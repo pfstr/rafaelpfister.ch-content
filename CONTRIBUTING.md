@@ -20,3 +20,5 @@ Jeder Vorschlag wird von mir persönlich geprüft. Es kann daher ein paar Tage d
 - Bitte belege inhaltliche Korrekturen wenn möglich mit einer Quelle (Herstellerdoku, Microsoft Learn o. Ä.) — die Artikel arbeiten mit kommentierten Quellenlisten.
 
 Danke! — Rafael Pfister, [rafaelpfister.ch](https://rafaelpfister.ch)
+
+<!-- TEST-MARKER sync-pruefung, sollte vom Mirror entfernt werden -->
