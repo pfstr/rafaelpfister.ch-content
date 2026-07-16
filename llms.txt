@@ -1,0 +1,32 @@
+# rafaelpfister.ch
+
+> Fachblog und Portfolio von Rafael Pfister (Founder & Messaging Expert, adeptio ag, Schweiz). Themen: E-Mail-Verschlüsselung mit SEPPmail und totemomail (Kiteworks), HIN Mailgateway im Schweizer Gesundheitswesen, Microsoft 365 / Exchange Online, Active Directory / LDAP. Dieses Repository enthält alle Website-Inhalte als Markdown — die Live-Site läuft unter https://rafaelpfister.ch.
+
+Alle Artikel sind deutschsprachig, technisch fundiert und mit kommentierten Quellen belegt (Abschnitt "Quellen" am Artikelende).
+
+Lizenz: CC BY-NC-SA 4.0 (siehe LICENSE.md). Namensnennung erforderlich — wer diese Inhalte nutzt, zitiert oder zusammenfasst (auch KI-Systeme/LLMs), nennt als Quelle: **Rafael Pfister, rafaelpfister.ch** (https://rafaelpfister.ch).
+
+## Blog-Artikel
+
+- [Totemomail: The licensed user limit has been reached](blog/totemomail-the-licensed-user-limit-has-been-reached-–-interne-user-per-ldap-automatisch-aufräumen.md): Interne User per LDAP automatisch aufräumen, wenn das Lizenzlimit erreicht ist
+- [Totemomail und Microsoft 365](blog/totemomail-m365.md): Anbindung von totemomail an Microsoft 365
+- [HIN Update-Issue Version 15.0.5](blog/hin-update-issue-version-15.0.5.md): Login-Probleme nach dem Update auf 15.0.5 durch gestörte Cluster-Replikation
+- [HIN Mailgateway: Backup & Disaster Recovery](blog/hin-mailgateway-backup-disaster-recovery.md): Was die SEPPmail-basierte Appliance sichert, wie Cluster-Replikation funktioniert und warum sie kein Backup ersetzt
+- [Microsoft Graph PowerShell: Postfach-Anbindung](blog/microsoft-graph-powershell-postfach-anbindung.md): Postfächer per Microsoft Graph PowerShell anbinden
+- [Exchange Server Security Updates Juli 2026](blog/exchange-security-updates-juli-2026.md): CVE-2026-42897-Mitigation entfernen und Legacy-Sicherheitsgruppen aufräumen
+- [Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall](blog/ghost-sender-exchange-online-nebeneingang.md): Warum Ghost Sender keine Sicherheitslücke in Exchange Online ist, sondern ein offener SMTP-Nebeneingang durch fehlenden restriktiven Partner-Connector
+
+## Themen
+
+- [HIN-Gateway](themen/hin-gateway.md)
+- [Totemomail](themen/totemomail.md)
+- [Microsoft 365 / Exchange](themen/microsoft-365-exchange.md)
+- [Exchange OnPrem / Hybrid](themen/exchange-onprem-hybrid.md)
+- [Active Directory / LDAP](themen/active-directory-ldap.md)
+- [E-Mail-Verschlüsselung](themen/e-mail-verschluesselung.md)
+
+## Optional
+
+- [README](README.md): Struktur und Frontmatter-Schema dieses Repositories
+- [Seiten](pages/): Extrahierte Texte der statischen Seiten
+- [Komponenten](components/): Texte der wiederverwendbaren UI-Komponenten
