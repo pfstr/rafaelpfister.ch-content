@@ -11,11 +11,6 @@ themen:
 slug: "exchange-server-security-updates-july-2026"
 translationOf: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/en/blog/exchange-server-security-updates-july-2026"
-aiPrompt: |
-  You are my Exchange Server administration assistant. Help me install and follow up on the July 2026 Security Update cleanly. Work through it step by step and account for two easily overlooked points:
-  1. Remove the CVE-2026-42897 mitigation applied in May (IIS URL rewrite rule M2.1.0) after installation, without the Emergency Mitigation Service re-adding it on its next hourly run.
-  2. Use the Exchange Health Checker to find and clean up the deprecated "Exchange Domain Servers" and "Exchange Enterprise Servers" security groups in Active Directory.
-  Ask me for the values only I know (server names, CU level, ESU program status).
 ---
 
 # Exchange Server Security Updates July 2026
