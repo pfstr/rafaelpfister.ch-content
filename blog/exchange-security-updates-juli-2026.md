@@ -107,6 +107,8 @@ Get-ADGroup -Filter "Name -eq 'Exchange Domain Servers' -or Name -eq 'Exchange E
 
 Vorgehen: Mitgliedschaft und allfällige benutzerdefinierte ACL-Referenzen prüfen, sicherstellen, dass nichts Produktives darauf verweist – und die Gruppen anschliessend löschen. Da sie seit 2007 deprecated sind, sind sie in der überwiegenden Mehrheit der Umgebungen gefahrlos entfernbar. Wer gar keinen on-premises Exchange mehr betreibt, sollte im gleichen Zug eine umfassendere AD-Bereinigung nach der offiziellen Microsoft-Anleitung einplanen.
 
+Eine detaillierte Anleitung zum Entfernen der Gruppen hat Hayes Jupe in seinem Blogpost [Latest Exchange health check script and deprecated groups](https://www.hayesjupe.com/latest-exchange-health-check-script-and-deprecated-groups/) geschrieben.
+
 ## Empfohlenes Vorgehen
 
 Kurz zusammengefasst der praktische Ablauf: Zuerst mit dem Health Checker den Bestand inventarisieren (er zeigt fehlende CUs/SUs, offene manuelle Schritte *und* neu die Legacy-Gruppen). Dann das aktuelle CU sowie das Juli-SU einspielen, den Server neu starten und prüfen, ob alle Exchange-Dienste sauber gestartet sind. Danach den Health Checker erneut laufen lassen, die CVE-2026-42897-Mitigation entfernen (nach dem 16. Juli bzw. mit vorherigem Block der ID M2.1.0) und schliesslich die deprecierten Sicherheitsgruppen bereinigen. SUs sind kumulativ – wer auf einem unterstützten CU sitzt, muss nicht jedes Zwischen-SU nachziehen, sondern installiert direkt das neueste.
