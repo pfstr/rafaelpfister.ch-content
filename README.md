@@ -19,6 +19,7 @@ Alle Inhalte von [rafaelpfister.ch](https://rafaelpfister.ch) in offener, maschi
 - [Microsoft Graph PowerShell: Postfach-Anbindung](blog/microsoft-graph-powershell-postfach-anbindung.md): Postfächer per Microsoft Graph PowerShell anbinden
 - [Exchange Server Security Updates Juli 2026](blog/exchange-security-updates-juli-2026.md): CVE-2026-42897-Mitigation entfernen und Legacy-Sicherheitsgruppen aufräumen
 - [Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall](blog/ghost-sender-exchange-online-nebeneingang.md): Warum Ghost Sender keine Sicherheitslücke in Exchange Online ist, sondern ein offener SMTP-Nebeneingang durch fehlenden restriktiven Partner-Connector
+- [Microsoft Entra Connect Sync 2.6.84.0](blog/entra-connect-2-6-84-0.md): Sicherheitsfixes, neue Spielregeln für App-Authentifizierung und PHS – und die Lehre aus dem zurückgezogenen Vorgänger 2.6.79.0
 
 ## Frontmatter der Blog-Artikel
 

@@ -15,6 +15,7 @@ Lizenz: CC BY-NC-SA 4.0 (siehe LICENSE.md). Namensnennung erforderlich — wer d
 - [Microsoft Graph PowerShell: Postfach-Anbindung](blog/microsoft-graph-powershell-postfach-anbindung.md): Postfächer per Microsoft Graph PowerShell anbinden
 - [Exchange Server Security Updates Juli 2026](blog/exchange-security-updates-juli-2026.md): CVE-2026-42897-Mitigation entfernen und Legacy-Sicherheitsgruppen aufräumen
 - [Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall](blog/ghost-sender-exchange-online-nebeneingang.md): Warum Ghost Sender keine Sicherheitslücke in Exchange Online ist, sondern ein offener SMTP-Nebeneingang durch fehlenden restriktiven Partner-Connector
+- [Microsoft Entra Connect Sync 2.6.84.0](blog/entra-connect-2-6-84-0.md): Sicherheitsfixes, neue Spielregeln für App-Authentifizierung und PHS – und die Lehre aus dem zurückgezogenen Vorgänger 2.6.79.0
 
 ## Themen
 
@@ -23,6 +24,7 @@ Lizenz: CC BY-NC-SA 4.0 (siehe LICENSE.md). Namensnennung erforderlich — wer d
 - [Microsoft 365 / Exchange](themen/microsoft-365-exchange.md)
 - [Exchange OnPrem / Hybrid](themen/exchange-onprem-hybrid.md)
 - [Active Directory / LDAP](themen/active-directory-ldap.md)
+- [Microsoft Entra](themen/microsoft-entra.md)
 - [E-Mail-Verschlüsselung](themen/e-mail-verschluesselung.md)
 
 ## Optional
