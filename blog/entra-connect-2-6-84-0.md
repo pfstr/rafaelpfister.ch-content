@@ -41,7 +41,7 @@ Der Setup-Wizard unterstützt neu die Anmeldung mit Passkeys und FIDO2-Security-
 
 ### Unterstützung für die französische Sovereign Cloud
 
-2.6.84.0 bringt Unterstützung für die französische Sovereign-Cloud-Umgebung, inklusive Pass-through Authentication, Seamless Single Sign-On, Password Writeback und Health-Agent-Monitoring. Passend dazu wurde ein Fehler behoben, bei dem der Application-Proxy-Cloud-Name in der France Cloud nicht korrekt aufgelöst wurde und die PTA-Registrierung mit «EnvironmentName attribute is invalid» scheiterte. Für Schweizer Umgebungen ist das ohne direkte Relevanz, es zeigt aber, wohin die Reise geht: Microsoft baut die Sovereign-Cloud-Angebote aus, und die Hybrid-Komponenten ziehen nach.
+2.6.84.0 bringt Unterstützung für die französische Sovereign-Cloud-Umgebung, inklusive Pass-through Authentication, Seamless Single Sign-On, Password Writeback und Health-Agent-Monitoring. Passend dazu wurde ein Fehler behoben, bei dem der Application-Proxy-Cloud-Name in der France Cloud nicht korrekt aufgelöst wurde und die PTA-Registrierung mit «EnvironmentName attribute is invalid» scheiterte.
 
 ## Verhaltensänderungen im Detail
 
@@ -123,7 +123,7 @@ Seit März 2023 gilt für Entra Connect Sync 2.x eine strikte Retirement-Politik
 
 Wer noch auf 2.5.3.0 unterwegs ist, hat also nur noch zwei Wochen Support-Frist – hier ist die Frage nicht ob, sondern nur auf welche Version aktualisiert wird. Microsoft betont zudem, dass ausser Support geratene Versionen «unexpectedly» aufhören können zu funktionieren; bei den abgekündigten 1.x-Versionen ist die Synchronisation inzwischen tatsächlich serverseitig abgeschaltet. Die Mindestvoraussetzungen bleiben .NET Framework 4.7.2 und TLS 1.2; den Installer gibt es ausschliesslich im Entra Admin Center (Entra ID → Entra Connect → Get started), nicht mehr im Download Center.
 
-## Empfehlung: kontrolliert warten statt Tag-1-Upgrade
+## Empfehlung: erstmal abwarten
 
 Microsoft empfiehlt, «so schnell wie möglich» zu aktualisieren. Diese Empfehlung stand allerdings wortgleich auch über Version 2.6.79.0 – jener Version, die anschliessend zurückgezogen wurde. Die jüngere Release-Geschichte (zurückgezogener Installer, Hotfix wegen gestoppter Server, UI-Warnungen über mehrere Versionen) rechtfertigt eine nüchterne Abwägung statt eines Reflexes.
 
