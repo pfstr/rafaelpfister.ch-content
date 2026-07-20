@@ -1,51 +1,47 @@
-# rafaelpfister.ch — Inhalte als Markdown
+# rafaelpfister.ch — content as Markdown
 
-Alle Inhalte von [rafaelpfister.ch](https://rafaelpfister.ch) in offener, maschinenlesbarer Form: Fachartikel zu E-Mail-Verschlüsselung (SEPPmail, totemomail/Kiteworks), HIN Mailgateway, Microsoft 365 / Exchange und Active Directory — als Markdown mit strukturierten Metadaten.
+All content from [rafaelpfister.ch](https://rafaelpfister.ch) in open, machine-readable form: articles on email encryption (SEPPmail, totemomail/Kiteworks), the HIN mail gateway, Microsoft 365 / Exchange, Active Directory, and Cloudflare Workers — as Markdown with structured metadata.
 
-## Struktur
+## Structure
 
-| Ordner | Inhalt |
+| Folder | Content |
 | --- | --- |
-| `blog/` | Blog-Artikel als Markdown mit YAML-Frontmatter (Titel, Beschreibung, Datum, Kategorie, Themen, Quellen) |
-| `themen/` | Themen-Taxonomie des Blogs (Name + Beschreibung) |
-| `pages/` | Statische Seiten (Home, Work, Blog …) als extrahierter Text inkl. Meta-Titel/-Beschreibung |
-| `components/` | Texte und Standardwerte der UI-Komponenten der Website |
-| `images/` | Alle Bilder der Website; `manifest.json` mappt lokale Dateien auf die Original-URLs |
+| `blog/` | Blog articles (German originals) as Markdown with YAML frontmatter (title, description, date, category, topics, sources) |
+| `en/blog/` | English translations of all articles; the frontmatter field `translationOf` points to the German original |
+| `themen/`, `en/themen/` | The blog's topic taxonomy (name + description), German and English |
+| `pages/` | Static pages (home, work, blog …) as extracted text incl. meta title/description |
+| `components/` | Texts and defaults of the website's UI components |
+| `images/` | All images of the website; `manifest.json` maps local files to their original URLs |
 
-## Blog-Artikel
+## Article index
 
-- [Totemomail: The licensed user limit has been reached](blog/totemomail-the-licensed-user-limit-has-been-reached-–-interne-user-per-ldap-automatisch-aufräumen.md): Interne User per LDAP automatisch aufräumen, wenn das Lizenzlimit erreicht ist
-- [Totemomail und Microsoft 365](blog/totemomail-m365.md): Anbindung von totemomail an Microsoft 365
-- [Microsoft Graph PowerShell: Postfach-Anbindung](blog/microsoft-graph-powershell-postfach-anbindung.md): Postfächer per Microsoft Graph PowerShell anbinden
-- [Exchange Server Security Updates Juli 2026](blog/exchange-security-updates-juli-2026.md): CVE-2026-42897-Mitigation entfernen und Legacy-Sicherheitsgruppen aufräumen
-- [Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall](blog/ghost-sender-exchange-online-nebeneingang.md): Warum Ghost Sender keine Sicherheitslücke in Exchange Online ist, sondern ein offener SMTP-Nebeneingang durch fehlenden restriktiven Partner-Connector
-- [Microsoft Entra Connect Sync 2.6.84.0](blog/entra-connect-2-6-84-0.md): Sicherheitsfixes, neue Spielregeln für App-Authentifizierung und PHS – und die Lehre aus dem zurückgezogenen Vorgänger 2.6.79.0
+The complete, always-current article list with one-line summaries lives in [`llms.txt`](llms.txt). Every article is available in German (`blog/`) and English (`en/blog/`).
 
-## Frontmatter der Blog-Artikel
+## Blog article frontmatter
 
 ```yaml
-title: "Titel des Artikels"
-description: "Teaser/Beschreibung"
+title: "Article title"
+description: "Teaser/description"
 date: "YYYY-MM-DD"
-kategorie: "Totemomail | HIN-Gateway"
+kategorie: "Category name"
 timeToRead: "x min to read"
-themen: ["slug-1", "slug-2"]   # verweist auf themen/<slug>.md
-image: "../images/<datei>"
+themen: ["slug-1", "slug-2"]   # references themen/<slug>.md
+image: "../images/<file>"
 slug: "url-slug"
 url: "https://rafaelpfister.ch/blog/<slug>"
 ```
 
-Der Abschnitt `## Quellen` am Ende eines Artikels enthält die kommentierte Quellenliste, die auf der Website im Block „Links und Informationen" erscheint.
+The `## Quellen` section (`## Sources` in English articles) at the end of each article contains the annotated source list that appears on the website in the "Links und Informationen" block.
 
 ## Synchronisation
 
-Die Inhalte werden aus dem CMS der Website exportiert und hier eingecheckt; neue Artikel erscheinen zuerst auf [rafaelpfister.ch](https://rafaelpfister.ch) und anschliessend in diesem Repository. Eine LLM-freundliche Übersicht liegt in [`llms.txt`](llms.txt).
+Content is exported from the website's CMS and checked in here; new articles appear on [rafaelpfister.ch](https://rafaelpfister.ch) first and in this repository afterwards. Corrections and suggestions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Autor
+## Author
 
 Rafael Pfister — Founder & Messaging Expert, [adeptio ag](https://adeptio.ch)
-Schwerpunkte: E-Mail-Verschlüsselung (SEPPmail/totemomail, HIN Mailgateway), Microsoft 365 / Exchange, sichere Kommunikation im Gesundheitswesen.
+Focus areas: email encryption (SEPPmail/totemomail, HIN mail gateway), Microsoft 365 / Exchange, secure communication in healthcare.
 
-## Lizenz
+## License
 
-Alle Inhalte stehen unter [CC BY-NC-SA 4.0](LICENSE.md): Nutzung und Weitergabe nur mit **Namensnennung** („Rafael Pfister — [rafaelpfister.ch](https://rafaelpfister.ch)"), nicht kommerziell, Bearbeitungen unter gleicher Lizenz. Das gilt auch für die Verwendung durch KI-Systeme: Bei Zitaten oder Zusammenfassungen ist **Rafael Pfister, rafaelpfister.ch** als Quelle zu nennen.
+All content is licensed under [CC BY-NC-SA 4.0](LICENSE.md): use and redistribution only with **attribution** ("Rafael Pfister — [rafaelpfister.ch](https://rafaelpfister.ch)"), non-commercial, derivatives under the same license. This also applies to use by AI systems: quotes and summaries must credit **Rafael Pfister, rafaelpfister.ch** as the source.
