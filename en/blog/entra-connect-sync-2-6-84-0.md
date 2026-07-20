@@ -42,7 +42,7 @@ The setup wizard now supports signing in with passkeys and FIDO2 security keys v
 
 ### Support for the France Sovereign Cloud
 
-2.6.84.0 adds support for the France sovereign cloud environment, including Pass-through Authentication, Seamless Single Sign-On, password writeback, and Health Agent monitoring. Fittingly, a bug was fixed where the Application Proxy cloud name was not resolved correctly in the France cloud, causing PTA registration to fail with "EnvironmentName attribute is invalid". For Swiss environments this has no direct relevance, but it shows where things are heading: Microsoft is expanding its sovereign cloud offerings, and the hybrid components are following suit.
+2.6.84.0 adds support for the France sovereign cloud environment, including Pass-through Authentication, Seamless Single Sign-On, password writeback, and Health Agent monitoring. Fittingly, a bug was fixed where the Application Proxy cloud name was not resolved correctly in the France cloud, causing PTA registration to fail with "EnvironmentName attribute is invalid".
 
 ## Behavior Changes in Detail
 
@@ -113,18 +113,32 @@ For completeness, the remaining fixes:
 
 Since March 2023, a strict retirement policy applies to Entra Connect Sync 2.x: each version falls out of support twelve months after the release of its successor. The current deadlines:
 
-| Version | End of support |
-| --- | --- |
-| 2.5.3.0 | **July 31, 2026** |
-| 2.5.76.0 | September 1, 2026 |
-| 2.5.79.0 | October 23, 2026 |
-| 2.5.190.0 | February 2, 2027 |
-| 2.6.1.0 | March 10, 2027 |
-| 2.6.3.0 | July 7, 2027 |
+{% table %}
+- Version
+- End of support
+---
+- 2.5.3.0
+- **July 31, 2026**
+---
+- 2.5.76.0
+- September 1, 2026
+---
+- 2.5.79.0
+- October 23, 2026
+---
+- 2.5.190.0
+- February 2, 2027
+---
+- 2.6.1.0
+- March 10, 2027
+---
+- 2.6.3.0
+- July 7, 2027
+{% /table %}
 
 If you are still on 2.5.3.0, you have only two weeks of support left – here the question is not whether to update but only to which version. Microsoft also emphasizes that retired versions might stop working "unexpectedly"; for the discontinued 1.x versions, synchronization has in fact been switched off server-side by now. The minimum requirements remain .NET Framework 4.7.2 and TLS 1.2; the installer is available exclusively in the Entra admin center (Entra ID → Entra Connect → Get started), no longer in the Download Center.
 
-## Recommendation: Wait in a Controlled Manner Instead of a Day-One Upgrade
+## Recommendation: Wait for Now
 
 Microsoft recommends upgrading "as soon as possible". However, that recommendation stood word for word above version 2.6.79.0 as well – the version that was subsequently recalled. The recent release history (recalled installer, hotfix for stopped servers, UI warnings across several versions) justifies a sober assessment rather than a reflex.
 
@@ -142,16 +156,10 @@ For the upgrade itself, the usual procedure applies, and with this release histo
 
 ## Sources
 
-1.  [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history) — Official release notes for 2.6.84.0 including the recall notice for 2.6.79.0, the retirement table, and the known issue with a modified miiserver.exe.config.
-
-2.  [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version) — Upgrade procedures including swing migration via a staging-mode server.
-
-3.  [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id) — How Application-Based Authentication works, replacing the legacy service account.
-
-4.  [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication) — The new passkey/FIDO2 sign-in in the setup wizard via the Windows Web Account Manager.
-
-5.  [Microsoft Entra Connect: Automatic upgrade – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-automatic-upgrade) — The mechanics and prerequisites of auto-upgrade, whose rollout for 2.6.84.0 is still pending.
-
-6.  [Auditing administrator events in Microsoft Entra Connect Sync – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/admin-audit-logging) — Admin audit logging, whose identity attribution for synchronization rules was corrected in this release.
-
-7.  [SQL Server 2019 – Microsoft Lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019) — Support dates for the previously bundled LocalDB base, whose mainstream support ended in February 2025.
+1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history) — Official release notes for 2.6.84.0 including the recall notice for 2.6.79.0, the retirement table, and the known issue with a modified miiserver.exe.config.
+1. [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version) — Upgrade procedures including swing migration via a staging-mode server.
+1. [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id) — How Application-Based Authentication works, replacing the legacy service account.
+1. [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication) — The new passkey/FIDO2 sign-in in the setup wizard via the Windows Web Account Manager.
+1. [Microsoft Entra Connect: Automatic upgrade – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-automatic-upgrade) — The mechanics and prerequisites of auto-upgrade, whose rollout for 2.6.84.0 is still pending.
+1. [Auditing administrator events in Microsoft Entra Connect Sync – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/admin-audit-logging) — Admin audit logging, whose identity attribution for synchronization rules was corrected in this release.
+1. [SQL Server 2019 – Microsoft Lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019) — Support dates for the previously bundled LocalDB base, whose mainstream support ended in February 2025.
