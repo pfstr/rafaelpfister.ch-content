@@ -103,7 +103,7 @@ That would be sensible product hardening. It does not, however, change the techn
 For environments with an upstream filter, the checklist should include at least these points:
 
 1. **Fully document the mail flow.** Which systems are actually allowed to deliver to Exchange Online? This includes hybrid, application, and emergency paths.
-2. **Set up a restrictive partner connector.** Use `SenderDomains *` and restrict delivery to a certificate (preferred) or to maintained source IP ranges. A connector of type `OnPremises`, i.e. "Your organization," does not enforce this default-deny behavior.
+2. **Set up a restrictive partner connector.** Use `SenderDomains *` and restrict delivery to a certificate (preferred) or to maintained source IP ranges. A connector of type `OnPremises`, i.e. "Your organization," does not enforce this default-deny behavior (see e.g. also: [Setting Up Email Routing Between Apache James and Exchange Online](/en/blog/apache-james-exchange-online-mail-routing)).
 3. **Configure Enhanced Filtering correctly.** If EOP is still supposed to filter, the original IP and sender information must be reconstructed cleanly. Blanket SCL `-1` bypasses need critical review.
 4. **Disable Direct Send if unused.** Check beforehand with message trace or the available reports whether scanners or applications depend on it.
 5. **Don't switch blindly.** Test gateway IP ranges, certificate changes, hybrid mail flow, as well as `onmicrosoft.com`, Teams, and other special paths, and then monitor them.

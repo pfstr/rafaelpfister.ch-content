@@ -102,7 +102,7 @@ Das wäre sinnvolle Produkthärtung. Es ändert aber nichts an der technischen E
 Für Umgebungen mit vorgeschaltetem Filter gehören mindestens diese Punkte auf die Checkliste:
 
 1. **Mailflow vollständig dokumentieren.** Welche Systeme dürfen tatsächlich an Exchange Online zustellen? Dazu gehören auch Hybrid-, Applikations- und Notfallpfade.
-2. **Restriktiven Partner-Connector einrichten.** `SenderDomains *` verwenden und die Zustellung auf ein Zertifikat (bevorzugt) oder auf gepflegte Quell-IP-Bereiche beschränken. Ein Connector vom Typ `OnPremises` beziehungsweise «Ihre Organisation» erzwingt diese Default-Deny-Wirkung nicht.
+2. **Restriktiven Partner-Connector einrichten.** `SenderDomains *` verwenden und die Zustellung auf ein Zertifikat (bevorzugt) oder auf gepflegte Quell-IP-Bereiche beschränken. Ein Connector vom Typ `OnPremises` beziehungsweise «Ihre Organisation» erzwingt diese Default-Deny-Wirkung nicht (siehe bspw. auch: [Mailrouting zwischen Apache James und Exchange Online](/blog/totemomail-m365)).
 3. **Enhanced Filtering korrekt konfigurieren.** Wenn EOP weiterhin filtern soll, müssen Original-IP und Absenderinformationen sauber rekonstruiert werden. Pauschale SCL-`-1`-Bypässe sind kritisch zu prüfen.
 4. **Direct Send deaktivieren, falls unbenutzt.** Vorher mit Message Trace beziehungsweise den verfügbaren Berichten prüfen, ob Scanner oder Anwendungen davon abhängen.
 5. **Nicht blind umschalten.** Gateway-IP-Bereiche, Zertifikatswechsel, Hybrid-Mailflow sowie `onmicrosoft.com`-, Teams- und andere Sonderpfade testen und anschliessend überwachen.

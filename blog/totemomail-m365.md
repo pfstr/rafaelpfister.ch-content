@@ -19,6 +19,8 @@ Während Exchange Online primär als Ziel‑ oder Quellsystem für Benutzer-Mail
 
 Der Aufbau einer solchen Mailschlaufe ist jedoch alles andere als trivial. Neben klassischen SMTP‑Routingfragen spielen auch interne Mechanismen von Apache James eine entscheidende Rolle.
 
+Sobald die Mailschlaufe steht, ist ein Punkt besonders wichtig: Exchange Online darf Mails ausschliesslich von TotemoMail annehmen, nicht direkt aus dem Internet. Wie sich das mit einem restriktiven Partner-Connector absichern lässt, und was passiert, wenn dieser Schritt fehlt, zeigt [Ghost Sender oder Ghost Admin?](/blog/ghost-sender-exchange-online-nebeneingang).
+
 Gerade dieser interne Verarbeitungsfluss (verborgen hinter XML‑Konfigurationen) ist entscheidend für das korrekte Verhalten einer Mail im System.
 
 Konkret geht es um:
