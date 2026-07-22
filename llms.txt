@@ -19,6 +19,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall](blog/ghost-sender-exchange-online-nebeneingang.md): Warum Ghost Sender keine Sicherheitslücke in Exchange Online ist, sondern ein offener SMTP-Nebeneingang durch fehlenden restriktiven Partner-Connector
 - [Microsoft Entra Connect Sync 2.6.84.0](blog/entra-connect-2-6-84-0.md): Sicherheitsfixes, neue Spielregeln für App-Authentifizierung und PHS sowie die Lehre aus dem zurückgezogenen Vorgänger 2.6.79.0
 - [Claude Code auf dem eigenen VPS betreiben und den Server richtig absichern](blog/claude-code-vps-debian-absichern.md): Vollständige Härtungs-Checkliste für einen Debian-13-VPS: eigener Benutzer, SSH nur mit Ed25519-Schlüsseln, gehärtete sshd-Konfiguration, restriktive Firewall und Zugriff vom iPhone
+- [Serverloser Newsletter: Cloudflare Workers, D1 und ein Deploy-Button](blog/serverloser-newsletter-cloudflare-workers-d1.md): Ein vollständiges Newsletter-System läuft per Deploy-Button serverlos auf dem eigenen Cloudflare-Konto im Free Tier
 
 ## Themen
 
