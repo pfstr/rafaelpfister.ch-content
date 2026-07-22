@@ -3,10 +3,10 @@ title: "Claude Code auf dem eigenen VPS betreiben und den Server richtig absiche
 navTitle: "VPS für Claude"
 description: "Warum ein eigener VPS eine solide Basis für Claude Code ist, und die vollständige Absicherungs-Checkliste dazu: eigener Benutzer, SSH nur mit passphrasengeschützten Ed25519-Schlüsseln, gehärtete sshd-Konfiguration, restriktive Firewall, Prüfung der Angriffsfläche und Zugriff vom iPhone."
 date: "2026-07-21"
-kategorie: "Linux"
+kategorie: "Linux & VPS"
 timeToRead: "12 min to read"
 themen:
-  - "server-sicherheit"
+  - "linux-vps"
 slug: "claude-code-vps-debian-absichern"
 url: "https://rafaelpfister.ch/blog/claude-code-vps-debian-absichern"
 aiPrompt: |

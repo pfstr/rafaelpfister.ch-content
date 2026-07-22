@@ -29,7 +29,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Active Directory / LDAP](themen/active-directory-ldap.md)
 - [Microsoft Entra](themen/microsoft-entra.md)
 - [E-Mail-Verschlüsselung](themen/e-mail-verschluesselung.md)
-- [Server & Sicherheit](themen/server-sicherheit.md)
+- [Linux & VPS](themen/linux-vps.md)
 
 ## Optional
 
