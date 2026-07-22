@@ -103,7 +103,7 @@ Drei Funktionen sind eingebaut, aber standardmässig deaktiviert, damit das Syst
 
 ## Grenzen
 
-Das Template ist bewusst minimal gehalten, und die Grenzen sind dokumentiert statt versteckt. Der Kampagnenversand ist eine einfache Schleife und trägt damit einige hundert Empfänger pro Aussand (Workers-Subrequest-Limits); wer grössere Listen bedient, verlagert den Versand auf Cloudflare Queues. Die Zustellbarkeit hängt, wie bei jedem System, an der eigenen Absenderdomain: SPF und DKIM müssen beim gewählten Versanddienst verifiziert sein, sonst landet der Newsletter im Spam. Und der Single-Opt-in-Default ist der einfachste Start, aber nicht die konservativste Compliance-Variante; dafür gibt es den Schalter.
+Das Template ist bewusst minimal gehalten. Der Kampagnenversand ist eine einfache Schleife und trägt damit einige hundert Empfänger pro Aussand (Workers-Subrequest-Limits); wer grössere Listen bedient, verlagert den Versand auf Cloudflare Queues. Die Zustellbarkeit hängt, wie bei jedem System, an der eigenen Absenderdomain: SPF und DKIM müssen beim gewählten Versanddienst verifiziert sein, sonst landet der Newsletter im Spam. Und der Single-Opt-in-Default ist der einfachste Start, aber nicht die konservativste Compliance-Variante; dafür gibt es den Schalter.
 
 Zu den Kosten: Workers und D1 haben grosszügige Free-Tier-Kontingente (unter anderem 100'000 Requests pro Tag), die ein Anmeldeformular und wöchentliche Aussände an eine kleine bis mittlere Liste nicht ausschöpfen. Wird ein Limit erreicht, drosselt Cloudflare im Free-Plan, statt eine Rechnung zu stellen.
 

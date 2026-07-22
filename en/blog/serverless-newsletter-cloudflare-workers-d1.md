@@ -104,7 +104,7 @@ Three features are built in but disabled by default, so the system runs without 
 
 ## Limits
 
-The template is deliberately minimal, and its limits are documented rather than hidden. The campaign send is a simple loop and therefore carries a few hundred recipients per send (Workers subrequest limits); for larger lists, you move sending to Cloudflare Queues. Deliverability depends, as with any system, on your own sending domain: SPF and DKIM must be verified with your chosen delivery service, otherwise the newsletter ends up in spam. And the single-opt-in default is the simplest start, but not the most conservative compliance option; that is what the switch is for.
+The template is deliberately minimal. The campaign send is a simple loop and therefore carries a few hundred recipients per send (Workers subrequest limits); for larger lists, you move sending to Cloudflare Queues. Deliverability depends, as with any system, on your own sending domain: SPF and DKIM must be verified with your chosen delivery service, otherwise the newsletter ends up in spam. And the single-opt-in default is the simplest start, but not the most conservative compliance option; that is what the switch is for.
 
 On cost: Workers and D1 have generous free-tier quotas (including 100,000 requests per day) that a signup form and weekly sends to a small or medium list will not exhaust. If a limit is reached, Cloudflare throttles on the free plan instead of sending a bill.
 
