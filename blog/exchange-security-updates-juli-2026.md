@@ -7,7 +7,7 @@ kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min to read"
 themen:
   - "exchange-onprem-hybrid"
-  - "active-directory-ldap"
+  - "active-directory-entra"
 slug: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/blog/exchange-security-updates-juli-2026"
 aiPrompt: |

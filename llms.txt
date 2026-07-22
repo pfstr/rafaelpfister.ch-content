@@ -27,7 +27,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Totemomail](themen/totemomail.md)
 - [Microsoft 365 / Exchange](themen/microsoft-365-exchange.md)
 - [Exchange OnPrem / Hybrid](themen/exchange-onprem-hybrid.md)
-- [Active Directory / LDAP](themen/active-directory-ldap.md)
+- [Active Directory / Entra](themen/active-directory-entra.md)
 - [Microsoft Entra](themen/microsoft-entra.md)
 - [E-Mail-Verschlüsselung](themen/e-mail-verschluesselung.md)
 - [Linux & VPS](themen/linux-vps.md)

@@ -7,7 +7,7 @@ kategorie: "Microsoft Entra"
 timeToRead: "11 min to read"
 themen:
   - "microsoft-entra"
-  - "active-directory-ldap"
+  - "active-directory-entra"
 slug: "entra-connect-sync-2-6-84-0"
 translationOf: "entra-connect-2-6-84-0"
 url: "https://rafaelpfister.ch/en/blog/entra-connect-sync-2-6-84-0"

@@ -17,7 +17,7 @@ kategorie: Microsoft Entra
 timeToRead: 11 min to read
 themen:
   - microsoft-entra
-  - active-directory-ldap
+  - active-directory-entra
 url: https://rafaelpfister.ch/blog/entra-connect-2-6-84-0
 draft: false
 aiPrompt: >
