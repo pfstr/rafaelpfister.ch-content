@@ -55,7 +55,7 @@ The exported `.cer`Upload the file to the app registration under "Certificates &
 
 ## 4\. Restrict access to individual mailboxes
 
-Application Permissions gelten sonst tenant-wide: the app should be able to read every mailbox in the tenant. An Application Access Policy restricts it to a mail-enabled security group containing the permitted mailboxes (Exchange Online PowerShell, one-time setup):
+Application permissions otherwise apply tenant-wide: the app would be able to read every mailbox in the tenant. An Application Access Policy restricts it to a mail-enabled security group containing the permitted mailboxes (Exchange Online PowerShell, one-time setup):
 
 ```powershell
 New-ApplicationAccessPolicy -AppId "<App-ID>" `
@@ -84,7 +84,7 @@ Connect-MgGraph -TenantId $TenantId -ClientId $ClientId `
 
 ## 6\. Read emails and download ZIP attachments
 
-The gist of it: Go through your inbox, save ZIP attachments, unzip them, and move the processed email to "Deleted Items." The key step is downloading via the `/$value`\-Endpoint with `Invoke-MgGraphRequest -OutputFilePath`, this streams the raw content directly to a file and works reliably even with large attachments:
+The gist of it: Go through your inbox, save ZIP attachments, unzip them, and move the processed email to "Deleted Items." The key step is downloading via the `/$value`\-endpoint with `Invoke-MgGraphRequest -OutputFilePath`, which streams the raw content directly to a file and works reliably even with large attachments:
 
 ```powershell
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -119,7 +119,7 @@ If there are more than 100 emails with `Get-MgUserMessage -All` or paging; one b
 
 ## 7\. Send a report email via Graph
 
-Also `Send-MailMessage` is outdated. Through the same app registration (Right `Mail.Send`) The email is sent directly via Graph, in this case with a file as a base64-encoded attachment:
+Also `Send-MailMessage` is outdated. Through the same app registration (the `Mail.Send` permission), the email goes out directly via Graph, in this case with a file as a base64-encoded attachment:
 
 ```powershell
 $pfad = "D:\Reports

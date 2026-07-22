@@ -10,14 +10,6 @@ themen:
 translationOf: "claude-code-vps-debian-absichern"
 slug: "securing-a-debian-vps-for-claude-code"
 url: "https://rafaelpfister.ch/en/blog/securing-a-debian-vps-for-claude-code"
-aiPrompt: |
-  You are my Linux server assistant. Help me harden a freshly installed Debian 13 VPS step by step:
-  1. Fully update the system and create a dedicated user with sudo rights.
-  2. Switch SSH login to passphrase-protected Ed25519 keys, disable root and password login.
-  3. Move SSH to a high port (mind systemd socket activation) and validate the config with `sshd -t` before I reload.
-  4. Set the firewall so that only the SSH port is open inbound (default DROP), outbound allowed.
-  5. Check with `ss -lntup` and `systemctl --failed` which services listen publicly and whether anything is failing.
-  Ask me before any step that could lock me out, and keep my existing session open until the new access is tested.
 ---
 
 Starting Claude Code locally on your workstation is convenient, until the laptop lid closes, the Wi-Fi changes, or a long-running task dies in the middle of the night. Your own VPS solves that: a session that keeps running, reachable from your PC and your iPhone, with full control over what data lives there. The price is that the server is publicly reachable from the first minute, and therefore a target for automated scans. Running it is still worthwhile, and a freshly installed Debian server can be hardened to withstand that constant background noise.
