@@ -1,5 +1,5 @@
 ---
-title: "HIN Mailgateway auf SEPPmail-Basis: Backup & Disaster Recovery im Cluster – und was sich mit Stargate ändert"
+title: "HIN Mailgateway auf SEPPmail-Basis: Backup & Disaster Recovery im Cluster (und was sich mit Stargate ändert)"
 navTitle: "Backup & Recovery"
 description: "Das HIN Mailgateway beruht auf einer SEPPmail-Appliance. Für Backup und Disaster Recovery ist entscheidend, was die Appliance sichert (nur Konfiguration und Schlüsselmaterial, keine Mails), wie die Cluster-Replikation funktioniert und warum sie kein Backup ersetzt."
 date: "2026-07-08"
@@ -11,9 +11,9 @@ slug: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/blog/hin-mailgateway-backup-disaster-recovery"
 ---
 
-# HIN Mailgateway auf SEPPmail-Basis: Backup & Disaster Recovery im Cluster – und was sich mit Stargate ändert
+# HIN Mailgateway auf SEPPmail-Basis: Backup & Disaster Recovery im Cluster (und was sich mit Stargate ändert)
 
-Fast jedes produktive HIN Mailgateway (MGW) läuft im Clusterverbund – und mancher Betreiber verlässt sich stillschweigend darauf, dass diese Redundanz auch die Datensicherung übernimmt. Das ist ein Trugschluss. Ein Cluster schützt vor dem Ausfall eines Knotens, nicht vor einer fehlerhaften Regeländerung, einem gelöschten Zertifikat oder einem korrupten Import – denn [systemrelevante Daten werden zuverlässig auf alle Knoten repliziert](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html), Fehler eingeschlossen.
+Fast jedes produktive HIN Mailgateway (MGW) läuft im Clusterverbund. Mancher Betreiber verlässt sich stillschweigend darauf, dass diese Redundanz auch die Datensicherung übernimmt. Das ist ein Trugschluss. Ein Cluster schützt vor dem Ausfall eines Knotens, nicht vor einer fehlerhaften Regeländerung, einem gelöschten Zertifikat oder einem korrupten Import, denn [systemrelevante Daten werden zuverlässig auf alle Knoten repliziert](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html), Fehler eingeschlossen.
 
   
 
@@ -29,21 +29,21 @@ Das Gateway verarbeitet ein- und ausgehende Mails nach einem zentralen Regelwerk
 
 ## Cluster-Architektur: was repliziert wird
 
-SEPPmail kennt mehrere [Cluster-Ausprägungen – High-Availability, Load-Balancing und Geo-Cluster](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html); über alle Knoten synchronisiert werden Systemparameter, Benutzerdaten und Schlüsselmaterial. Beim [Frontend/Backend-Cluster verfügt das Frontend über keine eigene Konfigurationsdatenbank](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html): Es lässt sich in einer DMZ ohne Datenablage betreiben und erhält nur die zur aktuellen Verarbeitung nötigen Daten; die Datenbank samt Schlüsseln liegt auf dem Backend. Für [Large File Transfer (LFT) gilt eine Ausnahme](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html): Jedem Partner – auch Frontends – wird eine gleich grosse Platte zugeordnet, und die LFT-Daten werden auf alle Knoten synchronisiert.
+SEPPmail kennt mehrere [Cluster-Ausprägungen – High-Availability, Load-Balancing und Geo-Cluster](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html); über alle Knoten synchronisiert werden Systemparameter, Benutzerdaten und Schlüsselmaterial. Beim [Frontend/Backend-Cluster verfügt das Frontend über keine eigene Konfigurationsdatenbank](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html): Es lässt sich in einer DMZ ohne Datenablage betreiben und erhält nur die zur aktuellen Verarbeitung nötigen Daten; die Datenbank samt Schlüsseln liegt auf dem Backend. Für [Large File Transfer (LFT) gilt eine Ausnahme](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html): Jedem Partner (auch Frontends) wird eine gleich grosse Platte zugeordnet, und die LFT-Daten werden auf alle Knoten synchronisiert.
 
   
 
 ## Warum Replikation kein Backup ist
 
-> *Replikation kopiert den aktuellen Zustand – auch den fehlerhaften. Ein Backup bewahrt einen bekannten, funktionierenden Stand.*
+> *Replikation kopiert den aktuellen Zustand, auch den fehlerhaften. Ein Backup bewahrt einen bekannten, funktionierenden Stand.*
 
 Ein fehlerhafter Import, ein gelöschter Schlüssel oder eine deaktivierte Domain wird innerhalb von Sekunden auf den Partnerknoten repliziert. Ohne unabhängiges Backup existiert danach kein Wiederherstellungspunkt mehr. Wie eng Verfügbarkeit und Konsistenz im Cluster zusammenhängen, zeigte sich bei den [Login-Problemen nach dem Update auf 15.0.5](/blog/hin-update-issue-version-15.0.5), die durch gestörte Cluster-Replikation ausgelöst wurden.
 
   
 
-## Was im Backup enthalten ist – und was nicht
+## Was im Backup enthalten ist und was nicht
 
-Das [SEPPmail-Backup ist bewusst schlank](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): Es umfasst ausschliesslich Konfiguration und kryptografisches Schlüsselmaterial – [keine Nachrichten, keine Mailqueue und ausdrücklich keine Logs](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) (Logs gehören deshalb per Syslog auf ein externes System). Seit Firmware 14.0.0 erzeugt die Appliance das Backup [automatisch nachts um Mitternacht als backup.tgz](https://docs.seppmail.com/de/07_mi_11_adm__administration.html); abrufen lässt es sich über `Download`, `Send Backup` (E-Mail an die Backup-Gruppe) oder SCP.
+Das [SEPPmail-Backup ist bewusst schlank](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): Es umfasst ausschliesslich Konfiguration und kryptografisches Schlüsselmaterial: [keine Nachrichten, keine Mailqueue und ausdrücklich keine Logs](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) (Logs gehören deshalb per Syslog auf ein externes System). Seit Firmware 14.0.0 erzeugt die Appliance das Backup [automatisch nachts um Mitternacht als backup.tgz](https://docs.seppmail.com/de/07_mi_11_adm__administration.html); abrufen lässt es sich über `Download`, `Send Backup` (E-Mail an die Backup-Gruppe) oder SCP.
 
 | **Im Backup enthalten** | **Nicht im Backup** |
 | --- | --- |
@@ -59,9 +59,9 @@ Daraus folgt: Weil das Betriebssystem nicht im Konfigurations-Backup enthalten i
 
 ## Snapshots sind kein Cluster-Backup
 
-Seit Firmware 14.0.0 legt die Appliance zusätzlich [lokale Snapshots an – allerdings nur, wenn eine LFT-Partition mit Datenbank vorhanden ist](https://docs.seppmail.com/de/07_mi_11_adm__administration.html). Sonntags entsteht ein vollständiger, montags bis samstags je ein inkrementeller Snapshot; die Aufbewahrung beträgt 14 Tage.
+Seit Firmware 14.0.0 legt die Appliance zusätzlich [lokale Snapshots an, allerdings nur, wenn eine LFT-Partition mit Datenbank vorhanden ist](https://docs.seppmail.com/de/07_mi_11_adm__administration.html). Sonntags entsteht ein vollständiger, montags bis samstags je ein inkrementeller Snapshot; die Aufbewahrung beträgt 14 Tage.
 
-Entscheidend für die DR-Planung: Im Clusterbetrieb laufen diese Snapshots zwar im Hintergrund, es wird daraus aber **kein Restore angeboten**. Snapshots sind damit eine lokale Rollback-Hilfe auf Einzelsystemen, kein Cluster-Recovery. Die verlässliche Sicherung bleibt das verschlüsselte Konfigurations-Backup.
+Entscheidend für die DR-Planung: Im Clusterbetrieb laufen diese Snapshots zwar im Hintergrund, es wird daraus aber kein Restore angeboten. Snapshots sind damit eine lokale Rollback-Hilfe auf Einzelsystemen, kein Cluster-Recovery. Die verlässliche Sicherung bleibt das verschlüsselte Konfigurations-Backup.
 
   
 
@@ -69,7 +69,7 @@ Entscheidend für die DR-Planung: Im Clusterbetrieb laufen diese Snapshots zwar 
 
 Voraussetzung für jeden Abrufweg ist ein gesetztes Backup-Passwort unter [Administration › Backup › Change password](https://docs.seppmail.com/de/07_mi_11_adm__administration.html); ohne dieses Passwort wird weder heruntergeladen noch versendet oder per SCP bereitgestellt. Standardmässig geht das nächtliche Backup per E-Mail an die [Gruppe «backup (Backup Operator)»](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html); ein dedizierter Backup-Benutzer benötigt eine gültige interne Mailadresse.
 
--   Backup-Passwort setzen und [getrennt vom Backup aufbewahren](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html) – das Backup enthält private Schlüssel.
+-   Backup-Passwort setzen und [getrennt vom Backup aufbewahren](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html): Das Backup enthält private Schlüssel.
     
 -   Für die automatisierte Ablage die [Backups per SCP abholen](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html): öffentlichen `SSH-RSA`\-Schlüssel in der Administration hinterlegen und über den OS-Benutzer `backup` die um Mitternacht bereitgestellte `backup.tgz` abziehen.
     
@@ -86,7 +86,7 @@ Im Clusterbetrieb sind eine geordnete Sicherung und eine konsistente Versionsfü
     
 -   **Wöchentlich**: vollständiges VM- oder System-Backup beider Knoten, zeitlich versetzt statt gleichzeitig (das Betriebssystem ist nicht Teil des Konfigurations-Backups)
     
--   **Vor Wartung oder Update**: Mailannahme über [Preempt anhalten](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) – eingehende Mails werden dann mit einem konfigurierbaren SMTP-Return-Code (Standard `421`) temporär abgewiesen; die Einstellung bleibt auch nach einem Neustart aktiv.
+-   **Vor Wartung oder Update**: Mailannahme über [Preempt anhalten](https://docs.seppmail.com/de/07_mi_11_adm__administration.html): Eingehende Mails werden dann mit einem konfigurierbaren SMTP-Return-Code (Standard `421`) temporär abgewiesen; die Einstellung bleibt auch nach einem Neustart aktiv.
     
 
   
@@ -97,11 +97,11 @@ Zur Versionsführung: SEPPmail aktualisiert im Frontend/Backend-Cluster [das Fro
 
 ## Restore und Disaster Recovery
 
-Der Grundfall ist unkompliziert: [Import backup file](https://docs.seppmail.com/de/07_mi_11_adm__administration.html), Neustart – anschliessend arbeitet das Gateway mit vollem Funktionsumfang. Zu beachten ist die Versionsregel: Nur das Backup des **unmittelbar vorherigen** Firmware-Stands lässt sich in den aktuellen einspielen (danach das Ruleset neu generieren); das Backup einer neueren Firmware auf eine ältere Version einzuspielen ist nicht möglich.
+Der Grundfall ist unkompliziert: [Import backup file](https://docs.seppmail.com/de/07_mi_11_adm__administration.html), Neustart, anschliessend arbeitet das Gateway mit vollem Funktionsumfang. Zu beachten ist die Versionsregel: Nur das Backup des unmittelbar vorherigen Firmware-Stands lässt sich in den aktuellen einspielen (danach das Ruleset neu generieren); das Backup einer neueren Firmware auf eine ältere Version einzuspielen ist nicht möglich.
 
 Im Cluster gilt eine wichtige Einschränkung:
 
--   **Einzelnen Knoten nie direkt restaurieren**: Ein [Restore eines einzelnen Cluster-Partners ist nicht vorgesehen](https://docs.seppmail.com/de/07_mi_11_adm__administration.html). Stattdessen die defekte Maschine aus dem Cluster entfernen, eine neue VM aufsetzen und wieder hinzufügen – Konfiguration und Schlüssel kommen automatisch per Replikation vom intakten Partner.
+-   **Einzelnen Knoten nie direkt restaurieren**: Ein [Restore eines einzelnen Cluster-Partners ist nicht vorgesehen](https://docs.seppmail.com/de/07_mi_11_adm__administration.html). Stattdessen die defekte Maschine aus dem Cluster entfernen, eine neue VM aufsetzen und wieder hinzufügen: Konfiguration und Schlüssel kommen automatisch per Replikation vom intakten Partner.
     
 -   **Totalverlust auf allen Knoten**: Appliance aus dem Basis-Image neu ausrollen, danach das letzte bekannte, funktionierende Konfigurations-Backup importieren und neu starten.
     

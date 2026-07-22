@@ -16,7 +16,7 @@ image: "../images/ghost-admin.png"
 
 ![Ein Ghost-Admin hält im Rechenzentrum die Tür neben dem Security-Gate auf, während E-Mails am Filter vorbei direkt ins Postfach gelangen.](../images/ghost-admin.png)
 
-**InfoGuard Labs hat mit «Ghost-Sender – Universal Email Spoofing against Exchange Online» soviel Besorgnis ausgelöst, dass einige Anfragen zur «Sicherheitslücke» auch auf meinem Tisch gelandet sind. Kurzfazit: Das beschriebene Risiko ist real. Die Einordnung als universelle Sicherheitslücke in Exchange Online ist es jedoch nicht. Wer einen Third-Party-Mailfilter vor Exchange Online stellt, den weiterhin erreichbaren EXO-Endpunkt aber nicht auf diesen Filter beschränkt, hat keine neue Lücke entdeckt – sondern seinen Mailflow nicht fertig konfiguriert.**
+**InfoGuard Labs hat mit «Ghost-Sender – Universal Email Spoofing against Exchange Online» soviel Besorgnis ausgelöst, dass einige Anfragen zur «Sicherheitslücke» auch auf meinem Tisch gelandet sind. Kurzfazit: Das beschriebene Risiko ist real. Die Einordnung als universelle Sicherheitslücke in Exchange Online ist es jedoch nicht. Wer einen Third-Party-Mailfilter vor Exchange Online stellt, den weiterhin erreichbaren EXO-Endpunkt aber nicht auf diesen Filter beschränkt, hat keine neue Lücke entdeckt, sondern seinen Mailflow nicht fertig konfiguriert.**
 
 Es scheint, als hätte man bei InfoGuard für einen Moment vergessen, wie ein Mail Transfer Agent (MTA) funktioniert. Ein Mailserver, der Postfächer für eine Domain bedient, nimmt grundsätzlich SMTP-Verbindungen aus dem Internet entgegen. Genau dafür ist er da. Ein MX-Record sagt regulären Absendern lediglich, welchen Weg sie für die Zustellung nehmen sollen. Er ist aber weder eine Firewall-Regel noch eine Access Control List.
 
@@ -52,7 +52,7 @@ Auch die mediale Zuspitzung hilft bei der Einordnung wenig. [Heise titelt, Excha
 
 Jeder Exchange-Online-Tenant besitzt einen öffentlichen SMTP-Endpunkt. Dieser Endpunkt ist kein Geheimnis und soll auch keines sein. Microsoft erklärt selbst, dass Exchange Online standardmässig Nachrichten annimmt, die direkt an dort gehostete Postfächer adressiert sind: [Das sei schlicht die Funktionsweise von E-Mail](https://techcommunity.microsoft.com/blog/exchange/direct-send-vs-sending-directly-to-an-exchange-online-tenant/4439865).
 
-Auch [SMTP selbst beschreibt den MX-Record als Mechanismus zur Ermittlung des regulären Zielsystems](https://www.rfc-editor.org/rfc/rfc5321.html#section-5.1). Daraus folgt keine Verpflichtung des Zielservers, Verbindungen über jeden anderen erreichbaren Host abzulehnen. Ein Angreifer muss sich nicht an den ausgeschilderten Weg halten. Wenn ein weiterer MTA erreichbar ist, die Empfängerdomain kennt und die Nachricht akzeptiert, dann wird er ausprobiert – ganz ähnlich wie Spammer seit Jahrzehnten schlechter geschützte Backup-MX-Systeme anzusprechen versuchen.
+Auch [SMTP selbst beschreibt den MX-Record als Mechanismus zur Ermittlung des regulären Zielsystems](https://www.rfc-editor.org/rfc/rfc5321.html#section-5.1). Daraus folgt keine Verpflichtung des Zielservers, Verbindungen über jeden anderen erreichbaren Host abzulehnen. Ein Angreifer muss sich nicht an den ausgeschilderten Weg halten. Wenn ein weiterer MTA erreichbar ist, die Empfängerdomain kennt und die Nachricht akzeptiert, dann wird er ausprobiert, ganz ähnlich wie Spammer seit Jahrzehnten schlechter geschützte Backup-MX-Systeme anzusprechen versuchen.
 
 Wer einen Drittfilter vorschaltet, verändert die Standardtopologie. Aus «Exchange Online ist mein Internet-Mailgateway» wird «nur mein Drittanbieter-Gateway darf Internet-Mail an Exchange Online übergeben». Diese neue `Trust-Border` entsteht nicht durch einen DNS-Eintrag. Sie muss am empfangenden System ausdrücklich erzwungen werden.
 
@@ -62,9 +62,9 @@ Auch Frank Carius beschreibt diesen «Nebeneingang» in der [MSXFAQ](https://www
 
 ## SPF, DKIM und DMARC sind kein Türsteher
 
-InfoGuard zeigt Nachrichten, bei denen SPF, DKIM und DMARC fehlschlagen und die dennoch im Postfach landen. Das sieht spektakulär aus, ist aber kein kryptografischer «Bypass» dieser Verfahren. Die Mails schlagen gerade **nicht** erfolgreich durch – sie liefern `fail`. Entscheidend ist, welche lokale Aktion das empfangende System aus diesem Ergebnis ableitet.
+InfoGuard zeigt Nachrichten, bei denen SPF, DKIM und DMARC fehlschlagen und die dennoch im Postfach landen. Das sieht spektakulär aus, ist aber kein kryptografischer «Bypass» dieser Verfahren. Die Mails schlagen gerade nicht erfolgreich durch. Sie liefern `fail`. Entscheidend ist, welche lokale Aktion das empfangende System aus diesem Ergebnis ableitet.
 
-SPF prüft, ob ein System für den Envelope-Sender senden darf. DKIM prüft eine Signatur. DMARC verbindet diese Ergebnisse mit der sichtbaren Absenderdomain und veröffentlicht eine gewünschte Behandlung. Selbst der aktuelle [DMARC-Standard RFC 9989](https://www.rfc-editor.org/rfc/rfc9989.html#section-1) hält ausdrücklich fest, dass der Empfänger diese gewünschte Behandlung berücksichtigen kann, aber nicht dazu verpflichtet ist. DMARC ist ein wichtiges Signal – jedoch keine Netzwerk-Zugriffskontrolle.
+SPF prüft, ob ein System für den Envelope-Sender senden darf. DKIM prüft eine Signatur. DMARC verbindet diese Ergebnisse mit der sichtbaren Absenderdomain und veröffentlicht eine gewünschte Behandlung. Selbst der aktuelle [DMARC-Standard RFC 9989](https://www.rfc-editor.org/rfc/rfc9989.html#section-1) hält ausdrücklich fest, dass der Empfänger diese gewünschte Behandlung berücksichtigen kann, aber nicht dazu verpflichtet ist. DMARC ist ein wichtiges Signal, jedoch keine Netzwerk-Zugriffskontrolle.
 
 Bei einem vorgeschalteten Gateway kommt hinzu, dass Exchange Online zunächst die IP-Adresse dieses Gateways und nicht jene des ursprünglichen Absenders sieht. Dafür gibt es [Enhanced Filtering for Connectors](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors): Es rekonstruiert die ursprüngliche Quelle und verbessert SPF-, DKIM-, DMARC-, Anti-Spoofing- und Anti-Phishing-Auswertungen. Enhanced Filtering ist aber ebenfalls kein Türschloss. Es ersetzt den restriktiven Partner-Connector nicht.
 
@@ -102,7 +102,7 @@ Das wäre sinnvolle Produkthärtung. Es ändert aber nichts an der technischen E
 Für Umgebungen mit vorgeschaltetem Filter gehören mindestens diese Punkte auf die Checkliste:
 
 1. **Mailflow vollständig dokumentieren.** Welche Systeme dürfen tatsächlich an Exchange Online zustellen? Dazu gehören auch Hybrid-, Applikations- und Notfallpfade.
-2. **Restriktiven Partner-Connector einrichten.** `SenderDomains *` verwenden und die Zustellung auf ein Zertifikat – bevorzugt – oder auf gepflegte Quell-IP-Bereiche beschränken. Ein Connector vom Typ `OnPremises` beziehungsweise «Ihre Organisation» erzwingt diese Default-Deny-Wirkung nicht.
+2. **Restriktiven Partner-Connector einrichten.** `SenderDomains *` verwenden und die Zustellung auf ein Zertifikat (bevorzugt) oder auf gepflegte Quell-IP-Bereiche beschränken. Ein Connector vom Typ `OnPremises` beziehungsweise «Ihre Organisation» erzwingt diese Default-Deny-Wirkung nicht.
 3. **Enhanced Filtering korrekt konfigurieren.** Wenn EOP weiterhin filtern soll, müssen Original-IP und Absenderinformationen sauber rekonstruiert werden. Pauschale SCL-`-1`-Bypässe sind kritisch zu prüfen.
 4. **Direct Send deaktivieren, falls unbenutzt.** Vorher mit Message Trace beziehungsweise den verfügbaren Berichten prüfen, ob Scanner oder Anwendungen davon abhängen.
 5. **Nicht blind umschalten.** Gateway-IP-Bereiche, Zertifikatswechsel, Hybrid-Mailflow sowie `onmicrosoft.com`-, Teams- und andere Sonderpfade testen und anschliessend überwachen.
@@ -134,13 +134,13 @@ Send-MailMessage `
   -Body "Testmail direkt zum Tenant"
 ```
 
-Bei einem korrekt beschränkten Partner-Connector ist eine SMTP-Ablehnung wie `5.7.51 TenantInboundAttribution; Rejecting` zu erwarten. Eine alternative Transportregel kann die Nachricht zunächst annehmen und danach in Quarantäne verschieben; deshalb müssen neben der SMTP-Antwort auch Message Trace, Quarantäne und Postfach kontrolliert werden. `Send-MailMessage` (deprecated) dient hier nur der leicht verständlichen Illustration – jedes kontrollierte SMTP-Testwerkzeug erfüllt denselben Zweck.
+Bei einem korrekt beschränkten Partner-Connector ist eine SMTP-Ablehnung wie `5.7.51 TenantInboundAttribution; Rejecting` zu erwarten. Eine alternative Transportregel kann die Nachricht zunächst annehmen und danach in Quarantäne verschieben; deshalb müssen neben der SMTP-Antwort auch Message Trace, Quarantäne und Postfach kontrolliert werden. `Send-MailMessage` (deprecated) dient hier nur der leicht verständlichen Illustration. Jedes kontrollierte SMTP-Testwerkzeug erfüllt denselben Zweck.
 
 ## Fazit: Guter Test, falsches Etikett
 
 «Ghost Sender» ist kein neuer SMTP-Exploit. Es ist ein griffiger Name für einen offenen Nebeneingang, dessen Absicherung Microsoft seit langem dokumentiert und den der Administrator offengelassen hat.
 
-Das Ironische daran: InfoGuard bezeichnet das Problem im eigenen Beitrag selbst als «widespread and systematic misconfiguration» und schliesst mit dem Satz «Ghost-Sender is a misconfiguration». Auch Microsofts Security Response Center stufte die Meldung zunächst nicht als Sicherheitslücke ein. Die Fakten sind im Artikel also durchaus vorhanden – nur Titel, Testmail und «Vulnerability»-Branding erzählen leider eine dramatischere Geschichte.
+Das Ironische daran: InfoGuard bezeichnet das Problem im eigenen Beitrag selbst als «widespread and systematic misconfiguration» und schliesst mit dem Satz «Ghost-Sender is a misconfiguration». Auch Microsofts Security Response Center stufte die Meldung zunächst nicht als Sicherheitslücke ein. Die Fakten sind im Artikel also durchaus vorhanden: nur Titel, Testmail und «Vulnerability»-Branding erzählen leider eine dramatischere Geschichte.
 
 Der sinnvolle Teil der Veröffentlichung ist der Weckruf: Viele Unternehmen haben ihren Mailflow offenbar nicht sauber verriegelt. Der problematische Teil ist die Behauptung, Exchange Online habe dafür eine universelle Sicherheitslücke. Nein: Exchange Online verhält sich hier zunächst wie ein MTA. Unsicher wird es durch die nicht zu Ende konfigurierte Vertrauensgrenze.
 
@@ -172,7 +172,7 @@ Muss man dem Administrator wirklich alles abnehmen? Nein. Aber man muss offenbar
 
 ## Ist Ihr Mailflow sicher?
 
-Unsicher, ob Ihr Exchange-Online-Tenant ebenfalls einen offenen Nebeneingang hat? **adeptio** prüft Ihren kompletten Mailflow – von MX-Records, Connectors und Drittanbieter-Gateways bis zu EOP, SPF, DKIM, DMARC und Direct Send. Praxisnah, unabhängig und mit konkreten Empfehlungen.
+Unsicher, ob Ihr Exchange-Online-Tenant ebenfalls einen offenen Nebeneingang hat? **adeptio** prüft Ihren kompletten Mailflow: von MX-Records, Connectors und Drittanbieter-Gateways bis zu EOP, SPF, DKIM, DMARC und Direct Send. Praxisnah, unabhängig und mit konkreten Empfehlungen.
 
 Wer seinen Mailflow prüfen oder sauber absichern lassen möchte, kann gerne ein unverbindliches Beratungsgespräch vereinbaren:
 

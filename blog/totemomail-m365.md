@@ -13,15 +13,15 @@ url: "https://rafaelpfister.ch/blog/totemomail-m365"
 
 # Mailrouting zwischen Apache James (Totemomail / Kiteworks EPG) und Exchange Online einrichten
 
-In modernen E‑Mail‑Architekturen ist es oft erforderlich, unterschiedliche Mailplattformen miteinander zu verbinden – sei es im Rahmen von Migrationen, hybriden Umgebungen oder zur Integration von MTAs die Spezialaufgaben übernehmen. Dies soll an einem Beispiel einer Mailschlaufe zwischen einem Gateway-System wie TotemoMail (basierend auf Apache James) und einem Cloud‑Dienst wie Exchange Online aufgezeigt werden.
+In modernen E‑Mail‑Architekturen ist es oft erforderlich, unterschiedliche Mailplattformen miteinander zu verbinden: sei es im Rahmen von Migrationen, hybriden Umgebungen oder zur Integration von MTAs die Spezialaufgaben übernehmen. Dies soll an einem Beispiel einer Mailschlaufe zwischen einem Gateway-System wie TotemoMail (basierend auf Apache James) und einem Cloud‑Dienst wie Exchange Online aufgezeigt werden.
 
-Während Exchange Online primär als Ziel‑ oder Quellsystem für Benutzer-Mailboxen dient, übernimmt TotemoMail die Rolle eines Mail‑Gateways für Verschlüsselung, Signatur, Richtlinienprüfung oder spezielle Routing‑Logik. Damit diese Komponenten sauber zusammenspielen, müssen eingehende und ausgehende Nachrichten kontrolliert zwischen den Systemen weitergeleitet werden – ohne Schleifen, Zustellfehler oder unerwartete Seiteneffekte.
+Während Exchange Online primär als Ziel‑ oder Quellsystem für Benutzer-Mailboxen dient, übernimmt TotemoMail die Rolle eines Mail‑Gateways für Verschlüsselung, Signatur, Richtlinienprüfung oder spezielle Routing‑Logik. Damit diese Komponenten sauber zusammenspielen, müssen eingehende und ausgehende Nachrichten kontrolliert zwischen den Systemen weitergeleitet werden, ohne Schleifen, Zustellfehler oder unerwartete Seiteneffekte.
 
 Der Aufbau einer solchen Mailschlaufe ist jedoch alles andere als trivial. Neben klassischen SMTP‑Routingfragen spielen auch interne Mechanismen von Apache James eine entscheidende Rolle.
 
-Gerade dieser interne Verarbeitungsfluss – verborgen hinter XML‑Konfigurationen – ist entscheidend für das korrekte Verhalten einer Mail im System.
+Gerade dieser interne Verarbeitungsfluss (verborgen hinter XML‑Konfigurationen) ist entscheidend für das korrekte Verhalten einer Mail im System.
 
-In diesem Beitrag zeige ich Schritt für Schritt:
+Konkret geht es um:
 
 -   wie eine Mailschlaufe zwischen TotemoMail und Exchange Online aufgebaut wird
     
@@ -30,11 +30,11 @@ In diesem Beitrag zeige ich Schritt für Schritt:
 -   und worauf man achten muss, um saubere, stabile Mailflows zu gewährleisten
     
 
-Der Fokus liegt dabei nicht nur auf der Konfiguration, sondern auch auf dem Verständnis der zugrunde liegenden Mechanik – denn nur wer den Mailfluss wirklich versteht, kann Fehler gezielt analysieren und vermeiden.
+Der Fokus liegt dabei nicht nur auf der Konfiguration, sondern auch auf dem Verständnis der zugrunde liegenden Mechanik. Nur wer den Mailfluss wirklich versteht, kann Fehler gezielt analysieren und vermeiden.
 
 ### Spoolmanager (Verarbeitung eingehender Mails)
 
-**Das XML beschreibt die Konfiguration der Totemomail Mail-Processing-Pipeline** (zugrundeliegend ist [Apache James](https://james.apache.org/)). Sie beschreibt, **wie E-Mails verarbeitet, verschlüsselt, entschlüsselt, geroutet und zugestellt werden**.
+Das XML beschreibt die Konfiguration der Totemomail Mail-Processing-Pipeline (zugrundeliegend ist [Apache James](https://james.apache.org/)). Sie beschreibt, wie E-Mails verarbeitet, verschlüsselt, entschlüsselt, geroutet und zugestellt werden.
 
 Totemomail setzt auf Apache James auf und verwendet dessen Mailet Containers. Das Verarbeitungsmodell des Mailet Containers basiert auf vier zentralen Bausteinen:
 
@@ -238,7 +238,7 @@ Wenn wir uns nun den *root*\-Processor genauer anschauen, wird ersichtlich, dass
    </processor>
 ```
 
-Es handelt sich also nicht um die Implementierung der Logik sondern nur um ein Konfigurationsfile. Die eigentliche Logik befindet sich hier zum Beispiel in der aufgerufenen Klasse *SimpleLogger*. Offenbar scheint die Klasse ein Eigenbau von Totemomail (jetzt Kiteworks) zu sein - der Code lässt sich somit nicht direkt einsehen und liegt nur als kompilierter Bytecode vor.
+Es handelt sich also nicht um die Implementierung der Logik sondern nur um ein Konfigurationsfile. Die eigentliche Logik befindet sich hier zum Beispiel in der aufgerufenen Klasse *SimpleLogger*. Offenbar scheint die Klasse ein Eigenbau von Totemomail (jetzt Kiteworks) zu sein. Der Code lässt sich somit nicht direkt einsehen und liegt nur als kompilierter Bytecode vor.
 
 Im GUI lässt sich via Rechtsklick auf das entsprechende Mailet jedoch ein Help-Text anzeigen:
 

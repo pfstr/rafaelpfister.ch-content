@@ -1,7 +1,7 @@
 ---
 title: "Totemomail: \"The licensed user limit has been reached\" (interne User per LDAP automatisch aufräumen)"
 navTitle: "Lizenzlimit erreicht"
-description: "Wer eine totemomail-Umgebung über Jahre betreibt, kennt das Phänomen: Irgendwann erscheint oben rechts bei der Glocke eine rote Warnung – *„The licensed user limit has been reached.\"* Das System läuft zwar weiter, aber man bewegt sich plötzlich in einer **Unterlizenzierung**. In diesem Artikel zerlegen wir das Lizenzmodell von totemomail, klären warum die internen User unbemerkt anwachsen, und richten Schritt für Schritt eine LDAP-Anbindung samt automatischem Aufräum-Agent ein – inklusive der CLI-Werkzeuge, mit denen man die LDAP-Verbindung vorher sauber testet."
+description: "Wer eine totemomail-Umgebung über Jahre betreibt, kennt das Phänomen: Irgendwann erscheint oben rechts bei der Glocke eine rote Warnung: *„The licensed user limit has been reached.\"* Das System läuft zwar weiter, aber man bewegt sich plötzlich in einer **Unterlizenzierung**. In diesem Artikel zerlegen wir das Lizenzmodell von totemomail, klären warum die internen User unbemerkt anwachsen, und richten Schritt für Schritt eine LDAP-Anbindung samt automatischem Aufräum-Agent ein, inklusive der CLI-Werkzeuge, mit denen man die LDAP-Verbindung vorher sauber testet."
 date: "2026-06-26"
 kategorie: "Totemomail"
 timeToRead: "9 min to read"
@@ -13,7 +13,7 @@ url: "https://rafaelpfister.ch/blog/totemomail-the-licensed-user-limit-has-been-
 
 # Totemomail: "The licensed user limit has been reached" (interne User per LDAP automatisch aufräumen)
 
-Wenn Sie eine totemomail-Umgebung über mehrere Jahre betreiben, werden Sie irgendwann auf die Meldung *„The licensed user limit has been reached."* stossen. Das System arbeitet weiter, befindet sich aber in einer Unterlizenzierung. Die Ursache liegt fast immer im fehlenden Offboarding interner Benutzer. Dieser Artikel erklärt das Lizenzmodell, zeigt die Einrichtung einer LDAP-Anbindung und beschreibt den Cleanup-Agent samt der Tests, die Sie vorher auf der Kommandozeile durchführen sollten.
+Wenn Sie eine totemomail-Umgebung über mehrere Jahre betreiben, werden Sie irgendwann auf die Meldung *„The licensed user limit has been reached."* stossen. Das System arbeitet weiter, befindet sich aber in einer Unterlizenzierung. Die Ursache liegt fast immer im fehlenden Offboarding interner Benutzer.
 
 Die Hostnamen, DNs und Service-Accounts in diesem Artikel sind generische Beispiele (`example.com`). Passen Sie sie an Ihre Umgebung an.
 
@@ -27,7 +27,7 @@ totemomail unterscheidet zwei Klassen von Benutzern, von denen nur eine lizenzre
 | External Users | Externe Kommunikationspartner (WebMail, PDF, S/MIME, PGP) | Nein |
 
 
-Ein interner Benutzer wird angelegt, sobald er das erste Mal über das Gateway kommuniziert. Das passiert automatisch. Das Entfernen dagegen nicht: Verlässt ein Mitarbeiter die Organisation, deaktivieren Sie üblicherweise das AD-Konto – der totemomail-Eintrag bleibt aber bestehen. Über die Jahre sammeln sich so verwaiste Konten an, die weiter Lizenzen belegen.
+Ein interner Benutzer wird angelegt, sobald er das erste Mal über das Gateway kommuniziert. Das passiert automatisch. Das Entfernen dagegen nicht: Verlässt ein Mitarbeiter die Organisation, deaktivieren Sie üblicherweise das AD-Konto. Der totemomail-Eintrag bleibt aber bestehen. Über die Jahre sammeln sich so verwaiste Konten an, die weiter Lizenzen belegen.
 
 ### Statusanzeige
 
@@ -39,11 +39,11 @@ Den aktuellen Stand finden Sie unter **Settings → Overview → User Informatio
 
 Die wichtigen Zeilen:
 
--   **Internal users** (`4017`) – angelegte interne Benutzer
+-   **Internal users** (`4017`): angelegte interne Benutzer
     
--   **Internal blocked users** (`14`) – gesperrt, aber weiterhin lizenzrelevant
+-   **Internal blocked users** (`14`): gesperrt, aber weiterhin lizenzrelevant
     
--   **Available Users** (`-17`) – verfügbare Lizenzen; ein negativer Wert bedeutet Unterlizenzierung
+-   **Available Users** (`-17`): verfügbare Lizenzen; ein negativer Wert bedeutet Unterlizenzierung
     
 
 Sobald *Available Users* unter Null fällt, sehen Sie die Warnung an der Glocke:
@@ -62,7 +62,7 @@ Sie können interne Benutzer unter **Internal Users** einzeln suchen und lösche
 
 ### LDAP-Anbindung mit Cleanup-Agent
 
-Der tragfähige Weg ist die Anbindung an das Active Directory per LDAP. Ein Agent gleicht die internen Benutzer regelmässig gegen das Verzeichnis ab und entfernt oder deaktiviert Konten, die im AD nicht mehr existieren. Damit wird das AD zur führenden Quelle, und Ihr Offboarding-Prozess im AD erledigt die Lizenzhygiene gleich mit. Den Rest des Artikels widmen wir diesem Ansatz.
+Der tragfähige Weg ist die Anbindung an das Active Directory per LDAP. Ein Agent gleicht die internen Benutzer regelmässig gegen das Verzeichnis ab und entfernt oder deaktiviert Konten, die im AD nicht mehr existieren. Damit wird das AD zur führenden Quelle, und Ihr Offboarding-Prozess im AD erledigt die Lizenzhygiene gleich mit.
 
 ## LDAP-Grundlagen
 
@@ -84,7 +84,7 @@ Der tragfähige Weg ist die Anbindung an das Active Directory per LDAP. Ein Agen
 | 3269 | Global Catalog SSL | forestweite Suche über TLS |
 
 
-In einer Single-Domain-Umgebung kommen Sie mit Port 636 gegen einen Domain Controller aus. Betreiben Sie einen Forest mit mehreren Domains, liefert Ihnen nur der Global Catalog (Port 3269) forestweite Ergebnisse. Ein DC auf Port 636 kennt ausschliesslich die Objekte seiner eigenen Domäne und beantwortet Suchen ausserhalb seiner Partition mit einem Referral – ein Detail, das in Multi-Domain-Umgebungen gern übersehen wird.
+In einer Single-Domain-Umgebung kommen Sie mit Port 636 gegen einen Domain Controller aus. Betreiben Sie einen Forest mit mehreren Domains, liefert Ihnen nur der Global Catalog (Port 3269) forestweite Ergebnisse. Ein DC auf Port 636 kennt ausschliesslich die Objekte seiner eigenen Domäne und beantwortet Suchen ausserhalb seiner Partition mit einem Referral (ein Detail, das in Multi-Domain-Umgebungen gern übersehen wird).
 
 ### userAccountControl
 
@@ -100,7 +100,7 @@ Ob ein AD-Konto deaktiviert ist, steht im Bit-Feld `userAccountControl`. Das Fla
 
 ## Schritt 1: Service-Account im AD
 
-Für die Anbindung legen Sie ein dediziertes Konto mit reinen Leserechten an. Nehmen Sie dafür kein Administratorkonto – der Bind-Benutzer muss das AD nur lesen können.
+Für die Anbindung legen Sie ein dediziertes Konto mit reinen Leserechten an. Nehmen Sie dafür kein Administratorkonto. Der Bind-Benutzer muss das AD nur lesen können.
 
 ```powershell
 New-ADUser -Name "svc-totemomail-ldap" `
@@ -147,9 +147,9 @@ openssl s_client -connect dc01.corp.example.com:636 -showcerts </dev/null
 
 Achten Sie auf zwei Dinge:
 
--   `**subject=**` **/** `**issuer=**` – Der Hostname im Zertifikat (CN bzw. SAN) muss zu dem Hostnamen passen, über den Sie sich verbinden. Verbinden Sie sich über die IP-Adresse, schlägt die Prüfung fehl, wenn das Zertifikat nur den FQDN enthält.
+-   `**subject=**` **/** `**issuer=**`: Der Hostname im Zertifikat (CN bzw. SAN) muss zu dem Hostnamen passen, über den Sie sich verbinden. Verbinden Sie sich über die IP-Adresse, schlägt die Prüfung fehl, wenn das Zertifikat nur den FQDN enthält.
     
--   `**Verify return code: 0 (ok)**` – Die ausstellende CA muss totemomail bekannt sein. Bei einer internen Enterprise-CA müssen Sie deren Root- bzw. Issuing-Zertifikat in den Truststore von totemomail importieren.
+-   `**Verify return code: 0 (ok)**`: Die ausstellende CA muss totemomail bekannt sein. Bei einer internen Enterprise-CA müssen Sie deren Root- bzw. Issuing-Zertifikat in den Truststore von totemomail importieren.
     
 
 ### 2.3 Bind und Suche mit ldapsearch
@@ -229,7 +229,7 @@ Das LDAP-Directory legen Sie im Admin-GUI unter **Directories / LDAP** an. Über
 | Login Attribute | `sAMAccountName` (alternativ `mail` oder `userPrincipalName`) |
 
 
-Setzen Sie LDAPS gegen eine interne CA ein, müssen Sie deren Root- bzw. Issuing-Zertifikat in den Truststore von totemomail importieren. Sonst scheitert der TLS-Handshake mit „certificate verify failed", auch wenn `ldapsearch` mit `-x` vorher funktioniert hat – `ldapsearch` prüft das Zertifikat in dieser Form nämlich nicht strikt.
+Setzen Sie LDAPS gegen eine interne CA ein, müssen Sie deren Root- bzw. Issuing-Zertifikat in den Truststore von totemomail importieren. Sonst scheitert der TLS-Handshake mit „certificate verify failed", auch wenn `ldapsearch` mit `-x` vorher funktioniert hat: `ldapsearch` prüft das Zertifikat in dieser Form nämlich nicht strikt.
 
 Nach dem Speichern lösen Sie die eingebaute Test-Verbindung aus. Sie bestätigt den Bind.
 
@@ -280,11 +280,11 @@ In diesem Beispiel setzen Sie Benutzer der Gruppe *Mitarbeiter* bei Abwesenheit 
 
 Lassen Sie den Agent nicht ohne Testlauf gegen den Produktivbestand laufen. Gehen Sie stattdessen in dieser Reihenfolge vor:
 
-1.  **Queue-Modus aktivieren** – über die Option *„Produced emails are not sent but cached in a queue"*. Der Agent ermittelt die geplanten Aktionen, ohne Mails zu versenden.
+1.  **Queue-Modus aktivieren**: über die Option *„Produced emails are not sent but cached in a queue"*. Der Agent ermittelt die geplanten Aktionen, ohne Mails zu versenden.
     
 2.  **Manuell ausführen** und das Agent-Log auswerten: Wie viele Benutzer wären betroffen, und stehen unerwartete Konten wie Funktionspostfächer in der Liste?
     
-3.  **Plausibilität gegen** `**ldapsearch**` – Die Zahl der nicht im AD gefundenen Benutzer sollte zu Ihrer manuellen LDAP-Abfrage passen.
+3.  **Plausibilität gegen** `**ldapsearch**`: Die Zahl der nicht im AD gefundenen Benutzer sollte zu Ihrer manuellen LDAP-Abfrage passen.
     
 4.  Stimmt das Ergebnis, deaktivieren Sie den Queue-Modus, setzen *Agent enabled* und schalten den Schedule scharf.
     
@@ -320,7 +320,7 @@ So sehen Sie, ob der TLS-Handshake oder erst der Bind fehlschlägt. Diese Unters
     
 -   **Passwort-Rotation.** `PasswordNeverExpires` ist betrieblich praktikabel. Dokumentieren Sie den Account und rotieren Sie das Passwort nach Plan.
     
--   **Monitoring.** Überwachen Sie *Available Users* – idealerweise per Alerting –, statt auf die Glockenwarnung zu warten.
+-   **Monitoring.** Überwachen Sie *Available Users* (idealerweise per Alerting), statt auf die Glockenwarnung zu warten.
     
 -   **Erster Lauf im Queue-Modus.** Ein fehlerhafter Filter kann eine grosse Zahl von Konten treffen.
     
@@ -338,7 +338,7 @@ Das Erreichen des Lizenzlimits ist kein technischer Defekt, sondern die Folge ei
 4.  Agent produktiv schalten
     
 
-Wer diese Reihenfolge einhält, löst nicht nur das akute Lizenzproblem, sondern sorgt dafür, dass es nicht wiederkommt.
+Wer diese Reihenfolge einhält, löst das akute Lizenzproblem und verhindert, dass es wiederkommt.
 
 ## Quellen
 

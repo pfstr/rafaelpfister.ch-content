@@ -17,7 +17,7 @@ image: "../images/ghost-admin.png"
 
 ![A ghost admin holds the door next to the security gate open in a data center while emails slip past the filter straight into the mailbox.](../images/ghost-admin.png)
 
-**InfoGuard Labs stirred up so much concern with "Ghost-Sender – Universal Email Spoofing against Exchange Online" that several inquiries about the "vulnerability" landed on my desk as well. Short verdict: the risk described is real. Classifying it as a universal vulnerability in Exchange Online is not. Anyone who places a third-party mail filter in front of Exchange Online but does not restrict the still-reachable EXO endpoint to that filter has not discovered a new hole — they simply have not finished configuring their mail flow.**
+**InfoGuard Labs stirred up so much concern with "Ghost-Sender – Universal Email Spoofing against Exchange Online" that several inquiries about the "vulnerability" landed on my desk as well. Short verdict: the risk described is real. Classifying it as a universal vulnerability in Exchange Online is not. Anyone who places a third-party mail filter in front of Exchange Online but does not restrict the still-reachable EXO endpoint to that filter has not discovered a new hole. They simply have not finished configuring their mail flow.**
 
 It looks as if, for a moment, InfoGuard forgot how a Mail Transfer Agent (MTA) works. A mail server that hosts mailboxes for a domain fundamentally accepts SMTP connections from the internet. That is exactly what it is there for. An MX record merely tells regular senders which path to take for delivery. It is neither a firewall rule nor an access control list.
 
@@ -53,7 +53,7 @@ The media coverage doesn't help much with the assessment either. [Heise's headli
 
 Every Exchange Online tenant has a public SMTP endpoint. That endpoint is no secret, nor is it meant to be. Microsoft itself explains that Exchange Online accepts messages by default that are addressed directly to mailboxes hosted there: [that's simply how email works](https://techcommunity.microsoft.com/blog/exchange/direct-send-vs-sending-directly-to-an-exchange-online-tenant/4439865).
 
-[SMTP itself also describes the MX record as the mechanism for determining the regular target system](https://www.rfc-editor.org/rfc/rfc5321.html#section-5.1). That does not create any obligation for the destination server to reject connections coming through any other reachable host. An attacker does not have to follow the signposted path. If another MTA is reachable, knows the recipient domain, and accepts the message, it will be tried — much the way spammers have been probing poorly protected backup MX systems for decades.
+[SMTP itself also describes the MX record as the mechanism for determining the regular target system](https://www.rfc-editor.org/rfc/rfc5321.html#section-5.1). That does not create any obligation for the destination server to reject connections coming through any other reachable host. An attacker does not have to follow the signposted path. If another MTA is reachable, knows the recipient domain, and accepts the message, it will be tried, much the way spammers have been probing poorly protected backup MX systems for decades.
 
 Anyone who places a third-party filter in front changes the default topology. "Exchange Online is my internet mail gateway" becomes "only my third-party gateway may hand internet mail to Exchange Online." This new trust border does not arise from a DNS entry. It must be explicitly enforced on the receiving system.
 
@@ -63,13 +63,13 @@ Frank Carius also describes this "side entrance" in detail in the [MSXFAQ](https
 
 ## SPF, DKIM, and DMARC Are Not a Bouncer
 
-InfoGuard shows messages where SPF, DKIM, and DMARC fail and that still land in the mailbox. That looks spectacular, but it is not a cryptographic "bypass" of these mechanisms. The messages precisely do **not** pass successfully — they return `fail`. What matters is which local action the receiving system derives from that result.
+InfoGuard shows messages where SPF, DKIM, and DMARC fail and that still land in the mailbox. That looks spectacular, but it is not a cryptographic "bypass" of these mechanisms. The messages precisely do not pass successfully. They return `fail`. What matters is which local action the receiving system derives from that result.
 
-SPF checks whether a system is allowed to send for the envelope sender. DKIM checks a signature. DMARC ties these results to the visible sender domain and publishes a desired treatment. Even the current [DMARC standard RFC 9989](https://www.rfc-editor.org/rfc/rfc9989.html#section-1) explicitly states that the recipient may take this desired treatment into account, but is not obligated to. DMARC is an important signal — but it is not network access control.
+SPF checks whether a system is allowed to send for the envelope sender. DKIM checks a signature. DMARC ties these results to the visible sender domain and publishes a desired treatment. Even the current [DMARC standard RFC 9989](https://www.rfc-editor.org/rfc/rfc9989.html#section-1) explicitly states that the recipient may take this desired treatment into account, but is not obligated to. DMARC is an important signal, but it is not network access control.
 
 With an upstream gateway, there's the added factor that Exchange Online initially sees the IP address of that gateway rather than the original sender's. That's what [Enhanced Filtering for Connectors](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors) is for: it reconstructs the original source and improves SPF, DKIM, DMARC, anti-spoofing, and anti-phishing evaluation. Enhanced Filtering, however, is likewise not a door lock. It does not replace the restrictive partner connector.
 
-The misconfiguration becomes especially obvious when an administrator weakens or entirely bypasses the EOP check via an SCL bypass — on the assumption that the upstream product is already filtering — while at the same time leaving direct internet delivery open. In that case, they have not had a protection mechanism "bypassed" on them; they have deliberately left one of two entrances without effective protection.
+The misconfiguration becomes especially obvious when an administrator weakens or entirely bypasses the EOP check via an SCL bypass (on the assumption that the upstream product is already filtering) while at the same time leaving direct internet delivery open. In that case, they have not had a protection mechanism "bypassed" on them; they have deliberately left one of two entrances without effective protection.
 
 You can certainly criticize Microsoft for letting a message land in the inbox without a warning despite a clearly visible authentication failure. You can criticize the semantics of the connector types, the documentation, and the missing warnings in the Configuration Analyzer. All of that is legitimate. But the existence of a publicly reachable SMTP endpoint is not a vulnerability.
 
@@ -103,7 +103,7 @@ That would be sensible product hardening. It does not, however, change the techn
 For environments with an upstream filter, the checklist should include at least these points:
 
 1. **Fully document the mail flow.** Which systems are actually allowed to deliver to Exchange Online? This includes hybrid, application, and emergency paths.
-2. **Set up a restrictive partner connector.** Use `SenderDomains *` and restrict delivery to a certificate — preferred — or to maintained source IP ranges. A connector of type `OnPremises`, i.e. "Your organization," does not enforce this default-deny behavior.
+2. **Set up a restrictive partner connector.** Use `SenderDomains *` and restrict delivery to a certificate (preferred) or to maintained source IP ranges. A connector of type `OnPremises`, i.e. "Your organization," does not enforce this default-deny behavior.
 3. **Configure Enhanced Filtering correctly.** If EOP is still supposed to filter, the original IP and sender information must be reconstructed cleanly. Blanket SCL `-1` bypasses need critical review.
 4. **Disable Direct Send if unused.** Check beforehand with message trace or the available reports whether scanners or applications depend on it.
 5. **Don't switch blindly.** Test gateway IP ranges, certificate changes, hybrid mail flow, as well as `onmicrosoft.com`, Teams, and other special paths, and then monitor them.
@@ -135,15 +135,15 @@ Send-MailMessage `
   -Body "Testmail direkt zum Tenant"
 ```
 
-With a correctly restricted partner connector, you should expect an SMTP rejection like `5.7.51 TenantInboundAttribution; Rejecting`. An alternative transport rule can accept the message initially and then move it to quarantine; that's why, besides the SMTP response, you should also check message trace, quarantine, and the mailbox. `Send-MailMessage` (deprecated) serves here only as an easily understandable illustration — any controlled SMTP test tool serves the same purpose.
+With a correctly restricted partner connector, you should expect an SMTP rejection like `5.7.51 TenantInboundAttribution; Rejecting`. An alternative transport rule can accept the message initially and then move it to quarantine; that's why, besides the SMTP response, you should also check message trace, quarantine, and the mailbox. `Send-MailMessage` (deprecated) serves here only as an easily understandable illustration. Any controlled SMTP test tool serves the same purpose.
 
 ## Conclusion: Good Test, Wrong Label
 
 "Ghost Sender" is not a new SMTP exploit. It is a catchy name for an open side entrance whose mitigation Microsoft has documented for a long time and which the administrator left open.
 
-The irony: InfoGuard itself calls the problem a "widespread and systematic misconfiguration" in its own post and closes with the sentence "Ghost-Sender is a misconfiguration." Microsoft's Security Response Center also did not initially classify the report as a vulnerability. So the facts are all present in the article — only the title, the test email, and the "vulnerability" branding unfortunately tell a more dramatic story.
+The irony: InfoGuard itself calls the problem a "widespread and systematic misconfiguration" in its own post and closes with the sentence "Ghost-Sender is a misconfiguration." Microsoft's Security Response Center also did not initially classify the report as a vulnerability. So the facts are all present in the article: only the title, the test email, and the "vulnerability" branding unfortunately tell a more dramatic story.
 
-The useful part of the publication is the wake-up call: many companies apparently haven't locked down their mail flow properly. The problematic part is the claim that Exchange Online has a universal vulnerability because of it. No — Exchange Online initially just behaves like an MTA here. What makes it insecure is the trust boundary that was never finished being configured.
+The useful part of the publication is the wake-up call: many companies apparently haven't locked down their mail flow properly. The problematic part is the claim that Exchange Online has a universal vulnerability because of it. No: Exchange Online initially just behaves like an MTA here. What makes it insecure is the trust boundary that was never finished being configured.
 
 Does the administrator really need everything taken off their hands? No. But apparently it still needs to be repeated again and again that DNS routing is no substitute for access control.
 
@@ -173,7 +173,7 @@ Does the administrator really need everything taken off their hands? No. But app
 
 ## Is Your Mail Flow Secure?
 
-Not sure whether your Exchange Online tenant also has an open side entrance? **adeptio** reviews your entire mail flow — from MX records, connectors, and third-party gateways to EOP, SPF, DKIM, DMARC, and Direct Send. Practical, independent, and with concrete recommendations.
+Not sure whether your Exchange Online tenant also has an open side entrance? **adeptio** reviews your entire mail flow: from MX records, connectors, and third-party gateways to EOP, SPF, DKIM, DMARC, and Direct Send. Practical, independent, and with concrete recommendations.
 
 If you'd like to have your mail flow reviewed or properly secured, feel free to schedule a no-obligation consultation:
 

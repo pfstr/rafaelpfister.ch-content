@@ -1,7 +1,7 @@
 ---
 title: "Establishing a Microsoft Graph Connection in PowerShell: Reading a Mailbox and Sending Emails"
 navTitle: "Graph in PowerShell"
-description: "EWS will be discontinued for Exchange Online on October 1, 2026. This step-by-step guide walks you through the entire process of setting up the Graph connection in PowerShell: app registration, certificate-based app-only sign-in, reading mailboxes, downloading ZIP attachments, and sending emails—with specific code for each step."
+description: "EWS will be discontinued for Exchange Online on October 1, 2026. This step-by-step guide walks you through the entire process of setting up the Graph connection in PowerShell: app registration, certificate-based app-only sign-in, reading mailboxes, downloading ZIP attachments, and sending emails, with specific code for each step."
 date: "2026-07-11"
 kategorie: "Totemomail"
 timeToRead: "5 min to read"
@@ -14,13 +14,13 @@ url: "https://rafaelpfister.ch/en/blog/microsoft-graph-powershell-mailbox-connec
 
 # Establishing a Microsoft Graph Connection in PowerShell: Reading a Mailbox and Sending Emails
 
-Exchange Web Services (EWS) will be disabled for Exchange Online on **October 1, 2026**. Anyone who accesses mailboxes via script—for example, to retrieve automatically delivered files—must switch to the Microsoft Graph API. This guide walks you through setting up the complete Graph integration in PowerShell: app registration, certificate-based authentication, reading and downloading attachments, and sending emails—each with the specific code.
+Exchange Web Services (EWS) will be disabled for Exchange Online on **October 1, 2026**. Anyone who accesses mailboxes via script (for example, to retrieve automatically delivered files) must switch to the Microsoft Graph API. Setting up the complete Graph integration in PowerShell covers app registration, certificate-based authentication, reading and downloading attachments, and sending emails, each with the specific code.
 
 A good example of this is an unattended script that downloads ZIP attachments from a mailbox, unpacks them, and then sends a report. Placeholders such as `example.com` and replace the tenant/app IDs with your own values.
 
 ## 1\. Requirements
 
-Three modules of the Microsoft Graph SDK are sufficient—not the entire Meta module `Microsoft.Graph`:
+Three modules of the Microsoft Graph SDK are sufficient, not the entire Meta module `Microsoft.Graph`:
 
 ```powershell
 Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.Graph.Users.Actions -Scope AllUsers
@@ -30,9 +30,9 @@ Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.G
 
 Unsupervised scripts do not log in a user, but rather an app with its own permissions (App-Only). In the [Log in to the Admin Center](https://entra.microsoft.com) Under "App registrations," create a new registration and grant it two permissions under "API permissions" → "Microsoft Graph" → "Application permissions":
 
--   `Mail.ReadWrite` – Read emails and move them after processing them
+-   `Mail.ReadWrite`: Read emails and move them after processing them
     
--   `Mail.Send` – Send the report email
+-   `Mail.Send`: Send the report email
     
 
 After that **Grant admin consent** Click and make a note of the tenant ID and application (client) ID.
@@ -55,7 +55,7 @@ The exported `.cer`Upload the file to the app registration under "Certificates &
 
 ## 4\. Restrict access to individual mailboxes
 
-Application Permissions gelten sonst **tenant-wide** – The app should be able to read every mailbox in the tenant. An Application Access Policy restricts it to a mail-enabled security group containing the permitted mailboxes (Exchange Online PowerShell, one-time setup):
+Application Permissions gelten sonst tenant-wide: the app should be able to read every mailbox in the tenant. An Application Access Policy restricts it to a mail-enabled security group containing the permitted mailboxes (Exchange Online PowerShell, one-time setup):
 
 ```powershell
 New-ApplicationAccessPolicy -AppId "<App-ID>" `
@@ -69,7 +69,7 @@ Test-ApplicationAccessPolicy -AppId "<App-ID>" -Identity "ecall-logs@example.com
 
 ## 5\. Establish a connection
 
-The login process uses the tenant ID, app ID, and certificate thumbprint—all without any user interaction:
+The login process uses the tenant ID, app ID, and certificate thumbprint, all without any user interaction:
 
 ```powershell
 $TenantId   = "00000000-0000-0000-0000-000000000000"
@@ -84,7 +84,7 @@ Connect-MgGraph -TenantId $TenantId -ClientId $ClientId `
 
 ## 6\. Read emails and download ZIP attachments
 
-The gist of it: Go through your inbox, save ZIP attachments, unzip them, and move the processed email to "Deleted Items." The key step is downloading via the `/$value`\-Endpoint with `Invoke-MgGraphRequest -OutputFilePath` – This streams the raw content directly to a file and works reliably even with large attachments:
+The gist of it: Go through your inbox, save ZIP attachments, unzip them, and move the processed email to "Deleted Items." The key step is downloading via the `/$value`\-Endpoint with `Invoke-MgGraphRequest -OutputFilePath`, this streams the raw content directly to a file and works reliably even with large attachments:
 
 ```powershell
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -119,7 +119,7 @@ If there are more than 100 emails with `Get-MgUserMessage -All` or paging; one b
 
 ## 7\. Send a report email via Graph
 
-Also `Send-MailMessage` is outdated. Through the same app registration (Right `Mail.Send`) The email is sent directly via Graph—in this case, with a file as a base64-encoded attachment:
+Also `Send-MailMessage` is outdated. Through the same app registration (Right `Mail.Send`) The email is sent directly via Graph, in this case with a file as a base64-encoded attachment:
 
 ```powershell
 $pfad = "D:\Reports
@@ -152,7 +152,7 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
     -User "DOMAIN\svc-ecall" -Password (Read-Host "Passwort")
 ```
 
-The complete script—including logging, error handling, and the actual billing logic—is available as a working example on GitHub: [github.com/pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer)
+The complete script (including logging, error handling, and the actual billing logic) is available as a working example on GitHub: [github.com/pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer)
 
 ## Sources
 

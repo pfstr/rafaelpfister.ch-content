@@ -1,7 +1,7 @@
 ---
 title: "Microsoft-Graph-Verbindung in PowerShell bauen: Postfach auslesen und Mails senden"
 navTitle: "Graph in PowerShell"
-description: "EWS wird für Exchange Online am 1. Oktober 2026 abgeschaltet. Diese Schritt-für-Schritt-Anleitung baut die Graph-Anbindung in PowerShell komplett auf: App-Registrierung, zertifikatsbasierte App-Only-Anmeldung, Postfach auslesen, ZIP-Anhänge herunterladen und Mails versenden – mit beispielhaften Code-Snippets."
+description: "EWS wird für Exchange Online am 1. Oktober 2026 abgeschaltet. Diese Schritt-für-Schritt-Anleitung baut die Graph-Anbindung in PowerShell komplett auf: App-Registrierung, zertifikatsbasierte App-Only-Anmeldung, Postfach auslesen, ZIP-Anhänge herunterladen und Mails versenden, mit beispielhaften Code-Snippets."
 date: "2026-07-11"
 kategorie: "Totemomail"
 timeToRead: "5 min to read"
@@ -24,13 +24,13 @@ aiPrompt: |
 
 # Microsoft-Graph-Verbindung in PowerShell bauen: Postfach auslesen und Mails senden
 
-Exchange Web Services (EWS) wird für Exchange Online am **1\. Oktober 2026** abgeschaltet. Wer per Skript auf Postfächer zugreift – etwa um automatisiert zugestellte Dateien abzuholen –, muss auf die Microsoft Graph API wechseln. Diese Anleitung baut die komplette Graph-Anbindung in PowerShell auf: App-Registrierung, zertifikatsbasierte Anmeldung, Lesen und Herunterladen von Anhängen sowie Mailversand – jeweils mit dem konkreten Code.
+Exchange Web Services (EWS) wird für Exchange Online am **1\. Oktober 2026** abgeschaltet. Wer per Skript auf Postfächer zugreift (etwa um automatisiert zugestellte Dateien abzuholen), muss auf die Microsoft Graph API wechseln. Die komplette Graph-Anbindung in PowerShell umfasst App-Registrierung, zertifikatsbasierte Anmeldung, Lesen und Herunterladen von Anhängen sowie Mailversand, jeweils mit dem konkreten Code.
 
 Als durchgehendes Beispiel dient ein unbeaufsichtigtes Skript, das ZIP-Anhänge aus einem Postfach herunterlädt, entpackt und anschliessend einen Report verschickt. Platzhalter wie `example.com` und die Tenant-/App-IDs durch eigene Werte ersetzen.
 
 ## 1\. Voraussetzungen
 
-Es genügen drei Module des Microsoft-Graph-SDK – nicht das gesamte Meta-Modul `Microsoft.Graph`:
+Es genügen drei Module des Microsoft-Graph-SDK, nicht das gesamte Meta-Modul `Microsoft.Graph`:
 
 ```powershell
 Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.Graph.Users.Actions -Scope AllUsers
@@ -40,9 +40,9 @@ Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.G
 
 Unbeaufsichtigte Skripte melden nicht einen Benutzer an, sondern eine App mit eigenen Rechten (App-Only). Im [Entra Admin Center](https://entra.microsoft.com) unter App registrations eine neue Registrierung anlegen und ihr unter API permissions → Microsoft Graph → Application permissions zwei Rechte geben:
 
--   `Mail.ReadWrite` – Mails lesen und nach der Verarbeitung verschieben
+-   `Mail.ReadWrite`: Mails lesen und nach der Verarbeitung verschieben
     
--   `Mail.Send` – die Report-Mail versenden
+-   `Mail.Send`: die Report-Mail versenden
     
 
 Danach **Grant admin consent** klicken und Tenant-ID sowie Application (client) ID notieren.
@@ -65,7 +65,7 @@ Die exportierte `.cer`\-Datei in der App-Registrierung unter Certificates & secr
 
 ## 4\. Zugriff auf einzelne Postfächer einschränken
 
-Application Permissions gelten sonst **tenant-weit** – die App dürfte jedes Postfach im Tenant lesen. Eine Application Access Policy begrenzt sie auf eine Mail-aktivierte Sicherheitsgruppe mit den erlaubten Postfächern (Exchange Online PowerShell, einmalig):
+Application Permissions gelten sonst tenant-weit: die App dürfte jedes Postfach im Tenant lesen. Eine Application Access Policy begrenzt sie auf eine Mail-aktivierte Sicherheitsgruppe mit den erlaubten Postfächern (Exchange Online PowerShell, einmalig):
 
 ```powershell
 New-ApplicationAccessPolicy -AppId "<App-ID>" `
@@ -79,7 +79,7 @@ Test-ApplicationAccessPolicy -AppId "<App-ID>" -Identity "ecall-logs@example.com
 
 ## 5\. Verbindung aufbauen
 
-Die Anmeldung nutzt Tenant-ID, App-ID und den Zertifikat-Thumbprint – ganz ohne Benutzerinteraktion:
+Die Anmeldung nutzt Tenant-ID, App-ID und den Zertifikat-Thumbprint, ganz ohne Benutzerinteraktion:
 
 ```powershell
 $TenantId   = "00000000-0000-0000-0000-000000000000"
@@ -94,7 +94,7 @@ Connect-MgGraph -TenantId $TenantId -ClientId $ClientId `
 
 ## 6\. Mails lesen und ZIP-Anhänge herunterladen
 
-Der Kern: Posteingang durchgehen, ZIP-Anhänge speichern, entpacken und die verarbeitete Mail nach „Gelöschte Elemente“ verschieben. Entscheidend ist der Download über den `/$value`\-Endpunkt mit `Invoke-MgGraphRequest -OutputFilePath` – das streamt den Rohinhalt direkt in eine Datei und funktioniert auch bei grossen Anhängen zuverlässig:
+Der Kern: Posteingang durchgehen, ZIP-Anhänge speichern, entpacken und die verarbeitete Mail nach „Gelöschte Elemente“ verschieben. Entscheidend ist der Download über den `/$value`\-Endpunkt mit `Invoke-MgGraphRequest -OutputFilePath`, das streamt den Rohinhalt direkt in eine Datei und funktioniert auch bei grossen Anhängen zuverlässig:
 
 ```powershell
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -129,7 +129,7 @@ Bei mehr als 100 Mails mit `Get-MgUserMessage -All` oder Paging arbeiten; für e
 
 ## 7\. Report-Mail über Graph senden
 
-Auch `Send-MailMessage` ist veraltet. Über dieselbe App-Registrierung (Recht `Mail.Send`) geht die Mail direkt via Graph hinaus – hier mit einer Datei als base64-kodiertem Anhang:
+Auch `Send-MailMessage` ist veraltet. Über dieselbe App-Registrierung (Recht `Mail.Send`) geht die Mail direkt via Graph hinaus, hier mit einer Datei als base64-kodiertem Anhang:
 
 ```powershell
 $pfad = "D:\Reports
@@ -162,7 +162,7 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
     -User "DOMAIN\svc-ecall" -Password (Read-Host "Passwort")
 ```
 
-Das vollständige Skript – inklusive Logging, Fehlerbehandlung und der eigentlichen Verrechnungslogik – liegt als lauffähiges Beispiel auf GitHub: [github.com/pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer)
+Das vollständige Skript (inklusive Logging, Fehlerbehandlung und der eigentlichen Verrechnungslogik) liegt als lauffähiges Beispiel auf GitHub: [github.com/pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer)
 
 ## Quellen
 

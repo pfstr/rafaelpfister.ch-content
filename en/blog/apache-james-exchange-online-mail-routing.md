@@ -14,32 +14,32 @@ url: "https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing
 
 # Set Up Email Routing Between Apache James (Totemomail / Kiteworks EPG) and Exchange Online
 
-In modern email architectures, it is often necessary to connect different email platforms—whether as part of migrations, hybrid environments, or to integrate MTAs that handle specialized tasks. This will be illustrated using the example of a mail loop between a gateway system such as TotemoMail (based on Apache James) and a cloud service such as Exchange Online.
+In modern email architectures, it is often necessary to connect different email platforms: whether as part of migrations, hybrid environments, or to integrate MTAs that handle specialized tasks. This will be illustrated using the example of a mail loop between a gateway system such as TotemoMail (based on Apache James) and a cloud service such as Exchange Online.
 
-While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. To ensure these components work together seamlessly, incoming and outgoing messages must be routed between the systems in a controlled manner—without loops, delivery errors, or unexpected side effects.
+While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. To ensure these components work together seamlessly, incoming and outgoing messages must be routed between the systems in a controlled manner, without loops, delivery errors, or unexpected side effects.
 
 However, setting up such an email loop is anything but trivial. In addition to traditional SMTP routing issues, Apache James's internal mechanisms also play a crucial role.
 
-It is precisely this internal processing flow—hidden behind XML configurations—that is crucial for an email to function correctly within the system.
+It is precisely this internal processing flow (hidden behind XML configurations) that is crucial for an email to function correctly within the system.
 
-In this post, I'll walk you through the process step by step:
+This post covers:
 
--   How to Set Up an Email Loop Between TotemoMail and Exchange Online
+-   how to set up an email loop between TotemoMail and Exchange Online
     
 -   How Apache James processes and forwards emails internally
     
 -   and what you need to keep in mind to ensure clean, stable email flows
     
 
-The focus here is not only on configuration, but also on understanding the underlying mechanics—because only those who truly understand the flow of email can analyze and prevent errors in a targeted manner.
+The focus here is not only on configuration, but also on understanding the underlying mechanics. Only those who truly understand the flow of email can analyze and prevent errors in a targeted manner.
 
 ### Spool Manager (Processing Incoming Emails)
 
-**The XML describes the configuration of the Totemomail mail-processing pipeline** (The underlying principle is [Apache James](https://james.apache.org/)). It describes, **how emails are processed, encrypted, decrypted, routed, and delivered**.
+The XML describes the configuration of the Totemomail mail-processing pipeline (the underlying principle is [Apache James](https://james.apache.org/)). It describes how emails are processed, encrypted, decrypted, routed, and delivered.
 
 Totemomail is built on Apache James and uses its Mailet containers. The Mailet container's processing model is based on four key components:
 
--   **Hammer** Perform specific actions on emails, such as modifying content or headers, triggering actions, or terminating processing.
+-   **Mailets** perform specific actions on emails, such as modifying content or headers, triggering actions, or terminating processing.
     
 -   **Matchers** define conditions and determine whether an email should be processed by a specific Mailet.
     
@@ -76,9 +76,9 @@ Queuing takes place through various folders (known as repositories). This means 
 
 Here is an example setup with various repositories (including those used specifically for a HIN encryption gateway connection). HIN is a secure trust environment for the Swiss healthcare system, distributed by Health Infonet AG.
 
-> If you need assistance connecting to the HIN Mailgateway or migrating to the new HIN Stargate solution, you can find it at [attainment](https://adeptio.ch/) the relevant experts.  
+> If you need assistance connecting to the HIN Mailgateway or migrating to the new HIN Stargate solution, you'll find the relevant experts at [adeptio](https://adeptio.ch/).  
 >   
-> **attainment** is an official partner of the [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct points of contact at the manufacturer.  
+> **adeptio** is an official partner of the [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct points of contact at the manufacturer.  
 > [➜ Book an appointment today.](https://outlook.office.com/book/Erstgesprchadeptio@adeptio.ch/s/Akxr6wxKAEGw3d5sEmi-AQ2?ismsaljsauthenabled)
 
 ```text
@@ -239,7 +239,7 @@ Now, if we look at the *root*\-If you take a closer look at the processor, it be
    </processor>
 ```
 
-So this isn't the implementation of the logic, but merely a configuration file. The actual logic is located here, for example, in the class that is called *SimpleLogger*. Apparently, the class appears to be a custom development by Totemomail (now Kiteworks)—so the code cannot be viewed directly and is available only as compiled bytecode.
+So this isn't the implementation of the logic, but merely a configuration file. The actual logic is located here, for example, in the class that is called *SimpleLogger*. Apparently, the class appears to be a custom development by Totemomail (now Kiteworks), so the code cannot be viewed directly and is available only as compiled bytecode.
 
 In the GUI, however, you can display a help text by right-clicking on the corresponding mail item:
 

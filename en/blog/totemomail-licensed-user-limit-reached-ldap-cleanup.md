@@ -1,7 +1,7 @@
 ---
 title: "Totemomail: \"The licensed user limit has been reached\" (Automatically clean up internal users via LDAP)"
 navTitle: "License limit reached"
-description: "Anyone who has been running a totemomail environment for years is familiar with this phenomenon: At some point, a red warning appears in the upper-right corner next to the bell icon—*“The licensed user limit has been reached.”* The system continues to run, but you’re suddenly operating in a state of **under-licensing**. In this article, we’ll break down totemomail’s licensing model, explain why the number of internal users grows unnoticed, and set up an LDAP connection step by step—including an automatic cleanup agent—along with the CLI tools you’ll need to thoroughly test the LDAP connection beforehand."
+description: "Anyone who has been running a totemomail environment for years is familiar with this phenomenon: At some point, a red warning appears in the upper-right corner next to the bell icon: *“The licensed user limit has been reached.”* The system continues to run, but you’re suddenly operating in a state of **under-licensing**. In this article, we’ll break down totemomail’s licensing model, explain why the number of internal users grows unnoticed, and set up an LDAP connection step by step, including an automatic cleanup agent, along with the CLI tools you’ll need to thoroughly test the LDAP connection beforehand."
 date: "2026-06-26"
 kategorie: "Totemomail"
 timeToRead: "9 min to read"
@@ -14,7 +14,7 @@ url: "https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ld
 
 # Totemomail: "The licensed user limit has been reached" (Automatically clean up internal users via LDAP)
 
-If you run a totemomail environment for several years, you will eventually see the message *“The licensed user limit has been reached."* occur. The system continues to run, but is in a state of under-licensing. The cause is almost always the failure to offboard internal users. This article explains the licensing model, shows how to set up an LDAP connection, and describes the Cleanup Agent, including the tests you should run beforehand at the command line.
+If you run a totemomail environment for several years, you will eventually see the message *“The licensed user limit has been reached."* occur. The system continues to run, but is in a state of under-licensing. The cause is almost always the failure to offboard internal users.
 
 The host names, DNs, and service accounts in this article are generic examples (`example.com`). Adjust them to suit your environment.
 
@@ -27,7 +27,7 @@ totemomail distinguishes between two classes of users, only one of which is rele
 | Internal Users | Users of your own organization who send and receive encrypted mail | Yes |
 | External Users | External communication partners (WebMail, PDF, S/MIME, PGP) | No |
 
-An internal user is created the first time they communicate through the gateway. This happens automatically. Removal, however, is not automatic: When an employee leaves the organization, you typically deactivate their AD account—but the totemomail entry remains. Over the years, orphaned accounts accumulate in this way, continuing to occupy licenses.
+An internal user is created the first time they communicate through the gateway. This happens automatically. Removal, however, is not automatic: When an employee leaves the organization, you typically deactivate their AD account, but the totemomail entry remains. Over the years, orphaned accounts accumulate in this way, continuing to occupy licenses.
 
 ### Status Indicator
 
@@ -39,11 +39,11 @@ You can find the latest information at **Settings → Overview → User Informat
 
 The key lines:
 
--   **Internal users** (`4017`) – created internal users
+-   **Internal users** (`4017`): created internal users
     
--   **Internal blocked users** (`14`) – blocked, but still subject to licensing
+-   **Internal blocked users** (`14`): blocked, but still subject to licensing
     
--   **Available Users** (`-17`) – available licenses; a negative value indicates under-licensing
+-   **Available Users** (`-17`): available licenses; a negative value indicates under-licensing
     
 
 As soon as *Available Users* drops below zero, you'll see the warning on the bell:
@@ -62,7 +62,7 @@ You can search for internal users under **Internal Users** and delete them one b
 
 ### LDAP Connection with Cleanup Agent
 
-The most reliable approach is to connect to Active Directory via LDAP. An agent regularly synchronizes internal users with the directory and removes or deactivates accounts that no longer exist in AD. This makes AD the primary source, and your offboarding process in AD takes care of license management at the same time. The rest of this article is dedicated to this approach.
+The most reliable approach is to connect to Active Directory via LDAP. An agent regularly synchronizes internal users with the directory and removes or deactivates accounts that no longer exist in AD. This makes AD the primary source, and your offboarding process in AD takes care of license management at the same time.
 
 ## LDAP Basics
 
@@ -82,7 +82,7 @@ The most reliable approach is to connect to Active Directory via LDAP. An agent 
 | 3268 | Global Catalog | forest-wide search, unencrypted |
 | 3269 | Global Catalog SSL | forest-wide search over TLS |
 
-In a single-domain environment, port 636 is sufficient for communicating with a domain controller. If you are running a forest with multiple domains, only the Global Catalog (port 3269) will provide forest-wide results. A DC on port 636 is aware only of the objects in its own domain and responds to searches outside its partition with a referral—a detail that is often overlooked in multi-domain environments.
+In a single-domain environment, port 636 is sufficient for communicating with a domain controller. If you are running a forest with multiple domains, only the Global Catalog (port 3269) will provide forest-wide results. A DC on port 636 is aware only of the objects in its own domain and responds to searches outside its partition with a referral (a detail that is often overlooked in multi-domain environments).
 
 ### userAccountControl
 
@@ -98,7 +98,7 @@ Whether an AD account is deactivated is indicated in the bit field `userAccountC
 
 ## Step 1: Service Account in AD
 
-To set up the connection, create a dedicated account with read-only permissions. Do not use an administrator account for this—the Bind user must only be able to read the AD.
+To set up the connection, create a dedicated account with read-only permissions. Do not use an administrator account for this. The Bind user must only be able to read the AD.
 
 ```powershell
 New-ADUser -Name "svc-totemomail-ldap" `
@@ -145,9 +145,9 @@ openssl s_client -connect dc01.corp.example.com:636 -showcerts </dev/null
 
 Keep two things in mind:
 
--   `**subject=**` **/** `**issuer=**` – The hostname in the certificate (CN or SAN) must match the hostname you are connecting to. If you connect using the IP address, the validation will fail if the certificate contains only the FQDN.
+-   `**subject=**` **/** `**issuer=**`: The hostname in the certificate (CN or SAN) must match the hostname you are connecting to. If you connect using the IP address, the validation will fail if the certificate contains only the FQDN.
     
--   `**Verify return code: 0 (ok)**` – The issuing CA must be recognized by totemomail. If you are using an internal enterprise CA, you must import its root or issuing certificate into the totemomail trust store.
+-   `**Verify return code: 0 (ok)**`: The issuing CA must be recognized by totemomail. If you are using an internal enterprise CA, you must import its root or issuing certificate into the totemomail trust store.
     
 
 ### 2.3 Bind and Search with ldapsearch
@@ -225,13 +225,13 @@ You can configure the LDAP directory in the Admin GUI under **Directories / LDAP
 | User Filter | `(&(objectClass=user)(objectCategory=person))` |
 | Login Attribute | `sAMAccountName` (alternatively `mail` or `userPrincipalName`) |
 
-If you use LDAPS with an internal CA, you must import its root or issuing certificate into the totemomail trust store. Otherwise, the TLS handshake will fail with the error "certificate verify failed," even if `ldapsearch` with `-x` used to work – `ldapsearch` It does not strictly verify the certificate in this form.
+If you use LDAPS with an internal CA, you must import its root or issuing certificate into the totemomail trust store. Otherwise, the TLS handshake will fail with the error "certificate verify failed," even if `ldapsearch` with `-x` used to work: `ldapsearch` does not strictly verify the certificate in this form.
 
 After saving, trigger the built-in test connection. It confirms the binding.
 
 ## Step 4: Create a cleanup agent
 
-Under **Maintenance → Agents → Add** Create an agent of type **“Check presence of internal users in directories"**.
+Under **Maintenance → Agents → Add**, create an agent of type **“Check presence of internal users in directories"**.
 
 ### 4.1 The “Schedule" Tab
 
@@ -274,11 +274,11 @@ In this example, users in the group *Employees* are set to "inactive" when they 
 
 Do not run the agent on the production database without first performing a test run. Instead, proceed in the following order:
 
-1.  **Enable Queue Mode** – via the option *“Produced emails are not sent but cached in a queue"*. The agent determines the scheduled actions without sending any emails.
+1.  **Enable Queue Mode**: via the option *“Produced emails are not sent but cached in a queue"*. The agent determines the scheduled actions without sending any emails.
     
 2.  **Run Manually** and analyze the agent log: How many users would be affected, and are there any unexpected accounts, such as functional mailboxes, in the list?
     
-3.  **Plausibility vs.** `**ldapsearch**` – The number of users not found in the AD should match the results of your manual LDAP query.
+3.  **Plausibility vs.** `**ldapsearch**`: The number of users not found in the AD should match the results of your manual LDAP query.
     
 4.  If the result is correct, disable queue mode, set *Agent enabled* and activate the schedule.
     
@@ -313,7 +313,7 @@ This way, you can see whether the TLS handshake or the bind fails first. The tot
     
 -   **Password rotation.** `PasswordNeverExpires` is operationally feasible. Document the account and rotate the password according to schedule.
     
--   **Monitoring.** Monitor *Available Users* – ideally via alerts – rather than waiting for the bell to ring.
+-   **Monitoring.** Monitor *Available Users* (ideally via alerts) rather than waiting for the bell to ring.
     
 -   **First run in queue mode.** A faulty filter can affect a large number of accounts.
     
@@ -331,7 +331,7 @@ Reaching the license limit is not a technical issue, but rather the result of a 
 4.  Activate the agent
     
 
-If you follow this procedure, you will not only resolve the immediate licensing issue, but also ensure that it does not happen again.
+If you follow this procedure, you will resolve the immediate licensing issue and prevent it from recurring.
 
 ## Sources
 
