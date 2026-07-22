@@ -26,6 +26,8 @@ Newsletter services bill by subscriber count, and the recipient list lives with 
 
 Serverless fundamentally changes that calculation. A newsletter backend consists of a few HTTP endpoints, a small database, and a scheduled job: exactly the profile Cloudflare Workers and D1 are built for. I have implemented this as an open template: a complete newsletter system that lands on your own Cloudflare account in a single step via the **Deploy to Cloudflare button**. No command line, no server operations, and within the free tier for small and medium lists. The source code is MIT-licensed on [GitHub](https://github.com/pfstr/newsletter-template); the PR to include it in the official Cloudflare template gallery is in progress.
 
+<p class="badge-row"><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template"><img src="/images/deploy-to-cloudflare.svg" alt="Deploy to Cloudflare" width="184" height="39"></a></p>
+
 ![The template's hosted signup form](../images/newsletter-template-signup.png)
 
 ## What the template does
@@ -109,6 +111,8 @@ On cost: Workers and D1 have generous free-tier quotas (including 100,000 reques
 ## Try it
 
 The source code including the deploy button is on [GitHub](https://github.com/pfstr/newsletter-template), along with the full documentation of the configuration variables.
+
+<p class="badge-row"><a href="https://github.com/pfstr/newsletter-template"><img src="/images/github-newsletter-template.svg" alt="GitHub: pfstr/newsletter-template" width="323" height="28"></a></p>
 
 ## Sources
 
