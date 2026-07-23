@@ -8,7 +8,7 @@ timeToRead: "9 min to read"
 themen:
   - "totemomail"
 slug: "totemomail-licensed-user-limit-reached-ldap-cleanup"
-translationOf: "totemomail-the-licensed-user-limit-has-been-reached-–-interne-user-per-ldap-automatisch-aufräumen"
+translationOf: "totemomail-licensed-user-limit-ldap-cleanup"
 url: "https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ldap-cleanup"
 ---
 
