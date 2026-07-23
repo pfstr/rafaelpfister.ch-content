@@ -33,8 +33,6 @@ After updating to version 15.0.5, it is still possible to log in to the applianc
 
 ## Sources
 
-1.  [SEPPmail Documentation – “Cluster / High Availability”](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html) — Cluster types and configuration replication across all nodes.
-    
-2.  [SEPPmail Documentation – “Administration”](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) — Update order within the cluster (frontend before backend) and the requirement for identical version numbers.
-    
-3.  [HIN Mailgateway: Backup & Disaster Recovery im Cluster](/en/blog/hin-mail-gateway-backup-disaster-recovery) — An in-depth look at cluster replication, backup, and restore.
+1. [SEPPmail Documentation – “Cluster / High Availability”](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html) — Cluster types and configuration replication across all nodes.
+2. [SEPPmail Documentation – “Administration”](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) — Update order within the cluster (frontend before backend) and the requirement for identical version numbers.
+3. [HIN Mailgateway: Backup & Disaster Recovery im Cluster](/en/blog/hin-mail-gateway-backup-disaster-recovery) — An in-depth look at cluster replication, backup, and restore.
