@@ -1,5 +1,5 @@
 ---
-title: "A Serverless Newsletter: Cloudflare Workers, D1, and a Deploy Button"
+title: "Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1"
 navTitle: "Newsletter on Workers"
 description: "A complete newsletter system (signup form, one-click unsubscribe, queued sending, compliance footer) runs serverless on your own Cloudflare account; even large lists stay within the free tier. The deploy button provisions database, schema, and CI in a single step; no command line required."
 date: "2026-07-22"
@@ -19,7 +19,7 @@ aiPrompt: |
   Ask me for the values only I know (domain, email provider, postal address, feed URL).
 ---
 
-# A Serverless Newsletter: Cloudflare Workers, D1, and a Deploy Button
+# Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1
 
 Newsletter services bill by subscriber count, and the recipient list lives with the provider. The classic alternative (running a newsletter system on your own server) rarely fails because of the software; it fails because of operations: a server needs provisioning, patching, monitoring, and paying, all for a tool that might send one email a week.
 
