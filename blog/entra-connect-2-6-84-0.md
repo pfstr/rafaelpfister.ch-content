@@ -136,28 +136,14 @@ Der Vollständigkeit halber die restlichen Korrekturen:
 
 Seit März 2023 gilt für Entra Connect Sync 2.x eine strikte Retirement-Politik: Jede Version fällt zwölf Monate nach Erscheinen der Nachfolgeversion aus dem Support. Die aktuellen Fristen:
 
-{% table %}
-- Version
-- Support-Ende
----
-- 2.5.3.0
-- **31. Juli 2026**
----
-- 2.5.76.0
-- 1. September 2026
----
-- 2.5.79.0
-- 23. Oktober 2026
----
-- 2.5.190.0
-- 2. Februar 2027
----
-- 2.6.1.0
-- 10. März 2027
----
-- 2.6.3.0
-- 7. Juli 2027
-{% /table %}
+| Version | Support-Ende |
+| --- | --- |
+| 2.5.3.0 | **31. Juli 2026** |
+| 2.5.76.0 | 1. September 2026 |
+| 2.5.79.0 | 23. Oktober 2026 |
+| 2.5.190.0 | 2. Februar 2027 |
+| 2.6.1.0 | 10. März 2027 |
+| 2.6.3.0 | 7. Juli 2027 |
 
 Wer noch auf 2.5.3.0 unterwegs ist, hat also nur noch zwei Wochen Support-Frist. Hier ist die Frage nicht ob, sondern nur auf welche Version aktualisiert wird. Microsoft betont zudem, dass ausser Support geratene Versionen «unexpectedly» aufhören können zu funktionieren; bei den abgekündigten 1.x-Versionen ist die Synchronisation inzwischen tatsächlich serverseitig abgeschaltet. Die Mindestvoraussetzungen bleiben .NET Framework 4.7.2 und TLS 1.2; den Installer gibt es ausschliesslich im Entra Admin Center (Entra ID → Entra Connect → Get started), nicht mehr im Download Center.
 
