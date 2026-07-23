@@ -18,17 +18,15 @@ aiPrompt: |
   Frage nach den Werten, die nur ich kenne (Domain, E-Mail-Provider, Postadresse, Feed-URL).
 ---
 
-<!-- NACH MERGE von cloudflare/templates PR #1064: Galerie-Link https://github.com/cloudflare/templates/tree/main/newsletter-template und Live-Demo https://newsletter-template.templates.workers.dev wieder einfügen (Intro, Abschnitt "Ausprobieren", Quellen; DE + EN). Beide URLs waren bei Veröffentlichung noch 404, deshalb entfernt. -->
-
 # Serverloser Newsletter: Cloudflare Workers, D1 und ein Deploy-Button
 
 Newsletter-Dienste rechnen nach Abonnentenzahl ab, und die Empfängerliste liegt beim Anbieter. Die klassische Alternative (ein Newsletter-System auf einem eigenen Server) scheitert in der Praxis selten an der Software, sondern am Betrieb: Ein Server will provisioniert, gepatcht, überwacht und bezahlt werden, für ein Werkzeug, das vielleicht einmal pro Woche eine E-Mail verschickt.
 
 Serverless verändert diese Rechnung grundlegend. Ein Newsletter-Backend besteht aus wenigen HTTP-Endpunkten, einer kleinen Datenbank und einem zeitgesteuerten Job: exakt das Profil, für das Cloudflare Workers und D1 gebaut sind. Ich habe das als offenes Template umgesetzt: ein vollständiges Newsletter-System, das per **Deploy-to-Cloudflare-Button** in einem Schritt auf dem eigenen Cloudflare-Konto landet. Ohne Kommandozeile, ohne Serverbetrieb, und dank Warteschlangen-Versand auch für Listen mit tausenden Empfängern innerhalb des Free Tiers. Der Quellcode ist MIT-lizenziert auf [GitHub](https://github.com/pfstr/newsletter-template) verfügbar; der Aufnahme-PR in die offizielle Cloudflare-Template-Galerie läuft.
 
-<p class="badge-row"><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template"><img src="/images/deploy-to-cloudflare.svg" alt="Deploy to Cloudflare" width="184" height="39"></a></p>
+[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
 
-![Das gehostete Anmeldeformular des Templates](../images/newsletter-template-signup.png)
+![Das gehostete Anmeldeformular des Templates](../images/serverloser-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
 
 ## Was das Template kann
 
@@ -127,7 +125,7 @@ Zu den Kosten: Workers und D1 haben grosszügige Free-Tier-Kontingente (unter an
 
 Der Quellcode inklusive Deploy-Button liegt auf [GitHub](https://github.com/pfstr/newsletter-template); dort steht auch die vollständige Dokumentation der Konfigurationsvariablen.
 
-<p class="badge-row"><a href="https://github.com/pfstr/newsletter-template"><img src="/images/github-newsletter-template.svg" alt="GitHub: pfstr/newsletter-template" width="323" height="28"></a></p>
+[![GitHub: pfstr/newsletter-template](../images/serverloser-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
 
 ## Quellen
 

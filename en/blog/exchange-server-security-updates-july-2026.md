@@ -61,7 +61,7 @@ To prevent reactivation, add the mitigation ID to the block list: entries there 
 Set-ExchangeServer -Identity <ServerName> -MitigationsBlocked @("M2.1.0")
 ```
 
-Then remove the actual IIS rule. Good to know and rarely documented: the EM Service creates its URL rewrite rules with the **prefix "EEMS <mitigation ID> <description>"**. This lets you find them unambiguously in IIS Manager under URL Rewrite (or via `appcmd`/PowerShell in `applicationHost.config`) without guessing which rule belongs to the mitigation. After the server-side change has rolled out, you can lift the block again (`-MitigationsBlocked @()`), provided you set it only as an interim measure.
+Then remove the actual IIS rule. Good to know and rarely documented: the EM Service creates its URL rewrite rules with the **prefix "EEMS `<mitigation ID>` `<description>`"**. This lets you find them unambiguously in IIS Manager under URL Rewrite (or via `appcmd`/PowerShell in `applicationHost.config`) without guessing which rule belongs to the mitigation. After the server-side change has rolled out, you can lift the block again (`-MitigationsBlocked @()`), provided you set it only as an interim measure.
 
 ### EOMT path (isolated or air-gapped environments)
 

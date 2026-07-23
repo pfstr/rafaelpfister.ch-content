@@ -65,7 +65,7 @@ Um die Reaktivierung zu verhindern, wird die Mitigation-ID auf die Blockliste ge
 Set-ExchangeServer -Identity <Servername> -MitigationsBlocked @("M2.1.0")
 ```
 
-Danach die eigentliche IIS-Regel entfernen. Gut zu wissen und selten dokumentiert: Der EM Service legt seine URL-Rewrite-Regeln mit dem **Präfix «EEMS <Mitigation-ID> <Beschreibung>»** an. Damit findet man sie im IIS-Manager unter URL Rewrite (bzw. per `appcmd`/PowerShell in der `applicationHost.config`) eindeutig wieder, ohne raten zu müssen, welche Regel zur Mitigation gehört. Nach dem Ausrollen der serverseitigen Änderung kann man den Block wieder aufheben (`-MitigationsBlocked @()`), sofern man ihn nur als Übergangslösung gesetzt hat.
+Danach die eigentliche IIS-Regel entfernen. Gut zu wissen und selten dokumentiert: Der EM Service legt seine URL-Rewrite-Regeln mit dem **Präfix «EEMS `<Mitigation-ID>` `<Beschreibung>`»** an. Damit findet man sie im IIS-Manager unter URL Rewrite (bzw. per `appcmd`/PowerShell in der `applicationHost.config`) eindeutig wieder, ohne raten zu müssen, welche Regel zur Mitigation gehört. Nach dem Ausrollen der serverseitigen Änderung kann man den Block wieder aufheben (`-MitigationsBlocked @()`), sofern man ihn nur als Übergangslösung gesetzt hat.
 
 ### EOMT-Pfad (getrennte oder Air-Gapped-Umgebungen)
 
