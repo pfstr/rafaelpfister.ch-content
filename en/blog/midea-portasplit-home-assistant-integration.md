@@ -7,6 +7,8 @@ kategorie: "Smart Home & IoT"
 timeToRead: "16 min to read"
 themen:
   - "smart-home-iot"
+related:
+  - "serverless-newsletter-cloudflare-workers-d1"
 image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
 translationOf: "midea-portasplit-home-assistant"
 slug: "midea-portasplit-home-assistant-integration"
@@ -22,6 +24,17 @@ aiPrompt: |
   Warn me before any step that could destroy the existing pairing and force a new token retrieval through the Midea cloud.
 ---
 
+<aside class="article-update">
+  <p class="article-update__label">Update (July 2026): token interfaces are being shut down</p>
+  <p>The Midea AC LAN project warns that Midea is shutting down the cloud interfaces Home Assistant uses during setup to obtain the device-specific token and key. For PortaSplit owners this means:</p>
+  <ol>
+    <li><strong>Set it up now.</strong> Only the initial token retrieval needs the Midea cloud. If you wait, you may no longer be able to add the device to Home Assistant.</li>
+    <li><strong>Back up token, key, and the JSON configuration encrypted.</strong> After the shutdown these values are unlikely to be obtainable again; the backup is then the only path to a fresh setup.</li>
+    <li><strong>Do not break the pairing without need.</strong> A factory reset, removing the device from the Midea account, or swapping the Wi-Fi module forces a new token retrieval that may fail in the future.</li>
+  </ol>
+  <p>Devices that are already set up continue to be controlled locally; as things stand, the shutdown affects adding devices, not operating them. Background in the section <a href="#the-midea-ac-lan-warning">The Midea AC LAN warning</a>, the backup steps under <a href="#backing-up-the-configuration">Backing up the configuration</a>.</p>
+</aside>
+
 ![Example Home Assistant dashboard for a Midea PortaSplit showing room and target temperature, humidity, power draw, energy consumption, and compressor runtimes over the past 24 hours.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
 
 The Midea PortaSplit is one of the more interesting portable air conditioners for rented flats: the compressor sits outside, the indoor unit runs comparatively quietly, and installation requires no structural work. Less well known is that the PortaSplit can also be integrated into Home Assistant, which allows it to be controlled based on room temperature, electricity price, window state, or presence.
@@ -29,16 +42,6 @@ The Midea PortaSplit is one of the more interesting portable air conditioners fo
 After setup, the integration works largely locally on your own network. It does not, however, come entirely without a cloud and entirely without security questions. One current warning from the Midea AC LAN project is particularly relevant: Midea is progressively shutting down the cloud interfaces that Home Assistant uses to retrieve the credentials needed for local communication. At the same time, the developer describes the existing token architecture as a security problem.
 
 One note up front: the integrations described here come from the community and are supported neither by Midea nor by Home Assistant officially. Firmware updates, changes to the Midea cloud, or changes to the integrations themselves can affect their behaviour at any time.
-
-## What to do now
-
-The Midea AC LAN warning translates into three concrete steps that should not be postponed:
-
-1. **Set it up now.** During initial setup, the integration needs a device-specific token and key from the Midea cloud. The interfaces used for that are being shut down step by step; if you wait, you may no longer be able to add the device to Home Assistant.
-2. **Back up the credentials.** Store token, key, and the integration's JSON configuration file encrypted and outside of Home Assistant. Once the cloud interfaces are closed, these values are unlikely to be obtainable again; the backup is then the only path to a fresh setup.
-3. **Do not break the pairing without need.** A factory reset, removing the device from the Midea account, or swapping the Wi-Fi module forces a new token retrieval that may fail in the future. Take such steps only with a backup in place and a good reason.
-
-Devices that are already set up continue to be controlled locally by Home Assistant; as things stand, the shutdown affects adding devices, not operating them. The background is covered in the section [The Midea AC LAN warning](#the-midea-ac-lan-warning).
 
 ## Short answer
 
