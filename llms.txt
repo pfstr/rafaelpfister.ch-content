@@ -10,6 +10,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 
 ## Blog-Artikel (Deutsch, Originale)
 
+- [Midea PortaSplit in Home Assistant integrieren: lokale Steuerung, Einrichtung und Security-Risiken](https://rafaelpfister.ch/blog/midea-portasplit-home-assistant): Die Midea PortaSplit lässt sich per Community-Integration lokal in Home Assistant steuern. Welche Integration passt, weshalb bei der Einrichtung trotzdem kurz die Midea-Cloud nötig ist, was Token und Key wirklich bedeuten und wie sich das Gerät sicher im Heimnetz betreiben lässt.
 - [Eigener Newsletter ohne SaaS: serverlos auf Cloudflare Workers und D1](https://rafaelpfister.ch/blog/serverloser-newsletter-cloudflare-workers-d1): Ein vollständiges Newsletter-System (Anmeldeformular, One-Click-Abmeldung, Warteschlangen-Versand, Compliance-Footer) läuft serverlos auf dem eigenen Cloudflare-Konto; auch grosse Listen bleiben im Free Tier. Der Deploy-Button provisioniert Datenbank, Schema und CI in einem Schritt; eine Kommandozeile braucht es nicht.
 - [Claude Code auf dem eigenen VPS betreiben und den Server richtig absichern](https://rafaelpfister.ch/blog/claude-code-vps-debian-absichern): Warum ein eigener VPS eine solide Basis für Claude Code ist, und die vollständige Absicherungs-Checkliste dazu: eigener Benutzer, SSH nur mit passphrasengeschützten Ed25519-Schlüsseln, gehärtete sshd-Konfiguration, restriktive Firewall, Prüfung der Angriffsfläche und Zugriff vom iPhone.
 - [>-](https://rafaelpfister.ch/blog/entra-connect-2-6-84-0): >-
@@ -23,6 +24,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 
 ## Blog Articles (English translations)
 
+- [Integrating the Midea PortaSplit into Home Assistant: Local Control, Setup, and Security Risks](https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integration): The Midea PortaSplit can be controlled locally from Home Assistant through a community integration. Which integration to pick, why the Midea cloud is still needed briefly during setup, what token and key really mean, and how to run the device securely on your home network.
 - [Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1](https://rafaelpfister.ch/en/blog/serverless-newsletter-cloudflare-workers-d1): A complete newsletter system (signup form, one-click unsubscribe, queued sending, compliance footer) runs serverless on your own Cloudflare account; even large lists stay within the free tier. The deploy button provisions database, schema, and CI in a single step; no command line required.
 - [Running Claude Code on Your Own VPS and Hardening the Server Properly](https://rafaelpfister.ch/en/blog/securing-a-debian-vps-for-claude-code): Why your own VPS is a solid base for Claude Code, and the complete hardening checklist: a dedicated user, SSH with passphrase-protected Ed25519 keys only, a hardened sshd configuration, a restrictive firewall, attack-surface checks, and access from your iPhone.
 - [Microsoft Entra Connect Sync 2.6.84.0: Security Fixes, New Rules for App-Based Authentication and PHS, and the Lesson from the Recalled Predecessor](https://rafaelpfister.ch/en/blog/entra-connect-sync-2-6-84-0): On July 7, 2026, Microsoft released Entra Connect Sync 2.6.84.0, with security fixes, passkey support in the wizard, and a number of behavior changes around Application-Based Authentication, PowerShell cmdlets, and Password Hash Sync. Its direct predecessor 2.6.79.0 was recalled after release. What the release contains, the background behind it, and why a controlled waiting period is defensible despite the security fixes.
@@ -44,6 +46,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Linux & VPS](https://rafaelpfister.ch/blog/thema/linux-vps)
 - [Microsoft 365 / Exchange](https://rafaelpfister.ch/blog/thema/microsoft-365-exchange)
 - [Microsoft Entra](https://rafaelpfister.ch/blog/thema/microsoft-entra)
+- [Smart Home & IoT](https://rafaelpfister.ch/blog/thema/smart-home-iot)
 - [Totemomail](https://rafaelpfister.ch/blog/thema/totemomail)
 
 ## Optional
