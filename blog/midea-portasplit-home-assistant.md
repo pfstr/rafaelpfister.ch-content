@@ -39,8 +39,6 @@ Die lokale Steuerung der Midea PortaSplit in Home Assistant hängt an zwei gerä
 
 ## Die Token-Frage im Detail
 
-Wer verstehen will, warum die angekündigte Abschaltung so viel Aufmerksamkeit bekommt, muss wissen, woher der Token eigentlich stammt und warum er sich nicht einfach ersetzen lässt.
-
 ### Warum konnte Home Assistant den Token bisher überhaupt bekommen?
 
 Das Interessante ist: Die Community hat den Token nie berechnet. Sie hat vielmehr den Netzwerkverkehr der offiziellen App analysiert und dabei festgestellt, dass die App den Token gar nicht selbst erzeugt, sondern aus der Cloud bezieht:

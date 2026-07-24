@@ -40,8 +40,6 @@ Local control of the Midea PortaSplit in Home Assistant hinges on two device-spe
 
 ## The token question in detail
 
-To understand why the announced shutdown attracts so much attention, you have to know where the token actually comes from and why it cannot simply be replaced.
-
 ### Why could Home Assistant obtain the token at all?
 
 The interesting part: the community never computed the token. Instead, it analysed the network traffic of the official app and found that the app does not generate the token itself but fetches it from the cloud:

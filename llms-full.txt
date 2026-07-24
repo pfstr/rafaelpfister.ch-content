@@ -34,8 +34,6 @@ Die lokale Steuerung der Midea PortaSplit in Home Assistant hängt an zwei gerä
 
 ## Die Token-Frage im Detail
 
-Wer verstehen will, warum die angekündigte Abschaltung so viel Aufmerksamkeit bekommt, muss wissen, woher der Token eigentlich stammt und warum er sich nicht einfach ersetzen lässt.
-
 ### Warum konnte Home Assistant den Token bisher überhaupt bekommen?
 
 Das Interessante ist: Die Community hat den Token nie berechnet. Sie hat vielmehr den Netzwerkverkehr der offiziellen App analysiert und dabei festgestellt, dass die App den Token gar nicht selbst erzeugt, sondern aus der Cloud bezieht:
@@ -2860,8 +2858,6 @@ Datum: 2026-07-24
 Local control of the Midea PortaSplit in Home Assistant hinges on two device-specific values: a token and a key. The integration obtains both once, during initial setup, from the Midea cloud; after that, control runs directly on the local network, with no switching command having to travel through a Midea server. It is exactly this cloud interface that Midea is now shutting down, and that is the subject here. How local control works in detail, which integration to pick, and how to harden the device are covered in the [second part on setup and hardening](/en/blog/midea-portasplit-home-assistant-setup-and-hardening).
 
 ## The token question in detail
-
-To understand why the announced shutdown attracts so much attention, you have to know where the token actually comes from and why it cannot simply be replaced.
 
 ### Why could Home Assistant obtain the token at all?
 
