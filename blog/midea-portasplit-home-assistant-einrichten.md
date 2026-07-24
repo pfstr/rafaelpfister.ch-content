@@ -23,9 +23,31 @@ aiPrompt: |
   Warne mich vor jedem Schritt, der die bestehende Kopplung zerstören und eine erneute Token-Beschaffung über die Midea-Cloud erforderlich machen könnte.
 ---
 
-Dieser Beitrag ist der praktische Teil zur Midea PortaSplit in Home Assistant. Warum die lokale Steuerung überhaupt einen Token und Key aus der Midea-Cloud braucht und weshalb diese Zugangsdaten gerade unter Zeitdruck stehen, klärt der [erste Teil zu lokaler Steuerung und der Cloud-Token-Frage](/blog/midea-portasplit-home-assistant). Hier geht es um die konkrete Umsetzung: die Wahl der Integration, die Einrichtung Schritt für Schritt, sinnvolle Automationen und die Absicherung im eigenen Netz.
+Dieser Beitrag ist der praktische Teil zur Midea PortaSplit in Home Assistant: die Wahl der Integration, die Einrichtung Schritt für Schritt, sinnvolle Automationen und die Absicherung im eigenen Netz. Warum genau diese Zugangsdaten gerade unter Zeitdruck stehen und was die angekündigte Abschaltung der Cloud-Schnittstellen bedeutet, ordnet der [erste Teil zur Cloud-Token-Frage](/blog/midea-portasplit-home-assistant) ein.
 
 Ein Hinweis vorweg: Die beschriebenen Integrationen stammen aus der Community und werden weder von Midea noch von Home Assistant offiziell unterstützt. Firmware-Updates, Änderungen an der Midea-Cloud oder an den Integrationen selbst können das Verhalten jederzeit beeinflussen.
+
+## Wie die lokale Steuerung funktioniert
+
+Die eigentlichen Steuerbefehle gehen nach der Einrichtung direkt von Home Assistant an die PortaSplit:
+
+```text
+Home Assistant → lokales Netzwerk → Midea PortaSplit
+```
+
+Ein Schaltbefehl muss nicht über einen externen Midea-Server laufen, die Reaktionszeit ist kurz, eine Störung der Midea-Cloud legt die bereits eingerichtete lokale Steuerung nicht zwingend lahm, und das Gerät bleibt grundsätzlich auch ohne Internetzugriff steuerbar.
+
+Bei neueren Geräten mit dem sogenannten V3-Protokoll akzeptiert die PortaSplit lokale Befehle jedoch nicht ungeschützt. Home Assistant benötigt zwei gerätespezifische Werte, einen Token und einen Key, die der Authentifizierung und Verschlüsselung der lokalen Verbindung dienen. Die Integration holt sie während der erstmaligen Einrichtung einmalig über eine Midea-Cloud-Schnittstelle ab und speichert sie danach lokal; für die weitere Steuerung ist keine Cloud-Verbindung erforderlich.
+
+Vereinfacht sieht der Ablauf so aus:
+
+1. PortaSplit wird mit MSmartHome verbunden.
+2. Home Assistant meldet sich bei einer Midea-Cloud an.
+3. Home Assistant erhält Geräte-ID, Token und Key.
+4. Token und Key werden lokal gespeichert.
+5. Home Assistant steuert die PortaSplit direkt im LAN.
+
+Weshalb dieser einmalige Cloud-Schritt derzeit unter Zeitdruck steht, ordnet der [erste Teil](/blog/midea-portasplit-home-assistant) ein.
 
 ## Welche Integration passt
 

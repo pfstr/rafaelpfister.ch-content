@@ -1,10 +1,10 @@
 ---
-title: "Midea PortaSplit in Home Assistant: lokale Steuerung und die Cloud-Token-Frage"
+title: "Das Projekt Midea AC LAN warnt: Midea schaltet die Cloud-Schnittstellen ab"
 navTitle: "PortaSplit & Token"
-description: "Die Midea PortaSplit lässt sich lokal in Home Assistant steuern, braucht bei der Einrichtung aber einmalig einen Token und Key aus der Midea-Cloud. Wie dieser Token funktioniert, warum Home Assistant ihn bisher beziehen konnte, weshalb Midea die Schnittstellen abschaltet und was Besitzer jetzt tun sollten."
+description: "Die lokale Steuerung der Midea PortaSplit in Home Assistant hängt an einem Token und Key aus der Midea-Cloud. Wie dieser Token funktioniert, warum Home Assistant ihn beziehen konnte, weshalb Midea die Schnittstellen abschaltet und was Besitzer jetzt tun sollten."
 date: "2026-07-24"
 kategorie: "Smart Home & IoT"
-timeToRead: "10 min to read"
+timeToRead: "9 min to read"
 themen:
   - "smart-home-iot"
 related:
@@ -23,64 +23,19 @@ aiPrompt: |
 ---
 
 <aside class="article-update">
-  <p class="article-update__label">Das Projekt Midea AC LAN warnt: Midea schaltet die Cloud-Schnittstellen ab</p>
-  <p>Über diese Schnittstellen bezieht Home Assistant bei der Einrichtung den gerätespezifischen Token und Key. Der Hinweis steht seit dem 19. Mai 2025 im Projekt-Repository. Für PortaSplit-Besitzer heisst das:</p>
+  <p class="article-update__label">Was PortaSplit-Besitzer jetzt tun sollten</p>
+  <p>Über diese Cloud-Schnittstellen bezieht Home Assistant bei der Einrichtung den gerätespezifischen Token und Key. Der Hinweis steht seit dem 19. Mai 2025 im Projekt-Repository. Für Besitzer heisst das:</p>
   <ol>
     <li><strong>Jetzt einrichten.</strong> Nur die erstmalige Token-Beschaffung braucht die Midea-Cloud. Wer wartet, kann das Gerät möglicherweise nicht mehr in Home Assistant aufnehmen.</li>
     <li><strong>Token, Key und die Konfiguration verschlüsselt sichern.</strong> Nach der Abschaltung sind diese Werte voraussichtlich nicht erneut beschaffbar; das Backup ist dann der einzige Weg zu einer Neueinrichtung.</li>
     <li><strong>Kopplung nicht ohne Not auflösen.</strong> Werkseinstellungen, das Entfernen aus dem Midea-Konto oder ein WLAN-Modul-Tausch erzwingen eine neue Token-Beschaffung, die künftig scheitern kann.</li>
   </ol>
-  <p>Bereits eingerichtete Geräte steuern Home Assistant lokal weiter; betroffen ist nach heutigem Stand das Hinzufügen, nicht der Betrieb. Die Hintergründe stehen in diesem Artikel, die konkreten Einrichtungs- und Backup-Schritte im <a href="/blog/midea-portasplit-home-assistant-einrichten">zweiten Teil zu Einbindung und Absicherung</a>.</p>
+  <p>Bereits eingerichtete Geräte steuern Home Assistant lokal weiter; betroffen ist nach heutigem Stand das Hinzufügen, nicht der Betrieb. Die konkreten Einrichtungs- und Backup-Schritte stehen im <a href="/blog/midea-portasplit-home-assistant-einrichten">zweiten Teil zu Einbindung und Absicherung</a>.</p>
 </aside>
 
 ![Beispielhaftes Home-Assistant-Dashboard einer Midea PortaSplit mit Raum- und Solltemperatur, Luftfeuchtigkeit, Leistungsaufnahme, Energieverbrauch und Kompressorlaufzeiten der letzten 24 Stunden.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
 
-Die Midea PortaSplit gehört zu den interessantesten mobilen Klimageräten für Mietwohnungen: Sie ist als Split-Gerät aufgebaut, ein flaches Aussenteil hängt vor dem Fenster, das eigentliche Gerät steht im Raum, und für die Montage braucht es keinen dauerhaften Eingriff in die Bausubstanz. Weniger bekannt ist, dass sich die PortaSplit auch in Home Assistant einbinden lässt und sich damit abhängig von Raumtemperatur, Strompreis, Fensterstatus oder Anwesenheit steuern lässt.
-
-Die Steuerung läuft nach der Einrichtung weitgehend lokal im eigenen Netzwerk. Ganz ohne Cloud kommt sie jedoch nicht aus, und genau dieser Punkt ist gerade in Bewegung: Das Projekt Midea AC LAN warnt, dass Midea die Cloud-Schnittstellen abschaltet, über die Home Assistant die für die lokale Kommunikation benötigten Zugangsdaten bezieht. Dieser erste Teil erklärt, wie diese Zugangsdaten technisch funktionieren, warum Home Assistant sie überhaupt bekommen konnte und was die Abschaltung praktisch bedeutet. Die Schritt-für-Schritt-Einrichtung und die Netzwerk-Absicherung stehen im [zweiten Teil zu Einbindung und Absicherung](/blog/midea-portasplit-home-assistant-einrichten).
-
-Ein Hinweis vorweg: Die beschriebenen Integrationen stammen aus der Community und werden weder von Midea noch von Home Assistant offiziell unterstützt. Firmware-Updates, Änderungen an der Midea-Cloud oder an den Integrationen selbst können das Verhalten jederzeit beeinflussen.
-
-## Kurzfazit
-
-Ja, die Midea PortaSplit lässt sich in Home Assistant integrieren. Dafür stehen zwei Community-Integrationen zur Verfügung:
-
-<div class="repo-cards">
-  <a class="repo-card" href="https://github.com/mill1000/midea-ac-py" rel="noopener">
-    <span class="repo-card__name"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span>mill1000/midea-ac-py</span></span>
-    <span class="repo-card__desc">Midea Smart AC: auf Klimageräte spezialisiert, unterstützt die Gerätetypen 0xAC und 0xCC und die PortaSplit inklusive Out Silent Mode.</span>
-    <span class="repo-card__host">github.com</span>
-  </a>
-  <a class="repo-card" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener">
-    <span class="repo-card__name"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span>wuwentao/midea_ac_lan</span></span>
-    <span class="repo-card__desc">Midea AC LAN: deckt neben Klimaanlagen zahlreiche weitere Midea-Gerätetypen ab, trägt aber die Warnung zu den abgeschalteten Cloud-Token-APIs.</span>
-    <span class="repo-card__host">github.com</span>
-  </a>
-</div>
-
-Beide kommunizieren nach erfolgreicher Einrichtung direkt über das lokale Netzwerk mit dem Klimagerät. Bei neueren Midea-Geräten wird die Cloud allerdings einmalig benötigt, um einen gerätespezifischen Token und Key zu beschaffen. Welche der beiden Integrationen sich für die PortaSplit besser eignet und wie die Einrichtung abläuft, behandelt der [zweite Teil](/blog/midea-portasplit-home-assistant-einrichten). Hier geht es zuerst um die Frage, was dieser Token ist und warum er im Zentrum der aktuellen Warnung steht.
-
-## Weshalb lokale Steuerung eine Cloud benötigt
-
-Hier liegt der wichtigste technische Unterschied zwischen „lokaler Steuerung" und „vollständig cloudfreier Einrichtung". Die eigentlichen Steuerbefehle gehen nach der Einrichtung direkt von Home Assistant an die PortaSplit:
-
-```text
-Home Assistant → lokales Netzwerk → Midea PortaSplit
-```
-
-Das bedeutet: Ein Schaltbefehl muss nicht über einen externen Midea-Server laufen, die Reaktionszeit ist kurz, eine Störung der Midea-Cloud legt die bereits eingerichtete lokale Steuerung nicht zwingend lahm, und das Gerät bleibt grundsätzlich auch ohne Internetzugriff steuerbar.
-
-Bei neueren Geräten mit dem sogenannten V3-Protokoll akzeptiert die PortaSplit lokale Befehle jedoch nicht ungeschützt. Home Assistant benötigt zwei gerätespezifische Werte: einen Token und einen Key. Beide dienen der Authentifizierung und Verschlüsselung der lokalen Verbindung. Ohne sie lässt sich zwar eine TCP-Verbindung zum Gerät öffnen, aber kein gültiger Befehl absetzen. Die Integration kennt diese Werte nicht von sich aus, sondern holt sie während der erstmaligen Einrichtung über eine Midea-Cloud-Schnittstelle ab. Die Entwickler von `Midea Smart AC` beschreiben das ausdrücklich: Für V3-Geräte wird die Midea-Cloud während der Erkennung verwendet, um Token und Key zu erhalten. Danach werden diese lokal gespeichert, und für die weitere Steuerung ist keine Cloud-Verbindung erforderlich.
-
-Vereinfacht sieht der Ablauf so aus:
-
-1. PortaSplit wird mit MSmartHome verbunden.
-2. Home Assistant meldet sich bei einer Midea-Cloud an.
-3. Home Assistant erhält Geräte-ID, Token und Key.
-4. Token und Key werden lokal gespeichert.
-5. Home Assistant steuert die PortaSplit direkt im LAN.
-
-„Lokal steuerbar" bedeutet daher nicht automatisch „niemals mit einer Cloud verbunden". Die Cloud wird einmalig zur Beschaffung der Zugangsdaten gebraucht, nicht für den laufenden Betrieb.
+Die lokale Steuerung der Midea PortaSplit in Home Assistant hängt an zwei gerätespezifischen Werten: einem Token und einem Key. Beide beschafft die Integration bei der erstmaligen Einrichtung einmalig über die Midea-Cloud; danach läuft die Steuerung direkt im lokalen Netz, ohne dass ein Schaltbefehl über einen Midea-Server gehen müsste. Genau diese Cloud-Schnittstelle schaltet Midea nun ab, und darum geht es hier. Wie die lokale Steuerung im Detail funktioniert, welche Integration passt und wie sich das Gerät absichern lässt, steht im [zweiten Teil zu Einbindung und Absicherung](/blog/midea-portasplit-home-assistant-einrichten).
 
 ## Die Token-Frage im Detail
 
@@ -138,7 +93,7 @@ Die Warnung hat eine kurze Geschichte. Die prominente „Important Notice" kam a
 
 Das ist differenziert zu betrachten. Es handelt sich um die Einschätzung eines Open-Source-Projekts, nicht um eine verbindliche Roadmap von Midea, und der Zeitplan ist unbekannt. Ein zukünftiges Firmware-Update kann lokale Funktionen verändern, ein bereits gespeicherter Token kann weiter funktionieren, muss es aber nicht für immer. Eine Werkseinstellung, ein Wechsel des WLAN-Moduls oder ein neues Gerät kann eine erneute Token-Beschaffung erforderlich machen.
 
-Daraus leiten sich die drei Schritte vom Artikelanfang ab, jeweils mit ihrer Begründung:
+Daraus leiten sich die drei Schritte aus der Box am Artikelanfang ab, jeweils mit ihrer Begründung:
 
 - **Jetzt einrichten**, weil die Token-Beschaffung der einzige Schritt ist, der zwingend über die Midea-Cloud läuft. Solange die Integration noch eine funktionierende Token-Schnittstelle erreicht, gelingt die Einrichtung; danach hilft auch ein fabrikneues Gerät nicht weiter.
 - **Zugangsdaten sichern**, weil Token und Key nach der Abschaltung voraussichtlich nicht neu ausgestellt werden. Home Assistant speichert sie zwar lokal, aber ein defektes System, ein misslungener Restore oder eine versehentlich gelöschte Integration würde ohne externes Backup den dauerhaften Verlust der lokalen Steuerung bedeuten.
@@ -164,7 +119,7 @@ Praktisch heisst das: Wer eine PortaSplit besitzt oder kauft, sollte sie zeitnah
 
 ## Quellen
 
-1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> — Integration `Midea AC LAN` mit der Warnung zur schrittweisen Abschaltung der Cloud-Token-APIs, der Begründung über nicht ablaufende Tokens und rekonstruierte Client-Verschlüsselung sowie der Beschreibung des cloudbasierten Token-Bezugs.
+1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> — Integration `Midea AC LAN` mit der „Important Notice" (seit 19. Mai 2025, aktualisiert am 14. Juli 2025), der Begründung über nicht ablaufende Tokens und rekonstruierte Client-Verschlüsselung sowie der Beschreibung des cloudbasierten Token-Bezugs.
 
 2.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> — Integration `Midea Smart AC`: Beschreibung des cloudbasierten Token- und Key-Bezugs bei V3-Geräten und der lokalen Speicherung der Werte.
 
