@@ -48,8 +48,6 @@ Simplified, the sequence looks like this:
 4. Token and key are stored locally.
 5. Home Assistant controls the PortaSplit directly over the LAN.
 
-Why this one-time cloud step is under time pressure right now is explained in the [first part](/en/blog/midea-portasplit-home-assistant-integration).
-
 ## Which integration fits
 
 ### Midea Smart AC
@@ -62,7 +60,7 @@ As an indicator of compatibility, the project names apps including Artic King, M
 
 The <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> repository supports not only air conditioners but numerous other Midea device classes: dehumidifiers, fans, air purifiers, washing machines, dryers, dishwashers, water heaters, heat pumps, refrigerators, and more, partly under third-party brands such as Carrier or Electrolux. It also offers local communication, automatic device discovery, and additional sensors, and according to the project description keeps a long-lived TCP connection to the device open in order to synchronise state changes promptly. It requires Home Assistant 2024.4.1 or newer.
 
-Its biggest drawback right now is the developer's warning: the cloud token APIs used for adding new devices are being shut down step by step. Adding new devices may become impossible as a result. The context for this is in the [first part](/en/blog/midea-portasplit-home-assistant-integration#the-midea-ac-lan-warning).
+Its biggest drawback right now is the developer's warning: the cloud token APIs used for adding new devices are being shut down step by step. Adding new devices may become impossible as a result.
 
 ### Recommendation
 
@@ -144,7 +142,7 @@ Controlling the PortaSplit locally reclaims part of the control from the vendor 
 
 ### Token and key are secrets
 
-Token and key authenticate the local communication with the device and are to be treated like a password. Why they are so sensitive and what an attacker could do with them is covered in the [first part](/en/blog/midea-portasplit-home-assistant-integration#what-this-means-for-security). For operation, what counts most is: they do not belong in logs, in unencrypted backups, or in a repository.
+Token and key authenticate the local communication with the device and are to be treated like a password. For operation, what counts most is: they do not belong in logs, in unencrypted backups, or in a repository.
 
 ### No port forwarding to the PortaSplit
 
@@ -456,8 +454,6 @@ Midea PortaSplit
 The Midea PortaSplit integrates into Home Assistant surprisingly well. Once configured, it is locally controllable and can be wired into automations, which removes a large part of the cloud dependency from day-to-day operation.
 
 From a security perspective, the integration is defensible as long as a few ground rules hold: no port forwarding, keep token and key secret, encrypt backups, review debug logs before publishing them, secure Home Assistant, segment IoT devices, restrict outbound internet access to what is necessary, and do not install firmware and HACS updates blindly. Run that way, the PortaSplit is not only a capable air conditioner but a sensible component of a locally controlled smart home.
-
-Why setup needs the Midea cloud once at all, and why this path is under time pressure, is covered in the [first part on local control and the cloud token question](/en/blog/midea-portasplit-home-assistant-integration).
 
 ## Sources
 
