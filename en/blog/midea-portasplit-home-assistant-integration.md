@@ -30,6 +30,16 @@ After setup, the integration works largely locally on your own network. It does 
 
 One note up front: the integrations described here come from the community and are supported neither by Midea nor by Home Assistant officially. Firmware updates, changes to the Midea cloud, or changes to the integrations themselves can affect their behaviour at any time.
 
+## What to do now
+
+The Midea AC LAN warning translates into three concrete steps that should not be postponed:
+
+1. **Set it up now.** During initial setup, the integration needs a device-specific token and key from the Midea cloud. The interfaces used for that are being shut down step by step; if you wait, you may no longer be able to add the device to Home Assistant.
+2. **Back up the credentials.** Store token, key, and the integration's JSON configuration file encrypted and outside of Home Assistant. Once the cloud interfaces are closed, these values are unlikely to be obtainable again; the backup is then the only path to a fresh setup.
+3. **Do not break the pairing without need.** A factory reset, removing the device from the Midea account, or swapping the Wi-Fi module forces a new token retrieval that may fail in the future. Take such steps only with a backup in place and a good reason.
+
+Devices that are already set up continue to be controlled locally by Home Assistant; as things stand, the shutdown affects adding devices, not operating them. The background is covered in the section [The Midea AC LAN warning](#the-midea-ac-lan-warning).
+
 ## Short answer
 
 Yes, the Midea PortaSplit can be integrated into Home Assistant. Two community integrations are available:
@@ -169,7 +179,13 @@ The `Midea AC LAN` repository has carried a prominently placed warning since 202
 
 This needs a differentiated reading. It is the assessment of an open-source project, not a binding roadmap from Midea, and the timeline is unknown. A future firmware update may change local functionality, and a stored token may keep working, but not necessarily forever. A factory reset, a Wi-Fi module swap, or a new device may require obtaining a token again.
 
-Anyone who wants to use the integration should therefore not only set the PortaSplit up but also back up the local credentials and the Home Assistant configuration.
+This is where the three steps from the top of the article come from, each with its rationale:
+
+- **Set it up now**, because token retrieval is the only step that necessarily runs through the Midea cloud. As long as the integration can still reach a working token interface, setup succeeds; after that, even a factory-fresh device will not help.
+- **Back up the credentials**, because token and key are unlikely to be issued again after the shutdown. Home Assistant does store them locally, but a broken system, a failed restore, or an accidentally deleted integration would mean permanent loss of local control without an external backup.
+- **Do not break the pairing without need**, because any factory reset and any removal from the Midea account can discard the keys stored on the device. The re-pairing that follows depends on exactly the cloud interfaces that are disappearing.
+
+Day-to-day operation is not affected for now: local control uses the values already stored and no longer needs the token interfaces. A residual risk remains, however, if Midea, as the developer expects, eventually replaces the V1 LAN API through firmware updates as well.
 
 ## Security analysis
 
@@ -207,12 +223,10 @@ The file is named after the device ID:
 
 The project explicitly recommends backing this file up outside the Home Assistant system so that a fresh setup remains possible later, should the cloud token APIs no longer be available. The file is not an ordinary text note, though. It can contain device ID, serial number, IP address, token, key, protocol information, and cloud or device parameters. Accordingly:
 
-```text
-Do not upload it to a public GitHub repository.
-Do not post it in forums.
-Do not share it as an unredacted screenshot.
-Do not send it by unencrypted email.
-```
+- Do not upload it to a public GitHub repository.
+- Do not post it in forums.
+- Do not share it as an unredacted screenshot.
+- Do not send it by unencrypted email.
 
 A private Git repository is not automatically the right place either, because secrets remain in the Git history even after they have been deleted from the current file. Better options are an encrypted backup, a password manager with file attachments, an encrypted NAS backup, encrypted offline media, or an encrypted archive with the password stored separately.
 

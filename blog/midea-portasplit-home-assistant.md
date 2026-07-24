@@ -29,6 +29,16 @@ Die Integration funktioniert nach der Einrichtung weitgehend lokal im eigenen Ne
 
 Ein Hinweis vorweg: Die beschriebenen Integrationen stammen aus der Community und werden weder von Midea noch von Home Assistant offiziell unterstützt. Firmware-Updates, Änderungen an der Midea-Cloud oder an den Integrationen selbst können das Verhalten jederzeit beeinflussen.
 
+## Was jetzt zu tun ist
+
+Aus der Warnung von Midea AC LAN ergeben sich drei konkrete Schritte, die nicht aufgeschoben werden sollten:
+
+1. **Jetzt einrichten.** Die Integration benötigt bei der erstmaligen Einrichtung einen gerätespezifischen Token und Key aus der Midea-Cloud. Die dafür verwendeten Schnittstellen werden schrittweise abgeschaltet; wer wartet, kann das Gerät möglicherweise nicht mehr in Home Assistant aufnehmen.
+2. **Zugangsdaten sichern.** Token, Key und die JSON-Konfigurationsdatei der Integration verschlüsselt ausserhalb von Home Assistant ablegen. Sind die Cloud-Schnittstellen erst geschlossen, lassen sich diese Werte voraussichtlich nicht erneut beschaffen; das Backup ist dann der einzige Weg zu einer Neueinrichtung.
+3. **Kopplung nicht ohne Not auflösen.** Werkseinstellungen, das Entfernen des Geräts aus dem Midea-Konto oder ein Tausch des WLAN-Moduls erzwingen eine erneute Token-Beschaffung, die künftig scheitern kann. Solche Eingriffe nur mit vorhandenem Backup und gutem Grund durchführen.
+
+Bereits eingerichtete Geräte steuern Home Assistant lokal weiter; die Abschaltung betrifft nach heutigem Stand das Hinzufügen, nicht den Betrieb. Die Hintergründe dazu stehen im Abschnitt [Die Warnung von Midea AC LAN](#die-warnung-von-midea-ac-lan).
+
 ## Kurzfazit
 
 Ja, die Midea PortaSplit lässt sich in Home Assistant integrieren. Dafür stehen zwei Community-Integrationen zur Verfügung:
@@ -168,7 +178,13 @@ Das Repository von `Midea AC LAN` enthält seit 2026 eine prominent platzierte W
 
 Das ist differenziert zu betrachten. Es handelt sich um die Einschätzung eines Open-Source-Projekts, nicht um eine verbindliche Roadmap von Midea, und der Zeitplan ist unbekannt. Ein zukünftiges Firmware-Update kann lokale Funktionen verändern, ein bereits gespeicherter Token kann weiter funktionieren, muss es aber nicht für immer. Eine Werkseinstellung, ein Wechsel des WLAN-Moduls oder ein neues Gerät kann eine erneute Token-Beschaffung erforderlich machen.
 
-Wer die Integration nutzen möchte, sollte die PortaSplit deshalb nicht nur einrichten, sondern auch die lokalen Zugangsdaten und die Home-Assistant-Konfiguration sichern.
+Daraus leiten sich die drei Schritte vom Artikelanfang ab, jeweils mit ihrer Begründung:
+
+- **Jetzt einrichten**, weil die Token-Beschaffung der einzige Schritt ist, der zwingend über die Midea-Cloud läuft. Solange die Integration noch eine funktionierende Token-Schnittstelle erreicht, gelingt die Einrichtung; danach hilft auch ein fabrikneues Gerät nicht weiter.
+- **Zugangsdaten sichern**, weil Token und Key nach der Abschaltung voraussichtlich nicht neu ausgestellt werden. Home Assistant speichert sie zwar lokal, aber ein defektes System, ein misslungener Restore oder eine versehentlich gelöschte Integration würde ohne externes Backup den dauerhaften Verlust der lokalen Steuerung bedeuten.
+- **Kopplung nicht ohne Not auflösen**, weil jede Werkseinstellung und jedes Entfernen aus dem Midea-Konto die gespeicherten Schlüssel auf dem Gerät verwerfen kann. Die anschliessend nötige Neu-Kopplung setzt genau die Cloud-Schnittstellen voraus, die verschwinden.
+
+Der laufende Betrieb ist davon zunächst nicht betroffen: Die lokale Steuerung nutzt die bereits gespeicherten Werte und braucht die Token-Schnittstellen nicht mehr. Ein Restrisiko bleibt allerdings bestehen, falls Midea, wie vom Entwickler erwartet, langfristig auch die V1-LAN-API über Firmware-Updates ablöst.
 
 ## Security-Analyse
 
@@ -206,12 +222,10 @@ Die Datei trägt die Geräte-ID als Dateinamen:
 
 Das Projekt empfiehlt ausdrücklich, diese Datei ausserhalb des Home-Assistant-Systems zu sichern, damit später eine erneute Einrichtung möglich bleibt, falls die Cloud-Token-APIs nicht mehr verfügbar sind. Die Datei ist jedoch keine normale Textnotiz. Sie kann Geräte-ID, Seriennummer, IP-Adresse, Token, Key, Protokollinformationen sowie Cloud- und Geräteparameter enthalten. Entsprechend gilt:
 
-```text
-Nicht in ein öffentliches GitHub-Repository hochladen.
-Nicht in Foren posten.
-Nicht als ungeschwärzten Screenshot teilen.
-Nicht per unverschlüsselter E-Mail verschicken.
-```
+- Nicht in ein öffentliches GitHub-Repository hochladen.
+- Nicht in Foren posten.
+- Nicht als ungeschwärzten Screenshot teilen.
+- Nicht per unverschlüsselter E-Mail verschicken.
 
 Auch ein privates Git-Repository ist nicht automatisch der richtige Speicherort, weil Geheimnisse in der Git-Historie verbleiben, selbst wenn sie später aus der aktuellen Datei gelöscht werden. Geeigneter sind ein verschlüsseltes Backup, ein Passwortmanager mit Dateianhang, ein verschlüsseltes NAS-Backup, ein verschlüsseltes Offline-Medium oder ein verschlüsseltes Archiv mit separat gespeichertem Passwort.
 
