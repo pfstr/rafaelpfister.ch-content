@@ -48,7 +48,6 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Linux & VPS](https://rafaelpfister.ch/blog/thema/linux-vps)
 - [Microsoft 365 / Exchange](https://rafaelpfister.ch/blog/thema/microsoft-365-exchange)
 - [Microsoft Entra](https://rafaelpfister.ch/blog/thema/microsoft-entra)
-- [Paperless-ngx](https://rafaelpfister.ch/blog/thema/paperless-ngx)
 - [Smart Home & IoT](https://rafaelpfister.ch/blog/thema/smart-home-iot)
 - [Totemomail](https://rafaelpfister.ch/blog/thema/totemomail)
 
