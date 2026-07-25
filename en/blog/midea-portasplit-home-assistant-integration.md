@@ -24,6 +24,11 @@ aiPrompt: |
 ---
 
 <aside class="article-update">
+  <p class="article-update__label">Update, 25 July 2026</p>
+  <p>This article presented the warning from the <code>Midea AC LAN</code> project as an announced shutdown. As a statement of fact that was too strong: no official announcement from Midea with a date is documented, and in June 2026 the token endpoint in question started delivering valid credentials again, after the community library's request was adapted to match the format of the official app. What lies behind the different version numbers of the Midea interfaces is covered in the <a href="/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant">update on the v2 cloud API</a>. The recommendation to back up token and key remains unaffected.</p>
+</aside>
+
+<aside class="article-update">
   <p class="article-update__label">What PortaSplit owners should do now</p>
   <p>Home Assistant uses these cloud interfaces during setup to obtain the device-specific token and key. The notice has stood in the project repository since 19 May 2025. For owners this means:</p>
   <ol>
