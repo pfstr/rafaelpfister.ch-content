@@ -9,7 +9,6 @@ themen:
   - "paperless-ngx"
 related:
   - "offloading-paperless-documents-to-cloud-storage"
-draft: true
 translationOf: "cloud-mount-testen-dummy-pdfs"
 slug: "testing-cloud-mounts-with-generated-pdfs"
 url: "https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs"

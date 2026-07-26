@@ -9,7 +9,6 @@ themen:
   - "rclone"
 related:
   - "paperless-dokumente-proton-drive-auslagern"
-draft: true
 slug: "rclone-mount-in-docker-container"
 url: "https://rafaelpfister.ch/blog/rclone-mount-in-docker-container"
 ---

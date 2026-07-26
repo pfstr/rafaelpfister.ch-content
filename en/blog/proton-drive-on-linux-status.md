@@ -11,7 +11,6 @@ themen:
 related:
   - "offloading-paperless-documents-to-cloud-storage"
   - "rclone-mount-inside-docker-container"
-draft: true
 translationOf: "proton-drive-linux-status"
 slug: "proton-drive-on-linux-status"
 url: "https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status"

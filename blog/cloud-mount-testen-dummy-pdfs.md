@@ -9,7 +9,6 @@ themen:
   - "paperless-ngx"
 related:
   - "paperless-dokumente-proton-drive-auslagern"
-draft: true
 slug: "cloud-mount-testen-dummy-pdfs"
 url: "https://rafaelpfister.ch/blog/cloud-mount-testen-dummy-pdfs"
 ---

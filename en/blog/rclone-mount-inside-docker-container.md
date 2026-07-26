@@ -9,7 +9,6 @@ themen:
   - "rclone"
 related:
   - "offloading-paperless-documents-to-cloud-storage"
-draft: true
 translationOf: "rclone-mount-in-docker-container"
 slug: "rclone-mount-inside-docker-container"
 url: "https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container"
