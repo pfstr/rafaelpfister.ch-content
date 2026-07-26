@@ -20,7 +20,7 @@ Paperless-ngx stores its documents in a local directory, and that directory grow
 
 The result: **it works in both directions**, and the setup has shrunk to three commands. This article summarises what the test showed and how to set it up yourself. The technical depths live in their own articles, linked at the end: Docker mount propagation, AppArmor traps, two-factor authentication and the measurement methodology.
 
-## The principle: hot stays local, cold goes to the cloud
+## The principle: Hot Storage stays local, Cold Storage lives in the cloud
 
 | Component | Location | Why |
 |---|---|---|
@@ -29,7 +29,7 @@ The result: **it works in both directions**, and the setup has shrunk to three c
 | **Document files** | **cloud** | rarely read |
 | Cache (recently opened documents) | local, bounded | repeated access stays fast |
 
-In Paperless, of all places, the directory name is misleading: `archive/` is **not** the cold archive but holds the PDF/A version served on every view. Despite its name, it is the hottest file in the system. Cold is `originals/`. If you want maximum savings, turn the archive copy off entirely with `PAPERLESS_ARCHIVE_FILE_GENERATION=never`; full-text search is unaffected because the text lives in the database.
+In Paperless, of all places, the directory name is misleading: `archive/` is **not Cold Storage** but holds the PDF/A version served on every view. Despite its name, it belongs to Hot Storage. The rarely needed originals under `originals/` are the actual Cold Storage. If you want maximum savings, turn the archive copy off entirely with `PAPERLESS_ARCHIVE_FILE_GENERATION=never`; full-text search is unaffected because the text lives in the database.
 
 Paperless-ngx ships no cloud storage support of its own, by the way: no S3, no `django-storages`. A file-system mount via Rclone is currently the only way, and it works with any of the 70+ services Rclone supports. Proton Drive was my test choice for its end-to-end encryption; an S3-compatible store is the more robust alternative.
 

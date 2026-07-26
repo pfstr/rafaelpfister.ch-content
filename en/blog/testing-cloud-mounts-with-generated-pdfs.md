@@ -15,7 +15,7 @@ slug: "testing-cloud-mounts-with-generated-pdfs"
 url: "https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs"
 ---
 
-A cloud mount is not production-ready just because `ls` works. What matters is how long a cold access takes, what the application can still do during an outage, and whether every file comes back unchanged.
+A cloud mount is not production-ready just because `ls` works. What matters is how long a Cold Read takes, what the application can still do during an outage, and whether every file comes back unchanged.
 
 The following method emerged from [testing cloud storage for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage). It uses artificial documents, measures at the application level rather than just the file-system level, and verifies recovery after a hard mount interruption. The figures come from one specific machine and show orders of magnitude, not generally valid benchmarks.
 
@@ -78,7 +78,7 @@ The result is 40 files of 45 to 596 KB, 13.9 MB in total. That is a realistic di
 
 The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data`. Otherwise the container restarts in an endless loop.
 
-## Where cold and warm live in this system
+## Distinguishing Cold Reads and Warm Reads clearly
 
 Before measuring, it must be clear **which cache layers** sit between the application and the cloud. Otherwise you measure something other than what you claim. With an rclone mount using `--vfs-cache-mode full` there are three:
 
@@ -88,14 +88,14 @@ Before measuring, it must be clear **which cache layers** sit between the applic
 | VFS cache | local disk (`--cache-dir`) | copies of recently read files, bounded by `--vfs-cache-max-size` |
 | Page cache | RAM | held transparently by the kernel, both for the file as it is read through the FUSE mount and for the VFS copy itself |
 
-**Cold** in this setup means the file is not in the VFS cache and comes over the network. **Warm** means the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
+A **Cold Read** in this setup means the file is not in the VFS cache and comes over the network. With a **Warm Read**, the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
 
 ```bash
 S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
 S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
 ```
 
-In the test: 1765 ms cold versus 19 to 24 ms warm. That boundary is also the one that matters for the cloud question. Strictly speaking, though, "warm" here means "local, RAM-assisted" and not "from disk".
+In the test: 1765 ms for the Cold Read versus 19 to 24 ms for the Warm Read. That boundary is also the one that matters for the cloud question. Strictly speaking, though, "Warm Read" here means "local, RAM-assisted" and not "from disk".
 
 ## Measurement hygiene: drop the page cache and prove the drop
 
@@ -122,7 +122,7 @@ Two peculiarities of this setup make the proof mandatory rather than optional:
 
 **And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED` (600K resident, before and after): rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. To really isolate the disk layer, you have to stop the rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
 
-Put in perspective: at typical document sizes the separation barely pays off. Hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
+Put in perspective: at typical document sizes the separation barely pays off. Warm Reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
 
 The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant, because the network is the bottleneck. But anyone who wants to derive local read numbers from them has to evict first.
 
