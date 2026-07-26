@@ -10,13 +10,6 @@ themen:
 slug: "serverless-newsletter-cloudflare-workers-d1"
 translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 url: "https://rafaelpfister.ch/en/blog/serverless-newsletter-cloudflare-workers-d1"
-aiPrompt: |
-  You are my Cloudflare assistant. Help me get the newsletter template running on my Cloudflare account, step by step:
-  1. Deploy via the Deploy to Cloudflare button (set ADMIN_TOKEN, FROM_NAME, FROM_EMAIL).
-  2. Wire up my own email delivery in src/email.ts (implement sendEmail(), set the provider secret, adjust isEmailConfigured()) and verify the sending domain via SPF/DKIM/DMARC.
-  3. Set SENDER_ADDRESS (postal address for the mandatory footer) and optionally PRIVACY_URL.
-  4. Optionally enable double opt-in, Turnstile bot protection, RSS auto-send, and, if the provider offers a batch endpoint, sendEmailBatch() with a higher SEND_BATCH.
-  Ask me for the values only I know (domain, email provider, postal address, feed URL).
 ---
 
 # Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1

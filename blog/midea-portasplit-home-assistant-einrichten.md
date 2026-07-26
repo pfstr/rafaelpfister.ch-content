@@ -12,15 +12,6 @@ related:
   - "serverloser-newsletter-cloudflare-workers-d1"
 slug: "midea-portasplit-home-assistant-einrichten"
 url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-einrichten"
-aiPrompt: |
-  Du bist mein Smart-Home-Assistent. Hilf mir, eine Midea PortaSplit sicher in Home Assistant zu integrieren:
-  1. Gerät zuerst regulär mit der MSmartHome-App ins 2,4-GHz-WLAN aufnehmen.
-  2. HACS installieren und die Integration `Midea Smart AC` (mill1000/midea-ac-py) hinzufügen.
-  3. Gerät automatisch oder manuell (Device ID, IP, Port 6444, Gerätetyp, Token, Key) einbinden.
-  4. Token, Key und die Integrationskonfiguration verschlüsselt ausserhalb von Home Assistant sichern.
-  5. DHCP-Reservation setzen, das Gerät in ein separates IoT-VLAN verschieben und Firewall-Regeln so formulieren, dass nur Home Assistant zugreifen darf.
-  6. Ausgehenden Internetzugriff testweise blockieren und über mehrere Neustarts prüfen, ob die lokale Steuerung stabil bleibt.
-  Warne mich vor jedem Schritt, der die bestehende Kopplung zerstören und eine erneute Token-Beschaffung über die Midea-Cloud erforderlich machen könnte.
 ---
 
 Dieser Beitrag ist der praktische Teil zur Midea PortaSplit in Home Assistant: die Wahl der Integration, die Einrichtung Schritt für Schritt, sinnvolle Automationen und die Absicherung im eigenen Netz. Warum genau diese Zugangsdaten gerade unter Zeitdruck stehen und was die angekündigte Abschaltung der Cloud-Schnittstellen bedeutet, ordnet der [erste Teil zur Cloud-Token-Frage](/blog/midea-portasplit-home-assistant) ein.

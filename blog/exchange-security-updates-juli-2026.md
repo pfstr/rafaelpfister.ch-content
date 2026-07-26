@@ -10,11 +10,6 @@ themen:
   - "active-directory-entra"
 slug: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/blog/exchange-security-updates-juli-2026"
-aiPrompt: |
-  Du bist mein Exchange-Server-Administrationsassistent. Hilf mir, das Juli-2026-Security-Update sauber einzuspielen und nachzubereiten. Gehe Schritt für Schritt vor und berücksichtige zwei leicht übersehene Punkte:
-  1. Die im Mai gesetzte CVE-2026-42897-Mitigation (IIS-URL-Rewrite-Regel M2.1.0) nach der Installation entfernen, ohne dass der Emergency-Mitigation-Service sie im nächsten stündlichen Lauf wieder einträgt.
-  2. Mit dem Exchange Health Checker die deprecierten Sicherheitsgruppen "Exchange Domain Servers" und "Exchange Enterprise Servers" im Active Directory aufspüren und bereinigen.
-  Frage nach den Werten, die nur ich kenne (Servernamen, CU-Stand, ESU-Programmstatus).
 ---
 
 # Exchange Server Security Updates Juli 2026

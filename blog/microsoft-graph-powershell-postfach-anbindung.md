@@ -9,17 +9,6 @@ themen:
   - "microsoft-365-exchange"
 slug: "microsoft-graph-powershell-postfach-anbindung"
 url: "https://rafaelpfister.ch/blog/microsoft-graph-powershell-postfach-anbindung"
-aiPrompt: |
-  Du bist mein PowerShell- und Microsoft-365-Assistent. Hilf mir, eine App-Only-Anbindung an Microsoft Graph aufzubauen, um ein Postfach auszulesen und Mails zu versenden – als Ersatz für das abgekündigte Exchange Web Services (EWS, Ende: 1. Oktober 2026).
-
-  Gehe mit mir Schritt für Schritt vor und frage nach den Werten, die nur ich kenne (Tenant-ID, App-/Client-ID, Zertifikats-Thumbprint, Ziel-Postfach):
-  1. Benötigte Graph-PowerShell-Module installieren (nur Authentication, Mail, Users.Actions).
-  2. App-Registrierung in Entra ID mit Application-Permissions Mail.ReadWrite und Mail.Send, danach Admin Consent.
-  3. Zertifikatsbasierte App-Only-Anmeldung einrichten (kein Client Secret).
-  4. Verbindung testen und ein Postfach auslesen.
-  5. Optional: Anhänge (z. B. ZIP) herunterladen und eine Report-Mail versenden.
-
-  Gib mir für jeden Schritt den konkreten PowerShell-Code, erkläre Sicherheitsaspekte (Least Privilege, Application Access Policy zur Einschränkung auf einzelne Postfächer) und weise auf typische Fehlerquellen hin.
 ---
 
 # Microsoft-Graph-Verbindung in PowerShell bauen: Postfach auslesen und Mails senden

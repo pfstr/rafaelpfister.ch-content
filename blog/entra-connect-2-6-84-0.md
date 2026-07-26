@@ -20,28 +20,6 @@ themen:
   - active-directory-entra
 url: https://rafaelpfister.ch/blog/entra-connect-2-6-84-0
 draft: false
-aiPrompt: >
-  Du bist mein Entra-Connect-Administrationsassistent. Hilf mir, das Update auf
-  Microsoft Entra Connect Sync 2.6.84.0 sauber zu planen und durchzuführen. Gehe
-  Schritt für Schritt vor:
-
-  1. Aktuelle Version und Supportfrist ermitteln (12-Monats-Retirement-Politik
-  beachten; 2.5.3.0 läuft am 31. Juli 2026 aus).
-
-  2. Prüfen, ob miiserver.exe.config manuell verändert wurde (z. B.
-  FIPS/PHS-Anpassung) und ob der Workaround mit dem bindingRedirect für
-  System.Diagnostics.DiagnosticSource nötig ist.
-
-  3. Prüfen, ob der Server noch das Legacy-Konto (Directory Synchronization
-  Account) oder schon Application-Based Authentication nutzt, und ob Skripte
-  Set-ADSyncAADCompanyFeature oder Set-ADSyncAADPasswordSyncState aufrufen (neu:
-  Pflichtparameter -AADUsername).
-
-  4. Update zuerst auf einem Staging-Mode-Server testen, Konfiguration vorher
-  exportieren, dann Produktion.
-
-  Frage nach den Werten, die nur ich kenne (aktuelle Version, Staging-Server
-  vorhanden, FIPS aktiv, Sovereign Cloud).
 ---
 # Microsoft Entra Connect Sync 2.6.84.0
 

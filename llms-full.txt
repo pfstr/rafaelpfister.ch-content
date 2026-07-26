@@ -12,6 +12,452 @@ Diese Datei enthält die Volltexte aller Blog-Artikel (Deutsch und Englisch) in 
 
 ----
 
+# rclone-Mount im Docker-Container: Propagation, AppArmor und der Fehler „Transport endpoint is not connected“
+
+URL: https://rafaelpfister.ch/blog/rclone-mount-in-docker-container
+Datum: 2026-07-26
+
+Ein rclone-Mount soll in einem Docker-Container laufen, aber ausserhalb nutzbar sein: auf dem Host und in anderen Containern, die die Dateien konsumieren. Das klingt nach einer Zeile Compose — tatsächlich stecken darin drei Fallen, von denen zwei kaum dokumentiert sind. Dieser Artikel zeigt alle drei mit den konkreten Fehlerbildern, wie sie bei einem Praxistest auf Ubuntu 25.10 (Kernel 6.17, Docker 29.6) aufgetreten sind.
+
+Der Anwendungsfall dahinter: eine [Dokumentenablage für Paperless-ngx in einem Clouddienst](/blog/paperless-dokumente-proton-drive-auslagern). Die Erkenntnisse gelten aber für jeden containerisierten FUSE-Mount, auch mit sshfs oder anderen Werkzeugen.
+
+## Falle 1: Docker degradiert rshared stillschweigend
+
+Damit ein Mount aus dem Container den Host erreicht, braucht der Bind die Propagation `rshared`:
+
+```yaml
+    volumes:
+      - type: bind
+        source: /srv/storage/media
+        target: /data
+        bind:
+          propagation: rshared
+```
+
+Was die Dokumentation verschweigt: `rshared` funktioniert nur, wenn die Bind-Quelle auf dem Host **selbst ein Mountpoint mit shared-Propagation** ist. Ein gewöhnliches Verzeichnis erfüllt das nicht — und Docker meldet dann keinen Fehler, sondern stuft die Propagation kommentarlos herunter. Sichtbar wird das nur in `/proc/self/mountinfo` im Container:
+
+```text
+1938 2077 8:2 /srv/storage/media /data rw,relatime master:1 - ext4 /dev/sda2 rw
+```
+
+`master:1` heisst slave-Propagation: Mounts kommen vom Host herein, aber nie hinaus. Richtig wäre `shared:N`. Die Lösung ist ein Bind der Quelle auf sich selbst, als shared markiert:
+
+```bash
+mount --bind /srv/storage/media /srv/storage/media
+mount --make-shared /srv/storage/media
+```
+
+Damit das einen Reboot übersteht, gehört es in eine systemd-Unit mit `Before=docker.service`. Kontrolle: `findmnt -no PROPAGATION /srv/storage/media` muss `shared` liefern.
+
+## Falle 2: das AppArmor-Profil für fusermount3
+
+Mit korrekter Propagation kam die nächste Überraschung. Der Mount auf den geteilten Pfad scheiterte weiterhin:
+
+```text
+NOTICE: mount helper error: fusermount3: mount failed: Permission denied
+CRITICAL: Fatal error: failed to mount FUSE fs: fusermount: exit status 1
+```
+
+Bemerkenswert dabei: Es lag **nicht** an den Container-Rechten. `CAP_SYS_ADMIN`, `/dev/fuse`, AppArmor `unconfined` für den Container, sogar `--privileged` — der Fehler blieb identisch. Gleichzeitig funktionierte auf demselben Pfad ein tmpfs-Mount problemlos, und der FUSE-Mount funktionierte auf anderen Pfaden. Die Auflösung stand im Kernel-Audit-Log:
+
+```text
+audit: type=1400 apparmor="DENIED" operation="mount" class="mount"
+  info="failed mntpnt match" error=-13 profile="fusermount3"
+  name="/data/documents/originals/" fstype="fuse.rclone"
+```
+
+Ubuntu liefert ein **AppArmor-Profil für die Binary `fusermount3`** mit, das FUSE-Mounts nur auf eine Positivliste von Mountpunkt-Mustern erlaubt — und dieses Profil greift auch für das fusermount3 **im Container**, gematcht am Pfad, wie ihn der Container sieht:
+
+```text
+mount fstype=@{fuse_types} ... -> @{HOME}/**/,
+mount fstype=@{fuse_types} ... -> /mnt/{,**/},
+mount fstype=@{fuse_types} ... -> /media/**/,
+mount fstype=@{fuse_types} ... -> /tmp/**/,
+```
+
+`/data` steht nicht auf der Liste, `/srv` auch nicht. Dass der Container unconfined läuft, hilft nichts: Das Profil hängt an der ausführbaren Datei, nicht am Container.
+
+Der Ausweg nutzt aus, dass nur fusermount3 dem Profil unterliegt, ein gewöhnlicher `mount --bind` aber nicht: FUSE auf einen **erlaubten** Pfad mounten und von dort per Bind auf den geteilten Pfad publizieren.
+
+```sh
+rclone mount remote:pfad /mnt/inner/dokumente --allow-other --vfs-cache-mode full &
+# warten bis der Mount antwortet, dann:
+mount --bind /mnt/inner/dokumente /data/dokumente
+```
+
+Der Bind ist ein normaler mount(2)-Aufruf, propagiert wie jeder andere über den shared Pfad zum Host — verifiziert bis in einen zweiten Container, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
+
+## Falle 3: Konsumenten halten an toten Mounts fest
+
+Die dritte Falle betrifft die Gegenseite. Stirbt der rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort — ein Container, der den Pfad ganz normal per Bind eingebunden hat, aber nicht:
+
+```text
+ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
+```
+
+Docker verwendet für Bind-Mounts standardmässig `rprivate`: Ein Mount, der auf dem Host **nach** dem Container-Start entsteht, erreicht dessen Mount-Namensraum nie. Der Container bleibt am toten FUSE-Mount hängen, bis er neu erstellt wird. Die Lösung kostet eine Zeile:
+
+```yaml
+    volumes:
+      - type: bind
+        source: /srv/storage/media
+        target: /usr/src/app/media
+        bind:
+          propagation: rslave
+```
+
+Mit `rslave` reicht der Host neue Mount-Ereignisse in den Container weiter. Im Test sah der Konsument nach einem hart beendeten und neu aufgebauten Mount **ohne eigenen Neustart** wieder alle Dateien — der Neustartzähler blieb bei null.
+
+## Selbstheilung als Muster
+
+Aus den drei Bausteinen ergibt sich ein robustes Gesamtmuster, das ohne Watchdog-Daemon auskommt:
+
+1. Der Mount-Container prüft seine Mounts in einer Schleife. Antwortet einer nicht mehr, beendet er sich mit Fehlercode.
+2. `restart: unless-stopped` lässt Docker den Container neu starten.
+3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem Vorleben** ab — ein toter Bind auf dem Zielpfad würde das erneute Publizieren sonst blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
+
+```sh
+while grep -q " /data/dokumente " /proc/self/mountinfo; do
+    umount -l /data/dokumente 2>/dev/null || break
+done
+```
+
+4. Danach normal mounten und publizieren; Konsumenten mit `rslave` übernehmen den frischen Mount von selbst.
+
+Im Test war die komplette Kette — rclone-Prozess getötet, Erkennung, Container-Neustart, Aufräumen, Remount, Republish — nach 160 Sekunden durch, ohne dass der Konsumenten-Container etwas davon mitbekam ausser einer kurzen Lücke.
+
+Ein Wort zur Einordnung: Wer den Mount **auf dem Host** per systemd betreibt, umgeht Falle 1 und 2 vollständig und braucht nur `rslave` auf der Konsumentenseite. Der Container-Weg lohnt sich, wenn der Host frei von rclone-Installationen bleiben soll oder mehrere Mounts zentral verwaltet werden — dann führt an den drei Fallen kein Weg vorbei.
+
+## Quellen
+
+1.  [Docker: Bind mounts — configure bind propagation](https://docs.docker.com/engine/storage/bind-mounts/#configure-bind-propagation) — die Propagationsmodi rprivate, rslave und rshared und ihr Standardverhalten.
+
+2.  [Kernel-Dokumentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) — die Mount-Propagation des Linux-Kernels, auf der Dockers Bind-Optionen aufsetzen.
+
+3.  [rclone mount](https://rclone.org/commands/rclone_mount/) — VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
+
+4.  [AppArmor-Dokumentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/) — wie Profile an ausführbare Dateien gebunden werden; das fusermount3-Profil liegt unter /etc/apparmor.d/fusermount3.
+
+----
+
+# Proton Drive unter Linux: Status quo von offiziellem Client, rclone-Backend und SDK
+
+URL: https://rafaelpfister.ch/blog/proton-drive-linux-status
+Datum: 2026-07-26
+
+Proton Drive hat seit 2023 Sync-Clients für Windows und macOS — Linux ging leer aus. Wer Proton Drive auf einem Linux-Desktop oder gar auf einem Server nutzen will, bewegt sich in einem Flickenteppich aus Community-Werkzeugen, einem offiziellen SDK im Vorschaustadium und Ankündigungen. Dieser Artikel sortiert den Stand per Juli 2026 — aus der Praxis heraus, denn ich habe das rclone-Backend gerade ausgiebig [als Dokumentenablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern) getestet.
+
+## Der offizielle Client: angekündigt, ohne Termin
+
+Im Juni 2026 hat Proton erstmals bestätigt, dass ein Linux-Client tatsächlich in Entwicklung ist — „from the ground up" auf dem neuen, vereinheitlichten SDK, mit derselben Architektur wie die Windows- und macOS-Anwendungen. Einen Termin oder eine Beta gibt es nicht; die Roadmap nennt den „highly anticipated Linux app" ohne Zeitfenster.
+
+Wichtig für die Einordnung: Das wird ein **Desktop-Sync-Client**. Für den Schreibtisch löst er das Problem, für Server-Anwendungsfälle — ein Dienst soll Dateien direkt aus Proton Drive lesen und dorthin schreiben — ist ein Sync-Client das falsche Werkzeug: Er hält eine lokale Vollkopie, genau das, was man bei knappem Speicher vermeiden will.
+
+## Was heute funktioniert: das rclone-Backend
+
+Der Arbeitsweg für Linux ist seit Jahren rclone mit seinem `protondrive`-Backend: Kopieren, Synchronisieren und — als einziges Werkzeug — ein **FUSE-Mount**, mit dem Anwendungen die Cloud wie ein Verzeichnis sehen. Zwei Einschränkungen gehören zur ehrlichen Beschreibung:
+
+**Es ist Beta auf einer nachgebauten API.** Proton dokumentiert seine Drive-API nicht öffentlich; das Backend basiert auf Reverse Engineering. Im Test funktionierte es zuverlässig, drosselte aber bei schnellen Aufruffolgen mit inkonsistenten Verzeichnislisten.
+
+**Die unbeaufsichtigte Anmeldung braucht einen Kniff.** Wer die Zwei-Faktor-Authentifizierung bei der Einrichtung mit einem Einmalcode füttert, erlebt nach etwa 35 Minuten das Ende der Session:
+
+```text
+422 POST https://drive-api.proton.me/auth/v4/2fa:
+Ungültige Anmeldedaten (Code=8002)
+```
+
+rclone versucht, sich mit dem längst verbrauchten Code neu anzumelden. Die Lösung ist, den dauerhaften TOTP-Schlüssel (den Base32-Wert aus der 2FA-Einrichtung) als `otp_secret_key` in der rclone-Konfiguration zu hinterlegen — obscured über `rclone obscure`. Damit erzeugt rclone die Codes selbst und läuft dauerhaft. Das ist weniger heikel, als es klingt: Gegen geleakte Passwörter schützt der zweite Faktor unverändert, nur gegen die Kompromittierung des Servers nicht — und diesen Fall hat er nie verteidigt, denn dort liegt auch das Passwort. Ein **dediziertes Konto** nur für den jeweiligen Dienst bleibt trotzdem Pflicht.
+
+Wie sich so ein Mount in Docker-Umgebungen verhält — inklusive zweier undokumentierter Fallen — steht im [eigenen Artikel zu rclone in Containern](/blog/rclone-mount-in-docker-container).
+
+## Das SDK und seine CLI: offiziell, aber noch nicht für alle
+
+Parallel baut Proton seine Anwendungen auf ein **offizielles SDK** um (JavaScript und C#, mit Bindings für Swift und Kotlin). Das Repository ist öffentlich, und seit Kurzem liegt dort auch ein **Kommandozeilenwerkzeug** — und dessen Anmeldemodell zeigt, wohin die Reise geht:
+
+- `auth login` öffnet den Browser; die Anmeldung läuft regulär **inklusive Zwei-Faktor-Authentifizierung**
+- die Session landet im **Schlüsselspeicher des Betriebssystems** (Keychain, Credential Manager, libsecret), das SDK erneuert sie selbst
+- danach: Dateien auflisten, hochladen, Freigaben prüfen — mit maschinenlesbarer JSON-Ausgabe
+
+Kein Passwort auf der Kommandozeile, kein TOTP-Schlüssel in einer Konfigurationsdatei. Genau das Modell, das dem rclone-Backend fehlt. Aber: Die CLI kann **keine Dateisysteme einhängen**, der Browser-Login passt schlecht zu headless Servern, und Proton erklärt das SDK ausdrücklich für noch nicht produktionsreif für Drittanwendungen — die Freigabe ist für Ende 2026 bis Anfang 2027 angepeilt.
+
+## Die eigentliche Lücke: Maschinenzugänge
+
+Der Kern des Problems liegt eine Ebene tiefer als Client oder SDK: **Proton kennt keine Maschinenzugänge.** Kein App-Passwort, kein Service-Account, kein Token mit begrenztem Umfang. Jede Automatisierung — Backup-Skript, Server-Mount, CI-Job — muss mit den vollwertigen Zugangsdaten des Kontos arbeiten.
+
+Zum Vergleich: Bei S3-kompatiblen Speichern sind Zugriffsschlüssel-Paare der Normalfall, widerrufbar und auf Buckets oder Präfixe einschränkbar. Google und Microsoft kennen App-Passwörter und Service-Accounts. Bei Proton gibt es nur Alles-oder-nichts — wer einem Server Zugriff auf einen Ordner geben will, gibt ihm das ganze Konto.
+
+Fairerweise: Bei einem Ende-zu-Ende-verschlüsselten Dienst ist das schwieriger als bei S3, weil ein begrenzter Zugang auch begrenztes Schlüsselmaterial bedeuten müsste. Die SDK-Sessions zeigen aber, dass Proton solche Konstrukte beherrscht — eine Session ist bereits ein abgeleiteter, widerrufbarer Zugang. Ein offizieller „Maschinen-Token für genau diesen Ordner, nur lesend" wäre der grösste einzelne Fortschritt für den Server-Einsatz, weit vor jedem Client.
+
+## Empfehlung nach Anwendungsfall
+
+| Anwendungsfall | Stand Juli 2026 |
+|---|---|
+| Desktop-Sync unter Linux | Warten auf den angekündigten Client; bis dahin rclone-Sync oder Web-Oberfläche |
+| Server-Backup (Dateien hochladen) | rclone `copy`/`sync` — funktioniert, Beta-Status einkalkulieren |
+| Dateisystem-Mount für Dienste | rclone `mount` mit hinterlegtem TOTP-Schlüssel und dediziertem Konto — der einzige Weg, [praxiserprobt](/blog/paperless-dokumente-proton-drive-auslagern) |
+| Skript-Automatisierung mit sauberer Anmeldung | SDK-CLI im Auge behalten; für Produktion noch zu früh |
+
+Der Status quo in einem Satz: Linux-Nutzer tragen Proton Drive heute mit Community-Werkzeugen, die erstaunlich weit tragen — aber die Bausteine, die aus „funktioniert" ein „dafür gebaut" machen würden, heissen offizieller Mount-Support und Maschinenzugänge, und beide stehen noch aus.
+
+## Quellen
+
+1.  [OMG Ubuntu: Proton Drive client is (finally) coming to Linux](https://www.omgubuntu.co.uk/2026/06/proton-drive-linux-client) — die Bestätigung vom Juni 2026, dass der Linux-Client in Entwicklung ist, ohne Termin.
+
+2.  [Proton: Product roadmaps for spring and summer 2026](https://proton.me/blog/2026-spring-summer-roadmaps) — die Roadmap mit dem Linux-Client ohne Zeitfenster und dem SDK als Fundament der eigenen Apps.
+
+3.  [ProtonDriveApps/sdk auf GitHub](https://github.com/ProtonDriveApps/sdk) — das öffentliche SDK-Repository samt CLI mit Browser-Login und Session im Schlüsselspeicher.
+
+4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview) — Protons eigene Einordnung: noch nicht produktionsreif für Drittanwendungen.
+
+5.  [rclone: Proton Drive](https://rclone.org/protondrive/) — das Backend samt Beta-Hinweis und der Option `otp_secret_key` für die unbeaufsichtigte Anmeldung.
+
+----
+
+# Cloud-Speicher als Dokumentablage testen: generierte PDFs, Messmethode und Ausfallsimulation
+
+URL: https://rafaelpfister.ch/blog/cloud-mount-testen-dummy-pdfs
+Datum: 2026-07-26
+
+Bevor eine Dokumentenverwaltung ihre Ablage in einen Clouddienst verlagert, will man wissen: Wie langsam wird das Öffnen? Übersteht der Aufbau einen Ausfall? Und stimmen die Dateien hinterher noch bitgenau? Dieser Artikel dokumentiert die Messmethodik hinter meinem [Paperless-Cloud-Test](/blog/paperless-dokumente-proton-drive-auslagern) — als Vorlage für eigene Tests. Es sind bewusst Einzelmessungen auf einer konkreten Maschine: Sie zeigen Grössenordnungen, keine Benchmarks.
+
+## Testdokumente generieren statt echte hochladen
+
+Echte Privatdokumente haben in einer Testumgebung nichts verloren — zumal die Cloud-Zugangsdaten bei so einem Aufbau auf dem Server liegen. Für Übertragungsmessungen zählt ohnehin nur die Grössenverteilung, nicht der Inhalt.
+
+Das folgende Skript schreibt PDFs direkt in PDF-Syntax, ohne eine einzige Bibliothek. Jede Seite bekommt einen Block Zufallstext als Content-Stream; die Seitenzahl steuert die Dateigrösse. Die **feste Zufallssaat** macht die Verteilung reproduzierbar, und die **echte Textebene** sorgt dafür, dass die Dokumentenverwaltung keine Texterkennung anwirft — gemessen werden soll der Speicherpfad, nicht Tesseract:
+
+```python
+import os, random
+random.seed(42)                      # feste Saat: reproduzierbare Verteilung
+outdir = "dummy"
+os.makedirs(outdir, exist_ok=True)
+WORDS = ("Rechnung Beleg Vertrag Kunde Betrag Datum Position Menge Preis "
+         "Summe Steuer Netto Brutto Lieferung Zahlung Konto Referenz").split()
+
+def build(idx, npages):
+    objects, kids, objnum = {}, [], 4
+    for p in range(1, npages + 1):
+        lines = ["Testdokument %03d - Seite %d von %d" % (idx, p, npages)]
+        for _ in range(45):
+            lines.append(" ".join(random.choice(WORDS) for _ in range(11))
+                         + " %d" % random.randint(100, 99999))
+        parts = ["BT /F1 11 Tf 40 800 Td 14 TL"]
+        parts += ["(%s) Tj T*" % l for l in lines]
+        parts.append("ET")
+        stream = "\n".join(parts).encode("latin-1")
+        cnum, pnum = objnum, objnum + 1
+        objnum += 2
+        objects[cnum] = (b"<< /Length " + str(len(stream)).encode()
+                         + b" >>\nstream\n" + stream + b"\nendstream")
+        objects[pnum] = ("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+                         "/Resources << /Font << /F1 3 0 R >> >> "
+                         "/Contents %d 0 R >>" % cnum).encode()
+        kids.append(pnum)
+    objects[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
+    objects[2] = ("<< /Type /Pages /Kids [%s] /Count %d >>"
+                  % (" ".join("%d 0 R" % k for k in kids), npages)).encode()
+    objects[3] = b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+    mx = max(objects)
+    buf, off = bytearray(b"%PDF-1.4\n"), {}
+    for n in range(1, mx + 1):
+        off[n] = len(buf)
+        buf += ("%d 0 obj\n" % n).encode() + objects[n] + b"\nendobj\n"
+    x = len(buf)
+    buf += ("xref\n0 %d\n" % (mx + 1)).encode() + b"0000000000 65535 f \n"
+    for n in range(1, mx + 1):
+        buf += ("%010d 00000 n \n" % off[n]).encode()
+    buf += ("trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
+            % (mx + 1, x)).encode()
+    return bytes(buf)
+
+for i in range(1, 41):
+    pages = random.choice([10, 25, 40, 60, 90, 130])
+    open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
+```
+
+Heraus kommen 40 Dateien mit 45 bis 596 KB, zusammen 13.9 MB — eine realistische Verteilung für ein privates Dokumentenarchiv. Paperless nahm sie in gut 8 Sekunden pro Dokument auf, im Protokoll bestätigt `pdftotext exited 0` die funktionierende Textebene.
+
+Die Testinstanz selbst lief vollständig getrennt von der Produktion: eigene Datenbank, eigene Volumes, eigener Port. Ein Detail, das Zeit kostete: Bei `postgres:18` muss das Volume auf `/var/lib/postgresql` zeigen, nicht mehr auf `/var/lib/postgresql/data` — sonst startet der Container in einer Endlosschleife.
+
+## Wo in diesem System kalt und warm liegen
+
+Bevor man misst, muss klar sein, **welche Cache-Ebenen** zwischen Anwendung und Cloud liegen — sonst misst man etwas anderes als behauptet. Bei einem rclone-Mount mit `--vfs-cache-mode full` sind es drei:
+
+| Ebene | Ort | Was dort liegt |
+|---|---|---|
+| Cloud | beim Anbieter | die einzige vollständige Wahrheit |
+| VFS-Cache | lokale Platte (`--cache-dir`) | Kopien zuletzt gelesener Dateien, begrenzt über `--vfs-cache-max-size` |
+| Page-Cache | RAM | transparent vom Kernel gehalten — sowohl für die Datei, wie sie durch den FUSE-Mount gelesen wird, als auch für die VFS-Kopie selbst |
+
+**Kalt** heisst in diesem Setup: nicht im VFS-Cache, die Datei kommt übers Netz. **Warm** heisst: die VFS-Kopie liegt lokal — und beim wiederholten Lesen praktisch immer zusätzlich im RAM. Die einfache Zweipunktmessung erfasst also die Grenze Netz/lokal:
+
+```bash
+S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "kalt: $(( $(date +%s%3N) - S )) ms"
+S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
+```
+
+Im Test: 1765 ms kalt gegen 19 bis 24 ms warm. Diese Grenze ist für die Cloud-Frage auch die relevante — aber sauber benannt ist „warm" hier „lokal, RAM-unterstützt", nicht „von der Platte".
+
+## Messhygiene: Page-Cache räumen — und das Räumen beweisen
+
+Wer die lokalen Ebenen trennen will (RAM gegen Platte), muss den Page-Cache vor der Messung leeren und das **nachweisen**. Der übliche Weg ist `sync` gefolgt von `vmtouch -e`, die Kontrolle übernimmt `fincore` aus util-linux:
+
+```bash
+sync
+vmtouch -e datei.pdf          # Seiten dieser Datei aus dem RAM werfen
+fincore datei.pdf             # Beweis: RES muss 0 sein
+```
+
+Ist `vmtouch` nicht installiert, tut es ein Dreizeiler ohne Zusatzpaket:
+
+```python
+import os
+fd = os.open("datei.pdf", os.O_RDONLY)
+os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+os.close(fd)
+```
+
+Zwei Eigenheiten dieses Setups machen den Nachweis zur Pflicht statt zur Kür:
+
+**Die Eviction muss alle Pfade zur selben Datei treffen** — die Datei, wie der Mount sie zeigt, *und* die VFS-Kopie unter `--cache-dir` (dort im Unterverzeichnis `vfs/`, nicht `vfsMeta/` — das sind nur Metadaten).
+
+**Und sie kann stillschweigend scheitern.** In meinem Kontrollversuch zeigte `fincore` die VFS-Kopie nach `sync` und `POSIX_FADV_DONTNEED` unverändert vollständig im RAM (600K resident, vorher wie nachher): rclone hält die Cache-Datei offen, und der Kernel gab die Seiten nicht frei. Ohne den `fincore`-Beweis hätte ich eine „von der Platte"-Zahl veröffentlicht, die in Wahrheit aus dem RAM kam. Wer die Platten-Ebene wirklich isolieren will, muss den rclone-Prozess für die Messung beenden oder als root `echo 3 > /proc/sys/vm/drop_caches` verwenden.
+
+Die Einordnung dazu: Bei typischen Dokumentgrössen lohnt die Trennung kaum — heisse Lesungen durch den Mount lagen bei mir bei 19 bis 35 ms, weil die FUSE-Umwege dominieren, nicht das Speichermedium. Die Ebene, die das Nutzererlebnis bestimmt, bleibt Netz gegen lokal mit Faktor 60 bis 90. Aber behaupten darf man das erst, wenn die Messung die Ebenen nachweislich auseinanderhält.
+
+Dasselbe gilt übrigens für die generierten Testdateien: Direkt nach dem Erzeugen liegen sie vollständig im Page-Cache. Für die Upload-Messung ist das egal (der Engpass ist das Netz) — wer aber lokale Lesewerte über sie erheben will, muss zuerst räumen.
+
+Zur laufenden Beobachtung gehört ausserdem der Blick auf den VFS-Cache nach jedem Schritt (`du -sh` auf das Cache-Verzeichnis, `find … -type f | wc -l`) und das rclone-Protokoll über `--log-file` samt `--log-level INFO`, in dem das Verdrängungsverhalten steht. Dort zeigte sich auch, dass das konfigurierte Cache-Limit weich ist: 4 MB konfiguriert, 12.7 MiB Spitzenwert, bis der minütliche Aufräumlauf griff.
+
+## Auf Anwendungsebene prüfen, nicht nur im Dateisystem
+
+Dass `ls` Dateien zeigt, heisst nicht, dass die Anwendung sie lesen kann — Benutzerrechte auf FUSE-Mounts sind ein eigenes Thema. Deshalb der Zugriff durch die Anwendung selbst, bei Django-Anwendungen wie Paperless über eine Shell im Container:
+
+```bash
+docker compose exec webserver python3 -c "
+import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','paperless.settings')
+import django; django.setup()
+from documents.models import Document
+d = Document.objects.first()
+print(os.path.exists(d.source_path), len(open(d.source_path,'rb').read()))
+"
+```
+
+Die härteste Prüfung liefert die Anwendung gleich mit: Paperless' `document_sanity_checker` liest jede Datei vollständig und vergleicht die Prüfsumme mit der Datenbank. „No issues detected" nach einem Lauf über den Cloud-Mount belegt, dass jede Datei bitgenau zurückkommt. Für den Schreibpfad gilt eine Eigenheit: Die Testdatei muss **einzigartig** sein, eine Kopie eines vorhandenen Dokuments weist Paperless als Duplikat ab.
+
+## Ausfälle hart simulieren — und die Wiederherstellung beweisen
+
+Ein Ausfalltest, der nur den Dienst sauber stoppt, testet nichts. Hart heisst: den rclone-Prozess töten, den Mount aushängen, und dann vergleichen, was Host und Anwendung jeweils sehen:
+
+```bash
+pkill -f "rclone mount" ; fusermount3 -u /pfad/zum/mount
+docker compose exec webserver ls /usr/src/paperless/media/documents/originals
+```
+
+Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu rclone in Docker](/blog/rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
+
+Ebenso wichtig: prüfen, was **ohne** Cloud noch funktioniert. Bei entferntem Mount liefen Dokumentliste, Volltextsuche und Vorschaubilder unverändert — der erkannte Text lag mit knapp 244'000 Zeichen für ein Testdokument in der Datenbank. Nur das Öffnen der Originaldatei schlug fehl. Solche Negativproben gehören in jedes Testprotokoll, weil sie zeigen, welcher Schaden ein Ausfall wirklich anrichtet.
+
+## Eine Mess-Falle zum Schluss
+
+Wer Protokolle mit `grep` nach Fehlercodes durchsucht, sollte das Muster präzise wählen. Meine Suche nach `422` lieferte 39 vermeintliche Treffer — tatsächlich hatte sie harmlose Grössenangaben wie `422504 bytes` in Aufräummeldungen gefunden. Ein Wortgrenzen-Muster (`grep -E '\b422\b'`) oder die Suche nach der vollständigen Fehlerzeile erspart die Phantomjagd.
+
+## Quellen
+
+1.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — der Sanity-Checker und die übrigen Verwaltungsbefehle, die hier als Prüfwerkzeuge dienten.
+
+2.  [rclone mount](https://rclone.org/commands/rclone_mount/) — die VFS-Cache-Modi und Protokolloptionen, deren Verhalten hier vermessen wurde.
+
+3.  [PDF 1.7 Referenz (Adobe)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf) — die Struktur aus Objekten, Content-Streams und xref-Tabelle, die der Generator direkt schreibt.
+
+----
+
+# Paperless-ngx mit wenig Speicherplatz betreiben: Dokumente zu Clouddienst auslagern
+
+URL: https://rafaelpfister.ch/blog/paperless-dokumente-proton-drive-auslagern
+Datum: 2026-07-25
+
+Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses Verzeichnis wächst mit jedem Scan. Dabei braucht Paperless die Dateien im Alltag kaum: Die Suche läuft gegen die Datenbank, die Liste zeigt Vorschaubilder, und die eigentliche Datei wird erst beim Öffnen gelesen. Also habe ich getestet, ob sich die Ablage in einen Clouddienst verlagern lässt — mit rclone, so wie es Plex-Nutzer seit Jahren mit Mediensammlungen machen.
+
+Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Tiefen — Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik — stehen in eigenen Artikeln, die am Ende verlinkt sind.
+
+## Das Prinzip: heiss bleibt lokal, kalt geht in die Cloud
+
+| Bestandteil | Ort | Warum |
+|---|---|---|
+| Datenbank (enthält den OCR-Text) | lokal | braucht echtes Locking |
+| Suchindex, Vorschaubilder | lokal | ständige Zugriffe |
+| **Dokumentdateien** | **Cloud** | werden selten gelesen |
+| Cache (zuletzt geöffnete Dokumente) | lokal, begrenzt | wiederholte Zugriffe bleiben schnell |
+
+Eine Stolperfalle vorweg: In Paperless ist das Verzeichnis `archive/` **nicht** das kalte Archiv, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird — trotz des Namens die heisseste Datei im System. Kalt ist `originals/`. Wer maximal sparen will, schaltet die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
+
+Paperless-ngx bringt übrigens keine eigene Cloud-Anbindung mit — kein S3, kein `django-storages`. Ein Dateisystem-Mount über rclone ist derzeit der einzige Weg, und der funktioniert mit jedem der über 70 von rclone unterstützten Dienste. Proton Drive war meine Testwahl wegen der Ende-zu-Ende-Verschlüsselung; ein S3-kompatibler Speicher ist die robustere Alternative.
+
+## Was der Test ergeben hat
+
+Getestet mit einer isolierten Paperless-Instanz, 40 generierten Test-PDFs (13.9 MB) und einem dedizierten Proton-Konto:
+
+| Vorgang | Ergebnis |
+|---|---|
+| Dokument zum ersten Mal öffnen (aus der Cloud) | ~1.8 s |
+| Dasselbe Dokument erneut öffnen (aus dem Cache) | ~20 ms |
+| Neues Dokument aufnehmen, bis es in der Cloud liegt | ~20 s |
+| Dokumentliste, Volltextsuche | 39 ms / 272 ms — funktioniert auch **ohne** Cloud-Verbindung |
+| Integritätsprüfung (Prüfsumme jeder Datei) | bestanden, keine Abweichung |
+| Ausfall des Mounts | Selbstheilung ohne Paperless-Neustart, verifiziert |
+
+Der lokale Speicherbedarf ist damit von der Grösse des Archivs entkoppelt: Die Sammlung darf wachsen, die Platte nicht.
+
+## So richten Sie es ein
+
+Die komplette Konfiguration liegt als Vorlage auf GitHub: [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage). Auf dem Server:
+
+```bash
+git clone https://github.com/pfstr/paperless-cloud-storage.git
+cd paperless-cloud-storage
+sudo ./setup.sh      # einmalig, bereitet den Host vor (einziger Root-Schritt)
+./wizard.sh          # geführt: Anbieter wählen, Zugangsdaten, Rundlauf-Test
+```
+
+Der Wizard fragt den Clouddienst ab (Proton, S3, Backblaze B2, WebDAV, SFTP — oder „Not in the list" für jeden anderen rclone-Dienst), prüft die Verbindung mit einem echten Hoch- und Runterlade-Test und startet den Storage-Container. Danach:
+
+- **Neuinstallation:** `docker compose -f paperless.yml up -d` — fertig.
+- **Bestehende Paperless-Instanz:** Datenbank und Einstellungen bleiben unangetastet; die Anleitung [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) beschreibt Upload der Bestandsdokumente und die eine nötige Änderung an Ihrer Compose-Datei.
+
+Ein bewusst gesetzter Verzicht: Es gibt **kein Webinterface**. Wir hatten rclones Web-GUI im Einsatz — SSH-Tunnel, CORS und flüchtige Mounts machten sie schlimmer als die Kommandozeile, die sie ersetzen sollte. Drei Fragen im Terminal sind schneller.
+
+## Die vier Regeln für den stabilen Betrieb
+
+Die Vorlage setzt sie alle um; wer selbst baut, sollte sie kennen:
+
+1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
+2. **Paperless anhalten, wenn der Mount fehlt** — sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, die der zurückkehrende Mount unsichtbar überdeckt. Ein Watchdog-Skript liegt in der Vorlage bei.
+3. **Ein Konto, das sich unbeaufsichtigt anmelden kann** — bei Proton heisst das: den TOTP-Schlüssel in der rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
+4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`) — die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.
+
+## Grenzen, die bleiben
+
+Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist — stirbt die Maschine genau dann, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Langzeitdaten aus dem Dauerbetrieb fehlen noch — die Vorlage ist als experimentell gekennzeichnet.
+
+Wie die Messwerte zustande kamen, welche Ausfälle simuliert wurden und wie sich so ein Aufbau überhaupt seriös testen lässt, steht im Methodik-Artikel: [Cloud-Mounts testen mit generierten PDFs](/blog/cloud-mount-testen-dummy-pdfs).
+
+## Fazit
+
+Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagstauglich: knapp zwei Sekunden beim ersten Öffnen, danach Cache-Geschwindigkeit, Suche und Oberfläche bleiben cloud-unabhängig, und der Aufbau heilt sich nach Ausfällen selbst. Wer dagegen auf einem normal dimensionierten Server nur ein paar Gigabyte sparen will, sollte nachrechnen — in meinem Fall belegte die gesamte Ablage 71 MB, das Betriebssystem mehrere Gigabyte. Der Gewinn liegt nicht im sofort gesparten Platz, sondern darin, dass der Bestand wachsen darf, ohne dass die Platte mitwachsen muss.
+
+## Quellen
+
+1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage) — die Vorlage aus diesem Artikel: setup.sh, wizard.sh, Compose-Dateien, Watchdog und Retrofit-Anleitung.
+
+2.  [rclone: Overview of cloud storage systems](https://rclone.org/overview/) — die über 70 unterstützten Dienste und ihre Fähigkeiten im Vergleich.
+
+3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/) — `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` und die übrigen genutzten Einstellungen.
+
+4.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — Sanity-Checker, Export und Import sowie die geplanten Hintergrundaufgaben.
+
+----
+
 # Verwirrung um die Midea v2 Cloud-API: Ein Versuch Klarheit in den API-Dschungel zu bringen
 
 URL: https://rafaelpfister.ch/blog/midea-v2-cloud-api-portasplit-home-assistant
@@ -332,11 +778,6 @@ Die nüchterne Schlussfolgerung lautet deshalb:
 
 URL: https://rafaelpfister.ch/blog/midea-portasplit-home-assistant
 Datum: 2026-07-24
-
-<aside class="article-update">
-  <p class="article-update__label">Nachtrag vom 25. Juli 2026</p>
-  <p>Dieser Artikel gibt die Warnung des Projekts <code>Midea AC LAN</code> als angekündigte Abschaltung wieder. Als Tatsachenbehauptung war das zu stark formuliert: Eine offizielle Ankündigung von Midea mit Termin ist nicht dokumentiert, und im Juni 2026 lieferte der betreffende Token-Endpunkt wieder gültige Zugangsdaten, nachdem der Request der Community-Bibliothek an das Format der offiziellen App angepasst worden war. Was hinter den verschiedenen Versionsnummern der Midea-Schnittstellen steckt, ordnet der <a href="/blog/midea-v2-cloud-api-portasplit-home-assistant">Nachtrag zur v2 Cloud-API</a> ein. Die Empfehlung, Token und Key zu sichern, bleibt davon unberührt.</p>
-</aside>
 
 <aside class="article-update">
   <p class="article-update__label">Was PortaSplit-Besitzer jetzt tun sollten</p>
@@ -2696,6 +3137,452 @@ Zur Logik der Ausführung der einzlnen Matchers und Mailets findet sich folgende
 
 ----
 
+# Testing cloud storage as a document store: generated PDFs, measurement method and outage simulation
+
+URL: https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs
+Datum: 2026-07-26
+
+Before a document management system moves its store into a cloud service, you want to know: how slow does opening get? Does the setup survive an outage? And are the files still bit-for-bit intact afterwards? This article documents the measurement methodology behind my [Paperless cloud test](/en/blog/offloading-paperless-documents-to-proton-drive) — as a template for your own tests. These are deliberately single measurements on one concrete machine: they show orders of magnitude, not benchmarks.
+
+## Generate test documents instead of uploading real ones
+
+Real private documents have no place in a test environment — especially since the cloud credentials sit on the server in such a setup. For transfer measurements only the size distribution matters anyway, not the content.
+
+The following script writes PDFs directly in PDF syntax, without a single library. Every page gets a block of random text as a content stream; the page count drives the file size. The **fixed random seed** makes the distribution reproducible, and the **real text layer** ensures the document management system skips OCR — the storage path is what should be measured, not Tesseract:
+
+```python
+import os, random
+random.seed(42)                      # fixed seed: reproducible distribution
+outdir = "dummy"
+os.makedirs(outdir, exist_ok=True)
+WORDS = ("Invoice Receipt Contract Customer Amount Date Position Quantity "
+         "Price Total Tax Net Gross Delivery Payment Account Reference").split()
+
+def build(idx, npages):
+    objects, kids, objnum = {}, [], 4
+    for p in range(1, npages + 1):
+        lines = ["Test document %03d - page %d of %d" % (idx, p, npages)]
+        for _ in range(45):
+            lines.append(" ".join(random.choice(WORDS) for _ in range(11))
+                         + " %d" % random.randint(100, 99999))
+        parts = ["BT /F1 11 Tf 40 800 Td 14 TL"]
+        parts += ["(%s) Tj T*" % l for l in lines]
+        parts.append("ET")
+        stream = "\n".join(parts).encode("latin-1")
+        cnum, pnum = objnum, objnum + 1
+        objnum += 2
+        objects[cnum] = (b"<< /Length " + str(len(stream)).encode()
+                         + b" >>\nstream\n" + stream + b"\nendstream")
+        objects[pnum] = ("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+                         "/Resources << /Font << /F1 3 0 R >> >> "
+                         "/Contents %d 0 R >>" % cnum).encode()
+        kids.append(pnum)
+    objects[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
+    objects[2] = ("<< /Type /Pages /Kids [%s] /Count %d >>"
+                  % (" ".join("%d 0 R" % k for k in kids), npages)).encode()
+    objects[3] = b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+    mx = max(objects)
+    buf, off = bytearray(b"%PDF-1.4\n"), {}
+    for n in range(1, mx + 1):
+        off[n] = len(buf)
+        buf += ("%d 0 obj\n" % n).encode() + objects[n] + b"\nendobj\n"
+    x = len(buf)
+    buf += ("xref\n0 %d\n" % (mx + 1)).encode() + b"0000000000 65535 f \n"
+    for n in range(1, mx + 1):
+        buf += ("%010d 00000 n \n" % off[n]).encode()
+    buf += ("trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
+            % (mx + 1, x)).encode()
+    return bytes(buf)
+
+for i in range(1, 41):
+    pages = random.choice([10, 25, 40, 60, 90, 130])
+    open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
+```
+
+The result is 40 files of 45 to 596 KB, 13.9 MB in total — a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
+
+The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data` — otherwise the container restarts in an endless loop.
+
+## Where cold and warm live in this system
+
+Before measuring, it must be clear **which cache layers** sit between the application and the cloud — otherwise you measure something other than what you claim. With an rclone mount using `--vfs-cache-mode full` there are three:
+
+| Layer | Location | What lives there |
+|---|---|---|
+| Cloud | at the provider | the only complete truth |
+| VFS cache | local disk (`--cache-dir`) | copies of recently read files, bounded by `--vfs-cache-max-size` |
+| Page cache | RAM | held transparently by the kernel — both for the file as read through the FUSE mount and for the VFS copy itself |
+
+**Cold** in this setup means: not in the VFS cache, the file comes over the network. **Warm** means: the VFS copy sits locally — and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
+
+```bash
+S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
+S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
+```
+
+In the test: 1765 ms cold versus 19 to 24 ms warm. That boundary is also the one that matters for the cloud question — but named precisely, "warm" here is "local, RAM-assisted", not "from disk".
+
+## Measurement hygiene: drop the page cache — and prove the drop
+
+Whoever wants to separate the local layers (RAM versus disk) has to clear the page cache before measuring and **prove it**. The usual way is `sync` followed by `vmtouch -e`, with `fincore` from util-linux as the check:
+
+```bash
+sync
+vmtouch -e file.pdf           # evict this file's pages from RAM
+fincore file.pdf              # proof: RES must be 0
+```
+
+If `vmtouch` is not installed, three lines without any extra package do the job:
+
+```python
+import os
+fd = os.open("file.pdf", os.O_RDONLY)
+os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+os.close(fd)
+```
+
+Two peculiarities of this setup make the proof mandatory rather than optional:
+
+**Eviction has to hit every path to the same file** — the file as the mount presents it *and* the VFS copy under `--cache-dir` (there in the `vfs/` subdirectory, not `vfsMeta/` — those are just metadata).
+
+**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED` — unchanged, 600K resident before and after: rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. Whoever really wants to isolate the disk layer has to stop the rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
+
+The perspective that comes with it: at typical document sizes the separation barely pays off — hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
+
+The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant (the bottleneck is the network) — but whoever wants to derive local read numbers from them has to evict first.
+
+Ongoing observation additionally includes a look at the VFS cache after every step (`du -sh` on the cache directory, `find … -type f | wc -l`) and the rclone log via `--log-file` and `--log-level INFO`, which records the eviction behaviour. It also revealed that the configured cache limit is soft: 4 MB configured, 12.7 MiB peak until the once-a-minute cleanup pass kicked in.
+
+## Verify at application level, not just in the file system
+
+That `ls` shows files does not mean the application can read them — user permissions on FUSE mounts are a topic of their own. Hence the access through the application itself; for Django applications like Paperless via a shell in the container:
+
+```bash
+docker compose exec webserver python3 -c "
+import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','paperless.settings')
+import django; django.setup()
+from documents.models import Document
+d = Document.objects.first()
+print(os.path.exists(d.source_path), len(open(d.source_path,'rb').read()))
+"
+```
+
+The hardest check ships with the application: Paperless' `document_sanity_checker` reads every file in full and compares its checksum against the database. "No issues detected" after a run across the cloud mount proves that every file comes back bit for bit. One quirk applies to the write path: the test file must be **unique** — Paperless rejects a copy of an existing document as a duplicate.
+
+## Simulate outages hard — and prove the recovery
+
+An outage test that merely stops the service cleanly tests nothing. Hard means: kill the rclone process, unmount, and then compare what host and application each see:
+
+```bash
+pkill -f "rclone mount" ; fusermount3 -u /path/to/mount
+docker compose exec webserver ls /usr/src/paperless/media/documents/originals
+```
+
+Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected` — the details are in the [article on rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
+
+Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged — the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
+
+## One measurement trap to close
+
+Whoever greps logs for error codes should choose the pattern precisely. My search for `422` returned 39 supposed hits — in fact it had matched harmless size figures such as `422504 bytes` in cleanup messages. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error line spares the phantom hunt.
+
+## Sources
+
+1.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — the sanity checker and the other management commands that served as verification tools here.
+
+2.  [rclone mount](https://rclone.org/commands/rclone_mount/) — the VFS cache modes and logging options whose behaviour was measured here.
+
+3.  [PDF 1.7 reference (Adobe)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf) — the structure of objects, content streams and the xref table that the generator writes directly.
+
+----
+
+# rclone mounts inside Docker containers: propagation, AppArmor and the error \"Transport endpoint is not connected\"
+
+URL: https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container
+Datum: 2026-07-26
+
+An rclone mount is supposed to run in a Docker container but be usable outside of it: on the host and in other containers that consume the files. That sounds like one line of compose — in reality it hides three traps, two of which are barely documented. This article shows all three with the concrete error signatures, as they occurred during a hands-on test on Ubuntu 25.10 (kernel 6.17, Docker 29.6).
+
+The use case behind it: a [document store for Paperless-ngx in a cloud service](/en/blog/offloading-paperless-documents-to-proton-drive). The findings apply to any containerised FUSE mount, though, including sshfs and similar tools.
+
+## Trap 1: Docker silently downgrades rshared
+
+For a mount from the container to reach the host, the bind needs `rshared` propagation:
+
+```yaml
+    volumes:
+      - type: bind
+        source: /srv/storage/media
+        target: /data
+        bind:
+          propagation: rshared
+```
+
+What the documentation glosses over: `rshared` only works if the bind source on the host is **itself a mount point with shared propagation**. A plain directory does not qualify — and Docker then reports no error, but silently downgrades the propagation. It only becomes visible in `/proc/self/mountinfo` inside the container:
+
+```text
+1938 2077 8:2 /srv/storage/media /data rw,relatime master:1 - ext4 /dev/sda2 rw
+```
+
+`master:1` means slave propagation: mounts come in from the host, but never out. Correct would be `shared:N`. The fix is a bind of the source onto itself, marked shared:
+
+```bash
+mount --bind /srv/storage/media /srv/storage/media
+mount --make-shared /srv/storage/media
+```
+
+To survive a reboot, this belongs in a systemd unit with `Before=docker.service`. Check: `findmnt -no PROPAGATION /srv/storage/media` must print `shared`.
+
+## Trap 2: the AppArmor profile for fusermount3
+
+With propagation fixed, the next surprise followed. The mount onto the shared path kept failing:
+
+```text
+NOTICE: mount helper error: fusermount3: mount failed: Permission denied
+CRITICAL: Fatal error: failed to mount FUSE fs: fusermount: exit status 1
+```
+
+Remarkably, container privileges were **not** the cause. `CAP_SYS_ADMIN`, `/dev/fuse`, AppArmor `unconfined` for the container, even `--privileged` — the error stayed identical. At the same time a tmpfs mount worked fine on the very same path, and the FUSE mount worked on other paths. The resolution sat in the kernel audit log:
+
+```text
+audit: type=1400 apparmor="DENIED" operation="mount" class="mount"
+  info="failed mntpnt match" error=-13 profile="fusermount3"
+  name="/data/documents/originals/" fstype="fuse.rclone"
+```
+
+Ubuntu ships an **AppArmor profile for the `fusermount3` binary** that only permits FUSE mounts on an allow-list of mount point patterns — and this profile also applies to the fusermount3 **inside the container**, matched against the path as the container sees it:
+
+```text
+mount fstype=@{fuse_types} ... -> @{HOME}/**/,
+mount fstype=@{fuse_types} ... -> /mnt/{,**/},
+mount fstype=@{fuse_types} ... -> /media/**/,
+mount fstype=@{fuse_types} ... -> /tmp/**/,
+```
+
+`/data` is not on the list, `/srv` is not either. The container running unconfined does not help: the profile attaches to the executable, not to the container.
+
+The way out exploits the fact that only fusermount3 is subject to the profile, while a plain `mount --bind` is not: mount FUSE on an **allowed** path and publish it from there via bind onto the shared path.
+
+```sh
+rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode full &
+# wait until the mount answers, then:
+mount --bind /mnt/inner/documents /data/documents
+```
+
+The bind is a regular mount(2) call and propagates like any other through the shared path to the host — verified all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
+
+## Trap 3: consumers cling to dead mounts
+
+The third trap concerns the other side. If the rclone process dies and the mount is re-created, the host sees it immediately — a container that binds the path the ordinary way does not:
+
+```text
+ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
+```
+
+Docker uses `rprivate` for bind mounts by default: a mount created on the host **after** the container started never reaches its mount namespace. The container stays stuck on the dead FUSE mount until it is recreated. The fix costs one line:
+
+```yaml
+    volumes:
+      - type: bind
+        source: /srv/storage/media
+        target: /usr/src/app/media
+        bind:
+          propagation: rslave
+```
+
+With `rslave` the host passes new mount events into the container. In the test, the consumer saw all files again after a hard-killed and re-created mount **without a restart of its own** — the restart counter stayed at zero.
+
+## Self-healing as a pattern
+
+The three building blocks combine into a robust overall pattern that needs no watchdog daemon:
+
+1. The mount container checks its mounts in a loop. If one stops answering, it exits with an error code.
+2. `restart: unless-stopped` makes Docker restart the container.
+3. At startup the container first clears **orphaned mounts from its previous life** — a dead bind on the target path would otherwise block republishing, and an unprivileged user cannot remove it from the host. Inside the container it works, and the umount propagates outwards:
+
+```sh
+while grep -q " /data/documents " /proc/self/mountinfo; do
+    umount -l /data/documents 2>/dev/null || break
+done
+```
+
+4. Then mount and publish normally; consumers with `rslave` pick the fresh mount up by themselves.
+
+In the test the complete chain — rclone process killed, detection, container restart, cleanup, remount, republish — took 160 seconds, with the consumer container noticing nothing beyond a short gap.
+
+For perspective: whoever runs the mount **on the host** via systemd avoids traps 1 and 2 entirely and only needs `rslave` on the consumer side. The container route pays off when the host should stay free of rclone installations or several mounts are managed centrally — then there is no way around the three traps.
+
+## Sources
+
+1.  [Docker: Bind mounts — configure bind propagation](https://docs.docker.com/engine/storage/bind-mounts/#configure-bind-propagation) — the propagation modes rprivate, rslave and rshared and their default behaviour.
+
+2.  [Kernel documentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) — the Linux kernel's mount propagation that Docker's bind options build on.
+
+3.  [rclone mount](https://rclone.org/commands/rclone_mount/) — VFS cache modes, --allow-other and the limits of the FUSE mount.
+
+4.  [AppArmor documentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/) — how profiles attach to executables; the fusermount3 profile lives at /etc/apparmor.d/fusermount3.
+
+----
+
+# Proton Drive on Linux: the state of the official client, the rclone backend and the SDK
+
+URL: https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status
+Datum: 2026-07-26
+
+Proton Drive has had sync clients for Windows and macOS since 2023 — Linux came away empty. Whoever wants to use Proton Drive on a Linux desktop, let alone on a server, navigates a patchwork of community tooling, an official SDK in preview and announcements. This article sorts out the state as of July 2026 — from hands-on experience, since I have just tested the rclone backend extensively [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-proton-drive).
+
+## The official client: announced, no date
+
+In June 2026 Proton confirmed for the first time that a Linux client is actually in development — "from the ground up" on the new, unified SDK, with the same architecture as the Windows and macOS applications. There is no date and no beta; the roadmap mentions the "highly anticipated Linux app" without a time frame.
+
+Important for perspective: this will be a **desktop sync client**. It solves the desk problem; for server use cases — a service reading and writing files straight from Proton Drive — a sync client is the wrong tool: it keeps a full local copy, which is exactly what you want to avoid when disk space is the constraint.
+
+## What works today: the rclone backend
+
+The workhorse on Linux has been rclone with its `protondrive` backend for years: copying, syncing and — uniquely — a **FUSE mount** that lets applications see the cloud as a directory. Two limitations belong in an honest description:
+
+**It is beta on a reverse-engineered API.** Proton does not document its Drive API publicly; the backend is built on reverse engineering. In my test it worked reliably but throttled rapid call sequences with inconsistent directory listings.
+
+**Unattended sign-in needs a trick.** Whoever feeds two-factor authentication a one-time code during setup sees the session end after about 35 minutes:
+
+```text
+422 POST https://drive-api.proton.me/auth/v4/2fa:
+Invalid credentials (Code=8002)
+```
+
+rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the rclone configuration — obscured via `rclone obscure`. rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: against leaked passwords the second factor keeps protecting unchanged; only against a compromise of the server it does not — and that case it never defended, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
+
+How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on rclone in containers](/en/blog/rclone-mount-inside-docker-container).
+
+## The SDK and its CLI: official, but not for everyone yet
+
+In parallel, Proton is rebuilding its applications on an **official SDK** (JavaScript and C#, with bindings for Swift and Kotlin). The repository is public, and recently a **command-line tool** appeared there — and its authentication model shows where things are heading:
+
+- `auth login` opens the browser; sign-in happens normally, **including two-factor authentication**
+- the session lands in the **operating system's secret store** (Keychain, Credential Manager, libsecret), renewed by the SDK itself
+- after that: list files, upload, check shares — with machine-readable JSON output
+
+No password on the command line, no TOTP secret in a configuration file. Exactly the model the rclone backend lacks. But: the CLI can **not mount file systems**, the browser login fits headless servers poorly, and Proton explicitly declares the SDK not yet production-ready for third parties — general availability is targeted for late 2026 to early 2027.
+
+## The real gap: machine credentials
+
+The core of the problem sits one level below client or SDK: **Proton has no machine credentials.** No app passwords, no service accounts, no scoped tokens. Every piece of automation — backup script, server mount, CI job — has to work with the account's full credentials.
+
+For comparison: with S3-compatible storage, access key pairs are the norm — revocable and restrictable to buckets or prefixes. Google and Microsoft have app passwords and service accounts. With Proton it is all or nothing — whoever gives a server access to one folder gives it the whole account.
+
+In fairness: for an end-to-end encrypted service this is harder than for S3, because limited access would also have to mean limited key material. The SDK sessions show, however, that Proton masters such constructs — a session already is a derived, revocable credential. An official "machine token for exactly this folder, read-only" would be the single biggest step forward for server use, well ahead of any client.
+
+## Recommendation by use case
+
+| Use case | State as of July 2026 |
+|---|---|
+| Desktop sync on Linux | Wait for the announced client; until then rclone sync or the web interface |
+| Server backup (uploading files) | rclone `copy`/`sync` — works, factor in the beta status |
+| File-system mount for services | rclone `mount` with a stored TOTP secret and a dedicated account — the only way, [proven in practice](/en/blog/offloading-paperless-documents-to-proton-drive) |
+| Script automation with clean auth | Keep an eye on the SDK CLI; too early for production |
+
+The status quo in one sentence: Linux users carry Proton Drive today with community tooling that reaches surprisingly far — but the building blocks that would turn "works" into "built for this" are official mount support and machine credentials, and both are still outstanding.
+
+## Sources
+
+1.  [OMG Ubuntu: Proton Drive client is (finally) coming to Linux](https://www.omgubuntu.co.uk/2026/06/proton-drive-linux-client) — the June 2026 confirmation that the Linux client is in development, without a date.
+
+2.  [Proton: Product roadmaps for spring and summer 2026](https://proton.me/blog/2026-spring-summer-roadmaps) — the roadmap with the Linux client lacking a time frame and the SDK as the foundation of Proton's own apps.
+
+3.  [ProtonDriveApps/sdk on GitHub](https://github.com/ProtonDriveApps/sdk) — the public SDK repository including the CLI with browser login and session in the secret store.
+
+4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview) — Proton's own assessment: not yet production-ready for third-party applications.
+
+5.  [rclone: Proton Drive](https://rclone.org/protondrive/) — the backend including the beta notice and the `otp_secret_key` option for unattended sign-in.
+
+----
+
+# Running Paperless-ngx on little storage: offloading documents to a cloud service
+
+URL: https://rafaelpfister.ch/en/blog/offloading-paperless-documents-to-proton-drive
+Datum: 2026-07-25
+
+Paperless-ngx stores its documents in a local directory, and that directory grows with every scan. Yet Paperless barely needs the files day to day: search runs against the database, the list renders thumbnails, and the actual file is only read when opened. So I tested whether the store can be moved into a cloud service — with rclone, the way Plex users have been handling media collections for years.
+
+The result: **it works in both directions**, and the setup has shrunk to three commands. This article summarises what the test showed and how to set it up yourself. The technical depths — Docker mount propagation, AppArmor traps, two-factor authentication and the measurement methodology — live in their own articles, linked at the end.
+
+## The principle: hot stays local, cold goes to the cloud
+
+| Component | Location | Why |
+|---|---|---|
+| Database (holds the OCR text) | local | needs real locking |
+| Search index, thumbnails | local | constant access |
+| **Document files** | **cloud** | rarely read |
+| Cache (recently opened documents) | local, bounded | repeated access stays fast |
+
+One trap up front: in Paperless the `archive/` directory is **not** the cold archive — it holds the PDF/A version served on every view, despite its name the hottest file in the system. Cold is `originals/`. Whoever wants maximum savings turns the archive copy off entirely with `PAPERLESS_ARCHIVE_FILE_GENERATION=never`; full-text search is unaffected because the text lives in the database.
+
+Paperless-ngx ships no cloud storage support of its own, by the way — no S3, no `django-storages`. A file-system mount via rclone is currently the only way, and it works with any of the 70+ services rclone supports. Proton Drive was my test choice for its end-to-end encryption; an S3-compatible store is the more robust alternative.
+
+## What the test showed
+
+Tested with an isolated Paperless instance, 40 generated test PDFs (13.9 MB) and a dedicated Proton account:
+
+| Operation | Result |
+|---|---|
+| Opening a document for the first time (from the cloud) | ~1.8 s |
+| Opening the same document again (from the cache) | ~20 ms |
+| Consuming a new document until it sits in the cloud | ~20 s |
+| Document list, full-text search | 39 ms / 272 ms — works even **without** a cloud connection |
+| Integrity check (checksum of every file) | passed, no discrepancy |
+| Mount outage | self-healing without a Paperless restart, verified |
+
+Local storage demand is thereby decoupled from the size of the archive: the collection may grow, the disk does not have to.
+
+## How to set it up
+
+The complete configuration is available as a template on GitHub: [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage). On the server:
+
+```bash
+git clone https://github.com/pfstr/paperless-cloud-storage.git
+cd paperless-cloud-storage
+sudo ./setup.sh      # once, prepares the host (the only root step)
+./wizard.sh          # guided: pick provider, credentials, round-trip test
+```
+
+The wizard asks for your cloud service (Proton, S3, Backblaze B2, WebDAV, SFTP — or "Not in the list" for any other rclone backend), verifies the connection with a real upload/download test and starts the storage container. Then:
+
+- **New installation:** `docker compose -f paperless.yml up -d` — done.
+- **Existing Paperless instance:** database and settings stay untouched; the guide [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) covers uploading the existing documents and the one required change to your compose file.
+
+One deliberate omission: there is **no web interface**. We had rclone's web GUI in place — SSH tunnels, CORS and ephemeral mounts made it worse than the command line it was meant to replace. Three questions in the terminal are faster.
+
+## The four rules for stable operation
+
+The template implements all of them; whoever builds their own should know them:
+
+1. **`propagation: rslave`** on the Paperless container's media bind mount — otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [rclone mounts inside Docker containers](/en/blog/rclone-mount-inside-docker-container).
+2. **Stop Paperless while the mount is missing** — otherwise it consumes documents into a bare local directory that the returning mount then shadows invisibly. A watchdog script ships with the template.
+3. **An account that can sign in unattended** — for Proton that means storing the TOTP secret in the rclone configuration. Why this does not devalue two-factor authentication, and where Proton stands on Linux overall: [Proton Drive on Linux](/en/blog/proton-drive-on-linux-status).
+4. **Disable scheduled full-read tasks** (`PAPERLESS_SANITY_TASK_CRON=disable`) — the integrity check otherwise downloads the complete collection from the cloud regularly.
+
+## Limits that remain
+
+A freshly consumed document lives in the local cache for a few seconds until the upload completes — if the machine dies exactly then, the file is missing. The cache limit is soft and can be exceeded considerably during access bursts. And rclone's Proton backend is officially beta; under rapid API calls it showed throttling symptoms. Long-term data from continuous operation is still missing — the template is marked experimental.
+
+How the measurements came about, which outages were simulated and how to test such a setup seriously at all: [Testing cloud mounts with generated PDFs](/en/blog/testing-cloud-mounts-with-generated-pdfs).
+
+## Conclusion
+
+Paperless-ngx on a small disk with a cloud store is feasible and usable day to day: just under two seconds on first open, cache speed after that, search and interface stay cloud-independent, and the setup heals itself after outages. Whoever merely wants to save a few gigabytes on a normally sized server should do the maths — in my case the entire store occupied 71 MB while the operating system took several gigabytes. The gain is not the space saved immediately, but that the collection may grow without the disk having to grow with it.
+
+## Sources
+
+1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage) — the template from this article: setup.sh, wizard.sh, compose files, watchdog and retrofit guide.
+
+2.  [rclone: Overview of cloud storage systems](https://rclone.org/overview/) — the 70+ supported services and their capabilities compared.
+
+3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/) — `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` and the other settings used.
+
+4.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — sanity checker, export and import, and the scheduled background tasks.
+
+----
+
 # Confusion Around the Midea v2 Cloud API: An Attempt to Bring Clarity to the API Jungle
 
 URL: https://rafaelpfister.ch/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant
@@ -3470,11 +4357,6 @@ From a security perspective, the integration is defensible as long as a few grou
 
 URL: https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integration
 Datum: 2026-07-24
-
-<aside class="article-update">
-  <p class="article-update__label">Update, 25 July 2026</p>
-  <p>This article presented the warning from the <code>Midea AC LAN</code> project as an announced shutdown. As a statement of fact that was too strong: no official announcement from Midea with a date is documented, and in June 2026 the token endpoint in question started delivering valid credentials again, after the community library's request was adapted to match the format of the official app. What lies behind the different version numbers of the Midea interfaces is covered in the <a href="/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant">update on the v2 cloud API</a>. The recommendation to back up token and key remains unaffected.</p>
-</aside>
 
 <aside class="article-update">
   <p class="article-update__label">What PortaSplit owners should do now</p>

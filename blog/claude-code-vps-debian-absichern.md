@@ -3,20 +3,12 @@ title: "Claude Code auf dem eigenen VPS betreiben und den Server richtig absiche
 navTitle: "VPS für Claude"
 description: "Warum ein eigener VPS eine solide Basis für Claude Code ist, und die vollständige Absicherungs-Checkliste dazu: eigener Benutzer, SSH nur mit passphrasengeschützten Ed25519-Schlüsseln, gehärtete sshd-Konfiguration, restriktive Firewall, Prüfung der Angriffsfläche und Zugriff vom iPhone."
 date: "2026-07-21"
-kategorie: "Linux & VPS"
+kategorie: "Claude"
 timeToRead: "12 min to read"
 themen:
-  - "linux-vps"
+  - "claude"
 slug: "claude-code-vps-debian-absichern"
 url: "https://rafaelpfister.ch/blog/claude-code-vps-debian-absichern"
-aiPrompt: |
-  Du bist mein Linux-Server-Assistent. Hilf mir, einen frisch installierten Debian-13-VPS Schritt für Schritt abzusichern:
-  1. System vollständig aktualisieren und einen eigenen Benutzer mit sudo-Rechten anlegen.
-  2. SSH-Login auf passphrasengeschützte Ed25519-Schlüssel umstellen, Root- und Passwort-Login deaktivieren.
-  3. SSH auf einen hohen Port legen (systemd-Socket-Aktivierung beachten) und die Konfiguration mit `sshd -t` prüfen, bevor ich neu lade.
-  4. Firewall so setzen, dass eingehend nur der SSH-Port offen ist (Default DROP), ausgehend erlaubt.
-  5. Mit `ss -lntup` und `systemctl --failed` prüfen, welche Dienste öffentlich lauschen und ob etwas fehlschlägt.
-  Frag mich vor jedem Schritt, der mich aussperren könnte, und lass meine bestehende Sitzung offen, bis der neue Zugang getestet ist.
 ---
 
 Claude Code lokal auf dem Arbeitsrechner zu starten ist bequem, bis der Laptop zugeklappt wird, das WLAN wechselt oder ein länger laufender Task mitten in der Nacht abbricht. Ein eigener VPS löst das: eine Sitzung, die durchläuft, erreichbar vom PC und vom iPhone, mit voller Kontrolle darüber, welche Daten dort liegen. Der Preis dafür ist, dass der Server ab der ersten Minute öffentlich erreichbar und damit Ziel automatisierter Scans ist. Der Betrieb lohnt sich trotzdem, und ein frisch installierter Debian-Server lässt sich so absichern, dass er diesem Dauerbeschuss standhält.

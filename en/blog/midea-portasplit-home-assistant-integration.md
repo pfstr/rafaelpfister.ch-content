@@ -14,19 +14,7 @@ translationOf: "midea-portasplit-home-assistant"
 image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
 slug: "midea-portasplit-home-assistant-integration"
 url: "https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integration"
-aiPrompt: |
-  Explain the token architecture of the local Midea Home Assistant integrations:
-  1. Why does local control of a V3 device need a token and key at all?
-  2. How does the community integration obtain these values, and why does that run through the Midea cloud?
-  3. What does Midea shutting down these cloud token interfaces mean for devices already set up versus new ones?
-  4. Why can't the token simply be computed locally?
-  Put into context what a stored token and key make possible in practice and how to protect them.
 ---
-
-<aside class="article-update">
-  <p class="article-update__label">Update, 25 July 2026</p>
-  <p>This article presented the warning from the <code>Midea AC LAN</code> project as an announced shutdown. As a statement of fact that was too strong: no official announcement from Midea with a date is documented, and in June 2026 the token endpoint in question started delivering valid credentials again, after the community library's request was adapted to match the format of the official app. What lies behind the different version numbers of the Midea interfaces is covered in the <a href="/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant">update on the v2 cloud API</a>. The recommendation to back up token and key remains unaffected.</p>
-</aside>
 
 <aside class="article-update">
   <p class="article-update__label">What PortaSplit owners should do now</p>
