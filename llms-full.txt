@@ -140,7 +140,7 @@ Wer rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beide
 
 ----
 
-# Proton Drive unter Linux: Was heute auf Desktop und Server funktioniert
+# Proton Drive unter Linux: Stand der Dinge im Juli 2026
 
 URL: https://rafaelpfister.ch/blog/proton-drive-linux-status
 Datum: 2026-07-26
