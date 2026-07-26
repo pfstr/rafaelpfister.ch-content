@@ -161,20 +161,15 @@ Unter Linux ist rclone mit seinem `protondrive`-Backend derzeit das vielseitigst
 
 **Es ist Beta auf einer nachgebauten API.** Proton dokumentiert seine Drive-API nicht öffentlich; das Backend basiert auf Reverse Engineering. Im Test funktionierte es zuverlässig, drosselte aber bei schnellen Aufruffolgen mit inkonsistenten Verzeichnislisten.
 
-**Die unbeaufsichtigte Anmeldung braucht einen Kniff.** Wer die Zwei-Faktor-Authentifizierung bei der Einrichtung mit einem Einmalcode füttert, erlebt nach etwa 35 Minuten das Ende der Session:
+**Für den unbeaufsichtigten Betrieb fragt rclone nach dem TOTP-Schlüssel.** Der Konfigurationsassistent bezeichnet das Feld als `otp_secret_key`. Gemeint ist der dauerhafte Schlüssel aus der 2FA-Einrichtung, nicht der sechsstellige Code, den eine Authenticator-App gerade anzeigt. rclone speichert diesen Wert verschleiert und erzeugt daraus bei jeder Anmeldung selbst einen gültigen TOTP-Code.
 
-```text
-422 POST https://drive-api.proton.me/auth/v4/2fa:
-Ungültige Anmeldedaten (Code=8002)
-```
+Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung abschliessen. Die nächste erneute Authentifizierung scheitert jedoch mit Fehler 8002, weil rclone denselben Code nicht noch einmal verwenden kann.
 
-rclone versucht dann, sich mit dem bereits verbrauchten Einmalcode neu anzumelden. Für den unbeaufsichtigten Betrieb muss der dauerhafte TOTP-Schlüssel aus der 2FA-Einrichtung als `otp_secret_key` in der rclone-Konfiguration hinterlegt werden, verschleiert mit `rclone obscure`. rclone erzeugt daraus bei jeder Anmeldung einen aktuellen Code.
-
-Der zweite Faktor schützt damit weiterhin gegen ein isoliert gestohlenes Passwort. Wird jedoch der Server kompromittiert, liegen dort sowohl Passwort als auch TOTP-Schlüssel. Für jeden Dienst sollte deshalb ein **dediziertes Proton-Konto** verwendet werden.
+Damit bleibt das Konto gegen ein isoliert gestohlenes Passwort geschützt. Ein kompromittierter Server gibt jedoch Passwort und TOTP-Schlüssel preis. Für automatisierte Zugriffe empfiehlt sich deshalb ein **dediziertes Proton-Konto**.
 
 Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu rclone in Containern](/blog/rclone-mount-in-docker-container).
 
-## Das offizielle SDK zeigt den künftigen Weg
+## Das offizielle SDK zeigt, wohin die Entwicklung geht
 
 Parallel stellt Proton seine Anwendungen auf ein **offizielles SDK** für JavaScript und C# mit Bindings für Swift und Kotlin um. Das öffentliche Repository enthält auch ein Kommandozeilenwerkzeug. Dessen Anmeldemodell ist sauberer als das des rclone-Backends:
 
