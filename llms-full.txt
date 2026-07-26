@@ -3071,7 +3071,7 @@ If you run rclone directly **on the host** via systemd, you avoid the first two 
 
 ----
 
-# Proton Drive on Linux: what actually works today on desktop and server
+# Proton Drive on Linux: status as of July 2026
 
 URL: https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status
 Datum: 2026-07-26

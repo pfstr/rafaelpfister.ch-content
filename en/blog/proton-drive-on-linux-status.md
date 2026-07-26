@@ -1,5 +1,5 @@
 ---
-title: "Proton Drive on Linux: what actually works today on desktop and server"
+title: "Proton Drive on Linux: status as of July 2026"
 navTitle: "Proton Drive & Linux"
 description: "A Linux client has been announced but is not yet available. Until then, rclone and the new SDK remain the options. Still missing for servers: scoped machine credentials."
 date: "2026-07-26"
