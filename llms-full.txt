@@ -3087,20 +3087,15 @@ On Linux, rclone with its `protondrive` backend is currently the most versatile 
 
 **It is beta on a reverse-engineered API.** Proton does not document its Drive API publicly; the backend is built on reverse engineering. In my test it worked reliably but throttled rapid call sequences with inconsistent directory listings.
 
-**Unattended sign-in needs a trick.** Feed two-factor authentication a one-time code during setup and the session ends after about 35 minutes:
+**For unattended operation, rclone asks for the TOTP secret.** The configuration wizard labels the field `otp_secret_key`. That means the permanent secret from the 2FA setup, not the six-digit code an authenticator app currently displays. rclone stores this value obscured and generates a valid TOTP code from it itself at every sign-in.
 
-```text
-422 POST https://drive-api.proton.me/auth/v4/2fa:
-Invalid credentials (Code=8002)
-```
+Anyone who accidentally enters a current one-time code can complete the first sign-in. The next re-authentication, however, fails with error 8002, because rclone cannot reuse the same code a second time.
 
-rclone then tries to re-authenticate with the one-time code that has already been used. For unattended operation, the permanent TOTP secret from the 2FA setup must be stored as `otp_secret_key` in the rclone configuration, obscured with `rclone obscure`. rclone then generates a current code from it at every sign-in.
-
-The second factor still protects against a password stolen in isolation. If the server itself is compromised, however, both the password and the TOTP secret sit there. A **dedicated Proton account** should therefore be used for each service.
+That keeps the account protected against a password stolen in isolation. A compromised server, however, exposes both the password and the TOTP secret. A **dedicated Proton account** is therefore recommended for automated access.
 
 How such a mount behaves in Docker environments, including two undocumented traps, is covered in the [dedicated article on rclone in containers](/en/blog/rclone-mount-inside-docker-container).
 
-## The official SDK shows the path ahead
+## The official SDK shows where things are headed
 
 In parallel, Proton is rebuilding its applications on an **official SDK** for JavaScript and C#, with bindings for Swift and Kotlin. The public repository also contains a command-line tool. Its authentication model is cleaner than the rclone backend's:
 
