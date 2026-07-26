@@ -14,11 +14,11 @@ slug: "testing-cloud-mounts-with-generated-pdfs"
 url: "https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs"
 ---
 
-Before a document management system moves its store into a cloud service, you want to know: how slow does opening get? Does the setup survive an outage? And are the files still bit-for-bit intact afterwards? This article documents the measurement methodology behind my [Paperless cloud test](/en/blog/offloading-paperless-documents-to-cloud-storage) — as a template for your own tests. These are deliberately single measurements on one concrete machine: they show orders of magnitude, not benchmarks.
+Before a document management system moves its store into a cloud service, you want to know: how slow does opening get? Does the setup survive an outage? And are the files still bit-for-bit intact afterwards? This article documents the measurement methodology behind my [Paperless cloud test](/en/blog/offloading-paperless-documents-to-cloud-storage), meant as a template for your own tests. These are deliberately single measurements on one concrete machine: they show orders of magnitude, not benchmarks.
 
 ## Generate test documents instead of uploading real ones
 
-Real private documents have no place in a test environment — especially since the cloud credentials sit on the server in such a setup. For transfer measurements only the size distribution matters anyway, not the content.
+Real private documents have no place in a test environment, especially since the cloud credentials sit on the server in such a setup. For transfer measurements only the size distribution matters anyway, not the content.
 
 The following script writes PDFs directly in PDF syntax, without a single library. Every page gets a block of random text as a content stream; the page count drives the file size. The **fixed random seed** makes the distribution reproducible, and the **real text layer** ensures the document management system skips OCR — the storage path is what should be measured, not Tesseract:
 
@@ -71,9 +71,9 @@ for i in range(1, 41):
     open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
 ```
 
-The result is 40 files of 45 to 596 KB, 13.9 MB in total — a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
+The result is 40 files of 45 to 596 KB, 13.9 MB in total: a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
 
-The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data` — otherwise the container restarts in an endless loop.
+The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data`, otherwise the container restarts in an endless loop.
 
 ## Where cold and warm live in this system
 
@@ -83,18 +83,18 @@ Before measuring, it must be clear **which cache layers** sit between the applic
 |---|---|---|
 | Cloud | at the provider | the only complete truth |
 | VFS cache | local disk (`--cache-dir`) | copies of recently read files, bounded by `--vfs-cache-max-size` |
-| Page cache | RAM | held transparently by the kernel — both for the file as read through the FUSE mount and for the VFS copy itself |
+| Page cache | RAM | held transparently by the kernel, both for the file behind the FUSE mount and for the VFS copy itself |
 
-**Cold** in this setup means: not in the VFS cache, the file comes over the network. **Warm** means: the VFS copy sits locally — and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
+**Cold** in this setup means: not in the VFS cache, the file comes over the network. **Warm** means: the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
 
 ```bash
 S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
 S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
 ```
 
-In the test: 1765 ms cold versus 19 to 24 ms warm. That boundary is also the one that matters for the cloud question — but named precisely, "warm" here is "local, RAM-assisted", not "from disk".
+In the test: 1765 ms cold versus 19 to 24 ms warm. That boundary is also the one that matters for the cloud question. Named precisely, though, "warm" here is "local, RAM-assisted", not "from disk".
 
-## Measurement hygiene: drop the page cache — and prove the drop
+## Measurement hygiene: drop the page cache and prove the drop
 
 Whoever wants to separate the local layers (RAM versus disk) has to clear the page cache before measuring and **prove it**. The usual way is `sync` followed by `vmtouch -e`, with `fincore` from util-linux as the check:
 
@@ -115,19 +115,19 @@ os.close(fd)
 
 Two peculiarities of this setup make the proof mandatory rather than optional:
 
-**Eviction has to hit every path to the same file** — the file as the mount presents it *and* the VFS copy under `--cache-dir` (there in the `vfs/` subdirectory, not `vfsMeta/` — those are just metadata).
+**Eviction has to hit every path to the same file:** the file as the mount presents it *and* the VFS copy under `--cache-dir` (there in the `vfs/` subdirectory, not `vfsMeta/`; the latter is just metadata).
 
-**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED` — unchanged, 600K resident before and after: Rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. Whoever really wants to isolate the disk layer has to stop the Rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
+**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED`, unchanged, 600K resident before and after. Rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. Whoever really wants to isolate the disk layer has to stop the Rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
 
-The perspective that comes with it: at typical document sizes the separation barely pays off — hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
+Is the effort worth it? At typical document sizes, barely: hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
 
-The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant (the bottleneck is the network) — but whoever wants to derive local read numbers from them has to evict first.
+The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant, since the bottleneck is the network. Whoever wants to derive local read numbers from them, though, has to evict first.
 
 Ongoing observation additionally includes a look at the VFS cache after every step (`du -sh` on the cache directory, `find … -type f | wc -l`) and the Rclone log via `--log-file` and `--log-level INFO`, which records the eviction behaviour. It also revealed that the configured cache limit is soft: 4 MB configured, 12.7 MiB peak until the once-a-minute cleanup pass kicked in.
 
 ## Verify at application level, not just in the file system
 
-That `ls` shows files does not mean the application can read them — user permissions on FUSE mounts are a topic of their own. Hence the access through the application itself; for Django applications like Paperless via a shell in the container:
+That `ls` shows files does not mean the application can read them; user permissions on FUSE mounts are a topic of their own. Hence the access through the application itself; for Django applications like Paperless via a shell in the container:
 
 ```bash
 docker compose exec webserver python3 -c "
@@ -150,13 +150,13 @@ pkill -f "rclone mount" ; fusermount3 -u /path/to/mount
 docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 ```
 
-Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected` — the details are in the [article on Rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
+Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected`; the details are in the [article on Rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
 
 Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged — the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
 
 ## One measurement trap to close
 
-Whoever greps logs for error codes should choose the pattern precisely. My search for `422` returned 39 supposed hits — in fact it had matched harmless size figures such as `422504 bytes` in cleanup messages. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error line spares the phantom hunt.
+Whoever greps logs for error codes should choose the pattern precisely. My search for `422` returned 39 supposed hits. In fact, it had matched harmless size figures such as `422504 bytes` in cleanup messages. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error line spares the phantom hunt.
 
 ## Sources
 
