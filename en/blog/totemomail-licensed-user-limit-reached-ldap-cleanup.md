@@ -1,7 +1,7 @@
 ---
-title: "Totemomail: \"The licensed user limit has been reached\" (Automatically clean up internal users via LDAP)"
+title: "Totemomail License Limit Reached: Cleaning Up Orphaned Users via LDAP"
 navTitle: "License limit reached"
-description: "Anyone who has been running a totemomail environment for years is familiar with this phenomenon: At some point, a red warning appears in the upper-right corner next to the bell icon: *“The licensed user limit has been reached.”* The system continues to run, but you’re suddenly operating in a state of **under-licensing**. In this article, we’ll break down totemomail’s licensing model, explain why the number of internal users grows unnoticed, and set up an LDAP connection step by step, including an automatic cleanup agent, along with the CLI tools you’ll need to thoroughly test the LDAP connection beforehand."
+description: "Disabled AD accounts remain in totemomail and keep occupying licenses. With a verified LDAPS connection and the cleanup agent, Active Directory becomes the authoritative source."
 date: "2026-06-26"
 kategorie: "Totemomail"
 timeToRead: "9 min to read"
@@ -12,15 +12,15 @@ translationOf: "totemomail-licensed-user-limit-ldap-cleanup"
 url: "https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ldap-cleanup"
 ---
 
-# Totemomail: "The licensed user limit has been reached" (Automatically clean up internal users via LDAP)
+# Totemomail License Limit Reached: Cleaning Up Orphaned Users via LDAP
 
-If you run a totemomail environment for several years, you will eventually see the message *“The licensed user limit has been reached."* occur. The system continues to run, but is in a state of under-licensing. The cause is almost always the failure to offboard internal users.
+The message *"The licensed user limit has been reached"* doesn't mean mail flow stops immediately. It indicates under-licensing. In long-running environments, the cause is usually not sudden growth but former employees: the AD account was disabled, but the internal user in totemomail remained and continues to occupy a license.
 
-The host names, DNs, and service accounts in this article are generic examples (`example.com`). Adjust them to suit your environment.
+The sustainable solution is a regular LDAP sync against Active Directory. The following steps set up the connection and the cleanup agent, and verify the entire path before the first production run. Hostnames, DNs, and service accounts using `example.com` are placeholders and must be adapted to your own environment.
 
-## Licensing Model
+## Which Users Consume a License
 
-totemomail distinguishes between two classes of users, only one of which is relevant for licensing purposes.
+Totemomail distinguishes between two user classes. Only internal users count against the license limit.
 
 | User type | Description | License-relevant |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ As soon as *Available Users* drops below zero, you'll see the warning on the bel
 
 Important: Sublicensing does not block the flow of email. It is a licensing issue, not a technical one. This means you have time to find a proper solution, but you should not ignore this situation indefinitely.
 
-## Possible Solutions
+## From Quick Fix to Permanent Solution
 
 ### Manual Deletion
 
@@ -318,7 +318,7 @@ This way, you can see whether the TLS handshake or the bind fails first. The tot
 -   **First run in queue mode.** A faulty filter can affect a large number of accounts.
     
 
-## Conclusion
+## The Safe Process in Four Steps
 
 Reaching the license limit is not a technical issue, but rather the result of a lack of an offboarding process. The long-term solution is to regularly synchronize with Active Directory as the primary source. The order matters:
 
@@ -335,12 +335,12 @@ If you follow this procedure, you will resolve the immediate licensing issue and
 
 ## Sources
 
-1.  [totemo / Kiteworks – totemomail (Email Protection Gateway)](https://totemo.com/en/resources/downloads) — Product documentation for totemomail (licensing model, LDAP integration, Cleanup Agent); the technology is being continued at Kiteworks as the Email Protection Gateway.
+1.  [totemo / Kiteworks – totemomail (Email Protection Gateway)](https://totemo.com/en/resources/downloads): Product documentation for totemomail (licensing model, LDAP integration, Cleanup Agent); the technology is being continued at Kiteworks as the Email Protection Gateway.
     
-2.  [Microsoft Learn – «UserAccountControl property flags»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/useraccountcontrol-manipulate-account-properties) — Meaning of the flags, among other things `ACCOUNTDISABLE` (0x0002) and `NORMAL_ACCOUNT`.
+2.  [Microsoft Learn – «UserAccountControl property flags»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/useraccountcontrol-manipulate-account-properties): Meaning of the flags, among other things `ACCOUNTDISABLE` (0x0002) and `NORMAL_ACCOUNT`.
     
-3.  [Microsoft Learn – «Search Filter Syntax»](https://learn.microsoft.com/en-us/windows/win32/adsi/search-filter-syntax) — Bitwise LDAP filter using the matching rule OID `1.2.840.113556.1.4.803` (LDAP\_MATCHING\_RULE\_BIT\_AND).
+3.  [Microsoft Learn – «Search Filter Syntax»](https://learn.microsoft.com/en-us/windows/win32/adsi/search-filter-syntax): Bitwise LDAP filter using the matching rule OID `1.2.840.113556.1.4.803` (LDAP\_MATCHING\_RULE\_BIT\_AND).
     
-4.  [OpenLDAP – "ldapsearch" (Man Page)](https://www.openldap.org/software/man.cgi?query=ldapsearch) — Call options (`-x`, `-H ldaps://`, `-D`, `-W`, `-b`) for Bind and Search.
+4.  [OpenLDAP – "ldapsearch" (Man Page)](https://www.openldap.org/software/man.cgi?query=ldapsearch): Call options (`-x`, `-H ldaps://`, `-D`, `-W`, `-b`) for Bind and Search.
     
-5.  [Microsoft Learn – «Service overview and network port requirements»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/service-overview-and-network-port-requirements) — LDAP ports 389/636 and Global Catalog ports 3268/3269.
+5.  [Microsoft Learn – «Service overview and network port requirements»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/service-overview-and-network-port-requirements): LDAP ports 389/636 and Global Catalog ports 3268/3269.

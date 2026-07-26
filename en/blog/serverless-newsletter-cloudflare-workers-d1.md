@@ -1,7 +1,7 @@
 ---
-title: "Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1"
+title: "Running Your Own Newsletter with Cloudflare Workers and D1"
 navTitle: "Newsletter on Workers"
-description: "A complete newsletter system (signup form, one-click unsubscribe, queued sending, compliance footer) runs serverless on your own Cloudflare account; even large lists stay within the free tier. The deploy button provisions database, schema, and CI in a single step; no command line required."
+description: "The open template provides signup, unsubscribe, queued sending, and a database on your own Cloudflare account. A deploy button sets up the Worker, D1, and CI without a local server."
 date: "2026-07-22"
 kategorie: "Cloudflare Workers"
 timeToRead: "8 min to read"
@@ -12,11 +12,11 @@ translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 url: "https://rafaelpfister.ch/en/blog/serverless-newsletter-cloudflare-workers-d1"
 ---
 
-# Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1
+# Running Your Own Newsletter with Cloudflare Workers and D1
 
-Newsletter services bill by subscriber count, and the recipient list lives with the provider. The classic alternative (running a newsletter system on your own server) rarely fails because of the software; it fails because of operations: a server needs provisioning, patching, monitoring, and paying, all for a tool that might send one email a week.
+With a hosted newsletter service, the recipient list stays with the provider, and costs often rise with the number of subscribers. Running your own server gives you more control, but brings ongoing work with it: updates, monitoring, backups, and operations for a system that might send only once a week.
 
-Serverless fundamentally changes that calculation. A newsletter backend consists of a few HTTP endpoints, a small database, and a scheduled job: exactly the profile Cloudflare Workers and D1 are built for. I have implemented this as an open template: a complete newsletter system that lands on your own Cloudflare account in a single step via the **Deploy to Cloudflare button**. No command line, no server operations, and thanks to queued sending, even lists with thousands of recipients stay within the free tier. The source code is MIT-licensed on [GitHub](https://github.com/pfstr/newsletter-template); the PR to include it in the official Cloudflare template gallery is in progress.
+This lean use case needs no more than a few HTTP endpoints, a small database, and a scheduled sending job. Cloudflare Workers and D1 provide exactly these building blocks. My open template sets them up through a **Deploy to Cloudflare button** on your own account. No local command line or permanently maintained server is required. The MIT-licensed source code is on [GitHub](https://github.com/pfstr/newsletter-template).
 
 [![Deploy to Cloudflare](../images/serverless-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
 
@@ -26,8 +26,8 @@ Serverless fundamentally changes that calculation. A newsletter backend consists
 
 - **Signup**: a hosted signup page, an embeddable form for your own website, and a JSON endpoint
 - **One-click unsubscribe**: RFC 8058 compliant, with an individual token per subscriber
-- **Compliance built in**: every email automatically gets a footer with an unsubscribe link and postal address; consent and opt-out timestamps are stored (CAN-SPAM/GDPR)
-- **Sending**: a protected page where you paste subject and HTML, send a test to yourself, then queue the campaign; a background job delivers in batches, with retries
+- **Required disclosures built in**: every email automatically gets a footer with an unsubscribe link and postal address; consent and opt-out timestamps are stored
+- **Sending**: on a protected page you enter subject and HTML, send a test email, and queue the campaign; a background job delivers in batches and retries failed deliveries
 - **Your data**: subscribers live in a D1 database on your account and can be exported at any time
 - **Optional, off by default**: double opt-in, bot protection via Turnstile, and automatic delivery of new blog posts from your RSS feed
 
@@ -89,7 +89,7 @@ You operate sending from the `/admin` page: paste subject and email HTML, send a
 
 The actual delivery happens in the background, following the transactional outbox pattern: `POST /api/send` writes the campaign and one row per recipient into the database and responds immediately. A minutely cron job then delivers `SEND_BATCH` emails per run, 40 by default: chosen so that every run stays within the Workers free plan's subrequest limits. Rows are claimed atomically, so overlapping runs can never double-send; failed deliveries are retried up to three times, and crashed runs are picked up again after ten minutes. And anyone who unsubscribes while their email is still queued no longer receives it: the opt-out also cancels messages that are already queued.
 
-## Compliance is built in, not bolted on
+## Unsubscribing and proof of consent are core features
 
 Anyone who sends a newsletter is subject to anti-spam and privacy law: the US CAN-SPAM Act, GDPR and ePrivacy in the EU, the Unfair Competition Act in Switzerland. A substantial part of what newsletter services are paid for is exactly this compliance work. The template takes over the mechanical part of it:
 
@@ -123,18 +123,18 @@ The source code including the deploy button is on [GitHub](https://github.com/pf
 
 ## Sources
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template) — source code of the template (MIT) with deploy button and documentation.
+1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): source code of the template (MIT) with deploy button and documentation.
 
-2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/) — automatic provisioning of resources, repo cloning, and CI on deploy.
+2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatic provisioning of resources, repo cloning, and CI on deploy.
 
-3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/) — secrets and variables are collected in the deploy form since July 2025.
+3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/): secrets and variables are collected in the deploy form since July 2025.
 
-4.  [Cloudflare D1](https://developers.cloudflare.com/d1/) — serverless SQLite, used here for subscribers, the send log, and RSS deduplication.
+4.  [Cloudflare D1](https://developers.cloudflare.com/d1/): serverless SQLite, used here for subscribers, the send log, and RSS deduplication.
 
-5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) — bot protection without captcha puzzles, optionally enabled in the template.
+5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): bot protection without captcha puzzles, optionally enabled in the template.
 
-6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058) — Signaling One-Click Functionality for List Email Headers; the basis of the native unsubscribe button in Gmail and Outlook.
+6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058): Signaling One-Click Functionality for List Email Headers; the basis of the native unsubscribe button in Gmail and Outlook.
 
-7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) — subrequest limits per invocation (50 on the free plan, 10,000 on the paid plan); the send queue's batch size derives from these.
+7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/): subrequest limits per invocation (50 on the free plan, 10,000 on the paid plan); the send queue's batch size derives from these.
 
-8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business) — obligations for commercial email, including the postal address and a working opt-out.
+8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business): obligations for commercial email, including the postal address and a working opt-out.

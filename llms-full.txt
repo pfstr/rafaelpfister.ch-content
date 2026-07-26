@@ -2492,700 +2492,24 @@ Paperless-ngx on a small disk with a cloud store is feasible and usable day to d
 
 ## Sources
 
-1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage) — the template from this article: setup.sh, wizard.sh, compose files, watchdog and retrofit guide.
+1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage): the template from this article: setup.sh, wizard.sh, compose files, watchdog and retrofit guide.
 
-2.  [Rclone: Overview of cloud storage systems](https://rclone.org/overview/) — the 70+ supported services and their capabilities compared.
+2.  [Rclone: Overview of cloud storage systems](https://rclone.org/overview/): the 70+ supported services and their capabilities compared.
 
-3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/) — `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` and the other settings used.
+3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/): `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` and the other settings used.
 
-4.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — sanity checker, export and import, and the scheduled background tasks.
-
-----
-
-# Testing cloud storage as a document store: generated PDFs, measurement method and outage simulation
-
-URL: https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs
-Datum: 2026-07-25
-
-Before a document management system moves its store into a cloud service, you want to know: how slow does opening get? Does the setup survive an outage? And are the files still bit-for-bit intact afterwards? This article documents the measurement methodology behind my [Paperless cloud test](/en/blog/offloading-paperless-documents-to-cloud-storage), as a template for your own tests. These are deliberately single measurements on one concrete machine: they show orders of magnitude, not benchmarks.
-
-## Generate test documents instead of uploading real ones
-
-Real private documents have no place in a test environment, especially since the cloud credentials sit on the server in such a setup. For transfer measurements only the size distribution matters anyway, not the content.
-
-The following script writes PDFs directly in PDF syntax, without a single library. Every page gets a block of random text as a content stream; the page count drives the file size. The **fixed random seed** makes the distribution reproducible, and the **real text layer** ensures the document management system skips OCR; the storage path is what should be measured, not Tesseract:
-
-```python
-import os, random
-random.seed(42)                      # fixed seed: reproducible distribution
-outdir = "dummy"
-os.makedirs(outdir, exist_ok=True)
-WORDS = ("Invoice Receipt Contract Customer Amount Date Position Quantity "
-         "Price Total Tax Net Gross Delivery Payment Account Reference").split()
-
-def build(idx, npages):
-    objects, kids, objnum = {}, [], 4
-    for p in range(1, npages + 1):
-        lines = ["Test document %03d - page %d of %d" % (idx, p, npages)]
-        for _ in range(45):
-            lines.append(" ".join(random.choice(WORDS) for _ in range(11))
-                         + " %d" % random.randint(100, 99999))
-        parts = ["BT /F1 11 Tf 40 800 Td 14 TL"]
-        parts += ["(%s) Tj T*" % l for l in lines]
-        parts.append("ET")
-        stream = "\n".join(parts).encode("latin-1")
-        cnum, pnum = objnum, objnum + 1
-        objnum += 2
-        objects[cnum] = (b"<< /Length " + str(len(stream)).encode()
-                         + b" >>\nstream\n" + stream + b"\nendstream")
-        objects[pnum] = ("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
-                         "/Resources << /Font << /F1 3 0 R >> >> "
-                         "/Contents %d 0 R >>" % cnum).encode()
-        kids.append(pnum)
-    objects[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
-    objects[2] = ("<< /Type /Pages /Kids [%s] /Count %d >>"
-                  % (" ".join("%d 0 R" % k for k in kids), npages)).encode()
-    objects[3] = b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
-    mx = max(objects)
-    buf, off = bytearray(b"%PDF-1.4\n"), {}
-    for n in range(1, mx + 1):
-        off[n] = len(buf)
-        buf += ("%d 0 obj\n" % n).encode() + objects[n] + b"\nendobj\n"
-    x = len(buf)
-    buf += ("xref\n0 %d\n" % (mx + 1)).encode() + b"0000000000 65535 f \n"
-    for n in range(1, mx + 1):
-        buf += ("%010d 00000 n \n" % off[n]).encode()
-    buf += ("trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
-            % (mx + 1, x)).encode()
-    return bytes(buf)
-
-for i in range(1, 41):
-    pages = random.choice([10, 25, 40, 60, 90, 130])
-    open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
-```
-
-The result is 40 files of 45 to 596 KB, 13.9 MB in total, a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
-
-The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data`; otherwise the container restarts in an endless loop.
-
-## Where cold and warm live in this system
-
-Before measuring, it must be clear **which cache layers** sit between the application and the cloud. Otherwise you measure something other than what you claim. With an Rclone mount using `--vfs-cache-mode full` there are three:
-
-| Layer | Location | What lives there |
-|---|---|---|
-| Cloud | at the provider | the only complete truth |
-| VFS cache | local disk (`--cache-dir`) | copies of recently read files, bounded by `--vfs-cache-max-size` |
-| Page cache | RAM | held transparently by the kernel, both for the file as read through the FUSE mount and for the VFS copy itself |
-
-**Cold** in this setup means the file is not in the VFS cache and comes over the network. **Warm** means the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
-
-```bash
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
-```
-
-In the test: 1765 ms cold versus 19 to 24 ms warm. That boundary is also the one that matters for the cloud question. Named precisely, though, "warm" here is "local, RAM-assisted", not "from disk".
-
-## Measurement hygiene: drop the page cache and prove the drop
-
-To separate the local layers (RAM versus disk), you have to clear the page cache before measuring and **prove it**. The usual way is `sync` followed by `vmtouch -e`, with `fincore` from util-linux as the check:
-
-```bash
-sync
-vmtouch -e file.pdf           # evict this file's pages from RAM
-fincore file.pdf              # proof: RES must be 0
-```
-
-If `vmtouch` is not installed, three lines without any extra package do the job:
-
-```python
-import os
-fd = os.open("file.pdf", os.O_RDONLY)
-os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
-os.close(fd)
-```
-
-Two peculiarities of this setup make the proof mandatory rather than optional:
-
-**Eviction has to hit every path to the same file**: the file as the mount presents it *and* the VFS copy under `--cache-dir` (there in the `vfs/` subdirectory, not `vfsMeta/`, which holds just metadata).
-
-**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED`: 600K resident before, 600K after. Rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. To really isolate the disk layer, stop the Rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
-
-The perspective that comes with it: at typical document sizes the separation barely pays off. Hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
-
-The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant, since the bottleneck is the network. But anyone who wants to derive local read numbers from them has to evict first.
-
-Ongoing observation additionally includes a look at the VFS cache after every step (`du -sh` on the cache directory, `find … -type f | wc -l`) and the Rclone log via `--log-file` and `--log-level INFO`, which records the eviction behaviour. It also revealed that the configured cache limit is soft: 4 MB configured, 12.7 MiB peak until the once-a-minute cleanup pass kicked in.
-
-## Verify at application level, not just in the file system
-
-That `ls` shows files does not mean the application can read them — user permissions on FUSE mounts are a topic of their own. Hence the access through the application itself; for Django applications like Paperless via a shell in the container:
-
-```bash
-docker compose exec webserver python3 -c "
-import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','paperless.settings')
-import django; django.setup()
-from documents.models import Document
-d = Document.objects.first()
-print(os.path.exists(d.source_path), len(open(d.source_path,'rb').read()))
-"
-```
-
-The hardest check ships with the application: Paperless' `document_sanity_checker` reads every file in full and compares its checksum against the database. "No issues detected" after a run across the cloud mount proves that every file comes back bit for bit. One quirk applies to the write path: the test file must be **unique**, because Paperless rejects a copy of an existing document as a duplicate.
-
-## Simulate outages hard and prove the recovery
-
-An outage test that merely stops the service cleanly tests nothing. Hard means: kill the Rclone process, unmount, and then compare what host and application each see:
-
-```bash
-pkill -f "rclone mount" ; fusermount3 -u /path/to/mount
-docker compose exec webserver ls /usr/src/paperless/media/documents/originals
-```
-
-Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected`; the details are in the [article on Rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
-
-Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged; the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
-
-## One measurement trap to close
-
-If you grep logs for error codes, choose the pattern precisely. My search for `422` returned 39 supposed hits. In fact it had matched harmless size figures such as `422504 bytes` in cleanup messages. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error line spares the phantom hunt.
-
-## Sources
-
-1.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — the sanity checker and the other management commands that served as verification tools here.
-
-2.  [Rclone mount](https://rclone.org/commands/rclone_mount/) — the VFS cache modes and logging options whose behaviour was measured here.
-
-3.  [PDF 1.7 reference (Adobe)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf) — the structure of objects, content streams and the xref table that the generator writes directly.
+4.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/): sanity checker, export and import, and the scheduled background tasks.
 
 ----
 
-# Rclone mounts inside Docker containers: propagation, AppArmor and the error \"Transport endpoint is not connected\"
-
-URL: https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container
-Datum: 2026-07-25
-
-An Rclone mount is supposed to run in a Docker container but be usable outside of it: on the host and in other containers that consume the files. That sounds like one line of compose. In reality it hides three traps, two of which are barely documented. This article shows all three with the concrete error signatures, as they occurred during a hands-on test on Ubuntu 25.10 (kernel 6.17, Docker 29.6).
-
-The use case behind it: a [document store for Paperless-ngx in a cloud service](/en/blog/offloading-paperless-documents-to-cloud-storage). The findings apply to any containerised FUSE mount, though, including sshfs and similar tools.
-
-## Trap 1: Docker silently downgrades rshared
-
-For a mount from the container to reach the host, the bind needs `rshared` propagation:
-
-```yaml
-    volumes:
-      - type: bind
-        source: /srv/storage/media
-        target: /data
-        bind:
-          propagation: rshared
-```
-
-What the documentation glosses over: `rshared` only works if the bind source on the host is **itself a mount point with shared propagation**. A plain directory does not qualify. Docker then reports no error but silently downgrades the propagation. It only becomes visible in `/proc/self/mountinfo` inside the container:
-
-```text
-1938 2077 8:2 /srv/storage/media /data rw,relatime master:1 - ext4 /dev/sda2 rw
-```
-
-`master:1` means slave propagation: mounts come in from the host, but never out. Correct would be `shared:N`. The fix is a bind of the source onto itself, marked shared:
-
-```bash
-mount --bind /srv/storage/media /srv/storage/media
-mount --make-shared /srv/storage/media
-```
-
-To survive a reboot, this belongs in a systemd unit with `Before=docker.service`. Check: `findmnt -no PROPAGATION /srv/storage/media` must print `shared`.
-
-## Trap 2: the AppArmor profile for fusermount3
-
-With propagation fixed, the next surprise followed. The mount onto the shared path kept failing:
-
-```text
-NOTICE: mount helper error: fusermount3: mount failed: Permission denied
-CRITICAL: Fatal error: failed to mount FUSE fs: fusermount: exit status 1
-```
-
-Remarkably, container privileges were **not** the cause. `CAP_SYS_ADMIN`, `/dev/fuse`, AppArmor `unconfined` for the container, even `--privileged`: the error stayed identical. At the same time a tmpfs mount worked fine on the very same path, and the FUSE mount worked on other paths. The resolution sat in the kernel audit log:
-
-```text
-audit: type=1400 apparmor="DENIED" operation="mount" class="mount"
-  info="failed mntpnt match" error=-13 profile="fusermount3"
-  name="/data/documents/originals/" fstype="fuse.rclone"
-```
-
-Ubuntu ships an **AppArmor profile for the `fusermount3` binary** that only permits FUSE mounts on an allow-list of mount point patterns. This profile also applies to the fusermount3 **inside the container**, matched against the path as the container sees it:
-
-```text
-mount fstype=@{fuse_types} ... -> @{HOME}/**/,
-mount fstype=@{fuse_types} ... -> /mnt/{,**/},
-mount fstype=@{fuse_types} ... -> /media/**/,
-mount fstype=@{fuse_types} ... -> /tmp/**/,
-```
-
-`/data` is not on the list, `/srv` is not either. The container running unconfined does not help: the profile attaches to the executable, not to the container.
-
-The way out exploits the fact that only fusermount3 is subject to the profile, while a plain `mount --bind` is not: mount FUSE on an **allowed** path and publish it from there via bind onto the shared path.
-
-```sh
-rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode full &
-# wait until the mount answers, then:
-mount --bind /mnt/inner/documents /data/documents
-```
-
-The bind is a regular mount(2) call and propagates like any other through the shared path to the host. I verified that all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
-
-## Trap 3: consumers cling to dead mounts
-
-The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way sees only this:
-
-```text
-ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
-```
-
-Docker uses `rprivate` for bind mounts by default: a mount created on the host **after** the container started never reaches its mount namespace. The container stays stuck on the dead FUSE mount until it is recreated. The fix costs one line:
-
-```yaml
-    volumes:
-      - type: bind
-        source: /srv/storage/media
-        target: /usr/src/app/media
-        bind:
-          propagation: rslave
-```
-
-With `rslave` the host passes new mount events into the container. In the test, the consumer saw all files again after a hard-killed and re-created mount **without a restart of its own**; the restart counter stayed at zero.
-
-## Self-healing as a pattern
-
-The three building blocks combine into a robust overall pattern that needs no watchdog daemon:
-
-1. The mount container checks its mounts in a loop. If one stops answering, it exits with an error code.
-2. `restart: unless-stopped` makes Docker restart the container.
-3. At startup the container first clears **orphaned mounts from its previous life**, because a dead bind on the target path would otherwise block republishing, and an unprivileged user cannot remove it from the host. Inside the container it works, and the umount propagates outwards:
-
-```sh
-while grep -q " /data/documents " /proc/self/mountinfo; do
-    umount -l /data/documents 2>/dev/null || break
-done
-```
-
-4. Then mount and publish normally; consumers with `rslave` pick the fresh mount up by themselves.
-
-In the test the complete chain (Rclone process killed, detection, container restart, cleanup, remount, republish) took 160 seconds, with the consumer container noticing nothing beyond a short gap.
-
-If you run the mount **on the host** via systemd, you avoid traps 1 and 2 entirely and only need `rslave` on the consumer side. The container route pays off when the host should stay free of Rclone installations or several mounts are managed centrally. Then there is no way around the three traps.
-
-## Sources
-
-1.  [Docker: Bind mounts — configure bind propagation](https://docs.docker.com/engine/storage/bind-mounts/#configure-bind-propagation) — the propagation modes rprivate, rslave and rshared and their default behaviour.
-
-2.  [Kernel documentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) — the Linux kernel's mount propagation that Docker's bind options build on.
-
-3.  [Rclone mount](https://rclone.org/commands/rclone_mount/) — VFS cache modes, --allow-other and the limits of the FUSE mount.
-
-4.  [AppArmor documentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/) — how profiles attach to executables; the fusermount3 profile lives at /etc/apparmor.d/fusermount3.
-
-----
-
-# Proton Drive on Linux: the state of the official client, the Rclone backend and the SDK
-
-URL: https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status
-Datum: 2026-07-25
-
-Proton Drive has had sync clients for Windows and macOS since 2023; Linux came away empty. Using Proton Drive on a Linux desktop, let alone on a server, means navigating a patchwork of community tooling, an official SDK in preview and announcements. This article sorts out the state as of July 2026, and it does so from hands-on experience: I have just tested the Rclone backend extensively [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage).
-
-## The official client is announced, nothing more
-
-In June 2026 Proton confirmed for the first time that a Linux client is actually in development: "from the ground up" on the new, unified SDK, with the same architecture as the Windows and macOS applications. There is no date and no beta; the roadmap mentions the "highly anticipated Linux app" without a time frame.
-
-Important for perspective: this will be a **desktop sync client**. It solves the desktop problem. On a server, though, where a service reads and writes files straight from Proton Drive, a sync client is the wrong tool: it keeps a full local copy, exactly what you want to avoid when disk space is the constraint.
-
-## Today the Rclone backend carries the load
-
-The workhorse on Linux has been Rclone with its `protondrive` backend for years: copying, syncing and, uniquely, a **FUSE mount** that lets applications see the cloud as a directory. Two limitations come with it:
-
-**It is beta on a reverse-engineered API.** Proton does not document its Drive API publicly; the backend is built on reverse engineering. In my test it worked reliably but throttled rapid call sequences with inconsistent directory listings.
-
-**Unattended sign-in needs a trick.** Feed two-factor authentication a one-time code during setup and the session ends after about 35 minutes:
-
-```text
-422 POST https://drive-api.proton.me/auth/v4/2fa:
-Invalid credentials (Code=8002)
-```
-
-Rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the Rclone configuration, obscured via `rclone obscure`. Rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: the second factor still protects against leaked passwords, just not against a compromise of the server itself. It never defended that case anyway, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
-
-How such a mount behaves in Docker environments, including two undocumented traps, is covered in the [dedicated article on Rclone in containers](/en/blog/rclone-mount-inside-docker-container).
-
-## The SDK and its CLI point the way
-
-In parallel, Proton is rebuilding its applications on an **official SDK** (JavaScript and C#, with bindings for Swift and Kotlin). The repository is public, and recently a **command-line tool** appeared there. Its authentication model shows where things are heading:
-
-- `auth login` opens the browser; sign-in happens normally, **including two-factor authentication**
-- the session lands in the **operating system's secret store** (Keychain, Credential Manager, libsecret), renewed by the SDK itself
-- after that: list files, upload, check shares, with machine-readable JSON output
-
-No password on the command line, no TOTP secret in a configuration file. Exactly the model the Rclone backend lacks. But: the CLI can **not mount file systems**, the browser login fits headless servers poorly, and Proton explicitly declares the SDK not yet production-ready for third parties; general availability is targeted for late 2026 to early 2027.
-
-## The real gap: machine credentials
-
-The core of the problem sits one level below client or SDK: **Proton has no machine credentials.** No app passwords, no service accounts, no scoped tokens. Every piece of automation, from backup script to server mount to CI job, has to work with the account's full credentials.
-
-For comparison: with S3-compatible storage, access key pairs are the norm, revocable and restrictable to buckets or prefixes. Google and Microsoft have app passwords and service accounts. With Proton it is all or nothing: give a server access to one folder and you give it the whole account.
-
-Admittedly, this is harder for an end-to-end encrypted service than for S3, because limited access would also have to mean limited key material. The SDK sessions show, however, that Proton can build such constructs; a session already is a derived, revocable credential. An official "machine token for exactly this folder, read-only" would be the single biggest step forward for server use, well ahead of any client.
-
-## Recommendation by use case
-
-| Use case | State as of July 2026 |
-|---|---|
-| Desktop sync on Linux | Wait for the announced client; until then Rclone sync or the web interface |
-| Server backup (uploading files) | Rclone `copy`/`sync`: works, factor in the beta status |
-| File-system mount for services | Rclone `mount` with a stored TOTP secret and a dedicated account: the only way, [proven in practice](/en/blog/offloading-paperless-documents-to-cloud-storage) |
-| Script automation with clean auth | Keep an eye on the SDK CLI; too early for production |
-
-Linux users carry Proton Drive today with community tooling that reaches surprisingly far. The building blocks that would turn "works" into "built for this" are official mount support and machine credentials, and both are still outstanding.
-
-## Sources
-
-1.  [OMG Ubuntu: Proton Drive client is (finally) coming to Linux](https://www.omgubuntu.co.uk/2026/06/proton-drive-linux-client) — the June 2026 confirmation that the Linux client is in development, without a date.
-
-2.  [Proton: Product roadmaps for spring and summer 2026](https://proton.me/blog/2026-spring-summer-roadmaps) — the roadmap with the Linux client lacking a time frame and the SDK as the foundation of Proton's own apps.
-
-3.  [ProtonDriveApps/sdk on GitHub](https://github.com/ProtonDriveApps/sdk) — the public SDK repository including the CLI with browser login and session in the secret store.
-
-4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview) — Proton's own assessment: not yet production-ready for third-party applications.
-
-5.  [Rclone: Proton Drive](https://rclone.org/protondrive/) — the backend including the beta notice and the `otp_secret_key` option for unattended sign-in.
-
-----
-
-# Confusion Around the Midea v2 Cloud API: An Attempt to Bring Clarity to the API Jungle
-
-URL: https://rafaelpfister.ch/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant
-Datum: 2026-07-25
-
-The warning in the `Midea AC LAN` project sounds dramatic: Midea is said to be closing its existing token interfaces, switching to a new cloud-based V2 API, and thereby, in the long run, rendering local control unusable as well. That is still what the [Midea AC LAN README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) says today.
-
-A closer look at how this warning came about, the discussions around it, the current source code, and the official Midea documentation, however, shows a considerably less clear-cut picture.
-
-The short answer:
-
-> An official Midea Cloud-to-Cloud API V2 does exist. But it is not the same as the token interface used by Home Assistant, nor is it the same as the local V2 or V3 device protocol. No officially announced shutdown of local PortaSplit control with a concrete date is documented. In June 2026 it was also demonstrated that the supposedly shut-down SmartHome token API still worked — the community library's previous request was simply incomplete.
-
-This article reflects the state as of July 25, 2026.
-
-## Why This Follow-Up Is Necessary
-
-In the [first article on the cloud token question](/en/blog/midea-portasplit-home-assistant-integration) I reproduced the warning from the `Midea AC LAN` project, in substance, as an announced shutdown of the cloud interfaces. That matched the wording of the project README, but it was phrased too strongly as a statement of fact.
-
-The warning remains relevant as a risk notice. It is not, however, a published Midea roadmap. Above all, new technical material has since become available that calls a substantial part of the previous interpretation into question.
-
-## How Local PortaSplit Control Works
-
-The Home Assistant integration `Midea Smart AC` explicitly describes its architecture as local control. For newer V3 devices, the Midea cloud is used only during setup, to obtain a device-specific token and key. After that, the integration stores both values locally and needs no further cloud connection for actual control. The project documents this under [“Note On Cloud Usage”](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
-
-Simplified, the flow looks like this:
-
-```text
-Setup:
-
-Home Assistant
-    │
-    ├── sign-in to a Midea cloud
-    ├── retrieval of device ID, token, and key
-    └── local storage of the credentials
-
-Normal operation:
-
-Home Assistant
-    │
-    └── local TCP connection to the PortaSplit
-```
-
-For manually configured V3 devices, `Midea Smart AC` requires device ID, IP address, port, token, and key. The documented default port is `6444/TCP`; token and key are given as 128 and 64 hexadecimal characters, respectively. These details are in the [manual configuration documentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
-
-A PortaSplit was, for example, identified in the `Midea AC LAN` issue tracker as device type `0xAC`, model `00000Q1D`, and protocol version 3. The same user was then able to add it to Home Assistant via NetHome Plus. The specific course of events is documented in [issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
-
-The key distinction is:
-
-- The cloud service is used to obtain the local credentials.
-- Subsequent control happens directly on the LAN.
-- A disruption of the token service therefore mainly prevents new setups.
-- It does not automatically end an already established local connection.
-
-The latter also matches the explicit description given by [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
-
-## Where the Shutdown Warning Comes From
-
-The warning text visible today was added to the documentation on May 19, 2025, with [pull request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
-
-The reasoning, summarized, is:
-
-- The local tokens have no expiry date.
-- Various Home Assistant projects used reconstructed or extracted app encryption.
-- This creates a security problem.
-- Midea would therefore progressively shut down the existing token services.
-- In the long run, local V1 control would be superseded by a cloud-based V2 API.
-
-In July 2025, the documentation was adjusted again via [pull request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). Instead of the SmartHome cloud, NetHome Plus was now named as the temporarily used token source. The actual shutdown warning remained in place.
-
-The underlying discussion, however, is worded more cautiously than the README.
-
-The [comment from the Midea AC LAN maintainer](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) says, in substance, that NetHome Plus might only be a temporary solution and that, as he understands it, Midea has a new, fully cloud-based V2 service.
-
-The maintainer of `midea-msmart` replied that he had suspected the existence of a new V2 API as well, but, lacking his own Midea devices, could only investigate it to a limited extent. That is stated in the [direct reply comment](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
-
-That makes the state of the sources clearer:
-
-- The warning comes from experienced community developers.
-- It is based on observed changes and their technical assessment.
-- One of the maintainers explicitly describes the V2 migration as his own understanding.
-- The other calls it a suspicion.
-- Neither the pull request nor the discussion links to an official Midea shutdown announcement or a date.
-
-That does not make the warning worthless. But it makes it a risk analysis, not a confirmed manufacturer roadmap.
-
-## The Decisive New Finding From June 2026
-
-On June 15, 2026, a fix was merged into the `midea-local` library that substantially changes the previous interpretation.
-
-The starting point was the error:
-
-```json
-{
-  "code": "3004",
-  "msg": "value is illegal."
-}
-```
-
-This error occurred when querying token and key via the SmartHome cloud. Login and the device list kept working, but the call to `/v1/iot/secure/getToken` was rejected.
-
-At first, this looked like a shut-down or disabled interface. An analysis of the official SmartHome app's request, however, revealed a different cause: the app also sent an `applianceCodes` field alongside `udpid`. The community library had not been sending that field.
-
-The corrected request now includes:
-
-```python
-data.update({
-    "udpid": udp_id,
-    "applianceCodes": str(appliance_id)
-})
-```
-
-The developer tested the change with a real SmartHome account and four V3 air conditioners of type `0xAC`:
-
-- Without `applianceCodes`, the server responded with error 3004.
-- With `applianceCodes`, it delivered valid tokens and keys.
-- The returned values then worked for local V3 authentication.
-
-The complete investigation, the test results, and the code diff are documented in [`midea-local` pull request #470](https://github.com/midea-lan/midea-local/pull/470). The corresponding immutable commit is [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
-
-The current source code, too, still uses exactly this endpoint:
-
-```text
-/v1/iot/secure/getToken
-```
-
-In addition, `applianceCodes` is now sent along with it. This can be verified directly in the current [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py).
-
-The current version of `Midea AC LAN` pulls in `midea-local==6.11.0` and still declares itself a `local_push` integration. Both are stated in the current [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json).
-
-The blanket claim that the SmartHome token API had been shut down is thus refuted, at least for the accounts and devices tested in June 2026. The correct statement would be:
-
-> The previous token query stopped working after a change to the expected request format. After adapting it to the format used by the official app, the same V1 endpoint again returned valid local credentials.
-
-Regional differences, different accounts, or unsupported device types are not ruled out by this. But it evidently was not a global shutdown.
-
-## Why “V2” Is So Easily Misunderstood Here
-
-At least three independent version labels are used in the Midea ecosystem.
-
-| Term | Meaning |
-| --- | --- |
-| Local V2/V3 protocol | Generation of direct communication between the integration and the device |
-| V1/V2 app endpoint | Version number of an individual HTTP endpoint in the backend of the Midea apps |
-| Cloud-to-Cloud API V2 | Official partner API for authorized third-party companies |
-
-### Local V2 and V3
-
-For the local device protocol, V2 and V3 denote the device's communication generation. Newer V3 devices require token and key for local authentication. `Midea Smart AC` documents this requirement in its [configuration guide](https://github.com/mill1000/midea-ac-py#manual-configuration).
-
-This protocol version has nothing to do with the official Cloud-to-Cloud API V2.
-
-### V1 and V2 in App URLs
-
-Even within the same app, endpoints with different version numbers can be used at the same time. A `/v2/` in a URL path therefore does not mean that the entire platform has been switched to a new architecture.
-
-The current `midea-local` code still uses [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) for token and key. Other functions can nonetheless sit under differently versioned paths.
-
-### Official Cloud-to-Cloud API V2
-
-Midea does in fact document an [official Cloud-to-Cloud API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
-
-Among other things, it uses:
-
-- OAuth 2.0
-- `client_id` and `client_secret`
-- short-lived access tokens and refresh tokens
-- HMAC-SHA256 signatures
-- `/v2/open/oauth2/authorize`
-- `/v2/open/oauth2/token`
-- `/v2/open/device/list/get`
-- cloud-based status queries and control commands
-
-This is a controlled partner interface. The required `client_secret` is issued by Midea to a third-party company. An ordinary PortaSplit owner does not simply get one through their MSmartHome account. The requirements and signing rules are described in the [official V2 documentation](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
-
-This API also did not first appear in 2025. The documentation contains request examples with timestamps from 2018 and a Java comment dated April 18, 2019. The V2 partner interface therefore already existed well before the warning in `Midea AC LAN`.
-
-## Midea Really Is Replacing a V1 API — Just a Different One
-
-Midea also runs an older official cloud-to-cloud interface under `/v1/open/...`. Its documentation explicitly notes that it is no longer recommended, may be shut down in the future, and that the new V2 documentation should be used instead. That is stated in Midea's [documentation of the old cloud-to-cloud API](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
-
-This notice is a genuine, official V1-to-V2 migration. But it concerns the partner endpoints:
-
-```text
-/v1/open/...
-           ↓
-/v2/open/...
-```
-
-The token query used by the Home Assistant libraries, by contrast, is:
-
-```text
-/v1/iot/secure/getToken
-```
-
-And the local PortaSplit connection afterward does not run over such a cloud URL at all, but directly on the home network.
-
-Equating the three interfaces just because they share the version label “V1” would therefore not be technically justified.
-
-## Is There Already a Fully Cloud-Based Home Assistant Integration?
-
-With [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud), a community integration now exists that controls Midea devices via the cloud instead of directly over the LAN.
-
-This, too, however, is no evidence that the official partner V2 API has already replaced local control. The current source code of `Midea Auto Cloud` uses, among others:
-
-```text
-/v1/appliance/transparent/send
-/mjl/v1/device/status/lua/get
-/mjl/v1/device/lua/control
-```
-
-These endpoints can be seen in the current [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py).
-
-The integration thus reimplements private app or consumer-cloud functions. It does not simply use the documented `/v2/open/...` partner interface.
-
-A cloud-based alternative therefore already exists. But it comes with the usual dependencies of a cloud integration: internet access, a working user account, available Midea servers, and continued compatibility of private endpoints.
-
-## What Does This Mean Concretely for PortaSplit Owners?
-
-### Already Set Up Local Control
-
-For an already configured PortaSplit, the situation is relatively relaxed. `Midea Smart AC` stores token and key locally after setup and, according to its own [cloud documentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), needs no cloud connection for further control.
-
-A shutdown of the pure token retrieval would therefore not automatically end the existing local connection.
-
-### New Setup or Recovery
-
-The risk is greater in the case of:
-
-- a new Home Assistant installation
-- switching to a different integration
-- a lost or damaged backup
-- replacing the Wi-Fi module
-- changes to the device assignment
-- re-pairing, if the device credentials change in the process
-
-In such cases, the integration has to obtain token and key again, or the user has to enter them manually. That `Midea Smart AC` supports manual configuration is described in its [configuration documentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
-
-Whether a factory reset or re-pairing necessarily generates new credentials for every PortaSplit is not officially documented and should therefore not be claimed as a blanket rule.
-
-### An Actual Shutdown of LAN Control
-
-For an already set-up PortaSplit to stop accepting its locally stored credentials, the behavior of the device or Wi-Fi module would additionally have to change — for example through new firmware or a changed authentication procedure.
-
-A mere shutdown of the cloud endpoint `/v1/iot/secure/getToken` does not automatically remove the credentials already present on the device and in Home Assistant. This follows from the separation, documented by [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), between a one-time cloud retrieval and subsequent LAN control.
-
-Such a future device change is technically possible. A concrete announcement or shutdown date specifically for the PortaSplit, however, is something I have not found in the publicly available Midea documentation.
-
-## What I'd Still Recommend
-
-Despite these tempering findings, a backup remains sensible.
-
-For V3 devices, `Midea AC LAN` explicitly recommends backing up the generated JSON configuration outside of HAOS. The current recommendation is stated directly in the [project README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
-
-The following applies:
-
-- Treat token and key like passwords.
-- Do not upload the JSON file to a public Git repository.
-- Do not publish unredacted debug logs.
-- Encrypt the backup.
-- Additionally create a complete Home Assistant backup.
-- Check current functionality before firmware and integration updates.
-- Test local control again after updates.
-
-A backup is a reasonable safeguard against cloud changes, integration issues, and your own mistakes. It is not, however, an indication that a shutdown is imminent. How to set up and secure a PortaSplit on the home network properly is covered in the [practical part on setup](/en/blog/midea-portasplit-home-assistant-setup-and-hardening).
-
-## Conclusion
-
-The warning from `Midea AC LAN` should be taken seriously, but put in the correct context.
-
-It documents a plausible long-term risk: Midea could regard non-expiring local tokens as a security problem, further restrict the acquisition of such tokens, or tie future devices more closely to the cloud.
-
-What is not substantiated, on the other hand, is an officially announced, dated shutdown of local PortaSplit control.
-
-The current technical state even shows the opposite of an already completed shutdown: in June 2026, the still-used V1 token endpoint delivered valid credentials once the request had been adapted to the format of the official SmartHome app. The corresponding fix is now part of the library used by `Midea AC LAN`.
-
-The official Midea Cloud-to-Cloud API V2 does exist as well. But it is an older, access-restricted partner interface, not automatically the successor to the local PortaSplit protocol.
-
-The sober conclusion is therefore:
-
-> Make a backup, keep an eye on the integrations, and keep cloud dependencies in mind — but don't write off local PortaSplit control prematurely based on an unconfirmed shutdown assumption.
-
-## Sources
-
-1.  [Midea AC LAN: current README and shutdown warning](https://github.com/wuwentao/midea_ac_lan#1-important-notice) — Wording of the warning, backup recommendation, and the distinction between older V2 and newer V3 devices.
-
-2.  [Midea AC LAN PR #578 from May 19, 2025](https://github.com/wuwentao/midea_ac_lan/pull/578) — Introduction of the warning about the progressive shutdown of the token services and the claimed migration to a cloud-based V2 API.
-
-3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639) — Switch of the documented token source to NetHome Plus.
-
-4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201) — Discussion of the broken SmartHome token query and the temporary use of NetHome Plus.
-
-5.  [Comment from the Midea AC LAN maintainer on the suspected V2 migration](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) — Explicitly labels the statement about the new V2 cloud as his own understanding.
-
-6.  [Reply from the midea-msmart maintainer](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109) — Describes the existence of a new V2 API as a suspicion and notes the limited reverse-engineering options.
-
-7.  [midea-local PR #470 from June 15, 2026](https://github.com/midea-lan/midea-local/pull/470) — Analysis of error 3004, capture of the official app request, addition of `applianceCodes`, and a successful test with four V3 air conditioners.
-
-8.  [Immutable commit of the SmartHome getToken fix](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5) — Exact code diff of the merged fix.
-
-9.  [Current midea-local cloud code](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) — Still-used endpoint `/v1/iot/secure/getToken` and the current `applianceCodes` request field.
-
-10.  [Current Midea AC LAN manifest](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json) — Version of `midea-local` used and classification as a local push integration.
-
-11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py) — Documentation of local control, the one-time cloud retrieval for V3 devices, and manual configuration with token and key.
-
-12.  [Midea AC LAN Issue #607 on the PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607) — Concrete PortaSplit example with device type `0xAC`, model `00000Q1D`, protocol version 3, and a successful setup via NetHome Plus.
-
-13.  [Official Midea Cloud-to-Cloud API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html) — OAuth2, client ID, client secret, access and refresh tokens, signing scheme, and `/v2/open/...` endpoints.
-
-14.  [Official Midea Cloud-to-Cloud API V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html) — Official notice that the old `/v1/open/...` partner interface is no longer recommended and may be shut down in the future.
-
-15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) and [current cloud code](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py) — Community integration for full cloud control and the private V1 app endpoints it actually uses.
-
-----
-
-# Integrating and Hardening the Midea PortaSplit in Home Assistant
+# Controlling the Midea PortaSplit Locally with Home Assistant and Operating It Securely
 
 URL: https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-setup-and-hardening
 Datum: 2026-07-24
 
-This post is the practical part on the Midea PortaSplit in Home Assistant: choosing the integration, setting it up step by step, useful automations, and hardening it on your own network. Why these credentials are currently under time pressure and what the announced shutdown of the cloud interfaces means is covered in the [first part on the cloud token question](/en/blog/midea-portasplit-home-assistant-integration).
+The Midea PortaSplit can be controlled directly on the local network through Home Assistant once it's set up. To do that, the community integration needs two device-specific credentials from the Midea cloud: a token and a key.
 
-One note up front: the integrations described here come from the community and are supported neither by Midea nor by Home Assistant officially. Firmware updates, changes to the Midea cloud, or changes to the integrations themselves can affect their behaviour at any time.
+This post walks through choosing, setting up, and hardening the integration. The solutions described come from the community and are supported neither by Midea nor by Home Assistant officially. Firmware or cloud changes can affect their behaviour at any time. The background on the token interface and the ambiguous shutdown warning is covered in the [analysis of the Midea cloud APIs](/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant).
 
 ## How local control works
 
@@ -3608,7 +2932,7 @@ Midea PortaSplit
     └── internet only when needed
 ```
 
-## Conclusion
+## Recommended Operating State
 
 The Midea PortaSplit integrates into Home Assistant surprisingly well. Once configured, it is locally controllable and can be wired into automations, which removes a large part of the cloud dependency from day-to-day operation.
 
@@ -3616,41 +2940,43 @@ From a security perspective, the integration is defensible as long as a few grou
 
 ## Sources
 
-1.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> — The `Midea Smart AC` integration: supported device types `0xAC` and `0xCC`, PortaSplit with "Out Silent Mode", cloud usage for token and key retrieval on V3 devices, manual configuration, and default port 6444.
+1.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: The `Midea Smart AC` integration: supported device types `0xAC` and `0xCC`, PortaSplit with "Out Silent Mode", cloud usage for token and key retrieval on V3 devices, manual configuration, and default port 6444.
 
-2.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> — The `Midea AC LAN` integration: supported device classes, a long-lived TCP connection for state synchronisation, and the Home Assistant 2024.4.1 minimum version.
+2.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: The `Midea AC LAN` integration: supported device classes, a long-lived TCP connection for state synchronisation, and the Home Assistant 2024.4.1 minimum version.
 
-3.  [midea_ac_lan: climate entity documentation](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md) — Entities and attributes for air conditioners, including power, total energy, compressor frequency, and the energy decoding methods for individual subtypes.
+3.  [midea_ac_lan: climate entity documentation](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md): Entities and attributes for air conditioners, including power, total energy, compressor frequency, and the energy decoding methods for individual subtypes.
 
-4.  [midea_ac_lan: debug and configuration notes](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/debug.md) — Device configuration stored under `/config/.storage/midea_ac_lan/`, the recommendation to back up rather than delete the JSON file, and the logger configuration for debug logs.
+4.  [midea_ac_lan: debug and configuration notes](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/debug.md): Device configuration stored under `/config/.storage/midea_ac_lan/`, the recommendation to back up rather than delete the JSON file, and the logger configuration for debug logs.
 
-5.  [Issue 779: PortaSplit Out Silent Mode](https://github.com/wuwentao/midea_ac_lan/issues/779) — Request for support of the outdoor unit silent mode introduced with the January 2026 firmware update, which reduces noise by roughly 6 decibels.
+5.  [Issue 779: PortaSplit Out Silent Mode](https://github.com/wuwentao/midea_ac_lan/issues/779): Request for support of the outdoor unit silent mode introduced with the January 2026 firmware update, which reduces noise by roughly 6 decibels.
 
-6.  [Midea SmartHome](https://www.midea.com/global/smarthome) — Vendor statements on the security and privacy standards EN 303 645, PSTI, NIST, GDPR, and RED DA.
+6.  [Midea SmartHome](https://www.midea.com/global/smarthome): Vendor statements on the security and privacy standards EN 303 645, PSTI, NIST, GDPR, and RED DA.
 
-7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/) — Installing and managing custom integrations that are not part of Home Assistant Core.
+7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): Installing and managing custom integrations that are not part of Home Assistant Core.
 
 ----
 
-# The Midea AC LAN project warns: Midea is shutting down the cloud interfaces
+# Midea PortaSplit in Home Assistant: Why Token and Key Are Critical
 
 URL: https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integration
 Datum: 2026-07-24
 
 <aside class="article-update">
   <p class="article-update__label">What PortaSplit owners should do now</p>
-  <p>Home Assistant uses these cloud interfaces during setup to obtain the device-specific token and key. The notice has stood in the project repository since 19 May 2025. For owners this means:</p>
+  <p>Home Assistant obtains the device-specific token and key from private cloud interfaces during setup. The Midea AC LAN project has been warning of possible changes since 19 May 2025. However, no concrete shutdown date from the manufacturer is documented. For owners this means:</p>
   <ol>
-    <li><strong>Set it up now.</strong> Only the initial token retrieval needs the Midea cloud. If you wait, you may no longer be able to add the device to Home Assistant.</li>
-    <li><strong>Back up token, key, and the configuration encrypted.</strong> After the shutdown these values are unlikely to be obtainable again; the backup is then the only path to a fresh setup.</li>
+    <li><strong>Don't break an existing setup without reason.</strong> Only obtaining the credentials needs the Midea cloud. Future changes to the private endpoint could make a fresh setup harder.</li>
+    <li><strong>Back up token, key, and configuration in encrypted form.</strong> If retrieval stops working later on, the backup remains the most reliable path to recovery.</li>
     <li><strong>Do not break the pairing without need.</strong> A factory reset, removing the device from the Midea account, or swapping the Wi-Fi module forces a new token retrieval that may fail in the future.</li>
   </ol>
-  <p>Devices that are already set up continue to be controlled locally; as things stand, the shutdown affects adding devices, not operating them. The concrete setup and backup steps are in the <a href="/en/blog/midea-portasplit-home-assistant-setup-and-hardening">second part on setup and hardening</a>.</p>
+  <p>Devices that are already set up continue to be controlled locally. Changes to the cloud interface therefore primarily affect adding and recovering devices, not every ongoing control command. The concrete steps are in the <a href="/en/blog/midea-portasplit-home-assistant-setup-and-hardening">practical guide on setup and hardening</a>.</p>
 </aside>
 
 ![Example Home Assistant dashboard for a Midea PortaSplit showing room and target temperature, humidity, power draw, energy consumption, and compressor runtimes over the past 24 hours.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
 
-Local control of the Midea PortaSplit in Home Assistant hinges on two device-specific values: a token and a key. The integration obtains both once, during initial setup, from the Midea cloud; after that, control runs directly on the local network, with no switching command having to travel through a Midea server. It is exactly this cloud interface that Midea is now shutting down, and that is the subject here. How local control works in detail, which integration to pick, and how to harden the device are covered in the [second part on setup and hardening](/en/blog/midea-portasplit-home-assistant-setup-and-hardening).
+Local control of the Midea PortaSplit rests on two device-specific values: a token and a key. The Home Assistant integration retrieves both during setup through a private Midea cloud endpoint. After that, it sends control commands directly on the local network.
+
+The Midea AC LAN project warns of possible changes to these cloud interfaces. More recent analysis shows, however, that this cannot be read as a confirmed manufacturer roadmap or a concrete shutdown date. This post explains the technical dependency; the [detailed API analysis](/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant) untangles the various "V2" labels and the current state of affairs.
 
 ## The token question in detail
 
@@ -3687,7 +3013,7 @@ That would be the most elegant solution. If the device exchanged a public key du
 
 Midea, however, designed the original LAN protocol differently: the device only accepts local commands with the matching, cloud-derived credentials. There is no documented local pairing mechanism that would hand out the token without going through the cloud. The cloud is therefore not just convenience but, architecturally, the only intended path to the token.
 
-### Could the community work around the shutdown?
+### Could the community work around changes to the token endpoint?
 
 That would only be possible if one of the following turns up:
 
@@ -3708,48 +3034,48 @@ This needs a differentiated reading. It is the assessment of an open-source proj
 
 This is where the three steps from the box at the top come from, each with its rationale:
 
-- **Set it up now**, because token retrieval is the only step that necessarily runs through the Midea cloud. As long as the integration can still reach a working token interface, setup succeeds; after that, even a factory-fresh device will not help.
-- **Back up the credentials**, because token and key are unlikely to be issued again after the shutdown. Home Assistant does store them locally, but a broken system, a failed restore, or an accidentally deleted integration would mean permanent loss of local control without an external backup.
-- **Do not break the pairing without need**, because any factory reset and any removal from the Midea account can discard the keys stored on the device. The re-pairing that follows depends on exactly the cloud interfaces that are disappearing.
+- **Don't replace a working setup without reason.** Token retrieval is the only step that necessarily runs through the Midea cloud. Changes to the private endpoint can mainly affect a later fresh setup.
+- **Back up your credentials.** Home Assistant stores token and key locally. A broken system, a failed restore, or an accidentally deleted integration can still render local control unusable if no external backup exists.
+- **Don't break the pairing lightly.** Whether a factory reset or removal from the Midea account forces new credentials on every model is not fully documented. A backup before such changes is therefore essential.
 
-Day-to-day operation is not affected for now: local control uses the values already stored and no longer needs the token interfaces. A residual risk remains, however, if Midea, as the developer expects, eventually replaces the V1 LAN API through firmware updates as well. How to back up token, key, and configuration in practice is covered in the [second part](/en/blog/midea-portasplit-home-assistant-setup-and-hardening#backing-up-the-configuration).
+Day-to-day operation is not affected for now: local control uses the values already stored and no longer needs the token endpoint. A residual risk remains if a later firmware update changes the local protocol or authentication. How to back up token, key, and configuration in practice is covered in the [practical guide on setup](/en/blog/midea-portasplit-home-assistant-setup-and-hardening#backing-up-the-configuration).
 
 ## What this means for security
 
-The shutdown is not only a question of availability; it has a security core. According to the `Midea AC LAN` warning, the older LAN architecture rests on a problematic assumption: the developers originally assumed that client communication was already sufficiently encrypted. As a result, the tokens issued by the cloud were given no expiry.
+Beyond availability, the warning also has a security core. According to `Midea AC LAN`, the older LAN architecture rests on a problematic assumption: client communication was originally considered sufficiently protected, which is why the tokens issued by the cloud were given no expiry.
 
-A non-expiring token is not a vulnerability in itself. It becomes a problem when it can be read out, appears in logs, ends up in backups, is passed to third parties, when the client encryption has been reconstructed, or when it cannot be revoked or rotated. The developer of `Midea AC LAN` writes that numerous Home Assistant plugins on GitHub use reconstructed client encryption methods. Combined with non-expiring tokens, that creates a security gap, which Midea is addressing by shutting down the token APIs and moving to a new architecture.
+A non-expiring token is not a vulnerability by itself. It becomes a problem when it ends up in logs or unprotected backups, reaches third parties, or can neither be revoked nor rotated. The developer of `Midea AC LAN` suspects that Midea is responding to these risks with changes to the token services and a more cloud-based architecture. A corresponding manufacturer announcement with a timeline, however, is not substantiated.
 
 Precision of language matters here. The community integration does not "hack" the air conditioner. It implements a proprietary protocol that was reconstructed through reverse engineering. The security problem arises from long-lived secrets being usable and storable outside the app they were originally intended for.
 
 For operation on your own network, what matters most is what token and key enable. Both authenticate the local communication with the device. If they fall into the wrong hands, an attacker could, depending on the protocol and their network position, discover the device, authenticate against it, read status information, change settings, switch the air conditioner on or off, change operating modes, and change the target temperature. To do so, the attacker still generally needs a network connection to the device; possessing token and key alone does not enable an attack from the open internet. Token and key are therefore to be treated like a password. How to embed the device on the network so that these values do little harm even after a slip-up is the subject of the [second part](/en/blog/midea-portasplit-home-assistant-setup-and-hardening#operating-the-portasplit-securely).
 
-## Conclusion
+## What Practically Remains
 
-Local control of the PortaSplit in Home Assistant stands and falls with a token and key that are currently obtainable only through the Midea cloud. This detour is not a cosmetic flaw but the consequence of a LAN protocol that ties local commands to cloud-derived credentials. Because Midea is shutting down exactly these interfaces and considers the underlying architecture a security problem, the long-term future of the unofficial local API is not guaranteed.
+Local control of the PortaSplit stands and falls with a token and key that currently can only be obtained through the Midea cloud. This detour is part of the protocol design: local commands are tied to cloud-derived credentials. Because the endpoint is private and undocumented, the long-term availability of the unofficial integration remains uncertain.
 
-In practice: if you own or buy a PortaSplit, set it up soon, back up the credentials, and do not break the pairing lightly. Devices already set up keep running locally. The concrete setup, the choice of the right integration, and the network hardening are in the [second part: integrating and hardening the Midea PortaSplit in Home Assistant](/en/blog/midea-portasplit-home-assistant-setup-and-hardening).
+In practice, that means: back up credentials and configuration, don't break a working pairing without need, and keep an eye on changes to the integration and firmware. Devices already set up keep running locally. Setup, backup, and network hardening are covered in the [practical guide to the PortaSplit](/en/blog/midea-portasplit-home-assistant-setup-and-hardening).
 
 ## Sources
 
-1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> — The `Midea AC LAN` integration with the "Important Notice" (since 19 May 2025, updated 14 July 2025), the rationale around non-expiring tokens and reconstructed client encryption, and the description of the cloud-based token retrieval.
+1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: The `Midea AC LAN` integration with the "Important Notice" (since 19 May 2025, updated 14 July 2025), the rationale around non-expiring tokens and reconstructed client encryption, and the description of the cloud-based token retrieval.
 
-2.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> — The `Midea Smart AC` integration: description of the cloud-based token and key retrieval on V3 devices and the local storage of the values.
+2.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: The `Midea Smart AC` integration: description of the cloud-based token and key retrieval on V3 devices and the local storage of the values.
 
-3.  [Midea SmartHome](https://www.midea.com/global/smarthome) — Vendor information on the SmartHome ecosystem and the referenced security and privacy standards.
+3.  [Midea SmartHome](https://www.midea.com/global/smarthome): Vendor information on the SmartHome ecosystem and the referenced security and privacy standards.
 
 ----
 
-# Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1
+# Running Your Own Newsletter with Cloudflare Workers and D1
 
 URL: https://rafaelpfister.ch/en/blog/serverless-newsletter-cloudflare-workers-d1
 Datum: 2026-07-22
 
-# Your Own Newsletter Without SaaS: Serverless on Cloudflare Workers and D1
+# Running Your Own Newsletter with Cloudflare Workers and D1
 
-Newsletter services bill by subscriber count, and the recipient list lives with the provider. The classic alternative (running a newsletter system on your own server) rarely fails because of the software; it fails because of operations: a server needs provisioning, patching, monitoring, and paying, all for a tool that might send one email a week.
+With a hosted newsletter service, the recipient list stays with the provider, and costs often rise with the number of subscribers. Running your own server gives you more control, but brings ongoing work with it: updates, monitoring, backups, and operations for a system that might send only once a week.
 
-Serverless fundamentally changes that calculation. A newsletter backend consists of a few HTTP endpoints, a small database, and a scheduled job: exactly the profile Cloudflare Workers and D1 are built for. I have implemented this as an open template: a complete newsletter system that lands on your own Cloudflare account in a single step via the **Deploy to Cloudflare button**. No command line, no server operations, and thanks to queued sending, even lists with thousands of recipients stay within the free tier. The source code is MIT-licensed on [GitHub](https://github.com/pfstr/newsletter-template); the PR to include it in the official Cloudflare template gallery is in progress.
+This lean use case needs no more than a few HTTP endpoints, a small database, and a scheduled sending job. Cloudflare Workers and D1 provide exactly these building blocks. My open template sets them up through a **Deploy to Cloudflare button** on your own account. No local command line or permanently maintained server is required. The MIT-licensed source code is on [GitHub](https://github.com/pfstr/newsletter-template).
 
 [![Deploy to Cloudflare](../images/serverless-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
 
@@ -3759,8 +3085,8 @@ Serverless fundamentally changes that calculation. A newsletter backend consists
 
 - **Signup**: a hosted signup page, an embeddable form for your own website, and a JSON endpoint
 - **One-click unsubscribe**: RFC 8058 compliant, with an individual token per subscriber
-- **Compliance built in**: every email automatically gets a footer with an unsubscribe link and postal address; consent and opt-out timestamps are stored (CAN-SPAM/GDPR)
-- **Sending**: a protected page where you paste subject and HTML, send a test to yourself, then queue the campaign; a background job delivers in batches, with retries
+- **Required disclosures built in**: every email automatically gets a footer with an unsubscribe link and postal address; consent and opt-out timestamps are stored
+- **Sending**: on a protected page you enter subject and HTML, send a test email, and queue the campaign; a background job delivers in batches and retries failed deliveries
 - **Your data**: subscribers live in a D1 database on your account and can be exported at any time
 - **Optional, off by default**: double opt-in, bot protection via Turnstile, and automatic delivery of new blog posts from your RSS feed
 
@@ -3822,7 +3148,7 @@ You operate sending from the `/admin` page: paste subject and email HTML, send a
 
 The actual delivery happens in the background, following the transactional outbox pattern: `POST /api/send` writes the campaign and one row per recipient into the database and responds immediately. A minutely cron job then delivers `SEND_BATCH` emails per run, 40 by default: chosen so that every run stays within the Workers free plan's subrequest limits. Rows are claimed atomically, so overlapping runs can never double-send; failed deliveries are retried up to three times, and crashed runs are picked up again after ten minutes. And anyone who unsubscribes while their email is still queued no longer receives it: the opt-out also cancels messages that are already queued.
 
-## Compliance is built in, not bolted on
+## Unsubscribing and proof of consent are core features
 
 Anyone who sends a newsletter is subject to anti-spam and privacy law: the US CAN-SPAM Act, GDPR and ePrivacy in the EU, the Unfair Competition Act in Switzerland. A substantial part of what newsletter services are paid for is exactly this compliance work. The template takes over the mechanical part of it:
 
@@ -3856,36 +3182,36 @@ The source code including the deploy button is on [GitHub](https://github.com/pf
 
 ## Sources
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template) — source code of the template (MIT) with deploy button and documentation.
+1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): source code of the template (MIT) with deploy button and documentation.
 
-2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/) — automatic provisioning of resources, repo cloning, and CI on deploy.
+2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatic provisioning of resources, repo cloning, and CI on deploy.
 
-3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/) — secrets and variables are collected in the deploy form since July 2025.
+3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/): secrets and variables are collected in the deploy form since July 2025.
 
-4.  [Cloudflare D1](https://developers.cloudflare.com/d1/) — serverless SQLite, used here for subscribers, the send log, and RSS deduplication.
+4.  [Cloudflare D1](https://developers.cloudflare.com/d1/): serverless SQLite, used here for subscribers, the send log, and RSS deduplication.
 
-5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) — bot protection without captcha puzzles, optionally enabled in the template.
+5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): bot protection without captcha puzzles, optionally enabled in the template.
 
-6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058) — Signaling One-Click Functionality for List Email Headers; the basis of the native unsubscribe button in Gmail and Outlook.
+6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058): Signaling One-Click Functionality for List Email Headers; the basis of the native unsubscribe button in Gmail and Outlook.
 
-7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) — subrequest limits per invocation (50 on the free plan, 10,000 on the paid plan); the send queue's batch size derives from these.
+7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/): subrequest limits per invocation (50 on the free plan, 10,000 on the paid plan); the send queue's batch size derives from these.
 
-8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business) — obligations for commercial email, including the postal address and a working opt-out.
+8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business): obligations for commercial email, including the postal address and a working opt-out.
 
 ----
 
-# Running Claude Code on Your Own VPS and Hardening the Server Properly
+# Running Claude Code Securely on Your Own VPS
 
 URL: https://rafaelpfister.ch/en/blog/securing-a-debian-vps-for-claude-code
 Datum: 2026-07-21
 
-Starting Claude Code locally on your workstation is convenient, until the laptop lid closes, the Wi-Fi changes, or a long-running task dies in the middle of the night. Your own VPS solves that: a session that keeps running, reachable from your PC and your iPhone, with full control over what data lives there. The price is that the server is publicly reachable from the first minute, and therefore a target for automated scans. Running it is still worthwhile, and a freshly installed Debian server can be hardened to withstand that constant background noise.
+On your own machine, a Claude Code session ends unintentionally at the latest when the laptop goes to sleep or the network connection drops. A VPS keeps running and stays reachable from multiple devices. At the same time, it hangs permanently on the public internet and gets scanned automatically within minutes of going live.
 
-None of the steps are Claude-specific. It is the same hardening checklist that applies to any publicly reachable Linux server.
+This guide addresses both needs: Claude Code stays available in a `tmux` session, while the Debian server exposes only a key-protected SSH connection to the outside. The hardening itself is not Claude-specific and works equally well for any other publicly reachable Linux server.
 
-## Why your own VPS?
+## Why a VPS can make sense
 
-Three reasons favour a dedicated server over a local install:
+Compared to a purely local install, the server offers three practical advantages:
 
 - **Persistence.** Inside a `tmux` session, Claude keeps running even when the SSH connection drops. A task that takes ten minutes or an hour runs to completion without the laptop having to stay open.
 - **Reachability.** The same session is accessible from your desktop, your laptop, and your iPhone. You kick off a task at your desk and check the result on the move.
@@ -4106,32 +3432,32 @@ The full sequence at a glance:
 9. Data hygiene: no private keys and no credentials on the server, configuration vetted through a migration folder first.
 10. No additional ports; web previews run through an SSH tunnel.
 
-The effort is one-off, the result lasting: a server that shows the outside world only a single, key-protected door, and a Claude session that is always reachable, whether from the desk or on the move.
+After this setup, only SSH on the chosen port is reachable from outside, and even there exclusively with a passphrase-protected key. Claude Code runs independently of the end device in `tmux`; web previews stay accessible via the SSH tunnel without opening an additional port.
 
 ## Sources
 
-1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config) — Reference for all sshd directives, including `PermitRootLogin`, `PasswordAuthentication`, and `PubkeyAuthentication`.
+1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config): Reference for all sshd directives, including `PermitRootLogin`, `PasswordAuthentication`, and `PubkeyAuthentication`.
 
-2.  [Debian Wiki – SSH](https://wiki.debian.org/SSH) — Debian-specific notes on SSH configuration, including the drop-in files under `/etc/ssh/sshd_config.d/`.
+2.  [Debian Wiki – SSH](https://wiki.debian.org/SSH): Debian-specific notes on SSH configuration, including the drop-in files under `/etc/ssh/sshd_config.d/`.
 
-3.  [systemd.socket(5) – freedesktop.org](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html) — How socket activation and the `ListenStream=` directive work, relevant to the SSH port change on Debian 13.
+3.  [systemd.socket(5) – freedesktop.org](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html): How socket activation and the `ListenStream=` directive work, relevant to the SSH port change on Debian 13.
 
-4.  [ss(8) – iproute2 manpage](https://man7.org/linux/man-pages/man8/ss.8.html) — Options of `ss` for listing listening sockets together with process and bind address.
+4.  [ss(8) – iproute2 manpage](https://man7.org/linux/man-pages/man8/ss.8.html): Options of `ss` for listing listening sockets together with process and bind address.
 
-5.  [Claude Code – Official Documentation](https://docs.claude.com/en/docs/claude-code/overview) — Installing, authenticating, and running Claude Code.
+5.  [Claude Code – Official Documentation](https://docs.claude.com/en/docs/claude-code/overview): Installing, authenticating, and running Claude Code.
 
 ----
 
-# Microsoft Entra Connect Sync 2.6.84.0: Security Fixes, New Rules for App-Based Authentication and PHS, and the Lesson from the Recalled Predecessor
+# Entra Connect Sync 2.6.84.0: What's Changing and Who Should Update Now
 
 URL: https://rafaelpfister.ch/en/blog/entra-connect-sync-2-6-84-0
 Datum: 2026-07-17
 
-# Microsoft Entra Connect Sync 2.6.84.0
+# Entra Connect Sync 2.6.84.0: What's Changing and Who Should Update Now
 
-**On July 7, 2026, Microsoft released version 2.6.84.0 of Entra Connect Sync and classifies it as a security release: "We recommend upgrading to this version as soon as possible." At the same time, the very same document notes that the direct predecessor 2.6.79.0 was recalled after release because an issue was identified in the installer afterwards. Taken together, the realistic assessment is: the update is necessary, but a day-one rollout to your production server is not, unless you fall into one of the exceptions described below.**
+Microsoft released Entra Connect Sync 2.6.84.0 as a security release on July 7, 2026, and recommends upgrading quickly. At the same time, the direct predecessor 2.6.79.0 was recalled because of an installer issue discovered afterward. The consequence is neither "install everywhere immediately" nor "wait and ignore": affected systems and those soon falling out of support should switch promptly, while everyone else can first trial the update in a controlled way.
 
-## The Starting Point: a Release with History
+## Why This Release Deserves Extra Caution
 
 The 2.6 line of Entra Connect Sync has had a bumpy start. A short recap, because it matters for the update decision:
 
@@ -4231,7 +3557,7 @@ Since March 2023, a strict retirement policy applies to Entra Connect Sync 2.x: 
 
 If you are still on 2.5.3.0, you have only two weeks of support left. Here the question is not whether to update but only to which version. Microsoft also emphasizes that retired versions might stop working "unexpectedly"; for the discontinued 1.x versions, synchronization has in fact been switched off server-side by now. The minimum requirements remain .NET Framework 4.7.2 and TLS 1.2; the installer is available exclusively in the Entra admin center (Entra ID → Entra Connect → Get started), no longer in the Download Center.
 
-## Recommendation: Wait for Now
+## Recommendation by Starting Version
 
 Microsoft recommends upgrading "as soon as possible". However, that recommendation stood word for word above version 2.6.79.0 as well, the version that was subsequently recalled. The recent release history (recalled installer, hotfix for stopped servers, UI warnings across several versions) justifies a sober assessment rather than a reflex.
 
@@ -4249,28 +3575,28 @@ For the upgrade itself, the usual procedure applies, and with this release histo
 
 ## Sources
 
-1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history) — Official release notes for 2.6.84.0 including the recall notice for 2.6.79.0, the retirement table, and the known issue with a modified miiserver.exe.config.
-1. [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version) — Upgrade procedures including swing migration via a staging-mode server.
-1. [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id) — How Application-Based Authentication works, replacing the legacy service account.
-1. [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication) — The new passkey/FIDO2 sign-in in the setup wizard via the Windows Web Account Manager.
-1. [Microsoft Entra Connect: Automatic upgrade – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-automatic-upgrade) — The mechanics and prerequisites of auto-upgrade, whose rollout for 2.6.84.0 is still pending.
-1. [Auditing administrator events in Microsoft Entra Connect Sync – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/admin-audit-logging) — Admin audit logging, whose identity attribution for synchronization rules was corrected in this release.
-1. [SQL Server 2019 – Microsoft Lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019) — Support dates for the previously bundled LocalDB base, whose mainstream support ended in February 2025.
+1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history): Official release notes for 2.6.84.0 including the recall notice for 2.6.79.0, the retirement table, and the known issue with a modified miiserver.exe.config.
+1. [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version): Upgrade procedures including swing migration via a staging-mode server.
+1. [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id): How Application-Based Authentication works, replacing the legacy service account.
+1. [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication): The new passkey/FIDO2 sign-in in the setup wizard via the Windows Web Account Manager.
+1. [Microsoft Entra Connect: Automatic upgrade – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-automatic-upgrade): The mechanics and prerequisites of auto-upgrade, whose rollout for 2.6.84.0 is still pending.
+1. [Auditing administrator events in Microsoft Entra Connect Sync – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/admin-audit-logging): Admin audit logging, whose identity attribution for synchronization rules was corrected in this release.
+1. [SQL Server 2019 – Microsoft Lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019): Support dates for the previously bundled LocalDB base, whose mainstream support ended in February 2025.
 
 ----
 
-# Ghost Sender or Ghost Admin? An MX Record Is Not a Firewall!
+# Ghost Sender in Exchange Online: An MX Record Is Not a Firewall
 
 URL: https://rafaelpfister.ch/en/blog/ghost-sender-exchange-online-side-entrance
 Datum: 2026-07-15
 
-# Ghost Sender or Ghost Admin? An MX Record Is Not a Firewall!
+# Ghost Sender in Exchange Online: An MX Record Is Not a Firewall
 
 ![A ghost admin holds the door next to the security gate open in a data center while emails slip past the filter straight into the mailbox.](../images/ghost-admin.png)
 
-**InfoGuard Labs stirred up so much concern with "Ghost-Sender – Universal Email Spoofing against Exchange Online" that several inquiries about the "vulnerability" landed on my desk as well. Short verdict: the risk described is real. Classifying it as a universal vulnerability in Exchange Online is not. Anyone who places a third-party mail filter in front of Exchange Online but does not restrict the still-reachable EXO endpoint to that filter has not discovered a new hole. They simply have not finished configuring their mail flow.**
+The attack InfoGuard Labs describes as "Ghost Sender" is real: an attacker can bypass an upstream email gateway and deliver directly to Exchange Online. The precondition, however, is that the tenant still accepts this direct path. That is not a universal vulnerability in Exchange Online, but an incompletely secured mail flow topology.
 
-It looks as if, for a moment, InfoGuard forgot how a Mail Transfer Agent (MTA) works. A mail server that hosts mailboxes for a domain fundamentally accepts SMTP connections from the internet. That is exactly what it is there for. An MX record merely tells regular senders which path to take for delivery. It is neither a firewall rule nor an access control list.
+A mail transfer agent that hosts mailboxes for a domain fundamentally accepts SMTP connections from the internet. The MX record shows regular senders the intended delivery path. It is neither a firewall rule nor an access list, and it stops no one from addressing a known Exchange Online endpoint directly.
 
 ## What "Ghost Sender" Actually Shows
 
@@ -4388,7 +3714,7 @@ Send-MailMessage `
 
 With a correctly restricted partner connector, you should expect an SMTP rejection like `5.7.51 TenantInboundAttribution; Rejecting`. An alternative transport rule can accept the message initially and then move it to quarantine; that's why, besides the SMTP response, you should also check message trace, quarantine, and the mailbox. `Send-MailMessage` (deprecated) serves here only as an easily understandable illustration. Any controlled SMTP test tool serves the same purpose.
 
-## Conclusion: Good Test, Wrong Label
+## A Useful Test With a Misleading Label
 
 "Ghost Sender" is not a new SMTP exploit. It is a catchy name for an open side entrance whose mitigation Microsoft has documented for a long time and which the administrator left open.
 
@@ -4400,25 +3726,25 @@ Does the administrator really need everything taken off their hands? No. But app
 
 ## Sources
 
-1.  [InfoGuard Labs: Ghost-Sender – Universal Email Spoofing against Exchange Online](https://labs.infoguard.ch/posts/ghost-sender/) — The original research, including the prevalence analysis and its own conclusion, "Ghost-Sender is a misconfiguration."
+1.  [InfoGuard Labs: Ghost-Sender – Universal Email Spoofing against Exchange Online](https://labs.infoguard.ch/posts/ghost-sender/): The original research, including the prevalence analysis and its own conclusion, "Ghost-Sender is a misconfiguration."
 
-2.  [Ghost Sender: Exchange Online Mail Spoofing Tester](https://ghost-sender.com/) — The online test published by InfoGuard to check your own tenant for the open side entrance.
+2.  [Ghost Sender: Exchange Online Mail Spoofing Tester](https://ghost-sender.com/): The online test published by InfoGuard to check your own tenant for the open side entrance.
 
-3.  [MSXFAQ: Exchange Online als Nebeneingang für Mailempfang](https://www.msxfaq.de/cloud/exchangeonline/transport/exo-nebeneingang.htm) — Frank Carius' assessment: not a flaw in Exchange Online, but an administrator misconfiguration.
+3.  [MSXFAQ: Exchange Online als Nebeneingang für Mailempfang](https://www.msxfaq.de/cloud/exchangeonline/transport/exo-nebeneingang.htm): Frank Carius' assessment: not a flaw in Exchange Online, but an administrator misconfiguration.
 
-4.  [Microsoft: Direct Send vs sending directly to an Exchange Online tenant](https://techcommunity.microsoft.com/blog/exchange/direct-send-vs-sending-directly-to-an-exchange-online-tenant/4439865) — Microsoft explains that direct acceptance of mail to hosted mailboxes is simply how email works, and distinguishes it from Direct Send.
+4.  [Microsoft: Direct Send vs sending directly to an Exchange Online tenant](https://techcommunity.microsoft.com/blog/exchange/direct-send-vs-sending-directly-to-an-exchange-online-tenant/4439865): Microsoft explains that direct acceptance of mail to hosted mailboxes is simply how email works, and distinguishes it from Direct Send.
 
-5.  [Microsoft Learn: Manage mail flow using a third-party cloud service](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud) — The official guide, including the dedicated step for the restrictive partner connector with an external MX.
+5.  [Microsoft Learn: Manage mail flow using a third-party cloud service](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud): The official guide, including the dedicated step for the restrictive partner connector with an external MX.
 
-6.  [Microsoft Learn: Enhanced Filtering for Connectors](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors) — Reconstructs the original sender source behind a gateway; improves evaluation but does not replace the connector.
+6.  [Microsoft Learn: Enhanced Filtering for Connectors](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors): Reconstructs the original sender source behind a gateway; improves evaluation but does not replace the connector.
 
-7.  [Heise: Ghost-Sender – Exchange Online lässt gefälschte E-Mails anstandslos durch](https://www.heise.de/news/Ghost-Sender-Exchange-Online-laesst-gefaelschte-E-Mails-anstandslos-durch-11327666.html) — Example of the sensationalized coverage that generalizes only certain misconfigurations.
+7.  [Heise: Ghost-Sender – Exchange Online lässt gefälschte E-Mails anstandslos durch](https://www.heise.de/news/Ghost-Sender-Exchange-Online-laesst-gefaelschte-E-Mails-anstandslos-durch-11327666.html): Example of the sensationalized coverage that generalizes only certain misconfigurations.
 
-8.  [Crow in the Cloud: Die Geister, die ich nicht rief](https://crowinthe.cloud/die-geister-die-ich-nicht-rief-effektiver-schutz-gegen-ghost-sender-in-exchange-online/) — An apt classification as a design and configuration problem, including protective measures.
+8.  [Crow in the Cloud: Die Geister, die ich nicht rief](https://crowinthe.cloud/die-geister-die-ich-nicht-rief-effektiver-schutz-gegen-ghost-sender-in-exchange-online/): An apt classification as a design and configuration problem, including protective measures.
 
-9.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321.html) — Describes the MX record as the mechanism for determining the regular target system, not as access control.
+9.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321.html): Describes the MX record as the mechanism for determining the regular target system, not as access control.
 
-10.  [RFC 9989: DMARC](https://www.rfc-editor.org/rfc/rfc9989.html) — States that the recipient may take the published DMARC treatment into account, but is not required to.
+10.  [RFC 9989: DMARC](https://www.rfc-editor.org/rfc/rfc9989.html): States that the recipient may take the published DMARC treatment into account, but is not required to.
 
 ---
 
@@ -4433,16 +3759,18 @@ If you'd like to have your mail flow reviewed or properly secured, feel free to 
 
 ----
 
-# Exchange Server Security Updates July 2026: Removing the CVE-2026-42897 Mitigation and Cleaning Up Legacy Security Groups
+# Properly Following Up on the July 2026 Exchange Security Updates
 
 URL: https://rafaelpfister.ch/en/blog/exchange-server-security-updates-july-2026
 Datum: 2026-07-14
 
-# Exchange Server Security Updates July 2026
+# Properly Following Up on the July 2026 Exchange Security Updates
 
-On July 14, 2026, Microsoft released the regular Security Updates (SUs) for Exchange Server. Besides the actual security fixes, the release contains two points that are easily overlooked in practice but important: you can (and should) now remove the mitigation for **CVE-2026-42897** applied back in May, and the Exchange Health Checker newly checks for ancient, long-obsolete security groups in Active Directory. The official blog posts only touch on both points briefly.
+Installing the Exchange Security Updates from July 14, 2026 doesn't finish the job. Afterward, administrators should clean up two pieces of technical debt: the mitigation for **CVE-2026-42897** activated in May, and two historical Exchange security groups with far-reaching permissions in Active Directory.
 
-## What the July release contains
+Both tasks are easy to overlook. The mitigation deliberately stays in place until it is removed in a controlled way. The groups, meanwhile, may have survived every migration unnoticed for years.
+
+## Which Exchange Versions the Update Is Available For
 
 The SUs are available for the following versions:
 
@@ -4536,34 +3864,34 @@ The practical sequence: first inventory the environment with the Health Checker 
 
 ## Sources
 
-1.  [Released: July 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-july-2026-exchange-server-security-updates/4534146) — Official announcement of the July release with the supported versions and the known wrapper-message issue.
+1.  [Released: July 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-july-2026-exchange-server-security-updates/4534146): Official announcement of the July release with the supported versions and the known wrapper-message issue.
 
-2.  [Addressing Exchange Server May 2026 vulnerability CVE-2026-42897 – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/addressing-exchange-server-may-2026-vulnerability-cve-2026-42897/4518498) — Original security advisory including the emergency mitigation and the known OWA side effects.
+2.  [Addressing Exchange Server May 2026 vulnerability CVE-2026-42897 – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/addressing-exchange-server-may-2026-vulnerability-cve-2026-42897/4518498): Original security advisory including the emergency mitigation and the known OWA side effects.
 
-3.  [Released: June 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-june-2026-exchange-server-security-updates/4524491) — The June release that delivered the actual fix for CVE-2026-42897.
+3.  [Released: June 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-june-2026-exchange-server-security-updates/4524491): The June release that delivered the actual fix for CVE-2026-42897.
 
-4.  [Exchange Emergency Mitigation Service (Exchange EM Service) – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/post-installation-tasks/security-best-practices/exchange-emergency-mitigation-service) — How the EM Service works, reconciling mitigations hourly and re-adding a prematurely deleted rule.
+4.  [Exchange Emergency Mitigation Service (Exchange EM Service) – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/post-installation-tasks/security-best-practices/exchange-emergency-mitigation-service): How the EM Service works, reconciling mitigations hourly and re-adding a prematurely deleted rule.
 
-5.  [Set-ExchangeServer (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-exchangeserver) — The `MitigationsApplied` and `MitigationsBlocked` parameters for checking mitigations and preventing reactivation.
+5.  [Set-ExchangeServer (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-exchangeserver): The `MitigationsApplied` and `MitigationsBlocked` parameters for checking mitigations and preventing reactivation.
 
-6.  [Exchange On-premises Mitigation Tool (EOMT) – Microsoft CSS-Exchange](https://microsoft.github.io/CSS-Exchange/Security/EOMT/) — The EOMT script including the rollback switch and CVE-specific JSON backup of the initial IIS state.
+6.  [Exchange On-premises Mitigation Tool (EOMT) – Microsoft CSS-Exchange](https://microsoft.github.io/CSS-Exchange/Security/EOMT/): The EOMT script including the rollback switch and CVE-specific JSON backup of the initial IIS state.
 
-7.  [CVE-2026-42897 Detail – NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-42897) — Technical description and scoring of the vulnerability in the National Vulnerability Database.
+7.  [CVE-2026-42897 Detail – NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-42897): Technical description and scoring of the vulnerability in the National Vulnerability Database.
 
 ----
 
-# Establishing a Microsoft Graph Connection in PowerShell: Reading a Mailbox and Sending Emails
+# Accessing Exchange Online with PowerShell: Replacing EWS with Microsoft Graph
 
 URL: https://rafaelpfister.ch/en/blog/microsoft-graph-powershell-mailbox-connection
 Datum: 2026-07-11
 
-# Establishing a Microsoft Graph Connection in PowerShell: Reading a Mailbox and Sending Emails
+# Accessing Exchange Online with PowerShell: Replacing EWS with Microsoft Graph
 
-Exchange Web Services (EWS) will be disabled for Exchange Online on **October 1, 2026**. Anyone who accesses mailboxes via script (for example, to retrieve automatically delivered files) must switch to the Microsoft Graph API. Setting up the complete Graph integration in PowerShell covers app registration, certificate-based authentication, reading and downloading attachments, and sending emails, each with the specific code.
+Microsoft is retiring Exchange Web Services (EWS) in Exchange Online on **October 1, 2026**. Scripts that fetch messages or attachments from a mailbox therefore need to switch to Microsoft Graph.
 
-A good example of this is an unattended script that downloads ZIP attachments from a mailbox, unpacks them, and then sends a report. Placeholders such as `example.com` and replace the tenant/app IDs with your own values.
+The example in this post runs without user sign-in: it downloads ZIP attachments from a mailbox, unpacks them, moves processed messages, and then sends a report. That requires an app registration, a certificate, and two Graph permissions. Values such as `example.com`, the tenant ID, and the app ID are placeholders.
 
-## 1\. Requirements
+## 1. Required PowerShell modules
 
 Three modules of the Microsoft Graph SDK are sufficient, not the entire Meta module `Microsoft.Graph`:
 
@@ -4573,18 +3901,18 @@ Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.G
 
 ## 2\. App Registration in Entra ID
 
-Unsupervised scripts do not log in a user, but rather an app with its own permissions (App-Only). In the [Log in to the Admin Center](https://entra.microsoft.com) Under "App registrations," create a new registration and grant it two permissions under "API permissions" → "Microsoft Graph" → "Application permissions":
+An unattended script signs in as an application with its own permissions. In the [Entra Admin Center](https://entra.microsoft.com), create a new registration under **App registrations** and grant it these two permissions under **API permissions → Microsoft Graph → Application permissions**:
 
 -   `Mail.ReadWrite`: Read emails and move them after processing them
     
 -   `Mail.Send`: Send the report email
     
 
-After that **Grant admin consent** Click and make a note of the tenant ID and application (client) ID.
+Then grant admin consent and note down the tenant ID and application (client) ID.
 
 ## 3\. Certificate Instead of Client Secret
 
-App-Only authentication uses a client secret or a certificate. For scheduled tasks, the certificate is the cleaner option: The private key remains in the certificate store, and there is no password in the script. Generate the certificate on the server running the task and export the public key:
+An app-only sign-in works with either a client secret or a certificate. For scheduled tasks, a certificate is the better choice: the private key stays in the certificate store, and no password appears in the script. Generate the certificate on the server that will run the task and export only the public part:
 
 ```powershell
 $cert = New-SelfSignedCertificate -Subject "CN=eCall-Graph" `
@@ -4600,7 +3928,7 @@ The exported `.cer`Upload the file to the app registration under "Certificates &
 
 ## 4\. Restrict access to individual mailboxes
 
-Application permissions otherwise apply tenant-wide: the app would be able to read every mailbox in the tenant. An Application Access Policy restricts it to a mail-enabled security group containing the permitted mailboxes (Exchange Online PowerShell, one-time setup):
+Application permissions initially apply to every mailbox in the tenant. Restrict the app with an Application Access Policy to a mail-enabled security group instead. This step is run once in Exchange Online PowerShell:
 
 ```powershell
 New-ApplicationAccessPolicy -AppId "<App-ID>" `
@@ -4627,9 +3955,9 @@ Connect-MgGraph -TenantId $TenantId -ClientId $ClientId `
     -CertificateThumbprint $Thumbprint -NoWelcome
 ```
 
-## 6\. Read emails and download ZIP attachments
+## 6. Read messages and download ZIP attachments
 
-The gist of it: Go through your inbox, save ZIP attachments, unzip them, and move the processed email to "Deleted Items." The key step is downloading via the `/$value`\-endpoint with `Invoke-MgGraphRequest -OutputFilePath`, which streams the raw content directly to a file and works reliably even with large attachments:
+The script can now go through the inbox, save and unzip ZIP attachments, and move processed messages to "Deleted Items." The download happens via the `/$value` endpoint and `Invoke-MgGraphRequest -OutputFilePath`. This writes the raw content directly to a file, without holding a large attachment entirely in memory:
 
 ```powershell
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -4667,8 +3995,7 @@ If there are more than 100 emails with `Get-MgUserMessage -All` or paging; one b
 Also `Send-MailMessage` is outdated. Through the same app registration (the `Mail.Send` permission), the email goes out directly via Graph, in this case with a file as a base64-encoded attachment:
 
 ```powershell
-$pfad = "D:\Reports
-eport.csv"
+$pfad = "D:\Reports\report.csv"
 $body = @{
     message = @{
         subject = "eCall Report"
@@ -4697,38 +4024,30 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
     -User "DOMAIN\svc-ecall" -Password (Read-Host "Passwort")
 ```
 
-The complete script (including logging, error handling, and the actual billing logic) is available as a working example on GitHub: [github.com/pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer)
+The complete example, including logging and error handling, is available on GitHub: [pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer).
 
 ## Sources
 
-1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440) — Announcement and end date (October 1, 2026) for the discontinuation of EWS in Exchange Online.
+1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440): Announcement and end date (October 1, 2026) for the discontinuation of EWS in Exchange Online.
     
-2.  [Microsoft Learn – «Get access without a user (App-only)»](https://learn.microsoft.com/en-us/graph/auth-v2-service) — App-only authentication against Microsoft Graph using a certificate.
+2.  [Microsoft Learn – «Get access without a user (App-only)»](https://learn.microsoft.com/en-us/graph/auth-v2-service): App-only authentication against Microsoft Graph using a certificate.
     
-3.  [Microsoft Learn – «Limiting application permissions to specific mailboxes»](https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access) — Application Access Policy to restrict the app to specific mailboxes.
+3.  [Microsoft Learn – «Limiting application permissions to specific mailboxes»](https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access): Application Access Policy to restrict the app to specific mailboxes.
 
 ----
 
-# HIN Mail Gateway Based on SEPPmail: Backup & Disaster Recovery in a Cluster (and What's Changing with Stargate)
+# Backing Up the HIN Mail Gateway and Restoring It After a Failure
 
 URL: https://rafaelpfister.ch/en/blog/hin-mail-gateway-backup-disaster-recovery
 Datum: 2026-07-08
 
-# HIN Mail Gateway Based on SEPPmail: Backup & Disaster Recovery in a Cluster (and What's Changing with Stargate)
+# Backing Up the HIN Mail Gateway and Restoring It After a Failure
 
-Almost every production HIN Mail Gateway (MGW) runs in a cluster. Some operators tacitly assume that this redundancy also handles data backup. That is a fallacy. A cluster protects against the failure of a node, not against a faulty rule change, a deleted certificate, or a corrupted import, because [System-critical data is reliably replicated to all nodes](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html), errors included.
+Many production HIN Mail Gateways run as a cluster. If one node fails, the other takes over. This redundancy doesn't help against a faulty rule, a deleted certificate, or a corrupted import, though: [System-critical data is replicated to all nodes](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html), including unwanted changes.
 
-  
-  
-  
+A resilient recovery therefore requires a separate backup. Because the HIN Mail Gateway is technically based on a SEPPmail appliance using GINA, its documented backup and restore mechanisms apply.
 
-Backup and disaster recovery can only be planned once the technical foundation is clear. The HIN Mail Gateway is based on a SEPPmail appliance using the GINA method; therefore, the documented SEPPmail mechanism applies, which has some specific characteristics when it comes to backup.
-
-  
-  
-  
-
-## What the HIN MGW Is, Technically Speaking
+## What Data Lives on the Gateway
 
 The gateway processes incoming and outgoing emails according to a set of central rules and encrypts them using S/MIME, OpenPGP, or TLS, depending on the recipient; for recipients without their own key material, the web-based GINA method is used. For backup purposes, what matters is that [Message content is not stored persistently on the gateway](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): The appliance processes emails as they come in without archiving them.
 
@@ -4736,7 +4055,7 @@ The gateway processes incoming and outgoing emails according to a set of central
   
   
 
-## Cluster Architecture: What Is Replicated
+## What the Cluster Replicates
 
 SEPPmail supports several [Cluster Configurations – High Availability, Load Balancing, and Geo-Clusters](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html); system parameters, user data, and key material are synchronized across all nodes. When [In a front-end/back-end cluster, the front end does not have its own configuration database](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html): It can be run in a DMZ without data storage and receives only the data necessary for the current processing; the database, including the keys, is located on the backend. For [Large File Transfer (LFT) is an exception](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html): Each partner (including front-ends) is assigned a disk of equal size, and the LFT data is synchronized across all nodes.
 
@@ -4886,46 +4205,46 @@ For the operations manual, this means that the traditional procedure of “confi
   
   
 
-## Conclusion
+## The Most Important Distinction
 
 As long as the HIN MGW runs on SEPPmail technology, the following applies: The cluster compensates for hardware failures, but responsibility for configuration and key integrity remains with the operator. The lean configuration backup must be backed up independently of the cluster (via SCP, versioned, with a separately stored password); snapshots do not replace it within the cluster, the version states remain synchronized, and the restore is regularly tested in isolation. The transition to Stargate should be incorporated into disaster recovery (DR) planning at an early stage, as it shifts resilience and key storage to the decentralized network.
 
 ## Sources
 
-1.  [SEPPmail Documentation – “Backup / Restore”](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html) — Backup content (configuration and key material only), nightly backups, automatic cluster recovery via replication.
+1.  [SEPPmail Documentation – “Backup / Restore”](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): Backup content (configuration and key material only), nightly backups, automatic cluster recovery via replication.
     
-2.  [SEPPmail Documentation – “Administration”](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) — Detailed reference: Backup menu (Download / Send Backup / Change password, `backup.tgz` at midnight), LFT snapshots (14 days, no restore in the cluster), restore rules and cluster procedures, preemption (SMTP return code, default 421), device cloning, update channels and update order (frontend before backend), factory reset, bulk import/export.
+2.  [SEPPmail Documentation – “Administration”](https://docs.seppmail.com/de/07_mi_11_adm__administration.html): Detailed reference: Backup menu (Download / Send Backup / Change password, `backup.tgz` at midnight), LFT snapshots (14 days, no restore in the cluster), restore rules and cluster procedures, preemption (SMTP return code, default 421), device cloning, update channels and update order (frontend before backend), factory reset, bulk import/export.
     
-3.  [SEPPmail Documentation – “Create a Backup User”](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html) — "backup (Backup operator)" group, encryption, and password management.
+3.  [SEPPmail Documentation – “Create a Backup User”](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html): "backup (Backup operator)" group, encryption, and password management.
     
-4.  [SEPPmail Documentation – “Copying a Backup via SCP”](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html) — Pickup of the `backup.tgz` via SCP using the OS user `backup` instead of sending an email.
+4.  [SEPPmail Documentation – “Copying a Backup via SCP”](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html): Pickup of the `backup.tgz` via SCP using the OS user `backup` instead of sending an email.
     
-5.  [SEPPmail Documentation – “Cluster / High Availability”](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html) — Cluster types and the data synchronized across all nodes (system parameters, user data, key material).
+5.  [SEPPmail Documentation – “Cluster / High Availability”](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html): Cluster types and the data synchronized across all nodes (system parameters, user data, key material).
     
-6.  [SEPPmail Documentation – “Frontend/Backend Cluster”](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html) — Front end without a configuration database, DMZ operation, on-demand data; back end as a data store.
+6.  [SEPPmail Documentation – “Frontend/Backend Cluster”](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html): Front end without a configuration database, DMZ operation, on-demand data; back end as a data store.
     
-7.  [SEPPmail Documentation – “Data Storage in the Cluster (LFT)”](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html) — An additional plate of equal size for each partner; synchronization of LFT data across all nodes.
+7.  [SEPPmail Documentation – “Data Storage in the Cluster (LFT)”](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html): An additional plate of equal size for each partner; synchronization of LFT data across all nodes.
     
-8.  [HIN AG – “From Mail Gateway to Data Mesh”](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm) — HIN Communication on the Successor to Stargate: Decentralized Nodes, Data Mesh Concept, Timeline, End-to-End Encryption.
+8.  [HIN AG – “From Mail Gateway to Data Mesh”](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): HIN Communication on the Successor to Stargate: Decentralized Nodes, Data Mesh Concept, Timeline, End-to-End Encryption.
     
-9.  [Vereign AG – “Verimesh” / Vereign Client Library (vcl, Tag 0.4-rc1)](https://code.vereign.com/code/vcl/-/tree/0.4-rc1) — Technical foundation of Stargate: decentralized key management (DKMS), end-to-end encryption with message fragmentation, open source under AGPLv3.
+9.  [Vereign AG – “Verimesh” / Vereign Client Library (vcl, Tag 0.4-rc1)](https://code.vereign.com/code/vcl/-/tree/0.4-rc1): Technical foundation of Stargate: decentralized key management (DKMS), end-to-end encryption with message fragmentation, open source under AGPLv3.
 
 ----
 
-# Totemomail: \"The licensed user limit has been reached\" (Automatically clean up internal users via LDAP)
+# Totemomail License Limit Reached: Cleaning Up Orphaned Users via LDAP
 
 URL: https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ldap-cleanup
 Datum: 2026-06-26
 
-# Totemomail: "The licensed user limit has been reached" (Automatically clean up internal users via LDAP)
+# Totemomail License Limit Reached: Cleaning Up Orphaned Users via LDAP
 
-If you run a totemomail environment for several years, you will eventually see the message *“The licensed user limit has been reached."* occur. The system continues to run, but is in a state of under-licensing. The cause is almost always the failure to offboard internal users.
+The message *"The licensed user limit has been reached"* doesn't mean mail flow stops immediately. It indicates under-licensing. In long-running environments, the cause is usually not sudden growth but former employees: the AD account was disabled, but the internal user in totemomail remained and continues to occupy a license.
 
-The host names, DNs, and service accounts in this article are generic examples (`example.com`). Adjust them to suit your environment.
+The sustainable solution is a regular LDAP sync against Active Directory. The following steps set up the connection and the cleanup agent, and verify the entire path before the first production run. Hostnames, DNs, and service accounts using `example.com` are placeholders and must be adapted to your own environment.
 
-## Licensing Model
+## Which Users Consume a License
 
-totemomail distinguishes between two classes of users, only one of which is relevant for licensing purposes.
+Totemomail distinguishes between two user classes. Only internal users count against the license limit.
 
 | User type | Description | License-relevant |
 | --- | --- | --- |
@@ -4959,7 +4278,7 @@ As soon as *Available Users* drops below zero, you'll see the warning on the bel
 
 Important: Sublicensing does not block the flow of email. It is a licensing issue, not a technical one. This means you have time to find a proper solution, but you should not ignore this situation indefinitely.
 
-## Possible Solutions
+## From Quick Fix to Permanent Solution
 
 ### Manual Deletion
 
@@ -5223,7 +4542,7 @@ This way, you can see whether the TLS handshake or the bind fails first. The tot
 -   **First run in queue mode.** A faulty filter can affect a large number of accounts.
     
 
-## Conclusion
+## The Safe Process in Four Steps
 
 Reaching the license limit is not a technical issue, but rather the result of a lack of an offboarding process. The long-term solution is to regularly synchronize with Active Directory as the primary source. The order matters:
 
@@ -5240,120 +4559,98 @@ If you follow this procedure, you will resolve the immediate licensing issue and
 
 ## Sources
 
-1.  [totemo / Kiteworks – totemomail (Email Protection Gateway)](https://totemo.com/en/resources/downloads) — Product documentation for totemomail (licensing model, LDAP integration, Cleanup Agent); the technology is being continued at Kiteworks as the Email Protection Gateway.
+1.  [totemo / Kiteworks – totemomail (Email Protection Gateway)](https://totemo.com/en/resources/downloads): Product documentation for totemomail (licensing model, LDAP integration, Cleanup Agent); the technology is being continued at Kiteworks as the Email Protection Gateway.
     
-2.  [Microsoft Learn – «UserAccountControl property flags»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/useraccountcontrol-manipulate-account-properties) — Meaning of the flags, among other things `ACCOUNTDISABLE` (0x0002) and `NORMAL_ACCOUNT`.
+2.  [Microsoft Learn – «UserAccountControl property flags»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/useraccountcontrol-manipulate-account-properties): Meaning of the flags, among other things `ACCOUNTDISABLE` (0x0002) and `NORMAL_ACCOUNT`.
     
-3.  [Microsoft Learn – «Search Filter Syntax»](https://learn.microsoft.com/en-us/windows/win32/adsi/search-filter-syntax) — Bitwise LDAP filter using the matching rule OID `1.2.840.113556.1.4.803` (LDAP\_MATCHING\_RULE\_BIT\_AND).
+3.  [Microsoft Learn – «Search Filter Syntax»](https://learn.microsoft.com/en-us/windows/win32/adsi/search-filter-syntax): Bitwise LDAP filter using the matching rule OID `1.2.840.113556.1.4.803` (LDAP\_MATCHING\_RULE\_BIT\_AND).
     
-4.  [OpenLDAP – "ldapsearch" (Man Page)](https://www.openldap.org/software/man.cgi?query=ldapsearch) — Call options (`-x`, `-H ldaps://`, `-D`, `-W`, `-b`) for Bind and Search.
+4.  [OpenLDAP – "ldapsearch" (Man Page)](https://www.openldap.org/software/man.cgi?query=ldapsearch): Call options (`-x`, `-H ldaps://`, `-D`, `-W`, `-b`) for Bind and Search.
     
-5.  [Microsoft Learn – «Service overview and network port requirements»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/service-overview-and-network-port-requirements) — LDAP ports 389/636 and Global Catalog ports 3268/3269.
+5.  [Microsoft Learn – «Service overview and network port requirements»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/service-overview-and-network-port-requirements): LDAP ports 389/636 and Global Catalog ports 3268/3269.
 
 ----
 
-# Login is no longer possible after updating the HIN Mailgateway from version 14.1.4.2 to 15.0.5 (affects only systems in a cluster)
+# HIN Mailgateway 15.0.5: Fixing the Login Outage After a Cluster Update
 
 URL: https://rafaelpfister.ch/en/blog/hin-mailgateway-update-15-0-5-login-issue
 Datum: 2026-06-19
 
-# Login is no longer possible after updating the HIN Mailgateway from version 14.1.4.2 to 15.0.5 (affects only systems in a cluster)
+# HIN Mailgateway 15.0.5: Fixing the Login Outage After a Cluster Update
+
+When updating a HIN Mailgateway from 14.1.4.2 to 15.0.5, a bug in cluster replication can knock out the login on both appliances. Standalone systems are not affected. The vendor is aware of the issue and plans a fix in a later version.
 
 ## Fault Symptoms
 
-After updating to version 15.0.5, it is still possible to log in to the appliance for a few minutes. After about 10 minutes, login attempts fail on both cluster members. The error pattern suggests that cluster replication is causing the problems. According to the manufacturer, this is a known issue and should be resolved in the next version.
+Immediately after the update, the web interface can still be opened. About ten minutes later, login fails on both cluster nodes. The fact that the error appears with a delay and on both systems points to the replicated cluster configuration as the cause.
 
-## Solution
+## Recovery
 
-1. Restore snapshots from both cluster members simultaneously
-2. A cluster member must remain shut down after the restore
-3. Dissolve the cluster (download the cluster identifier first)
-4. The system boots up immediately and without warning!
+These steps modify the cluster configuration. Before you begin, make sure current backups and the cluster identifier are available.
+
+1. Restore the snapshots taken simultaneously on both cluster nodes.
+2. After the restore, leave one node powered off.
+3. On the running node, download the cluster identifier first, then dissolve the cluster.
+4. Warning: after dissolving the cluster, the appliance reboots immediately without any further confirmation prompt.
 
 ![](../images/hin-mailgateway-update-15-0-5-login-issue/YSaXyzS9jLOD9utH0H2AEDOdnjI.png)
 
-5. Update System 1
-6. Shut down System 1
-7. Repeat the same game using System 2
+5. Update the first node to version 15.0.5 and then shut it down.
+6. Start the second node and repeat the same steps there.
+7. Only once both systems work individually and are on the same version, rebuild the cluster according to the vendor documentation.
+
+This procedure prevents a faulty configuration from being replicated between the nodes again during the update.
 
 ## Sources
 
-1. [SEPPmail Documentation – “Cluster / High Availability”](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html) — Cluster types and configuration replication across all nodes.
-2. [SEPPmail Documentation – “Administration”](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) — Update order within the cluster (frontend before backend) and the requirement for identical version numbers.
-3. [HIN Mailgateway: Backup & Disaster Recovery im Cluster](/en/blog/hin-mail-gateway-backup-disaster-recovery) — An in-depth look at cluster replication, backup, and restore.
+1. [SEPPmail Documentation – “Cluster / High Availability”](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html): Cluster types and configuration replication across all nodes.
+2. [SEPPmail Documentation – “Administration”](https://docs.seppmail.com/de/07_mi_11_adm__administration.html): Update order within the cluster (frontend before backend) and the requirement for identical version numbers.
+3. [HIN Mailgateway: Backup & Disaster Recovery im Cluster](/en/blog/hin-mail-gateway-backup-disaster-recovery): An in-depth look at cluster replication, backup, and restore.
 
 ----
 
-# Set Up Email Routing Between Apache James (Totemomail / Kiteworks EPG) and Exchange Online
+# Understanding Mail Routing Between totemomail and Exchange Online
 
 URL: https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing
 Datum: 2026-06-17
 
-# Set Up Email Routing Between Apache James (Totemomail / Kiteworks EPG) and Exchange Online
+# Understanding Mail Routing Between totemomail and Exchange Online
 
-In modern email architectures, it is often necessary to connect different email platforms: whether as part of migrations, hybrid environments, or to integrate MTAs that handle specialized tasks. This will be illustrated using the example of a mail loop between a gateway system such as TotemoMail (based on Apache James) and a cloud service such as Exchange Online.
+In a mail loop between Exchange Online and totemomail, each system has a clearly defined role. Exchange Online provides the mailboxes. Totemomail, or today's Kiteworks Email Protection Gateway, handles encryption, signatures, policies, and special routing rules.
 
-While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. For these components to work together, incoming and outgoing messages must be routed between the systems in a controlled manner, without loops, delivery errors, or unexpected side effects.
+Turning that into a reliable mail flow takes more than setting up two SMTP connectors. For troubleshooting, you also need to understand what happens inside the gateway once a message has been accepted: Where does it end up? Which rule runs next? And why can a message sit waiting in a queue even though the SMTP dialog already completed successfully?
 
-Once the mail loop is in place, one point matters most: Exchange Online must accept mail exclusively from TotemoMail, not directly from the internet. For how that gets locked down with a restrictive partner connector, and what happens when that step is missing, see [Ghost Sender or Ghost Admin?](/en/blog/ghost-sender-exchange-online-side-entrance)
+This post therefore explains the processing model of [Apache James](https://james.apache.org/), on which totemomail is built. The actual routing configuration depends on the specific environment, but the processors, matchers, mailets, and repositories described here form the technical foundation of every installation.
 
-However, setting up such an email loop is anything but trivial. In addition to traditional SMTP routing issues, Apache James's internal mechanisms also play a major role.
+One important security rule applies regardless of the details: if totemomail sits in front as the gateway, Exchange Online must accept internet mail only from that gateway. That requires a restrictive partner connector. An MX record alone does not block the direct delivery path. The post [An MX Record Is Not a Firewall](/en/blog/ghost-sender-exchange-online-side-entrance) shows how this side entrance appears and how to close it.
 
-It is precisely this internal processing flow (hidden behind XML configurations) that decides whether an email functions correctly within the system.
+## From SMTP Intake to Processing
 
-This post covers:
+Apache James's processing logic consists of four building blocks:
 
--   how to set up an email loop between TotemoMail and Exchange Online
-    
--   How Apache James processes and forwards emails internally
-    
--   and what you need to keep in mind to ensure clean, stable email flows
-    
+- **Matchers** check conditions and determine which recipients a rule applies to.
+- **Mailets** perform the actual action, such as changing headers, encrypting, delivering, or ending further processing.
+- **Processors** combine matchers and mailets into ordered processing steps.
+- **Mail repositories** store messages during processing or after an error.
 
-The focus here is not only on configuration, but also on understanding the underlying mechanics. Only those who truly understand the flow of email can analyze and prevent errors in a targeted manner.
-
-### Spool Manager (Processing Incoming Emails)
-
-The XML describes the configuration of the Totemomail mail-processing pipeline (the underlying principle is [Apache James](https://james.apache.org/)). It describes how emails are processed, encrypted, decrypted, routed, and delivered.
-
-Totemomail is built on Apache James and uses its Mailet containers. The Mailet container's processing model is based on four key components:
-
--   **Mailets** perform specific actions on emails, such as modifying content or headers, triggering actions, or terminating processing.
-    
--   **Matchers** define conditions and determine whether an email should be processed by a specific Mailet.
-    
--   **Processors** organize these matcher and mailet combinations as sequential processing steps in a pipeline.
-    
--   **Mail-Repositories** serve as storage locations for emails during or after processing.
-    
-
-This modular structure allows administrators to flexibly assemble complex processing logic. In Totemomail (as well as in Apache James in general), the processing logic looks like this:
+This separation is essential for analysis: the repository answers the question of **where** a message resides. The processor determines **how** it gets processed further.
 
 ![Using James as an SMTP relay](../images/4CixEi383SY5WdvwMSGZ67odMU.png)
 
-Before an email can be processed in Apache James, it must first be delivered to the internal mail repository. This is handled by the SMTP server, which accepts incoming connections and receives messages via the SMTP protocol. In modern versions, this SMTP server is based on Netty, an asynchronous network engine that processes incoming TCP connections. As soon as an email has been fully transmitted via SMTP (specifically after the DATA command), it is converted into an internal object model within James.
+The SMTP server accepts the connection and reads the message through to the end of the `DATA` section. James then creates a `MailImpl` object. It holds the MIME content as a `MimeMessage`, along with the information needed for processing: sender, recipients, status, and further attributes.
 
-Specifically, the message is converted into a so-called MailImpl object. This object not only encapsulates the actual content of the email (as a MimeMessage), but also supplements it with additional metadata such as the sender, recipient, processing status, and other attributes required for internal routing and processing. From this point on, the actual mail processing takes place via the configured processors, matchers, and mailets.
+With a file-based repository, James stores this information separately:
 
-During persistence, this object is split into two parts in the FileMailRepository:
+- `FileStreamStore` contains the complete RFC 822/MIME message as a byte stream.
+- `FileObjectStore` contains the serialized `MailImpl` object with status and metadata.
 
--   The MIME content is stored as a raw byte stream in the FileStreamStore
-    
--   The Java object (MailImpl) is stored in the FileObjectStore using Java serialization
-    
+A message can therefore already be fully accepted and stored even though its business-logic processing is still pending.
 
-In doing so, James deliberately separates the message content from the processing state. The next sections look at how this is implemented in the system.
+## Repositories and Queues Under `/var/mail`
 
-##### Structure of the /var/mail Repository (the various queues)
+The individual repositories appear in the file system as directories. Under normal operation, a message stays there only very briefly. If a queue backs up, that usually points to a faulty rule, an unreachable destination, or a failed backend service.
 
-Queuing takes place through various folders (known as repositories). This means that emails are temporarily stored to be processed later. In reality, of course, this happens in fractions of a second. However, if there is a configuration error, the emails may pile up in the *spool* queue and wait to be processed. In other words:
-
--   Repository = where is the email stored?
-    
--   Processor = How is the email processed?
-    
-
-Here is an example setup with various repositories (including those used specifically for a HIN encryption gateway connection). HIN is a secure trust environment for the Swiss healthcare system, distributed by Health Infonet AG.
+In addition to the standard queues, the following example also includes optional directories for a HIN connection. HIN provides the secure communication space for the Swiss healthcare system.
 
 > If you need assistance connecting to the HIN Mailgateway or migrating to the new HIN Stargate solution, you'll find the relevant experts at [adeptio](https://adeptio.ch/).  
 >   
@@ -5383,21 +4680,19 @@ Root-Folder:
 │   → System- oder Zertifikatsbenachrichtigungen
 │
 ├── error/
-│   → Fehlgeschlagene Mails (z. B. Policy, Encryption, Routing)
+│   → Fehlgeschlagene Mails (z. B. Policy, Encryption, Routing)
 │
 ├── DBUnavailable/
 │   → Mails, die wegen Backend-/DB-Problemen nicht verarbeitet werden konnten
 ```
 
-##### Structure of Emails Within the Totemomail File System
+## How a Message Is Stored in the File System
 
-As previously described, an email within the repository consists of two separate files:
+Each stored message consists of two files.
 
-###### File Stream Store
+### `FileStreamStore`: Message Content
 
-\*.FileStreamStore = contains the MIME content of the emails as complete RFC822/MIME emails
-
-A \`cat\` dump displays the following content:
+The `*.FileStreamStore` file contains the complete RFC 822/MIME message. Using `cat`, the header and body are readable:
 
 ```text
 From:
@@ -5407,13 +4702,11 @@ Subject:
 Body
 ```
 
-See [RFC 822 - STANDARD FOR THE FORMAT OF ARPA INTERNET TEXT MESSAGES](https://datatracker.ietf.org/doc/html/rfc822)
+The underlying message format is described in [RFC 822](https://datatracker.ietf.org/doc/html/rfc822).
 
-###### FileObjectStore
+### `FileObjectStore`: Status and Metadata
 
-\*.FileObjectStore = serialized Java object (org.apache.james.core.MailImpl) containing the current processing state and metadata
-
-A \`cat\` dump displays the following content:
+The `*.FileObjectStore` file is a serialized Java object of type `org.apache.james.core.MailImpl`. Its fields include:
 
 ```text
 attributes: HashMap
@@ -5428,38 +4721,27 @@ remoteHost
 sender
 ```
 
-See [MailImpl (Apache James Server 3.0-beta5-SNAPSHOT API)](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html)
+The [API documentation for `MailImpl`](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html) describes the object model in detail.
 
-### Processor (Which rules are applied, and in what order?)
+## The Status Selects the Next Processor
 
-We learned above that the processing logic in Apache James is completely decoupled from the memory model. The directory structure reflects only the queue and not the current processing*condition* the email. The processing status is stored in the metadata (\*.FileObjectStore), more specifically in the *state*\-parameter. According to the specification, any string can generally be defined here. This corresponds to the **name**\-attribute of the processor. The official James documentation states the following:
+The directory structure shows only the repository. The actual processing state lives in the `state` field of the `FileObjectStore`. Its value refers to the `name` attribute of a processor.
 
-> [**James Server - James 2.3 - Configuring the SpoolManager**](https://james.apache.org/server/2.3.1/spoolmanager_configuration.html)
-> 
-> Each processor has a required attribute, **name**. The value of this attribute must be unique for each processor tag. The name of a processor is significant. Certain processors are required (specifically root and error). The name "ghost" is forbidden as a processor name, as it is used to denote a message that should not undergo any further processing.
-> 
-> The James SpoolManager creates a correspondance between processor names and the "state" of a mail as defined in the Mailet API. Specifically, after each mailet processes a mail, the state of the message is examined. If the state has been changed, the message does not continue in the current processor. If the new state is "ghost" then processing of that message terminates completely. If the new state is anything else, the message is re-routed to the processor with the name matching the new state.
-> 
-> The root processor is a required processor. All new messages that the SpoolManager finds on the spool are directed to this processor.
-> 
-> The error processor is another required processor. Under certain circumstances James itself will redirect messages to the error processor. It is also the standard processor to which mailets redirect messages when an error condition is encountered.
+After each mailet, the SpoolManager checks this status:
 
-The state is therefore the key to invoking the so-called "processor" within the Totemomail ruleset. The next state is then set within the processor. From this, an important architectural principle for the order in which processors are processed can be defined. Totemomail does not process data linearly in the sense of Processor1 → Processor2 → Processor3, but rather according to the following principle:
+1. If the status stays unchanged, the next matcher-mailet pair in the same processor follows.
+2. If a mailet changes the status, James ends the current processor and jumps to the processor of the same name.
+3. The special status `ghost` ends processing entirely.
 
-1.  state → processor
-    
-2.  processor → sets a new state
-    
-3.  → next processor
-    
+The mandatory `root` and `error` processors have fixed roles. New messages start in `root`; internal errors and mailets configured accordingly redirect to `error`. The order of the `<processor>` elements in the XML file, by contrast, does **not** determine the execution order.
 
-#### Processor Structure in the Totemomail Ruleset (totemomail\_config.xml)
+## Processor Structure in `totemomail_config.xml`
 
-Before making any changes to the system, you should create a backup of the totemomail\_config.xml file. The current Totemomail ruleset can be downloaded as follows:
+Before making any change, export and back up the current `totemomail_config.xml`:
 
 ![Configuration / Open Current / Export to File](../images/kWKIN3vramf0IAuPjzioEGV4Znw.png)
 
-The various processors and the mailets they contain are listed in totemomail\_config.xml. Here is another real-world example:
+The various processors and the mailets they contain are visible in totemomail_config.xml. Here's another real-world example:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -5491,9 +4773,9 @@ The various processors and the mailets they contain are listed in totemomail\_co
 </spoolmanager>
 ```
 
-Here, it is clear that the ruleset is not processed linearly. The *root*\-Processor can also be placed at the very end and will still be processed first.
+Although `root` appears at the end of this excerpt, every new message starts there. What matters is the name, not its position in the document.
 
-Now, if we look at the *root*\-If you take a closer look at the processor, it becomes clear that very little of the logic is visible in the XML:
+The `root` processor itself contains an ordered list of matcher-mailet pairs:
 
 ```xml
    <processor name="root">
@@ -5518,44 +4800,37 @@ Now, if we look at the *root*\-If you take a closer look at the processor, it be
    </processor>
 ```
 
-So this isn't the implementation of the logic, but merely a configuration file. The actual logic is located here, for example, in the class that is called *SimpleLogger*. Apparently, the class appears to be a custom development by Totemomail (now Kiteworks), so the code cannot be viewed directly and is available only as compiled bytecode.
+The XML file configures the classes but doesn't implement them. `SimpleLogger`, for instance, is a class provided by totemomail or Kiteworks whose source code isn't exposed on the appliance. The help text in the admin GUI, however, explains its parameters:
 
-In the GUI, however, you can display a help text by right-clicking on the corresponding mail item:
+- `log-message` sets the log text and is required.
+- `showSenderEmailAddress` optionally adds the sender address.
+- `showRecipientsEmailAddress` adds the recipient addresses.
+- `showSubject` adds the subject.
 
-> This action gives you the possibility to insert own log messages in the log file. The name and the location of the log file depend on the property totemo.mailer.logFile
-> 
-> **Parameters:**  
-> **log-message (required)**: The text to log.  
-> **showSenderEmailAddress (optional)**: Set it to "true" if the log message should contain the senders email address  
-> **showRecipientsEmailAddress (optional)**: Set it to "true" if the log message should contain the recipients email addresses  
-> **showSubject (optional)**: Set it to "true" if the log message should contain the subject
+The order **within** a processor is binding. A matcher can select none, all, or only some of the recipients. For a subset, James splits the message: the matching recipients pass through the mailet, while the rest continue separately. If a mailet then changes the status, processing jumps immediately to the named processor; the remaining rules in the current processor are skipped.
 
-The following information regarding the logic behind the execution of individual matchers and mailets can be found in James' documentation:
+This gives you a reliable troubleshooting workflow:
 
-> [James Server - James 2.3 - The SpoolManager, Matchers, and Mailets](https://james.apache.org/server/head/spoolmanager.html)
-> 
-> Matchers and mailets are used in pairs. At each stage in processing a message is checked against a matcher. The matcher will attempt to match the mail message. The match is not simply a yes or no issue. Instead, the match method returns a collection of matched recipients. If the this collection of matched recipients is empty, the mailet is not invoked. If the collection of matched recipients is the entire set of original recipients, the mail is then processed by the associated mailet. Finally, if the matcher only matches a proper subset of the original recipients, the original mail is duplicated. The recipients for one message are set to the matched recipients, and that message is processed by the mailet. The recipients for the other mail are set to the non-matching recipients, and that message is not processed by the mailet.
-> 
-> More on matchers and mailets can be found [here](https://james.apache.org/server/head/mailet_api.html).
-> 
-> One level up from the matchers and mailets are the processors. Each processor is a list of matcher/mailet pairs. **During mail processing, mail messages will be processed by each pair, in order.** In most cases, the message will be processed by all the pairs in the processor. **However, it is possible for a mailet to change the state of the mail message so it is immediately directed to another processor, and no additional processing occurs in the current processor.** Typically this occurs when the mailet wants to prevent future processing of this message (i.e. the mail message has been delivered locally, and hence requires no further processing) or when the mail message has been identified as a candidate for special processing (i.e. the message is spam and thus should be routed to the spam processor). **Because of this redirection, the processors in the SpoolManager form a tree. The root processor, which must be present, is the root of this tree.**
-> 
-> The SpoolManager continually checks for mail in the spool repository. When mail is first found in the repository, it is delivered to the root processor. Mail can be placed on this spool from a number of sources (SMTP, FetchPOP, a custom component). This spool repository is also used for storage of mail that is being redirected from one processor to another. Mail messages are driven through the processor tree until they reach the end of a processor or are marked completed by a mailet.
-> 
-> More on configuration of the SpoolManager can be found [here](https://james.apache.org/server/head/spoolmanager_configuration.html).
+1. Identify the repository and the associated `FileStreamStore`/`FileObjectStore` files.
+2. Determine the current `state` in the `FileObjectStore`.
+3. Look up the processor of the same name in `totemomail_config.xml`.
+4. Check the matchers and mailets in their actual order.
+5. On a status change, continue in the target processor.
+
+This lets you trace a mail flow step by step, without mistakenly reading the XML file top to bottom as a linear program.
 
 ## Sources
 
-1.  [Apache James – Project Page](https://james.apache.org/) — An open-source MTA on which totemomail and Kiteworks EPG are technically based.
+1.  [Apache James – Project Page](https://james.apache.org/): An open-source MTA on which totemomail and Kiteworks EPG are technically based.
     
-2.  [Apache James – “Spool Manager”](https://james.apache.org/server/head/spoolmanager.html) — Processing incoming emails, spool files, and queues.
+2.  [Apache James – "Spool Manager"](https://james.apache.org/server/head/spoolmanager.html): Processing incoming emails, spool files, and queues.
     
-3.  [Apache James – «Spool Manager Configuration»](https://james.apache.org/server/head/spoolmanager_configuration.html) — Processor configuration and order of the rules.
+3.  [Apache James – «Spool Manager Configuration»](https://james.apache.org/server/head/spoolmanager_configuration.html): Processor configuration and order of the rules.
     
-4.  [Apache James – “Mail API”](https://james.apache.org/server/head/mailet_api.html) — The Mailet and Matcher concepts behind the Rules.
+4.  [Apache James – "Mailet API"](https://james.apache.org/server/head/mailet_api.html): The mailet and matcher concepts behind the rules.
     
-5.  [Apache James – “MailImpl” (API Documentation)](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html) — Mail object model behind FileStreamStore and FileObjectStore.
+5.  [Apache James – "MailImpl" (API Documentation)](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html): Mail object model behind FileStreamStore and FileObjectStore.
     
-6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822) — Format of Internet text messages (header and body).
+6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (header and body).
     
-7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner) — Connector configuration for secure email flow between Exchange Online and the gateway.
+7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure email flow between Exchange Online and the gateway.

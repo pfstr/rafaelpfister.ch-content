@@ -87,10 +87,10 @@ Paperless-ngx on a small disk with a cloud store is feasible and usable day to d
 
 ## Sources
 
-1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage) — the template from this article: setup.sh, wizard.sh, compose files, watchdog and retrofit guide.
+1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage): the template from this article: setup.sh, wizard.sh, compose files, watchdog and retrofit guide.
 
-2.  [Rclone: Overview of cloud storage systems](https://rclone.org/overview/) — the 70+ supported services and their capabilities compared.
+2.  [Rclone: Overview of cloud storage systems](https://rclone.org/overview/): the 70+ supported services and their capabilities compared.
 
-3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/) — `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` and the other settings used.
+3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/): `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` and the other settings used.
 
-4.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — sanity checker, export and import, and the scheduled background tasks.
+4.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/): sanity checker, export and import, and the scheduled background tasks.

@@ -1,7 +1,7 @@
 ---
-title: "Integrating and Hardening the Midea PortaSplit in Home Assistant"
+title: "Controlling the Midea PortaSplit Locally with Home Assistant and Operating It Securely"
 navTitle: "PortaSplit setup"
-description: "The practical part on the Midea PortaSplit in Home Assistant: which community integration to pick, step-by-step setup, useful automations, and a complete hardening on your home network with an IoT VLAN, firewall rules, and an encrypted backup."
+description: "From choosing the right community integration to an IoT VLAN: how to set up the PortaSplit, secure token and key, and limit cloud and network access."
 date: "2026-07-24"
 kategorie: "Smart Home & IoT"
 timeToRead: "14 min to read"
@@ -15,9 +15,9 @@ slug: "midea-portasplit-home-assistant-setup-and-hardening"
 url: "https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-setup-and-hardening"
 ---
 
-This post is the practical part on the Midea PortaSplit in Home Assistant: choosing the integration, setting it up step by step, useful automations, and hardening it on your own network. Why these credentials are currently under time pressure and what the announced shutdown of the cloud interfaces means is covered in the [first part on the cloud token question](/en/blog/midea-portasplit-home-assistant-integration).
+The Midea PortaSplit can be controlled directly on the local network through Home Assistant once it's set up. To do that, the community integration needs two device-specific credentials from the Midea cloud: a token and a key.
 
-One note up front: the integrations described here come from the community and are supported neither by Midea nor by Home Assistant officially. Firmware updates, changes to the Midea cloud, or changes to the integrations themselves can affect their behaviour at any time.
+This post walks through choosing, setting up, and hardening the integration. The solutions described come from the community and are supported neither by Midea nor by Home Assistant officially. Firmware or cloud changes can affect their behaviour at any time. The background on the token interface and the ambiguous shutdown warning is covered in the [analysis of the Midea cloud APIs](/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant).
 
 ## How local control works
 
@@ -440,7 +440,7 @@ Midea PortaSplit
     └── internet only when needed
 ```
 
-## Conclusion
+## Recommended Operating State
 
 The Midea PortaSplit integrates into Home Assistant surprisingly well. Once configured, it is locally controllable and can be wired into automations, which removes a large part of the cloud dependency from day-to-day operation.
 
@@ -448,16 +448,16 @@ From a security perspective, the integration is defensible as long as a few grou
 
 ## Sources
 
-1.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> — The `Midea Smart AC` integration: supported device types `0xAC` and `0xCC`, PortaSplit with "Out Silent Mode", cloud usage for token and key retrieval on V3 devices, manual configuration, and default port 6444.
+1.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: The `Midea Smart AC` integration: supported device types `0xAC` and `0xCC`, PortaSplit with "Out Silent Mode", cloud usage for token and key retrieval on V3 devices, manual configuration, and default port 6444.
 
-2.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> — The `Midea AC LAN` integration: supported device classes, a long-lived TCP connection for state synchronisation, and the Home Assistant 2024.4.1 minimum version.
+2.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: The `Midea AC LAN` integration: supported device classes, a long-lived TCP connection for state synchronisation, and the Home Assistant 2024.4.1 minimum version.
 
-3.  [midea_ac_lan: climate entity documentation](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md) — Entities and attributes for air conditioners, including power, total energy, compressor frequency, and the energy decoding methods for individual subtypes.
+3.  [midea_ac_lan: climate entity documentation](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md): Entities and attributes for air conditioners, including power, total energy, compressor frequency, and the energy decoding methods for individual subtypes.
 
-4.  [midea_ac_lan: debug and configuration notes](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/debug.md) — Device configuration stored under `/config/.storage/midea_ac_lan/`, the recommendation to back up rather than delete the JSON file, and the logger configuration for debug logs.
+4.  [midea_ac_lan: debug and configuration notes](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/debug.md): Device configuration stored under `/config/.storage/midea_ac_lan/`, the recommendation to back up rather than delete the JSON file, and the logger configuration for debug logs.
 
-5.  [Issue 779: PortaSplit Out Silent Mode](https://github.com/wuwentao/midea_ac_lan/issues/779) — Request for support of the outdoor unit silent mode introduced with the January 2026 firmware update, which reduces noise by roughly 6 decibels.
+5.  [Issue 779: PortaSplit Out Silent Mode](https://github.com/wuwentao/midea_ac_lan/issues/779): Request for support of the outdoor unit silent mode introduced with the January 2026 firmware update, which reduces noise by roughly 6 decibels.
 
-6.  [Midea SmartHome](https://www.midea.com/global/smarthome) — Vendor statements on the security and privacy standards EN 303 645, PSTI, NIST, GDPR, and RED DA.
+6.  [Midea SmartHome](https://www.midea.com/global/smarthome): Vendor statements on the security and privacy standards EN 303 645, PSTI, NIST, GDPR, and RED DA.
 
-7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/) — Installing and managing custom integrations that are not part of Home Assistant Core.
+7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): Installing and managing custom integrations that are not part of Home Assistant Core.
