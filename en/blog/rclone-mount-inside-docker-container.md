@@ -1,22 +1,22 @@
 ---
-title: "rclone mounts inside Docker containers: propagation, AppArmor and the error \"Transport endpoint is not connected\""
-navTitle: "rclone in Docker"
+title: "Rclone mounts inside Docker containers: propagation, AppArmor and the error \"Transport endpoint is not connected\""
+navTitle: "Rclone in Docker"
 description: "A FUSE mount from inside a Docker container should be visible on the host and in other containers — and survive restarts. Three documented traps: silently downgraded rshared propagation, the fusermount3 AppArmor profile, and containers clinging to dead mounts."
-date: "2026-07-26"
-kategorie: "rclone"
+date: "2026-07-25"
+kategorie: "Rclone"
 timeToRead: "9 min to read"
 themen:
   - "rclone"
 related:
-  - "offloading-paperless-documents-to-proton-drive"
+  - "offloading-paperless-documents-to-cloud-storage"
 translationOf: "rclone-mount-in-docker-container"
 slug: "rclone-mount-inside-docker-container"
 url: "https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container"
 ---
 
-An rclone mount is supposed to run in a Docker container but be usable outside of it: on the host and in other containers that consume the files. That sounds like one line of compose — in reality it hides three traps, two of which are barely documented. This article shows all three with the concrete error signatures, as they occurred during a hands-on test on Ubuntu 25.10 (kernel 6.17, Docker 29.6).
+An Rclone mount is supposed to run in a Docker container but be usable outside of it: on the host and in other containers that consume the files. That sounds like one line of compose — in reality it hides three traps, two of which are barely documented. This article shows all three with the concrete error signatures, as they occurred during a hands-on test on Ubuntu 25.10 (kernel 6.17, Docker 29.6).
 
-The use case behind it: a [document store for Paperless-ngx in a cloud service](/en/blog/offloading-paperless-documents-to-proton-drive). The findings apply to any containerised FUSE mount, though, including sshfs and similar tools.
+The use case behind it: a [document store for Paperless-ngx in a cloud service](/en/blog/offloading-paperless-documents-to-cloud-storage). The findings apply to any containerised FUSE mount, though, including sshfs and similar tools.
 
 ## Trap 1: Docker silently downgrades rshared
 
@@ -82,11 +82,11 @@ rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/documents /data/documents
 ```
 
-The bind is a regular mount(2) call and propagates like any other through the shared path to the host — verified all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
+The bind is a regular mount(2) call and propagates like any other through the shared path to the host — verified all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
 
 ## Trap 3: consumers cling to dead mounts
 
-The third trap concerns the other side. If the rclone process dies and the mount is re-created, the host sees it immediately — a container that binds the path the ordinary way does not:
+The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately — a container that binds the path the ordinary way does not:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -121,9 +121,9 @@ done
 
 4. Then mount and publish normally; consumers with `rslave` pick the fresh mount up by themselves.
 
-In the test the complete chain — rclone process killed, detection, container restart, cleanup, remount, republish — took 160 seconds, with the consumer container noticing nothing beyond a short gap.
+In the test the complete chain — Rclone process killed, detection, container restart, cleanup, remount, republish — took 160 seconds, with the consumer container noticing nothing beyond a short gap.
 
-For perspective: whoever runs the mount **on the host** via systemd avoids traps 1 and 2 entirely and only needs `rslave` on the consumer side. The container route pays off when the host should stay free of rclone installations or several mounts are managed centrally — then there is no way around the three traps.
+For perspective: whoever runs the mount **on the host** via systemd avoids traps 1 and 2 entirely and only needs `rslave` on the consumer side. The container route pays off when the host should stay free of Rclone installations or several mounts are managed centrally — then there is no way around the three traps.
 
 ## Sources
 
@@ -131,6 +131,6 @@ For perspective: whoever runs the mount **on the host** via systemd avoids traps
 
 2.  [Kernel documentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) — the Linux kernel's mount propagation that Docker's bind options build on.
 
-3.  [rclone mount](https://rclone.org/commands/rclone_mount/) — VFS cache modes, --allow-other and the limits of the FUSE mount.
+3.  [Rclone mount](https://rclone.org/commands/rclone_mount/) — VFS cache modes, --allow-other and the limits of the FUSE mount.
 
 4.  [AppArmor documentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/) — how profiles attach to executables; the fusermount3 profile lives at /etc/apparmor.d/fusermount3.

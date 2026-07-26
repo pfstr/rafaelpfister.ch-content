@@ -2,7 +2,7 @@
 title: "Paperless-ngx mit wenig Speicherplatz betreiben: Dokumente zu Clouddienst auslagern"
 navTitle: "Paperless mit Clouddienst"
 description: "Paperless-ngx braucht lokal nur Datenbank, Suchindex und Vorschaubilder — die Dokumente selbst können in einem Clouddienst liegen. Was der Praxistest ergeben hat und wie die Einrichtung mit der fertigen Vorlage in drei Befehlen gelingt."
-date: "2026-07-25"
+date: "2026-07-26"
 kategorie: "Paperless-ngx"
 timeToRead: "6 min to read"
 themen:
@@ -11,11 +11,11 @@ related:
   - "rclone-mount-in-docker-container"
   - "proton-drive-linux-status"
   - "cloud-mount-testen-dummy-pdfs"
-slug: "paperless-dokumente-proton-drive-auslagern"
-url: "https://rafaelpfister.ch/blog/paperless-dokumente-proton-drive-auslagern"
+slug: "paperless-dokumente-clouddienst-auslagern"
+url: "https://rafaelpfister.ch/blog/paperless-dokumente-clouddienst-auslagern"
 ---
 
-Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses Verzeichnis wächst mit jedem Scan. Dabei braucht Paperless die Dateien im Alltag kaum: Die Suche läuft gegen die Datenbank, die Liste zeigt Vorschaubilder, und die eigentliche Datei wird erst beim Öffnen gelesen. Also habe ich getestet, ob sich die Ablage in einen Clouddienst verlagern lässt — mit rclone, so wie es Plex-Nutzer seit Jahren mit Mediensammlungen machen.
+Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses Verzeichnis wächst mit jedem Scan. Dabei braucht Paperless die Dateien im Alltag kaum: Die Suche läuft gegen die Datenbank, die Liste zeigt Vorschaubilder, und die eigentliche Datei wird erst beim Öffnen gelesen. Also habe ich getestet, ob sich die Ablage in einen Clouddienst verlagern lässt — mit Rclone, so wie es Plex-Nutzer seit Jahren mit Mediensammlungen machen.
 
 Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Tiefen — Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik — stehen in eigenen Artikeln, die am Ende verlinkt sind.
 
@@ -30,7 +30,7 @@ Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist i
 
 Eine Stolperfalle vorweg: In Paperless ist das Verzeichnis `archive/` **nicht** das kalte Archiv, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird — trotz des Namens die heisseste Datei im System. Kalt ist `originals/`. Wer maximal sparen will, schaltet die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
 
-Paperless-ngx bringt übrigens keine eigene Cloud-Anbindung mit — kein S3, kein `django-storages`. Ein Dateisystem-Mount über rclone ist derzeit der einzige Weg, und der funktioniert mit jedem der über 70 von rclone unterstützten Dienste. Proton Drive war meine Testwahl wegen der Ende-zu-Ende-Verschlüsselung; ein S3-kompatibler Speicher ist die robustere Alternative.
+Paperless-ngx bringt übrigens keine eigene Cloud-Anbindung mit — kein S3, kein `django-storages`. Ein Dateisystem-Mount über Rclone ist derzeit der einzige Weg, und der funktioniert mit jedem der über 70 von Rclone unterstützten Dienste. Proton Drive war meine Testwahl wegen der Ende-zu-Ende-Verschlüsselung; ein S3-kompatibler Speicher ist die robustere Alternative.
 
 ## Was der Test ergeben hat
 
@@ -58,7 +58,7 @@ sudo ./setup.sh      # einmalig, bereitet den Host vor (einziger Root-Schritt)
 ./wizard.sh          # geführt: Anbieter wählen, Zugangsdaten, Rundlauf-Test
 ```
 
-Der Wizard fragt den Clouddienst ab (Proton, S3, Backblaze B2, WebDAV, SFTP — oder „Not in the list" für jeden anderen rclone-Dienst), prüft die Verbindung mit einem echten Hoch- und Runterlade-Test und startet den Storage-Container. Danach:
+Der Wizard fragt den Clouddienst ab (Proton, S3, Backblaze B2, WebDAV, SFTP — oder „Not in the list" für jeden anderen Rclone-Dienst), prüft die Verbindung mit einem echten Hoch- und Runterlade-Test und startet den Storage-Container. Danach:
 
 - **Neuinstallation:** `docker compose -f paperless.yml up -d` — fertig.
 - **Bestehende Paperless-Instanz:** Datenbank und Einstellungen bleiben unangetastet; die Anleitung [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) beschreibt Upload der Bestandsdokumente und die eine nötige Änderung an Ihrer Compose-Datei.
@@ -69,9 +69,9 @@ Ein bewusst gesetzter Verzicht: Es gibt **kein Webinterface**. Wir hatten rclone
 
 Die Vorlage setzt sie alle um; wer selbst baut, sollte sie kennen:
 
-1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
+1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/Rclone-mount-in-docker-container).
 2. **Paperless anhalten, wenn der Mount fehlt** — sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, die der zurückkehrende Mount unsichtbar überdeckt. Ein Watchdog-Skript liegt in der Vorlage bei.
-3. **Ein Konto, das sich unbeaufsichtigt anmelden kann** — bei Proton heisst das: den TOTP-Schlüssel in der rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
+3. **Ein Konto, das sich unbeaufsichtigt anmelden kann** — bei Proton heisst das: den TOTP-Schlüssel in der Rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`) — die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.
 
 ## Grenzen, die bleiben
@@ -88,7 +88,7 @@ Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagst
 
 1.  [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage) — die Vorlage aus diesem Artikel: setup.sh, wizard.sh, Compose-Dateien, Watchdog und Retrofit-Anleitung.
 
-2.  [rclone: Overview of cloud storage systems](https://rclone.org/overview/) — die über 70 unterstützten Dienste und ihre Fähigkeiten im Vergleich.
+2.  [Rclone: Overview of cloud storage systems](https://rclone.org/overview/) — die über 70 unterstützten Dienste und ihre Fähigkeiten im Vergleich.
 
 3.  [Paperless-ngx: Configuration](https://docs.paperless-ngx.com/configuration/) — `PAPERLESS_ARCHIVE_FILE_GENERATION`, `PAPERLESS_SANITY_TASK_CRON` und die übrigen genutzten Einstellungen.
 

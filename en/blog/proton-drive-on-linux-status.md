@@ -1,22 +1,22 @@
 ---
-title: "Proton Drive on Linux: the state of the official client, the rclone backend and the SDK"
+title: "Proton Drive on Linux: the state of the official client, the Rclone backend and the SDK"
 navTitle: "Proton Drive & Linux"
-description: "Windows and macOS have their sync clients, Linux is still waiting — and servers are a different story again. What works today with rclone, what the official SDK and its CLI can already do, why machine credentials are the real gap, and what Proton has announced."
-date: "2026-07-26"
+description: "Windows and macOS have their sync clients, Linux is still waiting — and servers are a different story again. What works today with Rclone, what the official SDK and its CLI can already do, why machine credentials are the real gap, and what Proton has announced."
+date: "2026-07-25"
 kategorie: "Proton Drive"
 timeToRead: "8 min to read"
 themen:
   - "proton-drive"
   - "rclone"
 related:
-  - "offloading-paperless-documents-to-proton-drive"
+  - "offloading-paperless-documents-to-cloud-storage"
   - "rclone-mount-inside-docker-container"
 translationOf: "proton-drive-linux-status"
 slug: "proton-drive-on-linux-status"
 url: "https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status"
 ---
 
-Proton Drive has had sync clients for Windows and macOS since 2023 — Linux came away empty. Whoever wants to use Proton Drive on a Linux desktop, let alone on a server, navigates a patchwork of community tooling, an official SDK in preview and announcements. This article sorts out the state as of July 2026 — from hands-on experience, since I have just tested the rclone backend extensively [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-proton-drive).
+Proton Drive has had sync clients for Windows and macOS since 2023 — Linux came away empty. Whoever wants to use Proton Drive on a Linux desktop, let alone on a server, navigates a patchwork of community tooling, an official SDK in preview and announcements. This article sorts out the state as of July 2026 — from hands-on experience, since I have just tested the Rclone backend extensively [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage).
 
 ## The official client: announced, no date
 
@@ -24,9 +24,9 @@ In June 2026 Proton confirmed for the first time that a Linux client is actually
 
 Important for perspective: this will be a **desktop sync client**. It solves the desk problem; for server use cases — a service reading and writing files straight from Proton Drive — a sync client is the wrong tool: it keeps a full local copy, which is exactly what you want to avoid when disk space is the constraint.
 
-## What works today: the rclone backend
+## What works today: the Rclone backend
 
-The workhorse on Linux has been rclone with its `protondrive` backend for years: copying, syncing and — uniquely — a **FUSE mount** that lets applications see the cloud as a directory. Two limitations belong in an honest description:
+The workhorse on Linux has been Rclone with its `protondrive` backend for years: copying, syncing and — uniquely — a **FUSE mount** that lets applications see the cloud as a directory. Two limitations belong in an honest description:
 
 **It is beta on a reverse-engineered API.** Proton does not document its Drive API publicly; the backend is built on reverse engineering. In my test it worked reliably but throttled rapid call sequences with inconsistent directory listings.
 
@@ -37,9 +37,9 @@ The workhorse on Linux has been rclone with its `protondrive` backend for years:
 Invalid credentials (Code=8002)
 ```
 
-rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the rclone configuration — obscured via `rclone obscure`. rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: against leaked passwords the second factor keeps protecting unchanged; only against a compromise of the server it does not — and that case it never defended, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
+Rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the Rclone configuration — obscured via `rclone obscure`. Rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: against leaked passwords the second factor keeps protecting unchanged; only against a compromise of the server it does not — and that case it never defended, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
 
-How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on rclone in containers](/en/blog/rclone-mount-inside-docker-container).
+How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on Rclone in containers](/en/blog/Rclone-mount-inside-docker-container).
 
 ## The SDK and its CLI: official, but not for everyone yet
 
@@ -49,7 +49,7 @@ In parallel, Proton is rebuilding its applications on an **official SDK** (JavaS
 - the session lands in the **operating system's secret store** (Keychain, Credential Manager, libsecret), renewed by the SDK itself
 - after that: list files, upload, check shares — with machine-readable JSON output
 
-No password on the command line, no TOTP secret in a configuration file. Exactly the model the rclone backend lacks. But: the CLI can **not mount file systems**, the browser login fits headless servers poorly, and Proton explicitly declares the SDK not yet production-ready for third parties — general availability is targeted for late 2026 to early 2027.
+No password on the command line, no TOTP secret in a configuration file. Exactly the model the Rclone backend lacks. But: the CLI can **not mount file systems**, the browser login fits headless servers poorly, and Proton explicitly declares the SDK not yet production-ready for third parties — general availability is targeted for late 2026 to early 2027.
 
 ## The real gap: machine credentials
 
@@ -63,9 +63,9 @@ In fairness: for an end-to-end encrypted service this is harder than for S3, bec
 
 | Use case | State as of July 2026 |
 |---|---|
-| Desktop sync on Linux | Wait for the announced client; until then rclone sync or the web interface |
-| Server backup (uploading files) | rclone `copy`/`sync` — works, factor in the beta status |
-| File-system mount for services | rclone `mount` with a stored TOTP secret and a dedicated account — the only way, [proven in practice](/en/blog/offloading-paperless-documents-to-proton-drive) |
+| Desktop sync on Linux | Wait for the announced client; until then Rclone sync or the web interface |
+| Server backup (uploading files) | Rclone `copy`/`sync` — works, factor in the beta status |
+| File-system mount for services | Rclone `mount` with a stored TOTP secret and a dedicated account — the only way, [proven in practice](/en/blog/offloading-paperless-documents-to-cloud-storage) |
 | Script automation with clean auth | Keep an eye on the SDK CLI; too early for production |
 
 The status quo in one sentence: Linux users carry Proton Drive today with community tooling that reaches surprisingly far — but the building blocks that would turn "works" into "built for this" are official mount support and machine credentials, and both are still outstanding.
@@ -80,4 +80,4 @@ The status quo in one sentence: Linux users carry Proton Drive today with commun
 
 4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview) — Proton's own assessment: not yet production-ready for third-party applications.
 
-5.  [rclone: Proton Drive](https://rclone.org/protondrive/) — the backend including the beta notice and the `otp_secret_key` option for unattended sign-in.
+5.  [Rclone: Proton Drive](https://rclone.org/protondrive/) — the backend including the beta notice and the `otp_secret_key` option for unattended sign-in.

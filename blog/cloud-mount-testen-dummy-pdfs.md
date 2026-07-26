@@ -2,18 +2,18 @@
 title: "Cloud-Speicher als Dokumentablage testen: generierte PDFs, Messmethode und Ausfallsimulation"
 navTitle: "Cloud-Mounts testen"
 description: "Wie testet man einen Cloud-Mount unter einer Anwendung wie Paperless-ngx, ohne echte Dokumente hochzuladen? Ein Python-Generator für PDFs mit Textebene ohne Bibliotheken, Kalt-Warm-Messungen, Zugriffe auf Anwendungsebene und Ausfalltests mit beweisbarem Ergebnis."
-date: "2026-07-26"
+date: "2026-07-25"
 kategorie: "Paperless-ngx"
 timeToRead: "8 min to read"
 themen:
   - "paperless-ngx"
 related:
-  - "paperless-dokumente-proton-drive-auslagern"
+  - "paperless-dokumente-clouddienst-auslagern"
 slug: "cloud-mount-testen-dummy-pdfs"
 url: "https://rafaelpfister.ch/blog/cloud-mount-testen-dummy-pdfs"
 ---
 
-Bevor eine Dokumentenverwaltung ihre Ablage in einen Clouddienst verlagert, will man wissen: Wie langsam wird das Öffnen? Übersteht der Aufbau einen Ausfall? Und stimmen die Dateien hinterher noch bitgenau? Dieser Artikel dokumentiert die Messmethodik hinter meinem [Paperless-Cloud-Test](/blog/paperless-dokumente-proton-drive-auslagern) — als Vorlage für eigene Tests. Es sind bewusst Einzelmessungen auf einer konkreten Maschine: Sie zeigen Grössenordnungen, keine Benchmarks.
+Bevor eine Dokumentenverwaltung ihre Ablage in einen Clouddienst verlagert, will man wissen: Wie langsam wird das Öffnen? Übersteht der Aufbau einen Ausfall? Und stimmen die Dateien hinterher noch bitgenau? Dieser Artikel dokumentiert die Messmethodik hinter meinem [Paperless-Cloud-Test](/blog/paperless-dokumente-clouddienst-auslagern) — als Vorlage für eigene Tests. Es sind bewusst Einzelmessungen auf einer konkreten Maschine: Sie zeigen Grössenordnungen, keine Benchmarks.
 
 ## Testdokumente generieren statt echte hochladen
 
@@ -76,7 +76,7 @@ Die Testinstanz selbst lief vollständig getrennt von der Produktion: eigene Dat
 
 ## Wo in diesem System kalt und warm liegen
 
-Bevor man misst, muss klar sein, **welche Cache-Ebenen** zwischen Anwendung und Cloud liegen — sonst misst man etwas anderes als behauptet. Bei einem rclone-Mount mit `--vfs-cache-mode full` sind es drei:
+Bevor man misst, muss klar sein, **welche Cache-Ebenen** zwischen Anwendung und Cloud liegen — sonst misst man etwas anderes als behauptet. Bei einem Rclone-Mount mit `--vfs-cache-mode full` sind es drei:
 
 | Ebene | Ort | Was dort liegt |
 |---|---|---|
@@ -116,13 +116,13 @@ Zwei Eigenheiten dieses Setups machen den Nachweis zur Pflicht statt zur Kür:
 
 **Die Eviction muss alle Pfade zur selben Datei treffen** — die Datei, wie der Mount sie zeigt, *und* die VFS-Kopie unter `--cache-dir` (dort im Unterverzeichnis `vfs/`, nicht `vfsMeta/` — das sind nur Metadaten).
 
-**Und sie kann stillschweigend scheitern.** In meinem Kontrollversuch zeigte `fincore` die VFS-Kopie nach `sync` und `POSIX_FADV_DONTNEED` unverändert vollständig im RAM (600K resident, vorher wie nachher): rclone hält die Cache-Datei offen, und der Kernel gab die Seiten nicht frei. Ohne den `fincore`-Beweis hätte ich eine „von der Platte"-Zahl veröffentlicht, die in Wahrheit aus dem RAM kam. Wer die Platten-Ebene wirklich isolieren will, muss den rclone-Prozess für die Messung beenden oder als root `echo 3 > /proc/sys/vm/drop_caches` verwenden.
+**Und sie kann stillschweigend scheitern.** In meinem Kontrollversuch zeigte `fincore` die VFS-Kopie nach `sync` und `POSIX_FADV_DONTNEED` unverändert vollständig im RAM (600K resident, vorher wie nachher): Rclone hält die Cache-Datei offen, und der Kernel gab die Seiten nicht frei. Ohne den `fincore`-Beweis hätte ich eine „von der Platte"-Zahl veröffentlicht, die in Wahrheit aus dem RAM kam. Wer die Platten-Ebene wirklich isolieren will, muss den Rclone-Prozess für die Messung beenden oder als root `echo 3 > /proc/sys/vm/drop_caches` verwenden.
 
 Die Einordnung dazu: Bei typischen Dokumentgrössen lohnt die Trennung kaum — heisse Lesungen durch den Mount lagen bei mir bei 19 bis 35 ms, weil die FUSE-Umwege dominieren, nicht das Speichermedium. Die Ebene, die das Nutzererlebnis bestimmt, bleibt Netz gegen lokal mit Faktor 60 bis 90. Aber behaupten darf man das erst, wenn die Messung die Ebenen nachweislich auseinanderhält.
 
 Dasselbe gilt übrigens für die generierten Testdateien: Direkt nach dem Erzeugen liegen sie vollständig im Page-Cache. Für die Upload-Messung ist das egal (der Engpass ist das Netz) — wer aber lokale Lesewerte über sie erheben will, muss zuerst räumen.
 
-Zur laufenden Beobachtung gehört ausserdem der Blick auf den VFS-Cache nach jedem Schritt (`du -sh` auf das Cache-Verzeichnis, `find … -type f | wc -l`) und das rclone-Protokoll über `--log-file` samt `--log-level INFO`, in dem das Verdrängungsverhalten steht. Dort zeigte sich auch, dass das konfigurierte Cache-Limit weich ist: 4 MB konfiguriert, 12.7 MiB Spitzenwert, bis der minütliche Aufräumlauf griff.
+Zur laufenden Beobachtung gehört ausserdem der Blick auf den VFS-Cache nach jedem Schritt (`du -sh` auf das Cache-Verzeichnis, `find … -type f | wc -l`) und das Rclone-Protokoll über `--log-file` samt `--log-level INFO`, in dem das Verdrängungsverhalten steht. Dort zeigte sich auch, dass das konfigurierte Cache-Limit weich ist: 4 MB konfiguriert, 12.7 MiB Spitzenwert, bis der minütliche Aufräumlauf griff.
 
 ## Auf Anwendungsebene prüfen, nicht nur im Dateisystem
 
@@ -142,14 +142,14 @@ Die härteste Prüfung liefert die Anwendung gleich mit: Paperless' `document_sa
 
 ## Ausfälle hart simulieren — und die Wiederherstellung beweisen
 
-Ein Ausfalltest, der nur den Dienst sauber stoppt, testet nichts. Hart heisst: den rclone-Prozess töten, den Mount aushängen, und dann vergleichen, was Host und Anwendung jeweils sehen:
+Ein Ausfalltest, der nur den Dienst sauber stoppt, testet nichts. Hart heisst: den Rclone-Prozess töten, den Mount aushängen, und dann vergleichen, was Host und Anwendung jeweils sehen:
 
 ```bash
 pkill -f "rclone mount" ; fusermount3 -u /pfad/zum/mount
 docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 ```
 
-Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu rclone in Docker](/blog/rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
+Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu Rclone in Docker](/blog/Rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
 
 Ebenso wichtig: prüfen, was **ohne** Cloud noch funktioniert. Bei entferntem Mount liefen Dokumentliste, Volltextsuche und Vorschaubilder unverändert — der erkannte Text lag mit knapp 244'000 Zeichen für ein Testdokument in der Datenbank. Nur das Öffnen der Originaldatei schlug fehl. Solche Negativproben gehören in jedes Testprotokoll, weil sie zeigen, welcher Schaden ein Ausfall wirklich anrichtet.
 
@@ -161,6 +161,6 @@ Wer Protokolle mit `grep` nach Fehlercodes durchsucht, sollte das Muster präzis
 
 1.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/) — der Sanity-Checker und die übrigen Verwaltungsbefehle, die hier als Prüfwerkzeuge dienten.
 
-2.  [rclone mount](https://rclone.org/commands/rclone_mount/) — die VFS-Cache-Modi und Protokolloptionen, deren Verhalten hier vermessen wurde.
+2.  [Rclone mount](https://rclone.org/commands/rclone_mount/) — die VFS-Cache-Modi und Protokolloptionen, deren Verhalten hier vermessen wurde.
 
 3.  [PDF 1.7 Referenz (Adobe)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf) — die Struktur aus Objekten, Content-Streams und xref-Tabelle, die der Generator direkt schreibt.
