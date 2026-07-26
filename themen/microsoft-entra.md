@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/microsoft-entra"
 
 # Microsoft Entra
 
-Entra ID, Entra Connect Sync und hybride Identität zwischen Active Directory und der Cloud.
+Identitäten zwischen Active Directory und Microsoft Entra sicher synchronisieren und verwalten.

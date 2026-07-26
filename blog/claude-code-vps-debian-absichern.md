@@ -1,23 +1,23 @@
 ---
-title: "Claude Code auf dem eigenen VPS betreiben und den Server richtig absichern"
+title: "Claude Code auf einem eigenen VPS sicher betreiben"
 navTitle: "VPS für Claude"
-description: "Warum ein eigener VPS eine solide Basis für Claude Code ist, und die vollständige Absicherungs-Checkliste dazu: eigener Benutzer, SSH nur mit passphrasengeschützten Ed25519-Schlüsseln, gehärtete sshd-Konfiguration, restriktive Firewall, Prüfung der Angriffsfläche und Zugriff vom iPhone."
+description: "Ein gehärteter Debian-VPS hält Claude-Code-Sitzungen dauerhaft erreichbar. Die Anleitung führt von Benutzerkonto und SSH-Schlüsseln bis zu Firewall, Datenhygiene, tmux und sicherem Zugriff vom iPhone."
 date: "2026-07-21"
 kategorie: "Claude"
-timeToRead: "12 min to read"
+timeToRead: "12 Min. Lesezeit"
 themen:
   - "claude"
 slug: "claude-code-vps-debian-absichern"
 url: "https://rafaelpfister.ch/blog/claude-code-vps-debian-absichern"
 ---
 
-Claude Code lokal auf dem Arbeitsrechner zu starten ist bequem, bis der Laptop zugeklappt wird, das WLAN wechselt oder ein länger laufender Task mitten in der Nacht abbricht. Ein eigener VPS löst das: eine Sitzung, die durchläuft, erreichbar vom PC und vom iPhone, mit voller Kontrolle darüber, welche Daten dort liegen. Der Preis dafür ist, dass der Server ab der ersten Minute öffentlich erreichbar und damit Ziel automatisierter Scans ist. Der Betrieb lohnt sich trotzdem, und ein frisch installierter Debian-Server lässt sich so absichern, dass er diesem Dauerbeschuss standhält.
+Auf dem eigenen Rechner endet eine Claude-Code-Sitzung spätestens dann ungewollt, wenn der Laptop schläft oder die Netzwerkverbindung abbricht. Ein VPS läuft weiter und ist von mehreren Geräten erreichbar. Gleichzeitig hängt er dauerhaft am öffentlichen Internet und wird schon kurz nach dem Start automatisiert gescannt.
 
-Die Schritte sind nicht Claude-spezifisch. Es ist die gleiche Härtungs-Checkliste, die für jeden öffentlich erreichbaren Linux-Server gilt.
+Diese Anleitung verbindet beide Anforderungen: Claude Code bleibt in einer `tmux`-Sitzung verfügbar, während der Debian-Server nur eine schlüsselgeschützte SSH-Verbindung nach aussen anbietet. Die Härtung ist nicht Claude-spezifisch und eignet sich auch für andere öffentlich erreichbare Linux-Server.
 
-## Warum ein eigener VPS?
+## Weshalb ein VPS sinnvoll sein kann
 
-Drei Gründe sprechen für den eigenen Server statt der lokalen Installation:
+Gegenüber einer rein lokalen Installation bietet der Server drei praktische Vorteile:
 
 - **Persistenz.** In einer `tmux`-Sitzung läuft Claude weiter, auch wenn die SSH-Verbindung getrennt wird. Ein Task, der zehn Minuten oder eine Stunde braucht, läuft zu Ende, ohne dass der Laptop offen bleiben muss.
 - **Erreichbarkeit.** Dieselbe Sitzung ist vom Desktop, vom Laptop und vom iPhone aus zugänglich. Man setzt am Schreibtisch einen Task an und schaut unterwegs nach dem Ergebnis.
@@ -238,16 +238,16 @@ Zusammengefasst der komplette Ablauf:
 9. Datenhygiene: keine privaten Schlüssel und keine Zugangsdaten auf den Server, Konfiguration erst über einen Migrationsordner geprüft.
 10. Keine zusätzlichen Ports; Web-Vorschauen laufen durch einen SSH-Tunnel.
 
-Der Aufwand ist einmalig, das Ergebnis dauerhaft: ein Server, der von aussen nur eine einzige, schlüsselgeschützte Tür zeigt, und eine Claude-Sitzung, die immer erreichbar ist, egal ob vom Schreibtisch oder unterwegs.
+Nach dieser Einrichtung ist von aussen nur SSH auf dem festgelegten Port erreichbar, und auch dort ausschliesslich mit einem passphrasengeschützten Schlüssel. Claude Code läuft unabhängig vom Endgerät in `tmux`; Web-Vorschauen bleiben über SSH-Tunnel zugänglich, ohne einen zusätzlichen Port zu öffnen.
 
 ## Quellen
 
-1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config) — Referenz aller sshd-Direktiven, darunter `PermitRootLogin`, `PasswordAuthentication` und `PubkeyAuthentication`.
+1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config): Referenz aller sshd-Direktiven, darunter `PermitRootLogin`, `PasswordAuthentication` und `PubkeyAuthentication`.
 
-2.  [Debian Wiki – SSH](https://wiki.debian.org/SSH) — Debian-spezifische Hinweise zur SSH-Konfiguration inklusive der Drop-in-Dateien unter `/etc/ssh/sshd_config.d/`.
+2.  [Debian Wiki – SSH](https://wiki.debian.org/SSH): Debian-spezifische Hinweise zur SSH-Konfiguration inklusive der Drop-in-Dateien unter `/etc/ssh/sshd_config.d/`.
 
-3.  [systemd.socket(5) – freedesktop.org](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html) — Funktionsweise der Socket-Aktivierung und der `ListenStream=`-Direktive, relevant für den SSH-Portwechsel unter Debian 13.
+3.  [systemd.socket(5) – freedesktop.org](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html): Funktionsweise der Socket-Aktivierung und der `ListenStream=`-Direktive, relevant für den SSH-Portwechsel unter Debian 13.
 
-4.  [ss(8) – iproute2 Manpage](https://man7.org/linux/man-pages/man8/ss.8.html) — Optionen von `ss`, um lauschende Sockets samt Prozess und Bindungsadresse aufzulisten.
+4.  [ss(8) – iproute2 Manpage](https://man7.org/linux/man-pages/man8/ss.8.html): Optionen von `ss`, um lauschende Sockets samt Prozess und Bindungsadresse aufzulisten.
 
-5.  [Claude Code – Offizielle Dokumentation](https://docs.claude.com/en/docs/claude-code/overview) — Installation, Authentifizierung und Betrieb von Claude Code.
+5.  [Claude Code – Offizielle Dokumentation](https://docs.claude.com/en/docs/claude-code/overview): Installation, Authentifizierung und Betrieb von Claude Code.

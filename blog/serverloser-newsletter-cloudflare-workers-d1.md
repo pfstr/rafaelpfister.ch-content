@@ -1,21 +1,21 @@
 ---
-title: "Eigener Newsletter ohne SaaS: serverlos auf Cloudflare Workers und D1"
+title: "Einen eigenen Newsletter mit Cloudflare Workers und D1 betreiben"
 navTitle: "Newsletter auf Workers"
-description: "Ein vollständiges Newsletter-System (Anmeldeformular, One-Click-Abmeldung, Warteschlangen-Versand, Compliance-Footer) läuft serverlos auf dem eigenen Cloudflare-Konto; auch grosse Listen bleiben im Free Tier. Der Deploy-Button provisioniert Datenbank, Schema und CI in einem Schritt; eine Kommandozeile braucht es nicht."
+description: "Das offene Template stellt Anmeldung, Abmeldung, Warteschlange und Datenbank im eigenen Cloudflare-Konto bereit. Ein Deploy-Button richtet Worker, D1 und CI ohne lokalen Server ein."
 date: "2026-07-22"
 kategorie: "Cloudflare Workers"
-timeToRead: "8 min to read"
+timeToRead: "8 Min. Lesezeit"
 themen:
   - "cloudflare-workers"
 slug: "serverloser-newsletter-cloudflare-workers-d1"
 url: "https://rafaelpfister.ch/blog/serverloser-newsletter-cloudflare-workers-d1"
 ---
 
-# Eigener Newsletter ohne SaaS: serverlos auf Cloudflare Workers und D1
+# Einen eigenen Newsletter mit Cloudflare Workers und D1 betreiben
 
-Newsletter-Dienste rechnen nach Abonnentenzahl ab, und die Empfängerliste liegt beim Anbieter. Die klassische Alternative (ein Newsletter-System auf einem eigenen Server) scheitert in der Praxis selten an der Software, sondern am Betrieb: Ein Server will provisioniert, gepatcht, überwacht und bezahlt werden, für ein Werkzeug, das vielleicht einmal pro Woche eine E-Mail verschickt.
+Bei einem gehosteten Newsletter-Dienst liegt die Empfängerliste beim Anbieter, und die Kosten steigen häufig mit der Zahl der Abonnenten. Ein eigener Server schafft mehr Kontrolle, bringt aber laufende Arbeit mit sich: Updates, Überwachung, Backups und Betrieb für ein System, das vielleicht nur einmal pro Woche versendet.
 
-Serverless verändert diese Rechnung grundlegend. Ein Newsletter-Backend besteht aus wenigen HTTP-Endpunkten, einer kleinen Datenbank und einem zeitgesteuerten Job: exakt das Profil, für das Cloudflare Workers und D1 gebaut sind. Ich habe das als offenes Template umgesetzt: ein vollständiges Newsletter-System, das per **Deploy-to-Cloudflare-Button** in einem Schritt auf dem eigenen Cloudflare-Konto landet. Ohne Kommandozeile, ohne Serverbetrieb, und dank Warteschlangen-Versand auch für Listen mit tausenden Empfängern innerhalb des Free Tiers. Der Quellcode ist MIT-lizenziert auf [GitHub](https://github.com/pfstr/newsletter-template) verfügbar; der Aufnahme-PR in die offizielle Cloudflare-Template-Galerie läuft.
+Für diesen schlanken Anwendungsfall reichen HTTP-Endpunkte, eine kleine Datenbank und ein zeitgesteuerter Versandjob. Cloudflare Workers und D1 stellen genau diese Bausteine bereit. Mein offenes Template richtet sie über einen **Deploy-to-Cloudflare-Button** im eigenen Konto ein. Eine lokale Kommandozeile oder ein dauerhaft zu wartender Server ist nicht nötig. Der MIT-lizenzierte Quellcode liegt auf [GitHub](https://github.com/pfstr/newsletter-template).
 
 [![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
 
@@ -25,8 +25,8 @@ Serverless verändert diese Rechnung grundlegend. Ein Newsletter-Backend besteht
 
 - **Anmeldung**: eine gehostete Anmeldeseite, ein einbettbares Formular für die eigene Website und ein JSON-Endpunkt
 - **One-Click-Abmeldung**: konform zu RFC 8058, mit individuellem Token pro Abonnent
-- **Compliance eingebaut**: Jede E-Mail erhält automatisch einen Footer mit Abmeldelink und Postadresse; Einwilligungs- und Abmelde-Zeitstempel werden gespeichert (CAN-SPAM/DSGVO)
-- **Versand**: eine geschützte Seite, auf der Sie Betreff und HTML einfügen, einen Test an sich selbst schicken und die Kampagne dann einreihen; ein Hintergrundjob liefert in Batches aus, mit Wiederholversuchen
+- **Pflichtangaben eingebaut**: Jede E-Mail erhält automatisch einen Footer mit Abmeldelink und Postadresse; Einwilligungs- und Abmeldezeitpunkte werden gespeichert
+- **Versand**: Auf einer geschützten Seite lassen sich Betreff und HTML erfassen, eine Testmail senden und die Kampagne einreihen; ein Hintergrundjob versendet in Batches und wiederholt fehlgeschlagene Versuche
 - **Eigene Daten**: Abonnenten liegen in einer D1-Datenbank auf Ihrem Konto und lassen sich jederzeit exportieren
 - **Optional, standardmässig aus**: Double-Opt-in, Bot-Schutz per Turnstile und automatischer Versand neuer Blogartikel aus dem RSS-Feed
 
@@ -88,7 +88,7 @@ Bedient wird der Versand über die `/admin`-Seite: Betreff und E-Mail-HTML einf�
 
 Der eigentliche Versand passiert im Hintergrund, nach dem Transactional-Outbox-Muster: `POST /api/send` schreibt die Kampagne und eine Zeile pro Empfänger in die Datenbank und antwortet sofort. Ein minütlicher Cron-Job liefert anschliessend `SEND_BATCH` E-Mails pro Lauf aus, standardmässig 40: so gewählt, dass jeder Lauf innerhalb der Subrequest-Limits des Workers-Free-Plans bleibt. Die Zeilen werden atomar beansprucht, überlappende Läufe können also nie doppelt senden; fehlgeschlagene Zustellungen werden bis zu dreimal wiederholt, abgestürzte Läufe nach zehn Minuten wieder aufgenommen. Und wer sich abmeldet, während die eigene E-Mail noch in der Warteschlange steht, erhält sie nicht mehr: Der Opt-out storniert auch bereits eingereihte Nachrichten.
 
-## Compliance ist eingebaut, nicht angeflanscht
+## Abmeldung und Nachweise gehören zum Kern
 
 Wer einen Newsletter versendet, unterliegt Anti-Spam- und Datenschutzrecht: dem US-amerikanischen CAN-SPAM Act, in der EU DSGVO und ePrivacy, in der Schweiz dem UWG. Ein wesentlicher Teil dessen, wofür Newsletter-Dienste bezahlt werden, ist genau diese Pflichterfüllung. Das Template übernimmt den mechanischen Teil davon:
 
@@ -122,18 +122,18 @@ Der Quellcode inklusive Deploy-Button liegt auf [GitHub](https://github.com/pfst
 
 ## Quellen
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template) — Quellcode des Templates (MIT) mit Deploy-Button und Dokumentation.
+1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): Quellcode des Templates (MIT) mit Deploy-Button und Dokumentation.
 
-2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/) — automatische Provisionierung von Ressourcen, Repo-Klon und CI beim Deploy.
+2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatische Provisionierung von Ressourcen, Repo-Klon und CI beim Deploy.
 
-3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/) — Secrets und Variablen werden seit Juli 2025 im Deploy-Formular abgefragt.
+3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/): Secrets und Variablen werden seit Juli 2025 im Deploy-Formular abgefragt.
 
-4.  [Cloudflare D1](https://developers.cloudflare.com/d1/) — serverloses SQLite, hier für Abonnenten, Sendeprotokoll und RSS-Deduplizierung.
+4.  [Cloudflare D1](https://developers.cloudflare.com/d1/): serverloses SQLite, hier für Abonnenten, Sendeprotokoll und RSS-Deduplizierung.
 
-5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) — Bot-Schutz ohne Captcha-Rätsel, im Template optional zuschaltbar.
+5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): Bot-Schutz ohne Captcha-Rätsel, im Template optional zuschaltbar.
 
-6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058) — Signaling One-Click Functionality for List Email Headers; Grundlage des nativen Abmelden-Buttons in Gmail und Outlook.
+6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058): Signaling One-Click Functionality for List Email Headers; Grundlage des nativen Abmelden-Buttons in Gmail und Outlook.
 
-7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) — Subrequest-Limits pro Aufruf (50 im Free Plan, 10'000 im bezahlten Plan); daraus leitet sich die Batch-Grösse des Warteschlangen-Versands ab.
+7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/): Subrequest-Limits pro Aufruf (50 im Free Plan, 10'000 im bezahlten Plan); daraus leitet sich die Batch-Grösse des Warteschlangen-Versands ab.
 
-8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business) — Pflichten für kommerzielle E-Mails, darunter Postadresse und funktionierender Opt-out.
+8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business): Pflichten für kommerzielle E-Mails, darunter Postadresse und funktionierender Opt-out.

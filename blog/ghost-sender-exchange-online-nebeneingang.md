@@ -1,10 +1,10 @@
 ---
-title: "Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall!"
+title: "Ghost Sender in Exchange Online: Ein MX-Record ist keine Firewall"
 navTitle: "Ghost Sender"
-description: "Warum Ghost Sender keine neue Sicherheitslücke in Exchange Online ist, sondern die erwartbare Folge eines offenen SMTP-Nebeneingangs."
+description: "Direkte Zustellung an Exchange Online umgeht ein vorgeschaltetes Gateway, wenn der Tenant sie nicht ausdrücklich sperrt. Das Risiko ist real, die Ursache ist eine unvollständige Mailflow-Konfiguration."
 date: "2026-07-15"
 kategorie: "Microsoft 365 / Exchange"
-timeToRead: "9 min to read"
+timeToRead: "9 Min. Lesezeit"
 themen:
   - "microsoft-365-exchange"
 slug: "ghost-sender-exchange-online-nebeneingang"
@@ -12,13 +12,13 @@ url: "https://rafaelpfister.ch/blog/ghost-sender-exchange-online-nebeneingang"
 image: "../images/ghost-admin.png"
 ---
 
-# Ghost Sender oder Ghost Admin? Ein MX-Record ist keine Firewall!
+# Ghost Sender in Exchange Online: Ein MX-Record ist keine Firewall
 
 ![Ein Ghost-Admin hält im Rechenzentrum die Tür neben dem Security-Gate auf, während E-Mails am Filter vorbei direkt ins Postfach gelangen.](../images/ghost-admin.png)
 
-**InfoGuard Labs hat mit «Ghost-Sender – Universal Email Spoofing against Exchange Online» soviel Besorgnis ausgelöst, dass einige Anfragen zur «Sicherheitslücke» auch auf meinem Tisch gelandet sind. Kurzfazit: Das beschriebene Risiko ist real. Die Einordnung als universelle Sicherheitslücke in Exchange Online ist es jedoch nicht. Wer einen Third-Party-Mailfilter vor Exchange Online stellt, den weiterhin erreichbaren EXO-Endpunkt aber nicht auf diesen Filter beschränkt, hat keine neue Lücke entdeckt, sondern seinen Mailflow nicht fertig konfiguriert.**
+Die von InfoGuard Labs als «Ghost Sender» beschriebene Angriffsmöglichkeit ist real: Ein Angreifer kann ein vorgeschaltetes E-Mail-Gateway umgehen und direkt an Exchange Online zustellen. Voraussetzung ist jedoch, dass der Tenant diesen direkten Weg weiterhin akzeptiert. Das ist keine universelle Schwachstelle von Exchange Online, sondern eine unvollständig abgesicherte Mailflow-Topologie.
 
-Es scheint, als hätte man bei InfoGuard für einen Moment vergessen, wie ein Mail Transfer Agent (MTA) funktioniert. Ein Mailserver, der Postfächer für eine Domain bedient, nimmt grundsätzlich SMTP-Verbindungen aus dem Internet entgegen. Genau dafür ist er da. Ein MX-Record sagt regulären Absendern lediglich, welchen Weg sie für die Zustellung nehmen sollen. Er ist aber weder eine Firewall-Regel noch eine Access Control List.
+Ein Mail Transfer Agent, der Postfächer für eine Domain bedient, nimmt grundsätzlich SMTP-Verbindungen aus dem Internet entgegen. Der MX-Record zeigt regulären Absendern den gewünschten Zustellweg. Er ist weder eine Firewall-Regel noch eine Zugriffsliste und hindert niemanden daran, einen bekannten Exchange-Online-Endpunkt direkt anzusprechen.
 
 ## Was «Ghost Sender» tatsächlich zeigt
 
@@ -136,7 +136,7 @@ Send-MailMessage `
 
 Bei einem korrekt beschränkten Partner-Connector ist eine SMTP-Ablehnung wie `5.7.51 TenantInboundAttribution; Rejecting` zu erwarten. Eine alternative Transportregel kann die Nachricht zunächst annehmen und danach in Quarantäne verschieben; deshalb müssen neben der SMTP-Antwort auch Message Trace, Quarantäne und Postfach kontrolliert werden. `Send-MailMessage` (deprecated) dient hier nur der leicht verständlichen Illustration. Jedes kontrollierte SMTP-Testwerkzeug erfüllt denselben Zweck.
 
-## Fazit: Guter Test, falsches Etikett
+## Ein nützlicher Test mit irreführendem Etikett
 
 «Ghost Sender» ist kein neuer SMTP-Exploit. Es ist ein griffiger Name für einen offenen Nebeneingang, dessen Absicherung Microsoft seit langem dokumentiert und den der Administrator offengelassen hat.
 
@@ -148,25 +148,25 @@ Muss man dem Administrator wirklich alles abnehmen? Nein. Aber man muss offenbar
 
 ## Quellen
 
-1.  [InfoGuard Labs: Ghost-Sender – Universal Email Spoofing against Exchange Online](https://labs.infoguard.ch/posts/ghost-sender/) — Die ursprüngliche Untersuchung samt Verbreitungsanalyse und dem selbst gezogenen Fazit «Ghost-Sender is a misconfiguration».
+1.  [InfoGuard Labs: Ghost-Sender – Universal Email Spoofing against Exchange Online](https://labs.infoguard.ch/posts/ghost-sender/): Die ursprüngliche Untersuchung samt Verbreitungsanalyse und dem selbst gezogenen Fazit «Ghost-Sender is a misconfiguration».
 
-2.  [Ghost Sender: Exchange Online Mail Spoofing Tester](https://ghost-sender.com/) — Der von InfoGuard veröffentlichte Online-Test, um den eigenen Tenant auf den offenen Nebeneingang zu prüfen.
+2.  [Ghost Sender: Exchange Online Mail Spoofing Tester](https://ghost-sender.com/): Der von InfoGuard veröffentlichte Online-Test, um den eigenen Tenant auf den offenen Nebeneingang zu prüfen.
 
-3.  [MSXFAQ: Exchange Online als Nebeneingang für Mailempfang](https://www.msxfaq.de/cloud/exchangeonline/transport/exo-nebeneingang.htm) — Frank Carius' Einordnung: kein Fehler in Exchange Online, sondern eine Fehlkonfiguration des Administrators.
+3.  [MSXFAQ: Exchange Online als Nebeneingang für Mailempfang](https://www.msxfaq.de/cloud/exchangeonline/transport/exo-nebeneingang.htm): Frank Carius' Einordnung: kein Fehler in Exchange Online, sondern eine Fehlkonfiguration des Administrators.
 
-4.  [Microsoft: Direct Send vs sending directly to an Exchange Online tenant](https://techcommunity.microsoft.com/blog/exchange/direct-send-vs-sending-directly-to-an-exchange-online-tenant/4439865) — Microsoft erklärt, dass die direkte Annahme von Mail an gehostete Postfächer die Funktionsweise von E-Mail ist, und grenzt Direct Send ab.
+4.  [Microsoft: Direct Send vs sending directly to an Exchange Online tenant](https://techcommunity.microsoft.com/blog/exchange/direct-send-vs-sending-directly-to-an-exchange-online-tenant/4439865): Microsoft erklärt, dass die direkte Annahme von Mail an gehostete Postfächer die Funktionsweise von E-Mail ist, und grenzt Direct Send ab.
 
-5.  [Microsoft Learn: Manage mail flow using a third-party cloud service](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud) — Die offizielle Anleitung mit dem eigenen Schritt zum restriktiven Partner-Connector bei externem MX.
+5.  [Microsoft Learn: Manage mail flow using a third-party cloud service](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud): Die offizielle Anleitung mit dem eigenen Schritt zum restriktiven Partner-Connector bei externem MX.
 
-6.  [Microsoft Learn: Enhanced Filtering for Connectors](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors) — Rekonstruiert die ursprüngliche Absenderquelle hinter einem Gateway; verbessert die Auswertung, ersetzt den Connector aber nicht.
+6.  [Microsoft Learn: Enhanced Filtering for Connectors](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors): Rekonstruiert die ursprüngliche Absenderquelle hinter einem Gateway; verbessert die Auswertung, ersetzt den Connector aber nicht.
 
-7.  [Heise: Ghost-Sender – Exchange Online lässt gefälschte E-Mails anstandslos durch](https://www.heise.de/news/Ghost-Sender-Exchange-Online-laesst-gefaelschte-E-Mails-anstandslos-durch-11327666.html) — Beispiel für die zugespitzte Berichterstattung, die nur bestimmte Fehlkonfigurationen verallgemeinert.
+7.  [Heise: Ghost-Sender – Exchange Online lässt gefälschte E-Mails anstandslos durch](https://www.heise.de/news/Ghost-Sender-Exchange-Online-laesst-gefaelschte-E-Mails-anstandslos-durch-11327666.html): Beispiel für die zugespitzte Berichterstattung, die nur bestimmte Fehlkonfigurationen verallgemeinert.
 
-8.  [Crow in the Cloud: Die Geister, die ich nicht rief](https://crowinthe.cloud/die-geister-die-ich-nicht-rief-effektiver-schutz-gegen-ghost-sender-in-exchange-online/) — Treffende Einordnung als Design- und Konfigurationsproblem samt Schutzmassnahmen.
+8.  [Crow in the Cloud: Die Geister, die ich nicht rief](https://crowinthe.cloud/die-geister-die-ich-nicht-rief-effektiver-schutz-gegen-ghost-sender-in-exchange-online/): Treffende Einordnung als Design- und Konfigurationsproblem samt Schutzmassnahmen.
 
-9.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321.html) — Beschreibt den MX-Record als Mechanismus zur Ermittlung des regulären Zielsystems, nicht als Zugriffskontrolle.
+9.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321.html): Beschreibt den MX-Record als Mechanismus zur Ermittlung des regulären Zielsystems, nicht als Zugriffskontrolle.
 
-10.  [RFC 9989: DMARC](https://www.rfc-editor.org/rfc/rfc9989.html) — Hält fest, dass der Empfänger die veröffentlichte DMARC-Behandlung berücksichtigen kann, aber nicht muss.
+10.  [RFC 9989: DMARC](https://www.rfc-editor.org/rfc/rfc9989.html): Hält fest, dass der Empfänger die veröffentlichte DMARC-Behandlung berücksichtigen kann, aber nicht muss.
 
 ---
 

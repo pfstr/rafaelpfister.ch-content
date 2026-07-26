@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/e-mail-verschluesselung"
 
 # E-Mail-Verschlüsselung
 
-S/MIME, OpenPGP, GINA und TLS in der Praxis.
+E-Mail-Verschlüsselung verständlich umgesetzt: S/MIME, OpenPGP, GINA und TLS im praktischen Betrieb.

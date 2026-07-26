@@ -1,10 +1,10 @@
 ---
-title: "Exchange Server Security Updates Juli 2026: CVE-2026-42897-Mitigation entfernen und Legacy-Sicherheitsgruppen aufräumen"
+title: "Exchange-Sicherheitsupdates vom Juli 2026 richtig nachbereiten"
 navTitle: "Exchange SU 07/2026"
-description: "Microsoft hat am 14. Juli 2026 die Exchange Security Updates veröffentlicht. Zwei leicht übersehene Punkte: Die im Mai gesetzte CVE-2026-42897-Mitigation lässt sich jetzt sauber entfernen (samt der Stolperfalle, dass der Emergency-Mitigation-Service sie sonst wieder einspielt), und der Health Checker meldet neu zwei uralte, überprivilegierte Legacy-Sicherheitsgruppen im Active Directory."
+description: "Nach der Installation sind zwei Aufräumarbeiten nötig: die alte CVE-2026-42897-Mitigation kontrolliert entfernen und überprivilegierte Legacy-Gruppen im Active Directory prüfen."
 date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
-timeToRead: "6 min to read"
+timeToRead: "6 Min. Lesezeit"
 themen:
   - "exchange-onprem-hybrid"
   - "active-directory-entra"
@@ -12,11 +12,13 @@ slug: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/blog/exchange-security-updates-juli-2026"
 ---
 
-# Exchange Server Security Updates Juli 2026
+# Exchange-Sicherheitsupdates vom Juli 2026 richtig nachbereiten
 
-Microsoft hat am 14. Juli 2026 die turnusmässigen Security Updates (SUs) für Exchange Server veröffentlicht. Neben den eigentlichen Sicherheitskorrekturen enthält das Release zwei Punkte, die in der Praxis leicht übersehen werden, aber wichtig sind: Man kann (und soll) jetzt die im Mai eingespielte Mitigation für **CVE-2026-42897** wieder entfernen, und der Exchange Health Checker prüft neu auf uralte, längst überflüssige Sicherheitsgruppen im Active Directory. In den offiziellen Blogposts werden beide Punkte nur kurz angerissen.
+Mit der Installation der Exchange-Sicherheitsupdates vom 14. Juli 2026 ist die Arbeit noch nicht abgeschlossen. Danach sollten Administratoren zwei Altlasten beseitigen: die im Mai aktivierte Mitigation für **CVE-2026-42897** und zwei historische Exchange-Sicherheitsgruppen mit weitreichenden Rechten im Active Directory.
 
-## Was im Juli-Release steckt
+Beide Aufgaben sind leicht zu übersehen. Die Mitigation bleibt absichtlich bestehen, bis sie kontrolliert entfernt wird. Die Gruppen wiederum können seit vielen Jahren unbemerkt jede Migration überlebt haben.
+
+## Für welche Exchange-Versionen das Update verfügbar ist
 
 Die SUs stehen für folgende Versionen zur Verfügung:
 
@@ -110,16 +112,16 @@ Kurz zusammengefasst der praktische Ablauf: Zuerst mit dem Health Checker den Be
 
 ## Quellen
 
-1.  [Released: July 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-july-2026-exchange-server-security-updates/4534146) — Offizielle Ankündigung des Juli-Releases mit den unterstützten Versionen und dem bekannten Wrapper-Nachrichten-Problem.
+1.  [Released: July 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-july-2026-exchange-server-security-updates/4534146): Offizielle Ankündigung des Juli-Releases mit den unterstützten Versionen und dem bekannten Wrapper-Nachrichten-Problem.
 
-2.  [Addressing Exchange Server May 2026 vulnerability CVE-2026-42897 – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/addressing-exchange-server-may-2026-vulnerability-cve-2026-42897/4518498) — Ursprüngliche Sicherheitsmeldung samt Notfall-Mitigation und den bekannten Nebenwirkungen in OWA.
+2.  [Addressing Exchange Server May 2026 vulnerability CVE-2026-42897 – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/addressing-exchange-server-may-2026-vulnerability-cve-2026-42897/4518498): Ursprüngliche Sicherheitsmeldung samt Notfall-Mitigation und den bekannten Nebenwirkungen in OWA.
 
-3.  [Released: June 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-june-2026-exchange-server-security-updates/4524491) — Das Juni-Release, das den eigentlichen Fix für CVE-2026-42897 nachlieferte.
+3.  [Released: June 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-june-2026-exchange-server-security-updates/4524491): Das Juni-Release, das den eigentlichen Fix für CVE-2026-42897 nachlieferte.
 
-4.  [Exchange Emergency Mitigation Service (Exchange EM Service) – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/post-installation-tasks/security-best-practices/exchange-emergency-mitigation-service) — Funktionsweise des EM Service, der Mitigationen stündlich abgleicht und eine voreilig gelöschte Regel wieder einträgt.
+4.  [Exchange Emergency Mitigation Service (Exchange EM Service) – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/post-installation-tasks/security-best-practices/exchange-emergency-mitigation-service): Funktionsweise des EM Service, der Mitigationen stündlich abgleicht und eine voreilig gelöschte Regel wieder einträgt.
 
-5.  [Set-ExchangeServer (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-exchangeserver) — Parameter `MitigationsApplied` und `MitigationsBlocked`, um Mitigationen zu prüfen und die Reaktivierung zu unterbinden.
+5.  [Set-ExchangeServer (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-exchangeserver): Parameter `MitigationsApplied` und `MitigationsBlocked`, um Mitigationen zu prüfen und die Reaktivierung zu unterbinden.
 
-6.  [Exchange On-premises Mitigation Tool (EOMT) – Microsoft CSS-Exchange](https://microsoft.github.io/CSS-Exchange/Security/EOMT/) — Das EOMT-Skript inklusive Rollback-Schalter und CVE-spezifischer JSON-Sicherung des IIS-Ausgangszustands.
+6.  [Exchange On-premises Mitigation Tool (EOMT) – Microsoft CSS-Exchange](https://microsoft.github.io/CSS-Exchange/Security/EOMT/): Das EOMT-Skript inklusive Rollback-Schalter und CVE-spezifischer JSON-Sicherung des IIS-Ausgangszustands.
 
-7.  [CVE-2026-42897 Detail – NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-42897) — Technische Beschreibung und Bewertung der Schwachstelle in der National Vulnerability Database.
+7.  [CVE-2026-42897 Detail – NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-42897): Technische Beschreibung und Bewertung der Schwachstelle in der National Vulnerability Database.

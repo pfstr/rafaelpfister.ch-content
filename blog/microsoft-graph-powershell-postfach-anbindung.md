@@ -1,23 +1,23 @@
 ---
-title: "Microsoft-Graph-Verbindung in PowerShell bauen: Postfach auslesen und Mails senden"
+title: "Mit PowerShell auf Exchange Online zugreifen: EWS durch Microsoft Graph ersetzen"
 navTitle: "Graph in PowerShell"
-description: "EWS wird für Exchange Online am 1. Oktober 2026 abgeschaltet. Diese Schritt-für-Schritt-Anleitung baut die Graph-Anbindung in PowerShell komplett auf: App-Registrierung, zertifikatsbasierte App-Only-Anmeldung, Postfach auslesen, ZIP-Anhänge herunterladen und Mails versenden, mit beispielhaften Code-Snippets."
+description: "EWS endet in Exchange Online am 1. Oktober 2026. So registrieren Sie eine App, melden ein PowerShell-Skript per Zertifikat an, beschränken den Zugriff auf einzelne Postfächer und verarbeiten Nachrichten und Anhänge über Microsoft Graph."
 date: "2026-07-11"
 kategorie: "Totemomail"
-timeToRead: "5 min to read"
+timeToRead: "5 Min. Lesezeit"
 themen:
   - "microsoft-365-exchange"
 slug: "microsoft-graph-powershell-postfach-anbindung"
 url: "https://rafaelpfister.ch/blog/microsoft-graph-powershell-postfach-anbindung"
 ---
 
-# Microsoft-Graph-Verbindung in PowerShell bauen: Postfach auslesen und Mails senden
+# Mit PowerShell auf Exchange Online zugreifen: EWS durch Microsoft Graph ersetzen
 
-Exchange Web Services (EWS) wird für Exchange Online am **1\. Oktober 2026** abgeschaltet. Wer per Skript auf Postfächer zugreift (etwa um automatisiert zugestellte Dateien abzuholen), muss auf die Microsoft Graph API wechseln. Die komplette Graph-Anbindung in PowerShell umfasst App-Registrierung, zertifikatsbasierte Anmeldung, Lesen und Herunterladen von Anhängen sowie Mailversand, jeweils mit dem konkreten Code.
+Microsoft stellt Exchange Web Services (EWS) in Exchange Online am **1. Oktober 2026** ein. Skripte, die Nachrichten oder Anhänge aus einem Postfach abholen, müssen deshalb auf Microsoft Graph wechseln.
 
-Als durchgehendes Beispiel dient ein unbeaufsichtigtes Skript, das ZIP-Anhänge aus einem Postfach herunterlädt, entpackt und anschliessend einen Report verschickt. Platzhalter wie `example.com` und die Tenant-/App-IDs durch eigene Werte ersetzen.
+Das Beispiel in diesem Beitrag läuft ohne Benutzeranmeldung: Es lädt ZIP-Anhänge aus einem Postfach, entpackt sie, verschiebt verarbeitete Nachrichten und versendet anschliessend einen Bericht. Dafür braucht es eine App-Registrierung, ein Zertifikat und zwei Graph-Berechtigungen. Werte wie `example.com`, Tenant-ID und App-ID sind Platzhalter.
 
-## 1\. Voraussetzungen
+## 1. Benötigte PowerShell-Module
 
 Es genügen drei Module des Microsoft-Graph-SDK, nicht das gesamte Meta-Modul `Microsoft.Graph`:
 
@@ -27,18 +27,18 @@ Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.G
 
 ## 2\. App-Registrierung in Entra ID
 
-Unbeaufsichtigte Skripte melden nicht einen Benutzer an, sondern eine App mit eigenen Rechten (App-Only). Im [Entra Admin Center](https://entra.microsoft.com) unter App registrations eine neue Registrierung anlegen und ihr unter API permissions → Microsoft Graph → Application permissions zwei Rechte geben:
+Ein unbeaufsichtigtes Skript meldet sich als Anwendung mit eigenen Rechten an. Legen Sie im [Entra Admin Center](https://entra.microsoft.com) unter **App registrations** eine neue Registrierung an und vergeben Sie unter **API permissions → Microsoft Graph → Application permissions** diese beiden Rechte:
 
 -   `Mail.ReadWrite`: Mails lesen und nach der Verarbeitung verschieben
     
 -   `Mail.Send`: die Report-Mail versenden
     
 
-Danach **Grant admin consent** klicken und Tenant-ID sowie Application (client) ID notieren.
+Erteilen Sie danach die Administratorzustimmung und notieren Sie Tenant-ID sowie Application (Client) ID.
 
 ## 3\. Zertifikat statt Client Secret
 
-App-Only authentifiziert per Client Secret oder Zertifikat. Für Scheduled Tasks ist das Zertifikat die sauberere Wahl: Der private Schlüssel bleibt im Zertifikatspeicher, es liegt kein Passwort im Skript. Zertifikat auf dem ausführenden Server erzeugen und den öffentlichen Teil exportieren:
+Eine App-Only-Anmeldung funktioniert mit Client Secret oder Zertifikat. Für geplante Aufgaben ist ein Zertifikat die bessere Wahl: Der private Schlüssel bleibt im Zertifikatspeicher, im Skript steht kein Passwort. Erzeugen Sie das Zertifikat auf dem ausführenden Server und exportieren Sie nur den öffentlichen Teil:
 
 ```powershell
 $cert = New-SelfSignedCertificate -Subject "CN=eCall-Graph" `
@@ -54,7 +54,7 @@ Die exportierte `.cer`\-Datei in der App-Registrierung unter Certificates & secr
 
 ## 4\. Zugriff auf einzelne Postfächer einschränken
 
-Application Permissions gelten sonst tenant-weit: die App dürfte jedes Postfach im Tenant lesen. Eine Application Access Policy begrenzt sie auf eine Mail-aktivierte Sicherheitsgruppe mit den erlaubten Postfächern (Exchange Online PowerShell, einmalig):
+Application Permissions gelten zunächst für alle Postfächer im Tenant. Begrenzen Sie die App deshalb mit einer Application Access Policy auf eine mailaktivierte Sicherheitsgruppe. Dieser Schritt wird einmalig in Exchange Online PowerShell ausgeführt:
 
 ```powershell
 New-ApplicationAccessPolicy -AppId "<App-ID>" `
@@ -81,9 +81,9 @@ Connect-MgGraph -TenantId $TenantId -ClientId $ClientId `
     -CertificateThumbprint $Thumbprint -NoWelcome
 ```
 
-## 6\. Mails lesen und ZIP-Anhänge herunterladen
+## 6. Nachrichten lesen und ZIP-Anhänge herunterladen
 
-Der Kern: Posteingang durchgehen, ZIP-Anhänge speichern, entpacken und die verarbeitete Mail nach „Gelöschte Elemente“ verschieben. Entscheidend ist der Download über den `/$value`\-Endpunkt mit `Invoke-MgGraphRequest -OutputFilePath`, das streamt den Rohinhalt direkt in eine Datei und funktioniert auch bei grossen Anhängen zuverlässig:
+Nun kann das Skript den Posteingang durchlaufen, ZIP-Anhänge speichern und entpacken sowie verarbeitete Nachrichten nach «Gelöschte Elemente» verschieben. Der Download erfolgt über den Endpunkt `/$value` und `Invoke-MgGraphRequest -OutputFilePath`. Dadurch landet der Rohinhalt direkt in einer Datei, ohne einen grossen Anhang vollständig im Arbeitsspeicher zu halten:
 
 ```powershell
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -121,8 +121,7 @@ Bei mehr als 100 Mails mit `Get-MgUserMessage -All` oder Paging arbeiten; für e
 Auch `Send-MailMessage` ist veraltet. Über dieselbe App-Registrierung (Recht `Mail.Send`) geht die Mail direkt via Graph hinaus, hier mit einer Datei als base64-kodiertem Anhang:
 
 ```powershell
-$pfad = "D:\Reports
-eport.csv"
+$pfad = "D:\Reports\report.csv"
 $body = @{
     message = @{
         subject = "eCall Report"
@@ -151,12 +150,12 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
     -User "DOMAIN\svc-ecall" -Password (Read-Host "Passwort")
 ```
 
-Das vollständige Skript (inklusive Logging, Fehlerbehandlung und der eigentlichen Verrechnungslogik) liegt als lauffähiges Beispiel auf GitHub: [github.com/pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer)
+Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf GitHub: [pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer).
 
 ## Quellen
 
-1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440) — Ankündigung und Stichtag (1. Oktober 2026) für das Ende von EWS in Exchange Online.
+1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440): Ankündigung und Stichtag (1. Oktober 2026) für das Ende von EWS in Exchange Online.
     
-2.  [Microsoft Learn – «Get access without a user (App-only)»](https://learn.microsoft.com/en-us/graph/auth-v2-service) — App-Only-Authentifizierung gegen Microsoft Graph mit Zertifikat.
+2.  [Microsoft Learn – «Get access without a user (App-only)»](https://learn.microsoft.com/en-us/graph/auth-v2-service): App-Only-Authentifizierung gegen Microsoft Graph mit Zertifikat.
     
-3.  [Microsoft Learn – «Limiting application permissions to specific mailboxes»](https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access) — Application Access Policy zur Einschränkung der App auf einzelne Postfächer.
+3.  [Microsoft Learn – «Limiting application permissions to specific mailboxes»](https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access): Application Access Policy zur Einschränkung der App auf einzelne Postfächer.

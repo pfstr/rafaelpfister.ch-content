@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/smart-home-iot"
 
 # Smart Home & IoT
 
-Vernetzte Geräte im eigenen Netz betreiben: lokale Steuerung statt Hersteller-Cloud, Home Assistant und Community-Integrationen, Netzsegmentierung, Firewall-Regeln und der Umgang mit langlebigen Geräte-Zugangsdaten.
+Vernetzte Geräte unter eigener Kontrolle: Home Assistant, lokale Schnittstellen, Netzsegmentierung, Firewall-Regeln und der sichere Umgang mit Gerätezugängen.

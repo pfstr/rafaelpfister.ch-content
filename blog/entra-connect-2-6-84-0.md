@@ -1,31 +1,22 @@
 ---
 slug: entra-connect-2-6-84-0
-title: >-
-  Microsoft Entra Connect Sync 2.6.84.0: Sicherheitsfixes, neue Spielregeln für
-  App-Authentifizierung und PHS sowie die Lehre aus dem zurückgezogenen
-  Vorgänger
+title: "Entra Connect Sync 2.6.84.0: Was sich ändert und wer jetzt aktualisieren sollte"
 navTitle: Entra Connect 2.6.84
-description: >-
-  Microsoft hat am 7. Juli 2026 Entra Connect Sync 2.6.84.0 veröffentlicht, mit
-  Sicherheitsfixes, Passkey-Support im Wizard und etlichen Verhaltensänderungen
-  bei Application-Based Authentication, PowerShell-Cmdlets und Password Hash
-  Sync. Der direkte Vorgänger 2.6.79.0 wurde nach dem Release zurückgezogen. Was
-  im Release steckt, welche Hintergründe dahinterliegen und warum ein
-  kontrolliertes Abwarten trotz Sicherheitsfixes vertretbar ist.
+description: "Das Sicherheitsrelease bringt Passkey-Support und Änderungen an App-Authentifizierung, PowerShell und Password Hash Sync. Die Vorgängerversion wurde zurückgezogen; deshalb braucht das Update eine abgestufte Entscheidung."
 date: 2026-07-17
 kategorie: Microsoft Entra
-timeToRead: 11 min to read
+timeToRead: 11 Min. Lesezeit
 themen:
   - microsoft-entra
   - active-directory-entra
 url: https://rafaelpfister.ch/blog/entra-connect-2-6-84-0
 draft: false
 ---
-# Microsoft Entra Connect Sync 2.6.84.0
+# Entra Connect Sync 2.6.84.0: Was sich ändert und wer jetzt aktualisieren sollte
 
-**Microsoft hat am 7. Juli 2026 die Version 2.6.84.0 von Entra Connect Sync veröffentlicht und stuft sie als Sicherheitsrelease ein: «We recommend upgrading to this version as soon as possible.» Gleichzeitig steht im selben Dokument der Hinweis, dass der direkte Vorgänger 2.6.79.0 nach dem Release zurückgezogen wurde, weil nachträglich ein Problem im Installer gefunden wurde. Beides zusammen ergibt die realistische Einordnung: Das Update ist nötig, aber ein Tag-1-Rollout auf den Produktionsserver ist es nicht, ausser man fällt in eine der unten beschriebenen Ausnahmen.**
+Microsoft hat Entra Connect Sync 2.6.84.0 am 7. Juli 2026 als Sicherheitsrelease veröffentlicht und empfiehlt ein rasches Upgrade. Gleichzeitig wurde der direkte Vorgänger 2.6.79.0 wegen eines nachträglich entdeckten Installer-Problems zurückgezogen. Die Konsequenz ist weder «sofort überall installieren» noch «abwarten und ignorieren»: Betroffene und bald aus dem Support fallende Systeme sollten zügig wechseln, alle anderen können das Update zuerst kontrolliert erproben.
 
-## Die Ausgangslage: ein Release mit Vorgeschichte
+## Warum dieses Release besondere Vorsicht verdient
 
 Die 2.6er-Linie von Entra Connect Sync hat einen holprigen Start hinter sich. Ein kurzer Rückblick, weil er für die Update-Entscheidung relevant ist:
 
@@ -125,7 +116,7 @@ Seit März 2023 gilt für Entra Connect Sync 2.x eine strikte Retirement-Politik
 
 Wer noch auf 2.5.3.0 unterwegs ist, hat also nur noch zwei Wochen Support-Frist. Hier ist die Frage nicht ob, sondern nur auf welche Version aktualisiert wird. Microsoft betont zudem, dass ausser Support geratene Versionen «unexpectedly» aufhören können zu funktionieren; bei den abgekündigten 1.x-Versionen ist die Synchronisation inzwischen tatsächlich serverseitig abgeschaltet. Die Mindestvoraussetzungen bleiben .NET Framework 4.7.2 und TLS 1.2; den Installer gibt es ausschliesslich im Entra Admin Center (Entra ID → Entra Connect → Get started), nicht mehr im Download Center.
 
-## Empfehlung: vorerst noch abwarten
+## Empfehlung nach Ausgangsversion
 
 Microsoft empfiehlt, «so schnell wie möglich» zu aktualisieren. Diese Empfehlung stand allerdings wortgleich auch über Version 2.6.79.0, jener Version, die anschliessend zurückgezogen wurde. Die jüngere Release-Geschichte (zurückgezogener Installer, Hotfix wegen gestoppter Server, UI-Warnungen über mehrere Versionen) rechtfertigt eine nüchterne Abwägung statt eines Reflexes.
 
@@ -143,10 +134,10 @@ Für das Upgrade selbst gilt das übliche Vorgehen, das bei dieser Release-Histo
 
 ## Quellen
 
-1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history) — Offizielle Release Notes zu 2.6.84.0 samt Rückruf-Hinweis zu 2.6.79.0, Retirement-Tabelle und dem bekannten Problem mit modifizierter miiserver.exe.config.
-1. [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version) — Upgrade-Verfahren inklusive Swing-Migration über einen Staging-Mode-Server.
-1. [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id) — Funktionsweise der Application-Based Authentication, die das Legacy-Dienstkonto ablöst.
-1. [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication) — Die neue Passkey-/FIDO2-Anmeldung im Setup-Wizard über den Windows Web Account Manager.
-1. [Microsoft Entra Connect: Automatic upgrade – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-automatic-upgrade) — Mechanik und Voraussetzungen des Auto-Upgrade, dessen Rollout für 2.6.84.0 noch aussteht.
-1. [Auditing administrator events in Microsoft Entra Connect Sync – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/admin-audit-logging) — Das Admin-Audit-Logging, dessen Identitätszuordnung bei Synchronisationsregeln in diesem Release korrigiert wurde.
-1. [SQL Server 2019 – Microsoft Lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019) — Supportdaten zur bisher mitgelieferten LocalDB-Basis, deren Mainstream-Support im Februar 2025 endete.
+1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history): Offizielle Release Notes zu 2.6.84.0 samt Rückruf-Hinweis zu 2.6.79.0, Retirement-Tabelle und dem bekannten Problem mit modifizierter miiserver.exe.config.
+1. [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version): Upgrade-Verfahren inklusive Swing-Migration über einen Staging-Mode-Server.
+1. [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id): Funktionsweise der Application-Based Authentication, die das Legacy-Dienstkonto ablöst.
+1. [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication): Die neue Passkey-/FIDO2-Anmeldung im Setup-Wizard über den Windows Web Account Manager.
+1. [Microsoft Entra Connect: Automatic upgrade – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-install-automatic-upgrade): Mechanik und Voraussetzungen des Auto-Upgrade, dessen Rollout für 2.6.84.0 noch aussteht.
+1. [Auditing administrator events in Microsoft Entra Connect Sync – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/admin-audit-logging): Das Admin-Audit-Logging, dessen Identitätszuordnung bei Synchronisationsregeln in diesem Release korrigiert wurde.
+1. [SQL Server 2019 – Microsoft Lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019): Supportdaten zur bisher mitgelieferten LocalDB-Basis, deren Mainstream-Support im Februar 2025 endete.

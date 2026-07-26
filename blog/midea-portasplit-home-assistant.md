@@ -1,10 +1,10 @@
 ---
-title: "Das Projekt Midea AC LAN warnt: Midea schaltet die Cloud-Schnittstellen ab"
+title: "Midea PortaSplit in Home Assistant: Weshalb Token und Key entscheidend sind"
 navTitle: "PortaSplit & Token"
-description: "Die lokale Steuerung der Midea PortaSplit in Home Assistant hängt an einem Token und Key aus der Midea-Cloud. Wie dieser Token funktioniert, warum Home Assistant ihn beziehen konnte, weshalb Midea die Schnittstellen abschaltet und was Besitzer jetzt tun sollten."
+description: "Die lokale Steuerung benötigt zwei Werte aus der Midea-Cloud. So werden Token und Key beschafft, weshalb ihr Verlust problematisch ist und wie Besitzer ihre bestehende Einrichtung sichern."
 date: "2026-07-24"
 kategorie: "Smart Home & IoT"
-timeToRead: "9 min to read"
+timeToRead: "9 Min. Lesezeit"
 themen:
   - "smart-home-iot"
 related:
@@ -17,18 +17,20 @@ url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant"
 
 <aside class="article-update">
   <p class="article-update__label">Was PortaSplit-Besitzer jetzt tun sollten</p>
-  <p>Über diese Cloud-Schnittstellen bezieht Home Assistant bei der Einrichtung den gerätespezifischen Token und Key. Der Hinweis steht seit dem 19. Mai 2025 im Projekt-Repository. Für Besitzer heisst das:</p>
+  <p>Über private Cloud-Schnittstellen bezieht Home Assistant bei der Einrichtung den gerätespezifischen Token und Key. Das Projekt Midea AC LAN warnt seit dem 19. Mai 2025 vor möglichen Änderungen. Ein konkreter Abschalttermin des Herstellers ist jedoch nicht dokumentiert. Für Besitzer heisst das:</p>
   <ol>
-    <li><strong>Jetzt einrichten.</strong> Nur die erstmalige Token-Beschaffung braucht die Midea-Cloud. Wer wartet, kann das Gerät möglicherweise nicht mehr in Home Assistant aufnehmen.</li>
-    <li><strong>Token, Key und die Konfiguration verschlüsselt sichern.</strong> Nach der Abschaltung sind diese Werte voraussichtlich nicht erneut beschaffbar; das Backup ist dann der einzige Weg zu einer Neueinrichtung.</li>
+    <li><strong>Bestehende Einrichtung nicht unnötig auflösen.</strong> Nur die Beschaffung der Zugangswerte braucht die Midea-Cloud. Künftige Änderungen am privaten Endpunkt könnten eine erneute Einrichtung erschweren.</li>
+    <li><strong>Token, Key und Konfiguration verschlüsselt sichern.</strong> Falls der Abruf später nicht mehr funktioniert, bleibt das Backup der verlässlichste Weg zur Wiederherstellung.</li>
     <li><strong>Kopplung nicht ohne Not auflösen.</strong> Werkseinstellungen, das Entfernen aus dem Midea-Konto oder ein WLAN-Modul-Tausch erzwingen eine neue Token-Beschaffung, die künftig scheitern kann.</li>
   </ol>
-  <p>Bereits eingerichtete Geräte steuern Home Assistant lokal weiter; betroffen ist nach heutigem Stand das Hinzufügen, nicht der Betrieb. Die konkreten Einrichtungs- und Backup-Schritte stehen im <a href="/blog/midea-portasplit-home-assistant-einrichten">zweiten Teil zu Einbindung und Absicherung</a>.</p>
+  <p>Bereits eingerichtete Geräte werden lokal gesteuert. Änderungen an der Cloud-Schnittstelle betreffen deshalb zuerst das Hinzufügen und Wiederherstellen, nicht jeden laufenden Schaltbefehl. Die konkreten Schritte stehen im <a href="/blog/midea-portasplit-home-assistant-einrichten">Praxisbeitrag zu Einbindung und Absicherung</a>.</p>
 </aside>
 
 ![Beispielhaftes Home-Assistant-Dashboard einer Midea PortaSplit mit Raum- und Solltemperatur, Luftfeuchtigkeit, Leistungsaufnahme, Energieverbrauch und Kompressorlaufzeiten der letzten 24 Stunden.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
 
-Die lokale Steuerung der Midea PortaSplit in Home Assistant hängt an zwei gerätespezifischen Werten: einem Token und einem Key. Beide beschafft die Integration bei der erstmaligen Einrichtung einmalig über die Midea-Cloud; danach läuft die Steuerung direkt im lokalen Netz, ohne dass ein Schaltbefehl über einen Midea-Server gehen müsste. Genau diese Cloud-Schnittstelle schaltet Midea nun ab, und darum geht es hier. Wie die lokale Steuerung im Detail funktioniert, welche Integration passt und wie sich das Gerät absichern lässt, steht im [zweiten Teil zu Einbindung und Absicherung](/blog/midea-portasplit-home-assistant-einrichten).
+Die lokale Steuerung der Midea PortaSplit beruht auf zwei gerätespezifischen Werten: Token und Key. Die Home-Assistant-Integration ruft beide während der Einrichtung über einen privaten Midea-Cloud-Endpunkt ab. Danach sendet sie Steuerbefehle direkt im lokalen Netz.
+
+Das Projekt Midea AC LAN warnt vor möglichen Änderungen an diesen Cloud-Schnittstellen. Neuere Analysen zeigen allerdings, dass daraus keine bestätigte Hersteller-Roadmap oder ein konkreter Abschalttermin abgeleitet werden kann. Dieser Beitrag erklärt das technische Abhängigkeitsverhältnis; die [detaillierte API-Analyse](/blog/midea-v2-cloud-api-portasplit-home-assistant) ordnet die verschiedenen «V2»-Bezeichnungen und den aktuellen Stand ein.
 
 ## Die Token-Frage im Detail
 
@@ -65,7 +67,7 @@ Das wäre die eleganteste Lösung. Würde das Gerät beim ersten lokalen Pairing
 
 Midea hat das ursprüngliche LAN-Protokoll jedoch anders entworfen: Das Gerät akzeptiert lokale Befehle erst mit den passenden, cloudbezogenen Zugangsdaten. Es gibt keinen dokumentierten lokalen Pairing-Mechanismus, der den Token ohne Umweg über die Cloud ausgeben würde. Die Cloud ist damit nicht nur Bequemlichkeit, sondern architektonisch der einzige vorgesehene Weg zum Token.
 
-### Könnte die Community die Abschaltung umgehen?
+### Könnte die Community Änderungen am Token-Endpunkt umgehen?
 
 Möglich wäre das nur, wenn sich eine der folgenden Optionen findet:
 
@@ -86,32 +88,32 @@ Das ist differenziert zu betrachten. Es handelt sich um die Einschätzung eines 
 
 Daraus leiten sich die drei Schritte aus der Box am Artikelanfang ab, jeweils mit ihrer Begründung:
 
-- **Jetzt einrichten**, weil die Token-Beschaffung der einzige Schritt ist, der zwingend über die Midea-Cloud läuft. Solange die Integration noch eine funktionierende Token-Schnittstelle erreicht, gelingt die Einrichtung; danach hilft auch ein fabrikneues Gerät nicht weiter.
-- **Zugangsdaten sichern**, weil Token und Key nach der Abschaltung voraussichtlich nicht neu ausgestellt werden. Home Assistant speichert sie zwar lokal, aber ein defektes System, ein misslungener Restore oder eine versehentlich gelöschte Integration würde ohne externes Backup den dauerhaften Verlust der lokalen Steuerung bedeuten.
-- **Kopplung nicht ohne Not auflösen**, weil jede Werkseinstellung und jedes Entfernen aus dem Midea-Konto die gespeicherten Schlüssel auf dem Gerät verwerfen kann. Die anschliessend nötige Neu-Kopplung setzt genau die Cloud-Schnittstellen voraus, die verschwinden.
+- **Eine funktionierende Einrichtung nicht ohne Grund ersetzen.** Die Token-Beschaffung ist der einzige Schritt, der zwingend über die Midea-Cloud läuft. Änderungen am privaten Endpunkt können vor allem eine spätere Neueinrichtung treffen.
+- **Zugangsdaten sichern.** Home Assistant speichert Token und Key lokal. Ein defektes System, ein misslungener Restore oder eine versehentlich gelöschte Integration kann die lokale Steuerung dennoch unbrauchbar machen, wenn kein externes Backup vorhanden ist.
+- **Kopplung nicht leichtfertig auflösen.** Ob ein Werksreset oder das Entfernen aus dem Midea-Konto bei jedem Modell neue Zugangsdaten erzwingt, ist nicht vollständig dokumentiert. Ein Backup vor solchen Änderungen ist deshalb zwingend.
 
-Der laufende Betrieb ist davon zunächst nicht betroffen: Die lokale Steuerung nutzt die bereits gespeicherten Werte und braucht die Token-Schnittstellen nicht mehr. Ein Restrisiko bleibt allerdings bestehen, falls Midea, wie vom Entwickler erwartet, langfristig auch die V1-LAN-API über Firmware-Updates ablöst. Wie die Sicherung von Token, Key und Konfiguration konkret abläuft, steht im [zweiten Teil](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
+Der laufende Betrieb ist davon zunächst nicht betroffen: Die lokale Steuerung nutzt die bereits gespeicherten Werte und braucht den Token-Endpunkt nicht mehr. Ein Restrisiko bleibt, falls eine spätere Firmware das lokale Protokoll oder die Authentifizierung ändert. Wie Token, Key und Konfiguration gesichert werden, steht im [Praxisbeitrag zur Einrichtung](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
 
 ## Was das für die Sicherheit bedeutet
 
-Die Abschaltung ist nicht nur eine Verfügbarkeitsfrage, sondern hat einen sicherheitstechnischen Kern. Laut der Warnung von `Midea AC LAN` basiert die ältere LAN-Architektur auf einer problematischen Annahme: Die Entwickler gingen ursprünglich davon aus, dass die Client-Kommunikation bereits ausreichend verschlüsselt sei. Deshalb wurden die von der Cloud ausgegebenen Tokens nicht mit einer Ablaufzeit versehen.
+Die Warnung hat neben der Verfügbarkeit einen sicherheitstechnischen Kern. Laut `Midea AC LAN` basiert die ältere LAN-Architektur auf einer problematischen Annahme: Die Client-Kommunikation galt ursprünglich als ausreichend geschützt, weshalb die von der Cloud ausgegebenen Tokens keine Ablaufzeit erhielten.
 
-Ein nicht ablaufender Token ist für sich genommen noch keine Schwachstelle. Problematisch wird er, wenn er ausgelesen werden kann, in Logs auftaucht, in Backups landet, an Dritte weitergegeben wird, die Client-Verschlüsselung rekonstruiert wurde oder er sich nicht widerrufen beziehungsweise rotieren lässt. Der Entwickler von `Midea AC LAN` schreibt, dass zahlreiche Home-Assistant-Plugins auf GitHub rekonstruierte Client-Verschlüsselungsverfahren verwenden. In Verbindung mit nicht ablaufenden Tokens entstehe daraus eine Sicherheitslücke, auf die Midea mit der Abschaltung der Token-APIs und dem Übergang auf eine neue Architektur reagiere.
+Ein nicht ablaufender Token ist für sich genommen noch keine Schwachstelle. Problematisch wird er, wenn er in Protokollen oder ungeschützten Backups landet, an Dritte gelangt oder weder widerrufen noch rotiert werden kann. Der Entwickler von `Midea AC LAN` vermutet, dass Midea auf diese Risiken mit Änderungen an den Token-Diensten und einer stärker cloudbasierten Architektur reagiert. Eine entsprechende Herstellerankündigung mit Zeitplan ist jedoch nicht belegt.
 
 Dabei ist sprachliche Präzision wichtig. Die Community-Integration „hackt" nicht das Klimagerät. Sie implementiert ein proprietäres Protokoll, das durch Reverse Engineering nachvollzogen wurde. Das Sicherheitsproblem entsteht daraus, dass langlebige Geheimnisse ausserhalb der ursprünglich vorgesehenen App verwendet und gespeichert werden können.
 
 Für den Betrieb im eigenen Netz ist vor allem relevant, was Token und Key ermöglichen. Beide authentifizieren die lokale Kommunikation mit dem Gerät. Geraten sie in falsche Hände, könnte ein Angreifer abhängig vom Protokoll und von seiner Netzwerkposition das Gerät erkennen, sich gegenüber dem Gerät authentifizieren, Statusinformationen auslesen, Einstellungen verändern, die Klimaanlage ein- oder ausschalten, Betriebsmodi wechseln und die Solltemperatur verändern. Dazu muss der Angreifer in der Regel trotzdem eine Netzwerkverbindung zum Gerät herstellen können; der Besitz von Token und Key allein ermöglicht keinen Angriff aus dem gesamten Internet. Token und Key sind daher wie ein Passwort zu behandeln. Wie man das Gerät netzwerkseitig so einbettet, dass diese Werte auch bei einer Panne wenig Schaden anrichten, ist das Thema des [zweiten Teils](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben).
 
-## Fazit
+## Was davon praktisch bleibt
 
-Die lokale Steuerung der PortaSplit in Home Assistant steht und fällt mit einem Token und Key, die derzeit nur über die Midea-Cloud zu beschaffen sind. Dieser Umweg ist kein Schönheitsfehler, sondern die Folge eines LAN-Protokolls, das lokale Befehle an cloudbezogene Zugangsdaten knüpft. Weil Midea genau diese Schnittstellen abschaltet und die zugrunde liegende Architektur als Sicherheitsproblem betrachtet, ist die langfristige Zukunft der inoffiziellen lokalen API nicht garantiert.
+Die lokale Steuerung der PortaSplit steht und fällt mit Token und Key, die derzeit nur über die Midea-Cloud beschafft werden können. Dieser Umweg ist Teil des Protokolldesigns: Lokale Befehle sind an cloudbezogene Zugangsdaten gebunden. Weil der Endpunkt privat und undokumentiert ist, bleibt die langfristige Verfügbarkeit der inoffiziellen Integration unsicher.
 
-Praktisch heisst das: Wer eine PortaSplit besitzt oder kauft, sollte sie zeitnah einrichten, die Zugangsdaten sichern und die Kopplung nicht leichtfertig auflösen. Bereits eingerichtete Geräte laufen lokal weiter. Die konkrete Einrichtung, die Wahl der passenden Integration und die netzwerkseitige Absicherung stehen im [zweiten Teil: Midea PortaSplit in Home Assistant einbinden und absichern](/blog/midea-portasplit-home-assistant-einrichten).
+Praktisch heisst das: Zugangsdaten und Konfiguration sichern, eine funktionierende Kopplung nicht unnötig auflösen und Änderungen an Integration und Firmware beobachten. Bereits eingerichtete Geräte laufen lokal weiter. Einrichtung, Backup und Netzwerkschutz beschreibt der [Praxisbeitrag zur PortaSplit](/blog/midea-portasplit-home-assistant-einrichten).
 
 ## Quellen
 
-1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> — Integration `Midea AC LAN` mit der „Important Notice" (seit 19. Mai 2025, aktualisiert am 14. Juli 2025), der Begründung über nicht ablaufende Tokens und rekonstruierte Client-Verschlüsselung sowie der Beschreibung des cloudbasierten Token-Bezugs.
+1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: Integration `Midea AC LAN` mit der „Important Notice" (seit 19. Mai 2025, aktualisiert am 14. Juli 2025), der Begründung über nicht ablaufende Tokens und rekonstruierte Client-Verschlüsselung sowie der Beschreibung des cloudbasierten Token-Bezugs.
 
-2.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> — Integration `Midea Smart AC`: Beschreibung des cloudbasierten Token- und Key-Bezugs bei V3-Geräten und der lokalen Speicherung der Werte.
+2.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: Integration `Midea Smart AC`: Beschreibung des cloudbasierten Token- und Key-Bezugs bei V3-Geräten und der lokalen Speicherung der Werte.
 
-3.  [Midea SmartHome](https://www.midea.com/global/smarthome) — Herstellerangaben zum SmartHome-Ökosystem und zu den referenzierten Sicherheits- und Datenschutzstandards.
+3.  [Midea SmartHome](https://www.midea.com/global/smarthome): Herstellerangaben zum SmartHome-Ökosystem und zu den referenzierten Sicherheits- und Datenschutzstandards.

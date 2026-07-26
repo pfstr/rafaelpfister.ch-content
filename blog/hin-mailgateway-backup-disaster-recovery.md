@@ -1,33 +1,29 @@
 ---
-title: "HIN Mailgateway auf SEPPmail-Basis: Backup & Disaster Recovery im Cluster (und was sich mit Stargate ändert)"
+title: "HIN Mailgateway sichern und nach einem Ausfall wiederherstellen"
 navTitle: "Backup & Recovery"
-description: "Das HIN Mailgateway beruht auf einer SEPPmail-Appliance. Für Backup und Disaster Recovery ist entscheidend, was die Appliance sichert (nur Konfiguration und Schlüsselmaterial, keine Mails), wie die Cluster-Replikation funktioniert und warum sie kein Backup ersetzt."
+description: "Ein Cluster schützt das HIN Mailgateway vor einem Knotenausfall, ersetzt aber kein Backup. Entscheidend sind Konfiguration, Schlüsselmaterial, Restore-Reihenfolge und die Änderungen durch Stargate."
 date: "2026-07-08"
 kategorie: "HIN-Gateway"
-timeToRead: "15 min to read"
+timeToRead: "15 Min. Lesezeit"
 themen:
   - "hin-gateway"
 slug: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/blog/hin-mailgateway-backup-disaster-recovery"
 ---
 
-# HIN Mailgateway auf SEPPmail-Basis: Backup & Disaster Recovery im Cluster (und was sich mit Stargate ändert)
+# HIN Mailgateway sichern und nach einem Ausfall wiederherstellen
 
-Fast jedes produktive HIN Mailgateway (MGW) läuft im Clusterverbund. Mancher Betreiber verlässt sich stillschweigend darauf, dass diese Redundanz auch die Datensicherung übernimmt. Das ist ein Trugschluss. Ein Cluster schützt vor dem Ausfall eines Knotens, nicht vor einer fehlerhaften Regeländerung, einem gelöschten Zertifikat oder einem korrupten Import, denn [systemrelevante Daten werden zuverlässig auf alle Knoten repliziert](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html), Fehler eingeschlossen.
+Viele produktive HIN Mailgateways laufen als Cluster. Fällt ein Knoten aus, übernimmt der andere. Gegen eine fehlerhafte Regel, ein gelöschtes Zertifikat oder einen beschädigten Import hilft diese Redundanz jedoch nicht: [Systemrelevante Daten werden auf alle Knoten repliziert](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html), einschliesslich unerwünschter Änderungen.
 
-  
+Für eine belastbare Wiederherstellung braucht es deshalb ein separates Backup. Da das HIN Mailgateway technisch auf einer SEPPmail-Appliance mit GINA beruht, gelten deren dokumentierte Sicherungs- und Restore-Mechanismen.
 
-Backup und Disaster Recovery lassen sich nur planen, wenn die technische Basis klar ist. Das HIN Mailgateway beruht auf einer SEPPmail-Appliance mit dem GINA-Verfahren; es gilt damit die dokumentierte SEPPmail-Mechanik, die beim Backup einige Besonderheiten aufweist.
-
-  
-
-## Was das HIN MGW technisch ist
+## Welche Daten auf dem Gateway liegen
 
 Das Gateway verarbeitet ein- und ausgehende Mails nach einem zentralen Regelwerk und verschlüsselt je nach Empfänger per S/MIME, OpenPGP oder TLS; für Empfänger ohne eigenes Schlüsselmaterial dient das webbasierte GINA-Verfahren. Für das Backup ist entscheidend, dass [Nachrichteninhalte auf dem Gateway nicht persistent gespeichert werden](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): Die Appliance verarbeitet Mails im Durchlauf, ohne sie zu archivieren.
 
   
 
-## Cluster-Architektur: was repliziert wird
+## Was der Cluster repliziert
 
 SEPPmail kennt mehrere [Cluster-Ausprägungen – High-Availability, Load-Balancing und Geo-Cluster](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html); über alle Knoten synchronisiert werden Systemparameter, Benutzerdaten und Schlüsselmaterial. Beim [Frontend/Backend-Cluster verfügt das Frontend über keine eigene Konfigurationsdatenbank](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html): Es lässt sich in einer DMZ ohne Datenablage betreiben und erhält nur die zur aktuellen Verarbeitung nötigen Daten; die Datenbank samt Schlüsseln liegt auf dem Backend. Für [Large File Transfer (LFT) gilt eine Ausnahme](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html): Jedem Partner (auch Frontends) wird eine gleich grosse Platte zugeordnet, und die LFT-Daten werden auf alle Knoten synchronisiert.
 
@@ -154,26 +150,26 @@ Für das Betriebshandbuch bedeutet das: Die klassische Disziplin «Appliance-Kon
 
   
 
-## Fazit
+## Die wichtigste Trennung
 
 Solange das HIN MGW auf SEPPmail-Technik läuft, gilt: Der Cluster kompensiert Hardware-Ausfälle, die Verantwortung für Konfigurations- und Schlüsselintegrität verbleibt jedoch beim Betreiber. Das schlanke Konfigurations-Backup gehört unabhängig vom Cluster gesichert (per SCP, versioniert, mit getrennt verwahrtem Passwort), Snapshots ersetzen es im Cluster nicht, die Versionsstände bleiben synchron, und der Restore wird regelmässig isoliert getestet. Der Umstieg auf Stargate sollte frühzeitig in die DR-Planung einfliessen, da er Resilienz und Schlüsselverwahrung in das dezentrale Netz verlagert.
 
 ## Quellen
 
-1.  [SEPPmail-Dokumentation – «Backup / Restore»](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html) — Backup-Inhalt (nur Konfiguration und Schlüsselmaterial), nächtliche Erstellung, automatische Cluster-Wiederherstellung per Replikation.
+1.  [SEPPmail-Dokumentation – «Backup / Restore»](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): Backup-Inhalt (nur Konfiguration und Schlüsselmaterial), nächtliche Erstellung, automatische Cluster-Wiederherstellung per Replikation.
     
-2.  [SEPPmail-Dokumentation – «Administration»](https://docs.seppmail.com/de/07_mi_11_adm__administration.html) — Ausführliche Referenz: Backup-Menü (Download / Send Backup / Change password, `backup.tgz` um Mitternacht), LFT-Snapshots (14 Tage, im Cluster kein Restore), Restore-Regeln und Cluster-Vorgehen, Preempt (SMTP-Return-Code, Standard 421), Device Cloning, Update-Kanäle und Update-Reihenfolge (Frontend vor Backend), Factory Reset, Bulk-Import/-Export.
+2.  [SEPPmail-Dokumentation – «Administration»](https://docs.seppmail.com/de/07_mi_11_adm__administration.html): Ausführliche Referenz: Backup-Menü (Download / Send Backup / Change password, `backup.tgz` um Mitternacht), LFT-Snapshots (14 Tage, im Cluster kein Restore), Restore-Regeln und Cluster-Vorgehen, Preempt (SMTP-Return-Code, Standard 421), Device Cloning, Update-Kanäle und Update-Reihenfolge (Frontend vor Backend), Factory Reset, Bulk-Import/-Export.
     
-3.  [SEPPmail-Dokumentation – «Backup Benutzer erstellen»](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html) — Gruppe «backup (Backup operator)», Verschlüsselung und Passwortverwaltung.
+3.  [SEPPmail-Dokumentation – «Backup Benutzer erstellen»](https://docs.seppmail.com/de/04_com_06_bc_03_ism_03_create-backup-user.html): Gruppe «backup (Backup operator)», Verschlüsselung und Passwortverwaltung.
     
-4.  [SEPPmail-Dokumentation – «Backup per SCP kopieren»](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html) — Abholung der `backup.tgz` via SCP über den OS-Benutzer `backup` statt Mailversand.
+4.  [SEPPmail-Dokumentation – «Backup per SCP kopieren»](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html): Abholung der `backup.tgz` via SCP über den OS-Benutzer `backup` statt Mailversand.
     
-5.  [SEPPmail-Dokumentation – «Cluster / Hochverfügbarkeit»](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html) — Cluster-Typen und die über alle Knoten synchronisierten Daten (Systemparameter, Benutzerdaten, Schlüsselmaterial).
+5.  [SEPPmail-Dokumentation – «Cluster / Hochverfügbarkeit»](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html): Cluster-Typen und die über alle Knoten synchronisierten Daten (Systemparameter, Benutzerdaten, Schlüsselmaterial).
     
-6.  [SEPPmail-Dokumentation – «Frontend/Backend-Cluster»](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html) — Frontend ohne Konfigurationsdatenbank, DMZ-Betrieb, on-demand-Daten; Backend als Datenhalter.
+6.  [SEPPmail-Dokumentation – «Frontend/Backend-Cluster»](https://docs.seppmail.com/de/04_com_09_cl_05_frontend-backend-cluster.html): Frontend ohne Konfigurationsdatenbank, DMZ-Betrieb, on-demand-Daten; Backend als Datenhalter.
     
-7.  [SEPPmail-Dokumentation – «Datenablage im Cluster (LFT)»](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html) — Gleich grosse Zusatzplatte je Partner, Synchronisation der LFT-Daten auf alle Knoten.
+7.  [SEPPmail-Dokumentation – «Datenablage im Cluster (LFT)»](https://docs.seppmail.com/ch/09_ht_lft_data-storage-in-cluster.html): Gleich grosse Zusatzplatte je Partner, Synchronisation der LFT-Daten auf alle Knoten.
     
-8.  [HIN AG – «Vom Mailgateway zum Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm) — HIN-Kommunikation zum Nachfolger Stargate: dezentrale Nodes, Data-Mesh-Konzept, Zeitplan, Ende-zu-Ende-Verschlüsselung.
+8.  [HIN AG – «Vom Mailgateway zum Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): HIN-Kommunikation zum Nachfolger Stargate: dezentrale Nodes, Data-Mesh-Konzept, Zeitplan, Ende-zu-Ende-Verschlüsselung.
     
-9.  [Vereign AG – «Verimesh» / Vereign Client Library (vcl, Tag 0.4-rc1)](https://code.vereign.com/code/vcl/-/tree/0.4-rc1) — Technische Grundlage von Stargate: dezentrales Schlüsselmanagement (DKMS), Ende-zu-Ende-Verschlüsselung mit Nachrichtenfragmentierung, quelloffen unter AGPLv3.
+9.  [Vereign AG – «Verimesh» / Vereign Client Library (vcl, Tag 0.4-rc1)](https://code.vereign.com/code/vcl/-/tree/0.4-rc1): Technische Grundlage von Stargate: dezentrales Schlüsselmanagement (DKMS), Ende-zu-Ende-Verschlüsselung mit Nachrichtenfragmentierung, quelloffen unter AGPLv3.

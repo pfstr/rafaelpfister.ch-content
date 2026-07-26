@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/exchange-onprem-hybrid"
 
 # Exchange OnPrem / Hybrid
 
-On-premises Exchange Server, Security Updates, Hybrid-Anbindung an Exchange Online und die Migration auf Exchange SE.
+Exchange Server im eigenen Rechenzentrum: Sicherheitsupdates, Hybrid-Anbindung an Exchange Online und der Weg zu Exchange SE.

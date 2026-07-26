@@ -1,23 +1,24 @@
 ---
-title: "Rclone-Mount im Docker-Container: Propagation, AppArmor und der Fehler „Transport endpoint is not connected“"
-navTitle: "Rclone in Docker"
-description: "Ein FUSE-Mount aus einem Docker-Container soll auf dem Host und in anderen Containern sichtbar sein und Neustarts überleben. Drei dokumentierte Fallen: stillschweigend degradierte rshared-Propagation, das AppArmor-Profil für fusermount3 und Container, die an toten Mounts festhalten."
-date: "2026-07-25"
-kategorie: "Rclone"
-timeToRead: "9 min to read"
+title: "rclone-Mounts in Docker zuverlässig betreiben"
+navTitle: "rclone in Docker"
+description: "Damit ein FUSE-Mount aus einem Container auch auf dem Host und in weiteren Containern funktioniert, müssen Mount-Propagation, AppArmor und die Wiederherstellung nach Ausfällen zusammenspielen."
+date: "2026-07-26"
+kategorie: "rclone"
+timeToRead: "9 Min. Lesezeit"
 themen:
   - "rclone"
 related:
-  - "paperless-dokumente-clouddienst-auslagern"
+  - "paperless-dokumente-proton-drive-auslagern"
+draft: true
 slug: "rclone-mount-in-docker-container"
 url: "https://rafaelpfister.ch/blog/rclone-mount-in-docker-container"
 ---
 
-Ein Rclone-Mount soll in einem Docker-Container laufen, aber ausserhalb nutzbar sein: auf dem Host und in anderen Containern, die die Dateien konsumieren. Das klingt nach einer Zeile Compose. Tatsächlich stecken darin drei Fallen, von denen zwei kaum dokumentiert sind. Dieser Artikel zeigt alle drei mit den konkreten Fehlerbildern, wie sie bei einem Praxistest auf Ubuntu 25.10 (Kernel 6.17, Docker 29.6) aufgetreten sind.
+Ein rclone-Mount läuft in einem Docker-Container, soll aber auch auf dem Host und in weiteren Containern verfügbar sein. Dafür müssen Mount-Ereignisse mehrere Namensräume durchqueren. Eine einzelne Compose-Option genügt nicht.
 
-Der Anwendungsfall dahinter: eine [Dokumentenablage für Paperless-ngx in einem Clouddienst](/blog/paperless-dokumente-clouddienst-auslagern). Die Erkenntnisse gelten aber für jeden containerisierten FUSE-Mount, auch mit sshfs oder anderen Werkzeugen.
+In einem Praxistest mit Ubuntu 25.10, Kernel 6.17 und Docker 29.6 traten drei voneinander unabhängige Fehler auf: Docker stufte `rshared` unbemerkt herunter, AppArmor blockierte `fusermount3`, und ein konsumierender Container hielt nach einem Neustart am alten Mount fest. Der konkrete Anwendungsfall war eine [Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern); dieselben Mechanismen gelten auch für andere FUSE-Werkzeuge wie sshfs.
 
-## Falle 1: Docker degradiert rshared stillschweigend
+## 1. Die Host-Quelle muss selbst `shared` sein
 
 Damit ein Mount aus dem Container den Host erreicht, braucht der Bind die Propagation `rshared`:
 
@@ -30,7 +31,7 @@ Damit ein Mount aus dem Container den Host erreicht, braucht der Bind die Propag
           propagation: rshared
 ```
 
-Was die Dokumentation verschweigt: `rshared` funktioniert nur, wenn die Bind-Quelle auf dem Host **selbst ein Mountpoint mit shared-Propagation** ist. Ein gewöhnliches Verzeichnis erfüllt das nicht. Docker meldet dann aber keinen Fehler, sondern stuft die Propagation kommentarlos herunter. Sichtbar wird das nur in `/proc/self/mountinfo` im Container:
+`rshared` funktioniert nur, wenn die Bind-Quelle auf dem Host **selbst ein Mountpoint mit Shared-Propagation** ist. Ein gewöhnliches Verzeichnis erfüllt diese Voraussetzung nicht. Docker meldet trotzdem keinen Fehler, sondern verwendet stillschweigend eine schwächere Propagation. Erkennbar ist das in `/proc/self/mountinfo` innerhalb des Containers:
 
 ```text
 1938 2077 8:2 /srv/storage/media /data rw,relatime master:1 - ext4 /dev/sda2 rw
@@ -45,7 +46,7 @@ mount --make-shared /srv/storage/media
 
 Damit das einen Reboot übersteht, gehört es in eine systemd-Unit mit `Before=docker.service`. Kontrolle: `findmnt -no PROPAGATION /srv/storage/media` muss `shared` liefern.
 
-## Falle 2: das AppArmor-Profil für fusermount3
+## 2. AppArmor prüft `fusermount3` auch im Container
 
 Mit korrekter Propagation kam die nächste Überraschung. Der Mount auf den geteilten Pfad scheiterte weiterhin:
 
@@ -54,7 +55,7 @@ NOTICE: mount helper error: fusermount3: mount failed: Permission denied
 CRITICAL: Fatal error: failed to mount FUSE fs: fusermount: exit status 1
 ```
 
-Bemerkenswert dabei: Es lag **nicht** an den Container-Rechten. `CAP_SYS_ADMIN`, `/dev/fuse`, AppArmor `unconfined` für den Container, sogar `--privileged`: Der Fehler blieb identisch. Gleichzeitig funktionierte auf demselben Pfad ein tmpfs-Mount problemlos, und der FUSE-Mount funktionierte auf anderen Pfaden. Die Auflösung stand im Kernel-Audit-Log:
+Die üblichen zusätzlichen Container-Rechte änderten nichts: weder `CAP_SYS_ADMIN` und `/dev/fuse` noch `unconfined` oder sogar `--privileged`. Ein tmpfs-Mount funktionierte am selben Ziel, und FUSE funktionierte an anderen Pfaden. Erst das Kernel-Audit-Log zeigte die tatsächliche Ursache:
 
 ```text
 audit: type=1400 apparmor="DENIED" operation="mount" class="mount"
@@ -62,7 +63,7 @@ audit: type=1400 apparmor="DENIED" operation="mount" class="mount"
   name="/data/documents/originals/" fstype="fuse.rclone"
 ```
 
-Ubuntu liefert ein **AppArmor-Profil für die Binary `fusermount3`** mit, das FUSE-Mounts nur auf eine Positivliste von Mountpunkt-Mustern erlaubt. Dieses Profil greift auch für das fusermount3 **im Container**, gematcht am Pfad, wie ihn der Container sieht:
+Ubuntu liefert ein **AppArmor-Profil für die Binary `fusermount3`** mit, das FUSE-Mounts nur auf eine Positivliste von Mountpunkt-Mustern erlaubt. Dieses Profil greift auch für das fusermount3 **im Container**. Entscheidend ist der Pfad, wie ihn der Container sieht:
 
 ```text
 mount fstype=@{fuse_types} ... -> @{HOME}/**/,
@@ -81,11 +82,11 @@ rclone mount remote:pfad /mnt/inner/dokumente --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/dokumente /data/dokumente
 ```
 
-Der Bind ist ein normaler mount(2)-Aufruf, propagiert wie jeder andere über den shared Pfad zum Host. Verifiziert habe ich das bis in einen zweiten Container, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im Rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
+Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über den Shared-Pfad zum Host. Das liess sich bis in einen zweiten Container verifizieren, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
 
-## Falle 3: Konsumenten halten an toten Mounts fest
+## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Stirbt der Rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht dagegen nur noch das hier:
+Die dritte Falle betrifft die Gegenseite. Stirbt der rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -102,15 +103,15 @@ Docker verwendet für Bind-Mounts standardmässig `rprivate`: Ein Mount, der auf
           propagation: rslave
 ```
 
-Mit `rslave` reicht der Host neue Mount-Ereignisse in den Container weiter. Im Test sah der Konsument nach einem hart beendeten und neu aufgebauten Mount **ohne eigenen Neustart** wieder alle Dateien; der Neustartzähler blieb bei null.
+Mit `rslave` reicht der Host neue Mount-Ereignisse in den Container weiter. Im Test sah der Konsument nach einem hart beendeten und neu aufgebauten Mount **ohne eigenen Neustart** wieder alle Dateien. Der Neustartzähler blieb bei null.
 
-## Selbstheilung als Muster
+## Wiederherstellung ohne manuellen Eingriff
 
 Aus den drei Bausteinen ergibt sich ein robustes Gesamtmuster, das ohne Watchdog-Daemon auskommt:
 
 1. Der Mount-Container prüft seine Mounts in einer Schleife. Antwortet einer nicht mehr, beendet er sich mit Fehlercode.
 2. `restart: unless-stopped` lässt Docker den Container neu starten.
-3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem Vorleben** ab, denn ein toter Bind auf dem Zielpfad würde das erneute Publizieren blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
+3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem Vorleben** ab: ein toter Bind auf dem Zielpfad würde das erneute Publizieren sonst blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
 
 ```sh
 while grep -q " /data/dokumente " /proc/self/mountinfo; do
@@ -120,16 +121,16 @@ done
 
 4. Danach normal mounten und publizieren; Konsumenten mit `rslave` übernehmen den frischen Mount von selbst.
 
-Im Test war die komplette Kette (Rclone-Prozess getötet, Erkennung, Container-Neustart, Aufräumen, Remount, Republish) nach 160 Sekunden durch, ohne dass der Konsumenten-Container etwas davon mitbekam ausser einer kurzen Lücke.
+Im Test dauerte die gesamte Kette 160 Sekunden: Der rclone-Prozess wurde beendet, der Fehler erkannt, der Container neu gestartet, der verwaiste Mount entfernt und der neue Mount wieder veröffentlicht. Der konsumierende Container lief währenddessen weiter und bemerkte nur eine kurze Unterbrechung.
 
-Wer den Mount **auf dem Host** per systemd betreibt, umgeht Falle 1 und 2 vollständig und braucht nur `rslave` auf der Konsumentenseite. Der Container-Weg lohnt sich, wenn der Host frei von Rclone-Installationen bleiben soll oder mehrere Mounts zentral verwaltet werden sollen. Dann führt an den drei Fallen kein Weg vorbei.
+Wer rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beiden Probleme und benötigt nur `rslave` an den konsumierenden Containern. Der zusätzliche Container lohnt sich vor allem, wenn der Host frei von rclone-Installationen bleiben oder mehrere Mounts einheitlich verwalten soll. Dann müssen alle drei Ebenen bewusst konfiguriert werden.
 
 ## Quellen
 
-1.  [Docker: Bind mounts — configure bind propagation](https://docs.docker.com/engine/storage/bind-mounts/#configure-bind-propagation) — die Propagationsmodi rprivate, rslave und rshared und ihr Standardverhalten.
+1.  [Docker: Bind mounts: configure bind propagation](https://docs.docker.com/engine/storage/bind-mounts/#configure-bind-propagation): die Propagationsmodi rprivate, rslave und rshared und ihr Standardverhalten.
 
-2.  [Kernel-Dokumentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt) — die Mount-Propagation des Linux-Kernels, auf der Dockers Bind-Optionen aufsetzen.
+2.  [Kernel-Dokumentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt): die Mount-Propagation des Linux-Kernels, auf der Dockers Bind-Optionen aufsetzen.
 
-3.  [Rclone mount](https://rclone.org/commands/rclone_mount/) — VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
+3.  [rclone mount](https://rclone.org/commands/rclone_mount/): VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
 
-4.  [AppArmor-Dokumentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/) — wie Profile an ausführbare Dateien gebunden werden; das fusermount3-Profil liegt unter /etc/apparmor.d/fusermount3.
+4.  [AppArmor-Dokumentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): wie Profile an ausführbare Dateien gebunden werden; das fusermount3-Profil liegt unter /etc/apparmor.d/fusermount3.

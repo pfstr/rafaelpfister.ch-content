@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/totemomail"
 
 # Totemomail
 
-Totemomail / Kiteworks Email Protection Gateway: Betrieb, Routing, Lizenzierung.
+Totemomail und Kiteworks Email Protection Gateway: Mailrouting, Lizenzierung, LDAP-Anbindung und zuverlässiger Betrieb.

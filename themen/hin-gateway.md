@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/hin-gateway"
 
 # HIN-Gateway
 
-HIN Mailgateway auf SEPPmail-Basis: Cluster, Backup, Stargate.
+HIN Mailgateway auf SEPPmail-Basis: Clusterbetrieb, Backup, Wiederherstellung und die Umstellung auf Stargate.

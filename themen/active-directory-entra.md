@@ -6,4 +6,4 @@ url: "https://rafaelpfister.ch/blog/thema/active-directory-entra"
 
 # Active Directory / Entra
 
-Active Directory, Microsoft Entra, LDAP-Anbindung und Verzeichnisdienste.
+Verzeichnisdienste in hybriden Umgebungen: Active Directory, Microsoft Entra, LDAP-Anbindungen, Synchronisation und sicherer Betrieb.
