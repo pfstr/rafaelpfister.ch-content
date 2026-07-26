@@ -444,7 +444,7 @@ Midea PortaSplit
 
 The Midea PortaSplit integrates into Home Assistant surprisingly well. Once configured, it is locally controllable and can be wired into automations, which removes a large part of the cloud dependency from day-to-day operation.
 
-From a security perspective, the integration is defensible as long as a few ground rules hold: no port forwarding, keep token and key secret, encrypt backups, review debug logs before publishing them, secure Home Assistant, segment IoT devices, restrict outbound internet access to what is necessary, and do not install firmware and HACS updates blindly. Run that way, the PortaSplit is not only a capable air conditioner but a sensible component of a locally controlled smart home.
+From a security perspective, the integration is defensible as long as a few ground rules hold: no port forwarding, keep token and key secret, encrypt backups, review debug logs before publishing them, secure Home Assistant, segment IoT devices, restrict outbound internet access to what is necessary, and do not install firmware and HACS updates blindly. Run that way, the PortaSplit remains a capable air conditioner while also becoming a sensible component of a locally controlled smart home.
 
 ## Sources
 
