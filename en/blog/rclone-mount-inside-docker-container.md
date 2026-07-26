@@ -1,9 +1,9 @@
 ---
-title: "Running rclone mounts reliably in Docker"
-navTitle: "rclone in Docker"
+title: "Running Rclone mounts reliably in Docker"
+navTitle: "Rclone in Docker"
 description: "For a FUSE mount from a container to also work on the host and in other containers, mount propagation, AppArmor and outage recovery all have to work together."
 date: "2026-07-26"
-kategorie: "rclone"
+kategorie: "Rclone"
 timeToRead: "9 min to read"
 themen:
   - "rclone"
@@ -14,7 +14,7 @@ slug: "rclone-mount-inside-docker-container"
 url: "https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container"
 ---
 
-An rclone mount runs inside a Docker container but also needs to work on the host and in other containers. That requires mount events to cross several namespaces. A single compose option is not enough.
+An Rclone mount runs inside a Docker container but also needs to work on the host and in other containers. That requires mount events to cross several namespaces. A single compose option is not enough.
 
 In a hands-on test with Ubuntu 25.10, kernel 6.17 and Docker 29.6, three independent failures showed up: Docker silently downgraded `rshared`, AppArmor blocked `fusermount3`, and a consuming container clung to the old mount after a restart. The concrete use case was a [cloud store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage); the same mechanisms apply to other FUSE tools such as sshfs, too.
 
@@ -82,11 +82,11 @@ rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/documents /data/documents
 ```
 
-The bind is a regular mount(2) call and propagates like any other through the shared path to the host. That could be verified all the way into a second container, which could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
+The bind is a regular mount(2) call and propagates like any other through the shared path to the host. That could be verified all the way into a second container, which could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
 
 ## 3. Consumers need `rslave`
 
-The third trap concerns the other side. If the rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way, however, does not see it at all:
+The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way, however, does not see it at all:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -121,9 +121,9 @@ done
 
 4. Then mount and publish normally; consumers with `rslave` pick the fresh mount up by themselves.
 
-In the test, the complete chain took 160 seconds: the rclone process was killed, the failure detected, the container restarted, the orphaned mount removed, and the new mount republished. The consuming container kept running throughout and only noticed a brief interruption.
+In the test, the complete chain took 160 seconds: the Rclone process was killed, the failure detected, the container restarted, the orphaned mount removed, and the new mount republished. The consuming container kept running throughout and only noticed a brief interruption.
 
-If you run rclone directly **on the host** via systemd, you avoid the first two problems and only need `rslave` on the consuming containers. The extra container mainly pays off when the host should stay free of rclone installations or several mounts need to be managed uniformly. In that case, all three layers need to be configured deliberately.
+If you run Rclone directly **on the host** via systemd, you avoid the first two problems and only need `rslave` on the consuming containers. The extra container mainly pays off when the host should stay free of Rclone installations or several mounts need to be managed uniformly. In that case, all three layers need to be configured deliberately.
 
 ## Sources
 
@@ -131,6 +131,6 @@ If you run rclone directly **on the host** via systemd, you avoid the first two 
 
 2.  [Kernel documentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt): the Linux kernel's mount propagation that Docker's bind options build on.
 
-3.  [rclone mount](https://rclone.org/commands/rclone_mount/): VFS cache modes, --allow-other and the limits of the FUSE mount.
+3.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS cache modes, --allow-other and the limits of the FUSE mount.
 
 4.  [AppArmor documentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): how profiles attach to executables; the fusermount3 profile lives at /etc/apparmor.d/fusermount3.

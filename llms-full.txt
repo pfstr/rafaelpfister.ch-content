@@ -12,14 +12,14 @@ Diese Datei enthält die Volltexte aller Blog-Artikel (Deutsch und Englisch) in 
 
 ----
 
-# rclone-Mounts in Docker zuverlässig betreiben
+# Rclone-Mounts in Docker zuverlässig betreiben
 
 URL: https://rafaelpfister.ch/blog/rclone-mount-in-docker-container
 Datum: 2026-07-26
 
-Ein rclone-Mount läuft in einem Docker-Container, soll aber auch auf dem Host und in weiteren Containern verfügbar sein. Dafür müssen Mount-Ereignisse mehrere Namensräume durchqueren. Eine einzelne Compose-Option genügt nicht.
+Ein Rclone-Mount läuft in einem Docker-Container, soll aber auch auf dem Host und in weiteren Containern verfügbar sein. Dafür müssen Mount-Ereignisse mehrere Namensräume durchqueren. Eine einzelne Compose-Option genügt nicht.
 
-In einem Praxistest mit Ubuntu 25.10, Kernel 6.17 und Docker 29.6 traten drei voneinander unabhängige Fehler auf: Docker stufte `rshared` unbemerkt herunter, AppArmor blockierte `fusermount3`, und ein konsumierender Container hielt nach einem Neustart am alten Mount fest. Der konkrete Anwendungsfall war eine [Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern); dieselben Mechanismen gelten auch für andere FUSE-Werkzeuge wie sshfs.
+In einem Praxistest mit Ubuntu 25.10, Kernel 6.17 und Docker 29.6 traten drei voneinander unabhängige Fehler auf: Docker stufte `rshared` unbemerkt herunter, AppArmor blockierte `fusermount3`, und ein konsumierender Container hielt nach einem Neustart am alten Mount fest. Der konkrete Anwendungsfall war eine [Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-clouddienst-auslagern); dieselben Mechanismen gelten auch für andere FUSE-Werkzeuge wie sshfs.
 
 ## 1. Die Host-Quelle muss selbst `shared` sein
 
@@ -85,11 +85,11 @@ rclone mount remote:pfad /mnt/inner/dokumente --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/dokumente /data/dokumente
 ```
 
-Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über den Shared-Pfad zum Host. Das liess sich bis in einen zweiten Container verifizieren, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
+Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über den Shared-Pfad zum Host. Das liess sich bis in einen zweiten Container verifizieren, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im Rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
 
 ## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Stirbt der rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
+Die dritte Falle betrifft die Gegenseite. Stirbt der Rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -124,9 +124,9 @@ done
 
 4. Danach normal mounten und publizieren; Konsumenten mit `rslave` übernehmen den frischen Mount von selbst.
 
-Im Test dauerte die gesamte Kette 160 Sekunden: Der rclone-Prozess wurde beendet, der Fehler erkannt, der Container neu gestartet, der verwaiste Mount entfernt und der neue Mount wieder veröffentlicht. Der konsumierende Container lief währenddessen weiter und bemerkte nur eine kurze Unterbrechung.
+Im Test dauerte die gesamte Kette 160 Sekunden: Der Rclone-Prozess wurde beendet, der Fehler erkannt, der Container neu gestartet, der verwaiste Mount entfernt und der neue Mount wieder veröffentlicht. Der konsumierende Container lief währenddessen weiter und bemerkte nur eine kurze Unterbrechung.
 
-Wer rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beiden Probleme und benötigt nur `rslave` an den konsumierenden Containern. Der zusätzliche Container lohnt sich vor allem, wenn der Host frei von rclone-Installationen bleiben oder mehrere Mounts einheitlich verwalten soll. Dann müssen alle drei Ebenen bewusst konfiguriert werden.
+Wer Rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beiden Probleme und benötigt nur `rslave` an den konsumierenden Containern. Der zusätzliche Container lohnt sich vor allem, wenn der Host frei von Rclone-Installationen bleiben oder mehrere Mounts einheitlich verwalten soll. Dann müssen alle drei Ebenen bewusst konfiguriert werden.
 
 ## Quellen
 
@@ -134,7 +134,7 @@ Wer rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beide
 
 2.  [Kernel-Dokumentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt): die Mount-Propagation des Linux-Kernels, auf der Dockers Bind-Optionen aufsetzen.
 
-3.  [rclone mount](https://rclone.org/commands/rclone_mount/): VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
+3.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
 
 4.  [AppArmor-Dokumentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): wie Profile an ausführbare Dateien gebunden werden; das fusermount3-Profil liegt unter /etc/apparmor.d/fusermount3.
 
@@ -147,7 +147,7 @@ Datum: 2026-07-26
 
 Für Windows und macOS bietet Proton Drive seit 2023 eigene Sync-Clients. Unter Linux gibt es bislang nur die Weboberfläche, Community-Werkzeuge und ein offizielles SDK im Vorschaustadium. Auf einem Server ist die Lage nochmals schwieriger, weil dort weder ein Desktop-Sync noch eine interaktive Anmeldung gut passt.
 
-Dieser Überblick beschreibt den Stand im Juli 2026. Grundlage ist neben den veröffentlichten Roadmaps ein Praxistest des rclone-Backends [als Dokumentablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern).
+Dieser Überblick beschreibt den Stand im Juli 2026. Grundlage ist neben den veröffentlichten Roadmaps ein Praxistest des Rclone-Backends [als Dokumentablage für Paperless-ngx](/blog/paperless-dokumente-clouddienst-auslagern).
 
 ## Der Linux-Client ist angekündigt, aber noch ohne Termin
 
@@ -155,23 +155,23 @@ Im Juni 2026 bestätigte Proton erstmals ausdrücklich, dass ein Linux-Client en
 
 Wichtig für die Einordnung: Das wird ein **Desktop-Sync-Client**. Für den Schreibtisch löst er das Problem. Für Server-Anwendungen ist ein Sync-Client hingegen das falsche Werkzeug, denn ein Dienst soll Dateien direkt aus Proton Drive lesen und dorthin schreiben. Ein Sync-Client hält eine lokale Vollkopie, genau das, was man bei knappem Speicher vermeiden will.
 
-## Heute übernimmt rclone die praktische Arbeit
+## Heute übernimmt Rclone die praktische Arbeit
 
-Unter Linux ist rclone mit seinem `protondrive`-Backend derzeit das vielseitigste Werkzeug. Es kann Dateien kopieren und synchronisieren und als einzige verfügbare Lösung Proton Drive per **FUSE-Mount** wie ein lokales Verzeichnis bereitstellen. Zwei Einschränkungen sind dabei wichtig:
+Unter Linux ist Rclone mit seinem `protondrive`-Backend derzeit das vielseitigste Werkzeug. Es kann Dateien kopieren und synchronisieren und als einzige verfügbare Lösung Proton Drive per **FUSE-Mount** wie ein lokales Verzeichnis bereitstellen. Zwei Einschränkungen sind dabei wichtig:
 
 **Es ist Beta auf einer nachgebauten API.** Proton dokumentiert seine Drive-API nicht öffentlich; das Backend basiert auf Reverse Engineering. Im Test funktionierte es zuverlässig, drosselte aber bei schnellen Aufruffolgen mit inkonsistenten Verzeichnislisten.
 
-**Für den unbeaufsichtigten Betrieb fragt rclone nach dem TOTP-Schlüssel.** Der Konfigurationsassistent bezeichnet das Feld als `otp_secret_key`. Gemeint ist der dauerhafte Schlüssel aus der 2FA-Einrichtung, nicht der sechsstellige Code, den eine Authenticator-App gerade anzeigt. rclone speichert diesen Wert verschleiert und erzeugt daraus bei jeder Anmeldung selbst einen gültigen TOTP-Code.
+**Für den unbeaufsichtigten Betrieb fragt Rclone nach dem TOTP-Schlüssel.** Der Konfigurationsassistent bezeichnet das Feld als `otp_secret_key`. Gemeint ist der dauerhafte Schlüssel aus der 2FA-Einrichtung, nicht der sechsstellige Code, den eine Authenticator-App gerade anzeigt. Rclone speichert diesen Wert verschleiert und erzeugt daraus bei jeder Anmeldung selbst einen gültigen TOTP-Code.
 
-Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung abschliessen. Die nächste erneute Authentifizierung scheitert jedoch mit Fehler 8002, weil rclone denselben Code nicht noch einmal verwenden kann.
+Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung abschliessen. Die nächste erneute Authentifizierung scheitert jedoch mit Fehler 8002, weil Rclone denselben Code nicht noch einmal verwenden kann.
 
 Damit bleibt das Konto gegen ein isoliert gestohlenes Passwort geschützt. Ein kompromittierter Server gibt jedoch Passwort und TOTP-Schlüssel preis. Für automatisierte Zugriffe empfiehlt sich deshalb ein **dediziertes Proton-Konto**.
 
-Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu rclone in Containern](/blog/rclone-mount-in-docker-container).
+Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
 
 ## Das offizielle SDK zeigt, wohin die Entwicklung geht
 
-Parallel stellt Proton seine Anwendungen auf ein **offizielles SDK** für JavaScript und C# mit Bindings für Swift und Kotlin um. Das öffentliche Repository enthält auch ein Kommandozeilenwerkzeug. Dessen Anmeldemodell ist sauberer als das des rclone-Backends:
+Parallel stellt Proton seine Anwendungen auf ein **offizielles SDK** für JavaScript und C# mit Bindings für Swift und Kotlin um. Das öffentliche Repository enthält auch ein Kommandozeilenwerkzeug. Dessen Anmeldemodell ist sauberer als das des Rclone-Backends:
 
 - `auth login` öffnet den Browser; die Anmeldung läuft regulär **inklusive Zwei-Faktor-Authentifizierung**
 - die Session landet im **Schlüsselspeicher des Betriebssystems** (Keychain, Credential Manager, libsecret), das SDK erneuert sie selbst
@@ -191,12 +191,12 @@ Fairerweise ist das bei einem Ende-zu-Ende-verschlüsselten Dienst schwieriger a
 
 | Anwendungsfall | Stand Juli 2026 |
 |---|---|
-| Desktop-Sync unter Linux | Warten auf den angekündigten Client; bis dahin rclone-Sync oder Web-Oberfläche |
-| Server-Backup (Dateien hochladen) | rclone `copy`/`sync`; funktioniert, Beta-Status einkalkulieren |
-| Dateisystem-Mount für Dienste | rclone `mount` mit hinterlegtem TOTP-Schlüssel und dediziertem Konto; der einzige [praxiserprobte Weg](/blog/paperless-dokumente-proton-drive-auslagern) |
+| Desktop-Sync unter Linux | Warten auf den angekündigten Client; bis dahin Rclone-Sync oder Web-Oberfläche |
+| Server-Backup (Dateien hochladen) | Rclone mit `copy` oder `sync`; funktioniert, Beta-Status einkalkulieren |
+| Dateisystem-Mount für Dienste | Rclone mit `mount`, hinterlegtem TOTP-Schlüssel und dediziertem Konto; der einzige [praxiserprobte Weg](/blog/paperless-dokumente-clouddienst-auslagern) |
 | Skript-Automatisierung mit sauberer Anmeldung | SDK-CLI im Auge behalten; für Produktion noch zu früh |
 
-Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst rclone verwenden. Auf Servern bleibt rclone die einzige praktikable Mount-Lösung. Aus einem funktionierenden Behelf wird jedoch erst dann eine belastbare Plattform, wenn Proton begrenzte Maschinenzugänge und einen offiziell unterstützten Mount anbietet.
+Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst Rclone verwenden. Auf Servern bleibt Rclone die einzige praktikable Mount-Lösung. Aus einem funktionierenden Behelf wird jedoch erst dann eine belastbare Plattform, wenn Proton begrenzte Maschinenzugänge und einen offiziell unterstützten Mount anbietet.
 
 ## Quellen
 
@@ -208,7 +208,7 @@ Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst
 
 4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview): Protons eigene Einordnung: noch nicht produktionsreif für Drittanwendungen.
 
-5.  [rclone: Proton Drive](https://rclone.org/protondrive/): das Backend samt Beta-Hinweis und der Option `otp_secret_key` für die unbeaufsichtigte Anmeldung.
+5.  [Rclone: Proton Drive](https://rclone.org/protondrive/): das Backend samt Beta-Hinweis und der Option `otp_secret_key` für die unbeaufsichtigte Anmeldung.
 
 ----
 
@@ -219,7 +219,7 @@ Datum: 2026-07-26
 
 Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses Verzeichnis wächst mit jedem Scan. Dabei braucht Paperless die Dateien im Alltag kaum: Die Suche läuft gegen die Datenbank, die Liste zeigt Vorschaubilder, und die eigentliche Datei wird erst beim Öffnen gelesen. Also habe ich getestet, ob sich die Ablage in einen Clouddienst verlagern lässt. Das Werkzeug dafür ist Rclone, mit dem Plex-Nutzer seit Jahren ganze Mediensammlungen aus der Cloud einbinden.
 
-Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Tiefen stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik.
+Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie du das Setup selbst aufsetzt. Die technischen Details stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik.
 
 ## Das Prinzip: Hot Storage bleibt lokal, Cold Storage liegt in der Cloud
 
@@ -230,7 +230,7 @@ Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist i
 | **Dokumentdateien** | **Cloud** | werden selten gelesen |
 | Cache (zuletzt geöffnete Dokumente) | lokal, begrenzt | wiederholte Zugriffe bleiben schnell |
 
-In Paperless führt ausgerechnet der Verzeichnisname in die Irre: `archive/` ist **kein Cold Storage**, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird. Trotz des Namens gehört sie zum Hot Storage. Die selten benötigten Originale unter `originals/` sind der eigentliche Cold Storage. Wer maximal sparen will, schaltet die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
+In Paperless führt ausgerechnet der Verzeichnisname in die Irre: `archive/` ist **kein Cold Storage**, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird. Trotz des Namens gehört sie zum Hot Storage. Die selten benötigten Originale unter `originals/` sind der eigentliche Cold Storage. Wenn du maximal sparen willst, schaltest du die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
 
 Eine eigene Cloud-Anbindung bringt Paperless-ngx übrigens nicht mit, weder S3 noch `django-storages`. Ein Dateisystem-Mount über Rclone ist derzeit der einzige Weg, und der funktioniert mit jedem der über 70 von Rclone unterstützten Dienste. Proton Drive war meine Testwahl wegen der Ende-zu-Ende-Verschlüsselung; ein S3-kompatibler Speicher ist die robustere Alternative.
 
@@ -249,7 +249,7 @@ Getestet mit einer isolierten Paperless-Instanz, 40 generierten Test-PDFs (13.9 
 
 Der lokale Speicherbedarf ist damit von der Grösse des Archivs entkoppelt: Die Sammlung darf wachsen, die Platte nicht.
 
-## So richten Sie es ein
+## So richtest du es ein
 
 Die komplette Konfiguration liegt als Vorlage auf GitHub: [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage). Auf dem Server:
 
@@ -263,20 +263,20 @@ sudo ./setup.sh      # einmalig, bereitet den Host vor (einziger Root-Schritt)
 Der Wizard fragt den Clouddienst ab (Proton, S3, Backblaze B2, WebDAV, SFTP oder „Not in the list" für jeden anderen Rclone-Dienst), prüft die Verbindung mit einem echten Hoch- und Runterlade-Test und startet den Storage-Container. Danach:
 
 - **Neuinstallation:** `docker compose -f paperless.yml up -d`, fertig.
-- **Bestehende Paperless-Instanz:** Datenbank und Einstellungen bleiben unangetastet; die Anleitung [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) beschreibt Upload der Bestandsdokumente und die eine nötige Änderung an Ihrer Compose-Datei.
+- **Bestehende Paperless-Instanz:** Datenbank und Einstellungen bleiben unangetastet; die Anleitung [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) beschreibt den Upload der Bestandsdokumente und die nötige Änderung an deiner Compose-Datei.
 
 Auf ein Webinterface habe ich bewusst verzichtet. Rclones Web-GUI war zunächst im Einsatz, aber SSH-Tunnel, CORS und flüchtige Mounts machten sie schlimmer als die Kommandozeile, die sie ersetzen sollte. Drei Fragen im Terminal sind schneller.
 
-## Die vier Regeln für den stabilen Betrieb
+## Damit der Mount im Alltag stabil bleibt
 
-Die Vorlage setzt sie alle um; wer selbst baut, sollte sie kennen:
+Die Vorlage kümmert sich um vier Punkte, die du bei einem eigenen Aufbau ebenfalls berücksichtigen musst:
 
 1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers, sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
 2. **Paperless anhalten, wenn der Mount fehlt.** Sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, und der zurückkehrende Mount überdeckt sie unsichtbar. Ein Watchdog-Skript liegt in der Vorlage bei.
 3. **Ein Konto, das sich unbeaufsichtigt anmelden kann.** Bei Proton heisst das: den TOTP-Schlüssel in der Rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`), denn die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.
 
-## Grenzen, die bleiben
+## Was du vor dem Einsatz abwägen solltest
 
 Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist. Stirbt die Maschine genau in diesem Fenster, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und Rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Weil Langzeitdaten aus dem Dauerbetrieb noch fehlen, ist die Vorlage als experimentell gekennzeichnet.
 
@@ -284,7 +284,7 @@ Wie die Messwerte zustande kamen, welche Ausfälle simuliert wurden und wie sich
 
 ## Fazit
 
-Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagstauglich: knapp zwei Sekunden beim ersten Öffnen, danach Cache-Geschwindigkeit, Suche und Oberfläche bleiben cloud-unabhängig, und der Aufbau heilt sich nach Ausfällen selbst. Wer dagegen auf einem normal dimensionierten Server nur ein paar Gigabyte sparen will, sollte nachrechnen: In meinem Fall belegte die gesamte Ablage 71 MB, das Betriebssystem mehrere Gigabyte. Der Gewinn liegt nicht im sofort gesparten Platz, sondern darin, dass der Bestand wachsen darf, ohne dass die Platte mitwachsen muss.
+Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagstauglich: knapp zwei Sekunden beim ersten Öffnen, danach Cache-Geschwindigkeit, Suche und Oberfläche bleiben cloud-unabhängig, und der Aufbau heilt sich nach Ausfällen selbst. Wenn du auf einem normal dimensionierten Server nur ein paar Gigabyte sparen willst, solltest du allerdings nachrechnen: In meinem Fall belegte die gesamte Ablage 71 MB, das Betriebssystem mehrere Gigabyte. Der Gewinn liegt nicht im sofort gesparten Platz, sondern darin, dass der Bestand wachsen darf, ohne dass die Platte mitwachsen muss.
 
 ## Quellen
 
@@ -298,164 +298,309 @@ Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagst
 
 ----
 
-# Cloud-Mounts realistisch testen: PDFs erzeugen, Zugriffe messen, Ausfälle simulieren
+# Cold Storage mit Rclone testen: ein praxistauglicher Testplan
 
 URL: https://rafaelpfister.ch/blog/cloud-mount-testen-dummy-pdfs
 Datum: 2026-07-26
 
-Ein Cloud-Mount ist erst dann einsatzbereit, wenn nicht nur `ls` funktioniert. Entscheidend ist, wie lange ein Cold Read dauert, was die Anwendung bei einem Ausfall noch leisten kann und ob jede Datei unverändert zurückkommt.
+Ein Rclone-Mount ist schnell eingerichtet. Das Remote erscheint als Verzeichnis, `ls` zeigt Dateien und der erste Funktionstest ist bestanden. Für den produktiven Betrieb sagt das noch wenig aus.
 
-Die folgende Methode entstand beim [Test einer Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern). Sie verwendet künstliche Dokumente, misst auf Anwendungs- statt nur auf Dateisystemebene und prüft die Wiederherstellung nach einem hart unterbrochenen Mount. Die Werte stammen von einer konkreten Maschine und zeigen Grössenordnungen, keine allgemein gültigen Benchmarks.
+Sobald ein Dienst auf den Mount zugreift, kommen weitere Fragen dazu: Wie lange dauert der erste Zugriff auf eine Datei? Welche Zugriffe bedient der lokale Cache? Was geschieht mit einer noch nicht hochgeladenen Datei, wenn Rclone abstürzt? Sieht ein laufender Container den neu aufgebauten Mount wieder? Und wie reagiert der Dienst, wenn die Cloud vorübergehend nicht erreichbar ist?
 
-## Testdokumente generieren statt echte hochladen
+Dieser Artikel liefert dafür einen allgemeinen Testplan. Du kannst ihn für ein Dokumentenarchiv, einen Medienserver, eine Fotoverwaltung oder jeden anderen Dienst verwenden, der selten benötigte Dateien über Rclone aus einem Cold Storage bezieht.
 
-Private Dokumente gehören nicht in eine Testumgebung. Für Übertragungs- und Cache-Messungen zählen Dateigrösse, Seitenzahl und Textebene; der Inhalt ist unwichtig.
+## Zuerst festlegen, was du erreichen willst
 
-Das folgende Skript schreibt PDFs ohne zusätzliche Bibliothek direkt in PDF-Syntax. Jede Seite erhält Zufallstext als Content-Stream; über die Seitenzahl lässt sich die Dateigrösse steuern. Der **feste Seed** macht die Verteilung reproduzierbar. Eine **echte Textebene** verhindert, dass die Dokumentenverwaltung eine Texterkennung startet: Gemessen werden soll der Speicherpfad, nicht Tesseract.
+Cold Storage bedeutet nicht automatisch dasselbe für jede Anwendung. Ein Medienserver liest grosse Dateien meist sequenziell. Eine Fotoverwaltung lädt viele kleine Vorschaudaten und springt an verschiedene Stellen. Ein Dokumentenarchiv öffnet vergleichsweise kleine Dateien, dafür aber oft nur einmal.
 
-```python
-import os, random
-random.seed(42)                      # fester Seed: reproduzierbare Verteilung
-outdir = "dummy"
-os.makedirs(outdir, exist_ok=True)
-WORDS = ("Rechnung Beleg Vertrag Kunde Betrag Datum Position Menge Preis "
-         "Summe Steuer Netto Brutto Lieferung Zahlung Konto Referenz").split()
+Notiere vor dem Test die wichtigsten Eigenschaften deines echten Bestands:
 
-def build(idx, npages):
-    objects, kids, objnum = {}, [], 4
-    for p in range(1, npages + 1):
-        lines = ["Testdokument %03d - Seite %d von %d" % (idx, p, npages)]
-        for _ in range(45):
-            lines.append(" ".join(random.choice(WORDS) for _ in range(11))
-                         + " %d" % random.randint(100, 99999))
-        parts = ["BT /F1 11 Tf 40 800 Td 14 TL"]
-        parts += ["(%s) Tj T*" % l for l in lines]
-        parts.append("ET")
-        stream = "\n".join(parts).encode("latin-1")
-        cnum, pnum = objnum, objnum + 1
-        objnum += 2
-        objects[cnum] = (b"<< /Length " + str(len(stream)).encode()
-                         + b" >>\nstream\n" + stream + b"\nendstream")
-        objects[pnum] = ("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
-                         "/Resources << /Font << /F1 3 0 R >> >> "
-                         "/Contents %d 0 R >>" % cnum).encode()
-        kids.append(pnum)
-    objects[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
-    objects[2] = ("<< /Type /Pages /Kids [%s] /Count %d >>"
-                  % (" ".join("%d 0 R" % k for k in kids), npages)).encode()
-    objects[3] = b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
-    mx = max(objects)
-    buf, off = bytearray(b"%PDF-1.4\n"), {}
-    for n in range(1, mx + 1):
-        off[n] = len(buf)
-        buf += ("%d 0 obj\n" % n).encode() + objects[n] + b"\nendobj\n"
-    x = len(buf)
-    buf += ("xref\n0 %d\n" % (mx + 1)).encode() + b"0000000000 65535 f \n"
-    for n in range(1, mx + 1):
-        buf += ("%010d 00000 n \n" % off[n]).encode()
-    buf += ("trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
-            % (mx + 1, x)).encode()
-    return bytes(buf)
+- typische Dateigrösse sowie grösste vorkommende Datei
+- Anzahl Dateien pro Verzeichnis
+- vollständiges Lesen oder zufällige Zugriffe auf einzelne Bereiche
+- Verhältnis zwischen Lese- und Schreibzugriffen
+- Zahl gleichzeitiger Benutzer oder Prozesse
+- Änderungen, die ausserhalb des Mounts direkt im Remote stattfinden
+- akzeptable Wartezeit für einen Cold Read
+- maximal verfügbarer Platz für den lokalen Cache
 
-for i in range(1, 41):
-    pages = random.choice([10, 25, 40, 60, 90, 130])
-    open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
-```
+Erst daraus entstehen sinnvolle Erfolgskriterien. Eine einzelne Datei in 1.2 Sekunden zu öffnen, kann für ein Archiv völlig in Ordnung und für eine interaktive Anwendung unbrauchbar sein.
 
-Heraus kommen 40 Dateien mit 45 bis 596 KB, zusammen 13.9 MB. Das ist eine realistische Verteilung für ein privates Dokumentenarchiv. Paperless nahm sie in gut 8 Sekunden pro Dokument auf, im Protokoll bestätigt `pdftotext exited 0` die funktionierende Textebene.
+## Einen reproduzierbaren Testbestand erzeugen
 
-Die Testinstanz selbst lief vollständig getrennt von der Produktion: eigene Datenbank, eigene Volumes, eigener Port. Ein Detail, das Zeit kostete: Bei `postgres:18` muss das Volume auf `/var/lib/postgresql` zeigen, nicht mehr auf `/var/lib/postgresql/data`. Sonst startet der Container in einer Endlosschleife.
-
-## Cold Reads und Warm Reads sauber unterscheiden
-
-Bevor man misst, muss klar sein, **welche Cache-Ebenen** zwischen Anwendung und Cloud liegen. Sonst misst man etwas anderes als behauptet. Bei einem rclone-Mount mit `--vfs-cache-mode full` sind es drei:
-
-| Ebene | Ort | Was dort liegt |
-|---|---|---|
-| Cloud | beim Anbieter | die einzige vollständige Wahrheit |
-| VFS-Cache | lokale Platte (`--cache-dir`) | Kopien zuletzt gelesener Dateien, begrenzt über `--vfs-cache-max-size` |
-| Page-Cache | RAM | wird transparent vom Kernel gehalten, sowohl für die Datei, wie sie durch den FUSE-Mount gelesen wird, als auch für die VFS-Kopie selbst |
-
-Ein **Cold Read** bedeutet in diesem Setup: Die Datei liegt nicht im VFS-Cache und kommt übers Netz. Bei einem **Warm Read** liegt die VFS-Kopie lokal und beim wiederholten Lesen praktisch immer zusätzlich im RAM. Die einfache Zweipunktmessung erfasst also die Grenze Netz/lokal:
+Rclone bringt dafür bereits ein passendes Werkzeug mit. `rclone test makefiles` erzeugt mit einem festen Seed jedes Mal denselben Dateibaum:
 
 ```bash
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
+rclone test makefiles ./testdata \
+  --seed 42 \
+  --files 250 \
+  --files-per-directory 25 \
+  --min-file-size 16K \
+  --max-file-size 32M
 ```
 
-Im Test: 1765 ms beim Cold Read gegenüber 19 bis 24 ms beim Warm Read. Diese Grenze ist für die Cloud-Frage auch die relevante. Genau genommen bedeutet „Warm Read“ hier allerdings „lokal, RAM-unterstützt“ und nicht „von der Platte“.
+Passe Anzahl und Grössen an deinen echten Bestand an. Teste nicht nur Durchschnittsdateien. Einige sehr kleine Dateien zeigen, wie teuer Metadatenzugriffe sind; einige grosse Dateien machen Durchsatz, Read-Ahead und Cache-Verhalten sichtbar.
 
-## Messhygiene: Page-Cache räumen und das Räumen beweisen
-
-Wer die lokalen Ebenen trennen will (RAM gegen Platte), muss den Page-Cache vor der Messung leeren und das **nachweisen**. Der übliche Weg ist `sync` gefolgt von `vmtouch -e`, die Kontrolle übernimmt `fincore` aus util-linux:
+Ergänze ausserdem Dateinamen, die in der Praxis Probleme verursachen können:
 
 ```bash
-sync
-vmtouch -e datei.pdf          # Seiten dieser Datei aus dem RAM werfen
-fincore datei.pdf             # Beweis: RES muss 0 sein
+mkdir -p "testdata/Sonderfälle/Unterordner"
+printf 'Leerzeichen\n' > "testdata/Sonderfälle/Datei mit Leerzeichen.txt"
+printf 'Umlaute\n' > "testdata/Sonderfälle/Grösse und Änderung.txt"
+printf 'Grossschreibung\n' > "testdata/Sonderfälle/Test.txt"
+printf 'Kleinschreibung\n' > "testdata/Sonderfälle/test.txt"
 ```
 
-Ist `vmtouch` nicht installiert, tut es ein Dreizeiler ohne Zusatzpaket:
+Der letzte Test ist besonders wichtig, wenn lokales Dateisystem und Cloud-Backend Gross- und Kleinschreibung unterschiedlich behandeln.
 
-```python
-import os
-fd = os.open("datei.pdf", os.O_RDONLY)
-os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
-os.close(fd)
-```
+Wenn dein Dienst nur bestimmte Formate akzeptiert, reichen beliebige Binärdateien nicht. Erzeuge dann zusätzlich synthetische Dateien in genau diesen Formaten. Bei Paperless-ngx waren das PDFs mit echter Textebene, damit der Test nicht versehentlich die OCR-Leistung statt des Speicherpfads misst. Bei einer Fotoverwaltung gehören unterschiedliche Bildgrössen und Formate in den Bestand, bei einem Medienserver kurze Dateien mit verschiedenen Codecs.
 
-Zwei Eigenheiten dieses Setups machen den Nachweis zur Pflicht statt zur Kür:
+## Eine Referenzmessung ohne Mount
 
-**Die Eviction muss alle Pfade zur selben Datei treffen**: die Datei, wie der Mount sie zeigt, *und* die VFS-Kopie unter `--cache-dir`. Diese liegt im Unterverzeichnis `vfs/`; `vfsMeta/` enthält nur Metadaten.
-
-**Und sie kann stillschweigend scheitern.** In meinem Kontrollversuch zeigte `fincore` die VFS-Kopie nach `sync` und `POSIX_FADV_DONTNEED` unverändert vollständig im RAM (600K resident, vorher wie nachher): rclone hält die Cache-Datei offen, und der Kernel gab die Seiten nicht frei. Ohne den `fincore`-Beweis hätte ich eine „von der Platte"-Zahl veröffentlicht, die in Wahrheit aus dem RAM kam. Wer die Platten-Ebene wirklich isolieren will, muss den rclone-Prozess für die Messung beenden oder als root `echo 3 > /proc/sys/vm/drop_caches` verwenden.
-
-Die Einordnung dazu: Bei typischen Dokumentgrössen lohnt die Trennung kaum. Warm Reads durch den Mount lagen bei mir bei 19 bis 35 ms, weil die FUSE-Umwege dominieren, nicht das Speichermedium. Die Ebene, die das Nutzererlebnis bestimmt, bleibt Netz gegen lokal mit Faktor 60 bis 90. Aber behaupten darf man das erst, wenn die Messung die Ebenen nachweislich auseinanderhält.
-
-Dasselbe gilt übrigens für die generierten Testdateien: Direkt nach dem Erzeugen liegen sie vollständig im Page-Cache. Für die Upload-Messung ist das egal, weil das Netz der Engpass ist. Wer aber lokale Lesewerte über sie erheben will, muss zuerst räumen.
-
-Zur laufenden Beobachtung gehört ausserdem der Blick auf den VFS-Cache nach jedem Schritt (`du -sh` auf das Cache-Verzeichnis, `find … -type f | wc -l`) und das rclone-Protokoll über `--log-file` samt `--log-level INFO`, in dem das Verdrängungsverhalten steht. Dort zeigte sich auch, dass das konfigurierte Cache-Limit weich ist: 4 MB konfiguriert, 12.7 MiB Spitzenwert, bis der minütliche Aufräumlauf griff.
-
-## Auf Anwendungsebene prüfen, nicht nur im Dateisystem
-
-Dass `ls` Dateien zeigt, heisst nicht, dass die Anwendung sie lesen kann. Benutzerrechte auf FUSE-Mounts sind ein eigenes Thema. Deshalb sollte der Zugriff durch die Anwendung selbst geprüft werden, bei Django-Anwendungen wie Paperless über eine Shell im Container:
+Bevor FUSE und VFS-Cache ins Spiel kommen, solltest du das Backend direkt messen. Kopiere den Bestand mit Rclone ins Test-Remote und speichere ein ausführliches Protokoll:
 
 ```bash
-docker compose exec webserver python3 -c "
-import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','paperless.settings')
-import django; django.setup()
-from documents.models import Document
-d = Document.objects.first()
-print(os.path.exists(d.source_path), len(open(d.source_path,'rb').read()))
-"
+rclone copy ./testdata remote:cold-storage-test \
+  --progress \
+  --stats 5s \
+  --log-file rclone-copy.log \
+  --log-level INFO
 ```
 
-Die härteste Prüfung liefert die Anwendung gleich mit: Paperless' `document_sanity_checker` liest jede Datei vollständig und vergleicht die Prüfsumme mit der Datenbank. „No issues detected" nach einem Lauf über den Cloud-Mount belegt, dass jede Datei bitgenau zurückkommt. Für den Schreibpfad gilt eine Eigenheit: Die Testdatei muss **einzigartig** sein, eine Kopie eines vorhandenen Dokuments weist Paperless als Duplikat ab.
-
-## Ausfälle hart simulieren und die Wiederherstellung beweisen
-
-Ein Ausfalltest, der nur den Dienst sauber stoppt, testet nichts. Hart heisst: den rclone-Prozess töten, den Mount aushängen, und dann vergleichen, was Host und Anwendung jeweils sehen:
+Prüfe danach, ob Quelle und Ziel übereinstimmen:
 
 ```bash
-pkill -f "rclone mount" ; fusermount3 -u /pfad/zum/mount
-docker compose exec webserver ls /usr/src/paperless/media/documents/originals
+rclone check ./testdata remote:cold-storage-test \
+  --one-way \
+  --download
 ```
 
-Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen. Die Details dazu stehen im [Artikel zu rclone in Docker](/blog/rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
+Mit `--download` liest Rclone die Daten tatsächlich und vergleicht sie, auch wenn das Backend keine passenden Hashes bereitstellt. Das dauert länger, liefert aber eine brauchbare Ausgangsbasis für den späteren Integritätstest.
 
-Ebenso wichtig: prüfen, was **ohne** Cloud noch funktioniert. Bei entferntem Mount liefen Dokumentliste, Volltextsuche und Vorschaubilder unverändert. Der erkannte Text lag mit knapp 244'000 Zeichen für ein Testdokument in der Datenbank. Nur das Öffnen der Originaldatei schlug fehl. Solche Negativproben gehören in jedes Testprotokoll, weil sie zeigen, welcher Schaden ein Ausfall wirklich anrichtet.
+Halte Upload-Zeit, Transferrate, Anzahl Retries und API-Fehler fest. Wenn bereits der direkte Zugriff instabil ist, kann der Mount das nicht reparieren.
 
-## Protokolle mit präzisen Mustern auswerten
+## Den Test-Mount vom produktiven Cache trennen
 
-Bei der Auswertung müssen Suchmuster genau genug sein. Eine Suche nach `422` lieferte in meinem Test 39 vermeintliche Fehler. Tatsächlich stammten die Treffer aus harmlosen Grössenangaben wie `422504 bytes`. Ein Wortgrenzen-Muster (`grep -E '\b422\b'`) oder die Suche nach der vollständigen Fehlermeldung vermeidet solche Fehlalarme.
+Verwende für die Messung einen eigenen Mountpunkt und ein eigenes Cache-Verzeichnis:
+
+```bash
+rclone mount remote:cold-storage-test /mnt/rclone-test \
+  --vfs-cache-mode full \
+  --cache-dir /var/cache/rclone-test \
+  --vfs-cache-max-size 10G \
+  --vfs-cache-poll-interval 1m \
+  --allow-other \
+  --log-file /var/log/rclone-test.log \
+  --log-level INFO
+```
+
+Die Werte sind ein Beispiel und keine allgemeine Empfehlung. Entscheidend ist die Trennung: Ein leerer Test-Cache macht Cold Reads reproduzierbar, ohne dass du Dateien aus einem laufenden produktiven Cache löschen musst.
+
+`--vfs-cache-mode full` ist für Anwendungen meist der aufschlussreichste Testmodus. Rclone puffert dabei Lese- und Schreibzugriffe lokal und kann Dateizugriffe besser abbilden, die bei einem reinen Objektspeicher nicht möglich wären. Die zusätzliche Kompatibilität kostet lokalen Speicherplatz.
+
+## Immer aus Sicht des echten Dienstes prüfen
+
+Ein Mount kann für deinen Benutzer funktionieren und für den Dienst trotzdem unbrauchbar sein. Häufige Ursachen sind eine andere Benutzer-ID, fehlendes `--allow-other`, Container-Grenzen oder eine falsche Mount-Propagation.
+
+Führe deshalb mindestens einen vollständigen Lesezugriff mit derselben Identität aus, unter der später die Anwendung läuft:
+
+```bash
+sudo -u <service-user> sha256sum /mnt/rclone-test/pfad/zur/datei
+```
+
+Läuft der Dienst in Docker, gehört der Test in den Container:
+
+```bash
+docker exec --user <uid>:<gid> <app-container> \
+  sha256sum /pfad/im/container/datei
+```
+
+Noch besser ist ein echter Anwendungstest. Öffne die Datei über die Weboberfläche oder API des Dienstes. Nur so bemerkst du, ob die Anwendung beispielsweise mehrere parallele Reads startet, an das Dateiende springt oder zusätzliche Metadaten erwartet.
+
+## Cold Reads und Warm Reads getrennt messen
+
+Bei `--vfs-cache-mode full` liegen zwischen Anwendung und Cloud drei Ebenen:
+
+| Ebene | Was dort liegt |
+|---|---|
+| Remote | die vollständige Datei im Clouddienst |
+| VFS-Cache | lokal gespeicherte Bereiche bereits gelesener Dateien |
+| Linux-Page-Cache | kürzlich verwendete Daten im RAM |
+
+Für einen Cold Read nimmst du eine Datei, deren Inhalt noch nie über den Test-Mount gelesen wurde. Beim direkt anschliessenden Warm Read liegt sie im VFS-Cache und meistens zusätzlich im RAM.
+
+```bash
+measure_read() {
+  file="$1"
+  label="$2"
+  start=$(date +%s%3N)
+  cat "$file" > /dev/null
+  end=$(date +%s%3N)
+  printf '%s: %s ms\n' "$label" "$((end - start))"
+}
+
+measure_read "/mnt/rclone-test/grosse-datei.bin" "Cold Read"
+measure_read "/mnt/rclone-test/grosse-datei.bin" "Warm Read"
+```
+
+Miss nicht nur eine Datei. Verwende mindestens zehn bisher ungelesene Dateien verschiedener Grösse und notiere Median, langsamsten Wert und Dateigrösse. Ein einzelner Bestwert ist keine Entscheidungsgrundlage.
+
+Ein Warm Read ist kein reiner Festplattentest, weil der Kernel Teile der Datei im RAM halten kann. Für die meisten Cold-Storage-Szenarien ist das kein Problem. Entscheidend ist, was ein Benutzer beim ersten und beim wiederholten Öffnen erlebt. Wenn du RAM und lokale Platte getrennt beurteilen willst, musst du den Page-Cache zusätzlich kontrollieren und nachweislich räumen.
+
+## Nicht nur vollständige Lesezugriffe testen
+
+`cat` liest eine Datei von Anfang bis Ende. Viele Anwendungen verhalten sich anders:
+
+- Ein Videoplayer liest zunächst Header und Index, springt später an eine andere Position und lädt dann sequenziell weiter.
+- Eine Bildverwaltung liest Metadaten und erzeugt anschliessend ein Vorschaubild.
+- Ein Archivprogramm kann zuerst das Dateiende lesen.
+- Mehrere Worker können gleichzeitig auf verschiedene Dateien zugreifen.
+
+Teste diese Abläufe mit der tatsächlichen Anwendung. Beobachte parallel das Rclone-Protokoll und den Cache. Bei grossen Dateien ist interessant, wie viel Rclone wirklich lokal ablegt und ob `--vfs-read-ahead` zum Zugriffsmuster passt.
+
+Ein Rclone-Mount ist ausserdem kein sinnvoller Speicherort für Datenbanken oder andere Dateien, die verlässliches Locking und häufige Änderungen innerhalb derselben Datei benötigen. Der VFS-Layer gleicht Unterschiede zwischen Dateisystem und Objektspeicher aus, macht aus dem Backend aber kein lokales Dateisystem.
+
+## Den Schreibpfad separat abnehmen
+
+Wenn dein Dienst nur liest, mounte das Remote nach Möglichkeit schreibgeschützt. Muss er schreiben, teste Erstellen, Überschreiben, Umbenennen und Löschen einzeln.
+
+Eine geschriebene Datei erscheint nicht zwingend sofort im Remote. Bei aktivem VFS-Cache beginnt der Upload erst, nachdem die Datei geschlossen wurde und `--vfs-write-back` abgelaufen ist. Prüfe deshalb beide Zustände:
+
+1. Die Anwendung hat die Datei erfolgreich geschlossen.
+2. Die Datei ist anschliessend über einen direkten Rclone-Zugriff im Remote lesbar.
+
+```bash
+printf 'writeback-test\n' > /mnt/rclone-test/writeback-test.txt
+
+# Nach Ablauf von --vfs-write-back:
+rclone cat remote:cold-storage-test/writeback-test.txt
+```
+
+Wiederhole den Test mit einer grossen Datei und beende Rclone während des noch laufenden Uploads. Starte danach mit demselben Cache-Verzeichnis neu und kontrolliere, ob der Upload fortgesetzt wird. Genau dieses Zeitfenster entscheidet darüber, wie viele Daten bei einem Serverausfall gefährdet sind.
+
+Teste auch Umbenennen und Löschen. Viele Cloud-Backends bilden diese Operationen anders ab als ein lokales Dateisystem. Relevant ist nicht nur, ob der Befehl erfolgreich endet, sondern wann die Änderung bei einem direkten Zugriff auf das Remote und bei weiteren Clients sichtbar wird.
+
+## Änderungen ausserhalb des Mounts testen
+
+Dateien können über die Weboberfläche des Anbieters, einen zweiten Rclone-Prozess oder einen anderen Server verändert werden. Der Mount sieht solche Änderungen nicht immer sofort, weil Verzeichnisinformationen zwischengespeichert werden.
+
+Lege deshalb mit einem zweiten Rclone-Aufruf eine Datei direkt im Remote an:
+
+```bash
+printf 'external-change\n' > external-change.txt
+rclone copyto external-change.txt \
+  remote:cold-storage-test/external-change.txt
+```
+
+Miss, wann die Datei im Mount erscheint. Wiederhole den Test für Änderung und Löschung. Das Ergebnis hängt vom Backend, dessen Polling-Unterstützung sowie `--poll-interval` und `--dir-cache-time` ab. Wenn die Anwendung aktuelle Änderungen sofort sehen muss, gehört dieses Verhalten ausdrücklich in die Abnahmekriterien.
+
+Bei aktivierter Remote-Control-Schnittstelle kannst du den Verzeichnis-Cache gezielt verwerfen:
+
+```bash
+rclone rc vfs/forget
+```
+
+Das ist nützlich für einen manuellen Test, ersetzt aber keine passende Betriebsstrategie.
+
+## Den Cache unter Druck setzen
+
+Ein fast leerer Cache ist der einfachste Fall. Setze `--vfs-cache-max-size` in einer zweiten Testrunde bewusst klein und lies mehr Daten, als hineinpassen.
+
+```bash
+du -sh /var/cache/rclone-test/vfs
+du -sh --apparent-size /var/cache/rclone-test/vfs
+find /var/cache/rclone-test/vfs -type f | wc -l
+```
+
+Die beiden Grössen können stark voneinander abweichen. Im Full-Modus verwendet Rclone Sparse Files: Eine Datei zeigt ihre vollständige logische Grösse, obwohl nur die gelesenen Bereiche lokalen Platz belegen.
+
+Das Cache-Limit ist zudem weich. Rclone prüft es im Rhythmus von `--vfs-cache-poll-interval`, und geöffnete Dateien können nicht entfernt werden. Der Cache darf das Limit deshalb kurzzeitig überschreiten. Er sollte nach dem Schliessen der Dateien und dem nächsten Aufräumlauf aber wieder sinken.
+
+Protokolliere Spitzenwert, Wert nach der Bereinigung und die dafür benötigte Zeit. So lässt sich der nötige lokale Speicher vernünftig dimensionieren.
+
+## Zwei unterschiedliche Ausfälle simulieren
+
+Eine nicht erreichbare Cloud und ein abgestürzter Rclone-Prozess sind zwei verschiedene Fehler:
+
+| Ausfall | Was du damit prüfst |
+|---|---|
+| Backend oder Netzwerk nicht erreichbar, Rclone läuft weiter | Verhalten bei Retries, Timeouts und bereits gecachten Dateien |
+| Rclone-Prozess beendet | Verhalten des FUSE-Mounts und Wiederherstellung des Mountpunkts |
+
+Simuliere beides nur in der Testumgebung. Einen Rclone-Container kannst du für den zweiten Fall hart beenden:
+
+```bash
+docker kill --signal KILL <rclone-container>
+```
+
+Prüfe während des Ausfalls die Anwendung und nicht nur den Mountpunkt:
+
+- Welche Funktionen bleiben verfügbar?
+- Wie lange wartet ein Zugriff, bevor ein Fehler erscheint?
+- Sind bereits vollständig gecachte Dateien noch erreichbar?
+- Stoppt die Anwendung neue Schreibvorgänge?
+- Entsteht eine verständliche Fehlermeldung oder nur ein hängender Prozess?
+- Löst dein Monitoring aus?
+
+Ein Schreibdienst darf bei fehlendem Mount nicht unbemerkt in das darunterliegende lokale Verzeichnis schreiben. Nach der Rückkehr des Mounts würden diese Dateien verdeckt. Ein einfacher Schutz vor jedem Schreibjob ist:
+
+```bash
+mountpoint -q /mnt/rclone-test || exit 1
+```
+
+Nach dem Neustart von Rclone prüfst du den Mount auf dem Host und aus jedem konsumierenden Container. Ein neu aufgebauter Mount erreicht einen bereits laufenden Container nur mit passender Mount-Propagation. Für Docker ist meistens `rslave` auf der konsumierenden Seite nötig. Die Details stehen im Artikel [Rclone-Mounts in Docker zuverlässig betreiben](/blog/rclone-mount-in-docker-container).
+
+## Ein konkretes Beispiel aus Paperless-ngx
+
+Für meinen Paperless-Test erzeugte ich 40 PDFs mit insgesamt 13.9 MB. Ein bisher ungeöffnetes Dokument brauchte rund 1.8 Sekunden, ein direkt wiederholter Zugriff 19 bis 24 Millisekunden. Ein auf 4 MB begrenzter VFS-Cache stieg kurzzeitig auf 12.7 MiB und wurde beim nächsten Lauf wieder bereinigt.
+
+Während das Remote nicht erreichbar war, funktionierten Dokumentliste, Volltextsuche und Vorschaubilder weiter, weil diese Daten lokal lagen. Nur das Original liess sich nicht öffnen. Nach dem Wiederaufbau des Mounts konnte der laufende Paperless-Container wieder auf die Dateien zugreifen, ohne selbst neu gestartet zu werden.
+
+Diese Zahlen sind kein Benchmark für Rclone oder Proton Drive. Interessant ist das Verhalten: Hot Storage blieb lokal verfügbar, Cold Reads waren langsamer aber planbar, und der Dienst erholte sich nach dem Ausfall.
+
+## Was ins Testprotokoll gehört
+
+Ein später nachvollziehbares Ergebnis enthält mindestens:
+
+- Rclone-Version und verwendetes Backend
+- Betriebssystem, FUSE-Variante und Dateisystem des Cache-Verzeichnisses
+- vollständiger Mount-Befehl ohne Zugangsdaten
+- Zahl, Grössenverteilung und Struktur der Testdateien
+- Cold-Read- und Warm-Read-Werte für mehrere Dateien
+- Schreibdauer bis zur Sichtbarkeit im Remote
+- Cache-Spitzenwert und Dauer der Bereinigung
+- Ergebnis von `rclone check --download`
+- Verhalten bei Backend-Ausfall und beendetem Rclone-Prozess
+- Wiederherstellungszeit aus Sicht der Anwendung
+- Retries, Timeouts, Drosselungen und Authentifizierungsfehler aus dem Log
+
+Definiere für jeden Punkt vorab einen Grenzwert. Dann endet der Test mit einer Entscheidung und nicht nur mit einer Sammlung interessanter Zahlen.
+
+## Wann der Aufbau bereit ist
+
+Ein Cold-Storage-Mount ist einsatzbereit, wenn du diese Fragen mit Ja beantworten kannst:
+
+- Sind Cold Reads für den vorgesehenen Dienst schnell genug?
+- Beschleunigt der Cache wiederholte Zugriffe wie erwartet?
+- Bleibt der lokale Platzbedarf auch unter Last kontrollierbar?
+- Stimmen alle Dateien nach einem vollständigen Download?
+- Funktionieren alle benötigten Dateioperationen mit dem gewählten Backend?
+- Verhält sich die Anwendung bei einem Cloud-Ausfall kontrolliert?
+- Werden Schreibvorgänge bei fehlendem Mount sicher gestoppt?
+- Erreicht ein neu aufgebauter Mount alle laufenden Verbraucher?
+- Zeigt das Monitoring den Ausfall, bevor ein Benutzer ihn meldet?
+
+Wenn eine Antwort fehlt, weisst du immerhin genau, woran du weiterarbeiten musst. Das ist wesentlich hilfreicher als ein Mount, der beim ersten `ls` gut aussah und erst im Betrieb seine Grenzen zeigt.
 
 ## Quellen
 
-1.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/): der Sanity-Checker und die übrigen Verwaltungsbefehle, die hier als Prüfwerkzeuge dienten.
+1.  [Rclone test makefiles](https://rclone.org/commands/rclone_test_makefiles/): reproduzierbare Testdateien und Verzeichnisstrukturen mit konfigurierbaren Grössen.
 
-2.  [rclone mount](https://rclone.org/commands/rclone_mount/): die VFS-Cache-Modi und Protokolloptionen, deren Verhalten hier vermessen wurde.
+2.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS-Cache-Modi, Writeback, Sparse Files, Cache-Limits und Verzeichnis-Cache.
 
-3.  [PDF 1.7 Referenz (Adobe)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf): die Struktur aus Objekten, Content-Streams und xref-Tabelle, die der Generator direkt schreibt.
+3.  [Rclone check](https://rclone.org/commands/rclone_check/): Vergleich von Quelle und Ziel, einschliesslich vollständiger Prüfung mit `--download`.
+
+4.  [Rclone Remote Control](https://rclone.org/rc/): gezieltes Verwerfen des VFS-Verzeichnis-Caches mit `vfs/forget`.
 
 ----
 
@@ -2777,173 +2922,318 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
-# Testing cloud mounts for real: generating PDFs, measuring access, simulating outages
+# Testing Cold Storage with Rclone: a practical test plan
 
 URL: https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs
 Datum: 2026-07-26
 
-A cloud mount is not production-ready just because `ls` works. What matters is how long a Cold Read takes, what the application can still do during an outage, and whether every file comes back unchanged.
+An Rclone mount is quick to set up. The remote shows up as a directory, `ls` lists files, and the first functional test passes. That says very little about production readiness.
 
-The following method emerged from [testing cloud storage for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage). It uses artificial documents, measures at the application level rather than just the file-system level, and verifies recovery after a hard mount interruption. The figures come from one specific machine and show orders of magnitude, not generally valid benchmarks.
+As soon as a service starts accessing the mount, more questions come up: how long does the first access to a file take? Which accesses does the local cache serve? What happens to a file that hasn't been uploaded yet if Rclone crashes? Does a running container see the mount again once it's rebuilt? And how does the service react when the cloud is temporarily unreachable?
 
-## Generate test documents instead of uploading real ones
+This article provides a general test plan for exactly that. You can use it for a document archive, a media server, a photo library, or any other service that fetches rarely needed files from a Cold Storage through Rclone.
 
-Private documents have no place in a test environment. For transfer and cache measurements, what counts is file size, page count and text layer; the content itself is irrelevant.
+## First, decide what you're trying to achieve
 
-The following script writes PDFs directly in PDF syntax, without a single library. Every page gets a block of random text as a content stream; the page count controls the file size. The **fixed seed** makes the distribution reproducible. A **real text layer** stops the document management system from kicking off OCR: what should be measured is the storage path, not Tesseract.
+Cold Storage doesn't automatically mean the same thing for every application. A media server mostly reads large files sequentially. A photo library loads lots of small preview files and jumps around between different positions. A document archive opens comparatively small files, but often only once.
 
-```python
-import os, random
-random.seed(42)                      # fixed seed: reproducible distribution
-outdir = "dummy"
-os.makedirs(outdir, exist_ok=True)
-WORDS = ("Invoice Receipt Contract Customer Amount Date Position Quantity "
-         "Price Total Tax Net Gross Delivery Payment Account Reference").split()
+Before testing, note down the key characteristics of your real data set:
 
-def build(idx, npages):
-    objects, kids, objnum = {}, [], 4
-    for p in range(1, npages + 1):
-        lines = ["Test document %03d - page %d of %d" % (idx, p, npages)]
-        for _ in range(45):
-            lines.append(" ".join(random.choice(WORDS) for _ in range(11))
-                         + " %d" % random.randint(100, 99999))
-        parts = ["BT /F1 11 Tf 40 800 Td 14 TL"]
-        parts += ["(%s) Tj T*" % l for l in lines]
-        parts.append("ET")
-        stream = "\n".join(parts).encode("latin-1")
-        cnum, pnum = objnum, objnum + 1
-        objnum += 2
-        objects[cnum] = (b"<< /Length " + str(len(stream)).encode()
-                         + b" >>\nstream\n" + stream + b"\nendstream")
-        objects[pnum] = ("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
-                         "/Resources << /Font << /F1 3 0 R >> >> "
-                         "/Contents %d 0 R >>" % cnum).encode()
-        kids.append(pnum)
-    objects[1] = b"<< /Type /Catalog /Pages 2 0 R >>"
-    objects[2] = ("<< /Type /Pages /Kids [%s] /Count %d >>"
-                  % (" ".join("%d 0 R" % k for k in kids), npages)).encode()
-    objects[3] = b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
-    mx = max(objects)
-    buf, off = bytearray(b"%PDF-1.4\n"), {}
-    for n in range(1, mx + 1):
-        off[n] = len(buf)
-        buf += ("%d 0 obj\n" % n).encode() + objects[n] + b"\nendobj\n"
-    x = len(buf)
-    buf += ("xref\n0 %d\n" % (mx + 1)).encode() + b"0000000000 65535 f \n"
-    for n in range(1, mx + 1):
-        buf += ("%010d 00000 n \n" % off[n]).encode()
-    buf += ("trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
-            % (mx + 1, x)).encode()
-    return bytes(buf)
+- typical file size and the largest file that occurs
+- number of files per directory
+- full sequential reads or random access to specific ranges
+- ratio between read and write access
+- number of concurrent users or processes
+- changes that happen directly on the remote, outside the mount
+- acceptable wait time for a Cold Read
+- maximum space available for the local cache
 
-for i in range(1, 41):
-    pages = random.choice([10, 25, 40, 60, 90, 130])
-    open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
-```
+Only from that do meaningful success criteria emerge. Opening a single file in 1.2 seconds can be perfectly fine for an archive and unusable for an interactive application.
 
-The result is 40 files of 45 to 596 KB, 13.9 MB in total. That is a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
+## Generating a reproducible test data set
 
-The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data`. Otherwise the container restarts in an endless loop.
-
-## Distinguishing Cold Reads and Warm Reads clearly
-
-Before measuring, it must be clear **which cache layers** sit between the application and the cloud. Otherwise you measure something other than what you claim. With an rclone mount using `--vfs-cache-mode full` there are three:
-
-| Layer | Location | What lives there |
-|---|---|---|
-| Cloud | at the provider | the only complete truth |
-| VFS cache | local disk (`--cache-dir`) | copies of recently read files, bounded by `--vfs-cache-max-size` |
-| Page cache | RAM | held transparently by the kernel, both for the file as it is read through the FUSE mount and for the VFS copy itself |
-
-A **Cold Read** in this setup means the file is not in the VFS cache and comes over the network. With a **Warm Read**, the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
+Rclone already ships a suitable tool for this. `rclone test makefiles` generates the same file tree every time, given a fixed seed:
 
 ```bash
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
+rclone test makefiles ./testdata \
+  --seed 42 \
+  --files 250 \
+  --files-per-directory 25 \
+  --min-file-size 16K \
+  --max-file-size 32M
 ```
 
-In the test: 1765 ms for the Cold Read versus 19 to 24 ms for the Warm Read. That boundary is also the one that matters for the cloud question. Strictly speaking, though, "Warm Read" here means "local, RAM-assisted" and not "from disk".
+Adjust the count and sizes to your real data set. Don't test only average-sized files. Some very small files show how expensive metadata access is; some large files reveal throughput, read-ahead and cache behavior.
 
-## Measurement hygiene: drop the page cache and prove the drop
-
-To separate the local layers (RAM versus disk), you have to clear the page cache before measuring and **prove it**. The usual way is `sync` followed by `vmtouch -e`, with `fincore` from util-linux as the check:
+Also add file names that tend to cause trouble in practice:
 
 ```bash
-sync
-vmtouch -e file.pdf           # evict this file's pages from RAM
-fincore file.pdf              # proof: RES must be 0
+mkdir -p "testdata/Sonderfälle/Unterordner"
+printf 'Leerzeichen\n' > "testdata/Sonderfälle/Datei mit Leerzeichen.txt"
+printf 'Umlaute\n' > "testdata/Sonderfälle/Grösse und Änderung.txt"
+printf 'Grossschreibung\n' > "testdata/Sonderfälle/Test.txt"
+printf 'Kleinschreibung\n' > "testdata/Sonderfälle/test.txt"
 ```
 
-If `vmtouch` is not installed, three lines without any extra package do the job:
+The last test matters most when the local file system and the cloud backend handle case sensitivity differently.
 
-```python
-import os
-fd = os.open("file.pdf", os.O_RDONLY)
-os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
-os.close(fd)
-```
+If your service only accepts specific formats, arbitrary binary files aren't enough. In that case, also generate synthetic files in exactly those formats. For Paperless-ngx, that meant PDFs with a real text layer, so the test wouldn't accidentally measure OCR performance instead of the storage path. For a photo library, the data set should include different image sizes and formats; for a media server, short files with different codecs.
 
-Two peculiarities of this setup make the proof mandatory rather than optional:
+## A baseline measurement without a mount
 
-**Eviction has to hit every path to the same file**: the file as the mount presents it *and* the VFS copy under `--cache-dir`. This lives in the `vfs/` subdirectory; `vfsMeta/` holds only metadata.
-
-**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED` (600K resident, before and after): rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. To really isolate the disk layer, you have to stop the rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
-
-Put in perspective: at typical document sizes the separation barely pays off. Warm Reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
-
-The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant, because the network is the bottleneck. But anyone who wants to derive local read numbers from them has to evict first.
-
-Ongoing observation additionally includes a look at the VFS cache after every step (`du -sh` on the cache directory, `find … -type f | wc -l`) and the rclone log via `--log-file` and `--log-level INFO`, which records the eviction behaviour. It also revealed that the configured cache limit is soft: 4 MB configured, 12.7 MiB peak until the once-a-minute cleanup pass kicked in.
-
-## Verify at application level, not just in the file system
-
-That `ls` shows files does not mean the application can read them. User permissions on FUSE mounts are a topic of their own. The access should therefore be verified through the application itself; for Django applications like Paperless via a shell in the container:
+Before FUSE and the VFS cache come into play, you should measure the backend directly. Copy the data set to the test remote with Rclone and keep a detailed log:
 
 ```bash
-docker compose exec webserver python3 -c "
-import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','paperless.settings')
-import django; django.setup()
-from documents.models import Document
-d = Document.objects.first()
-print(os.path.exists(d.source_path), len(open(d.source_path,'rb').read()))
-"
+rclone copy ./testdata remote:cold-storage-test \
+  --progress \
+  --stats 5s \
+  --log-file rclone-copy.log \
+  --log-level INFO
 ```
 
-The hardest check ships with the application: Paperless' `document_sanity_checker` reads every file in full and compares its checksum against the database. "No issues detected" after a run across the cloud mount proves that every file comes back bit for bit. One quirk applies to the write path: the test file must be **unique**, because Paperless rejects a copy of an existing document as a duplicate.
-
-## Simulate outages hard and prove the recovery
-
-An outage test that merely stops the service cleanly tests nothing. Hard means: kill the rclone process, unmount, and then compare what host and application each see:
+Then check whether source and destination match:
 
 ```bash
-pkill -f "rclone mount" ; fusermount3 -u /path/to/mount
-docker compose exec webserver ls /usr/src/paperless/media/documents/originals
+rclone check ./testdata remote:cold-storage-test \
+  --one-way \
+  --download
 ```
 
-Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected`. The details are in the [article on rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
+With `--download`, Rclone actually reads the data and compares it, even if the backend doesn't provide matching hashes. That takes longer but gives you a solid baseline for the later integrity test.
 
-Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged. The recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
+Record upload time, transfer rate, number of retries, and API errors. If direct access is already unstable, the mount can't fix that.
 
-## Evaluate logs with precise patterns
+## Keeping the test mount separate from the production cache
 
-When evaluating logs, search patterns need to be precise enough. A search for `422` returned 39 supposed errors in my test. In fact, the hits came from harmless size figures such as `422504 bytes`. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error message avoids such false alarms.
+Use a dedicated mount point and a dedicated cache directory for the measurement:
+
+```bash
+rclone mount remote:cold-storage-test /mnt/rclone-test \
+  --vfs-cache-mode full \
+  --cache-dir /var/cache/rclone-test \
+  --vfs-cache-max-size 10G \
+  --vfs-cache-poll-interval 1m \
+  --allow-other \
+  --log-file /var/log/rclone-test.log \
+  --log-level INFO
+```
+
+These values are an example, not a general recommendation. What matters is the separation: an empty test cache makes Cold Reads reproducible without you having to delete files from a running production cache.
+
+`--vfs-cache-mode full` is usually the most revealing test mode for applications. Rclone buffers reads and writes locally and can emulate file access patterns that wouldn't be possible on a plain object store. That extra compatibility costs local disk space.
+
+## Always test from the real service's point of view
+
+A mount can work fine for your user account and still be unusable for the service. Common causes are a different user ID, a missing `--allow-other`, container boundaries, or the wrong mount propagation.
+
+So run at least one full read access under the same identity the application will later run as:
+
+```bash
+sudo -u <service-user> sha256sum /mnt/rclone-test/pfad/zur/datei
+```
+
+If the service runs in Docker, the test belongs inside the container:
+
+```bash
+docker exec --user <uid>:<gid> <app-container> \
+  sha256sum /pfad/im/container/datei
+```
+
+Even better is a real application-level test. Open the file through the service's web interface or API. That's the only way you'll notice, for example, whether the application starts several parallel reads, seeks to the end of the file, or expects additional metadata.
+
+## Measuring Cold Reads and Warm Reads separately
+
+With `--vfs-cache-mode full`, three layers sit between the application and the cloud:
+
+| Layer | What lives there |
+|---|---|
+| Remote | the complete file at the cloud service |
+| VFS cache | locally stored ranges of already-read files |
+| Linux page cache | recently used data in RAM |
+
+For a Cold Read, pick a file whose contents have never been read through the test mount. On the immediately following Warm Read, it sits in the VFS cache and, most of the time, in RAM as well.
+
+```bash
+measure_read() {
+  file="$1"
+  label="$2"
+  start=$(date +%s%3N)
+  cat "$file" > /dev/null
+  end=$(date +%s%3N)
+  printf '%s: %s ms\n' "$label" "$((end - start))"
+}
+
+measure_read "/mnt/rclone-test/grosse-datei.bin" "Cold Read"
+measure_read "/mnt/rclone-test/grosse-datei.bin" "Warm Read"
+```
+
+Don't measure just one file. Use at least ten previously unread files of different sizes and record the median, the slowest value, and the file size. A single best-case number is not a basis for a decision.
+
+A Warm Read is not a pure disk test, because the kernel can keep parts of the file in RAM. For most Cold Storage scenarios that's not a problem. What matters is what a user experiences on first and repeated opens. If you want to judge RAM and local disk separately, you additionally need to control the page cache and demonstrably clear it.
+
+## Don't test only full sequential reads
+
+`cat` reads a file from beginning to end. Many applications behave differently:
+
+- A video player first reads the header and index, later seeks to a different position, and then loads sequentially from there.
+- A photo manager reads metadata and then generates a thumbnail.
+- An archiving tool may read the end of the file first.
+- Multiple workers may access different files concurrently.
+
+Test these patterns with the actual application. Watch the Rclone log and the cache in parallel. For large files, it's interesting to see how much Rclone actually stores locally and whether `--vfs-read-ahead` matches the access pattern.
+
+An Rclone mount is also not a sensible storage location for databases or other files that need reliable locking and frequent in-place changes. The VFS layer smooths over the differences between a file system and an object store, but it doesn't turn the backend into a local file system.
+
+## Sign off on the write path separately
+
+If your service only reads, mount the remote read-only if at all possible. If it has to write, test create, overwrite, rename and delete individually.
+
+A written file doesn't necessarily show up on the remote right away. With an active VFS cache, the upload only starts after the file has been closed and `--vfs-write-back` has elapsed. So check both states:
+
+1. The application has successfully closed the file.
+2. The file is then readable on the remote through a direct Rclone access.
+
+```bash
+printf 'writeback-test\n' > /mnt/rclone-test/writeback-test.txt
+
+# After --vfs-write-back has elapsed:
+rclone cat remote:cold-storage-test/writeback-test.txt
+```
+
+Repeat the test with a large file and kill Rclone while the upload is still running. Then restart it with the same cache directory and check whether the upload resumes. That exact window determines how much data is at risk if the server fails.
+
+Also test renaming and deleting. Many cloud backends implement these operations differently than a local file system. What matters isn't just whether the command completes successfully, but when the change becomes visible on a direct access to the remote and to other clients.
+
+## Testing changes made outside the mount
+
+Files can be changed through the provider's web interface, a second Rclone process, or another server. The mount doesn't always see such changes immediately, because directory information is cached.
+
+So create a file directly on the remote with a second Rclone invocation:
+
+```bash
+printf 'external-change\n' > external-change.txt
+rclone copyto external-change.txt \
+  remote:cold-storage-test/external-change.txt
+```
+
+Measure when the file shows up in the mount. Repeat the test for changes and deletions. The result depends on the backend, its polling support, and `--poll-interval` and `--dir-cache-time`. If the application needs to see current changes immediately, this behavior belongs explicitly in your acceptance criteria.
+
+With the remote control interface enabled, you can deliberately drop the directory cache:
+
+```bash
+rclone rc vfs/forget
+```
+
+That's useful for a manual test but doesn't replace a proper operational strategy.
+
+## Putting the cache under pressure
+
+A nearly empty cache is the easy case. In a second test round, deliberately set `--vfs-cache-max-size` small and read more data than fits.
+
+```bash
+du -sh /var/cache/rclone-test/vfs
+du -sh --apparent-size /var/cache/rclone-test/vfs
+find /var/cache/rclone-test/vfs -type f | wc -l
+```
+
+The two figures can differ substantially. In full mode, Rclone uses sparse files: a file shows its full logical size even though only the ranges actually read occupy local space.
+
+The cache limit is also soft. Rclone checks it at the interval set by `--vfs-cache-poll-interval`, and open files can't be evicted. So the cache is allowed to exceed the limit briefly. It should shrink back down, though, once the files are closed and the next cleanup pass runs.
+
+Log the peak value, the value after cleanup, and the time cleanup took. That lets you size the required local storage sensibly.
+
+## Simulating two different kinds of failure
+
+An unreachable cloud and a crashed Rclone process are two different failures:
+
+| Failure | What it tests |
+|---|---|
+| Backend or network unreachable, Rclone keeps running | Behavior under retries, timeouts and already-cached files |
+| Rclone process terminated | Behavior of the FUSE mount and recovery of the mount point |
+
+Simulate both only in the test environment. For the second case, you can hard-kill an Rclone container:
+
+```bash
+docker kill --signal KILL <rclone-container>
+```
+
+During the outage, check the application, not just the mount point:
+
+- Which functions remain available?
+- How long does an access wait before an error appears?
+- Are already fully cached files still reachable?
+- Does the application stop new writes?
+- Does it produce an understandable error message, or just a hanging process?
+- Does your monitoring fire?
+
+A write-capable service must not silently write into the underlying local directory when the mount is missing. Once the mount returns, those files would be shadowed. A simple guard to put in front of every write job is:
+
+```bash
+mountpoint -q /mnt/rclone-test || exit 1
+```
+
+After restarting Rclone, check the mount on the host and from every consuming container. A freshly rebuilt mount only reaches an already-running container with the right mount propagation. For Docker, that usually means `rslave` on the consuming side. The details are in the article [Running Rclone mounts reliably in Docker](/en/blog/rclone-mount-inside-docker-container).
+
+## A concrete example from Paperless-ngx
+
+For my Paperless test, I generated 40 PDFs totaling 13.9 MB. A previously unopened document took around 1.8 seconds; a directly repeated access took 19 to 24 milliseconds. A VFS cache capped at 4 MB briefly rose to 12.7 MiB and was cleaned back up on the next pass.
+
+While the remote was unreachable, the document list, full-text search and thumbnails kept working, because that data lived locally. Only the original file failed to open. After the mount was rebuilt, the running Paperless container could access the files again without being restarted itself.
+
+These numbers aren't a benchmark for Rclone or Proton Drive. What's interesting is the behavior: Hot Storage stayed available locally, Cold Reads were slower but predictable, and the service recovered after the outage.
+
+## What belongs in the test report
+
+A result that's traceable later includes at least:
+
+- Rclone version and backend used
+- operating system, FUSE variant, and file system of the cache directory
+- the full mount command, without credentials
+- number, size distribution and structure of the test files
+- Cold Read and Warm Read values for several files
+- write duration until visible on the remote
+- cache peak value and cleanup duration
+- result of `rclone check --download`
+- behavior on backend outage and on a terminated Rclone process
+- recovery time from the application's point of view
+- retries, timeouts, throttling and authentication errors from the log
+
+Define a threshold for each point in advance. Then the test ends with a decision, not just a collection of interesting numbers.
+
+## When the setup is ready
+
+A Cold Storage mount is ready for production when you can answer yes to these questions:
+
+- Are Cold Reads fast enough for the intended service?
+- Does the cache speed up repeated access as expected?
+- Does local storage demand stay under control even under load?
+- Do all files check out after a full download?
+- Do all required file operations work with the chosen backend?
+- Does the application behave in a controlled way during a cloud outage?
+- Are writes safely stopped when the mount is missing?
+- Does a freshly rebuilt mount reach every running consumer?
+- Does your monitoring show the outage before a user reports it?
+
+If an answer is missing, at least you know exactly what to work on next. That's far more useful than a mount that looked good on the first `ls` and only showed its limits in production.
 
 ## Sources
 
-1.  [Paperless-ngx: Administration](https://docs.paperless-ngx.com/administration/): the sanity checker and the other management commands that served as verification tools here.
+1.  [Rclone test makefiles](https://rclone.org/commands/rclone_test_makefiles/): reproducible test files and directory structures with configurable sizes.
 
-2.  [rclone mount](https://rclone.org/commands/rclone_mount/): the VFS cache modes and logging options whose behaviour was measured here.
+2.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS cache modes, writeback, sparse files, cache limits, and the directory cache.
 
-3.  [PDF 1.7 reference (Adobe)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf): the structure of objects, content streams and the xref table that the generator writes directly.
+3.  [Rclone check](https://rclone.org/commands/rclone_check/): comparing source and destination, including a full check with `--download`.
+
+4.  [Rclone Remote Control](https://rclone.org/rc/): selectively dropping the VFS directory cache with `vfs/forget`.
 
 ----
 
-# Running rclone mounts reliably in Docker
+# Running Rclone mounts reliably in Docker
 
 URL: https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container
 Datum: 2026-07-26
 
-An rclone mount runs inside a Docker container but also needs to work on the host and in other containers. That requires mount events to cross several namespaces. A single compose option is not enough.
+An Rclone mount runs inside a Docker container but also needs to work on the host and in other containers. That requires mount events to cross several namespaces. A single compose option is not enough.
 
 In a hands-on test with Ubuntu 25.10, kernel 6.17 and Docker 29.6, three independent failures showed up: Docker silently downgraded `rshared`, AppArmor blocked `fusermount3`, and a consuming container clung to the old mount after a restart. The concrete use case was a [cloud store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage); the same mechanisms apply to other FUSE tools such as sshfs, too.
 
@@ -3011,11 +3301,11 @@ rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/documents /data/documents
 ```
 
-The bind is a regular mount(2) call and propagates like any other through the shared path to the host. That could be verified all the way into a second container, which could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
+The bind is a regular mount(2) call and propagates like any other through the shared path to the host. That could be verified all the way into a second container, which could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
 
 ## 3. Consumers need `rslave`
 
-The third trap concerns the other side. If the rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way, however, does not see it at all:
+The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way, however, does not see it at all:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -3050,9 +3340,9 @@ done
 
 4. Then mount and publish normally; consumers with `rslave` pick the fresh mount up by themselves.
 
-In the test, the complete chain took 160 seconds: the rclone process was killed, the failure detected, the container restarted, the orphaned mount removed, and the new mount republished. The consuming container kept running throughout and only noticed a brief interruption.
+In the test, the complete chain took 160 seconds: the Rclone process was killed, the failure detected, the container restarted, the orphaned mount removed, and the new mount republished. The consuming container kept running throughout and only noticed a brief interruption.
 
-If you run rclone directly **on the host** via systemd, you avoid the first two problems and only need `rslave` on the consuming containers. The extra container mainly pays off when the host should stay free of rclone installations or several mounts need to be managed uniformly. In that case, all three layers need to be configured deliberately.
+If you run Rclone directly **on the host** via systemd, you avoid the first two problems and only need `rslave` on the consuming containers. The extra container mainly pays off when the host should stay free of Rclone installations or several mounts need to be managed uniformly. In that case, all three layers need to be configured deliberately.
 
 ## Sources
 
@@ -3060,7 +3350,7 @@ If you run rclone directly **on the host** via systemd, you avoid the first two 
 
 2.  [Kernel documentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt): the Linux kernel's mount propagation that Docker's bind options build on.
 
-3.  [rclone mount](https://rclone.org/commands/rclone_mount/): VFS cache modes, --allow-other and the limits of the FUSE mount.
+3.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS cache modes, --allow-other and the limits of the FUSE mount.
 
 4.  [AppArmor documentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): how profiles attach to executables; the fusermount3 profile lives at /etc/apparmor.d/fusermount3.
 
@@ -3073,7 +3363,7 @@ Datum: 2026-07-26
 
 For Windows and macOS, Proton Drive has offered its own sync clients since 2023. On Linux there is so far only the web interface, community tooling, and an official SDK still in preview. On a server the situation is even harder, since neither a desktop sync client nor an interactive login fits well there.
 
-This overview describes the state as of July 2026. Alongside the published roadmaps, it draws on a hands-on test of the rclone backend [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage).
+This overview describes the state as of July 2026. Alongside the published roadmaps, it draws on a hands-on test of the Rclone backend [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage).
 
 ## The Linux client is announced, but still without a date
 
@@ -3081,23 +3371,23 @@ In June 2026 Proton confirmed explicitly for the first time that a Linux client 
 
 Important for context: this will be a **desktop sync client**. It solves the problem for the desktop. For server applications, though, a sync client is the wrong tool, because a service needs to read and write files directly from Proton Drive. A sync client keeps a full local copy, exactly what you want to avoid when disk space is tight.
 
-## Today rclone carries the practical work
+## Today Rclone carries the practical work
 
-On Linux, rclone with its `protondrive` backend is currently the most versatile tool. It can copy and sync files, and as the only available solution it can expose Proton Drive as a local directory via **FUSE mount**. Two limitations matter here:
+On Linux, Rclone with its `protondrive` backend is currently the most versatile tool. It can copy and sync files, and as the only available solution it can expose Proton Drive as a local directory via **FUSE mount**. Two limitations matter here:
 
 **It is beta on a reverse-engineered API.** Proton does not document its Drive API publicly; the backend is built on reverse engineering. In my test it worked reliably but throttled rapid call sequences with inconsistent directory listings.
 
-**For unattended operation, rclone asks for the TOTP secret.** The configuration wizard labels the field `otp_secret_key`. That means the permanent secret from the 2FA setup, not the six-digit code an authenticator app currently displays. rclone stores this value obscured and generates a valid TOTP code from it itself at every sign-in.
+**For unattended operation, Rclone asks for the TOTP secret.** The configuration wizard labels the field `otp_secret_key`. That means the permanent secret from the 2FA setup, not the six-digit code an authenticator app currently displays. Rclone stores this value obscured and generates a valid TOTP code from it itself at every sign-in.
 
-Anyone who accidentally enters a current one-time code can complete the first sign-in. The next re-authentication, however, fails with error 8002, because rclone cannot reuse the same code a second time.
+Anyone who accidentally enters a current one-time code can complete the first sign-in. The next re-authentication, however, fails with error 8002, because Rclone cannot reuse the same code a second time.
 
 That keeps the account protected against a password stolen in isolation. A compromised server, however, exposes both the password and the TOTP secret. A **dedicated Proton account** is therefore recommended for automated access.
 
-How such a mount behaves in Docker environments, including two undocumented traps, is covered in the [dedicated article on rclone in containers](/en/blog/rclone-mount-inside-docker-container).
+How such a mount behaves in Docker environments, including two undocumented traps, is covered in the [dedicated article on Rclone in containers](/en/blog/rclone-mount-inside-docker-container).
 
 ## The official SDK shows where things are headed
 
-In parallel, Proton is rebuilding its applications on an **official SDK** for JavaScript and C#, with bindings for Swift and Kotlin. The public repository also contains a command-line tool. Its authentication model is cleaner than the rclone backend's:
+In parallel, Proton is rebuilding its applications on an **official SDK** for JavaScript and C#, with bindings for Swift and Kotlin. The public repository also contains a command-line tool. Its authentication model is cleaner than the Rclone backend's:
 
 - `auth login` opens the browser; sign-in happens normally, **including two-factor authentication**
 - the session lands in the **operating system's secret store** (Keychain, Credential Manager, libsecret), renewed by the SDK itself
@@ -3117,12 +3407,12 @@ To be fair, this is harder for an end-to-end encrypted service than for S3, beca
 
 | Use case | State as of July 2026 |
 |---|---|
-| Desktop sync on Linux | Wait for the announced client; until then rclone sync or the web interface |
-| Server backup (uploading files) | rclone `copy`/`sync`; works, factor in the beta status |
-| File-system mount for services | rclone `mount` with a stored TOTP secret and a dedicated account; the only [proven-in-practice way](/en/blog/offloading-paperless-documents-to-cloud-storage) |
+| Desktop sync on Linux | Wait for the announced client; until then Rclone sync or the web interface |
+| Server backup (uploading files) | Rclone `copy`/`sync`; works, factor in the beta status |
+| File-system mount for services | Rclone `mount` with a stored TOTP secret and a dedicated account; the only [proven-in-practice way](/en/blog/offloading-paperless-documents-to-cloud-storage) |
 | Script automation with clean auth | Keep an eye on the SDK CLI; too early for production |
 
-On the Linux desktop, you can either wait for the announced client or use rclone for now. On servers, rclone remains the only practical mount solution. A working stopgap only becomes a solid platform once Proton offers scoped machine credentials and an officially supported mount, though.
+On the Linux desktop, you can either wait for the announced client or use Rclone for now. On servers, Rclone remains the only practical mount solution. A working stopgap only becomes a solid platform once Proton offers scoped machine credentials and an officially supported mount, though.
 
 ## Sources
 
@@ -3134,7 +3424,7 @@ On the Linux desktop, you can either wait for the announced client or use rclone
 
 4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview): Proton's own assessment: not yet production-ready for third-party applications.
 
-5.  [rclone: Proton Drive](https://rclone.org/protondrive/): the backend including the beta notice and the `otp_secret_key` option for unattended sign-in.
+5.  [Rclone: Proton Drive](https://rclone.org/protondrive/): the backend including the beta notice and the `otp_secret_key` option for unattended sign-in.
 
 ----
 
@@ -3145,7 +3435,7 @@ Datum: 2026-07-26
 
 Paperless-ngx stores its documents in a local directory, and that directory grows with every scan. Yet Paperless barely needs the files day to day: search runs against the database, the list renders thumbnails, and the actual file is only read when opened. So I tested whether the store can be moved into a cloud service. The tool for the job is Rclone, which Plex users have relied on for years to pull entire media collections in from the cloud.
 
-The result: **it works in both directions**, and the setup has shrunk to three commands. This article summarises what the test showed and how to set it up yourself. The technical depths live in their own articles, linked at the end: Docker mount propagation, AppArmor traps, two-factor authentication and the measurement methodology.
+The result: **it works in both directions**, and the setup has shrunk to three commands. This article summarises what the test showed and how to set it up yourself. The technical details live in their own articles, linked at the end: Docker mount propagation, AppArmor traps, two-factor authentication and the measurement methodology.
 
 ## The principle: Hot Storage stays local, Cold Storage lives in the cloud
 
@@ -3193,16 +3483,16 @@ The wizard asks for your cloud service (Proton, S3, Backblaze B2, WebDAV, SFTP, 
 
 I deliberately skipped a web interface. Rclone's web GUI was in place at first, but SSH tunnels, CORS and ephemeral mounts made it worse than the command line it was meant to replace. Three questions in the terminal are faster.
 
-## The four rules for stable operation
+## Keeping the mount stable day to day
 
-The template implements all of them; if you build your own, you should know them:
+The template takes care of four points that you need to consider as well if you build your own setup:
 
 1. **`propagation: rslave`** on the Paperless container's media bind mount, otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [Rclone mounts inside Docker containers](/en/blog/rclone-mount-inside-docker-container).
 2. **Stop Paperless while the mount is missing.** Otherwise it consumes documents into a bare local directory, and the returning mount then shadows them invisibly. A watchdog script ships with the template.
 3. **An account that can sign in unattended.** For Proton that means storing the TOTP secret in the Rclone configuration. Why this does not devalue two-factor authentication, and where Proton stands on Linux overall: [Proton Drive on Linux](/en/blog/proton-drive-on-linux-status).
 4. **Disable scheduled full-read tasks** (`PAPERLESS_SANITY_TASK_CRON=disable`), because the integrity check otherwise downloads the complete collection from the cloud regularly.
 
-## Limits that remain
+## What to weigh before you deploy this
 
 A freshly consumed document lives in the local cache for a few seconds until the upload completes. If the machine dies exactly in that window, the file is missing. The cache limit is soft and can be exceeded considerably during access bursts. And Rclone's Proton backend is officially beta; under rapid API calls it showed throttling symptoms. Because long-term data from continuous operation is still missing, the template is marked experimental.
 
@@ -3210,7 +3500,7 @@ How the measurements came about, which outages were simulated and how to test su
 
 ## Conclusion
 
-Paperless-ngx on a small disk with a cloud store is feasible and usable day to day: just under two seconds on first open, cache speed after that, search and interface stay cloud-independent, and the setup heals itself after outages. If you merely want to save a few gigabytes on a normally sized server, do the maths: in my case the entire store occupied 71 MB while the operating system took several gigabytes. The gain is not the space saved immediately, but that the collection may grow without the disk having to grow with it.
+Paperless-ngx on a small disk with a cloud store is feasible and usable day to day: just under two seconds on first open, cache speed after that, search and interface stay cloud-independent, and the setup heals itself after outages. If you merely want to save a few gigabytes on a normally sized server, however, do the maths: in my case the entire store occupied 71 MB while the operating system took several gigabytes. The gain is not the space saved immediately, but that the collection may grow without the disk having to grow with it.
 
 ## Sources
 
