@@ -70,7 +70,7 @@ One deliberate omission: there is **no web interface**. We had Rclone's web GUI 
 
 The template implements all of them; whoever builds their own should know them:
 
-1. **`propagation: rslave`** on the Paperless container's media bind mount — otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [Rclone mounts inside Docker containers](/en/blog/Rclone-mount-inside-docker-container).
+1. **`propagation: rslave`** on the Paperless container's media bind mount — otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [Rclone mounts inside Docker containers](/en/blog/rclone-mount-inside-docker-container).
 2. **Stop Paperless while the mount is missing** — otherwise it consumes documents into a bare local directory that the returning mount then shadows invisibly. A watchdog script ships with the template.
 3. **An account that can sign in unattended** — for Proton that means storing the TOTP secret in the Rclone configuration. Why this does not devalue two-factor authentication, and where Proton stands on Linux overall: [Proton Drive on Linux](/en/blog/proton-drive-on-linux-status).
 4. **Disable scheduled full-read tasks** (`PAPERLESS_SANITY_TASK_CRON=disable`) — the integrity check otherwise downloads the complete collection from the cloud regularly.

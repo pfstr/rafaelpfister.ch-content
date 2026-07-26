@@ -38,7 +38,7 @@ Ungültige Anmeldedaten (Code=8002)
 
 Rclone versucht, sich mit dem längst verbrauchten Code neu anzumelden. Die Lösung ist, den dauerhaften TOTP-Schlüssel (den Base32-Wert aus der 2FA-Einrichtung) als `otp_secret_key` in der Rclone-Konfiguration zu hinterlegen — obscured über `rclone obscure`. Damit erzeugt Rclone die Codes selbst und läuft dauerhaft. Das ist weniger heikel, als es klingt: Gegen geleakte Passwörter schützt der zweite Faktor unverändert, nur gegen die Kompromittierung des Servers nicht — und diesen Fall hat er nie verteidigt, denn dort liegt auch das Passwort. Ein **dediziertes Konto** nur für den jeweiligen Dienst bleibt trotzdem Pflicht.
 
-Wie sich so ein Mount in Docker-Umgebungen verhält — inklusive zweier undokumentierter Fallen — steht im [eigenen Artikel zu Rclone in Containern](/blog/Rclone-mount-in-docker-container).
+Wie sich so ein Mount in Docker-Umgebungen verhält — inklusive zweier undokumentierter Fallen — steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
 
 ## Das SDK und seine CLI: offiziell, aber noch nicht für alle
 

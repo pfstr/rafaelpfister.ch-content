@@ -39,7 +39,7 @@ Invalid credentials (Code=8002)
 
 Rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the Rclone configuration — obscured via `rclone obscure`. Rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: against leaked passwords the second factor keeps protecting unchanged; only against a compromise of the server it does not — and that case it never defended, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
 
-How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on Rclone in containers](/en/blog/Rclone-mount-inside-docker-container).
+How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on Rclone in containers](/en/blog/rclone-mount-inside-docker-container).
 
 ## The SDK and its CLI: official, but not for everyone yet
 

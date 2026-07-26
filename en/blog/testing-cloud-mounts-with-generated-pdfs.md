@@ -150,7 +150,7 @@ pkill -f "rclone mount" ; fusermount3 -u /path/to/mount
 docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 ```
 
-Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected` — the details are in the [article on Rclone in Docker](/en/blog/Rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
+Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected` — the details are in the [article on Rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
 
 Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged — the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
 

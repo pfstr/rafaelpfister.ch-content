@@ -149,7 +149,7 @@ pkill -f "rclone mount" ; fusermount3 -u /pfad/zum/mount
 docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 ```
 
-Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu Rclone in Docker](/blog/Rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
+Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu Rclone in Docker](/blog/rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
 
 Ebenso wichtig: prüfen, was **ohne** Cloud noch funktioniert. Bei entferntem Mount liefen Dokumentliste, Volltextsuche und Vorschaubilder unverändert — der erkannte Text lag mit knapp 244'000 Zeichen für ein Testdokument in der Datenbank. Nur das Öffnen der Originaldatei schlug fehl. Solche Negativproben gehören in jedes Testprotokoll, weil sie zeigen, welcher Schaden ein Ausfall wirklich anrichtet.
 

@@ -69,7 +69,7 @@ Ein bewusst gesetzter Verzicht: Es gibt **kein Webinterface**. Wir hatten rclone
 
 Die Vorlage setzt sie alle um; wer selbst baut, sollte sie kennen:
 
-1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/Rclone-mount-in-docker-container).
+1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
 2. **Paperless anhalten, wenn der Mount fehlt** — sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, die der zurückkehrende Mount unsichtbar überdeckt. Ein Watchdog-Skript liegt in der Vorlage bei.
 3. **Ein Konto, das sich unbeaufsichtigt anmelden kann** — bei Proton heisst das: den TOTP-Schlüssel in der Rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`) — die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.

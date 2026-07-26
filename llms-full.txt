@@ -71,7 +71,7 @@ Ein bewusst gesetzter Verzicht: Es gibt **kein Webinterface**. Wir hatten rclone
 
 Die Vorlage setzt sie alle um; wer selbst baut, sollte sie kennen:
 
-1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/Rclone-mount-in-docker-container).
+1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers — sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
 2. **Paperless anhalten, wenn der Mount fehlt** — sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, die der zurückkehrende Mount unsichtbar überdeckt. Ein Watchdog-Skript liegt in der Vorlage bei.
 3. **Ein Konto, das sich unbeaufsichtigt anmelden kann** — bei Proton heisst das: den TOTP-Schlüssel in der Rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`) — die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.
@@ -254,7 +254,7 @@ Ungültige Anmeldedaten (Code=8002)
 
 Rclone versucht, sich mit dem längst verbrauchten Code neu anzumelden. Die Lösung ist, den dauerhaften TOTP-Schlüssel (den Base32-Wert aus der 2FA-Einrichtung) als `otp_secret_key` in der Rclone-Konfiguration zu hinterlegen — obscured über `rclone obscure`. Damit erzeugt Rclone die Codes selbst und läuft dauerhaft. Das ist weniger heikel, als es klingt: Gegen geleakte Passwörter schützt der zweite Faktor unverändert, nur gegen die Kompromittierung des Servers nicht — und diesen Fall hat er nie verteidigt, denn dort liegt auch das Passwort. Ein **dediziertes Konto** nur für den jeweiligen Dienst bleibt trotzdem Pflicht.
 
-Wie sich so ein Mount in Docker-Umgebungen verhält — inklusive zweier undokumentierter Fallen — steht im [eigenen Artikel zu Rclone in Containern](/blog/Rclone-mount-in-docker-container).
+Wie sich so ein Mount in Docker-Umgebungen verhält — inklusive zweier undokumentierter Fallen — steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
 
 ## Das SDK und seine CLI: offiziell, aber noch nicht für alle
 
@@ -756,7 +756,7 @@ pkill -f "rclone mount" ; fusermount3 -u /pfad/zum/mount
 docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 ```
 
-Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu Rclone in Docker](/blog/Rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
+Zwei Dinge haben sich dabei als messbar wichtig erwiesen. Erstens der Unterschied zwischen den Perspektiven: Nach einem neu aufgebauten Mount sah der Host sofort wieder alles, der Container blieb ohne die richtige Mount-Propagation auf `Transport endpoint is not connected` hängen — die Details dazu stehen im [Artikel zu Rclone in Docker](/blog/rclone-mount-in-docker-container). Zweitens der **Neustartzähler als Beweismittel**: `docker inspect -f 'restarts={{.RestartCount}}'` vor und nach dem Test belegt, ob sich ein Container wirklich ohne Neustart erholt hat oder ob Docker still nachgeholfen hat.
 
 Ebenso wichtig: prüfen, was **ohne** Cloud noch funktioniert. Bei entferntem Mount liefen Dokumentliste, Volltextsuche und Vorschaubilder unverändert — der erkannte Text lag mit knapp 244'000 Zeichen für ein Testdokument in der Datenbank. Nur das Öffnen der Originaldatei schlug fehl. Solche Negativproben gehören in jedes Testprotokoll, weil sie zeigen, welcher Schaden ein Ausfall wirklich anrichtet.
 
@@ -3196,7 +3196,7 @@ One deliberate omission: there is **no web interface**. We had Rclone's web GUI 
 
 The template implements all of them; whoever builds their own should know them:
 
-1. **`propagation: rslave`** on the Paperless container's media bind mount — otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [Rclone mounts inside Docker containers](/en/blog/Rclone-mount-inside-docker-container).
+1. **`propagation: rslave`** on the Paperless container's media bind mount — otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [Rclone mounts inside Docker containers](/en/blog/rclone-mount-inside-docker-container).
 2. **Stop Paperless while the mount is missing** — otherwise it consumes documents into a bare local directory that the returning mount then shadows invisibly. A watchdog script ships with the template.
 3. **An account that can sign in unattended** — for Proton that means storing the TOTP secret in the Rclone configuration. Why this does not devalue two-factor authentication, and where Proton stands on Linux overall: [Proton Drive on Linux](/en/blog/proton-drive-on-linux-status).
 4. **Disable scheduled full-read tasks** (`PAPERLESS_SANITY_TASK_CRON=disable`) — the integrity check otherwise downloads the complete collection from the cloud regularly.
@@ -3364,7 +3364,7 @@ pkill -f "rclone mount" ; fusermount3 -u /path/to/mount
 docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 ```
 
-Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected` — the details are in the [article on Rclone in Docker](/en/blog/Rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
+Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected` — the details are in the [article on Rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
 
 Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged — the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
 
@@ -3538,7 +3538,7 @@ Invalid credentials (Code=8002)
 
 Rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the Rclone configuration — obscured via `rclone obscure`. Rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: against leaked passwords the second factor keeps protecting unchanged; only against a compromise of the server it does not — and that case it never defended, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
 
-How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on Rclone in containers](/en/blog/Rclone-mount-inside-docker-container).
+How such a mount behaves in Docker environments — including two undocumented traps — is covered in the [dedicated article on Rclone in containers](/en/blog/rclone-mount-inside-docker-container).
 
 ## The SDK and its CLI: official, but not for everyone yet
 
