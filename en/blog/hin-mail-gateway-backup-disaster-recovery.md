@@ -28,7 +28,7 @@ Backup and disaster recovery can only be planned once the technical foundation i
 
 ## What the HIN MGW Is, Technically Speaking
 
-The gateway processes incoming and outgoing emails according to a set of central rules and encrypts them using S/MIME, OpenPGP, or TLS, depending on the recipient; for recipients without their own key material, the web-based GINA method is used. For backup purposes, it is crucial that [Message content is not stored persistently on the gateway](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): The appliance processes emails as they come in without archiving them.
+The gateway processes incoming and outgoing emails according to a set of central rules and encrypts them using S/MIME, OpenPGP, or TLS, depending on the recipient; for recipients without their own key material, the web-based GINA method is used. For backup purposes, what matters is that [Message content is not stored persistently on the gateway](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): The appliance processes emails as they come in without archiving them.
 
   
   
@@ -96,7 +96,7 @@ A prerequisite for any retrieval method is that a backup password has been set u
 
 ## Backup Strategy in a Cluster Environment
 
-In a cluster environment, orderly backups and consistent version control are crucial.
+In a cluster environment, orderly backups and consistent version control are essential.
 
 -   **Every day**: Encrypted configuration backup [per SCP](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html) Retrieve and store externally with versioning
     

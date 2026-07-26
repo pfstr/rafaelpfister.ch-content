@@ -16,13 +16,13 @@ url: "https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing
 
 In modern email architectures, it is often necessary to connect different email platforms: whether as part of migrations, hybrid environments, or to integrate MTAs that handle specialized tasks. This will be illustrated using the example of a mail loop between a gateway system such as TotemoMail (based on Apache James) and a cloud service such as Exchange Online.
 
-While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. To ensure these components work together seamlessly, incoming and outgoing messages must be routed between the systems in a controlled manner, without loops, delivery errors, or unexpected side effects.
+While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. For these components to work together, incoming and outgoing messages must be routed between the systems in a controlled manner, without loops, delivery errors, or unexpected side effects.
 
 Once the mail loop is in place, one point matters most: Exchange Online must accept mail exclusively from TotemoMail, not directly from the internet. For how that gets locked down with a restrictive partner connector, and what happens when that step is missing, see [Ghost Sender or Ghost Admin?](/en/blog/ghost-sender-exchange-online-side-entrance)
 
-However, setting up such an email loop is anything but trivial. In addition to traditional SMTP routing issues, Apache James's internal mechanisms also play a crucial role.
+However, setting up such an email loop is anything but trivial. In addition to traditional SMTP routing issues, Apache James's internal mechanisms also play a major role.
 
-It is precisely this internal processing flow (hidden behind XML configurations) that is crucial for an email to function correctly within the system.
+It is precisely this internal processing flow (hidden behind XML configurations) that decides whether an email functions correctly within the system.
 
 This post covers:
 
@@ -65,11 +65,11 @@ During persistence, this object is split into two parts in the FileMailRepositor
 -   The Java object (MailImpl) is stored in the FileObjectStore using Java serialization
     
 
-In doing so, James deliberately separates the message content from the processing state. Let's now take a look at how this is implemented in the system.
+In doing so, James deliberately separates the message content from the processing state. The next sections look at how this is implemented in the system.
 
 ##### Structure of the /var/mail Repository (the various queues)
 
-Queuing takes place through various folders (known as repositories). This means that emails are temporarily stored to be processed later. In reality, of course, this happens in fractions of a second. However, if there is a configuration error, the emails may end up in the *spool*\-Wait in the queue until it's processed. Simply put:
+Queuing takes place through various folders (known as repositories). This means that emails are temporarily stored to be processed later. In reality, of course, this happens in fractions of a second. However, if there is a configuration error, the emails may pile up in the *spool* queue and wait to be processed. In other words:
 
 -   Repository = where is the email stored?
     

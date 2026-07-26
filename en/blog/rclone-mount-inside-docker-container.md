@@ -1,7 +1,7 @@
 ---
 title: "Rclone mounts inside Docker containers: propagation, AppArmor and the error \"Transport endpoint is not connected\""
 navTitle: "Rclone in Docker"
-description: "A FUSE mount from inside a Docker container should be visible on the host and in other containers and survive restarts. Three documented traps: silently downgraded rshared propagation, the fusermount3 AppArmor profile, and containers clinging to dead mounts."
+description: "A FUSE mount from inside a Docker container should be visible on the host and in other containers, and it should survive restarts. Three documented traps: silently downgraded rshared propagation, the fusermount3 AppArmor profile, and containers clinging to dead mounts."
 date: "2026-07-25"
 kategorie: "Rclone"
 timeToRead: "9 min to read"
@@ -31,7 +31,7 @@ For a mount from the container to reach the host, the bind needs `rshared` propa
           propagation: rshared
 ```
 
-What the documentation glosses over: `rshared` only works if the bind source on the host is **itself a mount point with shared propagation**. A plain directory does not qualify. Docker then reports no error, though, but silently downgrades the propagation. It only becomes visible in `/proc/self/mountinfo` inside the container:
+What the documentation glosses over: `rshared` only works if the bind source on the host is **itself a mount point with shared propagation**. A plain directory does not qualify. Docker then reports no error but silently downgrades the propagation. It only becomes visible in `/proc/self/mountinfo` inside the container:
 
 ```text
 1938 2077 8:2 /srv/storage/media /data rw,relatime master:1 - ext4 /dev/sda2 rw
@@ -82,11 +82,11 @@ rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/documents /data/documents
 ```
 
-The bind is a regular mount(2) call and propagates like any other through the shared path to the host. I verified this all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
+The bind is a regular mount(2) call and propagates like any other through the shared path to the host. I verified that all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
 
 ## Trap 3: consumers cling to dead mounts
 
-The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way, on the other hand, sees only this:
+The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way sees only this:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -111,7 +111,7 @@ The three building blocks combine into a robust overall pattern that needs no wa
 
 1. The mount container checks its mounts in a loop. If one stops answering, it exits with an error code.
 2. `restart: unless-stopped` makes Docker restart the container.
-3. At startup the container first clears **orphaned mounts from its previous life**, since a dead bind on the target path would otherwise block republishing, and an unprivileged user cannot remove it from the host. Inside the container it works, and the umount propagates outwards:
+3. At startup the container first clears **orphaned mounts from its previous life**, because a dead bind on the target path would otherwise block republishing, and an unprivileged user cannot remove it from the host. Inside the container it works, and the umount propagates outwards:
 
 ```sh
 while grep -q " /data/documents " /proc/self/mountinfo; do
@@ -123,7 +123,7 @@ done
 
 In the test the complete chain (Rclone process killed, detection, container restart, cleanup, remount, republish) took 160 seconds, with the consumer container noticing nothing beyond a short gap.
 
-Whoever runs the mount **on the host** via systemd avoids traps 1 and 2 entirely and only needs `rslave` on the consumer side. The container route pays off when the host should stay free of Rclone installations or several mounts need to be managed centrally. Then there is no way around the three traps.
+If you run the mount **on the host** via systemd, you avoid traps 1 and 2 entirely and only need `rslave` on the consumer side. The container route pays off when the host should stay free of Rclone installations or several mounts are managed centrally. Then there is no way around the three traps.
 
 ## Sources
 

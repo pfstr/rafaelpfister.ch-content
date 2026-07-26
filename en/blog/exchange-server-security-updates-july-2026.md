@@ -107,7 +107,7 @@ Hayes Jupe has written a detailed guide to removing these groups in his blog pos
 
 ## Recommended procedure
 
-In short, the practical sequence: first inventory the environment with the Health Checker (it shows missing CUs/SUs, open manual steps *and*, newly, the legacy groups). Then install the current CU and the July SU, restart the server, and check that all Exchange services have started cleanly. Then run the Health Checker again, remove the CVE-2026-42897 mitigation (after July 16, or with the ID M2.1.0 blocked beforehand), and finally clean up the deprecated security groups. SUs are cumulative: if you are on a supported CU, you do not need to install every intermediate SU, just the latest one directly.
+The practical sequence: first inventory the environment with the Health Checker (it shows missing CUs/SUs, open manual steps *and*, newly, the legacy groups). Then install the current CU and the July SU, restart the server, and check that all Exchange services have started cleanly. Then run the Health Checker again, remove the CVE-2026-42897 mitigation (after July 16, or with the ID M2.1.0 blocked beforehand), and finally clean up the deprecated security groups. SUs are cumulative: if you are on a supported CU, you do not need to install every intermediate SU, just the latest one directly.
 
 ## Sources
 

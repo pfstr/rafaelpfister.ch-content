@@ -443,7 +443,7 @@ Midea PortaSplit
 
 Die Midea PortaSplit lässt sich erstaunlich gut in Home Assistant integrieren. Nach erfolgreicher Einrichtung ist sie lokal steuerbar und in Automationen einbindbar, womit für den täglichen Betrieb ein grosser Teil der Cloud-Abhängigkeit entfällt.
 
-Unter Sicherheitsgesichtspunkten ist die Integration vertretbar, wenn einige Grundregeln eingehalten werden: keine Portweiterleitung, Token und Key geheim halten, Backups verschlüsseln, Debug-Logs vor Veröffentlichung prüfen, Home Assistant absichern, IoT-Geräte segmentieren, ausgehenden Internetzugriff auf das Notwendige beschränken und Firmware- sowie HACS-Updates nicht blind installieren. So betrieben ist die PortaSplit nicht nur eine leistungsfähige Klimaanlage, sondern ein sinnvoll integrierbarer Bestandteil eines lokal gesteuerten Smart Homes.
+Unter Sicherheitsgesichtspunkten ist die Integration vertretbar, wenn einige Grundregeln eingehalten werden: keine Portweiterleitung, Token und Key geheim halten, Backups verschlüsseln, Debug-Logs vor Veröffentlichung prüfen, Home Assistant absichern, IoT-Geräte segmentieren, ausgehenden Internetzugriff auf das Notwendige beschränken und Firmware- sowie HACS-Updates nicht blind installieren. So betrieben bleibt die PortaSplit eine leistungsfähige Klimaanlage und wird zugleich ein sinnvoll integrierbarer Bestandteil eines lokal gesteuerten Smart Homes.
 
 ## Quellen
 

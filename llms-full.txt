@@ -1316,7 +1316,7 @@ Midea PortaSplit
 
 Die Midea PortaSplit lässt sich erstaunlich gut in Home Assistant integrieren. Nach erfolgreicher Einrichtung ist sie lokal steuerbar und in Automationen einbindbar, womit für den täglichen Betrieb ein grosser Teil der Cloud-Abhängigkeit entfällt.
 
-Unter Sicherheitsgesichtspunkten ist die Integration vertretbar, wenn einige Grundregeln eingehalten werden: keine Portweiterleitung, Token und Key geheim halten, Backups verschlüsseln, Debug-Logs vor Veröffentlichung prüfen, Home Assistant absichern, IoT-Geräte segmentieren, ausgehenden Internetzugriff auf das Notwendige beschränken und Firmware- sowie HACS-Updates nicht blind installieren. So betrieben ist die PortaSplit nicht nur eine leistungsfähige Klimaanlage, sondern ein sinnvoll integrierbarer Bestandteil eines lokal gesteuerten Smart Homes.
+Unter Sicherheitsgesichtspunkten ist die Integration vertretbar, wenn einige Grundregeln eingehalten werden: keine Portweiterleitung, Token und Key geheim halten, Backups verschlüsseln, Debug-Logs vor Veröffentlichung prüfen, Home Assistant absichern, IoT-Geräte segmentieren, ausgehenden Internetzugriff auf das Notwendige beschränken und Firmware- sowie HACS-Updates nicht blind installieren. So betrieben bleibt die PortaSplit eine leistungsfähige Klimaanlage und wird zugleich ein sinnvoll integrierbarer Bestandteil eines lokal gesteuerten Smart Homes.
 
 ## Quellen
 
@@ -3142,7 +3142,7 @@ Zur Logik der Ausführung der einzlnen Matchers und Mailets findet sich folgende
 URL: https://rafaelpfister.ch/en/blog/offloading-paperless-documents-to-cloud-storage
 Datum: 2026-07-26
 
-Paperless-ngx stores its documents in a local directory, and that directory grows with every scan. Yet Paperless barely needs the files day to day: search runs against the database, the list renders thumbnails, and the actual file is only read when opened. So I tested whether the store can be moved into a cloud service. The tool for that is Rclone, the way Plex users have been mounting entire media collections from the cloud for years.
+Paperless-ngx stores its documents in a local directory, and that directory grows with every scan. Yet Paperless barely needs the files day to day: search runs against the database, the list renders thumbnails, and the actual file is only read when opened. So I tested whether the store can be moved into a cloud service. The tool for the job is Rclone, which Plex users have relied on for years to pull entire media collections in from the cloud.
 
 The result: **it works in both directions**, and the setup has shrunk to three commands. This article summarises what the test showed and how to set it up yourself. The technical depths live in their own articles, linked at the end: Docker mount propagation, AppArmor traps, two-factor authentication and the measurement methodology.
 
@@ -3155,9 +3155,9 @@ The result: **it works in both directions**, and the setup has shrunk to three c
 | **Document files** | **cloud** | rarely read |
 | Cache (recently opened documents) | local, bounded | repeated access stays fast |
 
-In Paperless, of all things, the directory name is misleading: `archive/` is **not** the cold archive, it holds the PDF/A version served on every view. Despite its name, it is the hottest file in the system. Cold is `originals/`. Whoever wants maximum savings turns the archive copy off entirely with `PAPERLESS_ARCHIVE_FILE_GENERATION=never`; full-text search is unaffected because the text lives in the database.
+In Paperless, of all places, the directory name is misleading: `archive/` is **not** the cold archive but holds the PDF/A version served on every view. Despite its name, it is the hottest file in the system. Cold is `originals/`. If you want maximum savings, turn the archive copy off entirely with `PAPERLESS_ARCHIVE_FILE_GENERATION=never`; full-text search is unaffected because the text lives in the database.
 
-Paperless-ngx ships no cloud storage support of its own, by the way, neither S3 nor `django-storages`. A file-system mount via Rclone is currently the only way, and it works with any of the 70+ services Rclone supports. Proton Drive was my test choice for its end-to-end encryption; an S3-compatible store is the more robust alternative.
+Paperless-ngx ships no cloud storage support of its own, by the way: no S3, no `django-storages`. A file-system mount via Rclone is currently the only way, and it works with any of the 70+ services Rclone supports. Proton Drive was my test choice for its end-to-end encryption; an S3-compatible store is the more robust alternative.
 
 ## What the test showed
 
@@ -3172,7 +3172,7 @@ Tested with an isolated Paperless instance, 40 generated test PDFs (13.9 MB) and
 | Integrity check (checksum of every file) | passed, no discrepancy |
 | Mount outage | self-healing without a Paperless restart, verified |
 
-Local storage demand is thereby decoupled from the size of the archive: the collection may grow, the disk does not have to.
+That decouples local storage demand from the size of the archive: the collection may grow, the disk does not have to.
 
 ## How to set it up
 
@@ -3185,31 +3185,31 @@ sudo ./setup.sh      # once, prepares the host (the only root step)
 ./wizard.sh          # guided: pick provider, credentials, round-trip test
 ```
 
-The wizard asks for your cloud service (Proton, S3, Backblaze B2, WebDAV, SFTP or "Not in the list" for any other Rclone backend), verifies the connection with a real upload/download test and starts the storage container. Then:
+The wizard asks for your cloud service (Proton, S3, Backblaze B2, WebDAV, SFTP, or "Not in the list" for any other Rclone backend), verifies the connection with a real upload/download test and starts the storage container. Then:
 
 - **New installation:** `docker compose -f paperless.yml up -d`, done.
 - **Existing Paperless instance:** database and settings stay untouched; the guide [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) covers uploading the existing documents and the one required change to your compose file.
 
-I deliberately left out a web interface. Rclone's web GUI was in place initially, but SSH tunnels, CORS and ephemeral mounts made it worse than the command line it was meant to replace. Three questions in the terminal are faster.
+I deliberately skipped a web interface. Rclone's web GUI was in place at first, but SSH tunnels, CORS and ephemeral mounts made it worse than the command line it was meant to replace. Three questions in the terminal are faster.
 
 ## The four rules for stable operation
 
-The template implements all of them; whoever builds their own should know them:
+The template implements all of them; if you build your own, you should know them:
 
 1. **`propagation: rslave`** on the Paperless container's media bind mount, otherwise the container does not survive a mount restart. Details and the AppArmor trap behind it: [Rclone mounts inside Docker containers](/en/blog/rclone-mount-inside-docker-container).
 2. **Stop Paperless while the mount is missing.** Otherwise it consumes documents into a bare local directory, and the returning mount then shadows them invisibly. A watchdog script ships with the template.
 3. **An account that can sign in unattended.** For Proton that means storing the TOTP secret in the Rclone configuration. Why this does not devalue two-factor authentication, and where Proton stands on Linux overall: [Proton Drive on Linux](/en/blog/proton-drive-on-linux-status).
-4. **Disable scheduled full-read tasks** (`PAPERLESS_SANITY_TASK_CRON=disable`), since the integrity check otherwise downloads the complete collection from the cloud regularly.
+4. **Disable scheduled full-read tasks** (`PAPERLESS_SANITY_TASK_CRON=disable`), because the integrity check otherwise downloads the complete collection from the cloud regularly.
 
 ## Limits that remain
 
-A freshly consumed document lives in the local cache for a few seconds until the upload completes. If the machine dies exactly in that window, the file is missing. The cache limit is soft and can be exceeded considerably during access bursts. And Rclone's Proton backend is officially beta; under rapid API calls it showed throttling symptoms. Since long-term data from continuous operation is still missing, the template is marked experimental.
+A freshly consumed document lives in the local cache for a few seconds until the upload completes. If the machine dies exactly in that window, the file is missing. The cache limit is soft and can be exceeded considerably during access bursts. And Rclone's Proton backend is officially beta; under rapid API calls it showed throttling symptoms. Because long-term data from continuous operation is still missing, the template is marked experimental.
 
-How the measurements came about, which outages were simulated and how to test such a setup seriously at all: [Testing cloud mounts with generated PDFs](/en/blog/testing-cloud-mounts-with-generated-pdfs).
+How the measurements came about, which outages were simulated and how to test such a setup seriously at all is covered in the methodology article: [Testing cloud mounts with generated PDFs](/en/blog/testing-cloud-mounts-with-generated-pdfs).
 
 ## Conclusion
 
-Paperless-ngx on a small disk with a cloud store is feasible and usable day to day: just under two seconds on first open, cache speed after that, search and interface stay cloud-independent, and the setup heals itself after outages. Whoever merely wants to save a few gigabytes on a normally sized server should do the maths: in my case the entire store occupied 71 MB while the operating system took several gigabytes. The gain is not the space saved immediately, but that the collection may grow without the disk having to grow with it.
+Paperless-ngx on a small disk with a cloud store is feasible and usable day to day: just under two seconds on first open, cache speed after that, search and interface stay cloud-independent, and the setup heals itself after outages. If you merely want to save a few gigabytes on a normally sized server, do the maths: in my case the entire store occupied 71 MB while the operating system took several gigabytes. The gain is not the space saved immediately, but that the collection may grow without the disk having to grow with it.
 
 ## Sources
 
@@ -3228,13 +3228,13 @@ Paperless-ngx on a small disk with a cloud store is feasible and usable day to d
 URL: https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs
 Datum: 2026-07-25
 
-Before a document management system moves its store into a cloud service, you want to know: how slow does opening get? Does the setup survive an outage? And are the files still bit-for-bit intact afterwards? This article documents the measurement methodology behind my [Paperless cloud test](/en/blog/offloading-paperless-documents-to-cloud-storage), meant as a template for your own tests. These are deliberately single measurements on one concrete machine: they show orders of magnitude, not benchmarks.
+Before a document management system moves its store into a cloud service, you want to know: how slow does opening get? Does the setup survive an outage? And are the files still bit-for-bit intact afterwards? This article documents the measurement methodology behind my [Paperless cloud test](/en/blog/offloading-paperless-documents-to-cloud-storage), as a template for your own tests. These are deliberately single measurements on one concrete machine: they show orders of magnitude, not benchmarks.
 
 ## Generate test documents instead of uploading real ones
 
 Real private documents have no place in a test environment, especially since the cloud credentials sit on the server in such a setup. For transfer measurements only the size distribution matters anyway, not the content.
 
-The following script writes PDFs directly in PDF syntax, without a single library. Every page gets a block of random text as a content stream; the page count drives the file size. The **fixed random seed** makes the distribution reproducible, and the **real text layer** ensures the document management system skips OCR — the storage path is what should be measured, not Tesseract:
+The following script writes PDFs directly in PDF syntax, without a single library. Every page gets a block of random text as a content stream; the page count drives the file size. The **fixed random seed** makes the distribution reproducible, and the **real text layer** ensures the document management system skips OCR; the storage path is what should be measured, not Tesseract:
 
 ```python
 import os, random
@@ -3285,21 +3285,21 @@ for i in range(1, 41):
     open(os.path.join(outdir, "dummy-%03d.pdf" % i), "wb").write(build(i, pages))
 ```
 
-The result is 40 files of 45 to 596 KB, 13.9 MB in total: a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
+The result is 40 files of 45 to 596 KB, 13.9 MB in total, a realistic distribution for a private document archive. Paperless consumed them at a good 8 seconds per document, with `pdftotext exited 0` in the log confirming the working text layer.
 
-The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data`, otherwise the container restarts in an endless loop.
+The test instance itself ran fully separated from production: its own database, its own volumes, its own port. One detail that cost time: with `postgres:18` the volume must point to `/var/lib/postgresql`, no longer `/var/lib/postgresql/data`; otherwise the container restarts in an endless loop.
 
 ## Where cold and warm live in this system
 
-Before measuring, it must be clear **which cache layers** sit between the application and the cloud — otherwise you measure something other than what you claim. With an Rclone mount using `--vfs-cache-mode full` there are three:
+Before measuring, it must be clear **which cache layers** sit between the application and the cloud. Otherwise you measure something other than what you claim. With an Rclone mount using `--vfs-cache-mode full` there are three:
 
 | Layer | Location | What lives there |
 |---|---|---|
 | Cloud | at the provider | the only complete truth |
 | VFS cache | local disk (`--cache-dir`) | copies of recently read files, bounded by `--vfs-cache-max-size` |
-| Page cache | RAM | held transparently by the kernel, both for the file behind the FUSE mount and for the VFS copy itself |
+| Page cache | RAM | held transparently by the kernel, both for the file as read through the FUSE mount and for the VFS copy itself |
 
-**Cold** in this setup means: not in the VFS cache, the file comes over the network. **Warm** means: the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
+**Cold** in this setup means the file is not in the VFS cache and comes over the network. **Warm** means the VFS copy sits locally, and on repeated reads practically always in RAM as well. The simple two-point measurement therefore captures the network/local boundary:
 
 ```bash
 S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
@@ -3310,7 +3310,7 @@ In the test: 1765 ms cold versus 19 to 24 ms warm. That boundary is also the one
 
 ## Measurement hygiene: drop the page cache and prove the drop
 
-Whoever wants to separate the local layers (RAM versus disk) has to clear the page cache before measuring and **prove it**. The usual way is `sync` followed by `vmtouch -e`, with `fincore` from util-linux as the check:
+To separate the local layers (RAM versus disk), you have to clear the page cache before measuring and **prove it**. The usual way is `sync` followed by `vmtouch -e`, with `fincore` from util-linux as the check:
 
 ```bash
 sync
@@ -3329,19 +3329,19 @@ os.close(fd)
 
 Two peculiarities of this setup make the proof mandatory rather than optional:
 
-**Eviction has to hit every path to the same file:** the file as the mount presents it *and* the VFS copy under `--cache-dir` (there in the `vfs/` subdirectory, not `vfsMeta/`; the latter is just metadata).
+**Eviction has to hit every path to the same file**: the file as the mount presents it *and* the VFS copy under `--cache-dir` (there in the `vfs/` subdirectory, not `vfsMeta/`, which holds just metadata).
 
-**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED`, unchanged, 600K resident before and after. Rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. Whoever really wants to isolate the disk layer has to stop the Rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
+**And it can fail silently.** In my control run, `fincore` showed the VFS copy fully resident in RAM after `sync` and `POSIX_FADV_DONTNEED`: 600K resident before, 600K after. Rclone keeps the cache file open, and the kernel did not release the pages. Without the `fincore` proof I would have published a "from disk" number that in truth came from RAM. To really isolate the disk layer, stop the Rclone process for the measurement or use `echo 3 > /proc/sys/vm/drop_caches` as root.
 
-Is the effort worth it? At typical document sizes, barely: hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
+The perspective that comes with it: at typical document sizes the separation barely pays off. Hot reads through the mount sat at 19 to 35 ms for me, because the FUSE round trips dominate, not the storage medium. The layer that determines the user experience remains network versus local at a factor of 60 to 90. But you may only claim that once the measurement demonstrably keeps the layers apart.
 
-The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant, since the bottleneck is the network. Whoever wants to derive local read numbers from them, though, has to evict first.
+The same applies to the generated test files, by the way: right after generation they sit fully in the page cache. For the upload measurement that is irrelevant, since the bottleneck is the network. But anyone who wants to derive local read numbers from them has to evict first.
 
 Ongoing observation additionally includes a look at the VFS cache after every step (`du -sh` on the cache directory, `find … -type f | wc -l`) and the Rclone log via `--log-file` and `--log-level INFO`, which records the eviction behaviour. It also revealed that the configured cache limit is soft: 4 MB configured, 12.7 MiB peak until the once-a-minute cleanup pass kicked in.
 
 ## Verify at application level, not just in the file system
 
-That `ls` shows files does not mean the application can read them; user permissions on FUSE mounts are a topic of their own. Hence the access through the application itself; for Django applications like Paperless via a shell in the container:
+That `ls` shows files does not mean the application can read them — user permissions on FUSE mounts are a topic of their own. Hence the access through the application itself; for Django applications like Paperless via a shell in the container:
 
 ```bash
 docker compose exec webserver python3 -c "
@@ -3353,9 +3353,9 @@ print(os.path.exists(d.source_path), len(open(d.source_path,'rb').read()))
 "
 ```
 
-The hardest check ships with the application: Paperless' `document_sanity_checker` reads every file in full and compares its checksum against the database. "No issues detected" after a run across the cloud mount proves that every file comes back bit for bit. One quirk applies to the write path: the test file must be **unique** — Paperless rejects a copy of an existing document as a duplicate.
+The hardest check ships with the application: Paperless' `document_sanity_checker` reads every file in full and compares its checksum against the database. "No issues detected" after a run across the cloud mount proves that every file comes back bit for bit. One quirk applies to the write path: the test file must be **unique**, because Paperless rejects a copy of an existing document as a duplicate.
 
-## Simulate outages hard — and prove the recovery
+## Simulate outages hard and prove the recovery
 
 An outage test that merely stops the service cleanly tests nothing. Hard means: kill the Rclone process, unmount, and then compare what host and application each see:
 
@@ -3366,11 +3366,11 @@ docker compose exec webserver ls /usr/src/paperless/media/documents/originals
 
 Two things proved measurably important. First, the difference between perspectives: after a re-created mount the host immediately saw everything again, while the container without the right mount propagation stayed stuck on `Transport endpoint is not connected`; the details are in the [article on Rclone in Docker](/en/blog/rclone-mount-inside-docker-container). Second, the **restart counter as evidence**: `docker inspect -f 'restarts={{.RestartCount}}'` before and after the test proves whether a container really recovered without a restart or whether Docker quietly helped out.
 
-Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged — the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
+Equally important: check what still works **without** the cloud. With the mount removed, document list, full-text search and thumbnails ran unchanged; the recognised text sat in the database, close to 244,000 characters for one test document. Only opening the original file failed. Such negative probes belong in every test protocol because they show what damage an outage actually does.
 
 ## One measurement trap to close
 
-Whoever greps logs for error codes should choose the pattern precisely. My search for `422` returned 39 supposed hits. In fact, it had matched harmless size figures such as `422504 bytes` in cleanup messages. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error line spares the phantom hunt.
+If you grep logs for error codes, choose the pattern precisely. My search for `422` returned 39 supposed hits. In fact it had matched harmless size figures such as `422504 bytes` in cleanup messages. A word-boundary pattern (`grep -E '\b422\b'`) or searching for the complete error line spares the phantom hunt.
 
 ## Sources
 
@@ -3404,7 +3404,7 @@ For a mount from the container to reach the host, the bind needs `rshared` propa
           propagation: rshared
 ```
 
-What the documentation glosses over: `rshared` only works if the bind source on the host is **itself a mount point with shared propagation**. A plain directory does not qualify. Docker then reports no error, though, but silently downgrades the propagation. It only becomes visible in `/proc/self/mountinfo` inside the container:
+What the documentation glosses over: `rshared` only works if the bind source on the host is **itself a mount point with shared propagation**. A plain directory does not qualify. Docker then reports no error but silently downgrades the propagation. It only becomes visible in `/proc/self/mountinfo` inside the container:
 
 ```text
 1938 2077 8:2 /srv/storage/media /data rw,relatime master:1 - ext4 /dev/sda2 rw
@@ -3455,11 +3455,11 @@ rclone mount remote:path /mnt/inner/documents --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/documents /data/documents
 ```
 
-The bind is a regular mount(2) call and propagates like any other through the shared path to the host. I verified this all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
+The bind is a regular mount(2) call and propagates like any other through the shared path to the host. I verified that all the way into a second container that could read the files as uid 1000. `--allow-other` is mandatory as soon as any user other than the mounting one accesses the files; the Rclone container needs `user_allow_other` in `/etc/fuse.conf` for that (already the case in the official image).
 
 ## Trap 3: consumers cling to dead mounts
 
-The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way, on the other hand, sees only this:
+The third trap concerns the other side. If the Rclone process dies and the mount is re-created, the host sees it immediately. A container that binds the path the ordinary way sees only this:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -3484,7 +3484,7 @@ The three building blocks combine into a robust overall pattern that needs no wa
 
 1. The mount container checks its mounts in a loop. If one stops answering, it exits with an error code.
 2. `restart: unless-stopped` makes Docker restart the container.
-3. At startup the container first clears **orphaned mounts from its previous life**, since a dead bind on the target path would otherwise block republishing, and an unprivileged user cannot remove it from the host. Inside the container it works, and the umount propagates outwards:
+3. At startup the container first clears **orphaned mounts from its previous life**, because a dead bind on the target path would otherwise block republishing, and an unprivileged user cannot remove it from the host. Inside the container it works, and the umount propagates outwards:
 
 ```sh
 while grep -q " /data/documents " /proc/self/mountinfo; do
@@ -3496,7 +3496,7 @@ done
 
 In the test the complete chain (Rclone process killed, detection, container restart, cleanup, remount, republish) took 160 seconds, with the consumer container noticing nothing beyond a short gap.
 
-Whoever runs the mount **on the host** via systemd avoids traps 1 and 2 entirely and only needs `rslave` on the consumer side. The container route pays off when the host should stay free of Rclone installations or several mounts need to be managed centrally. Then there is no way around the three traps.
+If you run the mount **on the host** via systemd, you avoid traps 1 and 2 entirely and only need `rslave` on the consumer side. The container route pays off when the host should stay free of Rclone installations or several mounts are managed centrally. Then there is no way around the three traps.
 
 ## Sources
 
@@ -3515,32 +3515,32 @@ Whoever runs the mount **on the host** via systemd avoids traps 1 and 2 entirely
 URL: https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status
 Datum: 2026-07-25
 
-Proton Drive has had sync clients for Windows and macOS since 2023, Linux came away empty. Whoever wants to use Proton Drive on a Linux desktop, let alone on a server, navigates a patchwork of community tooling, an official SDK in preview and announcements. This article sorts out the state as of July 2026, and does so from hands-on experience: I have just tested the Rclone backend extensively [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage).
+Proton Drive has had sync clients for Windows and macOS since 2023; Linux came away empty. Using Proton Drive on a Linux desktop, let alone on a server, means navigating a patchwork of community tooling, an official SDK in preview and announcements. This article sorts out the state as of July 2026, and it does so from hands-on experience: I have just tested the Rclone backend extensively [as a document store for Paperless-ngx](/en/blog/offloading-paperless-documents-to-cloud-storage).
 
 ## The official client is announced, nothing more
 
 In June 2026 Proton confirmed for the first time that a Linux client is actually in development: "from the ground up" on the new, unified SDK, with the same architecture as the Windows and macOS applications. There is no date and no beta; the roadmap mentions the "highly anticipated Linux app" without a time frame.
 
-Important for perspective: this will be a **desktop sync client**. It solves the desk problem. On the server, though, where a service is supposed to read and write files straight from Proton Drive, a sync client is the wrong tool: it keeps a full local copy, which is exactly what you want to avoid when disk space is the constraint.
+Important for perspective: this will be a **desktop sync client**. It solves the desktop problem. On a server, though, where a service reads and writes files straight from Proton Drive, a sync client is the wrong tool: it keeps a full local copy, exactly what you want to avoid when disk space is the constraint.
 
-## The Rclone backend carries the load today
+## Today the Rclone backend carries the load
 
-The workhorse on Linux has been Rclone with its `protondrive` backend for years: copying, syncing and, as the only tool at all, a **FUSE mount** that lets applications see the cloud as a directory. Two limitations belong here:
+The workhorse on Linux has been Rclone with its `protondrive` backend for years: copying, syncing and, uniquely, a **FUSE mount** that lets applications see the cloud as a directory. Two limitations come with it:
 
 **It is beta on a reverse-engineered API.** Proton does not document its Drive API publicly; the backend is built on reverse engineering. In my test it worked reliably but throttled rapid call sequences with inconsistent directory listings.
 
-**Unattended sign-in needs a trick.** Whoever feeds two-factor authentication a one-time code during setup sees the session end after about 35 minutes:
+**Unattended sign-in needs a trick.** Feed two-factor authentication a one-time code during setup and the session ends after about 35 minutes:
 
 ```text
 422 POST https://drive-api.proton.me/auth/v4/2fa:
 Invalid credentials (Code=8002)
 ```
 
-Rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the Rclone configuration, obscured via `rclone obscure`. Rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: against leaked passwords the second factor keeps protecting unchanged, just not against a compromise of the server. That case it never defended anyway, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
+Rclone tries to re-authenticate with the long-consumed code. The fix is storing the permanent TOTP secret (the Base32 value from the 2FA setup) as `otp_secret_key` in the Rclone configuration, obscured via `rclone obscure`. Rclone then generates the codes itself and runs indefinitely. That is less delicate than it sounds: the second factor still protects against leaked passwords, just not against a compromise of the server itself. It never defended that case anyway, since the password sits there too. A **dedicated account** just for the service in question remains mandatory regardless.
 
 How such a mount behaves in Docker environments, including two undocumented traps, is covered in the [dedicated article on Rclone in containers](/en/blog/rclone-mount-inside-docker-container).
 
-## SDK and CLI point the way
+## The SDK and its CLI point the way
 
 In parallel, Proton is rebuilding its applications on an **official SDK** (JavaScript and C#, with bindings for Swift and Kotlin). The repository is public, and recently a **command-line tool** appeared there. Its authentication model shows where things are heading:
 
@@ -3552,11 +3552,11 @@ No password on the command line, no TOTP secret in a configuration file. Exactly
 
 ## The real gap: machine credentials
 
-The core of the problem sits one level below client or SDK: **Proton has no machine credentials.** No app passwords, no service accounts, no scoped tokens. Every piece of automation, from the backup script through the server mount to the CI job, has to work with the account's full credentials.
+The core of the problem sits one level below client or SDK: **Proton has no machine credentials.** No app passwords, no service accounts, no scoped tokens. Every piece of automation, from backup script to server mount to CI job, has to work with the account's full credentials.
 
-For comparison: with S3-compatible storage, access key pairs are the norm — revocable and restrictable to buckets or prefixes. Google and Microsoft have app passwords and service accounts. With Proton it is all or nothing: whoever gives a server access to one folder gives it the whole account.
+For comparison: with S3-compatible storage, access key pairs are the norm, revocable and restrictable to buckets or prefixes. Google and Microsoft have app passwords and service accounts. With Proton it is all or nothing: give a server access to one folder and you give it the whole account.
 
-Admittedly, this is not entirely simple for an end-to-end encrypted service, since unlike with S3, limited access here would also have to mean limited key material. The SDK sessions show, however, that Proton masters such constructs; a session already is a derived, revocable credential. An official "machine token for exactly this folder, read-only" would be the single biggest step forward for server use, well ahead of any client.
+Admittedly, this is harder for an end-to-end encrypted service than for S3, because limited access would also have to mean limited key material. The SDK sessions show, however, that Proton can build such constructs; a session already is a derived, revocable credential. An official "machine token for exactly this folder, read-only" would be the single biggest step forward for server use, well ahead of any client.
 
 ## Recommendation by use case
 
@@ -3567,7 +3567,7 @@ Admittedly, this is not entirely simple for an end-to-end encrypted service, sin
 | File-system mount for services | Rclone `mount` with a stored TOTP secret and a dedicated account: the only way, [proven in practice](/en/blog/offloading-paperless-documents-to-cloud-storage) |
 | Script automation with clean auth | Keep an eye on the SDK CLI; too early for production |
 
-Linux users carry Proton Drive today with community tooling that reaches surprisingly far. What would turn "works" into "built for this" is official mount support and machine credentials, and both are still outstanding.
+Linux users carry Proton Drive today with community tooling that reaches surprisingly far. The building blocks that would turn "works" into "built for this" are official mount support and machine credentials, and both are still outstanding.
 
 ## Sources
 
@@ -5253,7 +5253,7 @@ Hayes Jupe has written a detailed guide to removing these groups in his blog pos
 
 ## Recommended procedure
 
-In short, the practical sequence: first inventory the environment with the Health Checker (it shows missing CUs/SUs, open manual steps *and*, newly, the legacy groups). Then install the current CU and the July SU, restart the server, and check that all Exchange services have started cleanly. Then run the Health Checker again, remove the CVE-2026-42897 mitigation (after July 16, or with the ID M2.1.0 blocked beforehand), and finally clean up the deprecated security groups. SUs are cumulative: if you are on a supported CU, you do not need to install every intermediate SU, just the latest one directly.
+The practical sequence: first inventory the environment with the Health Checker (it shows missing CUs/SUs, open manual steps *and*, newly, the legacy groups). Then install the current CU and the July SU, restart the server, and check that all Exchange services have started cleanly. Then run the Health Checker again, remove the CVE-2026-42897 mitigation (after July 16, or with the ID M2.1.0 blocked beforehand), and finally clean up the deprecated security groups. SUs are cumulative: if you are on a supported CU, you do not need to install every intermediate SU, just the latest one directly.
 
 ## Sources
 
@@ -5451,7 +5451,7 @@ Backup and disaster recovery can only be planned once the technical foundation i
 
 ## What the HIN MGW Is, Technically Speaking
 
-The gateway processes incoming and outgoing emails according to a set of central rules and encrypts them using S/MIME, OpenPGP, or TLS, depending on the recipient; for recipients without their own key material, the web-based GINA method is used. For backup purposes, it is crucial that [Message content is not stored persistently on the gateway](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): The appliance processes emails as they come in without archiving them.
+The gateway processes incoming and outgoing emails according to a set of central rules and encrypts them using S/MIME, OpenPGP, or TLS, depending on the recipient; for recipients without their own key material, the web-based GINA method is used. For backup purposes, what matters is that [Message content is not stored persistently on the gateway](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): The appliance processes emails as they come in without archiving them.
 
   
   
@@ -5519,7 +5519,7 @@ A prerequisite for any retrieval method is that a backup password has been set u
 
 ## Backup Strategy in a Cluster Environment
 
-In a cluster environment, orderly backups and consistent version control are crucial.
+In a cluster environment, orderly backups and consistent version control are essential.
 
 -   **Every day**: Encrypted configuration backup [per SCP](https://docs.seppmail.com/de/09_ht_backup_copy-instead-of-sending-mail.html) Retrieve and store externally with versioning
     
@@ -5946,7 +5946,7 @@ This way, you can see whether the TLS handshake or the bind fails first. The tot
 
 ## Conclusion
 
-Reaching the license limit is not a technical issue, but rather the result of a lack of an offboarding process. The long-term solution is to regularly synchronize with Active Directory as the primary source. The order is crucial:
+Reaching the license limit is not a technical issue, but rather the result of a lack of an offboarding process. The long-term solution is to regularly synchronize with Active Directory as the primary source. The order matters:
 
 1.  Verify the LDAP connection from the command line (`ldapsearch`, `openssl s_client`, `Test-NetConnection`)
     
@@ -6014,13 +6014,13 @@ Datum: 2026-06-17
 
 In modern email architectures, it is often necessary to connect different email platforms: whether as part of migrations, hybrid environments, or to integrate MTAs that handle specialized tasks. This will be illustrated using the example of a mail loop between a gateway system such as TotemoMail (based on Apache James) and a cloud service such as Exchange Online.
 
-While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. To ensure these components work together seamlessly, incoming and outgoing messages must be routed between the systems in a controlled manner, without loops, delivery errors, or unexpected side effects.
+While Exchange Online primarily serves as the destination or source system for user mailboxes, TotemoMail acts as a mail gateway for encryption, signing, policy enforcement, or specialized routing logic. For these components to work together, incoming and outgoing messages must be routed between the systems in a controlled manner, without loops, delivery errors, or unexpected side effects.
 
 Once the mail loop is in place, one point matters most: Exchange Online must accept mail exclusively from TotemoMail, not directly from the internet. For how that gets locked down with a restrictive partner connector, and what happens when that step is missing, see [Ghost Sender or Ghost Admin?](/en/blog/ghost-sender-exchange-online-side-entrance)
 
-However, setting up such an email loop is anything but trivial. In addition to traditional SMTP routing issues, Apache James's internal mechanisms also play a crucial role.
+However, setting up such an email loop is anything but trivial. In addition to traditional SMTP routing issues, Apache James's internal mechanisms also play a major role.
 
-It is precisely this internal processing flow (hidden behind XML configurations) that is crucial for an email to function correctly within the system.
+It is precisely this internal processing flow (hidden behind XML configurations) that decides whether an email functions correctly within the system.
 
 This post covers:
 
@@ -6063,11 +6063,11 @@ During persistence, this object is split into two parts in the FileMailRepositor
 -   The Java object (MailImpl) is stored in the FileObjectStore using Java serialization
     
 
-In doing so, James deliberately separates the message content from the processing state. Let's now take a look at how this is implemented in the system.
+In doing so, James deliberately separates the message content from the processing state. The next sections look at how this is implemented in the system.
 
 ##### Structure of the /var/mail Repository (the various queues)
 
-Queuing takes place through various folders (known as repositories). This means that emails are temporarily stored to be processed later. In reality, of course, this happens in fractions of a second. However, if there is a configuration error, the emails may end up in the *spool*\-Wait in the queue until it's processed. Simply put:
+Queuing takes place through various folders (known as repositories). This means that emails are temporarily stored to be processed later. In reality, of course, this happens in fractions of a second. However, if there is a configuration error, the emails may pile up in the *spool* queue and wait to be processed. In other words:
 
 -   Repository = where is the email stored?
     

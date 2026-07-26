@@ -320,7 +320,7 @@ This way, you can see whether the TLS handshake or the bind fails first. The tot
 
 ## Conclusion
 
-Reaching the license limit is not a technical issue, but rather the result of a lack of an offboarding process. The long-term solution is to regularly synchronize with Active Directory as the primary source. The order is crucial:
+Reaching the license limit is not a technical issue, but rather the result of a lack of an offboarding process. The long-term solution is to regularly synchronize with Active Directory as the primary source. The order matters:
 
 1.  Verify the LDAP connection from the command line (`ldapsearch`, `openssl s_client`, `Test-NetConnection`)
     
