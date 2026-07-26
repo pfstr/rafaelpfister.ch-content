@@ -19,7 +19,7 @@ Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses
 
 Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Tiefen stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik.
 
-## Das Prinzip: heiss bleibt lokal, kalt geht in die Cloud
+## Das Prinzip: Hot Storage bleibt lokal, Cold Storage liegt in der Cloud
 
 | Bestandteil | Ort | Warum |
 |---|---|---|
@@ -28,7 +28,7 @@ Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist i
 | **Dokumentdateien** | **Cloud** | werden selten gelesen |
 | Cache (zuletzt geöffnete Dokumente) | lokal, begrenzt | wiederholte Zugriffe bleiben schnell |
 
-In Paperless führt ausgerechnet der Verzeichnisname in die Irre: `archive/` ist **nicht** das kalte Archiv, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird. Trotz des Namens ist sie die heisseste Datei im System. Kalt ist `originals/`. Wer maximal sparen will, schaltet die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
+In Paperless führt ausgerechnet der Verzeichnisname in die Irre: `archive/` ist **kein Cold Storage**, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird. Trotz des Namens gehört sie zum Hot Storage. Die selten benötigten Originale unter `originals/` sind der eigentliche Cold Storage. Wer maximal sparen will, schaltet die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
 
 Eine eigene Cloud-Anbindung bringt Paperless-ngx übrigens nicht mit, weder S3 noch `django-storages`. Ein Dateisystem-Mount über Rclone ist derzeit der einzige Weg, und der funktioniert mit jedem der über 70 von Rclone unterstützten Dienste. Proton Drive war meine Testwahl wegen der Ende-zu-Ende-Verschlüsselung; ein S3-kompatibler Speicher ist die robustere Alternative.
 

@@ -14,7 +14,7 @@ slug: "cloud-mount-testen-dummy-pdfs"
 url: "https://rafaelpfister.ch/blog/cloud-mount-testen-dummy-pdfs"
 ---
 
-Ein Cloud-Mount ist erst dann einsatzbereit, wenn nicht nur `ls` funktioniert. Entscheidend ist, wie lange ein kalter Zugriff dauert, was die Anwendung bei einem Ausfall noch leisten kann und ob jede Datei unverändert zurückkommt.
+Ein Cloud-Mount ist erst dann einsatzbereit, wenn nicht nur `ls` funktioniert. Entscheidend ist, wie lange ein Cold Read dauert, was die Anwendung bei einem Ausfall noch leisten kann und ob jede Datei unverändert zurückkommt.
 
 Die folgende Methode entstand beim [Test einer Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern). Sie verwendet künstliche Dokumente, misst auf Anwendungs- statt nur auf Dateisystemebene und prüft die Wiederherstellung nach einem hart unterbrochenen Mount. Die Werte stammen von einer konkreten Maschine und zeigen Grössenordnungen, keine allgemein gültigen Benchmarks.
 
@@ -77,7 +77,7 @@ Heraus kommen 40 Dateien mit 45 bis 596 KB, zusammen 13.9 MB. Das ist eine reali
 
 Die Testinstanz selbst lief vollständig getrennt von der Produktion: eigene Datenbank, eigene Volumes, eigener Port. Ein Detail, das Zeit kostete: Bei `postgres:18` muss das Volume auf `/var/lib/postgresql` zeigen, nicht mehr auf `/var/lib/postgresql/data`. Sonst startet der Container in einer Endlosschleife.
 
-## Wo in diesem System kalt und warm liegen
+## Cold Reads und Warm Reads sauber unterscheiden
 
 Bevor man misst, muss klar sein, **welche Cache-Ebenen** zwischen Anwendung und Cloud liegen. Sonst misst man etwas anderes als behauptet. Bei einem rclone-Mount mit `--vfs-cache-mode full` sind es drei:
 
@@ -87,14 +87,14 @@ Bevor man misst, muss klar sein, **welche Cache-Ebenen** zwischen Anwendung und 
 | VFS-Cache | lokale Platte (`--cache-dir`) | Kopien zuletzt gelesener Dateien, begrenzt über `--vfs-cache-max-size` |
 | Page-Cache | RAM | wird transparent vom Kernel gehalten, sowohl für die Datei, wie sie durch den FUSE-Mount gelesen wird, als auch für die VFS-Kopie selbst |
 
-**Kalt** heisst in diesem Setup: nicht im VFS-Cache, die Datei kommt übers Netz. **Warm** heisst: Die VFS-Kopie liegt lokal und beim wiederholten Lesen praktisch immer zusätzlich im RAM. Die einfache Zweipunktmessung erfasst also die Grenze Netz/lokal:
+Ein **Cold Read** bedeutet in diesem Setup: Die Datei liegt nicht im VFS-Cache und kommt übers Netz. Bei einem **Warm Read** liegt die VFS-Kopie lokal und beim wiederholten Lesen praktisch immer zusätzlich im RAM. Die einfache Zweipunktmessung erfasst also die Grenze Netz/lokal:
 
 ```bash
-S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "kalt: $(( $(date +%s%3N) - S )) ms"
+S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "cold: $(( $(date +%s%3N) - S )) ms"
 S=$(date +%s%3N); cat "$D/$F" > /dev/null; echo "warm: $(( $(date +%s%3N) - S )) ms"
 ```
 
-Im Test: 1765 ms kalt gegen 19 bis 24 ms warm. Diese Grenze ist für die Cloud-Frage auch die relevante. Genau genommen bedeutet „warm" hier allerdings „lokal, RAM-unterstützt" und nicht „von der Platte".
+Im Test: 1765 ms beim Cold Read gegenüber 19 bis 24 ms beim Warm Read. Diese Grenze ist für die Cloud-Frage auch die relevante. Genau genommen bedeutet „Warm Read“ hier allerdings „lokal, RAM-unterstützt“ und nicht „von der Platte“.
 
 ## Messhygiene: Page-Cache räumen und das Räumen beweisen
 
@@ -121,7 +121,7 @@ Zwei Eigenheiten dieses Setups machen den Nachweis zur Pflicht statt zur Kür:
 
 **Und sie kann stillschweigend scheitern.** In meinem Kontrollversuch zeigte `fincore` die VFS-Kopie nach `sync` und `POSIX_FADV_DONTNEED` unverändert vollständig im RAM (600K resident, vorher wie nachher): rclone hält die Cache-Datei offen, und der Kernel gab die Seiten nicht frei. Ohne den `fincore`-Beweis hätte ich eine „von der Platte"-Zahl veröffentlicht, die in Wahrheit aus dem RAM kam. Wer die Platten-Ebene wirklich isolieren will, muss den rclone-Prozess für die Messung beenden oder als root `echo 3 > /proc/sys/vm/drop_caches` verwenden.
 
-Die Einordnung dazu: Bei typischen Dokumentgrössen lohnt die Trennung kaum. Heisse Lesungen durch den Mount lagen bei mir bei 19 bis 35 ms, weil die FUSE-Umwege dominieren, nicht das Speichermedium. Die Ebene, die das Nutzererlebnis bestimmt, bleibt Netz gegen lokal mit Faktor 60 bis 90. Aber behaupten darf man das erst, wenn die Messung die Ebenen nachweislich auseinanderhält.
+Die Einordnung dazu: Bei typischen Dokumentgrössen lohnt die Trennung kaum. Warm Reads durch den Mount lagen bei mir bei 19 bis 35 ms, weil die FUSE-Umwege dominieren, nicht das Speichermedium. Die Ebene, die das Nutzererlebnis bestimmt, bleibt Netz gegen lokal mit Faktor 60 bis 90. Aber behaupten darf man das erst, wenn die Messung die Ebenen nachweislich auseinanderhält.
 
 Dasselbe gilt übrigens für die generierten Testdateien: Direkt nach dem Erzeugen liegen sie vollständig im Page-Cache. Für die Upload-Messung ist das egal, weil das Netz der Engpass ist. Wer aber lokale Lesewerte über sie erheben will, muss zuerst räumen.
 
