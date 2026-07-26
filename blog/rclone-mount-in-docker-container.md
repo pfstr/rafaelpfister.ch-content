@@ -1,21 +1,21 @@
 ---
-title: "rclone-Mounts in Docker zuverlässig betreiben"
-navTitle: "rclone in Docker"
+title: "Rclone-Mounts in Docker zuverlässig betreiben"
+navTitle: "Rclone in Docker"
 description: "Damit ein FUSE-Mount aus einem Container auch auf dem Host und in weiteren Containern funktioniert, müssen Mount-Propagation, AppArmor und die Wiederherstellung nach Ausfällen zusammenspielen."
 date: "2026-07-26"
-kategorie: "rclone"
+kategorie: "Rclone"
 timeToRead: "9 Min. Lesezeit"
 themen:
   - "rclone"
 related:
-  - "paperless-dokumente-proton-drive-auslagern"
+  - "paperless-dokumente-clouddienst-auslagern"
 slug: "rclone-mount-in-docker-container"
 url: "https://rafaelpfister.ch/blog/rclone-mount-in-docker-container"
 ---
 
-Ein rclone-Mount läuft in einem Docker-Container, soll aber auch auf dem Host und in weiteren Containern verfügbar sein. Dafür müssen Mount-Ereignisse mehrere Namensräume durchqueren. Eine einzelne Compose-Option genügt nicht.
+Ein Rclone-Mount läuft in einem Docker-Container, soll aber auch auf dem Host und in weiteren Containern verfügbar sein. Dafür müssen Mount-Ereignisse mehrere Namensräume durchqueren. Eine einzelne Compose-Option genügt nicht.
 
-In einem Praxistest mit Ubuntu 25.10, Kernel 6.17 und Docker 29.6 traten drei voneinander unabhängige Fehler auf: Docker stufte `rshared` unbemerkt herunter, AppArmor blockierte `fusermount3`, und ein konsumierender Container hielt nach einem Neustart am alten Mount fest. Der konkrete Anwendungsfall war eine [Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern); dieselben Mechanismen gelten auch für andere FUSE-Werkzeuge wie sshfs.
+In einem Praxistest mit Ubuntu 25.10, Kernel 6.17 und Docker 29.6 traten drei voneinander unabhängige Fehler auf: Docker stufte `rshared` unbemerkt herunter, AppArmor blockierte `fusermount3`, und ein konsumierender Container hielt nach einem Neustart am alten Mount fest. Der konkrete Anwendungsfall war eine [Cloud-Ablage für Paperless-ngx](/blog/paperless-dokumente-clouddienst-auslagern); dieselben Mechanismen gelten auch für andere FUSE-Werkzeuge wie sshfs.
 
 ## 1. Die Host-Quelle muss selbst `shared` sein
 
@@ -81,11 +81,11 @@ rclone mount remote:pfad /mnt/inner/dokumente --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/dokumente /data/dokumente
 ```
 
-Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über den Shared-Pfad zum Host. Das liess sich bis in einen zweiten Container verifizieren, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
+Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über den Shared-Pfad zum Host. Das liess sich bis in einen zweiten Container verifizieren, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im Rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
 
 ## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Stirbt der rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
+Die dritte Falle betrifft die Gegenseite. Stirbt der Rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -120,9 +120,9 @@ done
 
 4. Danach normal mounten und publizieren; Konsumenten mit `rslave` übernehmen den frischen Mount von selbst.
 
-Im Test dauerte die gesamte Kette 160 Sekunden: Der rclone-Prozess wurde beendet, der Fehler erkannt, der Container neu gestartet, der verwaiste Mount entfernt und der neue Mount wieder veröffentlicht. Der konsumierende Container lief währenddessen weiter und bemerkte nur eine kurze Unterbrechung.
+Im Test dauerte die gesamte Kette 160 Sekunden: Der Rclone-Prozess wurde beendet, der Fehler erkannt, der Container neu gestartet, der verwaiste Mount entfernt und der neue Mount wieder veröffentlicht. Der konsumierende Container lief währenddessen weiter und bemerkte nur eine kurze Unterbrechung.
 
-Wer rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beiden Probleme und benötigt nur `rslave` an den konsumierenden Containern. Der zusätzliche Container lohnt sich vor allem, wenn der Host frei von rclone-Installationen bleiben oder mehrere Mounts einheitlich verwalten soll. Dann müssen alle drei Ebenen bewusst konfiguriert werden.
+Wer Rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beiden Probleme und benötigt nur `rslave` an den konsumierenden Containern. Der zusätzliche Container lohnt sich vor allem, wenn der Host frei von Rclone-Installationen bleiben oder mehrere Mounts einheitlich verwalten soll. Dann müssen alle drei Ebenen bewusst konfiguriert werden.
 
 ## Quellen
 
@@ -130,6 +130,6 @@ Wer rclone direkt **auf dem Host** per systemd betreibt, umgeht die ersten beide
 
 2.  [Kernel-Dokumentation: Shared Subtrees](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt): die Mount-Propagation des Linux-Kernels, auf der Dockers Bind-Optionen aufsetzen.
 
-3.  [rclone mount](https://rclone.org/commands/rclone_mount/): VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
+3.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS-Cache-Modi, --allow-other und die Grenzen des FUSE-Mounts.
 
 4.  [AppArmor-Dokumentation (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): wie Profile an ausführbare Dateien gebunden werden; das fusermount3-Profil liegt unter /etc/apparmor.d/fusermount3.

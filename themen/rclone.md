@@ -1,9 +1,9 @@
 ---
-name: "rclone"
+name: "Rclone"
 slug: "rclone"
 url: "https://rafaelpfister.ch/blog/thema/rclone"
 ---
 
-# rclone
+# Rclone
 
-Cloud-Speicher mit rclone einbinden: FUSE-Mounts, VFS-Cache, Docker, unbeaufsichtigte Anmeldung und typische Fehlerbilder.
+Cloud-Speicher mit Rclone einbinden: FUSE-Mounts, VFS-Cache, Docker, unbeaufsichtigte Anmeldung und typische Fehlerbilder.

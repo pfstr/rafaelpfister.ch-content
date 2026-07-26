@@ -1,7 +1,7 @@
 ---
 title: "Proton Drive unter Linux: Stand der Dinge im Juli 2026"
 navTitle: "Proton Drive & Linux"
-description: "Der offizielle Linux-Client ist angekündigt, aber noch nicht verfügbar. Auf Servern lässt sich Proton Drive derzeit mit rclone einbinden; das neue SDK zeigt die technische Richtung. Was weiterhin fehlt, ist ein auf einzelne Ordner oder Aufgaben beschränkter Maschinenzugang."
+description: "Der offizielle Linux-Client ist angekündigt, aber noch nicht verfügbar. Auf Servern lässt sich Proton Drive derzeit mit Rclone einbinden; das neue SDK zeigt die technische Richtung. Was weiterhin fehlt, ist ein auf einzelne Ordner oder Aufgaben beschränkter Maschinenzugang."
 date: "2026-07-26"
 kategorie: "Proton Drive"
 timeToRead: "8 Min. Lesezeit"
@@ -9,7 +9,7 @@ themen:
   - "proton-drive"
   - "rclone"
 related:
-  - "paperless-dokumente-proton-drive-auslagern"
+  - "paperless-dokumente-clouddienst-auslagern"
   - "rclone-mount-in-docker-container"
 slug: "proton-drive-linux-status"
 url: "https://rafaelpfister.ch/blog/proton-drive-linux-status"
@@ -17,7 +17,7 @@ url: "https://rafaelpfister.ch/blog/proton-drive-linux-status"
 
 Für Windows und macOS bietet Proton Drive seit 2023 eigene Sync-Clients. Unter Linux gibt es bislang nur die Weboberfläche, Community-Werkzeuge und ein offizielles SDK im Vorschaustadium. Auf einem Server ist die Lage nochmals schwieriger, weil dort weder ein Desktop-Sync noch eine interaktive Anmeldung gut passt.
 
-Dieser Überblick beschreibt den Stand im Juli 2026. Grundlage ist neben den veröffentlichten Roadmaps ein Praxistest des rclone-Backends [als Dokumentablage für Paperless-ngx](/blog/paperless-dokumente-proton-drive-auslagern).
+Dieser Überblick beschreibt den Stand im Juli 2026. Grundlage ist neben den veröffentlichten Roadmaps ein Praxistest des Rclone-Backends [als Dokumentablage für Paperless-ngx](/blog/paperless-dokumente-clouddienst-auslagern).
 
 ## Der Linux-Client ist angekündigt, aber noch ohne Termin
 
@@ -25,23 +25,23 @@ Im Juni 2026 bestätigte Proton erstmals ausdrücklich, dass ein Linux-Client en
 
 Wichtig für die Einordnung: Das wird ein **Desktop-Sync-Client**. Für den Schreibtisch löst er das Problem. Für Server-Anwendungen ist ein Sync-Client hingegen das falsche Werkzeug, denn ein Dienst soll Dateien direkt aus Proton Drive lesen und dorthin schreiben. Ein Sync-Client hält eine lokale Vollkopie, genau das, was man bei knappem Speicher vermeiden will.
 
-## Heute übernimmt rclone die praktische Arbeit
+## Heute übernimmt Rclone die praktische Arbeit
 
-Unter Linux ist rclone mit seinem `protondrive`-Backend derzeit das vielseitigste Werkzeug. Es kann Dateien kopieren und synchronisieren und als einzige verfügbare Lösung Proton Drive per **FUSE-Mount** wie ein lokales Verzeichnis bereitstellen. Zwei Einschränkungen sind dabei wichtig:
+Unter Linux ist Rclone mit seinem `protondrive`-Backend derzeit das vielseitigste Werkzeug. Es kann Dateien kopieren und synchronisieren und als einzige verfügbare Lösung Proton Drive per **FUSE-Mount** wie ein lokales Verzeichnis bereitstellen. Zwei Einschränkungen sind dabei wichtig:
 
 **Es ist Beta auf einer nachgebauten API.** Proton dokumentiert seine Drive-API nicht öffentlich; das Backend basiert auf Reverse Engineering. Im Test funktionierte es zuverlässig, drosselte aber bei schnellen Aufruffolgen mit inkonsistenten Verzeichnislisten.
 
-**Für den unbeaufsichtigten Betrieb fragt rclone nach dem TOTP-Schlüssel.** Der Konfigurationsassistent bezeichnet das Feld als `otp_secret_key`. Gemeint ist der dauerhafte Schlüssel aus der 2FA-Einrichtung, nicht der sechsstellige Code, den eine Authenticator-App gerade anzeigt. rclone speichert diesen Wert verschleiert und erzeugt daraus bei jeder Anmeldung selbst einen gültigen TOTP-Code.
+**Für den unbeaufsichtigten Betrieb fragt Rclone nach dem TOTP-Schlüssel.** Der Konfigurationsassistent bezeichnet das Feld als `otp_secret_key`. Gemeint ist der dauerhafte Schlüssel aus der 2FA-Einrichtung, nicht der sechsstellige Code, den eine Authenticator-App gerade anzeigt. Rclone speichert diesen Wert verschleiert und erzeugt daraus bei jeder Anmeldung selbst einen gültigen TOTP-Code.
 
-Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung abschliessen. Die nächste erneute Authentifizierung scheitert jedoch mit Fehler 8002, weil rclone denselben Code nicht noch einmal verwenden kann.
+Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung abschliessen. Die nächste erneute Authentifizierung scheitert jedoch mit Fehler 8002, weil Rclone denselben Code nicht noch einmal verwenden kann.
 
 Damit bleibt das Konto gegen ein isoliert gestohlenes Passwort geschützt. Ein kompromittierter Server gibt jedoch Passwort und TOTP-Schlüssel preis. Für automatisierte Zugriffe empfiehlt sich deshalb ein **dediziertes Proton-Konto**.
 
-Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu rclone in Containern](/blog/rclone-mount-in-docker-container).
+Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
 
 ## Das offizielle SDK zeigt, wohin die Entwicklung geht
 
-Parallel stellt Proton seine Anwendungen auf ein **offizielles SDK** für JavaScript und C# mit Bindings für Swift und Kotlin um. Das öffentliche Repository enthält auch ein Kommandozeilenwerkzeug. Dessen Anmeldemodell ist sauberer als das des rclone-Backends:
+Parallel stellt Proton seine Anwendungen auf ein **offizielles SDK** für JavaScript und C# mit Bindings für Swift und Kotlin um. Das öffentliche Repository enthält auch ein Kommandozeilenwerkzeug. Dessen Anmeldemodell ist sauberer als das des Rclone-Backends:
 
 - `auth login` öffnet den Browser; die Anmeldung läuft regulär **inklusive Zwei-Faktor-Authentifizierung**
 - die Session landet im **Schlüsselspeicher des Betriebssystems** (Keychain, Credential Manager, libsecret), das SDK erneuert sie selbst
@@ -61,12 +61,12 @@ Fairerweise ist das bei einem Ende-zu-Ende-verschlüsselten Dienst schwieriger a
 
 | Anwendungsfall | Stand Juli 2026 |
 |---|---|
-| Desktop-Sync unter Linux | Warten auf den angekündigten Client; bis dahin rclone-Sync oder Web-Oberfläche |
-| Server-Backup (Dateien hochladen) | rclone `copy`/`sync`; funktioniert, Beta-Status einkalkulieren |
-| Dateisystem-Mount für Dienste | rclone `mount` mit hinterlegtem TOTP-Schlüssel und dediziertem Konto; der einzige [praxiserprobte Weg](/blog/paperless-dokumente-proton-drive-auslagern) |
+| Desktop-Sync unter Linux | Warten auf den angekündigten Client; bis dahin Rclone-Sync oder Web-Oberfläche |
+| Server-Backup (Dateien hochladen) | Rclone mit `copy` oder `sync`; funktioniert, Beta-Status einkalkulieren |
+| Dateisystem-Mount für Dienste | Rclone mit `mount`, hinterlegtem TOTP-Schlüssel und dediziertem Konto; der einzige [praxiserprobte Weg](/blog/paperless-dokumente-clouddienst-auslagern) |
 | Skript-Automatisierung mit sauberer Anmeldung | SDK-CLI im Auge behalten; für Produktion noch zu früh |
 
-Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst rclone verwenden. Auf Servern bleibt rclone die einzige praktikable Mount-Lösung. Aus einem funktionierenden Behelf wird jedoch erst dann eine belastbare Plattform, wenn Proton begrenzte Maschinenzugänge und einen offiziell unterstützten Mount anbietet.
+Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst Rclone verwenden. Auf Servern bleibt Rclone die einzige praktikable Mount-Lösung. Aus einem funktionierenden Behelf wird jedoch erst dann eine belastbare Plattform, wenn Proton begrenzte Maschinenzugänge und einen offiziell unterstützten Mount anbietet.
 
 ## Quellen
 
@@ -78,4 +78,4 @@ Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst
 
 4.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview): Protons eigene Einordnung: noch nicht produktionsreif für Drittanwendungen.
 
-5.  [rclone: Proton Drive](https://rclone.org/protondrive/): das Backend samt Beta-Hinweis und der Option `otp_secret_key` für die unbeaufsichtigte Anmeldung.
+5.  [Rclone: Proton Drive](https://rclone.org/protondrive/): das Backend samt Beta-Hinweis und der Option `otp_secret_key` für die unbeaufsichtigte Anmeldung.
