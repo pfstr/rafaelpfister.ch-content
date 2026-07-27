@@ -177,5 +177,5 @@ Not sure whether your Exchange Online tenant also has an open side entrance? **a
 
 If you'd like to have your mail flow reviewed or properly secured, feel free to schedule a no-obligation consultation:
 
-**[Book a consultation with adeptio](https://outlook.office.com/book/Erstgesprchadeptio%40adeptio.ch/s/Akxr6wxKAEGw3d5sEmi-AQ2?ismsaljsauthenabled)**  
+**[Book a consultation with adeptio](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
 [adeptio.ch](https://adeptio.ch/)

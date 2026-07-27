@@ -5,7 +5,7 @@ path: "/"
 metaTitle: "Rafael Pfister - Founder & Messaging Expert"
 ---
 
-> [Komponente] Desktop | https://outlook.office.com/book/Erstgesprchadeptio@adeptio.ch/s/Akxr6wxKAEGw3d5sEmi-AQ2?ismsaljsauthenabled | Beratungsgespräch | https://outlook.office.com/book/Erstgesprchadeptio@adeptio.ch/s/Akxr6wxKAEGw3d5sEmi-AQ2?ismsaljsauthenabled | Beratungsgespräch buchen | Beratungsgespräch buchen
+> [Komponente] Desktop | https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink | Beratungsgespräch | https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink | Beratungsgespräch buchen | Beratungsgespräch buchen
 
 > [Komponente] Artikel | /blog
 

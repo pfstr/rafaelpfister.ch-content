@@ -52,7 +52,7 @@ Das folgende Beispiel enthält neben den Standard-Queues auch optionale Verzeich
 > Falls Sie Unterstützung bei der Anbindung von HIN-Mailgateway oder bei der Migration auf die neue HIN-Stargate-Lösung benötigen, finden Sie bei [adeptio](https://adeptio.ch/) die entsprechenden Experten.  
 >   
 > **adeptio** ist offizieller Partner der [Health Info Net AG](https://www.hin.ch/de/index.cfm) und verfügt als solcher auch über direkte Ansprechpartner beim Hersteller.  
-> [➜ Heute noch einen Termin buchen.](https://outlook.office.com/book/Erstgesprchadeptio@adeptio.ch/s/Akxr6wxKAEGw3d5sEmi-AQ2?ismsaljsauthenabled)
+> [➜ Heute noch einen Termin buchen.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
 
 ```text
 Root-Folder:
