@@ -7,8 +7,7 @@ All content from [rafaelpfister.ch](https://rafaelpfister.ch) in open, machine-r
 | Folder | Content |
 | --- | --- |
 | `blog/` | Blog articles (German originals) as Markdown with YAML frontmatter (title, description, date, category, topics, sources) |
-| `en/blog/` | English translations; the frontmatter field `translationOf` points to the German original |
-| `fr/blog/`, `it/blog/`, `es/blog/`, `sv/blog/`, `no/blog/` | DeepL translations, published progressively as quota becomes available |
+| `en/blog/` | English translations of all articles; the frontmatter field `translationOf` points to the German original |
 | `themen/`, `en/themen/` | The blog's topic taxonomy (name + description), German and English |
 | `pages/` | Static pages (home, work, blog …) as extracted text incl. meta title/description |
 | `components/` | Texts and defaults of the website's UI components |
@@ -16,7 +15,7 @@ All content from [rafaelpfister.ch](https://rafaelpfister.ch) in open, machine-r
 
 ## Article index
 
-The complete, always-current article list with one-line summaries lives in [`llms.txt`](llms.txt). German originals are published immediately. Translations are then added progressively in the order English, French, Italian, Spanish, Swedish, and Norwegian.
+The complete, always-current article list with one-line summaries lives in [`llms.txt`](llms.txt). Every article is available in German (`blog/`) and English (`en/blog/`).
 
 ## Blog article frontmatter
 
@@ -36,7 +35,7 @@ The `## Quellen` section (`## Sources` in English articles) at the end of each a
 
 ## Synchronisation
 
-This repository is the source of truth for the website. New German articles are deployed immediately; a quota-aware DeepL queue publishes each translated version independently as soon as it is ready. Corrections and suggestions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Content is exported from the website's CMS and checked in here; new articles appear on [rafaelpfister.ch](https://rafaelpfister.ch) first and in this repository afterwards. Corrections and suggestions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Author
 
