@@ -10,7 +10,7 @@ themen:
 related:
   - "midea-portasplit-home-assistant-integration"
   - "midea-portasplit-home-assistant-setup-and-hardening"
-draft: true
+draft: false
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
 slug: "midea-v2-cloud-api-clarified-portasplit-home-assistant"
 url: "https://rafaelpfister.ch/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant"
