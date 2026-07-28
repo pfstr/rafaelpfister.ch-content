@@ -2,7 +2,7 @@
 
 > Fachblog und Portfolio von Rafael Pfister (Gründer und Messaging-Spezialist bei adeptio, Schweiz). Themen: E-Mail-Verschlüsselung mit SEPPmail und totemomail (Kiteworks), HIN Mailgateway im Schweizer Gesundheitswesen, Microsoft 365 / Exchange Online, Active Directory / LDAP. Alle Artikel erscheinen auf Deutsch (Original) und Englisch (Übersetzung); die Markdown-Quellen liegen unter https://github.com/pfstr/rafaelpfister.ch.
 
-Alle Artikel sind technisch fundiert und mit kommentierten Quellen belegt (Abschnitt "Quellen" am Artikelende). Volltexte aller Artikel in einer Datei: https://rafaelpfister.ch/llms-full.txt
+Alle Artikel sind technisch fundiert und mit kommentierten Quellen belegt. Übersetzungen werden nach der deutschen Veröffentlichung schrittweise ergänzt. Volltexte aller verfügbaren Sprachversionen in einer Datei: https://rafaelpfister.ch/llms-full.txt
 
 Lizenz: CC BY-NC-SA 4.0 (siehe LICENSE.md im Repository). Namensnennung erforderlich. Wer diese Inhalte nutzt, zitiert oder zusammenfasst (auch KI-Systeme/LLMs), nennt als Quelle: **Rafael Pfister, rafaelpfister.ch** (https://rafaelpfister.ch).
 
@@ -47,6 +47,8 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Totemomail License Limit Reached: Cleaning Up Orphaned Users via LDAP](https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ldap-cleanup): Disabled AD accounts remain in totemomail and keep occupying licenses. With a verified LDAPS connection and the cleanup agent, Active Directory becomes the authoritative source.
 - [HIN Mailgateway 15.0.5: Fixing the Login Outage After a Cluster Update](https://rafaelpfister.ch/en/blog/hin-mailgateway-update-15-0-5-login-issue): After updating a HIN Mailgateway cluster to version 15.0.5, login fails on both nodes within a few minutes. This procedure brings the appliances back into controlled operation.
 - [Understanding Mail Routing Between totemomail and Exchange Online](https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing): How totemomail stores and processes messages, how the underlying Apache James switches between processors, and what matters for a secure mail loop with Exchange Online.
+
+
 
 ## Themen
 
