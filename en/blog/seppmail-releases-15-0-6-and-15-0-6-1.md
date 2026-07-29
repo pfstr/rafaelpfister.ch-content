@@ -52,7 +52,7 @@ Four bugs were fixed in the webmail (GINA): automatic deletion of unregistered a
 
 The REST API receives fixes to several endpoints: /system/ifaliasconfig (handling of null values), /system/applySysconfig (access configuration), /crypto/domain/{domainName} (domain certificate uploads), and GET and POST /ssl/csr. The timeout for REST calls was increased from 300 to 900 seconds, making long-running requests such as larger configuration changes more reliable.
 
-In cluster operation, an existing CARP IP previously blocked the IP settings of a newly joined member; this is fixed. Password rehashing is also suppressed when cluster members run different firmware versions; more on that below. Before daily snapshot creation, the backup now additionally checks for a corrupt database before the snapshot is written.
+In cluster operation, an existing CARP IP previously blocked the IP settings of a newly joined member; this is fixed. Before daily snapshot creation, the backup now additionally checks for a corrupt database before the snapshot is written.
 
 ## Connection to the Login Outage Under 15.0.5
 

@@ -51,7 +51,7 @@ Im Webmail (GINA) wurden vier Fehler behoben: Die automatische Löschung nicht r
 
 Die REST-API erhält Korrekturen an mehreren Endpunkten: /system/ifaliasconfig (Umgang mit null-Werten), /system/applySysconfig (Zugriffskonfiguration), /crypto/domain/{domainName} (Upload von Domänenzertifikaten) sowie GET und POST /ssl/csr. Der Timeout für REST-Aufrufe wurde von 300 auf 900 Sekunden erhöht, was langlaufende Anfragen wie grössere Konfigurationsänderungen zuverlässiger macht.
 
-Im Cluster-Betrieb blockierte bisher eine bestehende CARP-IP die IP-Einstellungen eines neu aufgenommenen Mitglieds; das ist behoben. Ausserdem wird das Passwort-Rehashing unterdrückt, wenn Cluster-Mitglieder unterschiedliche Firmware-Versionen fahren; dazu gleich mehr. Vor der täglichen Snapshot-Erstellung prüft das Backup neu zusätzlich auf eine korrupte Datenbank, bevor der Snapshot geschrieben wird.
+Im Cluster-Betrieb blockierte bisher eine bestehende CARP-IP die IP-Einstellungen eines neu aufgenommenen Mitglieds; das ist behoben. Vor der täglichen Snapshot-Erstellung prüft das Backup neu zusätzlich auf eine korrupte Datenbank, bevor der Snapshot geschrieben wird.
 
 ## Bezug zum Login-Ausfall unter 15.0.5
 
