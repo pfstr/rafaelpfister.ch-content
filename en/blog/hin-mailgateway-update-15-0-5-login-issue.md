@@ -17,7 +17,7 @@ url: "https://rafaelpfister.ch/en/blog/hin-mailgateway-update-15-0-5-login-issue
 
 When updating an HIN Mailgateway from 14.1.4.2 to 15.0.5, an error in cluster replication can prevent login on both appliances. Individual systems are not affected. The manufacturer is aware of the issue and plans a fix for a future version.
 
-**Update from July 29, 2026:** The announced fix has arrived. Patch release 15.0.6 suppresses password rehashing when cluster members run different firmware versions — exactly the constellation that triggered the outage described here. The assessment is in the article on [SEPPmail 15.0.6 and 15.0.6.1](/en/blog/seppmail-releases-15-0-6-and-15-0-6-1); the recovery procedure below remains relevant for clusters still updating to 15.0.5.
+**Update from July 29, 2026:** The announced fix has arrived. Patch release 15.0.6 suppresses password rehashing when cluster members run different firmware versions. That is exactly the constellation that triggered the outage described here. The assessment is in the article on [SEPPmail 15.0.6 and 15.0.6.1](/en/blog/seppmail-releases-15-0-6-and-15-0-6-1); the recovery procedure below remains relevant for clusters still updating to 15.0.5.
 
 ## Symptoms
 

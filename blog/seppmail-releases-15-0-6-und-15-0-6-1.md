@@ -17,7 +17,7 @@ SEPPmail hat am 21. Juli 2026 das Patch-Release 15.0.6 und einen Tag später den
 
 ## Hotfix 15.0.6.1 vom 22. Juli 2026
 
-Der Hotfix behebt zwei Punkte in der RuleEngine. Erstens verhinderte ein undefinierter Wert im Message-Objekt, dass Logeinträge ins Mail-Log geschrieben wurden — betroffene Nachrichten liefen damit ohne Protokollierung durch das System. Zweitens erkennt die RuleEngine nun die Richtung archivierter E-Mails, damit deren Zustellung korrekt behandelt wird.
+Der Hotfix behebt zwei Punkte in der RuleEngine. Erstens verhinderte ein undefinierter Wert im Message-Objekt, dass Logeinträge ins Mail-Log geschrieben wurden. Betroffene Nachrichten liefen damit ohne Protokollierung durch das System. Zweitens erkennt die RuleEngine nun die Richtung archivierter E-Mails, damit deren Zustellung korrekt behandelt wird.
 
 Wer 15.0.6 bereits installiert hat oder das Update plant, sollte direkt auf 15.0.6.1 gehen.
 
@@ -43,7 +43,7 @@ Daneben verwendet die Appliance jetzt konsequent gültige Zeitzonen (Standard: E
 
 ## Mailverarbeitung und Webmail
 
-In der RuleEngine wurden vier Punkte korrigiert. Die Betreffbehandlung funktioniert nun auch bei unbekanntem Encoding. Nachrichten werden gebounct, wenn eine Signatur explizit angefordert, aber nicht erstellt werden kann — bisher konnten solche Nachrichten unsigniert weiterlaufen. Archivkopien laufen neu durch die Zustellfunktion und erhalten damit ARC-Header. Und bei PGP-Nachrichten ohne MDC-Daten werden MDC-Fehler ignoriert, statt die Verarbeitung zu stören.
+In der RuleEngine wurden vier Punkte korrigiert. Die Betreffbehandlung funktioniert nun auch bei unbekanntem Encoding. Nachrichten werden gebounct, wenn eine Signatur explizit angefordert, aber nicht erstellt werden kann; bisher konnten solche Nachrichten unsigniert weiterlaufen. Archivkopien laufen neu durch die Zustellfunktion und erhalten damit ARC-Header. Und bei PGP-Nachrichten ohne MDC-Daten werden MDC-Fehler ignoriert, statt die Verarbeitung zu stören.
 
 Im Webmail (GINA) wurden vier Fehler behoben: Die automatische Löschung nicht registrierter Konten nach Ablauf der Karenzfrist funktioniert wieder, die Funktion hashdecrypt lieferte in bestimmten Fällen ein falsch-positives Entschlüsselungsergebnis, das Hinzufügen eines Anhangs leerte die Felder An und CC, und die Zeitausgabe in den SMS-Logs war fehlerhaft.
 
@@ -51,13 +51,13 @@ Im Webmail (GINA) wurden vier Fehler behoben: Die automatische Löschung nicht r
 
 Die REST-API erhält Korrekturen an mehreren Endpunkten: /system/ifaliasconfig (Umgang mit null-Werten), /system/applySysconfig (Zugriffskonfiguration), /crypto/domain/{domainName} (Upload von Domänenzertifikaten) sowie GET und POST /ssl/csr. Der Timeout für REST-Aufrufe wurde von 300 auf 900 Sekunden erhöht, was langlaufende Anfragen wie grössere Konfigurationsänderungen zuverlässiger macht.
 
-Im Cluster-Betrieb blockierte bisher eine bestehende CARP-IP die IP-Einstellungen eines neu aufgenommenen Mitglieds; das ist behoben. Ausserdem wird das Passwort-Rehashing unterdrückt, wenn Cluster-Mitglieder unterschiedliche Firmware-Versionen fahren — dazu gleich mehr. Vor der täglichen Snapshot-Erstellung prüft das Backup neu zusätzlich auf eine korrupte Datenbank, bevor der Snapshot geschrieben wird.
+Im Cluster-Betrieb blockierte bisher eine bestehende CARP-IP die IP-Einstellungen eines neu aufgenommenen Mitglieds; das ist behoben. Ausserdem wird das Passwort-Rehashing unterdrückt, wenn Cluster-Mitglieder unterschiedliche Firmware-Versionen fahren; dazu gleich mehr. Vor der täglichen Snapshot-Erstellung prüft das Backup neu zusätzlich auf eine korrupte Datenbank, bevor der Snapshot geschrieben wird.
 
 ## Bezug zum Login-Ausfall unter 15.0.5
 
-Beim Update eines Clusters auf 15.0.5 konnte die Anmeldung auf beiden Knoten ausfallen — das Fehlerbild und die Wiederherstellung sind im Artikel zum [Login-Ausfall nach dem 15.0.5-Update](/blog/hin-update-issue-version-15.0.5) beschrieben. Der Hersteller kannte das Problem damals bereits und stellte eine Korrektur für eine folgende Version in Aussicht.
+Beim Update eines Clusters auf 15.0.5 konnte die Anmeldung auf beiden Knoten ausfallen. Das Fehlerbild und die Wiederherstellung sind im Artikel zum [Login-Ausfall nach dem 15.0.5-Update](/blog/hin-update-issue-version-15.0.5) beschrieben. Der Hersteller kannte das Problem damals bereits und stellte eine Korrektur für eine folgende Version in Aussicht.
 
-In den Release Notes zu 15.0.6 findet sich nun genau ein Eintrag, der zu diesem Fehlerbild passt: «prevent password rehashing when cluster members use different firmware versions». Während eines Cluster-Updates laufen die Knoten zwangsläufig vorübergehend mit unterschiedlichen Firmware-Ständen. Berechnet ein Knoten in dieser Phase Passwort-Hashes neu und repliziert sie in den Cluster, passen die Hashes auf dem anderen Stand nicht mehr — die Anmeldung scheitert auf beiden Knoten, genau wie beim damals beobachteten Ausfall. Die Release Notes nennen den Login-Ausfall nicht ausdrücklich, der Eintrag deckt aber exakt die Konstellation ab, die ihn ausgelöst hatte. Die Ursache ist damit in 15.0.6 adressiert; die in 15.0.5 nötige Notfallprozedur mit Cluster-Auflösung sollte sich bei künftigen Updates erübrigen.
+In den Release Notes zu 15.0.6 findet sich nun genau ein Eintrag, der zu diesem Fehlerbild passt: «prevent password rehashing when cluster members use different firmware versions». Während eines Cluster-Updates laufen die Knoten zwangsläufig vorübergehend mit unterschiedlichen Firmware-Ständen. Berechnet ein Knoten in dieser Phase Passwort-Hashes neu und repliziert sie in den Cluster, passen die Hashes auf dem anderen Stand nicht mehr, und die Anmeldung scheitert auf beiden Knoten, genau wie beim damals beobachteten Ausfall. Die Release Notes nennen den Login-Ausfall nicht ausdrücklich, der Eintrag deckt aber exakt die Konstellation ab, die ihn ausgelöst hatte. Die Ursache ist damit in 15.0.6 adressiert; die in 15.0.5 nötige Notfallprozedur mit Cluster-Auflösung sollte sich bei künftigen Updates erübrigen.
 
 ## Kleinere Korrekturen
 
@@ -65,10 +65,10 @@ Im Mail-Log wurde die Datumssortierung korrigiert, die bisher alphabetisch statt
 
 ## Einordnung
 
-15.0.6 ist ein Patch-Release mit ungewöhnlich viel Substanz: drei Schwachstellen-Fixes, zwei aktualisierte Kryptobibliotheken und mit dem separaten MFA-Feld sowie der LDAP-Authentifizierung zwei Funktionen, die den Administrationsalltag direkt verbessern. Die beiden RuleEngine-Fehler aus dem Hotfix sprechen dafür, 15.0.6 zu überspringen und direkt 15.0.6.1 einzusetzen. Für Cluster gilt wie immer: Update-Reihenfolge gemäss Herstellerdokumentation einhalten und vorher Snapshots beider Knoten erstellen — die Erfahrungen mit dem Login-Ausfall unter 15.0.5 haben gezeigt, weshalb das kein Formalismus ist.
+Die beiden RuleEngine-Fehler aus dem Hotfix sprechen dafür, 15.0.6 zu überspringen und direkt 15.0.6.1 einzusetzen. Erstellen Sie bei Clustern vor dem Update Snapshots beider Knoten und halten Sie die Update-Reihenfolge der Herstellerdokumentation ein. Der Login-Ausfall unter 15.0.5 hat gezeigt, weshalb diese Vorbereitung kein Formalismus ist.
 
 ## Quellen
 
-1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html) — offizielle Release Notes zu 15.0.6 und 15.0.6.1 mit allen Einzelpunkten.
+1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 und 15.0.6.1 mit allen Einzelpunkten.
 
-2.  [HIN Mailgateway 15.0.5: Login-Ausfall nach dem Cluster-Update beheben](/blog/hin-update-issue-version-15.0.5) — weshalb Snapshots und die korrekte Update-Reihenfolge im Cluster entscheidend sind.
+2.  [HIN Mailgateway 15.0.5: Login-Ausfall nach dem Cluster-Update beheben](/blog/hin-update-issue-version-15.0.5): Weshalb Snapshots und die korrekte Update-Reihenfolge im Cluster entscheidend sind.
