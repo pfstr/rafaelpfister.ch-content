@@ -19,7 +19,7 @@ Die weiteren Änderungen des Releases sind im Artikel zu [SEPPmail 15.0.6 und 15
 
 ## Was die Funktion leistet
 
-Laut den Extended Release Notes (Ticket 58159) fügt 15.0.6 unter **User > Advanced Settings** einen neuen Abschnitt **External Authentication** hinzu. Damit authentifiziert sich die Admin-GUI gegen einen externen LDAP-Server, und externe Gruppen (etwa AD-Sicherheitsgruppen) werden auf lokale Gruppen der Appliance gemappt.
+Laut den Extended Release Notes fügt 15.0.6 unter **User > Advanced Settings** einen neuen Abschnitt **External Authentication** hinzu. Damit authentifiziert sich die Admin-GUI gegen einen externen LDAP-Server, und externe Gruppen (etwa AD-Sicherheitsgruppen) werden auf lokale Gruppen der Appliance gemappt.
 
 Extern authentifizierte Benutzer erscheinen lokal auf der Appliance und verhalten sich wie lokale Benutzer, mit einem Unterschied: Ihr Passwort lässt sich auf der Appliance nicht ändern, denn es liegt im externen LDAP-Server. Die Passwort-Hoheit wandert also vollständig ins Verzeichnis.
 
@@ -109,7 +109,7 @@ Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der
 
 ## Quellen
 
-1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Eintrag zu Ticket 58159 mit Funktionsbeschreibung, Konfigurationsort und dem Verhalten extern authentifizierter Benutzer.
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Eintrag zur Admin-GUI-Authentifizierung mit Funktionsbeschreibung, Konfigurationsort und dem Verhalten extern authentifizierter Benutzer.
 
 2.  [SEPPmail-Dokumentation – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Referenz der Felder des External-Authentication-Abschnitts (Connection, User Attributes, Group Attributes, Mapping, Login Test).
 

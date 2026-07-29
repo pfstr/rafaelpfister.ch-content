@@ -3,7 +3,7 @@ title: "Midea PortaSplit in Home Assistant: perché token e chiave sono fondamen
 navTitle: "PortaSplit e token"
 description: "Il controllo locale richiede due valori dal cloud Midea. Ecco come ottenere token e chiave, perché la loro perdita è problematica e come i proprietari possono proteggere la configurazione esistente."
 date: "2026-07-24"
-kategorie: "Smart Home e IoT"
+kategorie: "Home Assistant e IoT"
 timeToRead: "9 min di lettura"
 themen:
   - "smart-home-iot"

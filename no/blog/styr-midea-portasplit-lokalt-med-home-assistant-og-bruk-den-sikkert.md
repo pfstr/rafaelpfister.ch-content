@@ -3,7 +3,7 @@ title: "Styr Midea PortaSplit lokalt med Home Assistant og bruk den sikkert"
 navTitle: "Sett opp PortaSplit"
 description: "Fra riktig fellesskapsintegrasjon til IoT-VLAN: Slik setter du opp PortaSplit, sikrer token og nøkkel og begrenser sky- og nettverkstilgang."
 date: "2026-07-24"
-kategorie: "Smarthus og IoT"
+kategorie: "Home Assistant og IoT"
 timeToRead: "14 min lesetid"
 themen:
   - "smart-home-iot"

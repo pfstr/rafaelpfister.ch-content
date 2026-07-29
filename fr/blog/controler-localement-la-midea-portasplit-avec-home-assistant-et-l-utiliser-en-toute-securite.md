@@ -3,7 +3,7 @@ title: "Contrôler localement la Midea PortaSplit avec Home Assistant et l’uti
 navTitle: "Configurer PortaSplit"
 description: "De l’intégration communautaire appropriée au VLAN IoT : comment configurer la PortaSplit, protéger le token et la clé, et limiter les accès au cloud et au réseau."
 date: "2026-07-24"
-kategorie: "Maison intelligente et IoT"
+kategorie: "Home Assistant et IoT"
 timeToRead: "14 min de lecture"
 themen:
   - "smart-home-iot"

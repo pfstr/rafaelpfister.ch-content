@@ -3,7 +3,7 @@ title: "Midea V2, V3 et API cloud : ce que cela signifie réellement pour la Por
 navTitle: "API cloud Midea V2"
 description: "Le protocole local des appareils, les points de terminaison privés des applications et l’API partenaire officielle utilisent des noms de version similaires. L’analyse des sources distingue ces niveaux et replace l’avertissement d’arrêt dans son contexte."
 date: "2026-07-25"
-kategorie: "Maison connectée & IoT"
+kategorie: "Home Assistant et IoT"
 timeToRead: "11 min de lecture"
 themen:
   - "smart-home-iot"

@@ -3,7 +3,7 @@ title: "Midea V2, V3 e API cloud: cosa significano davvero per PortaSplit"
 navTitle: "API cloud Midea V2"
 description: "Il protocollo locale del dispositivo, gli endpoint privati dell'app e l'API ufficiale per partner utilizzano nomi di versione simili. L'analisi delle fonti distingue questi livelli e contestualizza l'avviso di dismissione."
 date: "2026-07-25"
-kategorie: "Smart Home e IoT"
+kategorie: "Home Assistant e IoT"
 timeToRead: "11 min di lettura"
 themen:
   - "smart-home-iot"

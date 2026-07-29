@@ -20,7 +20,7 @@ The other changes in the release are summarized in the article on [SEPPmail 15.0
 
 ## What the Feature Does
 
-According to the Extended Release Notes (ticket 58159), 15.0.6 adds a new **External Authentication** section under **User > Advanced Settings**. With it, the admin GUI authenticates against an external LDAP server, and external groups (such as AD security groups) are mapped to local groups on the appliance.
+According to the Extended Release Notes, 15.0.6 adds a new **External Authentication** section under **User > Advanced Settings**. With it, the admin GUI authenticates against an external LDAP server, and external groups (such as AD security groups) are mapped to local groups on the appliance.
 
 Externally authenticated users appear locally on the appliance and behave like local users, with one difference: their password cannot be changed on the appliance, because it lives in the external LDAP server. Password authority moves entirely into the directory.
 
@@ -110,7 +110,7 @@ LDAP authentication for the admin GUI closes a gap that existed on the appliance
 
 ## Sources
 
-1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Entry for ticket 58159 with the feature description, configuration location, and the behavior of externally authenticated users.
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Entry on the admin GUI authentication with the feature description, configuration location, and the behavior of externally authenticated users.
 
 2.  [SEPPmail-Dokumentation – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Field reference for the External Authentication section (Connection, User Attributes, Group Attributes, Mapping, Login Test).
 

@@ -3,7 +3,7 @@ title: "Midea V2, V3 y API en la nube: qué significan realmente para la PortaSp
 navTitle: "API en la nube Midea V2"
 description: "El protocolo local del dispositivo, los endpoints privados de la aplicación y la API oficial para socios utilizan nombres de versión similares. El análisis de las fuentes separa estos niveles y contextualiza la advertencia de desactivación."
 date: "2026-07-25"
-kategorie: "Hogar inteligente e IoT"
+kategorie: "Home Assistant e IoT"
 timeToRead: "11 min de lectura"
 themen:
   - "smart-home-iot"

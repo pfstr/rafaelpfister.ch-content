@@ -3,7 +3,7 @@ title: "Midea PortaSplit i Home Assistant: Hvorfor token og nøkkel er avgjøren
 navTitle: "PortaSplit og token"
 description: "Lokal styring krever to verdier fra Midea-skyen. Slik hentes token og nøkkel, hvorfor det er problematisk å miste dem, og hvordan eiere kan sikre det eksisterende oppsettet."
 date: "2026-07-24"
-kategorie: "Smart hjem og IoT"
+kategorie: "Home Assistant og IoT"
 timeToRead: "9 min lesetid"
 themen:
   - "smart-home-iot"

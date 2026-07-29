@@ -3,7 +3,7 @@ title: "Midea V2, V3 and the Cloud API: What They Actually Mean for the PortaSpl
 navTitle: "Midea V2 Cloud API"
 description: "The local device protocol, private app endpoints and the official partner API use similar version names. This source analysis separates these layers and puts the shutdown warning into context."
 date: "2026-07-25"
-kategorie: "Smart Home & IoT"
+kategorie: "Home Assistant and IoT"
 timeToRead: "11 min read"
 themen:
   - "smart-home-iot"

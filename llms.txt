@@ -166,7 +166,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Proton Drive](https://rafaelpfister.ch/blog/thema/proton-drive)
 - [Rclone](https://rafaelpfister.ch/blog/thema/rclone)
 - [SEPPmail](https://rafaelpfister.ch/blog/thema/seppmail)
-- [Smart Home & IoT](https://rafaelpfister.ch/blog/thema/smart-home-iot)
+- [Home Assistant und IoT](https://rafaelpfister.ch/blog/thema/smart-home-iot)
 - [Totemomail](https://rafaelpfister.ch/blog/thema/totemomail)
 
 ## Optional
