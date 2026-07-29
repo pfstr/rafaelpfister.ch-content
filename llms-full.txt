@@ -122,7 +122,7 @@ Die Konfiguration findet sich in der Admin-GUI unter **User > Advanced Settings*
 
 **4. Mapping Settings:** Der entscheidende Teil. Unter *Remote Group* wird die Gruppe aus dem LDAP-Server ausgewählt, unter *Local Group* eine oder mehrere lokale Gruppen, auf die sie abgebildet wird. Für administrativen Vollzugriff ist das die Gruppe admin; deren Mitglieder sind dem Standardbenutzer admin gleichgestellt. Wer differenzieren will, mappt stattdessen auf eingeschränkte Gruppen wie readonly admin oder auf funktionsbezogene Gruppen der Appliance.
 
-Vor dem Speichern lohnt sich der eingebaute **Login Test**: Mit Benutzername und Passwort eines Testkontos lässt sich prüfen, ob Verbindung, Suche und Authentifizierung funktionieren, bevor die Konfiguration aktiv wird. Anschliessend sichert *Save* die Einstellungen.
+Vor dem Speichern lohnt sich der eingebaute **Login Test**: Mit Benutzername und Passwort eines Testkontos lässt sich prüfen, ob Verbindung, Suche und Authentifizierung funktionieren, bevor die Konfiguration aktiv wird.
 
 ## Beispielkonfigurationen
 
@@ -166,8 +166,6 @@ Hinweise zu Active Directory: Als Server eignet sich jeder erreichbare Domain Co
 
 Hinweise zu OpenLDAP: Benutzer liegen in typischen Setups als inetOrgPerson unter ou=people. Für die Gruppen ist groupOfNames die zuverlässige Wahl, da die Mitgliedschaft dort über das member-Attribut mit vollem DN abgebildet wird. posixGroup-Gruppen führen ihre Mitglieder dagegen nur als memberUid (Benutzername statt DN); ob die Appliance das auflöst, ist nicht dokumentiert und sollte vor dem Umstellen mit dem Login Test geprüft werden. Läuft der Server nur mit STARTTLS auf Port 389, gehört der entsprechende Port ins Server-Feld; unverschlüsselt sollte die Verbindung in keinem Fall laufen.
 
-In beiden Fällen gilt: Nach dem Ausfüllen zuerst der Login Test mit einem Konto aus der gemappten Gruppe, dann Save.
-
 ## Betriebshinweise
 
 Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in die Appliance wird:
@@ -175,8 +173,6 @@ Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in di
 - **Lokalen Notfallzugang behalten.** Die Passwörter externer Benutzer liegen im LDAP-Server. Ist das Verzeichnis nicht erreichbar (Netzwerkproblem, AD-Wartung, oder das Gateway soll gerade ein Problem mit ebendiesem Netzwerk beheben), braucht es weiterhin ein lokales Administratorkonto mit sicher hinterlegtem Passwort. Der Standardbenutzer admin sollte also nicht abgeschafft, sondern als dokumentierter Notfallzugang gepflegt werden.
 - **MFA bleibt relevant.** 15.0.6 hat auch die MFA-Anmeldung überarbeitet: Der zweite Faktor wird nicht mehr ans Passwort angehängt, sondern in einem eigenen Feld abgefragt. Externe Authentifizierung ersetzt den zweiten Faktor nicht.
 - **Offboarding über das Verzeichnis.** Der eigentliche Gewinn der Anbindung: Verlässt ein Administrator das Unternehmen, genügt das Deaktivieren des AD-Kontos beziehungsweise das Entfernen aus der gemappten Gruppe. Das bisher nötige Nachpflegen lokaler Konten auf jeder Appliance entfällt. Die lokal sichtbaren, extern authentifizierten Benutzerobjekte sollten dennoch periodisch mit dem Verzeichnis abgeglichen werden.
-
-Die Handbuchseite zu den Advanced Settings dokumentiert derzeit weder das erwartete Login-Format (E-Mail-Adresse, UPN oder sAMAccountName) noch ein explizites Fallback-Verhalten für lokale Konten. Beides lässt sich mit dem Login Test und einem zweiten Browserfenster gefahrlos verifizieren: die neue Konfiguration testen, während die bestehende Admin-Session offen bleibt.
 
 ## Fazit
 
@@ -3532,7 +3528,7 @@ The configuration lives in the admin GUI under **User > Advanced Settings** in t
 
 **4. Mapping Settings:** The decisive part. Under *Remote Group* you select the group from the LDAP server, under *Local Group* one or more local groups it is mapped to. For full administrative access, that is the admin group; its members are equal to the default admin user. If you want to differentiate, map to restricted groups such as readonly admin or to function-specific groups on the appliance instead.
 
-Before saving, the built-in **Login Test** is worth using: with the username and password of a test account, you can verify that connection, search, and authentication work before the configuration goes live. *Save* then stores the settings.
+Before saving, the built-in **Login Test** is worth using: with the username and password of a test account, you can verify that connection, search, and authentication work before the configuration goes live.
 
 ## Example Configurations
 
@@ -3576,8 +3572,6 @@ Notes on Active Directory: Any reachable domain controller works as the server; 
 
 Notes on OpenLDAP: In typical setups, users live as inetOrgPerson under ou=people. For groups, groupOfNames is the reliable choice, since membership is stored in the member attribute with the full DN. posixGroup entries list their members only as memberUid (username instead of DN); whether the appliance resolves that is not documented and should be verified with the Login Test before switching over. If the server only offers STARTTLS on port 389, that port belongs in the server field; the connection should never run unencrypted.
 
-In both cases: after filling in the fields, run the Login Test with an account from the mapped group first, then Save.
-
 ## Operational Notes
 
 Three points deserve attention before LDAP login becomes the only way into the appliance:
@@ -3585,8 +3579,6 @@ Three points deserve attention before LDAP login becomes the only way into the a
 - **Keep a local emergency account.** The passwords of external users live in the LDAP server. If the directory is unreachable (a network problem, AD maintenance, or the gateway is supposed to help fix an issue with that very network), you still need a local administrator account with a securely stored password. The default admin user should therefore not be retired but maintained as a documented emergency access.
 - **MFA remains relevant.** 15.0.6 also reworked the MFA login: the second factor is no longer appended to the password but requested in its own field. External authentication does not replace a second factor.
 - **Offboarding through the directory.** The real gain of the integration: when an administrator leaves the company, disabling the AD account or removing it from the mapped group is enough. Maintaining local accounts on every appliance is no longer necessary. The locally visible, externally authenticated user objects should still be reconciled with the directory periodically.
-
-The manual page for the Advanced Settings currently documents neither the expected login format (email address, UPN, or sAMAccountName) nor an explicit fallback behavior for local accounts. Both can be verified safely with the Login Test and a second browser window: test the new configuration while the existing admin session stays open.
 
 ## Conclusion
 
