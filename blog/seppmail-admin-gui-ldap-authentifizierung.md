@@ -4,7 +4,7 @@ navTitle: "Admin-LDAP-Login"
 description: "Seit Firmware 15.0.6 können sich Administratoren der SEPPmail-Appliance gegen einen externen LDAP-Server wie Active Directory authentifizieren, inklusive Gruppen-Mapping auf die lokale admin-Gruppe. Die Einrichtung unter User > Advanced Settings, Schritt für Schritt."
 date: "2026-07-29"
 kategorie: "SEPPmail"
-timeToRead: "6 Min. Lesezeit"
+timeToRead: "7 Min. Lesezeit"
 themen:
   - "seppmail"
 slug: "seppmail-admin-gui-ldap-authentifizierung"
@@ -48,6 +48,50 @@ Die Konfiguration findet sich in der Admin-GUI unter **User > Advanced Settings*
 **4. Mapping Settings:** Der entscheidende Teil. Unter *Remote Group* wird die Gruppe aus dem LDAP-Server ausgewählt, unter *Local Group* eine oder mehrere lokale Gruppen, auf die sie abgebildet wird. Für administrativen Vollzugriff ist das die Gruppe admin; deren Mitglieder sind dem Standardbenutzer admin gleichgestellt. Wer differenzieren will, mappt stattdessen auf eingeschränkte Gruppen wie readonly admin oder auf funktionsbezogene Gruppen der Appliance.
 
 Vor dem Speichern lohnt sich der eingebaute **Login Test**: Mit Benutzername und Passwort eines Testkontos lässt sich prüfen, ob Verbindung, Suche und Authentifizierung funktionieren, bevor die Konfiguration aktiv wird. Anschliessend sichert *Save* die Einstellungen.
+
+## Beispielkonfigurationen
+
+Die folgenden Werte sind an die eigene Umgebung anzupassen (Beispieldomäne example.com). Die Feldnamen entsprechen dem External-Authentication-Abschnitt der Appliance.
+
+### Active Directory
+
+| Feld | Wert |
+|---|---|
+| Server | dc01.example.com |
+| Port | 636 |
+| TLS required | aktiviert |
+| Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
+| Bind Password | Passwort des Servicekontos |
+| User: LDAP Object Class | person |
+| User: Search Base | OU=IT,DC=example,DC=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | group |
+| Group: Search Base | OU=Groups,DC=example,DC=com |
+| Mapping: Remote Group | SEPPmail-Admins |
+| Mapping: Local Group | admin |
+
+Hinweise zu Active Directory: Als Server eignet sich jeder erreichbare Domain Controller; in Umgebungen mit mehreren Standorten empfiehlt sich ein DC am gleichen Standort oder ein Alias, der auf mehrere DCs zeigt. Port 636 ist LDAPS; dafür muss das Zertifikat des DC von der Appliance validierbar sein. Die Search Base sollte so eng gefasst sein, dass sie die Administratorkonten enthält, aber nicht das ganze Verzeichnis. Das Attribut mail muss an den AD-Konten gepflegt sein.
+
+### OpenLDAP
+
+| Feld | Wert |
+|---|---|
+| Server | ldap01.example.com |
+| Port | 636 |
+| TLS required | aktiviert |
+| Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
+| Bind Password | Passwort des Servicekontos |
+| User: LDAP Object Class | inetOrgPerson |
+| User: Search Base | ou=people,dc=example,dc=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | groupOfNames |
+| Group: Search Base | ou=groups,dc=example,dc=com |
+| Mapping: Remote Group | seppmail-admins |
+| Mapping: Local Group | admin |
+
+Hinweise zu OpenLDAP: Benutzer liegen in typischen Setups als inetOrgPerson unter ou=people. Für die Gruppen ist groupOfNames die zuverlässige Wahl, da die Mitgliedschaft dort über das member-Attribut mit vollem DN abgebildet wird. posixGroup-Gruppen führen ihre Mitglieder dagegen nur als memberUid (Benutzername statt DN); ob die Appliance das auflöst, ist nicht dokumentiert und sollte vor dem Umstellen mit dem Login Test geprüft werden. Läuft der Server nur mit STARTTLS auf Port 389, gehört der entsprechende Port ins Server-Feld; unverschlüsselt sollte die Verbindung in keinem Fall laufen.
+
+In beiden Fällen gilt: Nach dem Ausfüllen zuerst der Login Test mit einem Konto aus der gemappten Gruppe, dann Save.
 
 ## Betriebshinweise
 
