@@ -3828,93 +3828,93 @@ Paperless-ngx on a small disk with cloud storage is feasible and suitable for da
 
 ----
 
-# Midea V2, V3, and the Cloud API: What Actually Applies to the PortaSplit
+# Midea V2, V3 and the Cloud API: What They Actually Mean for the PortaSplit
 
 URL: https://rafaelpfister.ch/en/blog/midea-v2-cloud-api-clarified-portasplit-home-assistant
 Datum: 2026-07-25
 
-In the context of the Midea PortaSplit, "V2" refers to several independent things. There's a local V2 device protocol, version numbers in private app endpoints, and an official Cloud-to-Cloud API V2 for partners. Conflating these layers inevitably leads to wrong conclusions about local control.
+In the context of the Midea PortaSplit, ‘V2’ refers to several independent things. There is a local V2 device protocol, version numbers in private app endpoints, and an official cloud-to-cloud API V2 for partners. Anyone who equates these layers will inevitably draw incorrect conclusions about local control.
 
-The `Midea AC LAN` project warns in its [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) that existing token interfaces will be closed and replaced by a cloud-based V2 API. A review of the discussions, the current code, and the official Midea documentation paints a more nuanced picture:
+The project `Midea AC LAN` warns in its [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) that the previous token interfaces would be closed and replaced by a cloud-based V2 API. A review of the discussions, current code and official Midea documentation paints a more nuanced picture:
 
-> An official Midea Cloud-to-Cloud API V2 does exist. But it is not the same as the token interface used by Home Assistant, nor is it the same as the local V2 or V3 device protocol. No officially announced shutdown of local PortaSplit control with a concrete date is documented. In June 2026 it was also demonstrated that the supposedly shut-down SmartHome token API still worked — the community library's previous request was simply incomplete.
+> An official Midea cloud-to-cloud API V2 exists. However, it is neither identical to the token interface used by Home Assistant nor to the local V2 or V3 device protocol. No officially announced shutdown of local PortaSplit control with a specific date is documented. In June 2026, it was also demonstrated that the supposedly shut-down SmartHome token API was still working – the community library’s previous request was simply incomplete.
 
-This article reflects the state as of July 25, 2026.
+This article is current as of 25 July 2026.
 
-## Why the Earlier Assessment Needs to Be Corrected
+## Why the previous assessment needs to be corrected
 
-In the [first article on the cloud token question](/en/blog/midea-portasplit-home-assistant-integration) I reproduced the warning from the `Midea AC LAN` project, in substance, as an announced shutdown of the cloud interfaces. That matched the wording of the project README, but it was phrased too strongly as a statement of fact.
+In the [first article on the cloud token issue](/blog/midea-portasplit-home-assistant), I paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly worded as a statement of fact.
 
-The warning remains relevant as a risk notice. It is not, however, a published Midea roadmap. Above all, new technical material has since become available that calls a substantial part of the previous interpretation into question.
+The warning remains relevant as a risk indication. However, it is not a published Midea roadmap. Above all, new technical material is now available that calls a substantial part of the previous interpretation into question.
 
-## How Local PortaSplit Control Works
+## How local PortaSplit control works
 
-The Home Assistant integration `Midea Smart AC` explicitly describes its architecture as local control. For newer V3 devices, the Midea cloud is used only during setup, to obtain a device-specific token and key. After that, the integration stores both values locally and needs no further cloud connection for actual control. The project documents this under [“Note On Cloud Usage”](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+The Home Assistant integration `Midea Smart AC` explicitly describes its architecture as local control. On newer V3 devices, the Midea cloud is used only during setup to obtain a device-specific token and key. The integration then stores both values locally and requires no further cloud connection for actual control. The project documents this under [“Note On Cloud Usage”](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
 
-Simplified, the flow looks like this:
+In simplified terms, the process looks like this:
 
 ```text
-Setup:
+Einrichtung:
 
 Home Assistant
     │
-    ├── sign-in to a Midea cloud
-    ├── retrieval of device ID, token, and key
-    └── local storage of the credentials
+    ├── Anmeldung an einer Midea-Cloud
+    ├── Abruf von Geräte-ID, Token und Key
+    └── lokale Speicherung der Zugangsdaten
 
-Normal operation:
+Normalbetrieb:
 
 Home Assistant
     │
-    └── local TCP connection to the PortaSplit
+    └── lokale TCP-Verbindung zur PortaSplit
 ```
 
-For manually configured V3 devices, `Midea Smart AC` requires device ID, IP address, port, token, and key. The documented default port is `6444/TCP`; token and key are given as 128 and 64 hexadecimal characters, respectively. These details are in the [manual configuration documentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
+For manually configured V3 devices, `Midea Smart AC` requires the device ID, IP address, port, token and key. The documented default port is `6444/TCP`; the token and key are specified as 128 and 64 hexadecimal characters respectively. These details are given in the [manual configuration documentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
 
-A PortaSplit was, for example, identified in the `Midea AC LAN` issue tracker as device type `0xAC`, model `00000Q1D`, and protocol version 3. The same user was then able to add it to Home Assistant via NetHome Plus. The specific course of events is documented in [issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
+For example, a PortaSplit was detected in the issue tracker of `Midea AC LAN` as device type `0xAC`, model `00000Q1D` and protocol version 3. The same user was then able to add it to Home Assistant through NetHome Plus. The specific history is documented in [Issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
 
-The key distinction is:
+The distinction is crucial:
 
 - The cloud service is used to obtain the local credentials.
-- Subsequent control happens directly on the LAN.
-- A disruption of the token service therefore mainly prevents new setups.
-- It does not automatically end an already established local connection.
+- Subsequent control takes place directly over the LAN.
+- A disruption to the token service therefore primarily prevents new setups.
+- It does not automatically terminate an already configured local connection.
 
-The latter also matches the explicit description given by [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+The latter also corresponds to the explicit description by [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
 
-## Where the Shutdown Warning Comes From
+## Where the shutdown warning originates
 
-The warning text visible today was added to the documentation on May 19, 2025, with [pull request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
+The warning text visible today was added to the documentation on 19 May 2025 through [Pull Request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
 
-The reasoning, summarized, is:
+In summary, the reasoning is as follows:
 
-- The local tokens have no expiry date.
-- Various Home Assistant projects used reconstructed or extracted app encryption.
-- This creates a security problem.
-- Midea would therefore progressively shut down the existing token services.
-- In the long run, local V1 control would be superseded by a cloud-based V2 API.
+- Local tokens had no expiry date.
+- Various Home Assistant projects used emulated or extracted app encryption.
+- This created a security issue.
+- Midea would therefore gradually close the existing token services.
+- In the long term, local V1 control would be displaced by a cloud-based V2 API.
 
-In July 2025, the documentation was adjusted again via [pull request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). Instead of the SmartHome cloud, NetHome Plus was now named as the temporarily used token source. The actual shutdown warning remained in place.
+In July 2025, the documentation was revised again through [Pull Request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). Instead of the SmartHome cloud, NetHome Plus was now named as the temporarily used token source. The actual shutdown warning remained in place.
 
-The underlying discussion, however, is worded more cautiously than the README.
+However, the underlying discussion is phrased more cautiously than the README.
 
-The [comment from the Midea AC LAN maintainer](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) says, in substance, that NetHome Plus might only be a temporary solution and that, as he understands it, Midea has a new, fully cloud-based V2 service.
+In the [comment by the Midea AC LAN maintainer](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457), it is stated in essence that NetHome Plus may only be a temporary solution and that, as he understands it, Midea has a new, fully cloud-based V2 service.
 
-The maintainer of `midea-msmart` replied that he had suspected the existence of a new V2 API as well, but, lacking his own Midea devices, could only investigate it to a limited extent. That is stated in the [direct reply comment](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
+The maintainer of `midea-msmart` replied that he too had suspected the existence of a new V2 API, but could investigate it only to a limited extent because he did not own any Midea devices. This is stated in the [direct reply comment](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
 
-That makes the state of the sources clearer:
+This makes the source situation clearer:
 
 - The warning comes from experienced community developers.
-- It is based on observed changes and their technical assessment.
-- One of the maintainers explicitly describes the V2 migration as his own understanding.
-- The other calls it a suspicion.
-- Neither the pull request nor the discussion links to an official Midea shutdown announcement or a date.
+- It is based on observed changes and their technical assessment of them.
+- One maintainer explicitly describes the V2 migration as his understanding.
+- The other refers to it as a suspicion.
+- Neither the pull request nor the discussion links to an official Midea shutdown announcement or date.
 
-That does not make the warning worthless. But it makes it a risk analysis, not a confirmed manufacturer roadmap.
+This does not make the warning worthless. But it does make it a risk analysis rather than a confirmed manufacturer roadmap.
 
-## The Decisive New Finding From June 2026
+## The crucial new finding from June 2026
 
-On June 15, 2026, a fix was merged into the `midea-local` library that substantially changes the previous interpretation.
+On 15 June 2026, a fix was merged into library `midea-local` that substantially changes the previous interpretation.
 
 The starting point was the error:
 
@@ -3925,11 +3925,11 @@ The starting point was the error:
 }
 ```
 
-This error occurred when querying token and key via the SmartHome cloud. Login and the device list kept working, but the call to `/v1/iot/secure/getToken` was rejected.
+This error had occurred when retrieving the token and key via the SmartHome cloud. Login and the device list continued to work, but the call to `/v1/iot/secure/getToken` was rejected.
 
-At first, this looked like a shut-down or disabled interface. An analysis of the official SmartHome app's request, however, revealed a different cause: the app also sent an `applianceCodes` field alongside `udpid`. The community library had not been sending that field.
+At first, this looked like an interface that had been shut down or rendered unusable. However, an analysis of the official SmartHome app’s request revealed a different cause: in addition to `udpid`, the app also sent field `applianceCodes`. The community library had not sent this field.
 
-The corrected request now includes:
+The corrected request now contains:
 
 ```python
 data.update({
@@ -3938,55 +3938,55 @@ data.update({
 })
 ```
 
-The developer tested the change with a real SmartHome account and four V3 air conditioners of type `0xAC`:
+The developer tested the change with a real SmartHome account and four V3 air-conditioning units of type `0xAC`:
 
 - Without `applianceCodes`, the server responded with error 3004.
-- With `applianceCodes`, it delivered valid tokens and keys.
-- The returned values then worked for local V3 authentication.
+- With `applianceCodes`, it returned valid tokens and keys.
+- The returned values subsequently worked for local V3 authentication.
 
-The complete investigation, the test results, and the code diff are documented in [`midea-local` pull request #470](https://github.com/midea-lan/midea-local/pull/470). The corresponding immutable commit is [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
+The full investigation, test results and code diff are documented in [`midea-local` Pull Request #470](https://github.com/midea-lan/midea-local/pull/470). The associated immutable commit is [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
 
-The current source code, too, still uses exactly this endpoint:
+The current source code still uses exactly this endpoint:
 
 ```text
 /v1/iot/secure/getToken
 ```
 
-In addition, `applianceCodes` is now sent along with it. This can be verified directly in the current [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py).
+In addition, `applianceCodes` is now sent as well. This can be verified directly in the current [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py).
 
-The current version of `Midea AC LAN` pulls in `midea-local==6.11.0` and still declares itself a `local_push` integration. Both are stated in the current [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json).
+The current version of `Midea AC LAN` includes `midea-local==6.11.0` and continues to declare itself as a `local_push` integration. Both are stated in the current [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json).
 
-The blanket claim that the SmartHome token API had been shut down is thus refuted, at least for the accounts and devices tested in June 2026. The correct statement would be:
+The blanket claim that the SmartHome token API had been closed is therefore disproven, at least for the accounts and devices tested in June 2026. The correct statement would be:
 
-> The previous token query stopped working after a change to the expected request format. After adapting it to the format used by the official app, the same V1 endpoint again returned valid local credentials.
+> The previous token retrieval stopped working after a change to the expected request format. Once it was adapted to the format used by the official app, the same V1 endpoint once again returned valid local credentials.
 
-Regional differences, different accounts, or unsupported device types are not ruled out by this. But it evidently was not a global shutdown.
+This does not rule out regional differences, different accounts or unsupported device types. But it was clearly not a global shutdown.
 
-## Why “V2” Is So Easily Misunderstood Here
+## Why ‘V2’ is so easily misunderstood here
 
-At least three independent version labels are used in the Midea ecosystem.
+At least three independent version designations are used in the Midea ecosystem.
 
 | Term | Meaning |
 | --- | --- |
-| Local V2/V3 protocol | Generation of direct communication between the integration and the device |
-| V1/V2 app endpoint | Version number of an individual HTTP endpoint in the backend of the Midea apps |
-| Cloud-to-Cloud API V2 | Official partner API for authorized third-party companies |
+| Local V2/V3 protocol | Generation of direct communication between the integration and device |
+| V1/V2 app endpoint | Version number of an individual HTTP endpoint in the Midea apps’ backend |
+| Cloud-to-cloud API V2 | Official partner API for authorised third-party companies |
 
 ### Local V2 and V3
 
-For the local device protocol, V2 and V3 denote the device's communication generation. Newer V3 devices require token and key for local authentication. `Midea Smart AC` documents this requirement in its [configuration guide](https://github.com/mill1000/midea-ac-py#manual-configuration).
+For the local device protocol, V2 and V3 denote the device’s communication generation. Newer V3 devices require a token and key for local authentication. `Midea Smart AC` documents this requirement in its [configuration guide](https://github.com/mill1000/midea-ac-py#manual-configuration).
 
-This protocol version has nothing to do with the official Cloud-to-Cloud API V2.
+This protocol version has nothing to do with the official cloud-to-cloud API V2.
 
-### V1 and V2 in App URLs
+### V1 and V2 in app URLs
 
-Even within the same app, endpoints with different version numbers can be used at the same time. A `/v2/` in a URL path therefore does not mean that the entire platform has been switched to a new architecture.
+Even within the same app, endpoints with different version numbers can be used simultaneously. A `/v2/` in the URL path therefore does not mean that the entire platform has been moved to a new architecture.
 
-The current `midea-local` code still uses [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) for token and key. Other functions can nonetheless sit under differently versioned paths.
+The current `midea-local` code still uses [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) for the token and key. Other functions may nevertheless use differently versioned paths.
 
-### Official Cloud-to-Cloud API V2
+### Official cloud-to-cloud API V2
 
-Midea does in fact document an [official Cloud-to-Cloud API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+Midea does in fact document an [official cloud-to-cloud API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
 
 Among other things, it uses:
 
@@ -3999,15 +3999,15 @@ Among other things, it uses:
 - `/v2/open/device/list/get`
 - cloud-based status queries and control commands
 
-This is a controlled partner interface. The required `client_secret` is issued by Midea to a third-party company. An ordinary PortaSplit owner does not simply get one through their MSmartHome account. The requirements and signing rules are described in the [official V2 documentation](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+This is a controlled partner interface. The required `client_secret` is allocated to a third-party provider by Midea. An ordinary PortaSplit owner does not simply obtain it through their MSmartHome account. The requirements and signature rules are described in the [official V2 documentation](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
 
-This API also did not first appear in 2025. The documentation contains request examples with timestamps from 2018 and a Java comment dated April 18, 2019. The V2 partner interface therefore already existed well before the warning in `Midea AC LAN`.
+This API did not originate in 2025 either. The documentation contains request examples with timestamps from 2018 and a Java comment dated 18 April 2019. The V2 partner interface therefore existed well before the warning in `Midea AC LAN`.
 
-## Midea Really Is Replacing a V1 API — Just a Different One
+## Midea is indeed replacing a V1 API – but a different one
 
-Midea also runs an older official cloud-to-cloud interface under `/v1/open/...`. Its documentation explicitly notes that it is no longer recommended, may be shut down in the future, and that the new V2 documentation should be used instead. That is stated in Midea's [documentation of the old cloud-to-cloud API](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
+Midea also maintains an older official cloud-to-cloud interface under `/v1/open/...`. Its documentation explicitly states that it is no longer recommended, may be shut down in future, and that the new V2 documentation should be used instead. This is stated in Midea’s [documentation for the old cloud-to-cloud API](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
 
-This notice is a genuine, official V1-to-V2 migration. But it concerns the partner endpoints:
+This notice is a genuine official V1-to-V2 migration. However, it concerns the partner endpoints:
 
 ```text
 /v1/open/...
@@ -4015,21 +4015,21 @@ This notice is a genuine, official V1-to-V2 migration. But it concerns the partn
 /v2/open/...
 ```
 
-The token query used by the Home Assistant libraries, by contrast, is:
+By contrast, the token retrieval used by the Home Assistant libraries is:
 
 ```text
 /v1/iot/secure/getToken
 ```
 
-And the local PortaSplit connection afterward does not run over such a cloud URL at all, but directly on the home network.
+The local PortaSplit connection then no longer runs via such a cloud URL at all, but directly on the home network.
 
-Equating the three interfaces just because they share the version label “V1” would therefore not be technically justified.
+Equating the three interfaces solely on the basis of the version number ‘V1’ would therefore not be technically justified.
 
-## Is There Already a Fully Cloud-Based Home Assistant Integration?
+## Is there already a fully cloud-based Home Assistant integration?
 
 With [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud), a community integration now exists that controls Midea devices via the cloud instead of directly over the LAN.
 
-This, too, however, is no evidence that the official partner V2 API has already replaced local control. The current source code of `Midea Auto Cloud` uses, among others:
+However, this too is not evidence that the official partner V2 API has already replaced local control. The current source code of `Midea Auto Cloud` uses, among other things:
 
 ```text
 /v1/appliance/transparent/send
@@ -4037,108 +4037,108 @@ This, too, however, is no evidence that the official partner V2 API has already 
 /mjl/v1/device/lua/control
 ```
 
-These endpoints can be seen in the current [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py).
+These endpoints can be viewed in the current [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py).
 
-The integration thus reimplements private app or consumer-cloud functions. It does not simply use the documented `/v2/open/...` partner interface.
+The integration therefore emulates private app or consumer-cloud functions. It does not simply use the documented `/v2/open/...` partner interface.
 
-A cloud-based alternative therefore already exists. But it comes with the usual dependencies of a cloud integration: internet access, a working user account, available Midea servers, and continued compatibility of private endpoints.
+A cloud-based alternative therefore already exists. But it also brings the usual dependencies of a cloud integration: internet access, a working user account, available Midea servers and still-compatible private endpoints.
 
-## What Does This Mean Concretely for PortaSplit Owners?
+## What does this mean in practice for PortaSplit owners?
 
-### Already Set Up Local Control
+### Already configured local control
 
-For an already configured PortaSplit, the situation is relatively relaxed. `Midea Smart AC` stores token and key locally after setup and, according to its own [cloud documentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), needs no cloud connection for further control.
+For an already configured PortaSplit, the situation is relatively relaxed. `Midea Smart AC` stores the token and key locally after setup and, according to its own [cloud documentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), requires no cloud connection for ongoing control.
 
-A shutdown of the pure token retrieval would therefore not automatically end the existing local connection.
+A shutdown of token retrieval alone would therefore not automatically terminate the existing local connection.
 
-### New Setup or Recovery
+### New setup or recovery
 
-The risk is greater in the case of:
+The risk is greater in the event of:
 
 - a new Home Assistant installation
-- switching to a different integration
-- a lost or damaged backup
-- replacing the Wi-Fi module
-- changes to the device assignment
-- re-pairing, if the device credentials change in the process
+- switching to another integration
+- a lost or corrupted backup
+- replacement of the Wi-Fi module
+- changes to device assignment
+- re-pairing, if this changes the device credentials
 
-In such cases, the integration has to obtain token and key again, or the user has to enter them manually. That `Midea Smart AC` supports manual configuration is described in its [configuration documentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
+In such cases, the integration must obtain the token and key again, or the user must provide them manually. That `Midea Smart AC` supports manual configuration is described in its [configuration documentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
 
-Whether a factory reset or re-pairing necessarily generates new credentials for every PortaSplit is not officially documented and should therefore not be claimed as a blanket rule.
+Whether a factory reset or re-pairing necessarily generates new credentials for every PortaSplit is not officially documented and should therefore not be claimed as a general rule.
 
-### An Actual Shutdown of LAN Control
+### A genuine shutdown of LAN control
 
-For an already set-up PortaSplit to stop accepting its locally stored credentials, the behavior of the device or Wi-Fi module would additionally have to change — for example through new firmware or a changed authentication procedure.
+For an already configured PortaSplit to stop accepting its locally stored credentials, the behaviour of the device or Wi-Fi module would also have to change – for example through new firmware or a changed authentication mechanism.
 
-A mere shutdown of the cloud endpoint `/v1/iot/secure/getToken` does not automatically remove the credentials already present on the device and in Home Assistant. This follows from the separation, documented by [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), between a one-time cloud retrieval and subsequent LAN control.
+Merely shutting down cloud endpoint `/v1/iot/secure/getToken` does not automatically remove the credentials already present in the device and Home Assistant. This follows from the separation between one-time cloud retrieval and subsequent LAN control documented by [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
 
-Such a future device change is technically possible. A concrete announcement or shutdown date specifically for the PortaSplit, however, is something I have not found in the publicly available Midea documentation.
+Such a future device change is technically possible. However, I have not found a specific announcement or shutdown date for the PortaSplit in publicly accessible Midea documentation.
 
-## What I'd Still Recommend
+## What I would still recommend
 
-Despite these tempering findings, a backup remains sensible.
+Despite the qualifying findings, a backup remains sensible.
 
-For V3 devices, `Midea AC LAN` explicitly recommends backing up the generated JSON configuration outside of HAOS. The current recommendation is stated directly in the [project README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
+For V3 devices, `Midea AC LAN` explicitly recommends saving the generated JSON configuration outside HAOS. The current recommendation appears directly in the [project README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
 
 The following applies:
 
-- Treat token and key like passwords.
+- Treat the token and key like passwords.
 - Do not upload the JSON file to a public Git repository.
 - Do not publish unredacted debug logs.
 - Encrypt the backup.
-- Additionally create a complete Home Assistant backup.
-- Check current functionality before firmware and integration updates.
+- Also create a complete Home Assistant backup.
+- Check that the current setup works before firmware and integration updates.
 - Test local control again after updates.
 
-A backup is a reasonable safeguard against cloud changes, integration issues, and your own mistakes. It is not, however, an indication that a shutdown is imminent. How to set up and secure a PortaSplit on the home network properly is covered in the [practical part on setup](/en/blog/midea-portasplit-home-assistant-setup-and-hardening).
+A backup is a sensible safeguard against cloud changes, integration issues and user errors. However, it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant-einrichten) explains how to set up a PortaSplit properly and secure it on the home network.
 
-## Putting It in Context Based on the Available Evidence
+## Assessment based on the available evidence
 
-The warning from `Midea AC LAN` should be taken seriously, but put in the correct context.
+The warning from `Midea AC LAN` should be taken seriously, but interpreted correctly.
 
-It documents a plausible long-term risk: Midea could regard non-expiring local tokens as a security problem, further restrict the acquisition of such tokens, or tie future devices more closely to the cloud.
+It documents a plausible long-term risk: Midea could regard non-expiring local tokens as a security issue, further restrict how such tokens are obtained, or tie future devices more closely to the cloud.
 
-What is not substantiated, on the other hand, is an officially announced, dated shutdown of local PortaSplit control.
+What is not supported, however, is an officially announced and scheduled shutdown of local PortaSplit control.
 
-The current technical state even shows the opposite of an already completed shutdown: in June 2026, the still-used V1 token endpoint delivered valid credentials once the request had been adapted to the format of the official SmartHome app. The corresponding fix is now part of the library used by `Midea AC LAN`.
+The current technical state even shows the opposite of a shutdown that has already taken place: in June 2026, the still-used V1 token endpoint returned valid credentials after the request had been adapted to the format of the official SmartHome app. The corresponding fix is now part of the library used by `Midea AC LAN`.
 
-The official Midea Cloud-to-Cloud API V2 does exist as well. But it is an older, access-restricted partner interface, not automatically the successor to the local PortaSplit protocol.
+The official Midea cloud-to-cloud API V2 also exists. However, it is an older, access-restricted partner interface and not automatically the successor to the local PortaSplit protocol.
 
 The sober conclusion is therefore:
 
-> Make a backup, keep an eye on the integrations, and keep cloud dependencies in mind — but don't write off local PortaSplit control prematurely based on an unconfirmed shutdown assumption.
+> Create a backup, monitor integrations and bear cloud dependencies in mind – but do not write off local PortaSplit control prematurely on the basis of an unconfirmed shutdown assumption.
 
 ## Sources
 
-1.  [Midea AC LAN: current README and shutdown warning](https://github.com/wuwentao/midea_ac_lan#1-important-notice): Wording of the warning, backup recommendation, and the distinction between older V2 and newer V3 devices.
+1.  [Midea AC LAN: current README and shutdown warning](https://github.com/wuwentao/midea_ac_lan#1-important-notice): wording of the warning, backup recommendation and distinction between older V2 and newer V3 devices.
 
-2.  [Midea AC LAN PR #578 from May 19, 2025](https://github.com/wuwentao/midea_ac_lan/pull/578): Introduction of the warning about the progressive shutdown of the token services and the claimed migration to a cloud-based V2 API.
+2.  [Midea AC LAN PR #578 of 19 May 2025](https://github.com/wuwentao/midea_ac_lan/pull/578): introduction of the warning about the gradual shutdown of token services and the claimed migration to a cloud-based V2 API.
 
-3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639): Switch of the documented token source to NetHome Plus.
+3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639): change of the documented token source to NetHome Plus.
 
-4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201): Discussion of the broken SmartHome token query and the temporary use of NetHome Plus.
+4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201): discussion of the faulty SmartHome token retrieval and the temporary use of NetHome Plus.
 
-5.  [Comment from the Midea AC LAN maintainer on the suspected V2 migration](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457): Explicitly labels the statement about the new V2 cloud as his own understanding.
+5.  [Comment by the Midea AC LAN maintainer on the suspected V2 migration](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457): explicitly identifies the statement about the new V2 cloud as his own understanding.
 
-6.  [Reply from the midea-msmart maintainer](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109): Describes the existence of a new V2 API as a suspicion and notes the limited reverse-engineering options.
+6.  [Reply from the midea-msmart maintainer](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109): describes the existence of a new V2 API as a suspicion and points out the limited reverse-engineering possibilities.
 
-7.  [midea-local PR #470 from June 15, 2026](https://github.com/midea-lan/midea-local/pull/470): Analysis of error 3004, capture of the official app request, addition of `applianceCodes`, and a successful test with four V3 air conditioners.
+7.  [midea-local PR #470 of 15 June 2026](https://github.com/midea-lan/midea-local/pull/470): analysis of error 3004, capture of the official app request, addition of `applianceCodes` and successful testing with four V3 air-conditioning units.
 
-8.  [Immutable commit of the SmartHome getToken fix](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5): Exact code diff of the merged fix.
+8.  [Immutable commit for the SmartHome getToken fix](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5): exact code diff of the merged fix.
 
-9.  [Current midea-local cloud code](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): Still-used endpoint `/v1/iot/secure/getToken` and the current `applianceCodes` request field.
+9.  [Current midea-local cloud code](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): endpoint `/v1/iot/secure/getToken` still in use and current request field `applianceCodes`.
 
-10.  [Current Midea AC LAN manifest](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): Version of `midea-local` used and classification as a local push integration.
+10.  [Current Midea AC LAN manifest](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): version of `midea-local` in use and classification as a local push integration.
 
-11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): Documentation of local control, the one-time cloud retrieval for V3 devices, and manual configuration with token and key.
+11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): documentation of local control, one-time cloud retrieval for V3 devices and manual configuration with token and key.
 
-12.  [Midea AC LAN Issue #607 on the PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607): Concrete PortaSplit example with device type `0xAC`, model `00000Q1D`, protocol version 3, and a successful setup via NetHome Plus.
+12.  [Midea AC LAN Issue #607 on the PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607): specific PortaSplit example with device type `0xAC`, model `00000Q1D`, protocol version 3 and successful setup through NetHome Plus.
 
-13.  [Official Midea Cloud-to-Cloud API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html): OAuth2, client ID, client secret, access and refresh tokens, signing scheme, and `/v2/open/...` endpoints.
+13.  [Official Midea cloud-to-cloud API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html): OAuth2, client ID, client secret, access and refresh tokens, signing method and `/v2/open/...` endpoints.
 
-14.  [Official Midea Cloud-to-Cloud API V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): Official notice that the old `/v1/open/...` partner interface is no longer recommended and may be shut down in the future.
+14.  [Official Midea cloud-to-cloud API V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): official notice that the old `/v1/open/...` partner interface is no longer recommended and may be shut down in future.
 
-15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) and [current cloud code](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): Community integration for full cloud control and the private V1 app endpoints it actually uses.
+15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) and [current cloud code](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): community integration for complete cloud control and the private V1 app endpoints actually used by it.
 
 ----
 
@@ -7069,6 +7069,320 @@ Celles et ceux qui exécutent Rclone directement **sur l’hôte** avec systemd 
 
 ----
 
+# Midea V2, V3 et API cloud : ce que cela signifie réellement pour la PortaSplit
+
+URL: https://rafaelpfister.ch/fr/blog/midea-v2-v3-et-api-cloud-ce-que-cela-signifie-reellement-pour-la-portasplit
+Datum: 2026-07-25
+
+Dans l’univers de la Midea PortaSplit, « V2 » désigne plusieurs choses indépendantes les unes des autres. Il existe un protocole local V2 pour les appareils, des numéros de version dans des points de terminaison privés d’applications et une API officielle cloud-à-cloud V2 destinée aux partenaires. Confondre ces niveaux conduit inévitablement à de fausses conclusions sur le contrôle local.
+
+Le projet `Midea AC LAN` avertit dans son [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) que les interfaces de jetons utilisées jusqu’à présent seraient fermées et remplacées par une API V2 basée sur le cloud. L’examen des discussions, du code actuel et de la documentation officielle de Midea donne une image plus nuancée :
+
+> Une API officielle Midea cloud-à-cloud V2 existe. Mais elle n’est identique ni à l’interface de jetons utilisée par Home Assistant, ni au protocole local V2 ou V3 des appareils. Aucun arrêt officiellement annoncé du contrôle local de la PortaSplit à une date précise n’est documenté. En juin 2026, il a en outre été démontré que l’API de jetons SmartHome prétendument arrêtée fonctionnait toujours : la requête antérieure de la bibliothèque communautaire était simplement incomplète.
+
+Cet article est à jour au 25 juillet 2026.
+
+## Pourquoi l’interprétation précédente doit être corrigée
+
+Dans le [premier article sur la question des jetons cloud](/blog/midea-portasplit-home-assistant), j’avais rapporté l’avertissement du projet `Midea AC LAN` en substance comme l’annonce d’un arrêt des interfaces cloud. Cela correspondait au libellé du README du projet, mais était formulé de manière trop catégorique comme une affirmation factuelle.
+
+L’avertissement reste pertinent en tant qu’indication de risque. Il ne constitue toutefois pas une feuille de route publiée par Midea. Surtout, de nouveaux éléments techniques sont désormais disponibles et remettent en question une partie essentielle de l’interprétation précédente.
+
+## Comment fonctionne le contrôle local de la PortaSplit
+
+L’intégration Home Assistant `Midea Smart AC` décrit explicitement son architecture comme un contrôle local. Pour les appareils V3 plus récents, le cloud Midea est utilisé uniquement lors de la configuration afin d’obtenir un jeton et une clé propres à l’appareil. L’intégration enregistre ensuite ces deux valeurs localement et n’a plus besoin d’aucune connexion cloud pour le contrôle proprement dit. Le projet le documente sous [« Note On Cloud Usage »](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Schématiquement, le processus se présente ainsi :
+
+```text
+Einrichtung:
+
+Home Assistant
+    │
+    ├── Anmeldung an einer Midea-Cloud
+    ├── Abruf von Geräte-ID, Token und Key
+    └── lokale Speicherung der Zugangsdaten
+
+Normalbetrieb:
+
+Home Assistant
+    │
+    └── lokale TCP-Verbindung zur PortaSplit
+```
+
+Pour les appareils V3 configurés manuellement, `Midea Smart AC` exige l’identifiant de l’appareil, l’adresse IP, le port, le jeton et la clé. Le port standard documenté est `6444/TCP`; le jeton et la clé sont indiqués avec respectivement 128 et 64 caractères hexadécimaux. Ces informations figurent dans la [documentation relative à la configuration manuelle](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Dans le suivi des tickets de `Midea AC LAN`, une PortaSplit a par exemple été détectée comme appareil de type `0xAC`, modèle `00000Q1D` et version de protocole 3. Le même utilisateur a ensuite pu l’ajouter à Home Assistant via NetHome Plus. Le déroulement concret est documenté dans [l’issue n° 607](https://github.com/wuwentao/midea_ac_lan/issues/607).
+
+La distinction est essentielle :
+
+- Le service cloud est utilisé pour obtenir les identifiants d’accès locaux.
+- Le contrôle ultérieur s’effectue directement sur le réseau local.
+- Une défaillance du service de jetons empêche donc avant tout les nouvelles configurations.
+- Elle ne met pas automatiquement fin à une connexion locale déjà configurée.
+
+Ce dernier point correspond également à la description explicite de [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+## D’où vient l’avertissement d’arrêt
+
+Le texte d’avertissement actuellement visible a été ajouté à la documentation le 19 mai 2025 avec la [pull request n° 578](https://github.com/wuwentao/midea_ac_lan/pull/578).
+
+Son raisonnement peut être résumé comme suit :
+
+- Les jetons locaux n’auraient pas de date d’expiration.
+- Différents projets Home Assistant utiliseraient un chiffrement d’application reproduit ou extrait.
+- Il en résulterait un problème de sécurité.
+- Midea fermerait donc progressivement les services de jetons existants.
+- À long terme, le contrôle local V1 serait remplacé par une API V2 basée sur le cloud.
+
+En juillet 2025, la documentation a de nouveau été adaptée via la [pull request n° 639](https://github.com/wuwentao/midea_ac_lan/pull/639). Au lieu du cloud SmartHome, NetHome Plus était désormais mentionné comme source temporaire de jetons. L’avertissement d’arrêt proprement dit est resté en place.
+
+La discussion sous-jacente est toutefois formulée avec plus de prudence que le README.
+
+Dans le [commentaire du mainteneur de Midea-AC-LAN](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457), il est indiqué en substance que NetHome Plus pourrait n’être qu’une solution temporaire et que Midea disposerait, selon sa compréhension, d’un nouveau service V2 entièrement basé sur le cloud.
+
+Le mainteneur de `midea-msmart` a répondu qu’il soupçonnait également l’existence d’une nouvelle API V2, mais qu’il ne pouvait l’étudier que de manière limitée faute de posséder lui-même des appareils Midea. Cela figure dans le [commentaire de réponse direct](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
+
+La situation des sources est donc plus claire :
+
+- L’avertissement provient de développeurs expérimentés de la communauté.
+- Il repose sur des changements observés et leur évaluation technique.
+- L’un des mainteneurs qualifie explicitement la migration V2 de sa propre compréhension.
+- L’autre parle d’une supposition.
+- Ni la pull request ni la discussion ne renvoient vers une annonce officielle de Midea concernant un arrêt, ni vers une date.
+
+Cela ne rend pas l’avertissement inutile. Mais cela en fait une analyse de risque, et non une feuille de route confirmée par le fabricant.
+
+## La découverte déterminante de juin 2026
+
+Le 15 juin 2026, un correctif a été intégré dans la bibliothèque `midea-local`, ce qui modifie considérablement l’interprétation précédente.
+
+Le point de départ était l’erreur suivante :
+
+```json
+{
+  "code": "3004",
+  "msg": "value is illegal."
+}
+```
+
+Cette erreur s’était produite lors de la récupération du jeton et de la clé via le cloud SmartHome. La connexion et la liste des appareils continuaient de fonctionner, mais l’appel à `/v1/iot/secure/getToken` était rejeté.
+
+Au départ, cela ressemblait à une interface arrêtée ou rendue inutilisable. L’analyse de la requête de l’application officielle SmartHome a toutefois révélé une autre cause : en plus de `udpid`, l’application envoyait le champ `applianceCodes`. La bibliothèque communautaire n’envoyait pas ce champ.
+
+La requête corrigée contient désormais :
+
+```python
+data.update({
+    "udpid": udp_id,
+    "applianceCodes": str(appliance_id)
+})
+```
+
+Le développeur a testé la modification avec un véritable compte SmartHome et quatre climatiseurs V3 de type `0xAC` :
+
+- Sans `applianceCodes`, le serveur répondait avec l’erreur 3004.
+- Avec `applianceCodes`, il fournissait des jetons et clés valides.
+- Les valeurs renvoyées fonctionnaient ensuite pour l’authentification locale V3.
+
+L’enquête complète, les résultats des tests et le diff du code sont documentés dans la [pull request n° 470 de `midea-local`](https://github.com/midea-lan/midea-local/pull/470). Le commit immuable associé est [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
+
+Le code source actuel utilise toujours exactement ce point de terminaison :
+
+```text
+/v1/iot/secure/getToken
+```
+
+En outre, `applianceCodes` est désormais également envoyé. Cela peut être vérifié directement dans le [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) actuel.
+
+La version actuelle de `Midea AC LAN` intègre `midea-local==6.11.0` et se déclare toujours comme une intégration `local_push`. Ces deux informations figurent dans le [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json) actuel.
+
+L’affirmation générale selon laquelle l’API de jetons SmartHome aurait été fermée est donc réfutée, au moins pour les comptes et appareils testés en juin 2026. La formulation correcte serait :
+
+> L’ancienne récupération de jetons ne fonctionnait plus après une modification du format de requête attendu. Après adaptation au format utilisé par l’application officielle, le même point de terminaison V1 a de nouveau fourni des identifiants d’accès locaux valides.
+
+Cela n’exclut pas les différences régionales, les comptes différents ou les types d’appareils non pris en charge. Mais il ne s’agissait manifestement pas d’un arrêt global.
+
+## Pourquoi « V2 » est si facile à mal comprendre ici
+
+Dans l’environnement Midea, au moins trois désignations de version indépendantes les unes des autres sont utilisées.
+
+| Terme | Signification |
+| --- | --- |
+| Protocole local V2/V3 | Génération de la communication directe entre l’intégration et l’appareil |
+| Point de terminaison d’application V1/V2 | Numéro de version d’un point de terminaison HTTP individuel dans le backend des applications Midea |
+| API cloud-à-cloud V2 | API partenaire officielle destinée aux entreprises tierces autorisées |
+
+### V2 et V3 locaux
+
+Dans le protocole local des appareils, V2 et V3 désignent la génération de communication de l’appareil. Les appareils V3 plus récents nécessitent un jeton et une clé pour l’authentification locale. `Midea Smart AC` documente cette condition dans son [guide de configuration](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Cette version de protocole n’a rien à voir avec l’API officielle cloud-à-cloud V2.
+
+### V1 et V2 dans les URL des applications
+
+Même au sein d’une même application, des points de terminaison ayant différents numéros de version peuvent être utilisés simultanément. Un `/v2/` dans le chemin d’URL ne signifie donc pas que l’ensemble de la plateforme a été migré vers une nouvelle architecture.
+
+Le code actuel de `midea-local` utilise toujours [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) pour le jeton et la clé. D’autres fonctions peuvent néanmoins se trouver sous des chemins versionnés différemment.
+
+### API officielle cloud-à-cloud V2
+
+Midea documente bel et bien une [API officielle cloud-à-cloud V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Elle utilise notamment :
+
+- OAuth 2.0
+- `client_id` et `client_secret`
+- des jetons d’accès et de rafraîchissement à courte durée de vie
+- des signatures HMAC-SHA256
+- `/v2/open/oauth2/authorize`
+- `/v2/open/oauth2/token`
+- `/v2/open/device/list/get`
+- des requêtes d’état et commandes de contrôle basées sur le cloud
+
+Il s’agit d’une interface partenaire contrôlée. Le `client_secret` requis est attribué à un fournisseur tiers par Midea. Un propriétaire normal de PortaSplit ne l’obtient pas simplement via son compte MSmartHome. Les exigences et règles de signature sont décrites dans la [documentation officielle V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Cette API n’est par ailleurs pas apparue seulement en 2025. La documentation contient des exemples de requêtes avec des horodatages datant de 2018 et un commentaire Java du 18 avril 2019. L’interface partenaire V2 existait donc déjà bien avant l’avertissement de `Midea AC LAN`.
+
+## Midea remplace effectivement une API V1, mais une autre
+
+Midea propose également une ancienne interface officielle cloud-à-cloud sous `/v1/open/...`. Sa documentation comporte explicitement l’indication qu’elle n’est plus recommandée, qu’elle pourrait être arrêtée à l’avenir et qu’il convient d’utiliser la nouvelle documentation V2. Cela figure dans la [documentation Midea de l’ancienne API cloud-à-cloud](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
+
+Cette indication correspond à une véritable migration officielle de V1 vers V2. Elle concerne toutefois les points de terminaison partenaires :
+
+```text
+/v1/open/...
+           ↓
+/v2/open/...
+```
+
+La récupération de jetons utilisée par les bibliothèques Home Assistant est en revanche :
+
+```text
+/v1/iot/secure/getToken
+```
+
+Et la connexion locale à la PortaSplit ne passe ensuite plus du tout par une telle URL cloud, mais directement par le réseau domestique.
+
+Assimiler les trois interfaces uniquement en raison du numéro de version « V1 » ne serait donc pas techniquement justifié.
+
+## Existe-t-il déjà une intégration Home Assistant entièrement basée sur le cloud ?
+
+Avec [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud), il existe désormais une intégration communautaire qui contrôle les appareils Midea via le cloud plutôt que directement par le réseau local.
+
+Cela ne constitue toutefois pas non plus la preuve que l’API partenaire officielle V2 aurait déjà remplacé le contrôle local. Le code source actuel de `Midea Auto Cloud` utilise notamment :
+
+```text
+/v1/appliance/transparent/send
+/mjl/v1/device/status/lua/get
+/mjl/v1/device/lua/control
+```
+
+Ces points de terminaison sont consultables dans le [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py) actuel.
+
+L’intégration reproduit ainsi des fonctions privées d’applications ou du cloud grand public. Elle n’utilise pas simplement l’interface partenaire documentée `/v2/open/...`.
+
+Une alternative basée sur le cloud existe donc déjà. Mais elle entraîne également les dépendances habituelles d’une intégration cloud : accès à Internet, compte utilisateur fonctionnel, serveurs Midea disponibles et points de terminaison privés restant compatibles.
+
+## Qu’est-ce que cela signifie concrètement pour les propriétaires de PortaSplit ?
+
+### Contrôle local déjà configuré
+
+Pour une PortaSplit déjà configurée, la situation est relativement sereine. `Midea Smart AC` enregistre le jeton et la clé localement après la configuration et, selon sa propre [documentation cloud](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), n’a besoin d’aucune connexion cloud pour la suite du contrôle.
+
+Un arrêt de la simple récupération de jetons ne mettrait donc pas automatiquement fin à la connexion locale existante.
+
+### Nouvelle configuration ou restauration
+
+Le risque est plus important dans les cas suivants :
+
+- une nouvelle installation de Home Assistant
+- le passage à une autre intégration
+- une sauvegarde perdue ou endommagée
+- le remplacement du module Wi-Fi
+- des modifications de l’association de l’appareil
+- un nouvel appairage si les identifiants d’accès de l’appareil changent à cette occasion
+
+Dans ces cas, l’intégration doit obtenir à nouveau le jeton et la clé, ou l’utilisateur doit les fournir manuellement. Le fait que `Midea Smart AC` prend en charge une configuration manuelle est décrit dans sa [documentation de configuration](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Il n’est pas officiellement documenté qu’une réinitialisation d’usine ou un nouvel appairage génère obligatoirement de nouveaux identifiants d’accès pour chaque PortaSplit ; il ne faut donc pas l’affirmer de manière générale.
+
+### Un véritable arrêt du contrôle par LAN
+
+Pour qu’une PortaSplit déjà configurée n’accepte plus ses identifiants d’accès enregistrés localement, le comportement de l’appareil ou du module Wi-Fi devrait aussi changer, par exemple via un nouveau micrologiciel ou une procédure d’authentification modifiée.
+
+Un simple arrêt du point de terminaison cloud `/v1/iot/secure/getToken` ne supprime pas automatiquement les identifiants d’accès déjà présents dans l’appareil et dans Home Assistant. Cela découle de la séparation entre la récupération unique dans le cloud et le contrôle ultérieur par LAN, documentée par [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Une telle modification future des appareils est techniquement possible. Je n’ai toutefois trouvé dans la documentation Midea publiquement accessible aucune annonce concrète ni date d’arrêt spécifique à la PortaSplit.
+
+## Ce que je continuerais à recommander
+
+Malgré ces éléments relativisant la situation, une sauvegarde reste judicieuse.
+
+Pour les appareils V3, `Midea AC LAN` recommande explicitement de sauvegarder la configuration JSON générée en dehors de HAOS. La recommandation actuelle figure directement dans le [README du projet](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
+
+Il convient de :
+
+- Traiter le jeton et la clé comme des mots de passe.
+- Ne pas téléverser le fichier JSON dans un dépôt Git public.
+- Ne pas publier de journaux de débogage non masqués.
+- Chiffrer la sauvegarde.
+- Créer également une sauvegarde complète de Home Assistant.
+- Vérifier le fonctionnement actuel avant les mises à jour de micrologiciel et d’intégration.
+- Tester à nouveau le contrôle local après les mises à jour.
+
+Une sauvegarde constitue une protection raisonnable contre les changements du cloud, les problèmes d’intégration et les erreurs personnelles. Elle ne signifie pas qu’un arrêt est imminent. La manière de configurer proprement une PortaSplit et de la sécuriser sur le réseau domestique est expliquée dans la [partie pratique consacrée à la configuration](/blog/midea-portasplit-home-assistant-einrichten).
+
+## Évaluation sur la base des preuves disponibles
+
+L’avertissement de `Midea AC LAN` doit être pris au sérieux, mais interprété correctement.
+
+Il documente un risque plausible à long terme : Midea pourrait considérer les jetons locaux sans expiration comme un problème de sécurité, restreindre davantage l’obtention de tels jetons ou lier plus fortement les futurs appareils au cloud.
+
+En revanche, aucun arrêt officiellement annoncé et daté du contrôle local de la PortaSplit n’est étayé.
+
+L’état technique actuel montre même le contraire d’un arrêt déjà réalisé : en juin 2026, le point de terminaison de jetons V1 toujours utilisé a fourni des identifiants valides après adaptation de la requête au format de l’application officielle SmartHome. Le correctif correspondant fait aujourd’hui partie de la bibliothèque utilisée par `Midea AC LAN`.
+
+L’API officielle Midea cloud-à-cloud V2 existe également. Mais il s’agit d’une ancienne interface partenaire à accès restreint, et non automatiquement du successeur du protocole local de la PortaSplit.
+
+La conclusion sobre est donc la suivante :
+
+> Créez une sauvegarde, surveillez les intégrations et gardez les dépendances cloud à l’esprit, mais n’abandonnez pas prématurément le contrôle local de la PortaSplit sur la base d’une hypothèse d’arrêt non confirmée.
+
+## Sources
+
+1.  [Midea AC LAN : README actuel et avertissement d’arrêt](https://github.com/wuwentao/midea_ac_lan#1-important-notice) : libellé de l’avertissement, recommandation de sauvegarde et distinction entre les anciens appareils V2 et les appareils V3 plus récents.
+
+2.  [Midea AC LAN PR n° 578 du 19 mai 2025](https://github.com/wuwentao/midea_ac_lan/pull/578) : introduction de l’avertissement concernant l’arrêt progressif des services de jetons et la migration prétendue vers une API V2 basée sur le cloud.
+
+3.  [Midea AC LAN PR n° 639](https://github.com/wuwentao/midea_ac_lan/pull/639) : remplacement de la source de jetons documentée par NetHome Plus.
+
+4.  [midea-msmart issue n° 201](https://github.com/mill1000/midea-msmart/issues/201) : discussion sur la récupération défaillante des jetons SmartHome et l’utilisation temporaire de NetHome Plus.
+
+5.  [Commentaire du mainteneur de Midea-AC-LAN sur la migration V2 supposée](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) : qualifie explicitement l’affirmation concernant le nouveau cloud V2 de sa propre compréhension.
+
+6.  [Réponse du mainteneur de midea-msmart](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109) : décrit l’existence d’une nouvelle API V2 comme une supposition et souligne les possibilités limitées de rétro-ingénierie.
+
+7.  [midea-local PR n° 470 du 15 juin 2026](https://github.com/midea-lan/midea-local/pull/470) : analyse de l’erreur 3004, capture de la requête de l’application officielle, ajout de `applianceCodes` et test concluant avec quatre climatiseurs V3.
+
+8.  [Commit immuable du correctif SmartHome-getToken](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5) : diff exact du code du correctif intégré.
+
+9.  [Code cloud midea-local actuel](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) : point de terminaison `/v1/iot/secure/getToken` toujours utilisé et champ de requête actuel `applianceCodes`.
+
+10.  [Manifeste actuel de Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json) : version utilisée de `midea-local` et classification en tant qu’intégration push locale.
+
+11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py) : documentation du contrôle local, de la récupération cloud unique pour les appareils V3 et de la configuration manuelle avec jeton et clé.
+
+12.  [Midea AC LAN issue n° 607 concernant la PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607) : exemple concret de PortaSplit avec appareil de type `0xAC`, modèle `00000Q1D`, version de protocole 3 et configuration réussie via NetHome Plus.
+
+13.  [API officielle Midea cloud-à-cloud V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html) : OAuth2, identifiant client, secret client, jetons d’accès et de rafraîchissement, procédure de signature et points de terminaison `/v2/open/...`.
+
+14.  [API officielle Midea cloud-à-cloud V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html) : indication officielle selon laquelle l’ancienne interface partenaire `/v1/open/...` n’est plus recommandée et pourrait être arrêtée à l’avenir.
+
+15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) et [code cloud actuel](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py) : intégration communautaire pour un contrôle entièrement basé sur le cloud et points de terminaison privés V1 des applications effectivement utilisés.
+
+----
+
 # Testare il Cold Storage con Rclone: un piano di test pratico
 
 URL: https://rafaelpfister.ch/it/blog/testare-il-cold-storage-con-rclone-un-piano-di-test-pratico
@@ -7658,6 +7972,320 @@ Chi esegue Rclone direttamente **sull’host** tramite systemd evita i primi due
 3.  [Rclone mount](https://rclone.org/commands/rclone_mount/): modalità della cache VFS, --allow-other e i limiti del mount FUSE.
 
 4.  [Documentazione AppArmor (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): come i profili sono associati ai file eseguibili; il profilo fusermount3 si trova in /etc/apparmor.d/fusermount3.
+
+----
+
+# Midea V2, V3 e API cloud: cosa significano davvero per PortaSplit
+
+URL: https://rafaelpfister.ch/it/blog/midea-v2-v3-e-api-cloud-cosa-significano-davvero-per-portasplit
+Datum: 2026-07-25
+
+Nel contesto di Midea PortaSplit, «V2» indica diverse cose indipendenti tra loro. Esistono un protocollo locale del dispositivo V2, numeri di versione negli endpoint privati dell'app e un'API ufficiale cloud-to-cloud V2 per i partner. Chi equipara questi livelli giunge inevitabilmente a conclusioni errate sul controllo locale.
+
+Il progetto `Midea AC LAN` avverte nella sua [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) che le precedenti interfacce token sarebbero state chiuse e sostituite da un'API V2 basata sul cloud. Un esame delle discussioni, del codice attuale e della documentazione ufficiale Midea restituisce un quadro più differenziato:
+
+> Esiste un'API ufficiale Midea cloud-to-cloud V2. Tuttavia, non è identica all'interfaccia token utilizzata da Home Assistant, né al protocollo locale del dispositivo V2 o V3. Non è documentata una dismissione annunciata ufficialmente del controllo locale di PortaSplit con una data concreta. Nel giugno 2026 è stato inoltre dimostrato che la presunta API token SmartHome dismessa continuava a funzionare: la precedente richiesta della libreria della community era semplicemente incompleta.
+
+Questo articolo è aggiornato al 25 luglio 2026.
+
+## Perché la classificazione precedente deve essere corretta
+
+Nel [primo articolo sulla questione dei token cloud](/blog/midea-portasplit-home-assistant) avevo riportato, in sostanza, l'avvertimento del progetto `Midea AC LAN` come una dismissione annunciata delle interfacce cloud. Ciò corrispondeva al testo della README del progetto, ma era formulato in modo troppo categorico come affermazione di fatto.
+
+L'avvertimento resta rilevante come indicazione di rischio. Non è però una roadmap Midea pubblicata. Soprattutto, nel frattempo è disponibile nuovo materiale tecnico che mette in discussione una parte sostanziale dell'interpretazione precedente.
+
+## Come funziona il controllo locale di PortaSplit
+
+L'integrazione Home Assistant `Midea Smart AC` descrive esplicitamente la propria architettura come controllo locale. Sui dispositivi V3 più recenti, il cloud Midea viene utilizzato solo durante la configurazione per ottenere un token e una chiave specifici del dispositivo. In seguito, l'integrazione memorizza entrambi i valori localmente e non necessita di ulteriori connessioni cloud per il controllo effettivo. Il progetto lo documenta in [«Note On Cloud Usage"](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+In forma semplificata, il flusso è il seguente:
+
+```text
+Einrichtung:
+
+Home Assistant
+    │
+    ├── Anmeldung an einer Midea-Cloud
+    ├── Abruf von Geräte-ID, Token und Key
+    └── lokale Speicherung der Zugangsdaten
+
+Normalbetrieb:
+
+Home Assistant
+    │
+    └── lokale TCP-Verbindung zur PortaSplit
+```
+
+Per i dispositivi V3 configurati manualmente, `Midea Smart AC` richiede ID del dispositivo, indirizzo IP, porta, token e chiave. La porta standard documentata è `6444/TCP`; token e chiave sono indicati rispettivamente come 128 e 64 caratteri esadecimali. Queste informazioni sono disponibili nella [documentazione sulla configurazione manuale](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Nel tracker delle issue di `Midea AC LAN`, una PortaSplit è stata ad esempio riconosciuta come dispositivo di tipo `0xAC`, modello `00000Q1D` e versione del protocollo 3. Lo stesso utente ha poi potuto aggiungerla a Home Assistant tramite NetHome Plus. Il caso concreto è documentato in [Issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
+
+La separazione decisiva è questa:
+
+- Il servizio cloud viene utilizzato per ottenere le credenziali locali.
+- Il controllo successivo avviene direttamente nella LAN.
+- Un guasto del servizio token impedisce quindi soprattutto nuove configurazioni.
+- Non interrompe automaticamente una connessione locale già configurata.
+
+Quest'ultimo punto corrisponde anche alla descrizione esplicita di [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+## Da dove proviene l'avviso di dismissione
+
+Il testo di avviso attualmente visibile è stato aggiunto alla documentazione il 19 maggio 2025 con [Pull Request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
+
+In sintesi, la motivazione è la seguente:
+
+- I token locali non avrebbero una data di scadenza.
+- Vari progetti Home Assistant utilizzerebbero una crittografia dell'app riprodotta o estratta.
+- Da ciò deriverebbe un problema di sicurezza.
+- Midea chiuderebbe quindi gradualmente i precedenti servizi token.
+- A lungo termine, il controllo locale V1 sarebbe destinato a essere sostituito da un'API V2 basata sul cloud.
+
+Nel luglio 2025, la documentazione è stata nuovamente modificata tramite [Pull Request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). Al posto del cloud SmartHome, veniva ora indicato NetHome Plus come fonte token temporaneamente utilizzata. L'avviso di dismissione vero e proprio è rimasto.
+
+La discussione sottostante è tuttavia formulata con maggiore cautela rispetto alla README.
+
+Nel [commento del maintainer di Midea-AC-LAN](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) si afferma in sostanza che NetHome Plus potrebbe essere solo una soluzione temporanea e che, secondo la sua interpretazione, Midea dispone di un nuovo servizio V2 interamente basato sul cloud.
+
+Il maintainer di `midea-msmart` ha risposto di aver anch'egli ipotizzato l'esistenza di una nuova API V2, ma di poterla analizzare solo limitatamente per mancanza di dispositivi Midea propri. Ciò è riportato nel [commento di risposta diretto](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
+
+Il quadro delle fonti è quindi più chiaro:
+
+- L'avvertimento proviene da sviluppatori esperti della community.
+- Si basa su modifiche osservate e sulla loro valutazione tecnica.
+- Uno dei maintainer definisce esplicitamente la migrazione V2 come la propria interpretazione.
+- L'altro parla di un'ipotesi.
+- Né la pull request né la discussione rimandano a un annuncio ufficiale Midea di dismissione o a una data.
+
+Ciò non rende l'avvertimento privo di valore. Lo rende però un'analisi del rischio, non una roadmap del produttore confermata.
+
+## Il nuovo riscontro decisivo del giugno 2026
+
+Il 15 giugno 2026 è stata integrata nella libreria `midea-local` una correzione che modifica sostanzialmente l'interpretazione precedente.
+
+Il punto di partenza era l'errore:
+
+```json
+{
+  "code": "3004",
+  "msg": "value is illegal."
+}
+```
+
+Questo errore si era verificato durante la richiesta di token e chiave tramite il cloud SmartHome. Il login e l'elenco dei dispositivi continuavano a funzionare, ma la chiamata di `/v1/iot/secure/getToken` veniva respinta.
+
+Inizialmente ciò sembrava indicare un'interfaccia dismessa o resa inutilizzabile. L'analisi della richiesta dell'app ufficiale SmartHome ha però mostrato una causa diversa: oltre a `udpid`, l'app inviava anche il campo `applianceCodes`. La libreria della community non inviava questo campo.
+
+La richiesta corretta contiene ora:
+
+```python
+data.update({
+    "udpid": udp_id,
+    "applianceCodes": str(appliance_id)
+})
+```
+
+Lo sviluppatore ha testato la modifica con un account SmartHome reale e quattro climatizzatori V3 di tipo `0xAC`:
+
+- Senza `applianceCodes`, il server rispondeva con l'errore 3004.
+- Con `applianceCodes`, forniva token e chiavi validi.
+- I valori restituiti funzionavano poi per l'autenticazione locale V3.
+
+L'indagine completa, i risultati dei test e il diff del codice sono documentati nella [`midea-local` Pull Request #470](https://github.com/midea-lan/midea-local/pull/470). Il commit immutabile associato è [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
+
+Anche nel codice sorgente attuale continua a essere utilizzato esattamente questo endpoint:
+
+```text
+/v1/iot/secure/getToken
+```
+
+Inoltre, ora viene inviato anche `applianceCodes`. Questo è verificabile direttamente nel [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) attuale.
+
+La versione attuale di `Midea AC LAN` integra `midea-local==6.11.0` e continua a dichiararsi un'integrazione `local_push`. Entrambe le informazioni sono presenti nel [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json) attuale.
+
+L'affermazione generica secondo cui l'API token SmartHome sarebbe stata chiusa è quindi confutata, almeno per gli account e i dispositivi testati nel giugno 2026. La formulazione corretta sarebbe:
+
+> La precedente richiesta token non funzionava più dopo una modifica del formato della richiesta previsto. Dopo l'adeguamento al formato utilizzato dall'app ufficiale, lo stesso endpoint V1 ha nuovamente fornito credenziali locali valide.
+
+Non sono per questo esclusi differenze regionali, account diversi o tipi di dispositivo non supportati. Ma non si trattava evidentemente di una dismissione globale.
+
+## Perché «V2» viene così facilmente frainteso in questo contesto
+
+Nell'ecosistema Midea vengono utilizzate almeno tre denominazioni di versione indipendenti tra loro.
+
+| Termine | Significato |
+| --- | --- |
+| Protocollo locale V2/V3 | Generazione della comunicazione diretta tra integrazione e dispositivo |
+| Endpoint dell'app V1/V2 | Numero di versione di un singolo endpoint HTTP nel backend delle app Midea |
+| API cloud-to-cloud V2 | API ufficiale per partner destinata a terze parti autorizzate |
+
+### V2 e V3 locali
+
+Nel protocollo locale del dispositivo, V2 e V3 indicano la generazione di comunicazione del dispositivo. I dispositivi V3 più recenti richiedono token e chiave per l'autenticazione locale. `Midea Smart AC` documenta questo requisito nella sua [guida alla configurazione](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Questa versione del protocollo non ha nulla a che fare con l'API ufficiale cloud-to-cloud V2.
+
+### V1 e V2 negli URL dell'app
+
+Anche all'interno della stessa app possono essere usati contemporaneamente endpoint con numeri di versione diversi. Un `/v2/` nel percorso URL non significa quindi che l'intera piattaforma sia stata convertita a una nuova architettura.
+
+Il codice attuale di `midea-local` continua a utilizzare [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) per token e chiave. Altre funzioni possono comunque trovarsi in percorsi con versioni diverse.
+
+### API ufficiale cloud-to-cloud V2
+
+Midea documenta effettivamente una [API ufficiale cloud-to-cloud V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Questa utilizza, tra l'altro:
+
+- OAuth 2.0
+- `client_id` e `client_secret`
+- access token e refresh token a breve durata
+- firme HMAC-SHA256
+- `/v2/open/oauth2/authorize`
+- `/v2/open/oauth2/token`
+- `/v2/open/device/list/get`
+- interrogazioni di stato e comandi di controllo basati sul cloud
+
+Si tratta di un'interfaccia per partner controllata. Il necessario `client_secret` viene assegnato da Midea a un fornitore terzo. Un normale proprietario di PortaSplit non lo ottiene semplicemente tramite il proprio account MSmartHome. I requisiti e le regole di firma sono descritti nella [documentazione ufficiale V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Inoltre, questa API non è nata soltanto nel 2025. La documentazione contiene esempi di richieste con timestamp del 2018 e un commento Java del 18 aprile 2019. L'interfaccia V2 per partner esisteva dunque già molto prima dell'avvertimento in `Midea AC LAN`.
+
+## Midea sostituisce effettivamente un'API V1, ma un'altra
+
+Midea gestisce anche una vecchia interfaccia ufficiale cloud-to-cloud sotto `/v1/open/...`. La relativa documentazione riporta esplicitamente che non è più raccomandata, che potrebbe essere dismessa in futuro e che occorre utilizzare la nuova documentazione V2. Questo è indicato nella [documentazione Midea della vecchia API cloud-to-cloud](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
+
+Questo avviso rappresenta una reale migrazione ufficiale da V1 a V2. Riguarda però gli endpoint per partner:
+
+```text
+/v1/open/...
+           ↓
+/v2/open/...
+```
+
+La richiesta token utilizzata dalle librerie Home Assistant è invece:
+
+```text
+/v1/iot/secure/getToken
+```
+
+E la connessione locale di PortaSplit non passa poi più attraverso un simile URL cloud, ma direttamente nella rete domestica.
+
+Equiparare le tre interfacce solo in base al numero di versione «V1» non sarebbe quindi tecnicamente giustificato.
+
+## Esiste già un'integrazione Home Assistant completamente basata sul cloud?
+
+Con [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud) esiste ormai un'integrazione della community che controlla i dispositivi Midea tramite il cloud invece che direttamente tramite la LAN.
+
+Anche questo, tuttavia, non dimostra che l'API V2 ufficiale per partner abbia già sostituito il controllo locale. Il codice sorgente attuale di `Midea Auto Cloud` utilizza tra l'altro:
+
+```text
+/v1/appliance/transparent/send
+/mjl/v1/device/status/lua/get
+/mjl/v1/device/lua/control
+```
+
+Questi endpoint sono visibili nel [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py) attuale.
+
+L'integrazione replica dunque funzioni private dell'app o del cloud consumer. Non utilizza semplicemente l'interfaccia per partner documentata `/v2/open/...`.
+
+Esiste quindi già un'alternativa basata sul cloud. Ma comporta anche le normali dipendenze di un'integrazione cloud: accesso a Internet, account utente funzionante, server Midea disponibili ed endpoint privati ancora compatibili.
+
+## Cosa significa concretamente per i proprietari di PortaSplit?
+
+### Controllo locale già configurato
+
+Per una PortaSplit già configurata, la situazione è relativamente tranquilla. `Midea Smart AC` memorizza token e chiave localmente dopo la configurazione e, secondo la propria [documentazione cloud](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), non richiede una connessione cloud per il controllo successivo.
+
+La dismissione della sola richiesta token non interromperebbe quindi automaticamente la connessione locale esistente.
+
+### Nuova configurazione o ripristino
+
+Il rischio è maggiore in caso di:
+
+- una nuova installazione Home Assistant
+- passaggio a un'altra integrazione
+- backup perso o danneggiato
+- sostituzione del modulo Wi-Fi
+- modifiche all'associazione del dispositivo
+- un nuovo abbinamento, se comporta una modifica delle credenziali del dispositivo
+
+In questi casi, l'integrazione deve ottenere nuovamente token e chiave, oppure l'utente deve inserirli manualmente. Il fatto che `Midea Smart AC` supporti una configurazione manuale è descritto nella sua [documentazione di configurazione](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Non è documentato ufficialmente se un ripristino di fabbrica o un nuovo abbinamento generi necessariamente nuove credenziali per ogni PortaSplit; non dovrebbe pertanto essere affermato in modo generalizzato.
+
+### Una vera dismissione del controllo LAN
+
+Affinché una PortaSplit già configurata non accetti più le credenziali memorizzate localmente, dovrebbe cambiare anche il comportamento del dispositivo o del modulo Wi-Fi, ad esempio tramite un nuovo firmware o una procedura di autenticazione modificata.
+
+La semplice dismissione dell'endpoint cloud `/v1/iot/secure/getToken` non rimuove automaticamente le credenziali già presenti nel dispositivo e in Home Assistant. Ciò deriva dalla separazione tra recupero cloud una tantum e successivo controllo LAN documentata da [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Una futura modifica del dispositivo di questo tipo è tecnicamente possibile. Tuttavia, non ho trovato nella documentazione Midea pubblicamente accessibile un annuncio concreto o una data di dismissione specifica per PortaSplit.
+
+## Cosa continuerei a raccomandare
+
+Nonostante le conclusioni ridimensionate, un backup resta sensato.
+
+Per i dispositivi V3, `Midea AC LAN` raccomanda esplicitamente di salvare la configurazione JSON generata al di fuori di HAOS. La raccomandazione attuale è riportata direttamente nella [README del progetto](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
+
+Si applicano le seguenti regole:
+
+- Trattare token e chiave come password.
+- Non caricare il file JSON in un repository Git pubblico.
+- Non pubblicare log di debug non oscurati.
+- Crittografare il backup.
+- Creare inoltre un backup completo di Home Assistant.
+- Verificare il funzionamento attuale prima di aggiornamenti firmware e integrazioni.
+- Testare nuovamente il controllo locale dopo gli aggiornamenti.
+
+Un backup è una protezione ragionevole contro modifiche cloud, problemi dell'integrazione ed errori propri. Non è però un'indicazione che una dismissione sia imminente. Come configurare correttamente una PortaSplit e proteggerla nella rete domestica è illustrato nella [parte pratica sulla configurazione](/blog/midea-portasplit-home-assistant-einrichten).
+
+## Valutazione sulla base delle prove disponibili
+
+L'avvertimento di `Midea AC LAN` va preso sul serio, ma inquadrato correttamente.
+
+Documenta un rischio plausibile a lungo termine: Midea potrebbe considerare un problema di sicurezza i token locali senza scadenza, limitare ulteriormente l'ottenimento di tali token o vincolare maggiormente al cloud i dispositivi futuri.
+
+Non è invece comprovata una dismissione ufficialmente annunciata e programmata del controllo locale di PortaSplit.
+
+Lo stato tecnico attuale mostra addirittura il contrario di una dismissione già avvenuta: nel giugno 2026, l'endpoint token V1 ancora utilizzato ha fornito credenziali valide dopo che la richiesta era stata adeguata al formato dell'app ufficiale SmartHome. La correzione corrispondente fa oggi parte della libreria utilizzata da `Midea AC LAN`.
+
+Esiste anche l'API ufficiale Midea cloud-to-cloud V2. Ma è un'interfaccia per partner più datata, ad accesso limitato, e non è automaticamente il successore del protocollo locale PortaSplit.
+
+La conclusione sobria è quindi:
+
+> Creare un backup, monitorare le integrazioni e tenere a mente le dipendenze dal cloud, ma non abbandonare prematuramente il controllo locale di PortaSplit sulla base di un'ipotesi di dismissione non confermata.
+
+## Fonti
+
+1.  [Midea AC LAN: README attuale e avviso di dismissione](https://github.com/wuwentao/midea_ac_lan#1-important-notice): testo dell'avviso, raccomandazione di backup e distinzione tra dispositivi V2 più vecchi e V3 più recenti.
+
+2.  [Midea AC LAN PR #578 del 19 maggio 2025](https://github.com/wuwentao/midea_ac_lan/pull/578): introduzione dell'avvertimento sulla graduale dismissione dei servizi token e sulla presunta migrazione verso un'API V2 basata sul cloud.
+
+3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639): passaggio della fonte token documentata a NetHome Plus.
+
+4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201): discussione sulla richiesta token SmartHome difettosa e sull'uso temporaneo di NetHome Plus.
+
+5.  [Commento del maintainer di Midea-AC-LAN sulla presunta migrazione V2](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457): indica esplicitamente l'affermazione sul nuovo cloud V2 come propria interpretazione.
+
+6.  [Risposta del maintainer di midea-msmart](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109): descrive l'esistenza di una nuova API V2 come un'ipotesi e segnala le limitate possibilità di reverse engineering.
+
+7.  [midea-local PR #470 del 15 giugno 2026](https://github.com/midea-lan/midea-local/pull/470): analisi dell'errore 3004, acquisizione della richiesta dell'app ufficiale, aggiunta di `applianceCodes` e test riuscito con quattro climatizzatori V3.
+
+8.  [Commit immutabile della correzione SmartHome-getToken](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5): diff esatto del codice della correzione integrata.
+
+9.  [Codice cloud midea-local attuale](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): endpoint ancora utilizzato `/v1/iot/secure/getToken` e campo di richiesta attuale `applianceCodes`.
+
+10.  [Manifest attuale di Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): versione utilizzata di `midea-local` e classificazione come integrazione push locale.
+
+11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): documentazione del controllo locale, del recupero cloud una tantum per dispositivi V3 e della configurazione manuale con token e chiave.
+
+12.  [Midea AC LAN Issue #607 su PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607): esempio concreto di PortaSplit con dispositivo di tipo `0xAC`, modello `00000Q1D`, versione del protocollo 3 e configurazione riuscita tramite NetHome Plus.
+
+13.  [API ufficiale Midea cloud-to-cloud V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html): OAuth2, ID client, segreto client, access e refresh token, procedura di firma ed endpoint `/v2/open/...`.
+
+14.  [API ufficiale Midea cloud-to-cloud V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): avviso ufficiale che la vecchia interfaccia per partner `/v1/open/...` non è più raccomandata e potrebbe essere dismessa in futuro.
+
+15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) e [codice cloud attuale](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): integrazione della community per il controllo cloud completo e gli endpoint privati dell'app V1 effettivamente utilizzati.
 
 ----
 
@@ -8253,6 +8881,320 @@ Quien ejecute Rclone directamente **en el host** mediante systemd evita los dos 
 
 ----
 
+# Midea V2, V3 y API en la nube: qué significan realmente para la PortaSplit
+
+URL: https://rafaelpfister.ch/es/blog/midea-v2-v3-y-api-en-la-nube-que-significan-realmente-para-la-portasplit
+Datum: 2026-07-25
+
+En el entorno de la Midea PortaSplit, «V2» designa varias cosas independientes entre sí. Existe un protocolo local de dispositivos V2, números de versión en endpoints privados de aplicaciones y una API oficial V2 de nube a nube para socios. Quien equipare estos niveles llegará inevitablemente a conclusiones erróneas sobre el control local.
+
+El proyecto `Midea AC LAN` advierte en su [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) de que las interfaces de tokens utilizadas hasta ahora se cerrarían y serían sustituidas por una API V2 basada en la nube. Una revisión de las discusiones, del código actual y de la documentación oficial de Midea ofrece una imagen más matizada:
+
+> Existe una API oficial Midea Cloud-to-Cloud API V2. Sin embargo, no es idéntica a la interfaz de tokens utilizada por Home Assistant ni a los protocolos locales de dispositivos V2 o V3. No está documentada una desactivación oficialmente anunciada del control local de la PortaSplit con una fecha concreta. Además, en junio de 2026 se demostró que la API de tokens de SmartHome supuestamente desactivada seguía funcionando: la solicitud anterior de la biblioteca de la comunidad simplemente estaba incompleta.
+
+Este artículo está actualizado al 25 de julio de 2026.
+
+## Por qué debe corregirse la clasificación anterior
+
+En el [primer artículo sobre la cuestión de los tokens en la nube](/blog/midea-portasplit-home-assistant) resumí la advertencia del proyecto `Midea AC LAN` como una desactivación anunciada de las interfaces en la nube. Eso correspondía al texto de la README del proyecto, pero estaba formulado con demasiada contundencia como afirmación de hechos.
+
+La advertencia sigue siendo relevante como indicación de riesgo. Sin embargo, no es una hoja de ruta publicada por Midea. Sobre todo, ahora hay disponible nuevo material técnico que cuestiona una parte esencial de la interpretación anterior.
+
+## Cómo funciona el control local de la PortaSplit
+
+La integración de Home Assistant `Midea Smart AC` describe explícitamente su arquitectura como control local. En los dispositivos V3 más recientes, la nube de Midea se utiliza únicamente durante la configuración para obtener un token y una clave específicos del dispositivo. Después, la integración guarda ambos valores localmente y no necesita otra conexión a la nube para el control propiamente dicho. El proyecto lo documenta en [«Note On Cloud Usage"](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Simplificado, el flujo es el siguiente:
+
+```text
+Einrichtung:
+
+Home Assistant
+    │
+    ├── Anmeldung an einer Midea-Cloud
+    ├── Abruf von Geräte-ID, Token und Key
+    └── lokale Speicherung der Zugangsdaten
+
+Normalbetrieb:
+
+Home Assistant
+    │
+    └── lokale TCP-Verbindung zur PortaSplit
+```
+
+Para dispositivos V3 configurados manualmente, `Midea Smart AC` requiere ID de dispositivo, dirección IP, puerto, token y clave. El puerto estándar documentado es `6444/TCP`; el token y la clave se indican como 128 y 64 caracteres hexadecimales, respectivamente. Estos datos figuran en la [documentación sobre la configuración manual](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Por ejemplo, una PortaSplit fue detectada en el rastreador de incidencias de `Midea AC LAN` como tipo de dispositivo `0xAC`, modelo `00000Q1D` y versión de protocolo 3. Posteriormente, el mismo usuario pudo añadirla a Home Assistant mediante NetHome Plus. El historial concreto está documentado en [Issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
+
+La separación es decisiva:
+
+- El servicio en la nube se utiliza para obtener las credenciales locales.
+- El control posterior se realiza directamente en la LAN.
+- Por tanto, una interrupción del servicio de tokens afecta sobre todo a las nuevas configuraciones.
+- No finaliza automáticamente una conexión local ya configurada.
+
+Esto último también corresponde a la descripción expresa de [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+## De dónde procede la advertencia de desactivación
+
+El texto de advertencia visible hoy se incorporó a la documentación el 19 de mayo de 2025 mediante [Pull Request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
+
+En resumen, la justificación es la siguiente:
+
+- Los tokens locales no tendrían fecha de caducidad.
+- Varios proyectos de Home Assistant utilizarían cifrado de la aplicación emulado o extraído.
+- De ello se derivaría un problema de seguridad.
+- Por ello, Midea cerraría progresivamente los servicios de tokens existentes.
+- A largo plazo, el control local V1 sería desplazado por una API V2 basada en la nube.
+
+En julio de 2025, la documentación volvió a modificarse mediante [Pull Request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). En lugar de la nube SmartHome, se mencionó ahora NetHome Plus como fuente de tokens utilizada temporalmente. La advertencia de desactivación propiamente dicha se mantuvo.
+
+Sin embargo, la discusión subyacente está formulada con más cautela que la README.
+
+En el [comentario del mantenedor de Midea-AC-LAN](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) se indica, en esencia, que NetHome Plus podría ser solo una solución temporal y que, según su comprensión, Midea dispone de un nuevo servicio V2 completamente basado en la nube.
+
+El mantenedor de `midea-msmart` respondió que también había supuesto la existencia de una nueva API V2, pero que, al no disponer de dispositivos Midea propios, solo podía investigarla de forma limitada. Esto consta en el [comentario de respuesta directa](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
+
+Con ello, la situación de las fuentes queda más clara:
+
+- La advertencia procede de desarrolladores experimentados de la comunidad.
+- Se basa en cambios observados y en su evaluación técnica.
+- Uno de los mantenedores describe expresamente la migración a V2 como su interpretación.
+- El otro habla de una suposición.
+- Ni el Pull Request ni la discusión enlazan un anuncio oficial de Midea sobre la desactivación o una fecha.
+
+Esto no hace que la advertencia carezca de valor. Pero la convierte en un análisis de riesgos, no en una hoja de ruta confirmada por el fabricante.
+
+## El hallazgo decisivo de junio de 2026
+
+El 15 de junio de 2026 se integró en la biblioteca `midea-local` una corrección que modifica sustancialmente la interpretación anterior.
+
+El punto de partida fue el error:
+
+```json
+{
+  "code": "3004",
+  "msg": "value is illegal."
+}
+```
+
+Este error se había producido al consultar el token y la clave a través de la nube SmartHome. El inicio de sesión y la lista de dispositivos seguían funcionando, pero se rechazaba la llamada a `/v1/iot/secure/getToken`.
+
+Al principio, esto parecía indicar una interfaz desactivada o inutilizada. Sin embargo, un análisis de la solicitud de la aplicación oficial SmartHome mostró otra causa: además de `udpid`, la aplicación enviaba el campo `applianceCodes`. La biblioteca de la comunidad no enviaba este campo.
+
+La solicitud corregida contiene ahora:
+
+```python
+data.update({
+    "udpid": udp_id,
+    "applianceCodes": str(appliance_id)
+})
+```
+
+El desarrollador probó el cambio con una cuenta real de SmartHome y cuatro equipos de aire acondicionado V3 del tipo `0xAC`:
+
+- Sin `applianceCodes`, el servidor respondía con el error 3004.
+- Con `applianceCodes`, devolvía tokens y claves válidos.
+- Los valores devueltos funcionaron posteriormente para la autenticación local V3.
+
+La investigación completa, los resultados de las pruebas y el diff de código están documentados en [`midea-local` Pull Request #470](https://github.com/midea-lan/midea-local/pull/470). El commit inmutable correspondiente es [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
+
+También en el código fuente actual se sigue utilizando exactamente este endpoint:
+
+```text
+/v1/iot/secure/getToken
+```
+
+Además, ahora se envía también `applianceCodes`. Esto puede comprobarse directamente en el [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) actual.
+
+La versión actual de `Midea AC LAN` integra `midea-local==6.11.0` y sigue declarándose como una integración `local_push`. Ambas cosas figuran en el [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json) actual.
+
+Por tanto, la afirmación general de que la API de tokens de SmartHome se habría cerrado queda refutada, al menos para las cuentas y dispositivos probados en junio de 2026. Lo correcto sería:
+
+> La consulta de tokens anterior dejó de funcionar tras un cambio en el formato esperado de la solicitud. Después de adaptarla al formato utilizado por la aplicación oficial SmartHome, el mismo endpoint V1 volvió a proporcionar credenciales locales válidas.
+
+Esto no excluye diferencias regionales, cuentas distintas o tipos de dispositivos no compatibles. Pero evidentemente no se trataba de una desactivación global.
+
+## Por qué «V2» se malinterpreta con tanta facilidad aquí
+
+En el entorno de Midea se utilizan al menos tres designaciones de versión independientes entre sí.
+
+| Término | Significado |
+| --- | --- |
+| Protocolo local V2/V3 | Generación de la comunicación directa entre la integración y el dispositivo |
+| Endpoint de aplicación V1/V2 | Número de versión de un endpoint HTTP individual en el backend de las aplicaciones de Midea |
+| Cloud-to-Cloud API V2 | API oficial para socios, destinada a empresas externas autorizadas |
+
+### V2 y V3 locales
+
+En el protocolo local de dispositivos, V2 o V3 designan la generación de comunicación del dispositivo. Los dispositivos V3 más recientes necesitan token y clave para la autenticación local. `Midea Smart AC` documenta este requisito en su [guía de configuración](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Esta versión del protocolo no tiene nada que ver con la Cloud-to-Cloud API V2 oficial.
+
+### V1 y V2 en las URL de aplicaciones
+
+Incluso dentro de la misma aplicación pueden utilizarse simultáneamente endpoints con distintos números de versión. Por ello, un `/v2/` en la ruta de la URL no significa que toda la plataforma se haya migrado a una arquitectura nueva.
+
+El código actual de `midea-local` sigue utilizando [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) para el token y la clave. No obstante, otras funciones pueden encontrarse en rutas con versiones diferentes.
+
+### Cloud-to-Cloud API V2 oficial
+
+Midea documenta efectivamente una [Cloud-to-Cloud API V2 oficial](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Esta utiliza, entre otros elementos:
+
+- OAuth 2.0
+- `client_id` y `client_secret`
+- tokens de acceso y tokens de actualización de corta duración
+- firmas HMAC-SHA256
+- `/v2/open/oauth2/authorize`
+- `/v2/open/oauth2/token`
+- `/v2/open/device/list/get`
+- consultas de estado y comandos de control basados en la nube
+
+Se trata de una interfaz para socios controlada. El `client_secret` necesario es asignado por Midea a un proveedor externo. Un propietario normal de una PortaSplit no lo obtiene simplemente mediante su cuenta MSmartHome. Los requisitos y las reglas de firma se describen en la [documentación oficial de V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Además, esta API no surgió recién en 2025. La documentación incluye ejemplos de solicitudes con marcas de tiempo de 2018 y un comentario Java del 18 de abril de 2019. Por tanto, la interfaz V2 para socios ya existía mucho antes de la advertencia en `Midea AC LAN`.
+
+## Midea sí está sustituyendo una API V1, pero otra diferente
+
+Midea también mantiene una interfaz oficial Cloud-to-Cloud más antigua bajo `/v1/open/...`. Su documentación incluye expresamente la indicación de que ya no se recomienda, que podría desactivarse en el futuro y que debe utilizarse la nueva documentación V2. Esto figura en la [documentación de Midea sobre la antigua Cloud-to-Cloud API](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
+
+Esta indicación es una migración oficial real de V1 a V2. Pero afecta a los endpoints para socios:
+
+```text
+/v1/open/...
+           ↓
+/v2/open/...
+```
+
+En cambio, la consulta de tokens utilizada por las bibliotecas de Home Assistant es:
+
+```text
+/v1/iot/secure/getToken
+```
+
+Y después, la conexión local de la PortaSplit ya no pasa por una URL de nube de ese tipo, sino directamente por la red doméstica.
+
+Por tanto, equiparar las tres interfaces únicamente por el número de versión «V1» no estaría técnicamente justificado.
+
+## ¿Existe ya una integración de Home Assistant totalmente basada en la nube?
+
+Con [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud) existe ahora una integración de la comunidad que controla dispositivos Midea mediante la nube en lugar de hacerlo directamente por la LAN.
+
+Sin embargo, esto tampoco demuestra que la API V2 oficial para socios haya sustituido ya el control local. El código fuente actual de `Midea Auto Cloud` utiliza, entre otros:
+
+```text
+/v1/appliance/transparent/send
+/mjl/v1/device/status/lua/get
+/mjl/v1/device/lua/control
+```
+
+Estos endpoints pueden consultarse en el [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py) actual.
+
+Por tanto, la integración emula funciones privadas de aplicaciones o de la nube de consumo. No utiliza simplemente la interfaz para socios documentada `/v2/open/...`.
+
+Así pues, ya existe una alternativa basada en la nube. Pero también implica las dependencias habituales de una integración en la nube: acceso a Internet, una cuenta de usuario funcional, servidores de Midea disponibles y endpoints privados que sigan siendo compatibles.
+
+## ¿Qué significa esto concretamente para los propietarios de una PortaSplit?
+
+### Control local ya configurado
+
+Para una PortaSplit ya configurada, la situación es relativamente tranquila. `Midea Smart AC` guarda el token y la clave localmente después de la configuración y, según su propia [documentación sobre la nube](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage), no necesita conexión a la nube para el control posterior.
+
+Por tanto, una desactivación de la mera consulta de tokens no finalizaría automáticamente la conexión local existente.
+
+### Nueva configuración o recuperación
+
+El riesgo es mayor en caso de:
+
+- una nueva instalación de Home Assistant
+- cambiar a otra integración
+- una copia de seguridad perdida o dañada
+- sustituir el módulo Wi-Fi
+- cambios en la asignación de dispositivos
+- un nuevo emparejamiento, si con ello cambian las credenciales del dispositivo
+
+En tales casos, la integración debe obtener de nuevo el token y la clave, o el usuario debe indicarlos manualmente. Que `Midea Smart AC` admite una configuración manual se describe en su [documentación de configuración](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+No está documentado oficialmente si un restablecimiento de fábrica o un nuevo emparejamiento generan obligatoriamente nuevas credenciales en cada PortaSplit, por lo que no debería afirmarse de forma general.
+
+### Una desactivación real del control por LAN
+
+Para que una PortaSplit ya configurada dejara de aceptar sus credenciales almacenadas localmente, tendría que cambiar además el comportamiento del dispositivo o del módulo Wi-Fi, por ejemplo mediante un nuevo firmware o un procedimiento de autenticación modificado.
+
+La mera desactivación del endpoint en la nube `/v1/iot/secure/getToken` no elimina automáticamente las credenciales que ya existen en el dispositivo y en Home Assistant. Esto se deriva de la separación entre la consulta única en la nube y el control posterior por LAN documentada por [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Un cambio futuro de este tipo en el dispositivo es técnicamente posible. Sin embargo, no he encontrado en la documentación de Midea accesible públicamente un anuncio concreto ni una fecha de desactivación específica para la PortaSplit.
+
+## Lo que seguiría recomendando
+
+A pesar de los hallazgos que relativizan la situación, sigue siendo recomendable hacer una copia de seguridad.
+
+Para dispositivos V3, `Midea AC LAN` recomienda expresamente guardar la configuración JSON generada fuera de HAOS. La recomendación actual figura directamente en la [README del proyecto](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
+
+Se aplica lo siguiente:
+
+- Tratar el token y la clave como contraseñas.
+- No subir el archivo JSON a un repositorio público de Git.
+- No publicar registros de depuración sin censurar.
+- Cifrar la copia de seguridad.
+- Crear además una copia de seguridad completa de Home Assistant.
+- Comprobar el funcionamiento actual antes de actualizar el firmware y las integraciones.
+- Volver a probar el control local después de las actualizaciones.
+
+Una copia de seguridad es una protección razonable frente a cambios en la nube, problemas de integración y errores propios. Sin embargo, no indica que una desactivación sea inminente. Cómo configurar correctamente una PortaSplit y protegerla en la red doméstica se explica en la [parte práctica sobre la configuración](/blog/midea-portasplit-home-assistant-einrichten).
+
+## Evaluación basada en las pruebas disponibles
+
+La advertencia de `Midea AC LAN` debe tomarse en serio, pero debe contextualizarse correctamente.
+
+Documenta un riesgo plausible a largo plazo: Midea podría considerar los tokens locales sin caducidad como un problema de seguridad, restringir aún más la obtención de dichos tokens o vincular más estrechamente los dispositivos futuros a la nube.
+
+En cambio, no hay pruebas de una desactivación oficialmente anunciada y fechada del control local de la PortaSplit.
+
+El estado técnico actual muestra incluso lo contrario de una desactivación ya realizada: en junio de 2026, el endpoint de tokens V1 que se seguía utilizando proporcionó credenciales válidas después de adaptar la solicitud al formato de la aplicación oficial SmartHome. La corrección correspondiente forma hoy parte de la biblioteca utilizada por `Midea AC LAN`.
+
+También existe la Cloud-to-Cloud API V2 oficial de Midea. Pero se trata de una interfaz para socios más antigua y con acceso restringido, no automáticamente del sucesor del protocolo local de la PortaSplit.
+
+Por tanto, la conclusión sobria es:
+
+> Crear una copia de seguridad, vigilar las integraciones y tener presentes las dependencias de la nube, pero no descartar prematuramente el control local de la PortaSplit basándose en una suposición de desactivación no confirmada.
+
+## Fuentes
+
+1.  [Midea AC LAN: README actual y advertencia de desactivación](https://github.com/wuwentao/midea_ac_lan#1-important-notice): texto de la advertencia, recomendación de copia de seguridad y distinción entre dispositivos V2 más antiguos y V3 más recientes.
+
+2.  [Midea AC LAN PR #578 del 19 de mayo de 2025](https://github.com/wuwentao/midea_ac_lan/pull/578): introducción de la advertencia sobre la desactivación gradual de los servicios de tokens y la supuesta migración a una API V2 basada en la nube.
+
+3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639): cambio de la fuente de tokens documentada a NetHome Plus.
+
+4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201): discusión sobre la consulta defectuosa de tokens de SmartHome y el uso temporal de NetHome Plus.
+
+5.  [Comentario del mantenedor de Midea-AC-LAN sobre la supuesta migración a V2](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457): identifica expresamente la afirmación sobre la nueva nube V2 como su propia interpretación.
+
+6.  [Respuesta del mantenedor de midea-msmart](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109): describe la existencia de una nueva API V2 como una suposición y señala las limitadas posibilidades de ingeniería inversa.
+
+7.  [midea-local PR #470 del 15 de junio de 2026](https://github.com/midea-lan/midea-local/pull/470): análisis del error 3004, captura de la solicitud de la aplicación oficial, incorporación de `applianceCodes` y prueba satisfactoria con cuatro equipos de aire acondicionado V3.
+
+8.  [Commit inmutable de la corrección de SmartHome-getToken](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5): diff exacto del código de la corrección integrada.
+
+9.  [Código actual de nube de midea-local](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): endpoint `/v1/iot/secure/getToken` que sigue utilizándose y campo de solicitud actual `applianceCodes`.
+
+10.  [Manifiesto actual de Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): versión utilizada de `midea-local` y clasificación como integración local push.
+
+11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): documentación del control local, de la consulta única en la nube para dispositivos V3 y de la configuración manual con token y clave.
+
+12.  [Midea AC LAN Issue #607 sobre la PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607): ejemplo concreto de PortaSplit con tipo de dispositivo `0xAC`, modelo `00000Q1D`, versión de protocolo 3 y configuración satisfactoria mediante NetHome Plus.
+
+13.  [Cloud-to-Cloud API V2 oficial de Midea](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html): OAuth2, ID de cliente, secreto de cliente, tokens de acceso y actualización, procedimiento de firma y endpoints `/v2/open/...`.
+
+14.  [Cloud-to-Cloud API V1 oficial de Midea](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): indicación oficial de que la antigua interfaz para socios `/v1/open/...` ya no se recomienda y podría desactivarse en el futuro.
+
+15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) y [código actual de nube](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): integración de la comunidad para control completo en la nube y endpoints privados de aplicaciones V1 que se utilizan realmente.
+
+----
+
 # Testa Cold Storage med Rclone: en praktisk testplan
 
 URL: https://rafaelpfister.ch/sv/blog/testa-cold-storage-med-rclone-en-praktisk-testplan
@@ -8845,6 +9787,320 @@ Den som kör Rclone direkt **på värden** via systemd undviker de två första 
 
 ----
 
+# Midea V2, V3 och Cloud API: Vad det faktiskt betyder för PortaSplit
+
+URL: https://rafaelpfister.ch/sv/blog/midea-v2-v3-och-cloud-api-vad-det-faktiskt-betyder-for-portasplit
+Datum: 2026-07-25
+
+I samband med Midea PortaSplit syftar «V2» på flera sinsemellan oberoende saker. Det finns ett lokalt V2-enhetsprotokoll, versionsnummer i privata appändpunkter och ett officiellt moln-till-moln-API V2 för partner. Den som likställer dessa nivåer drar oundvikligen fel slutsatser om den lokala styrningen.
+
+Projektet `Midea AC LAN` varnar i sin [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) för att tidigare token-gränssnitt skulle stängas och ersättas av ett molnbaserat V2-API. En granskning av diskussionerna, den aktuella koden och Mideas officiella dokumentation ger en mer nyanserad bild:
+
+> Ett officiellt Midea moln-till-moln-API V2 finns. Men det är inte identiskt med token-gränssnittet som Home Assistant använder, och inte heller med det lokala V2- eller V3-enhetsprotokollet. Någon officiellt annonserad avveckling av lokal PortaSplit-styrning med ett konkret datum är inte dokumenterad. I juni 2026 visades dessutom att det SmartHome-token-API som påstods vara avstängt fortfarande fungerade – den tidigare begäran från community-biblioteket var bara ofullständig.
+
+Den här artikeln är aktuell den 25 juli 2026.
+
+## Varför den tidigare bedömningen måste korrigeras
+
+I [den första artikeln om frågan om molntoken](/blog/midea-portasplit-home-assistant) återgav jag i huvudsak varningen från projektet `Midea AC LAN` som en annonserad avveckling av molngränssnitten. Det motsvarade ordalydelsen i projektets README, men var för starkt formulerat som faktapåstående.
+
+Varningen är fortfarande relevant som en riskindikation. Den är dock inte en publicerad Midea-färdplan. Framför allt finns nu nytt tekniskt material som ifrågasätter en väsentlig del av den tidigare tolkningen.
+
+## Så fungerar den lokala PortaSplit-styrningen
+
+Home Assistant-integrationen `Midea Smart AC` beskriver uttryckligen sin arkitektur som lokal styrning. För nyare V3-enheter används Midea-molnet endast under installationen för att hämta enhetsspecifik token och nyckel. Därefter sparar integrationen båda värdena lokalt och behöver ingen ytterligare molnanslutning för själva styrningen. Projektet dokumenterar detta under [„Note On Cloud Usage"](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Förenklat ser flödet ut så här:
+
+```text
+Einrichtung:
+
+Home Assistant
+    │
+    ├── Anmeldung an einer Midea-Cloud
+    ├── Abruf von Geräte-ID, Token und Key
+    └── lokale Speicherung der Zugangsdaten
+
+Normalbetrieb:
+
+Home Assistant
+    │
+    └── lokale TCP-Verbindung zur PortaSplit
+```
+
+För manuellt konfigurerade V3-enheter kräver `Midea Smart AC` enhets-ID, IP-adress, port, token och nyckel. Den dokumenterade standardporten är `6444/TCP`; token och nyckel anges som 128 respektive 64 hexadecimala tecken. Dessa uppgifter finns i [dokumentationen för manuell konfiguration](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+En PortaSplit identifierades exempelvis i ärendehanteraren för `Midea AC LAN` som enhetstyp `0xAC`, modell `00000Q1D` och protokollversion 3. Samma användare kunde sedan lägga till den i Home Assistant via NetHome Plus. Det konkreta förloppet dokumenteras i [Issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
+
+Det avgörande är åtskillnaden:
+
+- Molntjänsten används för att hämta de lokala åtkomstuppgifterna.
+- Den senare styrningen sker direkt i LAN.
+- Ett avbrott i token-tjänsten förhindrar därför främst nya installationer.
+- Det avslutar inte automatiskt en redan konfigurerad lokal anslutning.
+
+Det senare motsvarar också den uttryckliga beskrivningen av [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+## Varifrån avvecklingsvarningen kommer
+
+Den varningstext som syns i dag lades till i dokumentationen den 19 maj 2025 genom [Pull Request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
+
+Motiveringen kan sammanfattas så här:
+
+- De lokala token-värdena skulle sakna utgångsdatum.
+- Olika Home Assistant-projekt använde emulerad eller extraherad appkryptering.
+- Detta skulle innebära ett säkerhetsproblem.
+- Midea skulle därför stegvis stänga de tidigare token-tjänsterna.
+- På lång sikt skulle lokal V1-styrning trängas undan av ett molnbaserat V2-API.
+
+I juli 2025 justerades dokumentationen ännu en gång genom [Pull Request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). I stället för SmartHome-molnet nämndes nu NetHome Plus som tillfällig token-källa. Själva avvecklingsvarningen fanns kvar.
+
+Den underliggande diskussionen är dock mer försiktigt formulerad än README-filen.
+
+I [kommentaren från Midea-AC-LAN-underhållaren](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) sägs i huvudsak att NetHome Plus möjligen bara är en tillfällig lösning och att Midea, enligt hans uppfattning, har en ny helt molnbaserad V2-tjänst.
+
+Underhållaren av `midea-msmart` svarade att han också hade misstänkt att ett nytt V2-API fanns, men på grund av brist på egna Midea-enheter bara kunde undersöka det begränsat. Detta står i [det direkta svarskommentaren](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
+
+Därmed är källsituationen tydligare:
+
+- Varningen kommer från erfarna community-utvecklare.
+- Den bygger på observerade förändringar och deras tekniska bedömning.
+- En av underhållarna beskriver uttryckligen V2-migreringen som sin uppfattning.
+- Den andra talar om ett antagande.
+- Varken pull requesten eller diskussionen länkar till ett officiellt Midea-meddelande om avveckling eller ett datum.
+
+Det gör inte varningen värdelös. Men det gör den till en riskanalys, inte en bekräftad tillverkarfärdplan.
+
+## Det avgörande nya fyndet från juni 2026
+
+Den 15 juni 2026 infördes en korrigering i biblioteket `midea-local` som väsentligt förändrar den tidigare tolkningen.
+
+Utgångspunkten var felet:
+
+```json
+{
+  "code": "3004",
+  "msg": "value is illegal."
+}
+```
+
+Detta fel uppstod vid hämtning av token och nyckel via SmartHome-molnet. Inloggning och enhetslistan fungerade fortfarande, men anropet till `/v1/iot/secure/getToken` avvisades.
+
+Till en början såg det ut som ett avstängt eller obrukbart gränssnitt. En analys av begäran från den officiella SmartHome-appen visade dock en annan orsak: Appen skickade, utöver `udpid`, även fältet `applianceCodes`. Community-biblioteket hade inte skickat med detta fält.
+
+Den korrigerade begäran innehåller nu:
+
+```python
+data.update({
+    "udpid": udp_id,
+    "applianceCodes": str(appliance_id)
+})
+```
+
+Utvecklaren testade ändringen med ett verkligt SmartHome-konto och fyra V3-luftkonditioneringsenheter av typen `0xAC`:
+
+- Utan `applianceCodes` svarade servern med fel 3004.
+- Med `applianceCodes` levererade den giltiga token-värden och nycklar.
+- De returnerade värdena fungerade sedan för lokal V3-autentisering.
+
+Den fullständiga undersökningen, testresultaten och kod-diffen dokumenteras i [`midea-local` Pull Request #470](https://github.com/midea-lan/midea-local/pull/470). Den tillhörande oföränderliga committen är [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
+
+Även i den aktuella källkoden används fortfarande exakt denna ändpunkt:
+
+```text
+/v1/iot/secure/getToken
+```
+
+Dessutom skickas nu `applianceCodes` med. Detta går direkt att följa i den aktuella [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py).
+
+Den nuvarande versionen av `Midea AC LAN` inkluderar `midea-local==6.11.0` och deklarerar sig fortfarande som en `local_push`-integration. Båda framgår av det aktuella [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json).
+
+Det generella påståendet att SmartHome-token-API:t skulle ha stängts är därmed motbevisat, åtminstone för de konton och enheter som testades i juni 2026. Korrekt vore:
+
+> Den tidigare token-hämtningen fungerade inte längre efter en ändring av det förväntade begärandeformatet. Efter anpassning till det format som den officiella appen använder levererade samma V1-ändpunkt åter giltiga lokala åtkomstuppgifter.
+
+Regionala skillnader, avvikande konton eller enhetstyper som inte stöds är därmed inte uteslutna. Men det var uppenbarligen ingen global avveckling.
+
+## Varför „V2" så lätt missförstås här
+
+I Midea-sammanhang används minst tre sinsemellan oberoende versionsbeteckningar.
+
+| Begrepp | Betydelse |
+| --- | --- |
+| Lokalt V2-/V3-protokoll | Generation för direkt kommunikation mellan integration och enhet |
+| V1-/V2-appändpunkt | Versionsnummer för en enskild HTTP-ändpunkt i Midea-apparnas backend |
+| Moln-till-moln-API V2 | Officiellt partner-API för auktoriserade tredjepartsföretag |
+
+### Lokalt V2 och V3
+
+I det lokala enhetsprotokollet anger V2 respektive V3 enhetens kommunikationsgeneration. Nyare V3-enheter behöver token och nyckel för lokal autentisering. `Midea Smart AC` dokumenterar detta krav i sin [konfigurationsguide](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Denna protokollversion har inget att göra med det officiella moln-till-moln-API:t V2.
+
+### V1 och V2 i app-URL:er
+
+Även inom samma app kan ändpunkter med olika versionsnummer användas samtidigt. Ett `/v2/` i URL-sökvägen betyder därför inte att hela plattformen har ställts om till en ny arkitektur.
+
+Den aktuella `midea-local`-koden använder fortfarande [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) för token och nyckel. Andra funktioner kan ändå ligga på sökvägar med andra versionsnummer.
+
+### Officiellt moln-till-moln-API V2
+
+Midea dokumenterar faktiskt ett [officiellt moln-till-moln-API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Det använder bland annat:
+
+- OAuth 2.0
+- `client_id` och `client_secret`
+- kortlivade access-token och refresh-token
+- HMAC-SHA256-signaturer
+- `/v2/open/oauth2/authorize`
+- `/v2/open/oauth2/token`
+- `/v2/open/device/list/get`
+- molnbaserade statusförfrågningar och styrkommandon
+
+Detta är ett kontrollerat partnergränssnitt. Det nödvändiga `client_secret` tilldelas en tredjepartsleverantör av Midea. En vanlig PortaSplit-ägare får det inte bara via sitt MSmartHome-konto. Kraven och signaturreglerna beskrivs i [den officiella V2-dokumentationen](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Detta API uppstod dessutom inte först 2025. Dokumentationen innehåller exempel på begäranden med tidsstämplar från 2018 och en Java-kommentar från den 18 april 2019. Partnergränssnittet V2 fanns alltså redan långt före varningen i `Midea AC LAN`.
+
+## Midea ersätter faktiskt ett V1-API – men ett annat
+
+Midea har också ett äldre officiellt moln-till-moln-gränssnitt under `/v1/open/...`. Dess dokumentation har uttryckligen en anmärkning om att det inte längre rekommenderas, kan avvecklas i framtiden och att den nya V2-dokumentationen bör användas. Detta står i Mideas [dokumentation för det gamla moln-till-moln-API:t](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
+
+Denna anmärkning är en verklig officiell V1-till-V2-migrering. Men den gäller partnerändpunkterna:
+
+```text
+/v1/open/...
+           ↓
+/v2/open/...
+```
+
+Token-hämtningen som används av Home Assistant-biblioteken är däremot:
+
+```text
+/v1/iot/secure/getToken
+```
+
+Och den lokala PortaSplit-anslutningen sker sedan inte alls via en sådan moln-URL, utan direkt i hemnätverket.
+
+Att likställa de tre gränssnitten bara på grund av versionsnumret „V1" skulle därför inte vara tekniskt motiverat.
+
+## Finns det redan en helt molnbaserad Home Assistant-integration?
+
+Med [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud) finns numera en community-integration som styr Midea-enheter via molnet i stället för direkt via LAN.
+
+Inte heller detta är dock ett belägg för att det officiella partner-API:t V2 redan har ersatt lokal styrning. Den aktuella källkoden för `Midea Auto Cloud` använder bland annat:
+
+```text
+/v1/appliance/transparent/send
+/mjl/v1/device/status/lua/get
+/mjl/v1/device/lua/control
+```
+
+Dessa ändpunkter kan ses i den aktuella [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py).
+
+Integrationen emulerar alltså privata app- respektive konsumentmolnfunktioner. Den använder inte helt enkelt det dokumenterade `/v2/open/...`-partnergränssnittet.
+
+Det finns alltså redan ett molnbaserat alternativ. Men det medför också de vanliga beroendena för en molnintegration: internetåtkomst, ett fungerande användarkonto, tillgängliga Midea-servrar och fortsatt kompatibla privata ändpunkter.
+
+## Vad betyder detta konkret för PortaSplit-ägare?
+
+### Redan konfigurerad lokal styrning
+
+För en redan konfigurerad PortaSplit är situationen relativt lugn. `Midea Smart AC` sparar token och nyckel lokalt efter installationen och behöver enligt sin egen [molndokumentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) ingen molnanslutning för fortsatt styrning.
+
+En avveckling av ren token-hämtning skulle därför inte automatiskt avsluta den befintliga lokala anslutningen.
+
+### Nyinstallation eller återställning
+
+Risken är större vid:
+
+- en ny Home Assistant-installation
+- byte till en annan integration
+- en förlorad eller skadad säkerhetskopia
+- byte av Wi-Fi-modul
+- ändringar i enhetstilldelningen
+- en ny parkoppling, om enhetens åtkomstuppgifter då ändras
+
+I sådana fall måste integrationen hämta token och nyckel på nytt, eller så måste användaren ange dem manuellt. Att `Midea Smart AC` stöder manuell konfiguration beskrivs i dess [konfigurationsdokumentation](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Om en fabriksåterställning eller ny parkoppling nödvändigtvis skapar nya åtkomstuppgifter för varje PortaSplit är inte officiellt dokumenterat och bör därför inte påstås generellt.
+
+### En verklig avveckling av LAN-styrningen
+
+För att en redan konfigurerad PortaSplit inte längre ska acceptera sina lokalt sparade åtkomstuppgifter måste dessutom enhetens eller Wi-Fi-modulens beteende ändras – till exempel genom ny firmware eller en ändrad autentiseringsmetod.
+
+Enbart en avveckling av molnändpunkten `/v1/iot/secure/getToken` tar inte automatiskt bort åtkomstuppgifterna som redan finns i enheten och Home Assistant. Det följer av den uppdelning mellan engångshämtning från molnet och efterföljande LAN-styrning som dokumenteras av [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+En sådan framtida enhetsändring är tekniskt möjlig. Men jag har inte hittat något konkret tillkännagivande eller avvecklingsdatum specifikt för PortaSplit i Mideas offentligt tillgängliga dokumentation.
+
+## Vad jag fortfarande skulle rekommendera
+
+Trots de relativiserande insikterna är en säkerhetskopia klok.
+
+För V3-enheter rekommenderar `Midea AC LAN` uttryckligen att den skapade JSON-konfigurationen sparas utanför HAOS. Den aktuella rekommendationen finns direkt i [projektets README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
+
+Då gäller följande:
+
+- Behandla token och nyckel som lösenord.
+- Ladda inte upp JSON-filen till ett offentligt Git-repository.
+- Publicera inga osanerade felsökningsloggar.
+- Kryptera säkerhetskopian.
+- Skapa dessutom en fullständig Home Assistant-säkerhetskopia.
+- Kontrollera den aktuella funktionen före firmware- och integrationsuppdateringar.
+- Testa den lokala styrningen igen efter uppdateringar.
+
+En säkerhetskopia är ett rimligt skydd mot molnändringar, integrationsproblem och egna misstag. Men den är inget tecken på att en avveckling är nära förestående. Hur en PortaSplit konfigureras korrekt och säkras i hemnätverket beskrivs i [den praktiska delen om installation](/blog/midea-portasplit-home-assistant-einrichten).
+
+## Bedömning utifrån tillgängliga belägg
+
+Varningen från `Midea AC LAN` bör tas på allvar, men sättas i rätt sammanhang.
+
+Den dokumenterar en rimlig långsiktig risk: Midea kan betrakta lokala token-värden utan utgångsdatum som ett säkerhetsproblem, ytterligare begränsa möjligheten att hämta sådana token-värden eller knyta framtida enheter hårdare till molnet.
+
+Däremot är en officiellt annonserad och tidsatt avveckling av lokal PortaSplit-styrning inte belagd.
+
+Det aktuella tekniska läget visar till och med motsatsen till en redan genomförd avveckling: I juni 2026 levererade den fortfarande använda V1-token-ändpunkten giltiga åtkomstuppgifter efter att begäran hade anpassats till den officiella SmartHome-appens format. Den aktuella korrigeringen ingår i dag i biblioteket som används av `Midea AC LAN`.
+
+Även det officiella Midea moln-till-moln-API:t V2 finns. Men det är ett äldre partnergränssnitt med begränsad åtkomst och inte automatiskt efterföljaren till det lokala PortaSplit-protokollet.
+
+Den nyktra slutsatsen är därför:
+
+> Skapa en säkerhetskopia, följ integrationerna och ha molnberoenden i åtanke – men avskriv inte den lokala PortaSplit-styrningen i förtid på grund av ett obekräftat antagande om avveckling.
+
+## Källor
+
+1.  [Midea AC LAN: aktuell README och avvecklingsvarning](https://github.com/wuwentao/midea_ac_lan#1-important-notice): Varningens ordalydelse, rekommendation om säkerhetskopia och åtskillnaden mellan äldre V2- och nyare V3-enheter.
+
+2.  [Midea AC LAN PR #578 från den 19 maj 2025](https://github.com/wuwentao/midea_ac_lan/pull/578): Införande av varningen om stegvis avveckling av token-tjänsterna och den påstådda migreringen till ett molnbaserat V2-API.
+
+3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639): Byte av den dokumenterade token-källan till NetHome Plus.
+
+4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201): Diskussion om den felaktiga SmartHome-token-hämtningen och den tillfälliga användningen av NetHome Plus.
+
+5.  [Kommentar från Midea-AC-LAN-underhållaren om den misstänkta V2-migreringen](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457): Anger uttryckligen påståendet om det nya V2-molnet som den egna uppfattningen.
+
+6.  [Svar från midea-msmart-underhållaren](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109): Beskriver existensen av ett nytt V2-API som ett antagande och hänvisar till begränsade möjligheter till reverse engineering.
+
+7.  [midea-local PR #470 från den 15 juni 2026](https://github.com/midea-lan/midea-local/pull/470): Analys av fel 3004, inspelning av den officiella appbegäran, tillägg av `applianceCodes` och framgångsrikt test med fyra V3-luftkonditioneringsenheter.
+
+8.  [Oföränderlig commit för SmartHome-getToken-korrigeringen](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5): Exakt kod-diff för den införda korrigeringen.
+
+9.  [Aktuell midea-local-molnkod](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): Fortfarande använd ändpunkt `/v1/iot/secure/getToken` och aktuellt begärandefält `applianceCodes`.
+
+10.  [Aktuellt manifest för Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): Använd version av `midea-local` och klassificering som lokal push-integration.
+
+11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): Dokumentation av lokal styrning, engångshämtning från molnet för V3-enheter och manuell konfiguration med token och nyckel.
+
+12.  [Midea AC LAN Issue #607 om PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607): Konkret PortaSplit-exempel med enhetstyp `0xAC`, modell `00000Q1D`, protokollversion 3 och lyckad installation via NetHome Plus.
+
+13.  [Officiellt Midea moln-till-moln-API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html): OAuth2, klient-ID, klienthemlighet, access- och refresh-token, signaturmetod och `/v2/open/...`-ändpunkter.
+
+14.  [Officiellt Midea moln-till-moln-API V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): Officiell anmärkning om att det gamla `/v1/open/...`-partnergränssnittet inte längre rekommenderas och kan avvecklas i framtiden.
+
+15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) och [aktuell molnkod](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): Community-integration för fullständig molnstyrning och de privata V1-appändpunkter som faktiskt används.
+
+----
+
 # Teste Cold Storage med Rclone: en praktisk testplan
 
 URL: https://rafaelpfister.ch/no/blog/teste-cold-storage-med-rclone-en-praktisk-testplan
@@ -9434,3 +10690,317 @@ De som kjører rclone direkte **på verten** via systemd, unngår de to første 
 3.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS-cache-moduser, --allow-other og begrensningene ved FUSE-montering.
 
 4.  [AppArmor-dokumentasjon (Ubuntu)](https://documentation.ubuntu.com/server/how-to/security/apparmor/): hvordan profiler knyttes til kjørbare filer; fusermount3-profilen ligger under /etc/apparmor.d/fusermount3.
+
+----
+
+# Midea V2, V3 og Cloud API: Hva det faktisk betyr for PortaSplit
+
+URL: https://rafaelpfister.ch/no/blog/midea-v2-v3-og-cloud-api-hva-det-faktisk-betyr-for-portasplit
+Datum: 2026-07-25
+
+I Midea PortaSplit-sammenheng betegner «V2» flere ting som er uavhengige av hverandre. Det finnes en lokal V2-enhetsprotokoll, versjonsnumre i private app-endepunkter og en offisiell sky-til-sky-API V2 for partnere. De som likestiller disse nivåene, vil uunngåelig trekke feil konklusjoner om lokal styring.
+
+Prosjektet `Midea AC LAN` advarer i sin [README](https://github.com/wuwentao/midea_ac_lan#1-important-notice) om at tidligere token-grensesnitt skulle bli stengt og erstattet av en skybasert V2-API. En gjennomgang av diskusjonene, den nåværende koden og Mideas offisielle dokumentasjon gir et mer nyansert bilde:
+
+> En offisiell Midea sky-til-sky-API V2 finnes. Den er imidlertid ikke identisk med token-grensesnittet som brukes av Home Assistant, og heller ikke med den lokale V2- eller V3-enhetsprotokollen. En offisielt kunngjort nedstenging av lokal PortaSplit-styring med en konkret dato er ikke dokumentert. I juni 2026 ble det dessuten påvist at den angivelig nedstengte SmartHome-token-API-en fortsatt fungerte – den tidligere forespørselen fra fellesskapsbiblioteket var bare ufullstendig.
+
+Denne artikkelen er oppdatert per 25. juli 2026.
+
+## Hvorfor den tidligere vurderingen må korrigeres
+
+I [den første artikkelen om sky-token-spørsmålet](/blog/midea-portasplit-home-assistant) gjenga jeg i hovedsak advarselen fra prosjektet `Midea AC LAN` som en varslet nedstenging av skygrensesnittene. Det samsvarte med ordlyden i prosjektets README, men var for sterkt formulert som en faktisk påstand.
+
+Advarselen er fortsatt relevant som en risikovurdering. Den er imidlertid ikke en publisert Midea-veikart. Fremfor alt er nytt teknisk materiale nå tilgjengelig, og dette setter en vesentlig del av den tidligere tolkningen i tvil.
+
+## Slik fungerer lokal PortaSplit-styring
+
+Home Assistant-integrasjonen `Midea Smart AC` beskriver arkitekturen sin uttrykkelig som lokal styring. På nyere V3-enheter brukes Midea-skyen bare under oppsettet for å hente en enhetsspesifikk token og nøkkel. Deretter lagrer integrasjonen begge verdiene lokalt og trenger ingen ytterligere skyforbindelse for den faktiske styringen. Prosjektet dokumenterer dette under [«Note On Cloud Usage"](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+Forenklet ser prosessen slik ut:
+
+```text
+Einrichtung:
+
+Home Assistant
+    │
+    ├── Anmeldung an einer Midea-Cloud
+    ├── Abruf von Geräte-ID, Token und Key
+    └── lokale Speicherung der Zugangsdaten
+
+Normalbetrieb:
+
+Home Assistant
+    │
+    └── lokale TCP-Verbindung zur PortaSplit
+```
+
+For manuelt konfigurerte V3-enheter krever `Midea Smart AC` enhets-ID, IP-adresse, port, token og nøkkel. Den dokumenterte standardporten er `6444/TCP`; token og nøkkel er oppgitt som henholdsvis 128 og 64 heksadesimale tegn. Denne informasjonen finnes i [dokumentasjonen for manuell konfigurasjon](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+En PortaSplit ble for eksempel gjenkjent i sakssporeren til `Midea AC LAN` som enhetstype `0xAC`, modell `00000Q1D` og protokollversjon 3. Den samme brukeren kunne deretter legge den til i Home Assistant via NetHome Plus. Det konkrete forløpet er dokumentert i [Issue #607](https://github.com/wuwentao/midea_ac_lan/issues/607).
+
+Det avgjørende er skillet:
+
+- Skytjenesten brukes for å hente de lokale tilgangsdataene.
+- Senere styring skjer direkte i LAN-et.
+- En feil i token-tjenesten hindrer derfor først og fremst nye oppsett.
+- Den avslutter ikke automatisk en allerede konfigurert lokal forbindelse.
+
+Sistnevnte samsvarer også med den uttrykkelige beskrivelsen fra [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+## Hvor nedstengningsadvarselen kommer fra
+
+Advarselsteksten som er synlig i dag, ble lagt til i dokumentasjonen 19. mai 2025 med [Pull Request #578](https://github.com/wuwentao/midea_ac_lan/pull/578).
+
+Begrunnelsen kan oppsummeres slik:
+
+- Lokale tokener hadde ingen utløpsdato.
+- Ulike Home Assistant-prosjekter brukte etterlignet eller uttrukket app-kryptering.
+- Dette skapte et sikkerhetsproblem.
+- Midea ville derfor gradvis stenge de tidligere token-tjenestene.
+- På lang sikt skulle lokal V1-styring bli fortrengt av en skybasert V2-API.
+
+I juli 2025 ble dokumentasjonen justert på nytt gjennom [Pull Request #639](https://github.com/wuwentao/midea_ac_lan/pull/639). I stedet for SmartHome-skyen ble NetHome Plus nå nevnt som en midlertidig token-kilde. Selve nedstengningsadvarselen ble stående.
+
+Den underliggende diskusjonen er imidlertid formulert mer forsiktig enn README-filen.
+
+I [kommentaren fra Midea-AC-LAN-vedlikeholderen](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457) står det i hovedsak at NetHome Plus muligens bare er en midlertidig løsning, og at Midea etter hans forståelse har en ny, fullt skybasert V2-tjeneste.
+
+Vedlikeholderen av `midea-msmart` svarte at han også hadde antatt at det fantes en ny V2-API, men at han bare i begrenset grad kunne undersøke den fordi han ikke selv har Midea-enheter. Dette står i [det direkte svarkommentaren](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109).
+
+Kildesituasjonen er dermed klarere:
+
+- Advarselen stammer fra erfarne utviklere i fellesskapet.
+- Den bygger på observerte endringer og deres tekniske vurdering.
+- Én av vedlikeholderne omtaler V2-migreringen uttrykkelig som sin forståelse.
+- Den andre omtaler den som en antakelse.
+- Verken pull request-en eller diskusjonen lenker til en offisiell Midea-kunngjøring om nedstenging eller en dato.
+
+Dette gjør ikke advarselen verdiløs. Men det gjør den til en risikoanalyse, ikke et bekreftet produsentveikart.
+
+## Det avgjørende nye funnet fra juni 2026
+
+15. juni 2026 ble det tatt inn en rettelse i biblioteket `midea-local`, som vesentlig endrer den tidligere tolkningen.
+
+Utgangspunktet var feilen:
+
+```json
+{
+  "code": "3004",
+  "msg": "value is illegal."
+}
+```
+
+Denne feilen oppsto ved forespørsel om token og nøkkel via SmartHome-skyen. Innlogging og enhetslisten fungerte fortsatt, men kallet til `/v1/iot/secure/getToken` ble avvist.
+
+Først så dette ut som et nedstengt eller ubrukeliggjort grensesnitt. En analyse av forespørselen fra den offisielle SmartHome-appen viste imidlertid en annen årsak: Appen sendte feltet `applianceCodes` i tillegg til `udpid`. Fellesskapsbiblioteket hadde ikke sendt dette feltet.
+
+Den korrigerte forespørselen inneholder nå:
+
+```python
+data.update({
+    "udpid": udp_id,
+    "applianceCodes": str(appliance_id)
+})
+```
+
+Utvikleren testet endringen med en ekte SmartHome-konto og fire V3-klimaanlegg av typen `0xAC`:
+
+- Uten `applianceCodes` svarte serveren med feil 3004.
+- Med `applianceCodes` leverte den gyldige tokener og nøkler.
+- De returnerte verdiene fungerte deretter for lokal V3-autentisering.
+
+Den fullstendige undersøkelsen, testresultatene og kode-diffen er dokumentert i [`midea-local` Pull Request #470](https://github.com/midea-lan/midea-local/pull/470). Den tilhørende uforanderlige commit-en er [`23312799`](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5).
+
+Også i den nåværende kildekoden brukes fortsatt nøyaktig dette endepunktet:
+
+```text
+/v1/iot/secure/getToken
+```
+
+I tillegg sendes nå `applianceCodes` med. Dette kan følges direkte i den nåværende [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py).
+
+Den nåværende versjonen av `Midea AC LAN` inkluderer `midea-local==6.11.0` og erklærer seg fortsatt som en `local_push`-integrasjon. Begge deler står i det nåværende [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json).
+
+Den generelle påstanden om at SmartHome-token-API-en er blitt stengt, er dermed tilbakevist, i hvert fall for kontoene og enhetene som ble testet i juni 2026. Korrekt formulert ville det være:
+
+> Den tidligere token-forespørselen fungerte ikke lenger etter en endring i det forventede forespørselsformatet. Etter tilpasning til formatet som brukes av den offisielle appen, leverte det samme V1-endepunktet igjen gyldige lokale tilgangsdata.
+
+Regionale forskjeller, avvikende kontoer eller enhetstyper som ikke støttes, er dermed ikke utelukket. Men det var åpenbart ikke en global nedstenging.
+
+## Hvorfor «V2" så lett misforstås her
+
+I Midea-sammenheng brukes minst tre uavhengige versjonsbetegnelser.
+
+| Begrep | Betydning |
+| --- | --- |
+| Lokal V2-/V3-protokoll | Generasjon av direkte kommunikasjon mellom integrasjon og enhet |
+| V1-/V2-app-endepunkt | Versjonsnummer for ett enkelt HTTP-endepunkt i backend-en til Midea-appene |
+| Sky-til-sky-API V2 | Offisiell partner-API for autoriserte tredjepartsselskaper |
+
+### Lokal V2 og V3
+
+I den lokale enhetsprotokollen betegner V2 og V3 enhetens kommunikasjonsgenerasjon. Nyere V3-enheter trenger token og nøkkel for lokal autentisering. `Midea Smart AC` dokumenterer dette kravet i sin [konfigurasjonsveiledning](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Denne protokollversjonen har ingenting med den offisielle sky-til-sky-API-en V2 å gjøre.
+
+### V1 og V2 i app-URL-er
+
+Også i samme app kan endepunkter med ulike versjonsnumre brukes samtidig. En `/v2/` i URL-stien betyr derfor ikke at hele plattformen er blitt lagt om til en ny arkitektur.
+
+Den nåværende `midea-local`-koden bruker fortsatt [`/v1/iot/secure/getToken`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) for token og nøkkel. Andre funksjoner kan likevel ligge under stier med andre versjoner.
+
+### Offisiell sky-til-sky-API V2
+
+Midea dokumenterer faktisk en [offisiell sky-til-sky-API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Denne bruker blant annet:
+
+- OAuth 2.0
+- `client_id` og `client_secret`
+- kortvarige tilgangstokener og oppdateringstokener
+- HMAC-SHA256-signaturer
+- `/v2/open/oauth2/authorize`
+- `/v2/open/oauth2/token`
+- `/v2/open/device/list/get`
+- skybaserte statusforespørsler og styringskommandoer
+
+Dette er et kontrollert partnergrensesnitt. Den nødvendige `client_secret` tildeles en tredjepartsleverandør av Midea. En vanlig eier av en PortaSplit får den ikke bare via sin MSmartHome-konto. Kravene og signaturreglene er beskrevet i den [offisielle V2-dokumentasjonen](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html).
+
+Denne API-en oppsto dessuten ikke først i 2025. Dokumentasjonen inneholder forespørselseksempler med tidsstempler fra 2018 og en Java-kommentar fra 18. april 2019. V2-partnergrensesnittet fantes dermed lenge før advarselen i `Midea AC LAN`.
+
+## Midea erstatter faktisk en V1-API – men en annen
+
+Midea har også et eldre offisielt sky-til-sky-grensesnitt under `/v1/open/...`. Dokumentasjonen inneholder uttrykkelig en merknad om at det ikke lenger anbefales, kan bli stengt i fremtiden, og at den nye V2-dokumentasjonen bør brukes. Dette står i Mideas [dokumentasjon for den gamle sky-til-sky-API-en](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html).
+
+Denne merknaden er en reell, offisiell V1-til-V2-migrering. Den gjelder imidlertid partner-endepunktene:
+
+```text
+/v1/open/...
+           ↓
+/v2/open/...
+```
+
+Token-forespørselen som brukes av Home Assistant-bibliotekene, er derimot:
+
+```text
+/v1/iot/secure/getToken
+```
+
+Og den lokale PortaSplit-forbindelsen går deretter ikke lenger via en slik sky-URL, men direkte i hjemmenettverket.
+
+Det ville derfor ikke være teknisk berettiget å likestille de tre grensesnittene bare på grunn av versjonsnummeret «V1".
+
+## Finnes det allerede en fullstendig skybasert Home Assistant-integrasjon?
+
+Med [`Midea Auto Cloud`](https://github.com/sususweet/midea_auto_cloud) finnes det nå en fellesskapsintegrasjon som styrer Midea-enheter via skyen i stedet for direkte via LAN.
+
+Dette er imidlertid heller ikke bevis på at den offisielle partner-V2-API-en allerede har erstattet lokal styring. Den nåværende kildekoden til `Midea Auto Cloud` bruker blant annet:
+
+```text
+/v1/appliance/transparent/send
+/mjl/v1/device/status/lua/get
+/mjl/v1/device/lua/control
+```
+
+Disse endepunktene kan sees i den nåværende [`core/cloud.py`](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py).
+
+Integrasjonen etterligner dermed private app- eller forbrukerskyfunksjoner. Den bruker ikke bare det dokumenterte `/v2/open/...`-partnergrensesnittet.
+
+Det finnes altså allerede et skybasert alternativ. Men det medfører også de vanlige avhengighetene ved en skyintegrasjon: Internett-tilgang, en fungerende brukerkonto, tilgjengelige Midea-servere og fortsatt kompatible private endepunkter.
+
+## Hva betyr dette konkret for PortaSplit-eiere?
+
+### Allerede konfigurert lokal styring
+
+For en PortaSplit som allerede er konfigurert, er situasjonen relativt avslappet. `Midea Smart AC` lagrer token og nøkkel lokalt etter oppsettet og trenger ifølge sin egen [skydokumentasjon](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) ingen skyforbindelse for videre styring.
+
+En nedstenging av ren token-henting vil derfor ikke automatisk avslutte den eksisterende lokale forbindelsen.
+
+### Nytt oppsett eller gjenoppretting
+
+Risikoen er større ved:
+
+- en ny Home Assistant-installasjon
+- overgang til en annen integrasjon
+- en tapt eller skadet sikkerhetskopi
+- bytte av Wi-Fi-modul
+- endringer i enhetstilknytningen
+- ny paring dersom enhetens tilgangsdata endres i prosessen
+
+I slike tilfeller må integrasjonen hente token og nøkkel på nytt, eller brukeren må oppgi dem manuelt. At `Midea Smart AC` støtter manuell konfigurasjon, er beskrevet i dens [konfigurasjonsdokumentasjon](https://github.com/mill1000/midea-ac-py#manual-configuration).
+
+Det er ikke offisielt dokumentert om en fabrikktilbakestilling eller ny paring nødvendigvis genererer nye tilgangsdata for hver PortaSplit, og det bør derfor ikke hevdes generelt.
+
+### En reell nedstenging av LAN-styring
+
+For at en allerede konfigurert PortaSplit ikke lenger skal godta de lokalt lagrede tilgangsdataene, måtte også enhetens eller Wi-Fi-modulens oppførsel endres – for eksempel gjennom ny fastvare eller en endret autentiseringsmetode.
+
+En ren nedstenging av skyendepunktet `/v1/iot/secure/getToken` fjerner ikke automatisk tilgangsdataene som allerede finnes i enheten og Home Assistant. Dette følger av skillet mellom engangs henting fra skyen og påfølgende LAN-styring, som er dokumentert av [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage).
+
+En slik fremtidig enhetsendring er teknisk mulig. Jeg har imidlertid ikke funnet noen konkret kunngjøring eller nedstengningsdato spesifikt for PortaSplit i Mideas offentlig tilgjengelige dokumentasjon.
+
+## Hva jeg fortsatt vil anbefale
+
+Til tross for de nyanserende funnene er en sikkerhetskopi fornuftig.
+
+For V3-enheter anbefaler `Midea AC LAN` uttrykkelig å lagre den genererte JSON-konfigurasjonen utenfor HAOS. Den nåværende anbefalingen står direkte i [prosjektets README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
+
+Følgende gjelder:
+
+- Behandle token og nøkkel som passord.
+- Ikke last opp JSON-filen til et offentlig Git-repositorium.
+- Ikke publiser usladdede feilsøkingslogger.
+- Krypter sikkerhetskopien.
+- Opprett i tillegg en fullstendig Home Assistant-sikkerhetskopi.
+- Kontroller at alt fungerer før fastvare- og integrasjonsoppdateringer.
+- Test den lokale styringen på nytt etter oppdateringer.
+
+En sikkerhetskopi er en fornuftig sikring mot skyendringer, integrasjonsproblemer og egne feil. Den er imidlertid ikke et tegn på at en nedstenging er nært forestående. Hvordan en PortaSplit kan settes opp riktig og sikres i hjemmenettverket, står i [den praktiske delen om oppsett](/blog/midea-portasplit-home-assistant-einrichten).
+
+## Vurdering basert på tilgjengelig dokumentasjon
+
+Advarselen fra `Midea AC LAN` bør tas på alvor, men settes i riktig sammenheng.
+
+Den dokumenterer en plausibel langsiktig risiko: Midea kan oppfatte lokale tokener uten utløp som et sikkerhetsproblem, begrense innhenting av slike tokener ytterligere eller knytte fremtidige enheter sterkere til skyen.
+
+Det er derimot ikke dokumentert noen offisielt kunngjort, datofestet nedstenging av lokal PortaSplit-styring.
+
+Den nåværende tekniske statusen viser til og med det motsatte av en allerede gjennomført nedstenging: I juni 2026 leverte det fortsatt brukte V1-token-endepunktet gyldige tilgangsdata etter at forespørselen var tilpasset formatet til den offisielle SmartHome-appen. Den aktuelle rettelsen er i dag en del av biblioteket som brukes av `Midea AC LAN`.
+
+Den offisielle Midea sky-til-sky-API-en V2 finnes også. Den er imidlertid et eldre partnergrensesnitt med begrenset tilgang, og ikke automatisk etterfølgeren til den lokale PortaSplit-protokollen.
+
+Den nøkterne konklusjonen er derfor:
+
+> Opprett en sikkerhetskopi, følg med på integrasjonene og ha skyavhengigheter i bakhodet – men ikke avskriv lokal PortaSplit-styring for tidlig basert på en ubekreftet antakelse om nedstenging.
+
+## Kilder
+
+1.  [Midea AC LAN: nåværende README og nedstengningsadvarsel](https://github.com/wuwentao/midea_ac_lan#1-important-notice): Ordlyden i advarselen, anbefaling om sikkerhetskopi og skillet mellom eldre V2- og nyere V3-enheter.
+
+2.  [Midea AC LAN PR #578 fra 19. mai 2025](https://github.com/wuwentao/midea_ac_lan/pull/578): Innføring av advarselen om gradvis nedstenging av token-tjenestene og den påståtte migreringen til en skybasert V2-API.
+
+3.  [Midea AC LAN PR #639](https://github.com/wuwentao/midea_ac_lan/pull/639): Endring av den dokumenterte token-kilden til NetHome Plus.
+
+4.  [midea-msmart Issue #201](https://github.com/mill1000/midea-msmart/issues/201): Diskusjon om den feilaktige SmartHome-token-forespørselen og midlertidig bruk av NetHome Plus.
+
+5.  [Kommentar fra Midea-AC-LAN-vedlikeholderen om den antatte V2-migreringen](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2746782457): Markerer uttrykkelig uttalelsen om den nye V2-skyen som hans egen forståelse.
+
+6.  [Svar fra midea-msmart-vedlikeholderen](https://github.com/mill1000/midea-msmart/issues/201#issuecomment-2751782109): Beskriver eksistensen av en ny V2-API som en antakelse og peker på begrensede muligheter for reversering.
+
+7.  [midea-local PR #470 fra 15. juni 2026](https://github.com/midea-lan/midea-local/pull/470): Analyse av feil 3004, opptak av den offisielle app-forespørselen, tillegg av `applianceCodes` og vellykket test med fire V3-klimaanlegg.
+
+8.  [Uforanderlig commit for SmartHome-getToken-rettelsen](https://github.com/midea-lan/midea-local/commit/23312799bbe80576f869c582f505dcfabf31aed5): Nøyaktig kode-diff for den innlemmede rettelsen.
+
+9.  [Nåværende midea-local-skytjenestekode](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): Fortsatt brukt endepunkt `/v1/iot/secure/getToken` og gjeldende forespørselsfelt `applianceCodes`.
+
+10.  [Nåværende manifest for Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): Brukt versjon av `midea-local` og klassifisering som lokal push-integrasjon.
+
+11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): Dokumentasjon av lokal styring, engangs henting fra skyen for V3-enheter og manuell konfigurasjon med token og nøkkel.
+
+12.  [Midea AC LAN Issue #607 om PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/607): Konkret PortaSplit-eksempel med enhetstype `0xAC`, modell `00000Q1D`, protokollversjon 3 og vellykket oppsett via NetHome Plus.
+
+13.  [Offisiell Midea sky-til-sky-API V2](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-v2-api.html): OAuth2, klient-ID, klienthemmelighet, tilgangs- og oppdateringstokener, signaturmetode og `/v2/open/...`-endepunkter.
+
+14.  [Offisiell Midea sky-til-sky-API V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): Offisiell merknad om at det gamle `/v1/open/...`-partnergrensesnittet ikke lenger anbefales og kan bli stengt i fremtiden.
+
+15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) og [nåværende skytjenestekode](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): Fellesskapsintegrasjon for fullstendig skystyring og de private V1-app-endepunktene som faktisk brukes.
