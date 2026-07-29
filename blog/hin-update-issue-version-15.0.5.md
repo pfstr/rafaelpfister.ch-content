@@ -15,6 +15,8 @@ draft: false
 
 Beim Update eines HIN Mailgateway von 14.1.4.2 auf 15.0.5 kann ein Fehler in der Cluster-Replikation die Anmeldung auf beiden Appliances lahmlegen. Einzelne Systeme sind nicht betroffen. Der Hersteller kennt das Problem und plant eine Korrektur für eine folgende Version.
 
+**Update vom 29. Juli 2026:** Die angekündigte Korrektur ist da. Das Patch-Release 15.0.6 unterdrückt das Passwort-Rehashing, wenn Cluster-Mitglieder unterschiedliche Firmware-Versionen fahren — exakt die Konstellation, die den hier beschriebenen Ausfall ausgelöst hatte. Die Einordnung steht im Artikel zu [SEPPmail 15.0.6 und 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1); die folgende Wiederherstellungsprozedur bleibt für Cluster relevant, die noch auf 15.0.5 aktualisieren.
+
 ## Fehlerbild
 
 Unmittelbar nach dem Update lässt sich die Weboberfläche noch öffnen. Rund zehn Minuten später scheitert die Anmeldung auf beiden Cluster-Knoten. Dass der Fehler zeitversetzt und auf beiden Systemen auftritt, weist auf die replizierte Cluster-Konfiguration als Ursache hin.

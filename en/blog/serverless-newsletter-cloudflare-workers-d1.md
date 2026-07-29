@@ -1,10 +1,10 @@
 ---
-title: "Running Your Own Newsletter with Cloudflare Workers and D1"
+title: "Run your own newsletter with Cloudflare Workers and D1"
 navTitle: "Newsletter on Workers"
-description: "The open template provides signup, unsubscribe, queued sending, and a database on your own Cloudflare account. A deploy button sets up the Worker, D1, and CI without a local server."
+description: "The open template provides sign-up, unsubscribe, queue and database in your own Cloudflare account. A deploy button sets up Worker, D1 and CI without a local server."
 date: "2026-07-22"
 kategorie: "Cloudflare Workers"
-timeToRead: "8 min to read"
+timeToRead: "8 min read"
 themen:
   - "cloudflare-workers"
 slug: "serverless-newsletter-cloudflare-workers-d1"
@@ -12,50 +12,50 @@ translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 url: "https://rafaelpfister.ch/en/blog/serverless-newsletter-cloudflare-workers-d1"
 ---
 
-# Running Your Own Newsletter with Cloudflare Workers and D1
+# Run your own newsletter with Cloudflare Workers and D1
 
-With a hosted newsletter service, the recipient list stays with the provider, and costs often rise with the number of subscribers. Running your own server gives you more control, but brings ongoing work with it: updates, monitoring, backups, and operations for a system that might send only once a week.
+With a hosted newsletter service, the recipient list resides with the provider, and costs often rise with the number of subscribers. Running your own server provides more control, but entails ongoing work: updates, monitoring, backups and operating a system that may only send once a week.
 
-This lean use case needs no more than a few HTTP endpoints, a small database, and a scheduled sending job. Cloudflare Workers and D1 provide exactly these building blocks. My open template sets them up through a **Deploy to Cloudflare button** on your own account. No local command line or permanently maintained server is required. The MIT-licensed source code is on [GitHub](https://github.com/pfstr/newsletter-template).
+For this lean use case, HTTP endpoints, a small database and a scheduled sending job are sufficient. Cloudflare Workers and D1 provide precisely these building blocks. My open template sets them up in your own account via a **Deploy-to-Cloudflare button**. No local command line or server requiring ongoing maintenance is needed. The MIT-licensed source code is available on [GitHub](https://github.com/pfstr/newsletter-template).
 
-[![Deploy to Cloudflare](../images/serverless-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
+[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
 
-![The template's hosted signup form](../images/serverless-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
+![The template's hosted sign-up form](../images/serverloser-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
 
-## What the template does
+## What the template can do
 
-- **Signup**: a hosted signup page, an embeddable form for your own website, and a JSON endpoint
-- **One-click unsubscribe**: RFC 8058 compliant, with an individual token per subscriber
-- **Required disclosures built in**: every email automatically gets a footer with an unsubscribe link and postal address; consent and opt-out timestamps are stored
-- **Sending**: on a protected page you enter subject and HTML, send a test email, and queue the campaign; a background job delivers in batches and retries failed deliveries
-- **Your data**: subscribers live in a D1 database on your account and can be exported at any time
-- **Optional, off by default**: double opt-in, bot protection via Turnstile, and automatic delivery of new blog posts from your RSS feed
+- **Sign-up**: a hosted sign-up page, an embeddable form for your own website and a JSON endpoint
+- **One-click unsubscribe**: compliant with RFC 8058, with an individual token for each subscriber
+- **Required information built in**: Every email automatically receives a footer with an unsubscribe link and postal address; consent and unsubscribe timestamps are stored
+- **Sending**: On a protected page, you can enter a subject line and HTML, send a test email and queue the campaign; a background job sends in batches and retries failed attempts
+- **Your own data**: Subscribers are held in a D1 database in your account and can be exported at any time
+- **Optional, disabled by default**: Double opt-in, bot protection via Turnstile and automatic sending of new blog posts from the RSS feed
 
 ## Architecture: one Worker, one database
 
-The entire system is a single Cloudflare Worker with two handlers: `fetch` for HTTP (routed with Hono) and `scheduled` for the cron trigger, plus a D1 database. There is no second service, no separate queue broker, no dedicated admin backend; even the send queue is just a D1 table.
+The entire system is a single Cloudflare Worker with two handlers: `fetch` for HTTP (routed with Hono) and `scheduled` for the cron trigger, plus a D1 database. There is no second service, no separate queue broker, no dedicated admin backend; even the sending queue is just a D1 table.
 
-| Route | Purpose |
+| Route | Function |
 | --- | --- |
-| `GET /` | Hosted signup page |
-| `GET /embed` | Transparent form for iframe embedding |
-| `POST /api/subscribe` | Signup (CORS-open for your own website) |
+| `GET /` | Hosted sign-up page |
+| `GET /embed` | Transparent form for embedding via iframe |
+| `POST /api/subscribe` | Sign-up (CORS-enabled for your own website) |
 | `GET /confirm` | Confirmation link for double opt-in |
-| `GET/POST /unsubscribe` | Unsubscribe: confirmation page on GET, execution on POST (one-click per RFC 8058) |
-| `GET /admin` | Send page (form) |
+| `GET/POST /unsubscribe` | Unsubscribe: confirmation page via GET, action via POST (one-click according to RFC 8058) |
+| `GET /admin` | Sending page (form) |
 | `POST /api/send` | Queue a campaign, protected by admin token |
 
-The data model comprises four tables: `subscribers` (email as primary key, name, status, unsubscribe and confirmation tokens, a JSON column for custom extra fields, plus timestamps for confirmation and opt-out), `campaigns` with subject, body, and per-send counters, `outbox` as the send queue (one row per recipient), and `sent_posts` for deduplicating the RSS send.
+The data model comprises four tables: `subscribers` (email as primary key, name, status, unsubscribe and confirmation tokens, a JSON column for custom additional fields, plus timestamps for confirmation and unsubscription), `campaigns` with subject, content and counters for each mailing, `outbox` as the sending queue (one row per recipient) and `sent_posts` for RSS sending deduplication.
 
 ## Deployment without a command line
 
-The most interesting part is not the code but the path to a running system. The Deploy to Cloudflare button reads the repository's Wrangler configuration and handles the complete setup: it clones the repository into your own GitHub account, provisions the D1 database, runs the schema migrations, and sets up CI so that every push deploys automatically. Since July 2025, the deploy flow additionally collects environment variables and secrets directly in the form: in this template's case the admin password (`ADMIN_TOKEN`), sender name and address, the double-opt-in switch, and the send batch size (`SEND_BATCH`).
+The most interesting part is not the code, but the path to a running system. The Deploy-to-Cloudflare button reads the repository's Wrangler configuration and handles the entire setup: it clones the repository into your own GitHub account, provisions the D1 database, runs the schema migrations and sets up CI so that every push deploys automatically. Since July 2025, the deploy flow has also requested environment variables and secrets directly in the form: in this template's case, the admin password (`ADMIN_TOKEN`), sender name and address, the double-opt-in switch and the sending batch size (`SEND_BATCH`).
 
-The result after one click and one form: the signup page is live at `https://<worker-name>.workers.dev` and collecting subscribers. A terminal is never opened at any point.
+The result after one click and one form: the sign-up page is live at `https://<worker-name>.workers.dev` and collects subscribers. A terminal is never opened.
 
 ## Collecting subscribers
 
-For integration into your own website there are three paths, in ascending order of integration depth. The simplest: share the link to the hosted signup page. The most practical for site builders (WordPress, Webflow, Squarespace, Framer): a one-line iframe in any HTML embed block.
+There are three ways to integrate it into your own website, in increasing order of integration depth. The simplest is to share the link to the hosted sign-up page. The most practical option for site builders (WordPress, Webflow, Squarespace, Framer) is a one-line iframe in any HTML embed block.
 
 ```html
 <iframe
@@ -75,66 +75,66 @@ If you want the form in your own design, post directly to the endpoint:
   }).then(()=>this.reset());"
 >
   <input name="email" type="email" placeholder="you@example.com" required />
-  <button>Subscribe</button>
+  <button>Abonnieren</button>
 </form>
 ```
 
-By default the form collects the email address and optionally a name. You define additional fields (company, country, …) in a single file (`src/fields.ts`); they automatically appear on both forms and are stored as JSON in the database.
+The form collects email by default and optionally a name. Define further fields (company, country, …) in a single file (`src/fields.ts`); they automatically appear on both forms and are stored as JSON in the database.
 
 ## Sending: your own provider instead of a built-in vendor
 
-For email delivery, the template makes a deliberate choice: it is **provider-agnostic**. The file `src/email.ts` contains a single `sendEmail()` adapter with a commented example for a generic HTTP API. Which delivery service you wire up there is your choice. No vendor is hard-coded, no registration with any particular service is required. Collecting subscribers already works entirely without delivery configuration; sending unlocks once the adapter is implemented and the provider secret is set. If your provider additionally offers a batch endpoint (one API call, many emails), you can add an optional `sendEmailBatch()` adapter in the same file; a commented example is included for that too.
+For email delivery, the template makes a deliberate choice: it is **provider-agnostic**. The file `src/email.ts` contains a single `sendEmail()` adapter with a commented example for a generic HTTP API. Which sending service you connect there is your choice. No provider is hard-wired, and registration with a particular service is not required. Collecting subscribers already works entirely without sending configuration; sending is enabled as soon as the adapter is implemented and the provider secret is set. If the provider also offers a batch endpoint (one API call, many emails), an optional `sendEmailBatch()` adapter can be added in the same file; a commented example is provided for that too.
 
-You operate sending from the `/admin` page: paste subject and email HTML, send a test to your own address, then queue the campaign for all subscribers. The merge tags `{{unsubscribe_url}}`, `{{email}}`, and `{{name}}` are available in your emails.
+Sending is managed via the `/admin` page: enter the subject and email HTML, send a test to your own address, then queue the campaign for all subscribers. The merge tags `{{unsubscribe_url}}`, `{{email}}` and `{{name}}` are available in emails.
 
-The actual delivery happens in the background, following the transactional outbox pattern: `POST /api/send` writes the campaign and one row per recipient into the database and responds immediately. A minutely cron job then delivers `SEND_BATCH` emails per run, 40 by default: chosen so that every run stays within the Workers free plan's subrequest limits. Rows are claimed atomically, so overlapping runs can never double-send; failed deliveries are retried up to three times, and crashed runs are picked up again after ten minutes. And anyone who unsubscribes while their email is still queued no longer receives it: the opt-out also cancels messages that are already queued.
+The actual sending happens in the background, following the transactional outbox pattern: `POST /api/send` writes the campaign and one row per recipient to the database and responds immediately. A per-minute cron job then delivers `SEND_BATCH` emails per run, 40 by default: chosen so that each run remains within the subrequest limits of the Workers Free plan. Rows are claimed atomically, so overlapping runs can never send duplicates; failed deliveries are retried up to three times, and crashed runs are resumed after ten minutes. And anyone who unsubscribes while their email is still in the queue will no longer receive it: opting out also cancels messages that have already been queued.
 
-## Unsubscribing and proof of consent are core features
+## Unsubscribing and records are core features
 
-Anyone who sends a newsletter is subject to anti-spam and privacy law: the US CAN-SPAM Act, GDPR and ePrivacy in the EU, the Unfair Competition Act in Switzerland. A substantial part of what newsletter services are paid for is exactly this compliance work. The template takes over the mechanical part of it:
+Anyone sending a newsletter is subject to anti-spam and data-protection law: the US CAN-SPAM Act, the GDPR and ePrivacy rules in the EU, and the UWG in Switzerland. A significant part of what newsletter services are paid for is precisely meeting these obligations. The template handles the mechanical part:
 
-- **Mandatory footer**: every campaign email automatically gets a footer with a working unsubscribe link and the sender's postal address (`SENDER_ADDRESS`); CAN-SPAM requires a physical address in commercial email. The send page warns as long as the address is missing.
-- **List-Unsubscribe headers per RFC 8058** on every send: the native unsubscribe button in Gmail and Outlook, which Gmail and Yahoo have required from bulk senders since 2024. The app builds the headers; your provider adapter just passes them through.
-- **Scanner-proof unsubscribe**: the unsubscribe link leads to a confirmation page with a single button. Corporate mail scanners that prefetch every link in an email can no longer unsubscribe anyone by accident; mail clients use the one-click POST directly.
-- **Data minimization and proof**: an opt-out takes effect immediately, deletes name and extra fields, and is recorded with a timestamp, as are signup and double-opt-in confirmation. Consent can be evidenced later (GDPR accountability).
-- **Privacy link**: with `PRIVACY_URL` set, a link to your privacy policy appears under the signup form.
+- **Required footer**: Every campaign email automatically receives a footer with a working unsubscribe link and the sender's postal address (`SENDER_ADDRESS`); CAN-SPAM requires a physical address in commercial emails. The sending page warns while the address is missing.
+- **List-Unsubscribe headers according to RFC 8058** on every mailing: the native unsubscribe button in Gmail and Outlook, which Gmail and Yahoo have required from bulk senders since 2024. The app assembles the headers; your own provider adapter only needs to pass them through.
+- **Scanner-safe unsubscribe**: The unsubscribe link leads to a confirmation page with a single button. Corporate email scanners that pre-fetch every link in an email cannot accidentally unsubscribe anyone; email clients use the one-click POST directly.
+- **Data minimisation and evidence**: An opt-out takes effect immediately, deletes the name and additional fields, and is recorded with a timestamp, as are sign-up and double-opt-in confirmation. Consent can therefore be evidenced later (GDPR accountability).
+- **Privacy link**: With `PRIVACY_URL` set, a link to your own privacy policy appears beneath the sign-up form.
 
-What remains with the operator: truthful sender and subject lines, sending only to genuinely subscribed addresses, and domain authentication (SPF/DKIM/DMARC) with the delivery service. None of this is legal advice.
+The operator remains responsible for truthful sender and subject lines, sending only to genuinely subscribed addresses, and domain authentication (SPF/DKIM/DMARC) with the sending service. None of this constitutes legal advice.
 
 ## Options: double opt-in, Turnstile, RSS automation
 
-Three features are built in but disabled by default, so the system runs without configuration:
+Three features are built in but disabled by default, so the system remains usable without configuration:
 
-- **Double opt-in** (`DOUBLE_OPT_IN = "true"`): new subscribers are stored as `pending` and only become active after clicking a confirmation link. For Switzerland (FADP) and the EU, this is the cleaner choice.
-- **Bot protection** with Cloudflare Turnstile: set the site and secret key as variables, nothing more; the widget automatically appears on both forms, and the Worker verifies every signup server-side. Without a valid token, the signup is rejected.
-- **RSS auto-send**: a cron job checks your blog feed (RSS 2.0 or Atom) every 15 minutes and automatically queues new posts for delivery. Two safeguards are built in: on the very first run, the existing feed is only recorded as a baseline (so the archive is not blasted out as an email flood), and every item ID is stored in `sent_posts`, so no post ever goes out twice.
+- **Double opt-in** (`DOUBLE_OPT_IN = "true"`): New subscribers are stored as `pending` and become active only after clicking a confirmation link. This procedure is the more robust choice for Switzerland (FADP) and the EU.
+- **Bot protection** with Cloudflare Turnstile: simply set the site and secret keys as variables; the widget automatically appears on both forms, and the Worker verifies each sign-up server-side. Sign-up is rejected without a valid token.
+- **Automatic RSS sending**: A cron job checks your own blog feed (RSS 2.0 or Atom) every 15 minutes and automatically queues new posts for sending. Two safeguards are built in: on the very first run, the existing feed is merely marked as a baseline (so the archive is not sent as an email flood), and every post ID is recorded in `sent_posts`, so no post is sent twice.
 
-## Limits
+## Limitations
 
-The template is deliberately minimal. On the free plan, the queued send delivers around 40 emails per minute by default; a campaign to 1,000 recipients takes about 25 minutes, which is irrelevant for a newsletter. On the paid Workers plan (10,000 subrequests per invocation instead of 50), `SEND_BATCH` can be raised into the hundreds; with a batch adapter (one API call, up to around 1,000 emails), even the free plan works through large lists in a few minutes. Deliverability depends, as with any system, on your own sending domain: SPF, DKIM, and DMARC must be verified with your chosen delivery service, otherwise the newsletter ends up in spam. And the single-opt-in default is the simplest start, but not the most conservative compliance option; that is what the switch is for.
+The template is deliberately minimal. In the Free plan, queue sending delivers around 40 emails per minute by default; a campaign to 1,000 recipients therefore takes about 25 minutes, which does not matter for a newsletter. In the paid Workers plan (10,000 subrequests per invocation rather than 50), `SEND_BATCH` can be increased into the hundreds; with a batch adapter (one API call, up to around 1,000 emails), even the Free plan sends large lists in a few minutes. As with any system, deliverability depends on your own sender domain: SPF, DKIM and DMARC must be verified with the chosen sending service, otherwise the newsletter will land in spam. And the single-opt-in default is the simplest starting point, but not the most conservative compliance option; that is what the switch is for.
 
-On cost: Workers and D1 have generous free-tier quotas (including 100,000 requests per day) that a signup form and weekly sends to a small or medium list will not exhaust. If a limit is reached, Cloudflare throttles on the free plan instead of sending a bill.
+As for costs: Workers and D1 have generous Free Tier allowances (including 100,000 requests per day), which a sign-up form and weekly mailings to a small to medium-sized list will not exhaust. If a limit is reached, Cloudflare throttles on the Free plan rather than issuing a bill.
 
-## Try it
+## Try it out
 
-The source code including the deploy button is on [GitHub](https://github.com/pfstr/newsletter-template), along with the full documentation of the configuration variables.
+The source code, including the deploy button, is available on [GitHub](https://github.com/pfstr/newsletter-template); the full documentation of the configuration variables is also available there.
 
-[![GitHub: pfstr/newsletter-template](../images/serverless-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
+[![GitHub: pfstr/newsletter-template](../images/serverloser-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
 
 ## Sources
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): source code of the template (MIT) with deploy button and documentation.
+1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): Template source code (MIT) with deploy button and documentation.
 
-2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatic provisioning of resources, repo cloning, and CI on deploy.
+2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatic resource provisioning, repository cloning and CI during deployment.
 
-3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/): secrets and variables are collected in the deploy form since July 2025.
+3.  [Deploy buttons: environment variables and secrets](https://developers.cloudflare.com/changelog/post/2025-07-01-workers-deploy-button-supports-environment-variables-and-secrets/): secrets and variables have been requested in the deployment form since July 2025.
 
-4.  [Cloudflare D1](https://developers.cloudflare.com/d1/): serverless SQLite, used here for subscribers, the send log, and RSS deduplication.
+4.  [Cloudflare D1](https://developers.cloudflare.com/d1/): serverless SQLite, used here for subscribers, sending log and RSS deduplication.
 
-5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): bot protection without captcha puzzles, optionally enabled in the template.
+5.  [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): bot protection without CAPTCHA puzzles, optionally enabled in the template.
 
-6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058): Signaling One-Click Functionality for List Email Headers; the basis of the native unsubscribe button in Gmail and Outlook.
+6.  [RFC 8058](https://datatracker.ietf.org/doc/html/rfc8058): Signalling One-Click Functionality for List Email Headers; the basis for the native unsubscribe button in Gmail and Outlook.
 
-7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/): subrequest limits per invocation (50 on the free plan, 10,000 on the paid plan); the send queue's batch size derives from these.
+7.  [Workers limits](https://developers.cloudflare.com/workers/platform/limits/): subrequest limits per invocation (50 in the Free plan, 10,000 in the paid plan); the queue sending batch size is derived from these.
 
-8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business): obligations for commercial email, including the postal address and a working opt-out.
+8.  [FTC: CAN-SPAM Act Compliance Guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business): obligations for commercial emails, including a postal address and a working opt-out.
