@@ -6,10 +6,14 @@ date: "2026-07-21"
 kategorie: "Claude"
 timeToRead: "12 min read"
 themen:
-  - "claude"
+  - claude
 translationOf: "claude-code-vps-debian-absichern"
 slug: "securing-a-debian-vps-for-claude-code"
 url: "https://rafaelpfister.ch/en/blog/securing-a-debian-vps-for-claude-code"
+translationId: article-f932e9e537d7704a
+translatedAt: 2026-07-28T11:10:30.447Z
+translationReview: automatic
+translationSourceHash: bd2aac7348c16dbd326ab0c10a063817d88a05cb99ab88a8cde66b885dfd7c3f
 ---
 
 On your own computer, a Claude Code session will eventually end unintentionally when the laptop goes to sleep or the network connection drops. A VPS keeps running and is accessible from multiple devices. At the same time, it is permanently connected to the public internet and is automatically scanned shortly after startup.

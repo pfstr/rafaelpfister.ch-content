@@ -6,11 +6,15 @@ date: "2026-07-15"
 kategorie: "Microsoft 365 / Exchange"
 timeToRead: "9 min de lecture"
 themen:
-  - "microsoft-365-exchange"
+  - microsoft-365-exchange
 slug: "ghost-sender-dans-exchange-online-un-enregistrement-mx-n-est-pas-un-pare-feu"
 image: "../images/ghost-admin.png"
 translationOf: "ghost-sender-exchange-online-nebeneingang"
 url: "https://rafaelpfister.ch/fr/blog/ghost-sender-dans-exchange-online-un-enregistrement-mx-n-est-pas-un-pare-feu"
+translationId: article-d8dc8d1da6379d67
+translationReview: automatic
+translationSourceHash: fc228adeba2a4ea46f6b36d20946d0aeb5c30f485b32da965e52168d2806a689
+translatedAt: 2026-07-29T12:29:38.935Z
 ---
 
 # Ghost Sender dans Exchange Online : un enregistrement MX n’est pas un pare-feu

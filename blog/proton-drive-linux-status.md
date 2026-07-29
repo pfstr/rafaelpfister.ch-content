@@ -12,6 +12,7 @@ related:
   - "paperless-dokumente-clouddienst-auslagern"
   - "rclone-mount-in-docker-container"
 slug: "proton-drive-linux-status"
+translationId: "article-ca282447e0b9acff"
 url: "https://rafaelpfister.ch/blog/proton-drive-linux-status"
 ---
 

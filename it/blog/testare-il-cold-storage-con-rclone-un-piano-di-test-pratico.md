@@ -6,13 +6,18 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "11 min di lettura"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "rclone-mount-in-docker-container"
-  - "paperless-dokumente-clouddienst-auslagern"
+  - rclone-mount-in-docker-container
+  - paperless-dokumente-clouddienst-auslagern
 slug: "testare-il-cold-storage-con-rclone-un-piano-di-test-pratico"
 translationOf: "cloud-mount-testen-dummy-pdfs"
 url: "https://rafaelpfister.ch/it/blog/testare-il-cold-storage-con-rclone-un-piano-di-test-pratico"
+translationId: article-8592f808b2e93cd4
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-28T13:31:55.763Z
+translationReview: automatic
+translationSourceHash: 4dd3058563b8e3853528cbd3cb5b216cc840923ceee9250055c3000c296232b9
 ---
 
 Un mount Rclone si configura rapidamente. Il remote appare come una directory, `ls` mostra i file e il primo test funzionale è superato. Tuttavia, questo dice ancora poco sul funzionamento in produzione.

@@ -8,6 +8,7 @@ timeToRead: "15 Min. Lesezeit"
 themen:
   - "hin-gateway"
 slug: "hin-mailgateway-backup-disaster-recovery"
+translationId: "article-845fb4bd0e4c592a"
 url: "https://rafaelpfister.ch/blog/hin-mailgateway-backup-disaster-recovery"
 ---
 

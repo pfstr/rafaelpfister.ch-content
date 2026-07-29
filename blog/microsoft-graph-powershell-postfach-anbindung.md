@@ -8,6 +8,7 @@ timeToRead: "5 Min. Lesezeit"
 themen:
   - "microsoft-365-exchange"
 slug: "microsoft-graph-powershell-postfach-anbindung"
+translationId: "article-4c6a02c79b7bf0fe"
 url: "https://rafaelpfister.ch/blog/microsoft-graph-powershell-postfach-anbindung"
 ---
 

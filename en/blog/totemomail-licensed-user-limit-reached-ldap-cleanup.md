@@ -6,10 +6,14 @@ date: "2026-06-26"
 kategorie: "Totemomail"
 timeToRead: "9 min read"
 themen:
-  - "totemomail"
+  - totemomail
 slug: "totemomail-licensed-user-limit-reached-ldap-cleanup"
 translationOf: "totemomail-licensed-user-limit-ldap-cleanup"
 url: "https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ldap-cleanup"
+translationId: article-cdc60310665049b8
+translatedAt: 2026-07-28T11:10:30.447Z
+translationReview: automatic
+translationSourceHash: 273d9af1e81522e2b2a99614880ebfac17f5c4ab3bb3a1fbdbc940554a5931da
 ---
 
 # Totemomail licence limit reached: clean up orphaned users via LDAP

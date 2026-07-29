@@ -6,10 +6,14 @@ date: "2026-07-11"
 kategorie: "Totemomail"
 timeToRead: "5 min lesetid"
 themen:
-  - "microsoft-365-exchange"
+  - microsoft-365-exchange
 slug: "fa-tilgang-til-exchange-online-med-powershell-erstatt-ews-med-microsoft-graph"
 translationOf: "microsoft-graph-powershell-postfach-anbindung"
 url: "https://rafaelpfister.ch/no/blog/fa-tilgang-til-exchange-online-med-powershell-erstatt-ews-med-microsoft-graph"
+translationId: article-4c6a02c79b7bf0fe
+translationReview: automatic
+translationSourceHash: bab6aabe691a64409231665e5d2dd2288fb409fa66b4a7f33cfcb79aeaa643b3
+translatedAt: 2026-07-29T12:29:38.967Z
 ---
 
 # Få tilgang til Exchange Online med PowerShell: erstatt EWS med Microsoft Graph

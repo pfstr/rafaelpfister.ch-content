@@ -6,11 +6,15 @@ date: "2026-07-15"
 kategorie: "Microsoft 365 / Exchange"
 timeToRead: "9 min read"
 themen:
-  - "microsoft-365-exchange"
+  - microsoft-365-exchange
 slug: "ghost-sender-exchange-online-side-entrance"
 translationOf: "ghost-sender-exchange-online-nebeneingang"
 image: "../images/ghost-admin.png"
 url: "https://rafaelpfister.ch/en/blog/ghost-sender-exchange-online-side-entrance"
+translationId: article-d8dc8d1da6379d67
+translatedAt: 2026-07-28T11:10:30.445Z
+translationReview: automatic
+translationSourceHash: fc228adeba2a4ea46f6b36d20946d0aeb5c30f485b32da965e52168d2806a689
 ---
 
 # Ghost Sender in Exchange Online: An MX Record Is Not a Firewall

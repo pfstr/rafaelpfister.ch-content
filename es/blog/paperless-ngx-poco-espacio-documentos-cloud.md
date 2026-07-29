@@ -6,14 +6,19 @@ date: "2026-07-26"
 kategorie: "Paperless-ngx"
 timeToRead: "6 min de lectura"
 themen:
-  - "paperless-ngx"
+  - paperless-ngx
 related:
-  - "rclone-mount-in-docker-container"
-  - "proton-drive-linux-status"
-  - "cloud-mount-testen-dummy-pdfs"
+  - rclone-mount-in-docker-container
+  - proton-drive-linux-status
+  - cloud-mount-testen-dummy-pdfs
 slug: "paperless-ngx-poco-espacio-documentos-cloud"
 translationOf: "paperless-dokumente-clouddienst-auslagern"
 url: "https://rafaelpfister.ch/es/blog/paperless-ngx-poco-espacio-documentos-cloud"
+translationId: article-2f00e7c17fc45664
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-28T21:22:44.392Z
+translationReview: automatic
+translationSourceHash: 81212f097221ec6213025dc5de54f583369799181f72747549102e2b4246e021
 ---
 
 Paperless-ngx guarda sus documentos en un directorio local, y ese directorio crece con cada escaneo. Sin embargo, Paperless apenas necesita los archivos en el día a día: la búsqueda consulta la base de datos, la lista muestra miniaturas y el archivo propiamente dicho solo se lee al abrirlo. Por eso probé si era posible trasladar el almacenamiento a un servicio en la nube. La herramienta para ello es Rclone, con la que los usuarios de Plex llevan años integrando colecciones multimedia completas desde la nube.

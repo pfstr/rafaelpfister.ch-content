@@ -6,10 +6,14 @@ date: "2026-07-08"
 kategorie: "HIN-Gateway"
 timeToRead: "15 min di lettura"
 themen:
-  - "hin-gateway"
+  - hin-gateway
 slug: "eseguire-il-backup-di-hin-mailgateway-e-ripristinarlo-dopo-un-guasto"
 translationOf: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/it/blog/eseguire-il-backup-di-hin-mailgateway-e-ripristinarlo-dopo-un-guasto"
+translationId: article-845fb4bd0e4c592a
+translationReview: automatic
+translationSourceHash: 39ecd30339131eb74d0748f4bfb31ead3f98aefbd47621974b1e032f1a96b345
+translatedAt: 2026-07-29T12:29:38.942Z
 ---
 
 # Eseguire il backup di HIN Mailgateway e ripristinarlo dopo un guasto

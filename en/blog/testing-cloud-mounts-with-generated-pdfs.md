@@ -6,13 +6,17 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "11 mins reading time"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "rclone-mount-inside-docker-container"
-  - "offloading-paperless-documents-to-cloud-storage"
+  - rclone-mount-in-docker-container
+  - paperless-dokumente-clouddienst-auslagern
 translationOf: "cloud-mount-testen-dummy-pdfs"
 slug: "testing-cloud-mounts-with-generated-pdfs"
 url: "https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs"
+translationId: article-8592f808b2e93cd4
+translatedAt: 2026-07-28T12:20:26.034Z
+translationReview: automatic
+translationSourceHash: 4dd3058563b8e3853528cbd3cb5b216cc840923ceee9250055c3000c296232b9
 ---
 
 A Rclone mount is quick to set up. The remote appears as a directory, `ls` displays files, and the initial functional test is passed. However, this says little about its suitability for production use.

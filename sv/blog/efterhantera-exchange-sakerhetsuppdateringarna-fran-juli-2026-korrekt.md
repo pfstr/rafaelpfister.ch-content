@@ -6,11 +6,15 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min lästid"
 themen:
-  - "exchange-onprem-hybrid"
-  - "active-directory-entra"
+  - exchange-onprem-hybrid
+  - active-directory-entra
 slug: "efterhantera-exchange-sakerhetsuppdateringarna-fran-juli-2026-korrekt"
 translationOf: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/sv/blog/efterhantera-exchange-sakerhetsuppdateringarna-fran-juli-2026-korrekt"
+translationId: article-731b5b840aee096c
+translationReview: automatic
+translationSourceHash: c4f0a68a6d0b88997bcc5dadd9f5c2423dcb61c7986e179a099460335042a23a
+translatedAt: 2026-07-29T12:29:38.958Z
 ---
 
 # Efterhantera Exchange-säkerhetsuppdateringarna från juli 2026 korrekt

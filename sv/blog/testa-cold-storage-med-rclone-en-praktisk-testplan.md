@@ -6,13 +6,18 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "11 min lästid"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "rclone-mount-in-docker-container"
-  - "paperless-dokumente-clouddienst-auslagern"
+  - rclone-mount-in-docker-container
+  - paperless-dokumente-clouddienst-auslagern
 slug: "testa-cold-storage-med-rclone-en-praktisk-testplan"
 translationOf: "cloud-mount-testen-dummy-pdfs"
 url: "https://rafaelpfister.ch/sv/blog/testa-cold-storage-med-rclone-en-praktisk-testplan"
+translationId: article-8592f808b2e93cd4
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-28T20:32:24.518Z
+translationReview: automatic
+translationSourceHash: 4dd3058563b8e3853528cbd3cb5b216cc840923ceee9250055c3000c296232b9
 ---
 
 En Rclone-mount är snabbt konfigurerad. Fjärrlagringen visas som en katalog, `ls` visar filer och det första funktionstestet är godkänt. Det säger dock inte mycket om produktionsdrift.

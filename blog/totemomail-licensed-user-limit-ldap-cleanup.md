@@ -8,6 +8,7 @@ timeToRead: "9 Min. Lesezeit"
 themen:
   - "totemomail"
 slug: "totemomail-licensed-user-limit-ldap-cleanup"
+translationId: "article-cdc60310665049b8"
 url: "https://rafaelpfister.ch/blog/totemomail-licensed-user-limit-ldap-cleanup"
 ---
 

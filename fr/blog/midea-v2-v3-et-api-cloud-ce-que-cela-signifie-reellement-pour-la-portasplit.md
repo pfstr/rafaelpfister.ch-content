@@ -6,14 +6,19 @@ date: "2026-07-25"
 kategorie: "Home Assistant et IoT"
 timeToRead: "11 min de lecture"
 themen:
-  - "smart-home-iot"
+  - smart-home-iot
 related:
-  - "midea-portasplit-home-assistant"
-  - "midea-portasplit-home-assistant-einrichten"
+  - midea-portasplit-home-assistant
+  - midea-portasplit-home-assistant-einrichten
 draft: false
 slug: "midea-v2-v3-et-api-cloud-ce-que-cela-signifie-reellement-pour-la-portasplit"
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
 url: "https://rafaelpfister.ch/fr/blog/midea-v2-v3-et-api-cloud-ce-que-cela-signifie-reellement-pour-la-portasplit"
+translationId: article-f504b2af00493864
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-29T07:23:45.332Z
+translationReview: automatic
+translationSourceHash: d63bb09234efede35ce75b1f2ef582fc016791b560d7cb6ba826c718ce50c791
 ---
 
 Dans l’univers de la Midea PortaSplit, « V2 » désigne plusieurs choses indépendantes les unes des autres. Il existe un protocole local V2 pour les appareils, des numéros de version dans des points de terminaison privés d’applications et une API officielle cloud-à-cloud V2 destinée aux partenaires. Confondre ces niveaux conduit inévitablement à de fausses conclusions sur le contrôle local.

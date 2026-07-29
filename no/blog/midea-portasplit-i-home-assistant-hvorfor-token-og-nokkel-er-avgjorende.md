@@ -6,14 +6,18 @@ date: "2026-07-24"
 kategorie: "Home Assistant og IoT"
 timeToRead: "9 min lesetid"
 themen:
-  - "smart-home-iot"
+  - smart-home-iot
 related:
-  - "midea-portasplit-home-assistant-einrichten"
-  - "serverloser-newsletter-cloudflare-workers-d1"
+  - midea-portasplit-home-assistant-einrichten
+  - serverloser-newsletter-cloudflare-workers-d1
 image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
 slug: "midea-portasplit-i-home-assistant-hvorfor-token-og-nokkel-er-avgjorende"
 translationOf: "midea-portasplit-home-assistant"
 url: "https://rafaelpfister.ch/no/blog/midea-portasplit-i-home-assistant-hvorfor-token-og-nokkel-er-avgjorende"
+translationId: article-a02e26cce22063f1
+translationReview: automatic
+translationSourceHash: a02265cf4b8fde907361c3551326fd3283c83d660cf9fdfb40451a9e78ca690b
+translatedAt: 2026-07-29T12:29:38.969Z
 ---
 
 <aside class="article-update">

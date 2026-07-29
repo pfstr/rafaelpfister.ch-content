@@ -6,14 +6,18 @@ date: "2026-07-24"
 kategorie: "Home Assistant and IoT"
 timeToRead: "9 min read"
 themen:
-  - "smart-home-iot"
+  - smart-home-iot
 related:
-  - "midea-portasplit-home-assistant-setup-and-hardening"
-  - "serverless-newsletter-cloudflare-workers-d1"
+  - midea-portasplit-home-assistant-einrichten
+  - serverloser-newsletter-cloudflare-workers-d1
 translationOf: "midea-portasplit-home-assistant"
 image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
 slug: "midea-portasplit-home-assistant-integration"
 url: "https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integration"
+translationId: article-a02e26cce22063f1
+translatedAt: 2026-07-28T11:10:30.446Z
+translationReview: automatic
+translationSourceHash: a02265cf4b8fde907361c3551326fd3283c83d660cf9fdfb40451a9e78ca690b
 ---
 
 <aside class="article-update">

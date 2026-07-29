@@ -6,10 +6,14 @@ date: "2026-07-22"
 kategorie: "Cloudflare Workers"
 timeToRead: "8 min di lettura"
 themen:
-  - "cloudflare-workers"
+  - cloudflare-workers
 slug: "gestire-una-newsletter-in-proprio-con-cloudflare-workers-e-d1"
 translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 url: "https://rafaelpfister.ch/it/blog/gestire-una-newsletter-in-proprio-con-cloudflare-workers-e-d1"
+translationId: article-4e7139acdb90923b
+translationReview: automatic
+translationSourceHash: 90c100386e148f80be4d4be81dc928f373431ce83b5f6e2336cfb0daafd3945e
+translatedAt: 2026-07-29T12:29:38.944Z
 ---
 
 # Gestire una newsletter in proprio con Cloudflare Workers e D1

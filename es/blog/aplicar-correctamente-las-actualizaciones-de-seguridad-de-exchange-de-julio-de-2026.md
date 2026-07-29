@@ -6,11 +6,15 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min de lectura"
 themen:
-  - "exchange-onprem-hybrid"
-  - "active-directory-entra"
+  - exchange-onprem-hybrid
+  - active-directory-entra
 slug: "aplicar-correctamente-las-actualizaciones-de-seguridad-de-exchange-de-julio-de-2026"
 translationOf: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/es/blog/aplicar-correctamente-las-actualizaciones-de-seguridad-de-exchange-de-julio-de-2026"
+translationId: article-731b5b840aee096c
+translationReview: automatic
+translationSourceHash: c4f0a68a6d0b88997bcc5dadd9f5c2423dcb61c7986e179a099460335042a23a
+translatedAt: 2026-07-29T12:29:38.949Z
 ---
 
 # Aplicar correctamente las actualizaciones de seguridad de Exchange de julio de 2026

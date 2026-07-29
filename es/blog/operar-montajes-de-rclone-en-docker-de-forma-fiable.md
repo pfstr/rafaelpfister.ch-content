@@ -6,12 +6,17 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "9 min de lectura"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "paperless-dokumente-clouddienst-auslagern"
+  - paperless-dokumente-clouddienst-auslagern
 slug: "operar-montajes-de-rclone-en-docker-de-forma-fiable"
 translationOf: "rclone-mount-in-docker-container"
 url: "https://rafaelpfister.ch/es/blog/operar-montajes-de-rclone-en-docker-de-forma-fiable"
+translationId: article-a08b15399e144547
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-29T07:02:42.741Z
+translationReview: automatic
+translationSourceHash: 9b1f0ebdc53ebc1f61e127ca462d0b92c4e48e717c4ac91778c59fa1f6915823
 ---
 
 Un montaje de Rclone se ejecuta en un contenedor Docker, pero también debe estar disponible en el host y en otros contenedores. Para ello, los eventos de montaje deben atravesar varios espacios de nombres. Una sola opción de Compose no es suficiente.

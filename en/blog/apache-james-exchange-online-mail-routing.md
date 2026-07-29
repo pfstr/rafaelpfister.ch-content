@@ -6,10 +6,14 @@ date: "2026-06-17"
 kategorie: "Totemomail"
 timeToRead: "10 min read"
 themen:
-  - "totemomail"
+  - totemomail
 slug: "apache-james-exchange-online-mail-routing"
 translationOf: "totemomail-m365"
 url: "https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing"
+translationId: article-60a86616507315fa
+translatedAt: 2026-07-28T11:10:30.444Z
+translationReview: automatic
+translationSourceHash: 8dabf54e50de750dbd1e13baf487ccb1fa9db0d7bd98afcd1933e87bdb57f0af
 ---
 
 # Understanding mail routing between totemomail and Exchange Online

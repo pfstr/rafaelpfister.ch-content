@@ -6,10 +6,14 @@ date: "2026-07-08"
 kategorie: "Passerelle HIN"
 timeToRead: "15 min de lecture"
 themen:
-  - "hin-gateway"
+  - hin-gateway
 slug: "sauvegarder-la-passerelle-de-messagerie-hin-et-la-restaurer-apres-une-panne"
 translationOf: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/fr/blog/sauvegarder-la-passerelle-de-messagerie-hin-et-la-restaurer-apres-une-panne"
+translationId: article-845fb4bd0e4c592a
+translationReview: automatic
+translationSourceHash: 39ecd30339131eb74d0748f4bfb31ead3f98aefbd47621974b1e032f1a96b345
+translatedAt: 2026-07-29T12:29:38.939Z
 ---
 
 # Sauvegarder la passerelle de messagerie HIN et la restaurer après une panne

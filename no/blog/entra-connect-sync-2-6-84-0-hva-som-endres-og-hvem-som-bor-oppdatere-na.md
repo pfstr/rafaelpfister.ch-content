@@ -12,6 +12,10 @@ themen:
 draft: false
 translationOf: "entra-connect-2-6-84-0"
 url: "https://rafaelpfister.ch/no/blog/entra-connect-sync-2-6-84-0-hva-som-endres-og-hvem-som-bor-oppdatere-na"
+translationId: article-85bd27acb917e406
+translationReview: automatic
+translationSourceHash: e4dc8f6498301c03d85afdba4b310d0af7ba497f7ee781448e2d02e5c62d26d9
+translatedAt: 2026-07-29T12:29:38.966Z
 ---
 
 # Entra Connect Sync 2.6.84.0: Hva som endres, og hvem som bør oppdatere nå

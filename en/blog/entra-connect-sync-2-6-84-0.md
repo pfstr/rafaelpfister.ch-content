@@ -6,12 +6,16 @@ date: "2026-07-17"
 kategorie: "Microsoft Entra"
 timeToRead: "11 min read"
 themen:
-  - "microsoft-entra"
-  - "active-directory-entra"
+  - microsoft-entra
+  - active-directory-entra
 slug: "entra-connect-sync-2-6-84-0"
 translationOf: "entra-connect-2-6-84-0"
 draft: false
 url: "https://rafaelpfister.ch/en/blog/entra-connect-sync-2-6-84-0"
+translationId: article-85bd27acb917e406
+translatedAt: 2026-07-28T11:10:30.445Z
+translationReview: automatic
+translationSourceHash: e4dc8f6498301c03d85afdba4b310d0af7ba497f7ee781448e2d02e5c62d26d9
 ---
 
 # Entra Connect Sync 2.6.84.0: What is changing and who should update now

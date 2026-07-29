@@ -6,10 +6,14 @@ date: "2026-06-26"
 kategorie: "Totemomail"
 timeToRead: "9 min de lectura"
 themen:
-  - "totemomail"
+  - totemomail
 slug: "limite-de-licencias-de-totemomail-alcanzado-limpiar-usuarios-huerfanos-mediante-ldap"
 translationOf: "totemomail-licensed-user-limit-ldap-cleanup"
 url: "https://rafaelpfister.ch/es/blog/limite-de-licencias-de-totemomail-alcanzado-limpiar-usuarios-huerfanos-mediante-ldap"
+translationId: article-cdc60310665049b8
+translationReview: automatic
+translationSourceHash: 273d9af1e81522e2b2a99614880ebfac17f5c4ab3bb3a1fbdbc940554a5931da
+translatedAt: 2026-07-29T12:29:38.952Z
 ---
 
 # Límite de licencias de Totemomail alcanzado: limpiar usuarios huérfanos mediante LDAP

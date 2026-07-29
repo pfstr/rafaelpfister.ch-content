@@ -1,5 +1,6 @@
 ---
 slug: entra-connect-2-6-84-0
+translationId: "article-85bd27acb917e406"
 title: "Entra Connect Sync 2.6.84.0: Was sich ändert und wer jetzt aktualisieren sollte"
 navTitle: Entra Connect 2.6.84
 description: "Das Sicherheitsrelease bringt Passkey-Support und Änderungen an App-Authentifizierung, PowerShell und Password Hash Sync. Die Vorgängerversion wurde zurückgezogen; deshalb braucht das Update eine abgestufte Entscheidung."

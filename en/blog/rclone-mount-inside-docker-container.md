@@ -6,12 +6,17 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "9 min read"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "offloading-paperless-documents-to-cloud-storage"
+  - paperless-dokumente-clouddienst-auslagern
 translationOf: "rclone-mount-in-docker-container"
 slug: "rclone-mount-inside-docker-container"
 url: "https://rafaelpfister.ch/en/blog/rclone-mount-inside-docker-container"
+translationId: article-a08b15399e144547
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-29T07:00:06.870Z
+translationReview: automatic
+translationSourceHash: 9b1f0ebdc53ebc1f61e127ca462d0b92c4e48e717c4ac91778c59fa1f6915823
 ---
 
 An Rclone mount runs in a Docker container but also needs to be available on the host and in other containers. To achieve this, mount events must traverse several namespaces. A single Compose option is not enough.

@@ -12,6 +12,7 @@ related:
   - "proton-drive-linux-status"
   - "cloud-mount-testen-dummy-pdfs"
 slug: "paperless-dokumente-clouddienst-auslagern"
+translationId: "article-2f00e7c17fc45664"
 url: "https://rafaelpfister.ch/blog/paperless-dokumente-clouddienst-auslagern"
 ---
 

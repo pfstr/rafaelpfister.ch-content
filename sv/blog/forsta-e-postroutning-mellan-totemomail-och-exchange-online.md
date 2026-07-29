@@ -6,10 +6,14 @@ date: "2026-06-17"
 kategorie: "Totemomail"
 timeToRead: "10 min. lästid"
 themen:
-  - "totemomail"
+  - totemomail
 slug: "forsta-e-postroutning-mellan-totemomail-och-exchange-online"
 translationOf: "totemomail-m365"
 url: "https://rafaelpfister.ch/sv/blog/forsta-e-postroutning-mellan-totemomail-och-exchange-online"
+translationId: article-60a86616507315fa
+translationReview: automatic
+translationSourceHash: 8dabf54e50de750dbd1e13baf487ccb1fa9db0d7bd98afcd1933e87bdb57f0af
+translatedAt: 2026-07-29T12:29:38.959Z
 ---
 
 # Förstå e-postroutning mellan totemomail och Exchange Online

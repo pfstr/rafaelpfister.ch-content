@@ -6,10 +6,14 @@ date: "2026-07-21"
 kategorie: "Claude"
 timeToRead: "12 min lästid"
 themen:
-  - "claude"
+  - claude
 slug: "kora-claude-code-sakert-pa-en-egen-vps"
 translationOf: "claude-code-vps-debian-absichern"
 url: "https://rafaelpfister.ch/sv/blog/kora-claude-code-sakert-pa-en-egen-vps"
+translationId: article-f932e9e537d7704a
+translationReview: automatic
+translationSourceHash: bd2aac7348c16dbd326ab0c10a063817d88a05cb99ab88a8cde66b885dfd7c3f
+translatedAt: 2026-07-29T12:29:38.960Z
 ---
 
 På den egna datorn avslutas en Claude Code-session ofrivilligt senast när laptopen försätts i viloläge eller nätverksanslutningen bryts. En VPS fortsätter att köra och är tillgänglig från flera enheter. Samtidigt är den permanent ansluten till det offentliga internet och skannas automatiskt kort efter starten.

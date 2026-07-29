@@ -6,13 +6,17 @@ date: "2026-07-24"
 kategorie: "Home Assistant and IoT"
 timeToRead: "14 min read"
 themen:
-  - "smart-home-iot"
+  - smart-home-iot
 related:
-  - "midea-portasplit-home-assistant-integration"
-  - "serverless-newsletter-cloudflare-workers-d1"
+  - midea-portasplit-home-assistant
+  - serverloser-newsletter-cloudflare-workers-d1
 translationOf: "midea-portasplit-home-assistant-einrichten"
 slug: "midea-portasplit-home-assistant-setup-and-hardening"
 url: "https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-setup-and-hardening"
+translationId: article-36e7710abe426781
+translatedAt: 2026-07-28T11:10:30.446Z
+translationReview: automatic
+translationSourceHash: ba9c7be984e6ce08724b05d9227acbac222522d3b8fac91639b48289312caba8
 ---
 
 The Midea PortaSplit can be controlled directly on the local network via Home Assistant after setup. To do this, the community integration requires two device-specific credentials from the Midea cloud: a token and a key.

@@ -12,6 +12,7 @@ related:
   - "serverloser-newsletter-cloudflare-workers-d1"
 image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
 slug: "midea-portasplit-home-assistant"
+translationId: "article-a02e26cce22063f1"
 url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant"
 ---
 

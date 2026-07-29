@@ -6,11 +6,15 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybride"
 timeToRead: "6 min de lecture"
 themen:
-  - "exchange-onprem-hybrid"
-  - "active-directory-entra"
+  - exchange-onprem-hybrid
+  - active-directory-entra
 slug: "finaliser-correctement-les-mises-a-jour-de-securite-exchange-de-juillet-2026"
 translationOf: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/fr/blog/finaliser-correctement-les-mises-a-jour-de-securite-exchange-de-juillet-2026"
+translationId: article-731b5b840aee096c
+translationReview: automatic
+translationSourceHash: c4f0a68a6d0b88997bcc5dadd9f5c2423dcb61c7986e179a099460335042a23a
+translatedAt: 2026-07-29T12:29:38.934Z
 ---
 
 # Finaliser correctement les mises à jour de sécurité Exchange de juillet 2026

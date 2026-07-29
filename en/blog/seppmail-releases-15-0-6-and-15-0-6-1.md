@@ -6,12 +6,17 @@ date: "2026-07-29"
 kategorie: "SEPPmail"
 timeToRead: "5 min to read"
 themen:
-  - "seppmail"
+  - seppmail
 slug: "seppmail-releases-15-0-6-and-15-0-6-1"
 translationOf: "seppmail-releases-15-0-6-und-15-0-6-1"
 url: "https://rafaelpfister.ch/en/blog/seppmail-releases-15-0-6-and-15-0-6-1"
 draft: false
+translationId: article-3046fc35b259929b
+translationSourceHash: f0ffa04852d84c7551904c8d66ffb0ea5001f58c2bf9a27bfc961471bc9229ae
+translatedAt: 2026-07-29T15:07:29.050Z
+translationReview: automatic
 ---
+
 # SEPPmail 15.0.6 and 15.0.6.1: Security Fixes and New Admin Features
 
 On July 21, 2026, SEPPmail released patch 15.0.6, followed one day later by hotfix 15.0.6.1. The patch release closes several vulnerabilities, updates OpenSSH and OpenSSL, and brings noticeable improvements for administration. The hotfix corrects two RuleEngine issues that were introduced or surfaced with 15.0.6. The changes also affect appliances operated as HIN Mailgateways, since those run on the same SEPPmail firmware.

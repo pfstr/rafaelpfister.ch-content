@@ -8,6 +8,7 @@ timeToRead: "9 Min. Lesezeit"
 themen:
   - "microsoft-365-exchange"
 slug: "ghost-sender-exchange-online-nebeneingang"
+translationId: "article-d8dc8d1da6379d67"
 url: "https://rafaelpfister.ch/blog/ghost-sender-exchange-online-nebeneingang"
 image: "../images/ghost-admin.png"
 ---

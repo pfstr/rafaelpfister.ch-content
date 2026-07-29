@@ -6,10 +6,14 @@ date: "2026-07-08"
 kategorie: "HIN Gateway"
 timeToRead: "15 min read"
 themen:
-  - "hin-gateway"
+  - hin-gateway
 slug: "hin-mail-gateway-backup-disaster-recovery"
 translationOf: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/en/blog/hin-mail-gateway-backup-disaster-recovery"
+translationId: article-845fb4bd0e4c592a
+translatedAt: 2026-07-28T11:10:30.445Z
+translationReview: automatic
+translationSourceHash: 39ecd30339131eb74d0748f4bfb31ead3f98aefbd47621974b1e032f1a96b345
 ---
 
 # Backing up and restoring the HIN Mail Gateway after a failure

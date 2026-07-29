@@ -6,12 +6,17 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "9 min. lesetid"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "paperless-dokumente-clouddienst-auslagern"
+  - paperless-dokumente-clouddienst-auslagern
 slug: "drift-rclone-monteringer-palitelig-i-docker"
 translationOf: "rclone-mount-in-docker-container"
 url: "https://rafaelpfister.ch/no/blog/drift-rclone-monteringer-palitelig-i-docker"
+translationId: article-a08b15399e144547
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-29T07:04:27.366Z
+translationReview: automatic
+translationSourceHash: 9b1f0ebdc53ebc1f61e127ca462d0b92c4e48e717c4ac91778c59fa1f6915823
 ---
 
 En rclone-montering kjører i en Docker-container, men skal også være tilgjengelig på verten og i andre containere. Da må monteringshendelser krysse flere navnerom. Ett enkelt Compose-alternativ er ikke nok.

@@ -8,6 +8,7 @@ timeToRead: "5 Min. Lesezeit"
 themen:
   - "seppmail"
 slug: "seppmail-releases-15-0-6-und-15-0-6-1"
+translationId: "article-3046fc35b259929b"
 url: "https://rafaelpfister.ch/blog/seppmail-releases-15-0-6-und-15-0-6-1"
 draft: false
 ---

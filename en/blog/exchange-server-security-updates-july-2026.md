@@ -6,11 +6,15 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min read"
 themen:
-  - "exchange-onprem-hybrid"
-  - "active-directory-entra"
+  - exchange-onprem-hybrid
+  - active-directory-entra
 slug: "exchange-server-security-updates-july-2026"
 translationOf: "exchange-security-updates-juli-2026"
 url: "https://rafaelpfister.ch/en/blog/exchange-server-security-updates-july-2026"
+translationId: article-731b5b840aee096c
+translatedAt: 2026-07-28T11:10:30.445Z
+translationReview: automatic
+translationSourceHash: c4f0a68a6d0b88997bcc5dadd9f5c2423dcb61c7986e179a099460335042a23a
 ---
 
 # Proper follow-up for the July 2026 Exchange security updates

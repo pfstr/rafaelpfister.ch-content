@@ -6,13 +6,18 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "11 min lesetid"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "rclone-mount-in-docker-container"
-  - "paperless-dokumente-clouddienst-auslagern"
+  - rclone-mount-in-docker-container
+  - paperless-dokumente-clouddienst-auslagern
 slug: "teste-cold-storage-med-rclone-en-praktisk-testplan"
 translationOf: "cloud-mount-testen-dummy-pdfs"
 url: "https://rafaelpfister.ch/no/blog/teste-cold-storage-med-rclone-en-praktisk-testplan"
+translationId: article-8592f808b2e93cd4
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-28T20:40:23.040Z
+translationReview: automatic
+translationSourceHash: 4dd3058563b8e3853528cbd3cb5b216cc840923ceee9250055c3000c296232b9
 ---
 
 En Rclone-mount er rask å sette opp. Remote-en vises som en katalog, `ls` viser filer, og den første funksjonstesten er bestått. Dette sier likevel lite om produksjonsdrift.

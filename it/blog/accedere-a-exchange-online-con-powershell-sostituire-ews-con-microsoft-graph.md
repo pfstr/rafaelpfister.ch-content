@@ -6,10 +6,14 @@ date: "2026-07-11"
 kategorie: "Totemomail"
 timeToRead: "5 min di lettura"
 themen:
-  - "microsoft-365-exchange"
+  - microsoft-365-exchange
 slug: "accedere-a-exchange-online-con-powershell-sostituire-ews-con-microsoft-graph"
 translationOf: "microsoft-graph-powershell-postfach-anbindung"
 url: "https://rafaelpfister.ch/it/blog/accedere-a-exchange-online-con-powershell-sostituire-ews-con-microsoft-graph"
+translationId: article-4c6a02c79b7bf0fe
+translationReview: automatic
+translationSourceHash: bab6aabe691a64409231665e5d2dd2288fb409fa66b4a7f33cfcb79aeaa643b3
+translatedAt: 2026-07-29T12:29:38.940Z
 ---
 
 # Accedere a Exchange Online con PowerShell: sostituire EWS con Microsoft Graph

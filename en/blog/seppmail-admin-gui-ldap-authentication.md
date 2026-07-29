@@ -6,12 +6,17 @@ date: "2026-07-29"
 kategorie: "SEPPmail"
 timeToRead: "7 min to read"
 themen:
-  - "seppmail"
+  - seppmail
 slug: "seppmail-admin-gui-ldap-authentication"
 translationOf: "seppmail-admin-gui-ldap-authentifizierung"
 url: "https://rafaelpfister.ch/en/blog/seppmail-admin-gui-ldap-authentication"
 draft: false
+translationId: article-21092a3dad6b84cb
+translationSourceHash: bede296801778ee8c5b09810cd9a6eca5522a50cc40c6f5a9e52f7cc24233ef9
+translatedAt: 2026-07-29T15:07:29.049Z
+translationReview: automatic
 ---
+
 # Connecting the SEPPmail Admin GUI to Active Directory: Setting Up LDAP Authentication in 15.0.6
 
 Up to firmware 15.0.5, the administration interface of the SEPPmail Secure E-Mail Gateway only knew local accounts. If you wanted to work cleanly, you created a dedicated local user for each administrator and added them to the admin group. That works, but it comes with the usual drawbacks of local accounts: separate passwords per appliance, no central offboarding, and no enforcement of the password policies from your directory service. Patch release 15.0.6 changes this. The admin GUI can now authenticate administrators against an external LDAP server such as Active Directory and map AD groups to local groups on the appliance.

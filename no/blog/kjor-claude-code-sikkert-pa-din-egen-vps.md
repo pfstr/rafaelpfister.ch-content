@@ -6,10 +6,14 @@ date: "2026-07-21"
 kategorie: "Claude"
 timeToRead: "12 min lesetid"
 themen:
-  - "claude"
+  - claude
 slug: "kjor-claude-code-sikkert-pa-din-egen-vps"
 translationOf: "claude-code-vps-debian-absichern"
 url: "https://rafaelpfister.ch/no/blog/kjor-claude-code-sikkert-pa-din-egen-vps"
+translationId: article-f932e9e537d7704a
+translationReview: automatic
+translationSourceHash: bd2aac7348c16dbd326ab0c10a063817d88a05cb99ab88a8cde66b885dfd7c3f
+translatedAt: 2026-07-29T12:29:38.969Z
 ---
 
 På din egen datamaskin avsluttes en Claude Code-økt senest ufrivillig når laptopen går i dvale eller nettverkstilkoblingen brytes. En VPS fortsetter å kjøre og er tilgjengelig fra flere enheter. Samtidig er den permanent koblet til det offentlige internettet og blir automatisk skannet kort tid etter oppstart.

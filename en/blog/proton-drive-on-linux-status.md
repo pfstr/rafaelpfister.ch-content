@@ -6,14 +6,19 @@ date: "2026-07-26"
 kategorie: "Proton Drive"
 timeToRead: "8 min read"
 themen:
-  - "proton-drive"
-  - "rclone"
+  - proton-drive
+  - rclone
 related:
-  - "offloading-paperless-documents-to-cloud-storage"
-  - "rclone-mount-inside-docker-container"
+  - paperless-dokumente-clouddienst-auslagern
+  - rclone-mount-in-docker-container
 translationOf: "proton-drive-linux-status"
 slug: "proton-drive-on-linux-status"
 url: "https://rafaelpfister.ch/en/blog/proton-drive-on-linux-status"
+translationId: article-ca282447e0b9acff
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-28T21:44:00.570Z
+translationReview: automatic
+translationSourceHash: 1b0af572e102121912376d523c1785ed1563e4ca5c17eee8d605c5000096b57e
 ---
 
 Proton Drive has offered dedicated sync clients for Windows and macOS since 2023. On Linux, there is currently only the web interface, community tools and an official SDK in preview. The situation is even more difficult on a server, where neither desktop sync nor interactive sign-in is a good fit.

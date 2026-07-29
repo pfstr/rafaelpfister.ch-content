@@ -6,10 +6,14 @@ date: "2026-07-21"
 kategorie: "Claude"
 timeToRead: "12 min de lectura"
 themen:
-  - "claude"
+  - claude
 slug: "operar-claude-code-de-forma-segura-en-un-vps-propio"
 translationOf: "claude-code-vps-debian-absichern"
 url: "https://rafaelpfister.ch/es/blog/operar-claude-code-de-forma-segura-en-un-vps-propio"
+translationId: article-f932e9e537d7704a
+translationReview: automatic
+translationSourceHash: bd2aac7348c16dbd326ab0c10a063817d88a05cb99ab88a8cde66b885dfd7c3f
+translatedAt: 2026-07-29T12:29:38.954Z
 ---
 
 En el propio ordenador, una sesión de Claude Code termina involuntariamente como muy tarde cuando el portátil entra en suspensión o se interrumpe la conexión de red. Un VPS sigue funcionando y es accesible desde varios dispositivos. Al mismo tiempo, permanece conectado al Internet público y recibe escaneos automatizados poco después de iniciarse.

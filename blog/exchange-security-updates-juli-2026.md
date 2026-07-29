@@ -9,6 +9,7 @@ themen:
   - "exchange-onprem-hybrid"
   - "active-directory-entra"
 slug: "exchange-security-updates-juli-2026"
+translationId: "article-731b5b840aee096c"
 url: "https://rafaelpfister.ch/blog/exchange-security-updates-juli-2026"
 ---
 

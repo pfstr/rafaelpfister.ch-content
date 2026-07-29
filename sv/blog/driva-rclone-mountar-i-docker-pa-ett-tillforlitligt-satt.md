@@ -6,12 +6,17 @@ date: "2026-07-26"
 kategorie: "Rclone"
 timeToRead: "9 min. läsning"
 themen:
-  - "rclone"
+  - rclone
 related:
-  - "paperless-dokumente-clouddienst-auslagern"
+  - paperless-dokumente-clouddienst-auslagern
 slug: "driva-rclone-mountar-i-docker-pa-ett-tillforlitligt-satt"
 translationOf: "rclone-mount-in-docker-container"
 url: "https://rafaelpfister.ch/sv/blog/driva-rclone-mountar-i-docker-pa-ett-tillforlitligt-satt"
+translationId: article-a08b15399e144547
+translationModel: gpt-5.6-terra
+translatedAt: 2026-07-29T07:03:34.063Z
+translationReview: automatic
+translationSourceHash: 9b1f0ebdc53ebc1f61e127ca462d0b92c4e48e717c4ac91778c59fa1f6915823
 ---
 
 En Rclone-mount körs i en Docker-container, men ska även vara tillgänglig på värden och i andra containrar. För detta måste mount-händelser passera flera namnrymder. Ett enda Compose-alternativ räcker inte.

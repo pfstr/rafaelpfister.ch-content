@@ -6,10 +6,14 @@ date: "2026-06-17"
 kategorie: "Totemomail"
 timeToRead: "10 min di lettura"
 themen:
-  - "totemomail"
+  - totemomail
 slug: "comprendere-il-routing-della-posta-tra-totemomail-ed-exchange-online"
 translationOf: "totemomail-m365"
 url: "https://rafaelpfister.ch/it/blog/comprendere-il-routing-della-posta-tra-totemomail-ed-exchange-online"
+translationId: article-60a86616507315fa
+translationReview: automatic
+translationSourceHash: 8dabf54e50de750dbd1e13baf487ccb1fa9db0d7bd98afcd1933e87bdb57f0af
+translatedAt: 2026-07-29T12:29:38.941Z
 ---
 
 # Comprendere il routing della posta tra totemomail ed Exchange Online

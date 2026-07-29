@@ -8,6 +8,7 @@ timeToRead: "10 Min. Lesezeit"
 themen:
   - "totemomail"
 slug: "totemomail-m365"
+translationId: "article-60a86616507315fa"
 url: "https://rafaelpfister.ch/blog/totemomail-m365"
 ---
 

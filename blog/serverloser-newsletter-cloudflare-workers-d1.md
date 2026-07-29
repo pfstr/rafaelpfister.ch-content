@@ -8,6 +8,7 @@ timeToRead: "8 Min. Lesezeit"
 themen:
   - "cloudflare-workers"
 slug: "serverloser-newsletter-cloudflare-workers-d1"
+translationId: "article-4e7139acdb90923b"
 url: "https://rafaelpfister.ch/blog/serverloser-newsletter-cloudflare-workers-d1"
 ---
 

@@ -1,5 +1,6 @@
 ---
 slug: hin-update-issue-version-15.0.5
+translationId: "article-bd1908eec39f9c26"
 title: "HIN Mailgateway 15.0.5: Login-Ausfall nach dem Cluster-Update beheben"
 navTitle: Login-Fehler 15.0.5
 description: "Nach dem Update eines HIN-Mailgateway-Clusters auf Version 15.0.5 fällt die Anmeldung nach wenigen Minuten auf beiden Knoten aus. Dieses Vorgehen bringt die Appliances kontrolliert wieder in Betrieb."

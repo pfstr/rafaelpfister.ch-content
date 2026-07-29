@@ -6,10 +6,14 @@ date: "2026-07-08"
 kategorie: "HIN-Gateway"
 timeToRead: "15 min de lectura"
 themen:
-  - "hin-gateway"
+  - hin-gateway
 slug: "realizar-copias-de-seguridad-de-hin-mailgateway-y-restaurarlo-tras-una-averia"
 translationOf: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/es/blog/realizar-copias-de-seguridad-de-hin-mailgateway-y-restaurarlo-tras-una-averia"
+translationId: article-845fb4bd0e4c592a
+translationReview: automatic
+translationSourceHash: 39ecd30339131eb74d0748f4bfb31ead3f98aefbd47621974b1e032f1a96b345
+translatedAt: 2026-07-29T12:29:38.956Z
 ---
 
 # Realizar copias de seguridad de HIN Mailgateway y restaurarlo tras una avería

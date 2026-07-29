@@ -11,6 +11,7 @@ related:
   - "rclone-mount-in-docker-container"
   - "paperless-dokumente-clouddienst-auslagern"
 slug: "cloud-mount-testen-dummy-pdfs"
+translationId: "article-8592f808b2e93cd4"
 url: "https://rafaelpfister.ch/blog/cloud-mount-testen-dummy-pdfs"
 ---
 

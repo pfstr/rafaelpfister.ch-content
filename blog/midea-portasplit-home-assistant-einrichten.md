@@ -11,6 +11,7 @@ related:
   - "midea-portasplit-home-assistant"
   - "serverloser-newsletter-cloudflare-workers-d1"
 slug: "midea-portasplit-home-assistant-einrichten"
+translationId: "article-36e7710abe426781"
 url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-einrichten"
 ---
 

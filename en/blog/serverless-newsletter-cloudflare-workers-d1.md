@@ -6,10 +6,14 @@ date: "2026-07-22"
 kategorie: "Cloudflare Workers"
 timeToRead: "8 min read"
 themen:
-  - "cloudflare-workers"
+  - cloudflare-workers
 slug: "serverless-newsletter-cloudflare-workers-d1"
 translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 url: "https://rafaelpfister.ch/en/blog/serverless-newsletter-cloudflare-workers-d1"
+translationId: article-4e7139acdb90923b
+translatedAt: 2026-07-28T11:10:30.447Z
+translationReview: automatic
+translationSourceHash: 90c100386e148f80be4d4be81dc928f373431ce83b5f6e2336cfb0daafd3945e
 ---
 
 # Run your own newsletter with Cloudflare Workers and D1

@@ -6,11 +6,15 @@ date: "2026-07-15"
 kategorie: "Microsoft 365 / Exchange"
 timeToRead: "9 min lesetid"
 themen:
-  - "microsoft-365-exchange"
+  - microsoft-365-exchange
 slug: "ghost-sender-i-exchange-online-en-mx-post-er-ikke-en-brannmur"
 image: "../images/ghost-admin.png"
 translationOf: "ghost-sender-exchange-online-nebeneingang"
 url: "https://rafaelpfister.ch/no/blog/ghost-sender-i-exchange-online-en-mx-post-er-ikke-en-brannmur"
+translationId: article-d8dc8d1da6379d67
+translationReview: automatic
+translationSourceHash: fc228adeba2a4ea46f6b36d20946d0aeb5c30f485b32da965e52168d2806a689
+translatedAt: 2026-07-29T12:29:38.968Z
 ---
 
 # Ghost Sender i Exchange Online: En MX-post er ikke en brannmur

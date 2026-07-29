@@ -11,6 +11,10 @@ themen:
 draft: false
 translationOf: "hin-update-issue-version-15.0.5"
 url: "https://rafaelpfister.ch/es/blog/hin-mailgateway-15-0-5-solucionar-el-fallo-de-inicio-de-sesion-tras-la-actualizacion-del-cluster"
+translationId: article-bd1908eec39f9c26
+translationReview: automatic
+translationSourceHash: 3bf0ad28c6b9b80f5644d7281912c3966fd7d0632665afcc13e055bda963e5c2
+translatedAt: 2026-07-29T12:29:38.952Z
 ---
 
 # HIN Mailgateway 15.0.5: solucionar el fallo de inicio de sesión tras la actualización del clúster

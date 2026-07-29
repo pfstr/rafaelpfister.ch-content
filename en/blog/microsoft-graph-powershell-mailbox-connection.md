@@ -6,10 +6,14 @@ date: "2026-07-11"
 kategorie: "Totemomail"
 timeToRead: "5 min read"
 themen:
-  - "microsoft-365-exchange"
+  - microsoft-365-exchange
 slug: "microsoft-graph-powershell-mailbox-connection"
 translationOf: "microsoft-graph-powershell-postfach-anbindung"
 url: "https://rafaelpfister.ch/en/blog/microsoft-graph-powershell-mailbox-connection"
+translationId: article-4c6a02c79b7bf0fe
+translatedAt: 2026-07-28T11:10:30.446Z
+translationReview: automatic
+translationSourceHash: bab6aabe691a64409231665e5d2dd2288fb409fa66b4a7f33cfcb79aeaa643b3
 ---
 
 # Accessing Exchange Online with PowerShell: Replacing EWS with Microsoft Graph

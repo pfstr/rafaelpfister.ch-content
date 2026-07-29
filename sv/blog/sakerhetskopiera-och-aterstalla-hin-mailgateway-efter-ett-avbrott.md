@@ -6,10 +6,14 @@ date: "2026-07-08"
 kategorie: "HIN-gateway"
 timeToRead: "15 min lästid"
 themen:
-  - "hin-gateway"
+  - hin-gateway
 slug: "sakerhetskopiera-och-aterstalla-hin-mailgateway-efter-ett-avbrott"
 translationOf: "hin-mailgateway-backup-disaster-recovery"
 url: "https://rafaelpfister.ch/sv/blog/sakerhetskopiera-och-aterstalla-hin-mailgateway-efter-ett-avbrott"
+translationId: article-845fb4bd0e4c592a
+translationReview: automatic
+translationSourceHash: 39ecd30339131eb74d0748f4bfb31ead3f98aefbd47621974b1e032f1a96b345
+translatedAt: 2026-07-29T12:29:38.963Z
 ---
 
 # Säkerhetskopiera och återställa HIN Mailgateway efter ett avbrott

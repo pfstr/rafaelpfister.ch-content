@@ -6,14 +6,18 @@ date: "2026-07-24"
 kategorie: "Home Assistant et IoT"
 timeToRead: "9 min de lecture"
 themen:
-  - "smart-home-iot"
+  - smart-home-iot
 related:
-  - "midea-portasplit-home-assistant-einrichten"
-  - "serverloser-newsletter-cloudflare-workers-d1"
+  - midea-portasplit-home-assistant-einrichten
+  - serverloser-newsletter-cloudflare-workers-d1
 image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
 slug: "midea-portasplit-dans-home-assistant-pourquoi-le-token-et-la-cle-sont-essentiels"
 translationOf: "midea-portasplit-home-assistant"
 url: "https://rafaelpfister.ch/fr/blog/midea-portasplit-dans-home-assistant-pourquoi-le-token-et-la-cle-sont-essentiels"
+translationId: article-a02e26cce22063f1
+translationReview: automatic
+translationSourceHash: a02265cf4b8fde907361c3551326fd3283c83d660cf9fdfb40451a9e78ca690b
+translatedAt: 2026-07-29T12:29:38.937Z
 ---
 
 <aside class="article-update">

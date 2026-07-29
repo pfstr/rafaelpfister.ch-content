@@ -10,6 +10,7 @@ themen:
 related:
   - "paperless-dokumente-clouddienst-auslagern"
 slug: "rclone-mount-in-docker-container"
+translationId: "article-a08b15399e144547"
 url: "https://rafaelpfister.ch/blog/rclone-mount-in-docker-container"
 ---
 

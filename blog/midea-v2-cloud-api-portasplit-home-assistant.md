@@ -12,6 +12,7 @@ related:
   - "midea-portasplit-home-assistant-einrichten"
 draft: false
 slug: "midea-v2-cloud-api-portasplit-home-assistant"
+translationId: "article-f504b2af00493864"
 url: "https://rafaelpfister.ch/blog/midea-v2-cloud-api-portasplit-home-assistant"
 ---
 

@@ -6,11 +6,15 @@ date: "2026-06-19"
 kategorie: "HIN Gateway"
 timeToRead: "3 min read"
 themen:
-  - "hin-gateway"
+  - hin-gateway
 slug: "hin-mailgateway-update-15-0-5-login-issue"
 translationOf: "hin-update-issue-version-15.0.5"
 draft: false
 url: "https://rafaelpfister.ch/en/blog/hin-mailgateway-update-15-0-5-login-issue"
+translationId: article-bd1908eec39f9c26
+translatedAt: 2026-07-28T11:10:30.445Z
+translationReview: automatic
+translationSourceHash: 3bf0ad28c6b9b80f5644d7281912c3966fd7d0632665afcc13e055bda963e5c2
 ---
 
 # HIN Mailgateway 15.0.5: Fixing login failures after the cluster update
