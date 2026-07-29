@@ -37,7 +37,7 @@ On top of that come updated libraries: OpenSSH 10.4 and OpenSSL 3.0.21 together 
 Three changes in the admin GUI stand out in daily use:
 
 - **Separate MFA input field:** The second factor no longer needs to be appended to the password but has its own field. This removes a long-standing stumbling block at login.
-- **LDAP authentication for the admin GUI:** Administrators can now authenticate against an external LDAP server instead of maintaining local accounts on the appliance.
+- **LDAP authentication for the admin GUI:** Administrators can now authenticate against an external LDAP server instead of maintaining local accounts on the appliance. The setup is described in the article on [connecting the admin GUI to Active Directory](/en/blog/seppmail-admin-gui-ldap-authentication).
 - **AutoRenew button for MPKI:** In the MPKI connector settings, automatic certificate renewal can be triggered manually via "Trigger AutoRenew...".
 
 In addition, the appliance now consistently uses valid time zones (default: Europe/Zurich), and the System Object ID under System >> Advanced View is validated as a proper OID.
