@@ -3500,126 +3500,203 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
-# SEPPmail 15.0.6 and 15.0.6.1: Security Fixes and New Admin Features
+# Microsoft Entra Domain Services: LDAP and Kerberos for cloud-only environments
+
+URL: https://rafaelpfister.ch/en/blog/microsoft-entra-domain-services-ldap-and-kerberos-for-cloud-only-environments
+Datum: 2026-07-30
+
+# Microsoft Entra Domain Services: LDAP and Kerberos for cloud-only environments
+
+Anyone who has moved their users entirely to Microsoft Entra ID (formerly Azure Active Directory) will notice it at the latest when dealing with their first appliance or legacy application: Entra ID responds to queries via Microsoft Graph and modern authentication protocols such as OAuth and SAML, but not via LDAP, Kerberos or NTLM. An LDAP bind against Entra ID is simply not possible. For anything that expects a traditional Active Directory, Microsoft offers a dedicated service: Microsoft Entra Domain Services, formerly Azure AD Domain Services.
+
+## What the service provides
+
+Entra Domain Services is a managed Active Directory domain. Microsoft operates two Windows domain controllers for it in an Azure VNet, handles patching, replication and backups, and automatically synchronises users and groups from Entra ID into the domain. Synchronisation runs in one direction only, from Entra ID to the managed domain; changes made directly in the domain do not flow back.
+
+Externally, the domain behaves like a standard Active Directory: it responds to LDAP and LDAPS queries, supports Kerberos and NTLM authentication, allows VMs to join the domain, and provides limited Group Policy. Applications and devices do not need to be adapted; they see a domain controller.
+
+## What it is needed for
+
+The service is aimed at environments that are actually cloud-only but run individual components with traditional directory requirements:
+
+- **Appliances and line-of-business applications with LDAP integration:** Devices that look up users via LDAP, evaluate group memberships or verify logins using LDAP bind.
+- **Lift-and-shift migrations:** Server workloads that must remain domain-bound (Kerberos, NTLM, domain join), without having to operate their own domain controllers in Azure.
+- **Environments without on-premises AD:** Where Active Directory never existed or has been decommissioned, the managed domain replaces the need to build dedicated DCs and their operational overhead.
+
+Important distinction: anyone still operating an on-premises Active Directory with Entra Connect synchronisation generally does not need the service; the appliance can query the existing AD instead. Entra Domain Services fills the gap when Entra ID is the only user source.
+
+## Architecture and setup
+
+The managed domain is deployed in its own VNet or subnet and receives two fixed domain controller addresses. Workloads in other VNets reach it through VNet peering; the DNS servers of the participating VNets must point to the domain controllers so that the domain name and objects can be resolved. Access is restricted via Network Security Groups to the sources and ports actually required.
+
+Some characteristics of the managed domain that are relevant when connecting applications:
+
+- Synchronised users are located in the **AADDC Users** OU, and the domain uses the **onmicrosoft.com** suffix without additional configuration. Search Base and bind DNs must reflect this structure, for example CN=svc-ldap,OU=AADDC Users,DC=example,DC=onmicrosoft,DC=com.
+- There is no Domain Administrator. Administration is performed through the delegated AAD DC Administrators group; schema extensions are not possible.
+- A dedicated, unprivileged account is sufficient for LDAP bind accounts; Directory Readers is the role for read-only directory queries in Entra ID.
+
+## The password hash trap
+
+One point regularly costs time in testing: Kerberos and NTLM logins as well as LDAP binds require password hashes in the managed domain. For cloud-only accounts, Entra ID only generates these hashes when the password is next changed after the service has been activated. A newly synchronised user is therefore visible in the directory but can only log in after changing their password once. For hybrid accounts, the hashes must also be synchronised from the on-premises AD via Entra Connect.
+
+## Secure LDAP step by step
+
+Within the domain, LDAP runs unencrypted by default over port 389. For logins and for any access outside strictly isolated networks, the connection should use Secure LDAP (LDAPS, port 636); the service only offers access from outside the VNet in encrypted form anyway. Setup consists of four steps.
+
+**1. Obtain a certificate.** Secure LDAP requires a separate certificate, uploaded as a PFX including its private key. The Subject or SAN must cover the managed domain with a wildcard (for example *.example.onmicrosoft.com), as requests may reach either of the two domain controllers. Options include a public CA, your own PKI or a separately created self-signed certificate. With a self-signed certificate, the chain must be stored as trusted on every requesting system; not every appliance permits this. If there is a choice, your own PKI or a public CA is the safer option.
+
+**2. Enable Secure LDAP.** In the portal, under Settings > Secure LDAP, enable the feature and upload the PFX together with its password. You can also enable internet access there; the managed domain then receives a public IP address.
+
+**3. Network and DNS.** The external IP address is listed under Properties. The associated NSG rule opens TCP/636 and should be restricted to the source IP addresses actually required, rather than Any. For name resolution, a DNS record (for example ldaps.example.com) points to this IP address; it must match the certificate. Internal access continues to go directly to the domain controller addresses.
+
+**4. Test the connection.** Before switching over the application, it is worth testing port 636 with an LDAP browser, ldp.exe or ldapsearch: bind with the service account, then search under the AADDC Users OU. Only once binding and searching work properly should the application be configured.
+
+To set up the service itself, the portal account requires the Application Administrator, Domain Services Contributor and Groups Administrator roles; deployment of the managed domain takes well over an hour. TLS 1.2 can also be enforced as the minimum in the security settings.
+
+## Costs
+
+Entra Domain Services is an ongoing operating cost: the service is billed hourly by SKU, in addition to VNet, peering and any test VMs. For one small LDAP use case, that is a substantial price; however, the alternative of operating your own domain controllers as VMs trades the saving for responsibility for patching, backups and availability.
+
+## Practical case: Email gateway with LDAP integration
+
+A specific example of the appliance category is the SEPPmail Secure E-Mail Gateway. It uses LDAP for user provisioning and permission queries and, since firmware 15.0.6, also for [logging in to the Admin GUI](/blog/seppmail-admin-gui-ldap-authentifizierung). An appliance in the Azure VNet reaches the managed domain through VNet peering using a dedicated bind account (Directory Readers), secured via NSGs. Particularly for Admin GUI login, where the TLS option is enabled by default, the connection should use Secure LDAP.
+
+## Conclusion
+
+Entra Domain Services is not a replacement for Entra ID, but a bridge: the service translates a cloud user base into a traditional AD domain for anything requiring LDAP, Kerberos or domain join. Anyone who only needs to connect a single application should weigh the ongoing costs against modernising that application. Once the service is in place, appliances and legacy applications behave as they would in a familiar AD environment, including the characteristics described for OU structure, permissions and password hashes.
+
+## Sources
+
+1.  [Microsoft Learn – «What is Microsoft Entra Domain Services?»](https://learn.microsoft.com/de-de/entra/identity/domain-services/overview): Scope of the managed domain, supported protocols and distinction from Entra ID and self-operated domain controllers.
+
+2.  [Microsoft Learn – «Synchronisation in Entra Domain Services»](https://learn.microsoft.com/de-de/entra/identity/domain-services/synchronization): One-way synchronisation, OU structure and the behaviour of password hashes for cloud-only and hybrid accounts.
+
+3.  [Microsoft Learn – «Configure Secure LDAP»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS with a dedicated certificate for encrypted LDAP access.
+
+4.  [Connect the SEPPmail Admin GUI to Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung): Setting up LDAP login for the Admin GUI from firmware 15.0.6.
+
+----
+
+# SEPPmail 15.0.6 and 15.0.6.1: security fixes and new admin features
 
 URL: https://rafaelpfister.ch/en/blog/seppmail-releases-15-0-6-and-15-0-6-1
 Datum: 2026-07-29
 
-# SEPPmail 15.0.6 and 15.0.6.1: Security Fixes and New Admin Features
+# SEPPmail 15.0.6 and 15.0.6.1: security fixes and new admin features
 
-On July 21, 2026, SEPPmail released patch 15.0.6, followed one day later by hotfix 15.0.6.1. The patch release closes several vulnerabilities, updates OpenSSH and OpenSSL, and brings noticeable improvements for administration. The hotfix corrects two RuleEngine issues that were introduced or surfaced with 15.0.6. The changes also affect appliances operated as HIN Mailgateways, since those run on the same SEPPmail firmware.
+SEPPmail released patch release 15.0.6 on 21 July 2026, followed by hotfix 15.0.6.1 a day later. The patch release closes several vulnerabilities, updates OpenSSH and OpenSSL, and brings noticeable improvements for administration. The hotfix fixes two errors in the RuleEngine that were introduced or became visible with 15.0.6. The changes also affect appliances operated as HIN Mailgateway, as these are based on the same SEPPmail firmware.
 
-## Hotfix 15.0.6.1 from July 22, 2026
+## Hotfix 15.0.6.1 of 22 July 2026
 
-The hotfix addresses two points in the RuleEngine. First, an undefined value in the message object prevented log entries from being written to the mail log. Affected messages passed through the system without being logged. Second, the RuleEngine now detects the direction of archived emails so their delivery is handled correctly.
+The hotfix resolves two issues in the RuleEngine. Firstly, an undefined value in the message object prevented log entries from being written to the mail log. Affected messages therefore passed through the system without being logged. Secondly, the RuleEngine now identifies the direction of archived emails so that their delivery is handled correctly.
 
-If you have already installed 15.0.6 or are planning the update, go straight to 15.0.6.1.
+Anyone who has already installed 15.0.6 or is planning the update should upgrade directly to 15.0.6.1.
 
-The HIN appliances have apparently received the hotfix as well: a HIN Mailgateway with installed version 15.0.6-RC-42-g278c81f84 now reports 15.0.6-RC-88-g916e513cc as the next version in the 15.0 branch. The RC designations of the HIN firmware cannot be mapped directly to a SEPPmail release, but the timing of the offer points to the hotfix.
+The HIN appliances also appear to have received the hotfix: a HIN Mailgateway with version 15.0.6-RC-42-g278c81f84 installed now reports 15.0.6-RC-88-g916e513cc as the next version in the 15.0 branch. The RC designations of the HIN firmware cannot be mapped directly to a SEPPmail release, but the timing of the offer suggests the hotfix.
 
-## Security Fixes in 15.0.6
+## Security fixes in 15.0.6
 
-The most important part of the patch release consists of three corrections to the security architecture:
+The most important part of the patch release consists of three changes to the security architecture:
 
-- A possible path traversal vulnerability in PDF generation was closed. It was found by InfoGuard.
-- All PGP-decrypted content is now Base64-encoded to prevent MIME structure injection.
-- The hashencrypt function was refactored to use AES-256-CBC with PBKDF2.
+- A possible path traversal vulnerability in PDF generation has been closed. It was found by InfoGuard.
+- All content decrypted using PGP is now Base64-encoded to prevent MIME structure injection.
+- The hashencrypt function has been switched to AES-256-CBC with PBKDF2.
 
-On top of that come updated libraries: OpenSSH 10.4 and OpenSSL 3.0.21 together fix more than twenty CVEs. These points alone make the update advisable for production systems.
+Updated libraries are also included: OpenSSH 10.4 and OpenSSL 3.0.21 fix more than twenty CVEs between them. These points alone make the update advisable for production systems.
 
-## New Administration Features
+## New features for administration
 
-Three changes in the admin GUI stand out in daily use:
+Three changes in the admin GUI stand out in day-to-day use:
 
-- **Separate MFA input field:** The second factor no longer needs to be appended to the password but has its own field. This removes a long-standing stumbling block at login.
-- **LDAP authentication for the admin GUI:** Administrators can now authenticate against an external LDAP server instead of maintaining local accounts on the appliance. The setup is described in the article on [connecting the admin GUI to Active Directory](/en/blog/seppmail-admin-gui-ldap-authentication). Whether the HIN Mailgateway has also received this feature, I still need to test and will update the article afterwards; since HIN uses the same firmware base, I assume it has.
-- **AutoRenew button for MPKI:** In the MPKI connector settings, automatic certificate renewal can be triggered manually via "Trigger AutoRenew...".
+- **Separate MFA input field:** The second factor no longer has to be appended to the password, but has its own field. This removes a long-standing login pitfall.
+- **LDAP authentication for the admin GUI:** Administrators can now authenticate against an external LDAP server instead of maintaining local accounts on the appliance. Setup is described in the article on [connecting the admin GUI to Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung). I am still testing whether the HIN Mailgateway has also received this feature and will add this to the article afterwards; as HIN uses the same firmware base, I assume it has.
+- **AutoRenew button for MPKI:** In the MPKI connector settings, automatic certificate renewal can be triggered manually using «Trigger AutoRenew... ».
 
-In addition, the appliance now consistently uses valid time zones (default: Europe/Zurich), and the System Object ID under System >> Advanced View is validated as a proper OID.
+In addition, the appliance now consistently uses valid time zones (default: Europe/Zurich), and the System Object ID under System >> Advanced View is validated as a valid OID.
 
-## Mail Processing and Webmail
+## Mail processing and webmail
 
-Four points were corrected in the RuleEngine. Subject handling now works even when the encoding is unknown. Messages are bounced when signing is explicitly requested but cannot be performed; previously such messages could continue unsigned. Archive copies now pass through the delivery function and thus receive ARC headers. And for PGP messages without MDC data, MDC errors are ignored instead of disrupting processing.
+Four issues have been fixed in the RuleEngine. Subject handling now also works with unknown encoding. Messages are bounced when a signature is explicitly requested but cannot be created; previously, such messages could continue unsigned. Archive copies now pass through the delivery function and therefore receive ARC headers. In addition, MDC errors are ignored for PGP messages without MDC data rather than disrupting processing.
 
-Four bugs were fixed in the webmail (GINA): automatic deletion of unregistered accounts after the configured grace period works again, the hashdecrypt function returned a false-positive decryption result in certain cases, adding an attachment cleared the To and CC fields, and the time output in the SMS logs was incorrect.
+Four errors have been fixed in webmail (GINA): automatic deletion of unregistered accounts after the grace period has expired works again, the hashdecrypt function returned a false-positive decryption result in certain cases, adding an attachment cleared the To and CC fields, and the time output in the SMS logs was incorrect.
 
-## REST API, Cluster, and Backup
+## REST API, cluster and backup
 
-The REST API receives fixes to several endpoints: /system/ifaliasconfig (handling of null values), /system/applySysconfig (access configuration), /crypto/domain/{domainName} (domain certificate uploads), and GET and POST /ssl/csr. The timeout for REST calls was increased from 300 to 900 seconds, making long-running requests such as larger configuration changes more reliable.
+The REST API receives fixes to several endpoints: /system/ifaliasconfig (handling of null values), /system/applySysconfig (access configuration), /crypto/domain/{domainName} (uploading domain certificates), and GET and POST /ssl/csr. The timeout for REST calls has been increased from 300 to 900 seconds, making long-running requests such as larger configuration changes more reliable.
 
-In cluster operation, an existing CARP IP previously blocked the IP settings of a newly joined member; this is fixed. Before daily snapshot creation, the backup now additionally checks for a corrupt database before the snapshot is written.
+In cluster operation, an existing CARP IP previously blocked the IP settings of a newly added member; this has been fixed. Before creating the daily snapshot, the backup now also checks for a corrupt database before writing the snapshot.
 
-## Connection to the Login Outage Under 15.0.5
+## Relation to the login outage in 15.0.5
 
-When updating a cluster to 15.0.5, login could fail on both nodes. The fault symptoms and the recovery procedure are described in the article on the [login outage after the 15.0.5 update](/en/blog/hin-mailgateway-update-15-0-5-login-issue). The vendor was already aware of the problem at the time and announced a fix for a later version.
+When updating a cluster to 15.0.5, login could fail on both nodes. The symptoms and recovery are described in the article on the [login outage after the 15.0.5 update](/blog/hin-update-issue-version-15.0.5). The manufacturer was already aware of the problem at the time and announced a fix for a subsequent version.
 
-The release notes for 15.0.6 now contain exactly one entry that matches this fault pattern: "prevent password rehashing when cluster members use different firmware versions". During a cluster update, the nodes inevitably run different firmware versions for a while. If a node recomputes password hashes in this phase and replicates them into the cluster, the hashes no longer match on the other version, and login fails on both nodes, exactly as observed in the outage back then. The release notes do not mention the login outage explicitly, but the entry covers precisely the constellation that triggered it. The root cause is therefore addressed in 15.0.6; the emergency procedure with cluster dissolution that was necessary under 15.0.5 should no longer be needed for future updates.
+The release notes for 15.0.6 now contain exactly one entry that matches these symptoms: «prevent password rehashing when cluster members use different firmware versions». During a cluster update, the nodes inevitably run temporarily with different firmware versions. If one node recalculates password hashes at this stage and replicates them to the cluster, the hashes no longer match on the other version and login fails on both nodes, exactly as in the outage observed at the time. The release notes do not explicitly mention the login outage, but the entry precisely covers the configuration that caused it. The cause is therefore addressed in 15.0.6; the emergency procedure involving cluster dissolution that was necessary in 15.0.5 should no longer be required for future updates.
 
-## Minor Corrections
+## Minor fixes
 
-In the mail log, the date sorting that previously sorted alphabetically instead of chronologically was corrected, and the displayed size of LFT messages is accurate again. Access to missing X-headers is no longer logged. The MPKI CertCentral connector handles input and REST errors more robustly.
+In the mail log, date sorting has been corrected, as it previously sorted alphabetically rather than chronologically, and the displayed size of LFT messages is correct again. Access to non-existent X-Headers is no longer logged. The CertCentral connector for MPKI handles input and REST errors more robustly.
 
 ## Assessment
 
-The two RuleEngine bugs addressed by the hotfix argue for skipping 15.0.6 and deploying 15.0.6.1 directly. For clusters, create snapshots of both nodes before the update and follow the update order from the vendor documentation. The login outage under 15.0.5 has shown why this preparation is not a formality.
+The two RuleEngine errors addressed by the hotfix suggest skipping 15.0.6 and deploying 15.0.6.1 directly. For clusters, create snapshots of both nodes before updating and follow the update sequence in the manufacturer documentation. The login outage in 15.0.5 showed why this preparation is not a mere formality.
 
 ## Sources
 
-1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Official release notes for 15.0.6 and 15.0.6.1 with all individual items.
+1.  [SEPPmail documentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Official release notes for 15.0.6 and 15.0.6.1 with all individual items.
 
-2.  [HIN Mailgateway 15.0.5: Fixing the Login Outage After a Cluster Update](/en/blog/hin-mailgateway-update-15-0-5-login-issue): Why snapshots and the correct update order in a cluster are essential.
+2.  [HIN Mailgateway 15.0.5: Fixing the login outage after the cluster update](/blog/hin-update-issue-version-15.0.5): Why snapshots and the correct update sequence in the cluster are crucial.
 
 ----
 
-# Connecting the SEPPmail Admin GUI to Active Directory: Setting Up LDAP Authentication in 15.0.6
+# Connecting the SEPPmail Admin GUI to Active Directory: Setting up LDAP authentication from 15.0.6
 
 URL: https://rafaelpfister.ch/en/blog/seppmail-admin-gui-ldap-authentication
 Datum: 2026-07-29
 
-# Connecting the SEPPmail Admin GUI to Active Directory: Setting Up LDAP Authentication in 15.0.6
+# Connecting the SEPPmail Admin GUI to Active Directory: Setting up LDAP authentication from 15.0.6
 
-Up to firmware 15.0.5, the administration interface of the SEPPmail Secure E-Mail Gateway only knew local accounts. If you wanted to work cleanly, you created a dedicated local user for each administrator and added them to the admin group. That works, but it comes with the usual drawbacks of local accounts: separate passwords per appliance, no central offboarding, and no enforcement of the password policies from your directory service. Patch release 15.0.6 changes this. The admin GUI can now authenticate administrators against an external LDAP server such as Active Directory and map AD groups to local groups on the appliance.
+Until firmware 15.0.5, the administration interface of the SEPPmail Secure E-Mail Gateway supported local accounts only. Those wishing to manage it properly created a separate local user for each administrator and added them to the admin group. This works, but comes with the usual disadvantages of local accounts: separate passwords for each appliance, no central offboarding, and no enforcement of password policies from the directory service. This changes with patch release 15.0.6. The Admin GUI can now authenticate administrators against an external LDAP server such as Active Directory and map AD groups to local appliance groups.
 
-The other changes in the release are summarized in the article on [SEPPmail 15.0.6 and 15.0.6.1](/en/blog/seppmail-releases-15-0-6-and-15-0-6-1). This article covers only the new external authentication.
+The other changes in the release are summarised in the article on [SEPPmail 15.0.6 and 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1). This article covers only the new external authentication.
 
-## What the Feature Does
+## What the feature does
 
-According to the Extended Release Notes, 15.0.6 adds a new **External Authentication** section under **User > Advanced Settings**. With it, the admin GUI authenticates against an external LDAP server, and external groups (such as AD security groups) are mapped to local groups on the appliance.
+According to the Extended Release Notes, 15.0.6 adds a new **External Authentication** section under **User > Advanced Settings**. This enables the Admin GUI to authenticate against an external LDAP server and maps external groups (such as AD security groups) to local appliance groups.
 
-Externally authenticated users appear locally on the appliance and behave like local users, with one difference: their password cannot be changed on the appliance, because it lives in the external LDAP server. Password authority moves entirely into the directory.
+Externally authenticated users appear locally on the appliance and behave like local users, with one difference: their password cannot be changed on the appliance because it is stored on the external LDAP server. Password control therefore moves entirely to the directory.
 
-An important distinction: the appliance already offered external authentication before, but only for the GINA web interface, configured per managed domain (the External authentication section in the domain configuration). What is new in 15.0.6 is that access to the administration interface itself can run through LDAP.
+An important distinction: the appliance already supported external authentication, but only for the GINA web interface, configured per Managed Domain (the External authentication section in the domain configuration). New in 15.0.6 is that access to the administration interface itself can also use LDAP.
 
-Whether the HIN Mailgateway has also received the LDAP login, I still need to test; I will update this article afterwards. Since the HIN appliances are based on the same SEPPmail firmware, I assume it has.
+I am still testing whether the HIN Mailgateway has also received LDAP login and will update this article afterwards. As HIN appliances are based on the same SEPPmail firmware, I assume it has.
 
 ## Prerequisites
 
-Three things should be in place before the setup:
+Three things should be in place before configuration:
 
-- **Firmware 15.0.6.1:** The feature ships with 15.0.6; because of the two RuleEngine bugs in that release, going straight to hotfix 15.0.6.1 is the right choice.
-- **An LDAP-capable directory:** An Active Directory, OpenLDAP, or comparable. If your users live only in Entra ID, which itself does not speak LDAP, [Microsoft Entra Domain Services](/en/blog/microsoft-entra-domain-services-ldap-kerberos) bridges the gap.
-- **A bind account in the directory:** A dedicated, unprivileged service account with read access that the appliance uses for the LDAP search. Not a domain administrator.
-- **An AD group for the gateway administrators:** For example, a security group SEPPmail-Admins that is later mapped to the local admin group. Membership in this group then decides who gets full administrative access.
+- **Firmware 15.0.6.1:** The feature arrives with 15.0.6; because of the release's two RuleEngine errors, the 15.0.6.1 hotfix is the right choice straight away.
+- **An LDAP-capable directory:** Active Directory, OpenLDAP or equivalent. If users exist only in Entra ID, which does not itself speak LDAP, [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) provides the bridge.
+- **A bind account in the directory:** A dedicated, unprivileged service account with read access, which the appliance uses for LDAP searches. Not a domain administrator.
+- **An AD group for gateway administrators:** For example, a SEPPmail-Admins security group, which is subsequently mapped to the local admin group. Membership of this group then determines full administrative access.
 
-TLS is enabled by default in the connection settings and should stay that way; administrator credentials do not belong on the network unencrypted. The appliance must be able to reach the LDAP server on the configured port (typically 636 for LDAPS).
+TLS is enabled by default in the connection settings and should remain so; administrators' credentials do not belong on the network unencrypted. The appliance must be able to reach the LDAP server on the configured port (usually 636 for LDAPS).
 
-## Setup Under User > Advanced Settings
+## Setup under User > Advanced Settings
 
-The configuration lives in the admin GUI under **User > Advanced Settings** in the **External Authentication** section and consists of four blocks.
+The configuration is located in the Admin GUI under **User > Advanced Settings**, in the **External Authentication** section, and consists of four blocks.
 
-**1. Connection Settings:** The checkbox *Authenticate users to external LDAP server (e.g. Active Directory)* enables the feature. It is followed by the server address, port, the *TLS required* option, and the Bind DN and Bind Password of the service account.
+**1. Connection Settings:** The *Authenticate users to external LDAP server (e.g. Active Directory)* checkbox enables the feature. This is followed by the server address, port, the *TLS required* option, and the Bind DN and Bind Password for the service account.
 
-**2. User Attributes:** This defines how the appliance finds user objects: the LDAP Object Class (typically person for Active Directory), the Search Base (the OU or container holding the administrator accounts), and the email attribute (default: mail).
+**2. User Attributes:** This defines how the appliance finds user objects: the LDAP Object Class (typically person for Active Directory), the Search Base (the OU or container containing the administrator accounts), and the email attribute (default: mail).
 
-**3. Group Attributes:** The same settings for group objects, so the appliance can resolve group memberships.
+**3. Group Attributes:** Similarly, these settings define group objects so that the appliance can resolve group memberships.
 
-**4. Mapping Settings:** The decisive part. Under *Remote Group* you select the group from the LDAP server, under *Local Group* one or more local groups it is mapped to. For full administrative access, that is the admin group; its members are equal to the default admin user. If you want to differentiate, map to restricted groups such as readonly admin or to function-specific groups on the appliance instead.
+**4. Mapping Settings:** This is the crucial part. Under *Remote Group*, select the group from the LDAP server; under *Local Group*, select one or more local groups to which it is mapped. For full administrative access, this is the admin group; its members are equivalent to the default admin user. For more granular access, map instead to restricted groups such as readonly admin or to function-specific appliance groups.
 
-Before saving, the built-in **Login Test** is worth using: with the username and password of a test account, you can verify that connection, search, and authentication work before the configuration goes live.
+Before saving, it is worth using the built-in **Login Test**: enter the username and password of a test account to verify that connection, search and authentication work before the configuration becomes active.
 
-## Example Configurations
+## Example configurations
 
-Adapt the following values to your own environment (example domain example.com). The field names match the External Authentication section on the appliance.
+The following values must be adapted to your own environment (example domain: example.com). The field names correspond to the appliance's External Authentication section.
 
 ### Active Directory
 
@@ -3629,7 +3706,7 @@ Adapt the following values to your own environment (example domain example.com).
 | Port | 636 |
 | TLS required | enabled |
 | Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
-| Bind Password | password of the service account |
+| Bind Password | Service account password |
 | User: LDAP Object Class | person |
 | User: Search Base | OU=IT,DC=example,DC=com |
 | User: E-Mail Attribute | mail |
@@ -3638,7 +3715,7 @@ Adapt the following values to your own environment (example domain example.com).
 | Mapping: Remote Group | SEPPmail-Admins |
 | Mapping: Local Group | admin |
 
-Notes on Active Directory: Any reachable domain controller works as the server; in multi-site environments, prefer a DC at the same site or an alias pointing to several DCs. Port 636 is LDAPS, which requires the DC certificate to be validatable by the appliance. Keep the search base narrow enough to contain the administrator accounts but not the whole directory. The mail attribute must be populated on the AD accounts.
+Notes on Active Directory: any reachable domain controller is suitable as the server; in environments with multiple sites, a DC at the same site or an alias pointing to several DCs is recommended. Port 636 is LDAPS; its DC certificate must be capable of validation by the appliance. The Search Base should be narrow enough to contain the administrator accounts without covering the entire directory. The mail attribute must be populated on the AD accounts.
 
 ### OpenLDAP
 
@@ -3648,7 +3725,7 @@ Notes on Active Directory: Any reachable domain controller works as the server; 
 | Port | 636 |
 | TLS required | enabled |
 | Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
-| Bind Password | password of the service account |
+| Bind Password | Service account password |
 | User: LDAP Object Class | inetOrgPerson |
 | User: Search Base | ou=people,dc=example,dc=com |
 | User: E-Mail Attribute | mail |
@@ -3657,31 +3734,31 @@ Notes on Active Directory: Any reachable domain controller works as the server; 
 | Mapping: Remote Group | seppmail-admins |
 | Mapping: Local Group | admin |
 
-Notes on OpenLDAP: In typical setups, users live as inetOrgPerson under ou=people. For groups, groupOfNames is the reliable choice, since membership is stored in the member attribute with the full DN. posixGroup entries list their members only as memberUid (username instead of DN); whether the appliance resolves that is not documented and should be verified with the Login Test before switching over. If the server only offers STARTTLS on port 389, that port belongs in the server field; the connection should never run unencrypted.
+Notes on OpenLDAP: in typical setups, users are stored as inetOrgPerson under ou=people. For groups, groupOfNames is the reliable choice because membership is represented through the member attribute using the full DN. By contrast, posixGroup groups list their members only as memberUid (a username rather than a DN); whether the appliance resolves this is not documented and should be checked with the Login Test before switching over. If the server uses STARTTLS only on port 389, enter the appropriate port in the Server field; the connection should never run unencrypted.
 
-## Operational Notes
+## Operational notes
 
 Three points deserve attention before LDAP login becomes the only way into the appliance:
 
-- **Keep a local emergency account.** The passwords of external users live in the LDAP server. If the directory is unreachable (a network problem, AD maintenance, or the gateway is supposed to help fix an issue with that very network), you still need a local administrator account with a securely stored password. The default admin user should therefore not be retired but maintained as a documented emergency access.
-- **MFA remains relevant.** 15.0.6 also reworked the MFA login: the second factor is no longer appended to the password but requested in its own field. External authentication does not replace a second factor.
-- **Offboarding through the directory.** The real gain of the integration: when an administrator leaves the company, disabling the AD account or removing it from the mapped group is enough. Maintaining local accounts on every appliance is no longer necessary. The locally visible, externally authenticated user objects should still be reconciled with the directory periodically.
+- **Keep local emergency access.** External users' passwords are stored on the LDAP server. If the directory is unavailable (because of a network issue, AD maintenance, or because the gateway is intended to resolve a problem with that very network), a local administrator account with a securely stored password is still required. The default admin user should therefore not be removed, but retained as a documented emergency access account.
+- **MFA remains relevant.** 15.0.6 also revised MFA login: the second factor is no longer appended to the password, but requested in a separate field. External authentication does not replace the second factor.
+- **Offboarding through the directory.** This is the real benefit of the integration: when an administrator leaves the organisation, it is sufficient to disable their AD account or remove them from the mapped group. The previously necessary maintenance of local accounts on every appliance is no longer required. However, the locally visible externally authenticated user objects should still be periodically reconciled with the directory.
 
 ## Conclusion
 
-LDAP authentication for the admin GUI closes a gap that existed on the appliance for a long time: administrator access can now be controlled centrally in the directory instead of per device. Together with the separate MFA field, 15.0.6 makes the login to the administration interface considerably more mature in a single release. If you introduce the feature, keep the group mapping deliberately restrictive and do not sacrifice the local emergency access.
+LDAP authentication for the Admin GUI closes a long-standing gap in the appliance: administrator access can now be managed centrally in the directory instead of on a per-device basis. Together with the separate MFA field, 15.0.6 makes logging into the administration interface significantly more mature in a single release. Anyone introducing the feature should keep group mapping deliberately restrictive and not sacrifice local emergency access.
 
 ## Sources
 
-1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Entry on the admin GUI authentication with the feature description, configuration location, and the behavior of externally authenticated users.
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Entry on Admin GUI authentication with a feature description, configuration location and the behaviour of externally authenticated users.
 
-2.  [SEPPmail-Dokumentation – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Field reference for the External Authentication section (Connection, User Attributes, Group Attributes, Mapping, Login Test).
+2.  [SEPPmail documentation – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Reference for the fields in the External Authentication section (Connection, User Attributes, Group Attributes, Mapping, Login Test).
 
-3.  [SEPPmail-Dokumentation – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Predefined groups on the appliance; members of the admin group have unrestricted administrative access.
+3.  [SEPPmail documentation – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Predefined appliance groups; members of the admin group have unrestricted administrative access.
 
-4.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Official release notes for 15.0.6 with the entry on admin GUI authentication against external LDAP servers.
+4.  [SEPPmail documentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Official release notes for 15.0.6, including the entry on Admin GUI authentication against external LDAP servers.
 
-5.  [SEPPmail 15.0.6 and 15.0.6.1: Security Fixes and New Admin Features](/en/blog/seppmail-releases-15-0-6-and-15-0-6-1): Overview of all changes in the two releases.
+5.  [SEPPmail 15.0.6 and 15.0.6.1: Security fixes and new admin features](/blog/seppmail-releases-15-0-6-und-15-0-6-1): Overview of all changes in the two releases.
 
 ----
 
@@ -6911,6 +6988,268 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 
 ----
 
+# Microsoft Entra Domain Services : LDAP et Kerberos pour les environnements exclusivement cloud
+
+URL: https://rafaelpfister.ch/fr/blog/microsoft-entra-domain-services-ldap-et-kerberos-pour-les-environnements-exclusivement-cloud
+Datum: 2026-07-30
+
+# Microsoft Entra Domain Services : LDAP et Kerberos pour les environnements exclusivement cloud
+
+Quiconque a entièrement migré ses utilisateurs vers Microsoft Entra ID (anciennement Azure Active Directory) s’en rend compte au plus tard avec la première appliance ou application legacy : Entra ID répond aux requêtes via Microsoft Graph et des protocoles d’authentification modernes tels qu’OAuth et SAML, mais pas via LDAP, Kerberos ou NTLM. Un LDAP bind vers Entra ID n’est tout simplement pas possible. Pour tout ce qui attend un Active Directory classique, Microsoft propose donc son propre service : Microsoft Entra Domain Services, anciennement Azure AD Domain Services.
+
+## Ce que fournit le service
+
+Entra Domain Services est un domaine Active Directory géré. Microsoft exploite à cet effet deux contrôleurs de domaine Windows dans un VNet Azure, assure le patching, la réplication et les sauvegardes, et synchronise automatiquement les utilisateurs et les groupes d’Entra ID vers le domaine. La synchronisation ne s’effectue que dans un sens, d’Entra ID vers le domaine géré ; les modifications apportées directement dans le domaine ne sont pas répercutées.
+
+Vu de l’extérieur, le domaine se comporte comme un Active Directory ordinaire : il répond aux requêtes LDAP et LDAPS, prend en charge l’authentification Kerberos et NTLM, permet de joindre des VM au domaine et offre des stratégies de groupe limitées. Les applications et les appareils ne doivent pas être adaptés ; ils voient un contrôleur de domaine.
+
+## À quoi il sert
+
+Le service vise les environnements qui sont en réalité exclusivement cloud, mais qui exploitent certains composants ayant des exigences classiques en matière d’annuaire :
+
+- **Appliances et applications métier avec intégration LDAP :** appareils qui recherchent des utilisateurs via LDAP, évaluent les appartenances à des groupes ou vérifient les connexions via LDAP bind.
+- **Migrations lift-and-shift :** charges de travail serveur qui doivent rester liées au domaine (Kerberos, NTLM, jointure de domaine), sans devoir exploiter leurs propres contrôleurs de domaine dans Azure.
+- **Environnements sans AD local :** lorsqu’il n’y a jamais eu d’Active Directory ou qu’il a été démantelé, le domaine géré remplace la mise en place de ses propres DC et leur charge d’exploitation.
+
+Distinction importante : si vous exploitez encore un Active Directory local avec synchronisation Entra Connect, vous n’avez généralement pas besoin de ce service ; l’appliance interroge alors l’AD existant. Entra Domain Services comble le vide lorsque Entra ID est l’unique source d’utilisateurs.
+
+## Architecture et mise en place
+
+Le domaine géré est déployé dans son propre VNet ou sous-réseau et reçoit deux adresses fixes de contrôleurs de domaine. Les charges de travail dans d’autres VNet y accèdent via l’appairage de VNet ; les serveurs DNS des VNet concernés doivent pointer vers les contrôleurs de domaine afin que le nom de domaine et les objets puissent être résolus. L’accès est limité via des groupes de sécurité réseau aux sources et ports réellement nécessaires.
+
+Quelques particularités du domaine géré sont pertinentes lors de la connexion d’applications :
+
+- Les utilisateurs synchronisés se trouvent dans l’OU **AADDC Users** et, sans configuration spécifique, le domaine porte le suffixe **onmicrosoft.com**. Les Search Base et Bind DN doivent refléter cette structure, par exemple CN=svc-ldap,OU=AADDC Users,DC=example,DC=onmicrosoft,DC=com.
+- Il n’existe pas de Domain Administrator. L’administration s’effectue via le groupe délégué AAD DC Administrators ; les extensions de schéma ne sont pas possibles.
+- Pour les comptes LDAP bind, un compte dédié non privilégié suffit ; pour les requêtes d’annuaire pures dans Entra ID, le rôle Directory Readers est requis.
+
+## Le piège des hash de mots de passe
+
+Un point fait régulièrement perdre du temps lors des tests : les connexions Kerberos et NTLM ainsi que les LDAP bind nécessitent des hash de mots de passe dans le domaine géré. Pour les comptes exclusivement cloud, Entra ID ne génère ces hash qu’à la prochaine modification du mot de passe après l’activation du service. Un utilisateur fraîchement synchronisé est donc visible dans l’annuaire, mais ne peut se connecter qu’après avoir changé une fois son mot de passe. Pour les comptes hybrides, les hash doivent également être synchronisés depuis l’AD local via Entra Connect.
+
+## Secure LDAP pas à pas
+
+Au sein du domaine, LDAP fonctionne par défaut sans chiffrement sur le port 389. Pour les connexions et tout accès en dehors de réseaux strictement isolés, la connexion doit passer par Secure LDAP (LDAPS, port 636) ; le service ne propose de toute façon l’accès depuis l’extérieur du VNet que de manière chiffrée. La configuration se compose de quatre étapes.
+
+**1. Obtenir un certificat.** Secure LDAP requiert un certificat dédié, chargé au format PFX avec sa clé privée. Le Subject ou le SAN doit couvrir le domaine géré à l’aide d’un caractère générique (par exemple *.example.onmicrosoft.com), car les requêtes peuvent aboutir sur l’un ou l’autre des deux contrôleurs de domaine. Les sources possibles sont une CA publique, votre propre PKI ou un certificat autosigné créé spécifiquement. Avec un certificat autosigné, la chaîne doit être enregistrée comme fiable sur chaque système effectuant des requêtes ; toutes les appliances ne le permettent pas. Lorsqu’on a le choix, sa propre PKI ou une CA publique offre davantage de sérénité.
+
+**2. Activer Secure LDAP.** Dans le portail, sous Settings > Secure LDAP, activez la fonctionnalité et chargez le PFX avec son mot de passe. Il est possible d’y autoriser en option l’accès via Internet ; le domaine géré reçoit alors une adresse IP publique.
+
+**3. Réseau et DNS.** L’adresse IP externe se trouve sous Properties. La règle NSG associée ouvre TCP/636 et devrait être limitée aux adresses IP sources réellement nécessaires, et non à Any. Pour la résolution de noms, un enregistrement DNS (par exemple ldaps.example.com) pointe vers cette adresse IP ; il doit correspondre au certificat. Les accès internes continuent de se faire directement vers les adresses des contrôleurs de domaine.
+
+**4. Tester la connexion.** Avant de basculer l’application, il est utile de tester avec un navigateur LDAP, ldp.exe ou ldapsearch sur le port 636 : bind avec le compte de service, puis recherche sous l’OU AADDC Users. Ce n’est que lorsque le bind et la recherche fonctionnent correctement que l’application peut être configurée.
+
+Pour configurer le service lui-même, le compte du portail nécessite les rôles Application Administrator, Domain Services Contributor et Groups Administrator ; le déploiement du domaine géré dure un peu plus d’une heure. Dans les paramètres de sécurité, il est également possible d’imposer TLS 1.2 comme version minimale.
+
+## Coûts
+
+Entra Domain Services représente un coût d’exploitation permanent : le service est facturé à l’heure selon la SKU, auxquels s’ajoutent le VNet, l’appairage et d’éventuelles VM de test. Pour un seul petit cas d’usage LDAP, le prix est conséquent ; l’alternative consistant à exploiter ses propres contrôleurs de domaine sous forme de VM achète toutefois cette économie au prix de la responsabilité du patching, des sauvegardes et de la disponibilité.
+
+## Cas pratique : passerelle e-mail avec intégration LDAP
+
+Un exemple concret de la catégorie des appliances est la SEPPmail Secure E-Mail Gateway. Elle utilise LDAP pour la création d’utilisateurs et les requêtes d’autorisations, et depuis le firmware 15.0.6 également pour la [connexion à l’interface d’administration](/blog/seppmail-admin-gui-ldap-authentifizierung). Une appliance dans le VNet Azure atteint le domaine géré via l’appairage de VNet avec un compte bind dédié (Directory Readers), sécurisé par des NSG. Au plus tard pour la connexion à l’interface d’administration, dont l’option TLS est activée par défaut, la connexion doit passer par Secure LDAP.
+
+## Conclusion
+
+Entra Domain Services n’est pas un remplacement d’Entra ID, mais un pont : le service traduit une base d’utilisateurs cloud en un domaine AD classique pour tout ce qui exige LDAP, Kerberos ou une jointure de domaine. Si une seule application doit être connectée, il convient de comparer les coûts récurrents avec une modernisation de l’application. Une fois le service en place, les appliances et applications legacy se comportent comme dans un environnement AD familier, y compris les particularités décrites concernant la structure des OU, les autorisations et les hash de mots de passe.
+
+## Sources
+
+1.  [Microsoft Learn – « Qu’est-ce que Microsoft Entra Domain Services ? »](https://learn.microsoft.com/de-de/entra/identity/domain-services/overview) : étendue fonctionnelle du domaine géré, protocoles pris en charge et distinction par rapport à Entra ID et aux contrôleurs de domaine exploités en propre.
+
+2.  [Microsoft Learn – « Synchronisation dans Entra Domain Services »](https://learn.microsoft.com/de-de/entra/identity/domain-services/synchronization) : synchronisation à sens unique, structure des OU et comportement des hash de mots de passe pour les comptes exclusivement cloud et hybrides.
+
+3.  [Microsoft Learn – « Configurer Secure LDAP »](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps) : LDAPS avec son propre certificat pour des accès LDAP chiffrés.
+
+4.  [Connecter l’interface d’administration SEPPmail à Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung) : configuration de la connexion LDAP à l’interface d’administration à partir du firmware 15.0.6.
+
+----
+
+# SEPPmail 15.0.6 et 15.0.6.1 : correctifs de sécurité et nouvelles fonctions d’administration
+
+URL: https://rafaelpfister.ch/fr/blog/seppmail-15-0-6-et-15-0-6-1-correctifs-de-securite-et-nouvelles-fonctions-d-administration
+Datum: 2026-07-29
+
+# SEPPmail 15.0.6 et 15.0.6.1 : correctifs de sécurité et nouvelles fonctions d’administration
+
+SEPPmail a publié la version corrective 15.0.6 le 21 juillet 2026, puis le correctif urgent 15.0.6.1 un jour plus tard. La version corrective comble plusieurs vulnérabilités, met à jour OpenSSH et OpenSSL et apporte des améliorations notables pour l’administration. Le correctif urgent corrige deux erreurs dans la RuleEngine, introduites ou devenues visibles avec la version 15.0.6. Les modifications concernent également les appliances exploitées comme HIN Mailgateway, car elles reposent sur le même firmware SEPPmail.
+
+## Correctif urgent 15.0.6.1 du 22 juillet 2026
+
+Le correctif urgent résout deux points dans la RuleEngine. Premièrement, une valeur non définie dans l’objet Message empêchait l’écriture des entrées de journal dans le journal de messagerie. Les messages concernés traversaient donc le système sans être consignés. Deuxièmement, la RuleEngine reconnaît désormais le sens des e-mails archivés afin que leur distribution soit correctement traitée.
+
+Toute personne ayant déjà installé la version 15.0.6 ou prévoyant la mise à jour devrait passer directement à la version 15.0.6.1.
+
+Les appliances HIN semblent également avoir reçu le correctif urgent : un HIN Mailgateway avec la version installée 15.0.6-RC-42-g278c81f84 indique désormais 15.0.6-RC-88-g916e513cc comme prochaine version dans la branche 15.0. Les désignations RC du firmware HIN ne peuvent pas être associées directement à une version SEPPmail, mais le moment de la proposition plaide en faveur du correctif urgent.
+
+## Correctifs de sécurité dans la version 15.0.6
+
+La partie la plus importante de la version corrective est constituée de trois corrections de l’architecture de sécurité :
+
+- Une possible vulnérabilité de traversée de chemin dans la génération de PDF a été corrigée. Elle a été découverte par InfoGuard.
+- Tout contenu déchiffré via PGP est désormais encodé en Base64 afin d’empêcher les injections de structure MIME.
+- La fonction hashencrypt a été migrée vers AES-256-CBC avec PBKDF2.
+
+S’y ajoutent des bibliothèques mises à jour : OpenSSH 10.4 et OpenSSL 3.0.21 corrigent ensemble plus de vingt CVE. Rien que pour ces points, la mise à jour est recommandée pour les systèmes de production.
+
+## Nouvelles fonctions pour l’administration
+
+Trois modifications de l’interface graphique d’administration se remarquent au quotidien :
+
+- **Champ de saisie MFA distinct :** Le second facteur ne doit plus être ajouté au mot de passe, mais dispose de son propre champ. Cela élimine un piège de longue date lors de la connexion.
+- **Authentification LDAP pour l’interface graphique d’administration :** Les administrateurs peuvent désormais s’authentifier auprès d’un serveur LDAP externe au lieu de gérer des comptes locaux sur l’appliance. La configuration est décrite dans l’article sur la [connexion de l’interface graphique d’administration à Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung) décrite. Je teste encore si le HIN Mailgateway a également reçu cette fonction et compléterai l’article ensuite ; comme HIN utilise la même base de firmware, je pars du principe que oui.
+- **Bouton AutoRenew pour MPKI :** Dans les paramètres du connecteur MPKI, le renouvellement automatique des certificats peut être déclenché manuellement via « Trigger AutoRenew... ».
+
+Par ailleurs, l’appliance utilise désormais systématiquement des fuseaux horaires valides (standard : Europe/Zurich), et l’ID d’objet système sous System >> Advanced View est validé comme OID valide.
+
+## Traitement des e-mails et Webmail
+
+Quatre points ont été corrigés dans la RuleEngine. Le traitement de l’objet fonctionne désormais également avec un encodage inconnu. Les messages sont rejetés lorsqu’une signature est explicitement demandée, mais ne peut pas être créée ; auparavant, de tels messages pouvaient continuer sans signature. Les copies d’archive passent désormais par la fonction de distribution et reçoivent ainsi des en-têtes ARC. Enfin, pour les messages PGP sans données MDC, les erreurs MDC sont ignorées au lieu de perturber le traitement.
+
+Quatre erreurs ont été corrigées dans le Webmail (GINA) : la suppression automatique des comptes non enregistrés après expiration du délai de grâce fonctionne à nouveau, la fonction hashdecrypt renvoyait dans certains cas un résultat de déchiffrement faussement positif, l’ajout d’une pièce jointe vidait les champs À et CC, et l’affichage de l’heure dans les journaux SMS était erroné.
+
+## API REST, cluster et sauvegarde
+
+L’API REST reçoit des corrections sur plusieurs points de terminaison : /system/ifaliasconfig (gestion des valeurs null), /system/applySysconfig (configuration des accès), /crypto/domain/{domainName} (téléversement de certificats de domaine) ainsi que GET et POST /ssl/csr. Le délai d’attente des appels REST a été augmenté de 300 à 900 secondes, ce qui rend plus fiables les requêtes de longue durée, telles que les modifications importantes de configuration.
+
+En fonctionnement en cluster, une adresse IP CARP existante bloquait jusqu’à présent les réglages IP d’un membre nouvellement ajouté ; ce problème est corrigé. Avant la création quotidienne d’un instantané, la sauvegarde vérifie désormais également si la base de données est corrompue avant d’écrire l’instantané.
+
+## Lien avec la panne de connexion sous la version 15.0.5
+
+Lors de la mise à jour d’un cluster vers la version 15.0.5, la connexion pouvait échouer sur les deux nœuds. Le problème et la procédure de récupération sont décrits dans l’article sur la [panne de connexion après la mise à jour 15.0.5](/blog/hin-update-issue-version-15.0.5) décrit. Le fabricant connaissait déjà le problème à l’époque et avait annoncé une correction dans une version ultérieure.
+
+Les notes de version de la 15.0.6 contiennent désormais précisément une entrée correspondant à ce problème : « prevent password rehashing when cluster members use different firmware versions ». Lors d’une mise à jour de cluster, les nœuds fonctionnent inévitablement temporairement avec des versions de firmware différentes. Si un nœud recalcule les hachages de mots de passe durant cette phase et les réplique dans le cluster, les hachages ne correspondent plus à l’autre version, et la connexion échoue sur les deux nœuds, exactement comme lors de la panne observée à l’époque. Les notes de version ne mentionnent pas explicitement la panne de connexion, mais cette entrée couvre exactement la configuration qui l’avait déclenchée. La cause est donc traitée dans la version 15.0.6 ; la procédure d’urgence avec dissolution du cluster nécessaire sous la 15.0.5 devrait devenir inutile lors de futures mises à jour.
+
+## Corrections mineures
+
+Dans le journal de messagerie, le tri par date a été corrigé : il était jusqu’à présent alphabétique au lieu de chronologique. La taille affichée des messages LFT est de nouveau correcte. Les accès à des en-têtes X inexistants ne sont plus consignés. Le connecteur CertCentral de la MPKI gère plus robustement les erreurs de saisie et REST.
+
+## Évaluation
+
+Les deux erreurs de RuleEngine corrigées par le correctif urgent plaident en faveur de sauter la version 15.0.6 et d’utiliser directement la 15.0.6.1. Pour les clusters, créez des instantanés des deux nœuds avant la mise à jour et respectez l’ordre de mise à jour indiqué dans la documentation du fabricant. La panne de connexion sous la version 15.0.5 a montré pourquoi cette préparation n’est pas une simple formalité.
+
+## Sources
+
+1.  [Documentation SEPPmail – « Revision History »](https://docs.seppmail.com/ch/20_revision-history.html): Notes de version officielles pour les versions 15.0.6 et 15.0.6.1 avec tous les détails.
+
+2.  [HIN Mailgateway 15.0.5 : résoudre la panne de connexion après la mise à jour du cluster](/blog/hin-update-issue-version-15.0.5): Pourquoi les instantanés et le bon ordre de mise à jour sont essentiels dans un cluster.
+
+----
+
+# Connecter l’interface d’administration SEPPmail à Active Directory : configurer l’authentification LDAP à partir de 15.0.6
+
+URL: https://rafaelpfister.ch/fr/blog/connecter-l-interface-d-administration-seppmail-a-active-directory-configurer-l
+Datum: 2026-07-29
+
+# Connecter l’interface d’administration SEPPmail à Active Directory : configurer l’authentification LDAP à partir de 15.0.6
+
+Jusqu’au firmware 15.0.5, l’interface d’administration de SEPPmail Secure E-Mail Gateway ne connaissait que les comptes locaux. Pour travailler proprement, il fallait créer un utilisateur local distinct pour chaque administrateur et l’ajouter au groupe admin. Cela fonctionne, mais présente les inconvénients habituels des comptes locaux : mots de passe propres à chaque appliance, absence d’offboarding centralisé et non-application des politiques de mot de passe du service d’annuaire. Le patch release 15.0.6 change la donne. L’interface d’administration authentifie désormais, à la demande, les administrateurs auprès d’un serveur LDAP externe tel qu’Active Directory et mappe les groupes AD vers les groupes locaux de l’appliance.
+
+Les autres changements de cette version sont résumés dans l’article consacré à [SEPPmail 15.0.6 et 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1). Cet article traite uniquement de la nouvelle authentification externe.
+
+## Ce que permet cette fonctionnalité
+
+Selon les Extended Release Notes, la version 15.0.6 ajoute une nouvelle section **External Authentication** sous **User > Advanced Settings**. Elle permet à l’interface d’administration de s’authentifier auprès d’un serveur LDAP externe et de mapper des groupes externes, par exemple des groupes de sécurité AD, vers les groupes locaux de l’appliance.
+
+Les utilisateurs authentifiés de manière externe apparaissent localement sur l’appliance et se comportent comme des utilisateurs locaux, à une différence près : leur mot de passe ne peut pas être modifié sur l’appliance, car il est stocké sur le serveur LDAP externe. La gestion des mots de passe est donc entièrement transférée vers l’annuaire.
+
+Une distinction importante : l’appliance connaissait déjà une authentification externe, mais uniquement pour l’interface web GINA, configurée par Managed Domain (section External authentication dans la configuration du domaine). La nouveauté de la version 15.0.6 est que l’accès à l’interface d’administration elle-même passe également par LDAP.
+
+Je teste encore si la passerelle de messagerie HIN a également reçu l’authentification LDAP et compléterai ensuite l’article. Les appliances HIN reposant sur le même firmware SEPPmail, je pars du principe que c’est le cas.
+
+## Prérequis
+
+Avant la configuration, les éléments suivants doivent être disponibles :
+
+- **Firmware 15.0.6.1 :** La fonctionnalité arrive avec la version 15.0.6 ; en raison des deux erreurs RuleEngine de cette version, le hotfix 15.0.6.1 est directement le bon choix.
+- **Un annuaire compatible LDAP :** Active Directory, OpenLDAP ou équivalent. Si les utilisateurs se trouvent uniquement dans Entra ID, qui ne parle pas lui-même LDAP, [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) fait le lien.
+- **Un compte de liaison dans l’annuaire :** Un compte de service dédié, non privilégié et disposant d’un accès en lecture, utilisé par l’appliance pour effectuer la recherche LDAP. Pas un administrateur de domaine.
+- **Un groupe AD pour les administrateurs de la passerelle :** Par exemple un groupe de sécurité SEPPmail-Admins, qui sera ensuite mappé vers le groupe local admin. L’appartenance à ce groupe déterminera alors l’accès administratif complet.
+
+TLS est activé par défaut dans les paramètres de connexion et doit le rester ; les identifiants des administrateurs ne doivent pas circuler en clair sur le réseau. L’appliance doit pouvoir joindre le serveur LDAP sur le port configuré, généralement 636 pour LDAPS.
+
+## Configuration sous User > Advanced Settings
+
+La configuration se trouve dans l’interface d’administration, sous **User > Advanced Settings**, dans la section **External Authentication**, et se compose de quatre blocs.
+
+**1. Connection Settings :** La case à cocher *Authenticate users to external LDAP server (e.g. Active Directory)* active la fonctionnalité. Viennent ensuite l’adresse du serveur, le port, l’option *TLS required*, ainsi que le Bind DN et le Bind Password du compte de service.
+
+**2. User Attributes :** Cette section définit la manière dont l’appliance trouve les objets utilisateurs : la LDAP Object Class (généralement person dans Active Directory), la Search Base (l’OU ou le conteneur où se trouvent les comptes administrateurs) et l’attribut e-mail (par défaut : mail).
+
+**3. Group Attributes :** De même, les paramètres des objets de groupe permettent à l’appliance de résoudre les appartenances aux groupes.
+
+**4. Mapping Settings :** La partie décisive. Sous *Remote Group*, le groupe du serveur LDAP est sélectionné ; sous *Local Group*, un ou plusieurs groupes locaux vers lesquels il est mappé. Pour disposer d’un accès administratif complet, il s’agit du groupe admin ; ses membres disposent des mêmes droits que l’utilisateur standard admin. Pour différencier les droits, mappez plutôt vers des groupes restreints tels que readonly admin ou vers des groupes fonctionnels de l’appliance.
+
+Avant l’enregistrement, il est utile d’exécuter le **Login Test** intégré : avec le nom d’utilisateur et le mot de passe d’un compte de test, il permet de vérifier la connexion, la recherche et l’authentification avant l’activation de la configuration.
+
+## Exemples de configuration
+
+Les valeurs suivantes doivent être adaptées à votre environnement (domaine d’exemple example.com). Les noms de champs correspondent à la section External Authentication de l’appliance.
+
+### Active Directory
+
+| Champ | Valeur |
+|---|---|
+| Server | dc01.example.com |
+| Port | 636 |
+| TLS required | activé |
+| Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
+| Bind Password | Mot de passe du compte de service |
+| User: LDAP Object Class | person |
+| User: Search Base | OU=IT,DC=example,DC=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | group |
+| Group: Search Base | OU=Groups,DC=example,DC=com |
+| Mapping: Remote Group | SEPPmail-Admins |
+| Mapping: Local Group | admin |
+
+Remarques concernant Active Directory : tout contrôleur de domaine accessible convient comme serveur ; dans les environnements avec plusieurs sites, il est recommandé d’utiliser un contrôleur de domaine situé sur le même site ou un alias pointant vers plusieurs contrôleurs de domaine. Le port 636 correspond à LDAPS ; le certificat du contrôleur de domaine doit donc pouvoir être validé par l’appliance. La Search Base doit être suffisamment restreinte pour inclure les comptes administrateurs, sans englober tout l’annuaire. L’attribut mail doit être renseigné dans les comptes AD.
+
+### OpenLDAP
+
+| Champ | Valeur |
+|---|---|
+| Server | ldap01.example.com |
+| Port | 636 |
+| TLS required | activé |
+| Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
+| Bind Password | Mot de passe du compte de service |
+| User: LDAP Object Class | inetOrgPerson |
+| User: Search Base | ou=people,dc=example,dc=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | groupOfNames |
+| Group: Search Base | ou=groups,dc=example,dc=com |
+| Mapping: Remote Group | seppmail-admins |
+| Mapping: Local Group | admin |
+
+Remarques concernant OpenLDAP : dans les configurations typiques, les utilisateurs sont stockés sous forme d’inetOrgPerson dans ou=people. Pour les groupes, groupOfNames est le choix fiable, car l’appartenance y est représentée par l’attribut member avec le DN complet. À l’inverse, les groupes posixGroup ne répertorient leurs membres que sous forme de memberUid (nom d’utilisateur plutôt que DN) ; la documentation n’indique pas si l’appliance peut le résoudre. Il convient donc de le vérifier avec le Login Test avant le changement. Si le serveur fonctionne uniquement avec STARTTLS sur le port 389, ce port doit être renseigné dans le champ Server ; la connexion ne doit en aucun cas s’effectuer sans chiffrement.
+
+## Consignes d’exploitation
+
+Trois points méritent attention avant de faire de l’authentification LDAP le seul moyen d’accès à l’appliance :
+
+- **Conserver un accès local de secours.** Les mots de passe des utilisateurs externes sont stockés sur le serveur LDAP. Si l’annuaire est inaccessible (problème réseau, maintenance AD ou nécessité pour la passerelle de résoudre un problème sur ce même réseau), un compte administrateur local avec un mot de passe conservé en lieu sûr reste indispensable. L’utilisateur standard admin ne doit donc pas être supprimé, mais maintenu comme accès de secours documenté.
+- **La MFA reste pertinente.** La version 15.0.6 a également remanié la connexion MFA : le deuxième facteur n’est plus ajouté au mot de passe, mais demandé dans un champ distinct. L’authentification externe ne remplace pas le deuxième facteur.
+- **Offboarding via l’annuaire.** C’est le principal avantage de l’intégration : lorsqu’un administrateur quitte l’entreprise, il suffit de désactiver son compte AD ou de le retirer du groupe mappé. Il n’est plus nécessaire de mettre à jour les comptes locaux sur chaque appliance. Les objets utilisateurs localement visibles et authentifiés de manière externe devraient néanmoins être régulièrement comparés avec l’annuaire.
+
+## Conclusion
+
+L’authentification LDAP pour l’interface d’administration comble une lacune qui existait depuis longtemps sur l’appliance : les accès administrateurs peuvent désormais être gérés de manière centralisée dans l’annuaire plutôt que sur chaque appareil. Avec le champ MFA distinct, la version 15.0.6 rend ainsi la connexion à l’interface d’administration nettement plus mature en une seule version. Toute personne mettant en œuvre cette fonctionnalité devrait maintenir le mappage de groupes de manière délibérément restrictive et ne pas sacrifier l’accès local de secours.
+
+## Sources
+
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): entrée sur l’authentification de l’interface d’administration avec description de la fonctionnalité, emplacement de configuration et comportement des utilisateurs authentifiés de manière externe.
+
+2.  [Documentation SEPPmail – « User > Advanced Settings »](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): référence des champs de la section External Authentication (Connection, User Attributes, Group Attributes, Mapping, Login Test).
+
+3.  [Documentation SEPPmail – « Groups »](https://docs.seppmail.com/ch/07_mi_16_groups.html): groupes prédéfinis de l’appliance ; les membres du groupe admin disposent d’un accès administratif sans restriction.
+
+4.  [Documentation SEPPmail – « Revision History »](https://docs.seppmail.com/ch/20_revision-history.html): notes de version officielles de la version 15.0.6 avec l’entrée relative à l’authentification de l’interface d’administration auprès de serveurs LDAP externes.
+
+5.  [SEPPmail 15.0.6 et 15.0.6.1 : correctifs de sécurité et nouvelles fonctions d’administration](/blog/seppmail-releases-15-0-6-und-15-0-6-1): aperçu de toutes les modifications des deux versions.
+
+----
+
 # Tester le stockage à froid avec Rclone : un plan de test pratique
 
 URL: https://rafaelpfister.ch/fr/blog/tester-le-stockage-a-froid-avec-rclone-un-plan-de-test-pratique
@@ -10135,6 +10474,268 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# Microsoft Entra Domain Services: LDAP e Kerberos per ambienti solo cloud
+
+URL: https://rafaelpfister.ch/it/blog/microsoft-entra-domain-services-ldap-e-kerberos-per-ambienti-solo-cloud
+Datum: 2026-07-30
+
+# Microsoft Entra Domain Services: LDAP e Kerberos per ambienti solo cloud
+
+Chi ha trasferito completamente i propri utenti a Microsoft Entra ID (in precedenza Azure Active Directory) se ne accorge al più tardi con la prima appliance o applicazione legacy: Entra ID risponde alle richieste tramite Microsoft Graph e protocolli di autenticazione moderni come OAuth e SAML, ma non tramite LDAP, Kerberos o NTLM. Un bind LDAP verso Entra ID semplicemente non è possibile. Per tutto ciò che si aspetta un classico Active Directory, Microsoft offre un servizio dedicato: Microsoft Entra Domain Services, precedentemente Azure AD Domain Services.
+
+## Cosa fornisce il servizio
+
+Entra Domain Services è un dominio Active Directory gestito. Microsoft gestisce due domain controller Windows in un VNet di Azure, si occupa di patching, replica e backup e sincronizza automaticamente utenti e gruppi da Entra ID al dominio. La sincronizzazione funziona solo in una direzione, da Entra ID al dominio gestito; le modifiche eseguite direttamente nel dominio non vengono riportate indietro.
+
+All'esterno, il dominio si comporta come un normale Active Directory: risponde alle richieste LDAP e LDAPS, supporta l'autenticazione Kerberos e NTLM, consente l'aggiunta di VM al dominio e offre criteri di gruppo limitati. Applicazioni e dispositivi non devono essere adattati: vedono un domain controller.
+
+## A cosa serve
+
+Il servizio è rivolto ad ambienti che sono sostanzialmente solo cloud, ma utilizzano singoli componenti con requisiti di directory classici:
+
+- **Appliance e applicazioni specialistiche con integrazione LDAP:** dispositivi che cercano utenti tramite LDAP, valutano appartenenze ai gruppi o verificano gli accessi tramite bind LDAP.
+- **Migrazioni lift-and-shift:** workload server che devono restare associati al dominio (Kerberos, NTLM, join al dominio), senza dover gestire domain controller propri in Azure.
+- **Ambienti senza AD locale:** dove non è mai esistito un Active Directory o è stato dismesso, il dominio gestito sostituisce la creazione di DC propri e il relativo onere operativo.
+
+Importante per delimitare il caso d'uso: chi gestisce ancora un Active Directory locale con sincronizzazione Entra Connect in genere non ha bisogno del servizio; l'appliance interroga quindi l'AD esistente. Entra Domain Services colma il divario quando Entra ID è l'unica fonte di utenti.
+
+## Architettura e configurazione
+
+Il dominio gestito viene distribuito in un VNet o una subnet dedicati e riceve due indirizzi fissi dei domain controller. I workload in altri VNet lo raggiungono tramite peering VNet; i server DNS dei VNet coinvolti devono puntare ai domain controller affinché il nome del dominio e gli oggetti possano essere risolti. L'accesso viene limitato tramite Network Security Groups alle origini e alle porte realmente necessarie.
+
+Alcune particolarità del dominio gestito rilevanti per il collegamento delle applicazioni:
+
+- Gli utenti sincronizzati si trovano nell'OU **AADDC Users**, mentre il dominio ha senza configurazione aggiuntiva il suffisso **onmicrosoft.com**. Search Base e Bind DN devono riflettere questa struttura, ad esempio CN=svc-ldap,OU=AADDC Users,DC=example,DC=onmicrosoft,DC=com.
+- Non esiste un Domain Administrator. L'amministrazione avviene tramite il gruppo delegato AAD DC Administrators; non sono possibili estensioni dello schema.
+- Per gli account di bind LDAP è sufficiente un account dedicato e senza privilegi; per le sole query di directory in Entra ID è necessario il ruolo Directory Readers.
+
+## La trappola degli hash delle password
+
+Un aspetto fa regolarmente perdere tempo nei test: gli accessi Kerberos e NTLM nonché i bind LDAP richiedono hash delle password nel dominio gestito. Per gli account solo cloud, Entra ID genera questi hash solo alla successiva modifica della password dopo l'attivazione del servizio. Un utente appena sincronizzato è quindi visibile nella directory, ma può accedere solo dopo aver modificato una volta la propria password. Per gli account ibridi, gli hash devono essere sincronizzati dall'AD locale tramite Entra Connect.
+
+## Secure LDAP passo dopo passo
+
+All'interno del dominio, LDAP funziona per impostazione predefinita in chiaro sulla porta 389. Per gli accessi e per ogni accesso al di fuori di reti strettamente isolate, la connessione deve usare Secure LDAP (LDAPS, porta 636); il servizio offre comunque accesso dall'esterno del VNet solo in forma crittografata. La configurazione consiste in quattro passaggi.
+
+**1. Ottenere il certificato.** Secure LDAP richiede un certificato dedicato, da caricare come PFX includendo la chiave privata. Il Subject o SAN deve coprire il dominio gestito con una wildcard (ad esempio *.example.onmicrosoft.com), poiché le richieste possono arrivare a uno qualsiasi dei due domain controller. Come fonte si possono usare una CA pubblica, la propria PKI o un certificato autofirmato creato appositamente. Con un certificato autofirmato, la catena deve essere configurata come attendibile su ogni sistema che effettua richieste; non tutte le appliance lo consentono. Se si può scegliere, la propria PKI o una CA pubblica offrono maggiore tranquillità.
+
+**2. Attivare Secure LDAP.** Nel portale, in Settings > Secure LDAP, si attiva la funzione e si carica il PFX con la relativa password. Facoltativamente è possibile abilitare l'accesso tramite Internet; il dominio gestito riceve quindi un indirizzo IP pubblico.
+
+**3. Rete e DNS.** L'indirizzo IP esterno è disponibile in Properties. La relativa regola NSG apre TCP/636 e dovrebbe essere limitata agli indirizzi IP sorgente realmente necessari, non a Any. Per la risoluzione dei nomi, una voce DNS (ad esempio ldaps.example.com) punta a questo IP; deve corrispondere al certificato. Gli accessi interni continuano ad avvenire direttamente verso gli indirizzi dei domain controller.
+
+**4. Testare la connessione.** Prima di modificare l'applicazione, vale la pena eseguire un test con un browser LDAP, ldp.exe o ldapsearch sulla porta 636: bind con l'account di servizio, quindi una ricerca nell'OU AADDC Users. Solo quando bind e ricerca funzionano correttamente, è il momento di passare all'applicazione.
+
+Per configurare il servizio stesso, l'account del portale necessita dei ruoli Application Administrator, Domain Services Contributor e Groups Administrator; la distribuzione del dominio gestito richiede poco più di un'ora. Nelle impostazioni di sicurezza è inoltre possibile imporre TLS 1.2 come versione minima.
+
+## Costi
+
+Entra Domain Services è una voce di costo continuativa: il servizio viene fatturato a ore in base alla SKU, a cui si aggiungono VNet, peering ed eventuali VM di test. Per un singolo piccolo caso d'uso LDAP è un prezzo considerevole; l'alternativa di gestire domain controller propri come VM ottiene però il risparmio a fronte della responsabilità di patching, backup e disponibilità.
+
+## Caso pratico: gateway e-mail con integrazione LDAP
+
+Un esempio concreto della categoria appliance è il SEPPmail Secure E-Mail Gateway. Utilizza LDAP per la creazione degli utenti e le verifiche delle autorizzazioni e, dal firmware 15.0.6, anche per l'[accesso alla GUI di amministrazione](/blog/seppmail-admin-gui-ldap-authentifizierung). Un'appliance nel VNet di Azure raggiunge il dominio gestito tramite peering VNet con un account di bind dedicato (Directory Readers), protetto tramite NSG. Al più tardi per l'accesso alla GUI di amministrazione, la cui opzione TLS è attiva per impostazione predefinita, la connessione deve usare Secure LDAP.
+
+## Conclusione
+
+Entra Domain Services non sostituisce Entra ID, ma funge da ponte: il servizio traduce una base utenti cloud in un dominio AD classico per tutto ciò che richiede LDAP, Kerberos o join al dominio. Chi deve collegare una sola applicazione dovrebbe valutare i costi ricorrenti rispetto a una modernizzazione dell'applicazione. Una volta configurato il servizio, appliance e applicazioni legacy si comportano come in un familiare ambiente AD, incluse le particolarità descritte relative alla struttura OU, alle autorizzazioni e agli hash delle password.
+
+## Fonti
+
+1.  [Microsoft Learn – «Che cos'è Microsoft Entra Domain Services?»](https://learn.microsoft.com/de-de/entra/identity/domain-services/overview): funzionalità del dominio gestito, protocolli supportati e distinzione rispetto a Entra ID e ai domain controller gestiti autonomamente.
+
+2.  [Microsoft Learn – «Sincronizzazione in Entra Domain Services»](https://learn.microsoft.com/de-de/entra/identity/domain-services/synchronization): sincronizzazione unidirezionale, struttura OU e comportamento degli hash delle password per gli account solo cloud e ibridi.
+
+3.  [Microsoft Learn – «Configurare Secure LDAP»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS con certificato proprio per accessi LDAP crittografati.
+
+4.  [Collegare la GUI di amministrazione SEPPmail ad Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung): configurazione dell'accesso LDAP alla GUI di amministrazione dal firmware 15.0.6.
+
+----
+
+# SEPPmail 15.0.6 e 15.0.6.1: correzioni di sicurezza e nuove funzioni di amministrazione
+
+URL: https://rafaelpfister.ch/it/blog/seppmail-15-0-6-e-15-0-6-1-correzioni-di-sicurezza-e-nuove-funzioni-di-amministrazione
+Datum: 2026-07-29
+
+# SEPPmail 15.0.6 e 15.0.6.1: correzioni di sicurezza e nuove funzioni di amministrazione
+
+SEPPmail ha rilasciato il 21 luglio 2026 la patch release 15.0.6 e, un giorno dopo, l'hotfix 15.0.6.1. La patch release chiude diverse vulnerabilità, aggiorna OpenSSH e OpenSSL e introduce notevoli miglioramenti per l'amministrazione. L'hotfix corregge due errori nella RuleEngine introdotti o resi visibili con la versione 15.0.6. Le modifiche riguardano anche le appliance utilizzate come HIN Mailgateway, poiché si basano sullo stesso firmware SEPPmail.
+
+## Hotfix 15.0.6.1 del 22 luglio 2026
+
+L'hotfix risolve due aspetti nella RuleEngine. In primo luogo, un valore non definito nell'oggetto Message impediva la scrittura delle voci di log nel Mail-Log. I messaggi interessati attraversavano quindi il sistema senza essere registrati. In secondo luogo, la RuleEngine ora riconosce la direzione delle e-mail archiviate, affinché la loro consegna venga gestita correttamente.
+
+Chi ha già installato la versione 15.0.6 o prevede l'aggiornamento dovrebbe passare direttamente alla 15.0.6.1.
+
+A quanto pare, anche le appliance HIN hanno ricevuto l'hotfix: un HIN Mailgateway con la versione installata 15.0.6-RC-42-g278c81f84 segnala ora 15.0.6-RC-88-g916e513cc come prossima versione nel ramo 15.0. Le denominazioni RC del firmware HIN non possono essere associate direttamente a una release SEPPmail, ma il momento dell'offerta fa pensare all'hotfix.
+
+## Correzioni di sicurezza nella 15.0.6
+
+La parte più importante della patch release consiste in tre correzioni all'architettura di sicurezza:
+
+- È stata chiusa una possibile vulnerabilità di path traversal nella generazione di PDF. È stata individuata da InfoGuard.
+- Tutti i contenuti decifrati tramite PGP vengono ora codificati in Base64 per impedire la MIME-Structure-Injection.
+- La funzione hashencrypt è stata convertita ad AES-256-CBC con PBKDF2.
+
+Si aggiungono librerie aggiornate: OpenSSH 10.4 e OpenSSL 3.0.21 correggono insieme oltre venti CVE. Già solo per questi punti, l'aggiornamento è consigliabile per i sistemi in produzione.
+
+## Nuove funzioni per l'amministrazione
+
+Tre modifiche nella GUI di amministrazione si notano nell'uso quotidiano:
+
+- **Campo di inserimento MFA separato:** il secondo fattore non deve più essere aggiunto alla password, ma dispone di un proprio campo. Questo elimina un ostacolo di lunga data durante il login.
+- **Autenticazione LDAP per la GUI di amministrazione:** gli amministratori possono ora autenticarsi tramite un server LDAP esterno, anziché gestire account locali sull'appliance. La configurazione è descritta nell'articolo sul [collegamento della GUI di amministrazione ad Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung). Sto ancora verificando se anche HIN Mailgateway abbia ricevuto questa funzione e completerò l'articolo in seguito; dato che HIN utilizza la stessa base firmware, lo presumo.
+- **Pulsante AutoRenew per MPKI:** nelle impostazioni del connettore MPKI, il rinnovo automatico del certificato può essere avviato manualmente tramite «Trigger AutoRenew...».
+
+Inoltre, l'appliance ora utilizza sistematicamente fusi orari validi (predefinito: Europe/Zurich) e il System Object ID in System >> Advanced View viene validato come OID valido.
+
+## Elaborazione della posta e Webmail
+
+Nella RuleEngine sono stati corretti quattro aspetti. La gestione dell'oggetto funziona ora anche con encoding sconosciuto. I messaggi vengono respinti se una firma è richiesta esplicitamente ma non può essere creata; finora tali messaggi potevano proseguire senza firma. Le copie archiviate passano ora attraverso la funzione di consegna e ricevono quindi header ARC. E per i messaggi PGP senza dati MDC, gli errori MDC vengono ignorati anziché interferire con l'elaborazione.
+
+Nel Webmail (GINA) sono stati corretti quattro errori: l'eliminazione automatica degli account non registrati dopo la scadenza del periodo di tolleranza funziona nuovamente, la funzione hashdecrypt in determinati casi restituiva un risultato di decrittazione falsamente positivo, l'aggiunta di un allegato svuotava i campi A e CC, e la visualizzazione dell'ora nei log SMS era errata.
+
+## REST API, cluster e backup
+
+La REST API riceve correzioni a diversi endpoint: /system/ifaliasconfig (gestione dei valori null), /system/applySysconfig (configurazione degli accessi), /crypto/domain/{domainName} (upload dei certificati di dominio) nonché GET e POST /ssl/csr. Il timeout per le chiamate REST è stato aumentato da 300 a 900 secondi, rendendo più affidabili le richieste di lunga durata, come le modifiche di configurazione più ampie.
+
+Nel funzionamento in cluster, un IP CARP esistente bloccava finora le impostazioni IP di un nuovo membro aggiunto; il problema è stato risolto. Prima della creazione giornaliera dello snapshot, il backup verifica ora inoltre la presenza di un database corrotto prima di scrivere lo snapshot.
+
+## Relazione con il malfunzionamento del login nella 15.0.5
+
+Durante l'aggiornamento di un cluster alla 15.0.5, il login poteva smettere di funzionare su entrambi i nodi. Il problema e il ripristino sono descritti nell'articolo sul [malfunzionamento del login dopo l'aggiornamento alla 15.0.5](/blog/hin-update-issue-version-15.0.5). Il produttore conosceva già il problema e all'epoca aveva annunciato una correzione per una versione successiva.
+
+Nelle release notes della 15.0.6 è ora presente esattamente una voce compatibile con questo problema: «prevent password rehashing when cluster members use different firmware versions». Durante un aggiornamento del cluster, i nodi operano inevitabilmente e temporaneamente con versioni firmware diverse. Se in questa fase un nodo ricalcola gli hash delle password e li replica nel cluster, gli hash non corrispondono più sull'altra versione e il login fallisce su entrambi i nodi, esattamente come nel malfunzionamento osservato allora. Le release notes non menzionano esplicitamente il malfunzionamento del login, ma la voce copre esattamente la configurazione che lo aveva causato. La causa è quindi affrontata nella 15.0.6; la procedura di emergenza necessaria nella 15.0.5, con scioglimento del cluster, dovrebbe diventare superflua nei futuri aggiornamenti.
+
+## Correzioni minori
+
+Nel Mail-Log è stato corretto l'ordinamento per data, che finora era alfabetico anziché cronologico, e la dimensione visualizzata dei messaggi LFT è nuovamente corretta. Gli accessi a X-Header inesistenti non vengono più registrati. Il connettore CertCentral dell'MPKI gestisce in modo più robusto gli errori di input e REST.
+
+## Valutazione
+
+I due errori RuleEngine corretti dall'hotfix suggeriscono di saltare la 15.0.6 e utilizzare direttamente la 15.0.6.1. Per i cluster, create snapshot di entrambi i nodi prima dell'aggiornamento e rispettate l'ordine di aggiornamento indicato nella documentazione del produttore. Il malfunzionamento del login nella 15.0.5 ha dimostrato perché questa preparazione non è una mera formalità.
+
+## Fonti
+
+1.  [Documentazione SEPPmail – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): release notes ufficiali della 15.0.6 e della 15.0.6.1 con tutti i singoli punti.
+
+2.  [HIN Mailgateway 15.0.5: risolvere il malfunzionamento del login dopo l'aggiornamento del cluster](/blog/hin-update-issue-version-15.0.5): perché gli snapshot e il corretto ordine di aggiornamento nel cluster sono determinanti.
+
+----
+
+# Collegare la GUI di amministrazione SEPPmail ad Active Directory: configurare l'autenticazione LDAP dalla versione 15.0.6
+
+URL: https://rafaelpfister.ch/it/blog/collegare-la-gui-di-amministrazione-seppmail-ad-active-directory-configurare-l-autenticazione
+Datum: 2026-07-29
+
+# Collegare la GUI di amministrazione SEPPmail ad Active Directory: configurare l'autenticazione LDAP dalla versione 15.0.6
+
+Fino al firmware 15.0.5, l'interfaccia di amministrazione del SEPPmail Secure E-Mail Gateway conosceva solo account locali. Per lavorare in modo ordinato, si creava un utente locale dedicato per ciascun amministratore e lo si aggiungeva al gruppo admin. Funziona, ma presenta i consueti svantaggi degli account locali: password separate per ogni appliance, nessun offboarding centralizzato e nessuna applicazione delle policy password del servizio di directory. Con la patch release 15.0.6 la situazione cambia. La GUI di amministrazione autentica gli amministratori, su richiesta, tramite un server LDAP esterno come Active Directory e mappa i gruppi AD sui gruppi locali dell'appliance.
+
+Le ulteriori modifiche della release sono riassunte nell'articolo [SEPPmail 15.0.6 e 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1). Qui si tratta esclusivamente della nuova autenticazione esterna.
+
+## Cosa offre la funzione
+
+Secondo le Extended Release Notes, la versione 15.0.6 aggiunge una nuova sezione **External Authentication** in **User > Advanced Settings**. In questo modo la GUI di amministrazione si autentica tramite un server LDAP esterno e i gruppi esterni, come i gruppi di sicurezza AD, vengono mappati sui gruppi locali dell'appliance.
+
+Gli utenti autenticati esternamente compaiono localmente sull'appliance e si comportano come utenti locali, con una differenza: la loro password non può essere modificata sull'appliance, perché risiede nel server LDAP esterno. La gestione delle password passa quindi completamente alla directory.
+
+Importante per distinguere le due funzioni: l'appliance disponeva già in precedenza di un'autenticazione esterna, ma solo per l'interfaccia web GINA, configurata per ogni Managed Domain, nella sezione External authentication della configurazione di dominio. La novità della versione 15.0.6 è che anche l'accesso all'interfaccia di amministrazione stessa avviene tramite LDAP.
+
+Sto ancora verificando se anche l'HIN Mailgateway ha ricevuto l'accesso LDAP e integrerò successivamente l'articolo. Poiché le appliance HIN si basano sullo stesso firmware SEPPmail, ritengo che sia così.
+
+## Prerequisiti
+
+Prima della configurazione devono essere disponibili quattro elementi:
+
+- **Firmware 15.0.6.1:** La funzione arriva con la versione 15.0.6; a causa dei due errori RuleEngine della release, l'hotfix 15.0.6.1 è direttamente la scelta giusta.
+- **Una directory compatibile con LDAP:** Active Directory, OpenLDAP o equivalente. Se gli utenti risiedono solo in Entra ID, che non parla LDAP, [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) fa da ponte.
+- **Un account di bind nella directory:** Un account di servizio dedicato e non privilegiato con accesso in lettura, utilizzato dall'appliance per eseguire le ricerche LDAP. Non un amministratore di dominio.
+- **Un gruppo AD per gli amministratori del gateway:** Ad esempio un gruppo di sicurezza SEPPmail-Admins, che verrà in seguito mappato al gruppo locale admin. L'appartenenza a questo gruppo determina quindi l'accesso amministrativo completo.
+
+TLS è attivato per impostazione predefinita nelle impostazioni di connessione e dovrebbe rimanere tale; le credenziali degli amministratori non devono transitare in rete in chiaro. L'appliance deve poter raggiungere il server LDAP sulla porta configurata, normalmente 636 per LDAPS.
+
+## Configurazione in User > Advanced Settings
+
+La configurazione si trova nella GUI di amministrazione in **User > Advanced Settings**, nella sezione **External Authentication**, ed è composta da quattro blocchi.
+
+**1. Connection Settings:** La casella *Authenticate users to external LDAP server (e.g. Active Directory)* attiva la funzione. Seguono l'indirizzo del server, la porta, l'opzione *TLS required*, nonché Bind DN e Bind Password dell'account di servizio.
+
+**2. User Attributes:** Qui si definisce come l'appliance trova gli oggetti utente: la LDAP Object Class, tipicamente person in Active Directory, la Search Base, ovvero l'OU o il contenitore in cui si trovano gli account amministrativi, e l'attributo e-mail, predefinito: mail.
+
+**3. Group Attributes:** Analogamente, qui vengono indicate le informazioni per gli oggetti gruppo, affinché l'appliance possa risolvere le appartenenze ai gruppi.
+
+**4. Mapping Settings:** La parte decisiva. In *Remote Group* si seleziona il gruppo dal server LDAP, mentre in *Local Group* uno o più gruppi locali ai quali viene mappato. Per l'accesso amministrativo completo si tratta del gruppo admin; i suoi membri sono equiparati all'utente standard admin. Chi desidera differenziare i privilegi può invece mappare gruppi limitati, come readonly admin, oppure gruppi dell'appliance correlati a specifiche funzioni.
+
+Prima del salvataggio conviene utilizzare il **Login Test** integrato: con nome utente e password di un account di test è possibile verificare connessione, ricerca e autenticazione prima di attivare la configurazione.
+
+## Configurazioni di esempio
+
+I valori seguenti devono essere adattati al proprio ambiente, con example.com come dominio di esempio. I nomi dei campi corrispondono alla sezione External Authentication dell'appliance.
+
+### Active Directory
+
+| Campo | Valore |
+|---|---|
+| Server | dc01.example.com |
+| Porta | 636 |
+| TLS required | attivato |
+| Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
+| Bind Password | Password dell'account di servizio |
+| User: LDAP Object Class | person |
+| User: Search Base | OU=IT,DC=example,DC=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | group |
+| Group: Search Base | OU=Groups,DC=example,DC=com |
+| Mapping: Remote Group | SEPPmail-Admins |
+| Mapping: Local Group | admin |
+
+Note su Active Directory: come server è adatto qualsiasi Domain Controller raggiungibile; in ambienti con più sedi si consiglia un DC nella stessa sede o un alias che punti a più DC. La porta 636 è LDAPS; il certificato del DC deve quindi essere validabile dall'appliance. La Search Base deve essere delimitata in modo sufficientemente ristretto da contenere gli account amministrativi, ma non l'intera directory. L'attributo mail deve essere valorizzato negli account AD.
+
+### OpenLDAP
+
+| Campo | Valore |
+|---|---|
+| Server | ldap01.example.com |
+| Porta | 636 |
+| TLS required | attivato |
+| Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
+| Bind Password | Password dell'account di servizio |
+| User: LDAP Object Class | inetOrgPerson |
+| User: Search Base | ou=people,dc=example,dc=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | groupOfNames |
+| Group: Search Base | ou=groups,dc=example,dc=com |
+| Mapping: Remote Group | seppmail-admins |
+| Mapping: Local Group | admin |
+
+Note su OpenLDAP: nelle configurazioni tipiche, gli utenti sono memorizzati come inetOrgPerson in ou=people. Per i gruppi, groupOfNames è la scelta affidabile, poiché l'appartenenza è rappresentata tramite l'attributo member con il DN completo. I gruppi posixGroup, invece, indicano i membri solo come memberUid, ovvero il nome utente anziché il DN; non è documentato se l'appliance sia in grado di risolverlo e va verificato con il Login Test prima della migrazione. Se il server funziona esclusivamente con STARTTLS sulla porta 389, occorre indicare la porta corrispondente nel campo Server; la connessione non deve in alcun caso avvenire in chiaro.
+
+## Indicazioni operative
+
+Tre punti meritano attenzione prima che l'accesso LDAP diventi l'unico modo per accedere all'appliance:
+
+- **Mantenere un accesso locale di emergenza.** Le password degli utenti esterni risiedono nel server LDAP. Se la directory non è raggiungibile, per un problema di rete, manutenzione AD o perché il gateway deve proprio risolvere un problema su quella rete, è comunque necessario un account amministrativo locale con password conservata in modo sicuro. L'utente standard admin non deve quindi essere eliminato, ma mantenuto come accesso di emergenza documentato.
+- **L'MFA resta rilevante.** La versione 15.0.6 ha rivisto anche l'accesso MFA: il secondo fattore non viene più aggiunto alla password, ma richiesto in un campo separato. L'autenticazione esterna non sostituisce il secondo fattore.
+- **Offboarding tramite la directory.** Il vero vantaggio del collegamento: quando un amministratore lascia l'azienda, basta disattivare l'account AD o rimuoverlo dal gruppo mappato. Non è più necessario aggiornare gli account locali su ogni appliance. Gli oggetti utente autenticati esternamente, visibili localmente, dovrebbero comunque essere confrontati periodicamente con la directory.
+
+## Conclusione
+
+L'autenticazione LDAP per la GUI di amministrazione colma una lacuna presente da tempo nell'appliance: gli accessi degli amministratori possono ora essere gestiti centralmente nella directory anziché per singolo dispositivo. Insieme al campo MFA separato, la versione 15.0.6 rende l'accesso all'interfaccia di amministrazione sensibilmente più maturo in un'unica release. Chi introduce la funzione dovrebbe mantenere il mapping dei gruppi deliberatamente restrittivo e non sacrificare l'accesso locale di emergenza.
+
+## Fonti
+
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Voce relativa all'autenticazione della GUI di amministrazione con descrizione della funzione, posizione della configurazione e comportamento degli utenti autenticati esternamente.
+
+2.  [Documentazione SEPPmail – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Riferimento dei campi della sezione External Authentication (Connection, User Attributes, Group Attributes, Mapping, Login Test).
+
+3.  [Documentazione SEPPmail – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Gruppi predefiniti dell'appliance; i membri del gruppo admin dispongono di accesso amministrativo illimitato.
+
+4.  [Documentazione SEPPmail – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Release Notes ufficiali della versione 15.0.6 con la voce relativa all'autenticazione della GUI di amministrazione tramite server LDAP esterni.
+
+5.  [SEPPmail 15.0.6 e 15.0.6.1: correzioni di sicurezza e nuove funzioni amministrative](/blog/seppmail-releases-15-0-6-und-15-0-6-1): Panoramica di tutte le modifiche delle due release.
+
+----
+
 # Testare il Cold Storage con Rclone: un piano di test pratico
 
 URL: https://rafaelpfister.ch/it/blog/testare-il-cold-storage-con-rclone-un-piano-di-test-pratico
@@ -13355,6 +13956,268 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Microsoft Entra Domain Services: LDAP y Kerberos para entornos solo en la nube
+
+URL: https://rafaelpfister.ch/es/blog/microsoft-entra-domain-services-ldap-y-kerberos-para-entornos-solo-en-la-nube
+Datum: 2026-07-30
+
+# Microsoft Entra Domain Services: LDAP y Kerberos para entornos solo en la nube
+
+Quien haya migrado por completo sus usuarios a Microsoft Entra ID (anteriormente Azure Active Directory) lo notará, como muy tarde, con la primera appliance o aplicación heredada: Entra ID responde consultas mediante Microsoft Graph y protocolos de autenticación modernos como OAuth y SAML, pero no mediante LDAP, Kerberos o NTLM. Un enlace LDAP contra Entra ID simplemente no es posible. Para todo lo que espera un Active Directory clásico, Microsoft ofrece su propio servicio: Microsoft Entra Domain Services, anteriormente Azure AD Domain Services.
+
+## Qué proporciona el servicio
+
+Entra Domain Services es un dominio de Active Directory administrado. Para ello, Microsoft opera dos controladores de dominio Windows en una VNet de Azure, se encarga de las actualizaciones, la replicación y las copias de seguridad, y sincroniza automáticamente usuarios y grupos desde Entra ID al dominio. La sincronización solo funciona en una dirección, desde Entra ID hacia el dominio administrado; los cambios realizados directamente en el dominio no se sincronizan de vuelta.
+
+De cara al exterior, el dominio se comporta como un Active Directory convencional: responde consultas LDAP y LDAPS, admite autenticación Kerberos y NTLM, permite unir VM al dominio y ofrece directivas de grupo limitadas. No es necesario adaptar aplicaciones ni dispositivos para ello; ven un controlador de dominio.
+
+## Para qué se necesita
+
+El servicio está orientado a entornos que en realidad son solo en la nube, pero que operan componentes individuales con requisitos de directorio clásicos:
+
+- **Appliances y aplicaciones especializadas con integración LDAP:** dispositivos que buscan usuarios mediante LDAP, evalúan pertenencias a grupos o verifican inicios de sesión mediante enlace LDAP.
+- **Migraciones lift-and-shift:** cargas de trabajo de servidor que deben permanecer vinculadas al dominio (Kerberos, NTLM, unión al dominio), sin tener que operar controladores de dominio propios en Azure.
+- **Entornos sin AD local:** cuando nunca existió un Active Directory o se desmanteló, el dominio administrado sustituye la creación de controladores de dominio propios y la carga operativa asociada.
+
+Importante para diferenciar: quien todavía opera un Active Directory local con sincronización de Entra Connect normalmente no necesita el servicio; en ese caso, la appliance consulta el AD existente. Entra Domain Services cubre la brecha cuando Entra ID es la única fuente de usuarios.
+
+## Arquitectura y configuración
+
+El dominio administrado se aprovisiona en su propia VNet o subred y recibe dos direcciones fijas de controlador de dominio. Las cargas de trabajo de otras VNet lo alcanzan mediante VNet Peering; los servidores DNS de las VNet implicadas deben apuntar a los controladores de dominio para poder resolver el nombre de dominio y los objetos. El acceso se restringe mediante Network Security Groups a las fuentes y puertos realmente necesarios.
+
+Algunas particularidades del dominio administrado relevantes para conectar aplicaciones:
+
+- Los usuarios sincronizados se encuentran en la OU **AADDC Users** y el dominio lleva, sin configuración propia, el sufijo **onmicrosoft.com**. La base de búsqueda y los DN de enlace deben reflejar esta estructura, por ejemplo: CN=svc-ldap,OU=AADDC Users,DC=example,DC=onmicrosoft,DC=com.
+- No existe un Domain Administrator. La administración se realiza mediante el grupo delegado AAD DC Administrators; no son posibles las extensiones de esquema.
+- Para las cuentas de enlace LDAP basta una cuenta dedicada sin privilegios; para consultas de directorio puras en Entra ID se requiere el rol Directory Readers.
+
+## La trampa de los hashes de contraseña
+
+Hay un aspecto que regularmente consume tiempo en las pruebas: los inicios de sesión Kerberos y NTLM, así como los enlaces LDAP, necesitan hashes de contraseña en el dominio administrado. Para cuentas solo en la nube, Entra ID genera estos hashes únicamente en el siguiente cambio de contraseña tras activar el servicio. Por tanto, un usuario recién sincronizado es visible en el directorio, pero solo podrá iniciar sesión después de haber cambiado su contraseña una vez. En las cuentas híbridas, los hashes deben sincronizarse también desde el AD local mediante Entra Connect.
+
+## Secure LDAP paso a paso
+
+Dentro del dominio, LDAP funciona sin cifrar de forma predeterminada a través del puerto 389. Para inicios de sesión y cualquier acceso fuera de redes estrictamente aisladas, la conexión debe utilizar Secure LDAP (LDAPS, puerto 636); el servicio solo ofrece acceso desde fuera de la VNet de forma cifrada. La configuración consta de cuatro pasos.
+
+**1. Obtener un certificado.** Secure LDAP requiere un certificado propio que se carga como PFX junto con la clave privada. El Subject o SAN debe cubrir el dominio administrado mediante un comodín (por ejemplo, *.example.onmicrosoft.com), ya que las solicitudes pueden llegar a cualquiera de los dos controladores de dominio. Como origen se puede utilizar una CA pública, la PKI propia o un certificado autofirmado creado específicamente. Con un certificado autofirmado, la cadena debe instalarse como confiable en cada sistema que realice consultas; no todas las appliances lo permiten. Quien pueda elegir estará más tranquilo con su propia PKI o una CA pública.
+
+**2. Activar Secure LDAP.** En el portal, en Settings > Secure LDAP, se activa la función y se carga el PFX junto con la contraseña. Opcionalmente, se puede habilitar allí el acceso a través de Internet; el dominio administrado recibe entonces una dirección IP pública.
+
+**3. Red y DNS.** La dirección IP externa aparece en Properties. La regla NSG correspondiente abre TCP/636 y debe restringirse a las direcciones IP de origen realmente necesarias, no a Any. Para la resolución de nombres, una entrada DNS (por ejemplo, ldaps.example.com) apunta a esta IP; debe coincidir con el certificado. Los accesos internos siguen realizándose directamente contra las direcciones de los controladores de dominio.
+
+**4. Probar la conexión.** Antes de cambiar la aplicación, conviene realizar una prueba con un navegador LDAP, ldp.exe o ldapsearch contra el puerto 636: enlace con la cuenta de servicio y, a continuación, una búsqueda en la OU AADDC Users. Solo cuando el enlace y la búsqueda funcionen correctamente se debe pasar a la aplicación.
+
+Para configurar el propio servicio, la cuenta del portal necesita los roles Application Administrator, Domain Services Contributor y Groups Administrator; el despliegue del dominio administrado tarda aproximadamente una hora. Además, en la configuración de seguridad se puede forzar TLS 1.2 como mínimo.
+
+## Costes
+
+Entra Domain Services es un coste operativo permanente: el servicio se factura por hora según la SKU, a lo que se suman VNet, peering y posibles VM de prueba. Para un único caso de uso pequeño de LDAP, es un precio considerable; sin embargo, la alternativa de operar controladores de dominio propios como VM compensa el ahorro con la responsabilidad de actualizaciones, copias de seguridad y disponibilidad.
+
+## Caso práctico: puerta de enlace de correo electrónico con integración LDAP
+
+Un ejemplo concreto de la categoría de appliances es el SEPPmail Secure E-Mail Gateway. Utiliza LDAP para la creación de usuarios y las consultas de permisos, y desde el firmware 15.0.6 también para el [inicio de sesión en la interfaz gráfica de administración](/blog/seppmail-admin-gui-ldap-authentifizierung). Una appliance en la VNet de Azure alcanza el dominio administrado mediante VNet Peering con una cuenta de enlace dedicada (Directory Readers), protegida mediante NSG. A más tardar para el inicio de sesión en la interfaz gráfica de administración, cuya opción TLS está activada de forma predeterminada, la conexión debe utilizar Secure LDAP.
+
+## Conclusión
+
+Entra Domain Services no es un sustituto de Entra ID, sino un puente: el servicio traduce una base de usuarios en la nube a un dominio AD clásico para todo lo que requiere LDAP, Kerberos o unión al dominio. Quien solo tenga que conectar una aplicación debería sopesar los costes continuos frente a una modernización de la aplicación. Una vez que el servicio está en funcionamiento, las appliances y las aplicaciones heredadas se comportan como en un entorno AD conocido, incluidas las particularidades descritas relativas a la estructura de OU, permisos y hashes de contraseña.
+
+## Fuentes
+
+1.  [Microsoft Learn – «¿Qué es Microsoft Entra Domain Services?»](https://learn.microsoft.com/de-de/entra/identity/domain-services/overview): alcance funcional del dominio administrado, protocolos compatibles y diferenciación respecto a Entra ID y controladores de dominio operados por el propio usuario.
+
+2.  [Microsoft Learn – «Sincronización en Entra Domain Services»](https://learn.microsoft.com/de-de/entra/identity/domain-services/synchronization): sincronización unidireccional, estructura de OU y comportamiento de los hashes de contraseña para cuentas solo en la nube e híbridas.
+
+3.  [Microsoft Learn – «Configurar Secure LDAP»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS con certificado propio para accesos LDAP cifrados.
+
+4.  [Conectar la interfaz gráfica de administración de SEPPmail a Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung): configuración del inicio de sesión LDAP en la interfaz gráfica de administración a partir del firmware 15.0.6.
+
+----
+
+# SEPPmail 15.0.6 y 15.0.6.1: correcciones de seguridad y nuevas funciones de administración
+
+URL: https://rafaelpfister.ch/es/blog/seppmail-15-0-6-y-15-0-6-1-correcciones-de-seguridad-y-nuevas-funciones-de-administracion
+Datum: 2026-07-29
+
+# SEPPmail 15.0.6 y 15.0.6.1: correcciones de seguridad y nuevas funciones de administración
+
+SEPPmail publicó el 21 de julio de 2026 la versión de parche 15.0.6 y, un día después, el hotfix 15.0.6.1. La versión de parche cierra varias vulnerabilidades, actualiza OpenSSH y OpenSSL e incorpora mejoras notables para la administración. El hotfix corrige dos errores en RuleEngine que se introdujeron o se hicieron visibles con la versión 15.0.6. Los cambios también afectan a las appliances operadas como HIN Mailgateway, ya que se basan en el mismo firmware de SEPPmail.
+
+## Hotfix 15.0.6.1 del 22 de julio de 2026
+
+El hotfix corrige dos aspectos de RuleEngine. En primer lugar, un valor indefinido en el objeto Message impedía que las entradas de registro se escribieran en el log de correo. Por tanto, los mensajes afectados atravesaban el sistema sin quedar registrados. En segundo lugar, RuleEngine ahora reconoce la dirección de los correos electrónicos archivados para que su entrega se gestione correctamente.
+
+Quien ya haya instalado la versión 15.0.6 o tenga previsto actualizar debería pasar directamente a la 15.0.6.1.
+
+Al parecer, las appliances de HIN también han recibido el hotfix: un HIN Mailgateway con la versión instalada 15.0.6-RC-42-g278c81f84 informa ahora de 15.0.6-RC-88-g916e513cc como siguiente versión de la rama 15.0. Las denominaciones RC del firmware de HIN no pueden asignarse directamente a una versión de SEPPmail, pero el momento en que se ofrece apunta al hotfix.
+
+## Correcciones de seguridad en la versión 15.0.6
+
+La parte más importante de la versión de parche son tres correcciones en la arquitectura de seguridad:
+
+- Se cerró una posible vulnerabilidad de path traversal en la generación de PDF. Fue descubierta por InfoGuard.
+- Todo el contenido descifrado mediante PGP se codifica ahora en Base64 para evitar la inyección de estructuras MIME.
+- La función hashencrypt se ha migrado a AES-256-CBC con PBKDF2.
+
+Además, se actualizaron las bibliotecas: OpenSSH 10.4 y OpenSSL 3.0.21 corrigen conjuntamente más de veinte CVE. Solo por estos aspectos, la actualización es recomendable para sistemas productivos.
+
+## Nuevas funciones para la administración
+
+Tres cambios en la GUI de administración destacan en el uso diario:
+
+- **Campo de entrada MFA independiente:** Ya no es necesario añadir el segundo factor a la contraseña, sino que dispone de su propio campo. Esto elimina un obstáculo de larga data durante el inicio de sesión.
+- **Autenticación LDAP para la GUI de administración:** Los administradores pueden autenticarse ahora contra un servidor LDAP externo en lugar de mantener cuentas locales en la appliance. La configuración se describe en el artículo sobre la [conexión de la GUI de administración a Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung). Aún estoy probando si HIN Mailgateway también ha recibido esta función y añadiré la información al artículo posteriormente; dado que HIN utiliza la misma base de firmware, lo supongo.
+- **Botón AutoRenew para MPKI:** En la configuración del conector MPKI, la renovación automática de certificados puede iniciarse manualmente mediante «Trigger AutoRenew... ».
+
+Además, la appliance utiliza ahora sistemáticamente zonas horarias válidas (predeterminada: Europe/Zurich), y el System Object ID en System >> Advanced View se valida como OID válido.
+
+## Procesamiento de correo y Webmail
+
+Se corrigieron cuatro aspectos en RuleEngine. El tratamiento del asunto funciona ahora también con codificaciones desconocidas. Los mensajes se devuelven si se solicita explícitamente una firma pero no puede crearse; hasta ahora, esos mensajes podían continuar sin firmar. Las copias archivadas pasan ahora por la función de entrega y reciben así cabeceras ARC. Y en los mensajes PGP sin datos MDC, los errores de MDC se ignoran en lugar de interferir en el procesamiento.
+
+En Webmail (GINA) se corrigieron cuatro errores: vuelve a funcionar la eliminación automática de cuentas no registradas tras expirar el periodo de gracia, la función hashdecrypt devolvía en determinados casos un resultado de descifrado falso positivo, al añadir un adjunto se vaciaban los campos Para y CC, y la salida de hora en los registros SMS era incorrecta.
+
+## API REST, clúster y copia de seguridad
+
+La API REST recibe correcciones en varios endpoints: /system/ifaliasconfig (gestión de valores null), /system/applySysconfig (configuración de acceso), /crypto/domain/{domainName} (carga de certificados de dominio), así como GET y POST /ssl/csr. El tiempo de espera para las llamadas REST se incrementó de 300 a 900 segundos, lo que hace más fiables las solicitudes de larga duración, como los cambios de configuración de mayor tamaño.
+
+En el funcionamiento en clúster, una IP CARP existente bloqueaba hasta ahora la configuración de IP de un miembro recién añadido; esto se ha corregido. Antes de crear el snapshot diario, la copia de seguridad comprueba ahora también si hay una base de datos corrupta antes de escribir el snapshot.
+
+## Relación con el fallo de inicio de sesión en la versión 15.0.5
+
+Al actualizar un clúster a la versión 15.0.5, el inicio de sesión podía fallar en ambos nodos. El patrón del error y la recuperación se describen en el artículo sobre el [fallo de inicio de sesión tras la actualización a 15.0.5](/blog/hin-update-issue-version-15.0.5). El fabricante ya conocía entonces el problema y anunció una corrección para una versión posterior.
+
+En las notas de la versión 15.0.6 aparece ahora exactamente una entrada que encaja con este patrón de error: «prevent password rehashing when cluster members use different firmware versions». Durante una actualización del clúster, los nodos funcionan inevitablemente de forma temporal con versiones de firmware distintas. Si un nodo recalcula los hashes de contraseña en esta fase y los replica en el clúster, los hashes dejan de ser compatibles con la otra versión y el inicio de sesión falla en ambos nodos, exactamente como en la interrupción observada entonces. Las notas de la versión no mencionan explícitamente el fallo de inicio de sesión, pero la entrada cubre exactamente la situación que lo había desencadenado. Por tanto, la causa queda resuelta en la versión 15.0.6; el procedimiento de emergencia necesario en la 15.0.5, con disolución del clúster, debería dejar de ser necesario en futuras actualizaciones.
+
+## Correcciones menores
+
+En el log de correo se corrigió la ordenación por fecha, que hasta ahora ordenaba alfabéticamente en lugar de cronológicamente, y el tamaño mostrado de los mensajes LFT vuelve a ser correcto. Los accesos a cabeceras X inexistentes ya no se registran. El conector CertCentral de MPKI gestiona de forma más robusta los errores de entrada y REST.
+
+## Evaluación
+
+Los dos errores de RuleEngine corregidos por el hotfix aconsejan omitir la versión 15.0.6 e implementar directamente la 15.0.6.1. En los clústeres, cree snapshots de ambos nodos antes de actualizar y respete el orden de actualización indicado en la documentación del fabricante. El fallo de inicio de sesión en la versión 15.0.5 demostró por qué esta preparación no es un mero formalismo.
+
+## Fuentes
+
+1.  [Documentación de SEPPmail – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Notas de versión oficiales de 15.0.6 y 15.0.6.1 con todos los detalles.
+
+2.  [HIN Mailgateway 15.0.5: solucionar el fallo de inicio de sesión tras la actualización del clúster](/blog/hin-update-issue-version-15.0.5): Por qué los snapshots y el orden correcto de actualización son decisivos en el clúster.
+
+----
+
+# Conectar la GUI de administración de SEPPmail a Active Directory: configurar la autenticación LDAP a partir de la versión 15.0.6
+
+URL: https://rafaelpfister.ch/es/blog/conectar-la-gui-de-administracion-de-seppmail-a-active-directory-configurar-la-autenticacion
+Datum: 2026-07-29
+
+# Conectar la GUI de administración de SEPPmail a Active Directory: configurar la autenticación LDAP a partir de la versión 15.0.6
+
+Hasta el firmware 15.0.5, la interfaz de administración de SEPPmail Secure E-Mail Gateway solo admitía cuentas locales. Quien quería trabajar de forma ordenada creaba un usuario local propio para cada administrador y lo incluía en el grupo admin. Esto funciona, pero tiene las desventajas habituales de las cuentas locales: contraseñas propias por appliance, ausencia de offboarding centralizado y falta de aplicación de las políticas de contraseñas del servicio de directorio. Con la versión de parche 15.0.6, esto cambia. Si se desea, la GUI de administración autentica a los administradores contra un servidor LDAP externo como Active Directory y asigna grupos de AD a grupos locales de la appliance.
+
+Los demás cambios de la versión se resumen en el artículo sobre [SEPPmail 15.0.6 y 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1). Aquí se trata únicamente de la nueva autenticación externa.
+
+## Qué ofrece la función
+
+Según las Extended Release Notes, la versión 15.0.6 añade una nueva sección, **External Authentication**, en **User > Advanced Settings**. Con ella, la GUI de administración se autentica contra un servidor LDAP externo y los grupos externos (por ejemplo, grupos de seguridad de AD) se mapean a grupos locales de la appliance.
+
+Los usuarios autenticados externamente aparecen de forma local en la appliance y se comportan como usuarios locales, con una diferencia: su contraseña no se puede cambiar en la appliance, ya que se encuentra en el servidor LDAP externo. Por tanto, la gestión de contraseñas pasa por completo al directorio.
+
+Importante para diferenciarlo: la appliance ya disponía de autenticación externa, pero únicamente para la interfaz web GINA, configurada por Managed Domain (sección External authentication en la configuración de dominio). La novedad de la versión 15.0.6 es que también el acceso a la propia interfaz de administración se realiza mediante LDAP.
+
+Todavía estoy probando si HIN Mailgateway también ha recibido el inicio de sesión LDAP; añadiré el resultado al artículo posteriormente. Dado que las appliances HIN se basan en el mismo firmware de SEPPmail, parto de que así es.
+
+## Requisitos
+
+Antes de la configuración, deben estar preparados cuatro elementos:
+
+- **Firmware 15.0.6.1:** La función llega con la versión 15.0.6; debido a los dos errores de RuleEngine de esta versión, el hotfix 15.0.6.1 es la elección correcta directamente.
+- **Un directorio compatible con LDAP:** Active Directory, OpenLDAP o equivalente. Si los usuarios solo están en Entra ID, que no habla LDAP por sí mismo, [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) establece el puente.
+- **Una cuenta de enlace en el directorio:** Una cuenta de servicio dedicada y sin privilegios, con acceso de lectura, con la que la appliance realiza la búsqueda LDAP. No debe ser un administrador de dominio.
+- **Un grupo de AD para los administradores del gateway:** Por ejemplo, un grupo de seguridad SEPPmail-Admins que posteriormente se mapeará al grupo local admin. La pertenencia a este grupo decidirá entonces el acceso administrativo completo.
+
+TLS está activado de forma predeterminada en la configuración de conexión y debe mantenerse así; las credenciales de los administradores no deben circular sin cifrar por la red. La appliance debe poder alcanzar el servidor LDAP en el puerto configurado (normalmente 636 para LDAPS).
+
+## Configuración en User > Advanced Settings
+
+La configuración se encuentra en la GUI de administración, en **User > Advanced Settings**, dentro de la sección **External Authentication**, y consta de cuatro bloques.
+
+**1. Connection Settings:** La casilla *Authenticate users to external LDAP server (e.g. Active Directory)* activa la función. A continuación se indican la dirección del servidor, el puerto, la opción *TLS required*, así como el Bind DN y Bind Password de la cuenta de servicio.
+
+**2. User Attributes:** Aquí se define cómo encuentra la appliance los objetos de usuario: la LDAP Object Class (en Active Directory, normalmente person), la Search Base (la OU o el contenedor donde se encuentran las cuentas de administrador) y el atributo de correo electrónico (valor predeterminado: mail).
+
+**3. Group Attributes:** De forma análoga, se indican los datos de los objetos de grupo para que la appliance pueda resolver las pertenencias a grupos.
+
+**4. Mapping Settings:** La parte decisiva. En *Remote Group* se selecciona el grupo del servidor LDAP y en *Local Group* uno o varios grupos locales a los que se asigna. Para acceso administrativo completo se trata del grupo admin; sus miembros tienen los mismos privilegios que el usuario predeterminado admin. Quien quiera diferenciar permisos puede mapear, en su lugar, a grupos restringidos como readonly admin o a grupos funcionales de la appliance.
+
+Antes de guardar, conviene utilizar el **Login Test** integrado: con el nombre de usuario y la contraseña de una cuenta de prueba, se puede comprobar si la conexión, la búsqueda y la autenticación funcionan antes de activar la configuración.
+
+## Configuraciones de ejemplo
+
+Los siguientes valores deben adaptarse al entorno propio (dominio de ejemplo example.com). Los nombres de los campos corresponden a la sección External Authentication de la appliance.
+
+### Active Directory
+
+| Campo | Valor |
+|---|---|
+| Server | dc01.example.com |
+| Port | 636 |
+| TLS required | activado |
+| Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
+| Bind Password | Contraseña de la cuenta de servicio |
+| User: LDAP Object Class | person |
+| User: Search Base | OU=IT,DC=example,DC=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | group |
+| Group: Search Base | OU=Groups,DC=example,DC=com |
+| Mapping: Remote Group | SEPPmail-Admins |
+| Mapping: Local Group | admin |
+
+Notas sobre Active Directory: cualquier Domain Controller accesible sirve como servidor; en entornos con varias ubicaciones, se recomienda un DC en la misma ubicación o un alias que apunte a varios DC. El puerto 636 corresponde a LDAPS; para ello, el certificado del DC debe poder ser validado por la appliance. La Search Base debe ser lo suficientemente específica para contener las cuentas de administrador, pero no todo el directorio. El atributo mail debe estar mantenido en las cuentas de AD.
+
+### OpenLDAP
+
+| Campo | Valor |
+|---|---|
+| Server | ldap01.example.com |
+| Port | 636 |
+| TLS required | activado |
+| Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
+| Bind Password | Contraseña de la cuenta de servicio |
+| User: LDAP Object Class | inetOrgPerson |
+| User: Search Base | ou=people,dc=example,dc=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | groupOfNames |
+| Group: Search Base | ou=groups,dc=example,dc=com |
+| Mapping: Remote Group | seppmail-admins |
+| Mapping: Local Group | admin |
+
+Notas sobre OpenLDAP: en configuraciones típicas, los usuarios se encuentran como inetOrgPerson bajo ou=people. Para los grupos, groupOfNames es la opción fiable, ya que la pertenencia se representa allí mediante el atributo member con el DN completo. En cambio, los grupos posixGroup solo contienen sus miembros como memberUid (nombre de usuario en lugar de DN); no está documentado si la appliance puede resolverlo, por lo que debe comprobarse con el Login Test antes de realizar el cambio. Si el servidor solo funciona con STARTTLS en el puerto 389, debe indicarse el puerto correspondiente en el campo Server; la conexión nunca debe funcionar sin cifrado.
+
+## Indicaciones de operación
+
+Hay tres puntos que merecen atención antes de convertir el inicio de sesión LDAP en la única vía de acceso a la appliance:
+
+- **Mantener un acceso local de emergencia.** Las contraseñas de los usuarios externos se encuentran en el servidor LDAP. Si el directorio no está disponible (problema de red, mantenimiento de AD o si el gateway debe resolver precisamente un problema con esa red), sigue siendo necesaria una cuenta local de administrador con una contraseña almacenada de forma segura. Por ello, el usuario predeterminado admin no debe eliminarse, sino mantenerse como acceso de emergencia documentado.
+- **MFA sigue siendo relevante.** La versión 15.0.6 también ha revisado el inicio de sesión MFA: el segundo factor ya no se añade a la contraseña, sino que se solicita en un campo independiente. La autenticación externa no sustituye al segundo factor.
+- **Offboarding mediante el directorio.** La verdadera ventaja de la integración: si un administrador abandona la empresa, basta con desactivar la cuenta de AD o eliminarla del grupo mapeado. Ya no es necesario mantener cuentas locales en cada appliance. No obstante, los objetos de usuario autenticados externamente que son visibles localmente deben compararse periódicamente con el directorio.
+
+## Conclusión
+
+La autenticación LDAP para la GUI de administración cubre una carencia que la appliance tenía desde hace tiempo: ahora los accesos de administrador se pueden gestionar centralmente en el directorio, en lugar de hacerlo por dispositivo. Junto con el campo MFA independiente, la versión 15.0.6 hace que el inicio de sesión en la interfaz de administración sea notablemente más maduro en una sola versión. Quien implemente esta función debería mantener el mapeo de grupos deliberadamente restrictivo y no sacrificar el acceso local de emergencia.
+
+## Fuentes
+
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Entrada sobre la autenticación de la GUI de administración con descripción de la función, ubicación de configuración y comportamiento de los usuarios autenticados externamente.
+
+2.  [Documentación de SEPPmail – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Referencia de los campos de la sección External Authentication (Connection, User Attributes, Group Attributes, Mapping, Login Test).
+
+3.  [Documentación de SEPPmail – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Grupos predefinidos de la appliance; los miembros del grupo admin tienen acceso administrativo sin restricciones.
+
+4.  [Documentación de SEPPmail – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Release Notes oficiales de la versión 15.0.6 con la entrada sobre la autenticación de la GUI de administración contra servidores LDAP externos.
+
+5.  [SEPPmail 15.0.6 y 15.0.6.1: correcciones de seguridad y nuevas funciones de administración](/blog/seppmail-releases-15-0-6-und-15-0-6-1): Resumen de todos los cambios de las dos versiones.
 
 ----
 
@@ -16582,6 +17445,197 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Microsoft Entra Domain Services: LDAP och Kerberos för miljöer som enbart använder molnet
+
+URL: https://rafaelpfister.ch/sv/blog/microsoft-entra-domain-services-ldap-och-kerberos-for-miljoer-som-enbart-anvander-molnet
+Datum: 2026-07-30
+
+# Microsoft Entra Domain Services: LDAP och Kerberos för miljöer som enbart använder molnet
+
+Den som har flyttat sina användare helt till Microsoft Entra ID (tidigare Azure Active Directory) märker det senast vid den första appliance-enheten eller äldre applikationen: Entra ID besvarar förfrågningar via Microsoft Graph och moderna autentiseringsprotokoll som OAuth och SAML, men inte via LDAP, Kerberos eller NTLM. En LDAP-bindning mot Entra ID är helt enkelt inte möjlig. För allt som förväntar sig ett klassiskt Active Directory erbjuder Microsoft därför en egen tjänst: Microsoft Entra Domain Services, tidigare Azure AD Domain Services.
+
+## Vad tjänsten tillhandahåller
+
+Entra Domain Services är en hanterad Active Directory-domän. Microsoft driver två Windows-domänkontrollanter i ett Azure-VNet, sköter patchning, replikering och säkerhetskopiering samt synkroniserar användare och grupper automatiskt från Entra ID till domänen. Synkroniseringen går endast åt ett håll, från Entra ID till den hanterade domänen; ändringar direkt i domänen förs inte tillbaka.
+
+Utåt beter sig domänen som ett vanligt Active Directory: den besvarar LDAP- och LDAPS-förfrågningar, stöder Kerberos- och NTLM-autentisering, tillåter att VM:ar ansluts till domänen och erbjuder begränsade grupprinciper. Applikationer och enheter behöver inte anpassas för detta; de ser en domänkontrollant.
+
+## Vad den behövs till
+
+Tjänsten riktar sig till miljöer som egentligen är helt molnbaserade men har enskilda komponenter med klassiska katalogkrav:
+
+- **Appliance-enheter och verksamhetsapplikationer med LDAP-anslutning:** Enheter som söker användare via LDAP, utvärderar gruppmedlemskap eller kontrollerar inloggningar med LDAP-bindning.
+- **Lift-and-shift-migreringar:** Serverarbetslaster som måste förbli domänanslutna (Kerberos, NTLM, domänanslutning), utan att egna domänkontrollanter behöver drivas i Azure.
+- **Miljöer utan lokalt AD:** Där det aldrig har funnits ett Active Directory eller där det har avvecklats ersätter den hanterade domänen uppbyggnaden av egna DC:er och den tillhörande driftsinsatsen.
+
+Viktigt för avgränsningen: Den som fortfarande driver ett lokalt Active Directory med Entra Connect-synkronisering behöver normalt inte tjänsten; appliance-enheten frågar då det befintliga AD:t. Entra Domain Services fyller luckan när Entra ID är den enda användarkällan.
+
+## Arkitektur och installation
+
+Den hanterade domänen tillhandahålls i ett eget VNet eller undernät och får två fasta domänkontrollantadresser. Arbetslaster i andra VNet når den via VNet-peering; DNS-servrarna i de berörda VNet:en måste peka på domänkontrollanterna så att domännamn och objekt kan lösas upp. Åtkomsten begränsas med Network Security Groups till de källor och portar som faktiskt behövs.
+
+Några särdrag hos den hanterade domänen som är relevanta vid anslutning av applikationer:
+
+- Synkroniserade användare ligger i OU:n **AADDC Users** och domänen har utan egen konfiguration suffixet **onmicrosoft.com**. Search Base och Bind-DN:er måste återspegla denna struktur, exempelvis CN=svc-ldap,OU=AADDC Users,DC=example,DC=onmicrosoft,DC=com.
+- Det finns ingen Domain Administrator. Administrationen sker via den delegerade gruppen AAD DC Administrators; schemautökningar är inte möjliga.
+- För LDAP-bindningskonton räcker ett dedikerat konto utan privilegier; för rena katalogfrågor i Entra ID krävs rollen Directory Readers.
+
+## Fällan med lösenordshashar
+
+En punkt kostar regelbundet tid i tester: Kerberos- och NTLM-inloggningar samt LDAP-bindningar behöver lösenordshashar i den hanterade domänen. För konton som enbart finns i molnet skapar Entra ID dessa hashar först vid nästa lösenordsändring efter att tjänsten har aktiverats. En nyss synkroniserad användare är alltså synlig i katalogen men kan inte logga in förrän lösenordet har ändrats en gång. För hybridkonton måste hasharna också synkroniseras från det lokala AD:t via Entra Connect.
+
+## Secure LDAP steg för steg
+
+Inom domänen körs LDAP som standard okrypterat över port 389. För inloggningar och för all åtkomst utanför strikt isolerade nät ska anslutningen använda Secure LDAP (LDAPS, port 636); tjänsten erbjuder ändå endast krypterad åtkomst utifrån VNet:et. Konfigurationen består av fyra steg.
+
+**1. Skaffa ett certifikat.** Secure LDAP kräver ett eget certifikat som laddas upp som PFX inklusive privat nyckel. Subject eller SAN måste täcka den hanterade domänen som jokertecken (exempelvis *.example.onmicrosoft.com), eftersom förfrågningar kan hamna hos någon av de två domänkontrollanterna. En offentlig CA, en egen PKI eller ett särskilt skapat självsignerat certifikat kan användas som källa. Med ett självsignerat certifikat måste kedjan lagras som betrodd på varje system som frågar; det tillåter inte alla appliance-enheter. Den som har valet gör klokt i att använda egen PKI eller en offentlig CA.
+
+**2. Aktivera Secure LDAP.** I portalen under Settings > Secure LDAP aktiveras funktionen och PFX-filen med lösenord laddas upp. Där kan åtkomst via internet valfritt aktiveras; den hanterade domänen får då en offentlig IP-adress.
+
+**3. Nätverk och DNS.** Den externa IP-adressen finns under Properties. Tillhörande NSG-regel öppnar TCP/636 och bör begränsas till de käll-IP-adresser som faktiskt behövs, inte till Any. För namnuppslagning pekar en DNS-post (exempelvis ldaps.example.com) på denna IP-adress; den måste stämma överens med certifikatet. Intern åtkomst går fortsatt direkt mot domänkontrollantadresserna.
+
+**4. Testa anslutningen.** Innan applikationen ställs om är det värt att testa med en LDAP-webbläsare, ldp.exe eller ldapsearch mot port 636: bindning med tjänstkontot och därefter en sökning under OU:n AADDC Users. Först när bindning och sökning fungerar korrekt där är det dags för applikationen.
+
+För att konfigurera själva tjänsten behöver portalkontot rollerna Application Administrator, Domain Services Contributor och Groups Administrator; distributionen av den hanterade domänen tar drygt en timme. I säkerhetsinställningarna kan TLS 1.2 dessutom tvingas som lägstanivå.
+
+## Kostnader
+
+Entra Domain Services är en löpande driftkostnad: tjänsten debiteras per timme enligt SKU, därtill kommer VNet, peering och eventuella test-VM:ar. För det enda lilla LDAP-användningsfallet är det ett högt pris; alternativet att driva egna domänkontrollanter som VM:ar köper dock tillbaka besparingen med ansvar för patchning, säkerhetskopiering och tillgänglighet.
+
+## Praktiskt exempel: e-postgateway med LDAP-anslutning
+
+Ett konkret exempel på appliance-kategorin är SEPPmail Secure E-Mail Gateway. Den använder LDAP för användarskapande och behörighetsfrågor samt sedan firmware 15.0.6 även för [inloggning till admin-GUI:t](/blog/seppmail-admin-gui-ldap-authentifizierung). En appliance-enhet i Azure-VNet når den hanterade domänen via VNet-peering med ett dedikerat bindningskonto (Directory Readers), skyddat med NSG:er. Senast för inloggning till admin-GUI:t, där TLS-alternativet är aktivt som standard, ska anslutningen använda Secure LDAP.
+
+## Slutsats
+
+Entra Domain Services är inte en ersättning för Entra ID utan en brygga: tjänsten översätter en molnbaserad användarbas till en klassisk AD-domän för allt som kräver LDAP, Kerberos eller domänanslutning. Den som endast behöver ansluta en enskild applikation bör väga de löpande kostnaderna mot en modernisering av applikationen. När tjänsten väl finns på plats beter sig appliance-enheter och äldre applikationer som i en välbekant AD-miljö, inklusive de beskrivna särdragen kring OU-struktur, behörigheter och lösenordshashar.
+
+## Källor
+
+1.  [Microsoft Learn – «Vad är Microsoft Entra Domain Services?»](https://learn.microsoft.com/de-de/entra/identity/domain-services/overview): Funktioner för den hanterade domänen, protokoll som stöds och avgränsning mot Entra ID och egenhanterade domänkontrollanter.
+
+2.  [Microsoft Learn – «Synkronisering i Entra Domain Services»](https://learn.microsoft.com/de-de/entra/identity/domain-services/synchronization): Envägssynkronisering, OU-struktur och beteendet hos lösenordshashar för konton som enbart finns i molnet och hybridkonton.
+
+3.  [Microsoft Learn – «Konfigurera Secure LDAP»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS med eget certifikat för krypterad LDAP-åtkomst.
+
+4.  [Anslut SEPPmail Admin-GUI till Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung): Konfiguration av LDAP-inloggning till admin-GUI:t från firmware 15.0.6.
+
+----
+
+# Anslut SEPPmail Admin-GUI till Active Directory: konfigurera LDAP-autentisering från 15.0.6
+
+URL: https://rafaelpfister.ch/sv/blog/anslut-seppmail-admin-gui-till-active-directory-konfigurera-ldap-autentisering-fran-15-0-6
+Datum: 2026-07-29
+
+# Anslut SEPPmail Admin-GUI till Active Directory: konfigurera LDAP-autentisering från 15.0.6
+
+Fram till firmware 15.0.5 kände administrationsgränssnittet för SEPPmail Secure E-Mail Gateway endast till lokala konton. Den som ville arbeta korrekt skapade en egen lokal användare för varje administratör och lade till den i gruppen admin. Det fungerar, men har de vanliga nackdelarna med lokala konton: egna lösenord per appliance, ingen central offboarding och ingen tillämpning av lösenordspolicyer från katalogtjänsten. Med patchversion 15.0.6 ändras detta. Admin-GUI autentiserar vid behov administratörer mot en extern LDAP-server som Active Directory och mappar AD-grupper till lokala grupper på appliancen.
+
+De övriga ändringarna i versionen sammanfattas i artikeln om [SEPPmail 15.0.6 och 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1). Här handlar det endast om den nya externa autentiseringen.
+
+## Vad funktionen gör
+
+Enligt Extended Release Notes lägger 15.0.6 till ett nytt avsnitt, **External Authentication**, under **User > Advanced Settings**. Därmed autentiserar Admin-GUI mot en extern LDAP-server, och externa grupper (till exempel AD-säkerhetsgrupper) mappas till lokala grupper på appliancen.
+
+Externt autentiserade användare visas lokalt på appliancen och fungerar som lokala användare, med en skillnad: deras lösenord kan inte ändras på appliancen eftersom det finns på den externa LDAP-servern. Lösenordsansvaret flyttas alltså helt till katalogen.
+
+Viktigt för avgränsningen: Appliancen hade redan tidigare extern autentisering, men endast för GINA-webbgränssnittet, konfigurerad per Managed Domain (avsnittet External authentication i domänkonfigurationen). Nytt i 15.0.6 är att även åtkomsten till själva administrationsgränssnittet sker via LDAP.
+
+Jag testar fortfarande om HIN Mailgateway också har fått LDAP-inloggning och kompletterar artikeln därefter. Eftersom HIN-applianserna bygger på samma SEPPmail-firmware utgår jag från det.
+
+## Förutsättningar
+
+Före konfigurationen bör fyra saker finnas på plats:
+
+- **Firmware 15.0.6.1:** Funktionen kommer med 15.0.6; på grund av versionens två RuleEngine-fel är hotfixen 15.0.6.1 direkt det rätta valet.
+- **En LDAP-kompatibel katalog:** Active Directory, OpenLDAP eller motsvarande. Om användarna endast finns i Entra ID, som i sig inte talar LDAP, bygger [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) bron.
+- **Ett bind-konto i katalogen:** Ett dedikerat, oprivilegierat tjänstkonto med läsåtkomst som appliancen använder för LDAP-sökningen. Ingen domänadministratör.
+- **En AD-grupp för gateway-administratörer:** Till exempel en säkerhetsgrupp SEPPmail-Admins, som senare mappas till den lokala gruppen admin. Medlemskap i denna grupp avgör då den fullständiga administrativa åtkomsten.
+
+TLS är som standard aktiverat i anslutningsinställningarna och bör förbli så; administratörernas inloggningsuppgifter ska inte skickas okrypterade över nätverket. Appliancen måste kunna nå LDAP-servern på den konfigurerade porten (LDAPS vanligtvis 636).
+
+## Konfiguration under User > Advanced Settings
+
+Konfigurationen finns i Admin-GUI under **User > Advanced Settings** i avsnittet **External Authentication** och består av fyra block.
+
+**1. Connection Settings:** Kryssrutan *Authenticate users to external LDAP server (e.g. Active Directory)* aktiverar funktionen. Därefter följer serveradress, port, alternativet *TLS required* samt tjänstkontots Bind DN och Bind Password.
+
+**2. User Attributes:** Här definieras hur appliancen hittar användarobjekt: LDAP Object Class (vanligtvis person i Active Directory), Search Base (den OU eller behållare där administratörskontona finns) och e-postattributet (standard: mail).
+
+**3. Group Attributes:** Motsvarande uppgifter för gruppobjekt så att appliancen kan lösa gruppmedlemskapen.
+
+**4. Mapping Settings:** Den avgörande delen. Under *Remote Group* väljs gruppen från LDAP-servern, och under *Local Group* en eller flera lokala grupper som den mappas till. För fullständig administrativ åtkomst är det gruppen admin; dess medlemmar är likställda med standardanvändaren admin. Den som vill differentiera mappar i stället till begränsade grupper som readonly admin eller till funktionsrelaterade grupper på appliancen.
+
+Innan du sparar är det värt att använda det inbyggda **Login Test**: Med användarnamn och lösenord för ett testkonto går det att kontrollera om anslutning, sökning och autentisering fungerar innan konfigurationen aktiveras.
+
+## Exempelkonfigurationer
+
+Följande värden måste anpassas till den egna miljön (exempeldomän example.com). Fältnamnen motsvarar avsnittet External Authentication på appliancen.
+
+### Active Directory
+
+| Fält | Värde |
+|---|---|
+| Server | dc01.example.com |
+| Port | 636 |
+| TLS required | aktiverat |
+| Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
+| Bind Password | Tjänstkontots lösenord |
+| User: LDAP Object Class | person |
+| User: Search Base | OU=IT,DC=example,DC=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | group |
+| Group: Search Base | OU=Groups,DC=example,DC=com |
+| Mapping: Remote Group | SEPPmail-Admins |
+| Mapping: Local Group | admin |
+
+Anmärkningar om Active Directory: Alla nåbara domänkontrollanter lämpar sig som server; i miljöer med flera platser rekommenderas en DC på samma plats eller ett alias som pekar på flera DC:er. Port 636 är LDAPS; för detta måste DC:ns certifikat kunna valideras av appliancen. Search Base bör begränsas så att den innehåller administratörskontona, men inte hela katalogen. Attributet mail måste vara ifyllt på AD-kontona.
+
+### OpenLDAP
+
+| Fält | Värde |
+|---|---|
+| Server | ldap01.example.com |
+| Port | 636 |
+| TLS required | aktiverat |
+| Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
+| Bind Password | Tjänstkontots lösenord |
+| User: LDAP Object Class | inetOrgPerson |
+| User: Search Base | ou=people,dc=example,dc=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | groupOfNames |
+| Group: Search Base | ou=groups,dc=example,dc=com |
+| Mapping: Remote Group | seppmail-admins |
+| Mapping: Local Group | admin |
+
+Anmärkningar om OpenLDAP: I typiska installationer finns användare som inetOrgPerson under ou=people. För grupper är groupOfNames det tillförlitliga valet, eftersom medlemskapet där representeras via member-attributet med fullständigt DN. posixGroup-grupper anger däremot endast sina medlemmar som memberUid (användarnamn i stället för DN); om appliancen kan lösa detta är inte dokumenterat och bör kontrolleras med Login Test före övergången. Om servern endast kör STARTTLS på port 389 ska motsvarande port anges i serverfältet; anslutningen får under inga omständigheter vara okrypterad.
+
+## Driftanvisningar
+
+Tre punkter förtjänar uppmärksamhet innan LDAP-inloggning blir den enda vägen in i appliancen:
+
+- **Behåll lokal nödåtkomst.** Externa användares lösenord finns på LDAP-servern. Om katalogen inte är tillgänglig (nätverksproblem, AD-underhåll eller om gatewayen just ska åtgärda ett problem i just detta nätverk) behövs fortfarande ett lokalt administratörskonto med säkert förvarat lösenord. Standardanvändaren admin bör därför inte avskaffas utan underhållas som dokumenterad nödåtkomst.
+- **MFA är fortfarande relevant.** 15.0.6 har också omarbetat MFA-inloggningen: Den andra faktorn läggs inte längre till lösenordet utan efterfrågas i ett eget fält. Extern autentisering ersätter inte den andra faktorn.
+- **Offboarding via katalogen.** Den egentliga vinsten med anslutningen: När en administratör lämnar företaget räcker det att inaktivera AD-kontot eller ta bort personen från den mappade gruppen. Det tidigare nödvändiga underhållet av lokala konton på varje appliance försvinner. De lokalt synliga, externt autentiserade användarobjekten bör ändå regelbundet jämföras med katalogen.
+
+## Slutsats
+
+LDAP-autentisering för Admin-GUI täpper till en lucka som länge funnits på appliancen: Administratörsåtkomst kan nu styras centralt i katalogen i stället för per enhet. Tillsammans med det separata MFA-fältet gör 15.0.6 därmed inloggningen till administrationsgränssnittet betydligt mognare i en och samma version. Den som inför funktionen bör hålla gruppmappningen medvetet restriktiv och inte offra den lokala nödåtkomsten.
+
+## Källor
+
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Post om Admin-GUI-autentisering med funktionsbeskrivning, konfigurationsplats och beteendet för externt autentiserade användare.
+
+2.  [SEPPmail-dokumentation – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Referens för fälten i avsnittet External Authentication (Connection, User Attributes, Group Attributes, Mapping, Login Test).
+
+3.  [SEPPmail-dokumentation – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Fördefinierade grupper på appliancen; medlemmar i gruppen admin har obegränsad administrativ åtkomst.
+
+4.  [SEPPmail-dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Officiella release notes för 15.0.6 med posten om Admin-GUI-autentisering mot externa LDAP-servrar.
+
+5.  [SEPPmail 15.0.6 och 15.0.6.1: säkerhetskorrigeringar och nya adminfunktioner](/blog/seppmail-releases-15-0-6-und-15-0-6-1): Översikt över alla ändringar i de båda versionerna.
+
+----
+
 # Testa Cold Storage med Rclone: en praktisk testplan
 
 URL: https://rafaelpfister.ch/sv/blog/testa-cold-storage-med-rclone-en-praktisk-testplan
@@ -19803,6 +20857,197 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Microsoft Entra Domain Services: LDAP og Kerberos for skybaserte miljøer
+
+URL: https://rafaelpfister.ch/no/blog/microsoft-entra-domain-services-ldap-og-kerberos-for-skybaserte-miljoer
+Datum: 2026-07-30
+
+# Microsoft Entra Domain Services: LDAP og Kerberos for skybaserte miljøer
+
+De som har flyttet brukerne sine fullt og helt til Microsoft Entra ID (tidligere Azure Active Directory), merker det senest ved den første appliance-en eller eldre applikasjonen: Entra ID besvarer forespørsler via Microsoft Graph og moderne autentiseringsprotokoller som OAuth og SAML, men ikke via LDAP, Kerberos eller NTLM. En LDAP-bind mot Entra ID er rett og slett ikke mulig. For alt som forventer et klassisk Active Directory, tilbyr Microsoft derfor en egen tjeneste: Microsoft Entra Domain Services, tidligere Azure AD Domain Services.
+
+## Hva tjenesten tilbyr
+
+Entra Domain Services er et administrert Active Directory-domene. Microsoft drifter to Windows-domenecontrollere i et Azure-VNet, tar seg av patching, replikering og sikkerhetskopier, og synkroniserer brukere og grupper automatisk fra Entra ID til domenet. Synkroniseringen går bare én vei, fra Entra ID til det administrerte domenet; endringer direkte i domenet flyter ikke tilbake.
+
+Utad oppfører domenet seg som et vanlig Active Directory: Det besvarer LDAP- og LDAPS-forespørsler, støtter Kerberos- og NTLM-autentisering, tillater at VM-er blir med i domenet og tilbyr begrensede gruppepolicyer. Applikasjoner og enheter trenger ikke tilpasses; de ser en Domain Controller.
+
+## Hva man trenger det til
+
+Tjenesten er rettet mot miljøer som egentlig er skybaserte, men som drifter enkelte komponenter med klassiske katalogkrav:
+
+- **Appliances og fagapplikasjoner med LDAP-integrasjon:** Enheter som søker etter brukere via LDAP, evaluerer gruppemedlemskap eller kontrollerer innlogginger via LDAP-bind.
+- **Lift-and-shift-migreringer:** Serverarbeidslaster som må forbli domenetilknyttet (Kerberos, NTLM, domenetilknytning), uten at egne Domain Controllers skal driftes i Azure.
+- **Miljøer uten lokalt AD:** Der det aldri har vært et Active Directory, eller der det er avviklet, erstatter det administrerte domenet oppsettet av egne DC-er med tilhørende driftsarbeid.
+
+Viktig avgrensning: De som fortsatt drifter et lokalt Active Directory med Entra Connect-synkronisering, trenger som regel ikke tjenesten; da spør appliance-en det eksisterende AD-et. Entra Domain Services fyller gapet når Entra ID er den eneste brukerkilden.
+
+## Arkitektur og oppsett
+
+Det administrerte domenet distribueres i et eget VNet eller subnett og får to faste Domain Controller-adresser. Arbeidslaster i andre VNet-er når det via VNet-peering; DNS-serverne i de involverte VNet-ene må peke mot Domain Controllers slik at domenenavn og objekter kan løses opp. Tilgang begrenses med Network Security Groups til de faktisk nødvendige kildene og portene.
+
+Noen særtrekk ved det administrerte domenet som er relevante ved tilkobling av applikasjoner:
+
+- Synkroniserte brukere ligger i OU-en **AADDC Users**, og domenet har uten egen konfigurasjon suffikset **onmicrosoft.com**. Search Base og Bind-DN-er må gjenspeile denne strukturen, for eksempel CN=svc-ldap,OU=AADDC Users,DC=example,DC=onmicrosoft,DC=com.
+- Det finnes ingen Domain Administrator. Administrasjonen skjer via den delegerte gruppen AAD DC Administrators; skjemautvidelser er ikke mulig.
+- For LDAP-bind-kontoer holder det med en dedikert konto uten privilegier; for rene katalogoppslag i Entra ID rollen Directory Readers.
+
+## Fellen med passordhasher
+
+Ett punkt tar jevnlig tid i tester: Kerberos- og NTLM-innlogginger samt LDAP-bind trenger passordhasher i det administrerte domenet. For cloud-only-kontoer oppretter Entra ID disse hashene først ved neste passordendring etter at tjenesten er aktivert. En nylig synkronisert bruker er altså synlig i katalogen, men kan først logge på etter å ha endret passordet én gang. For hybride kontoer må hashene synkroniseres fra det lokale AD-et via Entra Connect.
+
+## Secure LDAP trinn for trinn
+
+Innenfor domenet kjører LDAP som standard ukryptert over port 389. For innlogginger og all tilgang utenfor strengt isolerte nettverk skal forbindelsen bruke Secure LDAP (LDAPS, port 636); tjenesten tilbyr uansett kun kryptert tilgang utenfra VNet-et. Oppsettet består av fire trinn.
+
+**1. Skaff sertifikat.** Secure LDAP trenger et eget sertifikat som lastes opp som PFX, inkludert privat nøkkel. Subject eller SAN må dekke det administrerte domenet med wildcard (for eksempel *.example.onmicrosoft.com), siden forespørsler kan havne hos hver av de to Domain Controllers. En offentlig CA, egen PKI eller et selvopprettet selvsignert sertifikat kan brukes som kilde. Med selvsignert sertifikat må kjeden være installert som klarert på hvert system som gjør forespørsler; ikke alle appliances tillater dette. De som kan velge, er tryggere med egen PKI eller en offentlig CA.
+
+**2. Aktiver Secure LDAP.** I portalen under Settings > Secure LDAP aktiveres funksjonen, og PFX-filen samt passordet lastes opp. Valgfritt kan tilgang via Internett aktiveres der; det administrerte domenet får da en offentlig IP-adresse.
+
+**3. Nettverk og DNS.** Den eksterne IP-adressen finnes under Properties. Den tilhørende NSG-regelen åpner TCP/636 og bør begrenses til de faktisk nødvendige kilde-IP-adressene, ikke Any. For navneoppløsning peker en DNS-oppføring (for eksempel ldaps.example.com) mot denne IP-adressen; den må samsvare med sertifikatet. Intern tilgang går fortsatt direkte mot Domain Controller-adressene.
+
+**4. Test forbindelsen.** Før applikasjonen legges om, er det verdt å teste med en LDAP-nettleser, ldp.exe eller ldapsearch mot port 636: Bind med tjenestekontoen, deretter et søk under OU-en AADDC Users. Først når bind og søk fungerer korrekt der, er det applikasjonens tur.
+
+For å sette opp selve tjenesten trenger portalkontoen rollene Application Administrator, Domain Services Contributor og Groups Administrator; distribusjonen av det administrerte domenet tar godt over en time. I sikkerhetsinnstillingene kan TLS 1.2 også håndheves som minimum.
+
+## Kostnader
+
+Entra Domain Services er en løpende driftskostnad: Tjenesten faktureres per time etter SKU, i tillegg kommer VNet, peering og eventuelle test-VM-er. For det ene lille LDAP-bruksområdet er det en høy pris; alternativet, å drifte egne Domain Controllers som VM-er, kjøper imidlertid besparelsen tilbake med ansvar for patching, sikkerhetskopiering og tilgjengelighet.
+
+## Praktisk eksempel: E-postgateway med LDAP-integrasjon
+
+Et konkret eksempel på appliance-kategorien er SEPPmail Secure E-Mail Gateway. Den bruker LDAP til brukeropprettelse og tilgangsforespørsler, og siden firmware 15.0.6 også til [innlogging i Admin-GUI](/blog/seppmail-admin-gui-ldap-authentifizierung). En appliance i Azure-VNet-et når det administrerte domenet via VNet-peering med en dedikert bind-konto (Directory Readers), sikret med NSG-er. Senest for innlogging i Admin-GUI-en, der TLS-alternativet er aktivert som standard, skal forbindelsen bruke Secure LDAP.
+
+## Konklusjon
+
+Entra Domain Services er ikke en erstatning for Entra ID, men en bro: Tjenesten oversetter en skybasert brukerbase til et klassisk AD-domene for alt som krever LDAP, Kerberos eller domenetilknytning. De som bare må koble til én enkelt applikasjon, bør veie de løpende kostnadene opp mot en modernisering av applikasjonen. Når tjenesten først er på plass, oppfører appliances og eldre applikasjoner seg som i et velkjent AD-miljø, inkludert de beskrevne særtrekkene ved OU-struktur, tillatelser og passordhasher.
+
+## Kilder
+
+1.  [Microsoft Learn – «Hva er Microsoft Entra Domain Services?»](https://learn.microsoft.com/de-de/entra/identity/domain-services/overview): Funksjonsomfanget til det administrerte domenet, støttede protokoller og avgrensning mot Entra ID og selvdriftede Domain Controllers.
+
+2.  [Microsoft Learn – «Synkronisering i Entra Domain Services»](https://learn.microsoft.com/de-de/entra/identity/domain-services/synchronization): Enveis synkronisering, OU-struktur og oppførselen til passordhashene for cloud-only- og hybride kontoer.
+
+3.  [Microsoft Learn – «Konfigurere Secure LDAP»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS med eget sertifikat for kryptert LDAP-tilgang.
+
+4.  [Koble SEPPmail Admin-GUI til Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung): Oppsett av LDAP-innlogging i Admin-GUI fra firmware 15.0.6.
+
+----
+
+# Koble SEPPmail Admin-GUI til Active Directory: Konfigurer LDAP-autentisering fra 15.0.6
+
+URL: https://rafaelpfister.ch/no/blog/koble-seppmail-admin-gui-til-active-directory-konfigurer-ldap-autentisering-fra-15-0-6
+Datum: 2026-07-29
+
+# Koble SEPPmail Admin-GUI til Active Directory: Konfigurer LDAP-autentisering fra 15.0.6
+
+Frem til fastvare 15.0.5 kjente administrasjonsgrensesnittet til SEPPmail Secure E-Mail Gateway kun lokale kontoer. De som ønsket å arbeide ryddig, opprettet en egen lokal bruker for hver administrator og la vedkommende til i gruppen admin. Dette fungerer, men har de vanlige ulempene med lokale kontoer: egne passord per appliance, ingen sentral offboarding og ingen håndheving av passordreglene fra katalogtjenesten. Dette endres med patch-utgivelsen 15.0.6. Admin-GUI-en autentiserer administratorer mot en ekstern LDAP-server som Active Directory ved behov, og tilordner AD-grupper til lokale grupper på appliancen.
+
+De øvrige endringene i utgivelsen er oppsummert i artikkelen om [SEPPmail 15.0.6 og 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1). Her handler det kun om den nye eksterne autentiseringen.
+
+## Hva funksjonen gjør
+
+Ifølge Extended Release Notes legger 15.0.6 til en ny seksjon, **External Authentication**, under **User > Advanced Settings**. Dermed autentiserer Admin-GUI-en seg mot en ekstern LDAP-server, og eksterne grupper (for eksempel AD-sikkerhetsgrupper) mappes til lokale grupper på appliancen.
+
+Eksternt autentiserte brukere vises lokalt på appliancen og oppfører seg som lokale brukere, med én forskjell: Passordet deres kan ikke endres på appliancen, siden det ligger på den eksterne LDAP-serveren. Passordansvaret flyttes dermed fullt og helt til katalogen.
+
+Viktig avgrensning: Appliancen hadde allerede ekstern autentisering, men kun for GINA-nettgrensesnittet, konfigurert per Managed Domain (seksjonen External authentication i domeneoppsettet). Nytt i 15.0.6 er at også tilgang til selve administrasjonsgrensesnittet går via LDAP.
+
+Jeg tester fortsatt om HIN Mailgateway også har fått LDAP-innlogging, og oppdaterer artikkelen deretter. Siden HIN-appliancene er basert på samme SEPPmail-fastvare, går jeg ut fra det.
+
+## Forutsetninger
+
+Før oppsettet bør tre ting være på plass:
+
+- **Fastvare 15.0.6.1:** Funksjonen kommer med 15.0.6; på grunn av de to RuleEngine-feilene i utgivelsen er hotfixen 15.0.6.1 det riktige valget direkte.
+- **En LDAP-kompatibel katalog:** Active Directory, OpenLDAP eller tilsvarende. Dersom brukerne kun finnes i Entra ID, som selv ikke snakker LDAP, bygger [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) broen.
+- **En bind-konto i katalogen:** En dedikert, uprivilegert tjenestekonto med lesetilgang som appliancen bruker til LDAP-søket. Ingen domeneadministrator.
+- **En AD-gruppe for gateway-administratorene:** For eksempel en sikkerhetsgruppe kalt SEPPmail-Admins, som senere mappes til den lokale gruppen admin. Medlemskap i denne gruppen avgjør da om brukeren får full administrativ tilgang.
+
+TLS er aktivert som standard i tilkoblingsinnstillingene og bør forbli aktivert; administratorenes innloggingsdata hører ikke hjemme ukryptert på nettverket. Appliancen må kunne nå LDAP-serveren på den konfigurerte porten (vanligvis 636 for LDAPS).
+
+## Oppsett under User > Advanced Settings
+
+Konfigurasjonen finnes i Admin-GUI-en under **User > Advanced Settings** i seksjonen **External Authentication**, og består av fire blokker.
+
+**1. Connection Settings:** Avkrysningsboksen *Authenticate users to external LDAP server (e.g. Active Directory)* aktiverer funksjonen. Deretter følger serveradresse, port, alternativet *TLS required* samt Bind DN og Bind Password for tjenestekontoen.
+
+**2. User Attributes:** Her defineres hvordan appliancen finner brukerobjekter: LDAP Object Class (i Active Directory typisk person), Search Base (OU-en eller containeren der administratorkontoene ligger) og e-postattributtet (standard: mail).
+
+**3. Group Attributes:** Tilsvarende opplysninger for gruppeobjekter, slik at appliancen kan løse opp gruppemedlemskapene.
+
+**4. Mapping Settings:** Den avgjørende delen. Under *Remote Group* velges gruppen fra LDAP-serveren, og under *Local Group* velges én eller flere lokale grupper som den tilordnes til. For full administrativ tilgang er dette gruppen admin; medlemmene er likestilt med standardbrukeren admin. De som ønsker differensiering, mapper i stedet til begrensede grupper som readonly admin eller til funksjonsrelaterte grupper på appliancen.
+
+Før lagring er det verdt å bruke den innebygde **Login Test**: Med brukernavn og passord fra en testkonto kan du kontrollere at tilkobling, søk og autentisering fungerer før konfigurasjonen aktiveres.
+
+## Eksempelkonfigurasjoner
+
+Følgende verdier må tilpasses eget miljø (eksempeldomene example.com). Feltnavnene tilsvarer seksjonen External Authentication på appliancen.
+
+### Active Directory
+
+| Felt | Verdi |
+|---|---|
+| Server | dc01.example.com |
+| Port | 636 |
+| TLS required | aktivert |
+| Bind DN | CN=svc-seppmail,OU=ServiceAccounts,DC=example,DC=com |
+| Bind Password | Passord for tjenestekontoen |
+| User: LDAP Object Class | person |
+| User: Search Base | OU=IT,DC=example,DC=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | group |
+| Group: Search Base | OU=Groups,DC=example,DC=com |
+| Mapping: Remote Group | SEPPmail-Admins |
+| Mapping: Local Group | admin |
+
+Merknader om Active Directory: Enhver tilgjengelig Domain Controller kan brukes som server; i miljøer med flere lokasjoner anbefales en DC på samme sted eller et alias som peker til flere DC-er. Port 636 er LDAPS; for dette må sertifikatet til DC-en kunne valideres av appliancen. Search Base bør avgrenses så stramt at den inneholder administratorkontoene, men ikke hele katalogen. Attributtet mail må være vedlikeholdt på AD-kontoene.
+
+### OpenLDAP
+
+| Felt | Verdi |
+|---|---|
+| Server | ldap01.example.com |
+| Port | 636 |
+| TLS required | aktivert |
+| Bind DN | cn=seppmail,ou=services,dc=example,dc=com |
+| Bind Password | Passord for tjenestekontoen |
+| User: LDAP Object Class | inetOrgPerson |
+| User: Search Base | ou=people,dc=example,dc=com |
+| User: E-Mail Attribute | mail |
+| Group: LDAP Object Class | groupOfNames |
+| Group: Search Base | ou=groups,dc=example,dc=com |
+| Mapping: Remote Group | seppmail-admins |
+| Mapping: Local Group | admin |
+
+Merknader om OpenLDAP: I typiske oppsett ligger brukere som inetOrgPerson under ou=people. For gruppene er groupOfNames det pålitelige valget, siden medlemskap der representeres via member-attributtet med full DN. posixGroup-grupper fører derimot kun medlemmene som memberUid (brukernavn i stedet for DN); om appliancen kan løse dette opp, er ikke dokumentert og bør kontrolleres med Login Test før overgang. Dersom serveren kun kjører med STARTTLS på port 389, skal den tilsvarende porten angis i serverfeltet; tilkoblingen må under ingen omstendigheter gå ukryptert.
+
+## Driftsmerknader
+
+Tre punkter fortjener oppmerksomhet før LDAP-innlogging blir den eneste veien inn på appliancen:
+
+- **Behold lokal nødtilgang.** Passordene til eksterne brukere ligger på LDAP-serveren. Dersom katalogen ikke er tilgjengelig (nettverksproblem, AD-vedlikehold eller fordi gatewayen nettopp skal løse et problem med det samme nettverket), er det fortsatt nødvendig med en lokal administratorkonto med et sikkert lagret passord. Standardbrukeren admin bør derfor ikke avskaffes, men vedlikeholdes som dokumentert nødtilgang.
+- **MFA er fortsatt relevant.** 15.0.6 har også endret MFA-innloggingen: Den andre faktoren legges ikke lenger til passordet, men spørres etter i et eget felt. Ekstern autentisering erstatter ikke den andre faktoren.
+- **Offboarding via katalogen.** Den egentlige gevinsten med integrasjonen: Når en administrator slutter i virksomheten, er det tilstrekkelig å deaktivere AD-kontoen eller fjerne brukeren fra den mappede gruppen. Det tidligere nødvendige vedlikeholdet av lokale kontoer på hver appliance faller bort. De lokalt synlige, eksternt autentiserte brukerobjektene bør likevel sammenlignes med katalogen med jevne mellomrom.
+
+## Konklusjon
+
+LDAP-autentiseringen for Admin-GUI-en lukker et hull som lenge har eksistert på appliancen: Administratoradganger kan nå styres sentralt i katalogen i stedet for per enhet. Sammen med det separate MFA-feltet gjør 15.0.6 dermed innloggingen til administrasjonsgrensesnittet betydelig mer moden i én og samme utgivelse. De som innfører funksjonen, bør holde gruppemappingen bevisst restriktiv og ikke ofre den lokale nødtilgangen.
+
+## Kilder
+
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Oppføring om Admin-GUI-autentisering med funksjonsbeskrivelse, konfigurasjonssted og oppførselen til eksternt autentiserte brukere.
+
+2.  [SEPPmail-dokumentasjon – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Referanse for feltene i seksjonen External Authentication (Connection, User Attributes, Group Attributes, Mapping, Login Test).
+
+3.  [SEPPmail-dokumentasjon – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Forhåndsdefinerte grupper på appliancen; medlemmer av gruppen admin har ubegrenset administrativ tilgang.
+
+4.  [SEPPmail-dokumentasjon – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offisielle release notes for 15.0.6 med oppføringen om Admin-GUI-autentisering mot eksterne LDAP-servere.
+
+5.  [SEPPmail 15.0.6 og 15.0.6.1: Sikkerhetsrettinger og nye administrasjonsfunksjoner](/blog/seppmail-releases-15-0-6-und-15-0-6-1): Oversikt over alle endringer i de to utgivelsene.
 
 ----
 
