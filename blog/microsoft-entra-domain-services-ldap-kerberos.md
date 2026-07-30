@@ -49,7 +49,7 @@ Ein Punkt kostet in Tests regelmässig Zeit: Kerberos- und NTLM-Anmeldungen sowi
 
 Innerhalb der Domäne läuft LDAP standardmässig unverschlüsselt über Port 389. Für Anmeldungen und für jeden Zugriff ausserhalb streng abgeschotteter Netze gehört die Verbindung auf Secure LDAP (LDAPS, Port 636); Zugriff von ausserhalb des VNets bietet der Dienst ohnehin nur verschlüsselt an. Die Einrichtung besteht aus vier Schritten.
 
-**1. Zertifikat beschaffen.** Secure LDAP braucht ein eigenes Zertifikat, das als PFX inklusive privatem Schlüssel hochgeladen wird. Subject oder SAN muss die verwaltete Domäne als Wildcard abdecken (etwa *.example.onmicrosoft.com), da Anfragen bei jedem der beiden Domain Controller landen können. Als Quelle kommen eine öffentliche CA, die eigene PKI oder ein eigens erstelltes selbstsigniertes Zertifikat infrage. Beim selbstsignierten Weg muss die Kette auf jedem anfragenden System als vertrauenswürdig hinterlegt werden; nicht jede Appliance lässt das zu, woran etwa der Import im SEPPmail-Herstellerbeitrag scheiterte. Wer die Wahl hat, fährt mit der eigenen PKI oder einer öffentlichen CA ruhiger.
+**1. Zertifikat beschaffen.** Secure LDAP braucht ein eigenes Zertifikat, das als PFX inklusive privatem Schlüssel hochgeladen wird. Subject oder SAN muss die verwaltete Domäne als Wildcard abdecken (etwa *.example.onmicrosoft.com), da Anfragen bei jedem der beiden Domain Controller landen können. Als Quelle kommen eine öffentliche CA, die eigene PKI oder ein eigens erstelltes selbstsigniertes Zertifikat infrage. Beim selbstsignierten Weg muss die Kette auf jedem anfragenden System als vertrauenswürdig hinterlegt werden; nicht jede Appliance lässt das zu. Wer die Wahl hat, fährt mit der eigenen PKI oder einer öffentlichen CA ruhiger.
 
 **2. Secure LDAP aktivieren.** Im Portal unter Settings > Secure LDAP wird die Funktion eingeschaltet und das PFX samt Passwort hochgeladen. Optional lässt sich dort der Zugriff über das Internet freigeben; die verwaltete Domäne erhält dann eine öffentliche IP-Adresse.
 
@@ -57,7 +57,7 @@ Innerhalb der Domäne läuft LDAP standardmässig unverschlüsselt über Port 38
 
 **4. Verbindung testen.** Vor der Umstellung der Anwendung lohnt der Test mit einem LDAP-Browser, ldp.exe oder ldapsearch gegen Port 636: Bind mit dem Servicekonto, danach eine Suche unter der OU AADDC Users. Erst wenn Bind und Suche dort sauber funktionieren, kommt die Anwendung an die Reihe.
 
-Für die Einrichtung des Dienstes selbst braucht das Portal-Konto laut der AVANTEC-Anleitung die Rollen Application Administrator, Domain Services Contributor und Groups Administrator; das Deployment der verwalteten Domäne dauert gut eine Stunde. In den Sicherheitseinstellungen lässt sich zudem TLS 1.2 als Minimum erzwingen.
+Für die Einrichtung des Dienstes selbst braucht das Portal-Konto die Rollen Application Administrator, Domain Services Contributor und Groups Administrator; das Deployment der verwalteten Domäne dauert gut eine Stunde. In den Sicherheitseinstellungen lässt sich zudem TLS 1.2 als Minimum erzwingen.
 
 ## Kosten
 
@@ -65,9 +65,7 @@ Entra Domain Services ist ein Dauerbetriebsposten: Der Dienst wird pro Stunde na
 
 ## Praxisfall: E-Mail-Gateway mit LDAP-Anbindung
 
-Ein konkretes Beispiel für die Appliance-Kategorie ist das SEPPmail Secure E-Mail Gateway. Es nutzt LDAP für Benutzeranlage und Berechtigungsabfragen und seit Firmware 15.0.6 auch für die [Anmeldung an der Admin-GUI](/blog/seppmail-admin-gui-ldap-authentifizierung). Der Hersteller beschreibt in einem eigenen Beitrag, wie eine Appliance im Azure-VNet über Entra Domain Services an eine reine Entra-ID-Benutzerbasis angebunden wird: verwaltete Domäne, VNet-Peering, dediziertes Bind-Konto mit Directory Readers, abgesichert über NSGs. Im Herstellerbeitrag läuft die Verbindung noch unverschlüsselt über Port 389; spätestens für die Admin-GUI-Anmeldung, deren TLS-Option standardmässig aktiv ist, ist Secure LDAP die bessere Wahl.
-
-Aus der Praxis ergänzt AVANTEC einen Stolperstein für genau diese Kombination: LDAP-Abfragen über sAMAccountName funktionieren mit SEPPmail gegen die verwaltete Domäne nicht, Abfragen über userPrincipalName hingegen schon. Wer Filter oder Custom Commands von einem klassischen AD übernimmt, sollte das Attribut entsprechend umstellen.
+Ein konkretes Beispiel für die Appliance-Kategorie ist das SEPPmail Secure E-Mail Gateway. Es nutzt LDAP für Benutzeranlage und Berechtigungsabfragen und seit Firmware 15.0.6 auch für die [Anmeldung an der Admin-GUI](/blog/seppmail-admin-gui-ldap-authentifizierung). Eine Appliance im Azure-VNet erreicht die verwaltete Domäne über VNet-Peering mit einem dedizierten Bind-Konto (Directory Readers), abgesichert über NSGs. Spätestens für die Admin-GUI-Anmeldung, deren TLS-Option standardmässig aktiv ist, gehört die Verbindung auf Secure LDAP.
 
 ## Fazit
 
@@ -81,8 +79,4 @@ Entra Domain Services ist kein Ersatz für Entra ID, sondern eine Brücke: Der D
 
 3.  [Microsoft Learn – «Secure LDAP konfigurieren»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS mit eigenem Zertifikat für verschlüsselte LDAP-Zugriffe.
 
-4.  [SEPPmail – «LDAP-Zugriff mit Azure Active Directory ermöglichen»](https://www.seppmail.com/de/seppmail-ldap-zugriff-mit-azure-active-directory-ermoeglichen/): Herstellerbeitrag zur Anbindung der Appliance über Domain Services mit VNet-Peering und Bind-Konto.
-
-5.  [AVANTEC Tech-Blog – «Step-by-Step-Anleitung: LDAPS-Queries mit Azure AD»](https://www.avantec.ch/step-by-step-anleitung-ldaps-queries-mit-azure-ad/): Rollen-Voraussetzungen, Secure-LDAP-Aktivierung, NSG-Regeln für Port 636 und der Hinweis auf userPrincipalName statt sAMAccountName bei SEPPmail.
-
-6.  [SEPPmail Admin-GUI an Active Directory anbinden](/blog/seppmail-admin-gui-ldap-authentifizierung): Einrichtung der LDAP-Anmeldung an der Admin-GUI ab Firmware 15.0.6.
+4.  [SEPPmail Admin-GUI an Active Directory anbinden](/blog/seppmail-admin-gui-ldap-authentifizierung): Einrichtung der LDAP-Anmeldung an der Admin-GUI ab Firmware 15.0.6.
