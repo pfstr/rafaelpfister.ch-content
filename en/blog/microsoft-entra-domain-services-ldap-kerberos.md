@@ -4,7 +4,7 @@ navTitle: "Entra Domain Services"
 description: "Entra ID speaks neither LDAP nor Kerberos. Microsoft Entra Domain Services provides a managed Active Directory domain that synchronizes users from Entra ID and offers the classic protocols. How it works, its limits, costs, and a real-world case with an email gateway."
 date: "2026-07-30"
 kategorie: "Active Directory / Entra"
-timeToRead: "6 min to read"
+timeToRead: "8 min to read"
 themen:
   - "active-directory-entra"
 slug: "microsoft-entra-domain-services-ldap-kerberos"
@@ -46,9 +46,19 @@ Some peculiarities of the managed domain that matter when connecting application
 
 One point regularly costs time in testing: Kerberos and NTLM logins as well as LDAP binds need password hashes in the managed domain. For cloud-only accounts, Entra ID generates these hashes only at the next password change after the service is enabled. A freshly synchronized user is therefore visible in the directory but can only log in after changing their password once. For hybrid accounts, the hashes must be synchronized from the on-premises AD via Entra Connect.
 
-## Encryption: Secure LDAP
+## Secure LDAP Step by Step
 
-Within the domain, LDAP runs unencrypted over port 389 by default. For logins and for any access outside strictly isolated networks, the connection belongs on Secure LDAP (LDAPS, port 636). This requires depositing your own certificate whose chain the querying application can validate; the self-signed certificates of the domain controllers are not suitable. Microsoft describes the setup in a dedicated tutorial.
+Within the domain, LDAP runs unencrypted over port 389 by default. For logins and for any access outside strictly isolated networks, the connection belongs on Secure LDAP (LDAPS, port 636); access from outside the VNet is only offered encrypted anyway. The setup consists of four steps.
+
+**1. Obtain a certificate.** Secure LDAP needs its own certificate, uploaded as a PFX including the private key. The subject or SAN must cover the managed domain as a wildcard (for example *.example.onmicrosoft.com), since requests can land on either of the two domain controllers. Possible sources are a public CA, your own PKI, or a purpose-made self-signed certificate. With the self-signed route, the chain must be trusted on every querying system; not every appliance allows that, which is exactly where the certificate import in the SEPPmail vendor post failed. If you have the choice, your own PKI or a public CA is the calmer path.
+
+**2. Enable Secure LDAP.** In the portal under Settings > Secure LDAP, the feature is switched on and the PFX is uploaded with its password. Optionally, access over the internet can be enabled there; the managed domain then receives a public IP address.
+
+**3. Network and DNS.** The external IP address is listed under Properties. The corresponding NSG rule opens TCP/636 and should be restricted to the source IPs actually needed, not Any. For name resolution, a DNS record (for example ldaps.example.com) points to this IP; it must match the certificate. Internal access continues to run directly against the domain controller addresses.
+
+**4. Test the connection.** Before switching the application over, test with an LDAP browser, ldp.exe, or ldapsearch against port 636: bind with the service account, then a search under the AADDC Users OU. Only when bind and search work cleanly there is it the application's turn.
+
+For setting up the service itself, according to the AVANTEC guide the portal account needs the Application Administrator, Domain Services Contributor, and Groups Administrator roles; deploying the managed domain takes a good hour. The security settings also allow enforcing TLS 1.2 as the minimum.
 
 ## Costs
 
@@ -57,6 +67,8 @@ Entra Domain Services is a permanent operating cost: the service is billed per h
 ## Real-World Case: Email Gateway with LDAP Integration
 
 A concrete example from the appliance category is the SEPPmail Secure E-Mail Gateway. It uses LDAP for user creation and authorization queries and, since firmware 15.0.6, also for [logging in to the admin GUI](/en/blog/seppmail-admin-gui-ldap-authentication). The vendor describes in a dedicated post how an appliance in an Azure VNet is connected to a pure Entra ID user base via Entra Domain Services: managed domain, VNet peering, a dedicated bind account with Directory Readers, secured via NSGs. In the vendor post, the connection still runs unencrypted over port 389; at the latest for the admin GUI login, whose TLS option is enabled by default, Secure LDAP is the better choice.
+
+From the field, AVANTEC adds a pitfall for exactly this combination: LDAP queries via sAMAccountName do not work with SEPPmail against the managed domain, while queries via userPrincipalName do. If you carry over filters or custom commands from a classic AD, adjust the attribute accordingly.
 
 ## Conclusion
 
@@ -72,4 +84,6 @@ Entra Domain Services is not a replacement for Entra ID but a bridge: the servic
 
 4.  [SEPPmail – «LDAP-Zugriff mit Azure Active Directory ermöglichen»](https://www.seppmail.com/de/seppmail-ldap-zugriff-mit-azure-active-directory-ermoeglichen/): Vendor post on connecting the appliance via Domain Services with VNet peering and a bind account.
 
-5.  [Connecting the SEPPmail Admin GUI to Active Directory](/en/blog/seppmail-admin-gui-ldap-authentication): Setting up LDAP login for the admin GUI as of firmware 15.0.6.
+5.  [AVANTEC Tech Blog – «Step-by-Step-Anleitung: LDAPS-Queries mit Azure AD»](https://www.avantec.ch/step-by-step-anleitung-ldaps-queries-mit-azure-ad/): Role prerequisites, Secure LDAP activation, NSG rules for port 636, and the note on userPrincipalName instead of sAMAccountName with SEPPmail.
+
+6.  [Connecting the SEPPmail Admin GUI to Active Directory](/en/blog/seppmail-admin-gui-ldap-authentication): Setting up LDAP login for the admin GUI as of firmware 15.0.6.
