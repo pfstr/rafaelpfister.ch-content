@@ -27,6 +27,8 @@ The hotfix addresses two points in the RuleEngine. First, an undefined value in 
 
 If you have already installed 15.0.6 or are planning the update, go straight to 15.0.6.1.
 
+The HIN appliances have apparently received the hotfix as well: a HIN Mailgateway with installed version 15.0.6-RC-42-g278c81f84 now reports 15.0.6-RC-88-g916e513cc as the next version in the 15.0 branch. The RC designations of the HIN firmware cannot be mapped directly to a SEPPmail release, but the timing of the offer points to the hotfix.
+
 ## Security Fixes in 15.0.6
 
 The most important part of the patch release consists of three corrections to the security architecture:
@@ -42,7 +44,7 @@ On top of that come updated libraries: OpenSSH 10.4 and OpenSSL 3.0.21 together 
 Three changes in the admin GUI stand out in daily use:
 
 - **Separate MFA input field:** The second factor no longer needs to be appended to the password but has its own field. This removes a long-standing stumbling block at login.
-- **LDAP authentication for the admin GUI:** Administrators can now authenticate against an external LDAP server instead of maintaining local accounts on the appliance. The setup is described in the article on [connecting the admin GUI to Active Directory](/en/blog/seppmail-admin-gui-ldap-authentication).
+- **LDAP authentication for the admin GUI:** Administrators can now authenticate against an external LDAP server instead of maintaining local accounts on the appliance. The setup is described in the article on [connecting the admin GUI to Active Directory](/en/blog/seppmail-admin-gui-ldap-authentication). Whether the HIN Mailgateway has also received this feature, I still need to test and will update the article afterwards; since HIN uses the same firmware base, I assume it has.
 - **AutoRenew button for MPKI:** In the MPKI connector settings, automatic certificate renewal can be triggered manually via "Trigger AutoRenew...".
 
 In addition, the appliance now consistently uses valid time zones (default: Europe/Zurich), and the System Object ID under System >> Advanced View is validated as a proper OID.

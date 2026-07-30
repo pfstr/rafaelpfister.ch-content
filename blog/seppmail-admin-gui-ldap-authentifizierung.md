@@ -26,11 +26,14 @@ Extern authentifizierte Benutzer erscheinen lokal auf der Appliance und verhalte
 
 Wichtig zur Abgrenzung: Die Appliance kannte schon vorher eine externe Authentifizierung, allerdings nur für die GINA-Weboberfläche, konfiguriert pro Managed Domain (Abschnitt External authentication in der Domänenkonfiguration). Neu in 15.0.6 ist, dass auch der Zugang zur Administrationsoberfläche selbst über LDAP läuft.
 
+Ob das HIN Mailgateway die LDAP-Anmeldung ebenfalls erhalten hat, teste ich noch und ergänze den Artikel anschliessend. Da die HIN-Appliances auf derselben SEPPmail-Firmware basieren, gehe ich davon aus.
+
 ## Voraussetzungen
 
 Vor der Einrichtung sollten drei Dinge bereitstehen:
 
 - **Firmware 15.0.6.1:** Das Feature kommt mit 15.0.6; wegen der beiden RuleEngine-Fehler des Releases ist direkt der Hotfix 15.0.6.1 die richtige Wahl.
+- **Ein LDAP-fähiges Verzeichnis:** Ein Active Directory, OpenLDAP oder Vergleichbares. Liegen die Benutzer nur in Entra ID, das selbst kein LDAP spricht, schlägt [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) die Brücke.
 - **Ein Bind-Konto im Verzeichnis:** Ein dediziertes, unprivilegiertes Servicekonto mit Lesezugriff, mit dem die Appliance die LDAP-Suche ausführt. Kein Domänen-Administrator.
 - **Eine AD-Gruppe für die Gateway-Administratoren:** Zum Beispiel eine Sicherheitsgruppe SEPPmail-Admins, die später auf die lokale Gruppe admin gemappt wird. Die Mitgliedschaft in dieser Gruppe entscheidet dann über den administrativen Vollzugriff.
 

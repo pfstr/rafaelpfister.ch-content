@@ -22,6 +22,8 @@ Der Hotfix behebt zwei Punkte in der RuleEngine. Erstens verhinderte ein undefin
 
 Wer 15.0.6 bereits installiert hat oder das Update plant, sollte direkt auf 15.0.6.1 gehen.
 
+Die HIN-Appliances haben den Hotfix offenbar ebenfalls erhalten: Ein HIN Mailgateway mit installierter Version 15.0.6-RC-42-g278c81f84 meldet inzwischen 15.0.6-RC-88-g916e513cc als nächste Version im 15.0-Zweig. Die RC-Bezeichnungen der HIN-Firmware lassen sich nicht direkt einem SEPPmail-Release zuordnen, der Zeitpunkt des Angebots spricht aber für den Hotfix.
+
 ## Sicherheitskorrekturen in 15.0.6
 
 Der wichtigste Teil des Patch-Releases sind drei Korrekturen an der Sicherheitsarchitektur:
@@ -37,7 +39,7 @@ Dazu kommen aktualisierte Bibliotheken: OpenSSH 10.4 und OpenSSL 3.0.21 beheben 
 Drei Änderungen in der Admin-GUI fallen im Alltag auf:
 
 - **Separates MFA-Eingabefeld:** Der zweite Faktor muss nicht mehr an das Passwort angehängt werden, sondern hat ein eigenes Feld. Das beseitigt eine langjährige Stolperfalle beim Login.
-- **LDAP-Authentifizierung für die Admin-GUI:** Administratoren können sich nun gegen einen externen LDAP-Server authentifizieren, statt lokale Konten auf der Appliance zu pflegen. Die Einrichtung ist im Artikel zur [Admin-GUI-Anbindung an Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung) beschrieben.
+- **LDAP-Authentifizierung für die Admin-GUI:** Administratoren können sich nun gegen einen externen LDAP-Server authentifizieren, statt lokale Konten auf der Appliance zu pflegen. Die Einrichtung ist im Artikel zur [Admin-GUI-Anbindung an Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung) beschrieben. Ob das HIN Mailgateway diese Funktion ebenfalls erhalten hat, teste ich noch und ergänze den Artikel anschliessend; da HIN dieselbe Firmware-Basis einsetzt, gehe ich davon aus.
 - **AutoRenew-Button für MPKI:** In den MPKI-Connector-Einstellungen lässt sich die automatische Zertifikatserneuerung per «Trigger AutoRenew...» manuell anstossen.
 
 Daneben verwendet die Appliance jetzt konsequent gültige Zeitzonen (Standard: Europe/Zurich), und die System Object ID unter System >> Advanced View wird als gültige OID validiert.
