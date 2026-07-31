@@ -17522,6 +17522,77 @@ Entra Domain Services är inte en ersättning för Entra ID utan en brygga: tjä
 
 ----
 
+# SEPPmail 15.0.6 och 15.0.6.1: Säkerhetskorrigeringar och nya adminfunktioner
+
+URL: https://rafaelpfister.ch/sv/blog/seppmail-15-0-6-och-15-0-6-1-sakerhetskorrigeringar-och-nya-adminfunktioner
+Datum: 2026-07-29
+
+# SEPPmail 15.0.6 och 15.0.6.1: Säkerhetskorrigeringar och nya adminfunktioner
+
+SEPPmail släppte patchversionen 15.0.6 den 21 juli 2026 och hotfixen 15.0.6.1 en dag senare. Patchversionen åtgärdar flera sårbarheter, uppdaterar OpenSSH och OpenSSL och medför märkbara förbättringar för administrationen. Hotfixen korrigerar två fel i RuleEngine som infördes eller blev synliga med 15.0.6. Ändringarna berör även appliances som används som HIN Mailgateway, eftersom de bygger på samma SEPPmail-firmware.
+
+## Hotfix 15.0.6.1 från den 22 juli 2026
+
+Hotfixen åtgärdar två punkter i RuleEngine. För det första förhindrade ett odefinierat värde i Message-objektet att loggposter skrevs till e-postloggen. Berörda meddelanden passerade därmed systemet utan loggning. För det andra identifierar RuleEngine nu riktningen för arkiverade e-postmeddelanden, så att deras leverans hanteras korrekt.
+
+Den som redan har installerat 15.0.6 eller planerar uppdateringen bör gå direkt till 15.0.6.1.
+
+HIN-appliances verkar också ha fått hotfixen: En HIN Mailgateway med installerad version 15.0.6-RC-42-g278c81f84 visar nu 15.0.6-RC-88-g916e513cc som nästa version i 15.0-grenen. RC-beteckningarna för HIN-firmware kan inte direkt kopplas till en SEPPmail-release, men tidpunkten för erbjudandet talar för hotfixen.
+
+## Säkerhetskorrigeringar i 15.0.6
+
+Den viktigaste delen av patchversionen är tre korrigeringar av säkerhetsarkitekturen:
+
+- En möjlig Path-Traversal-sårbarhet i PDF-genereringen har stängts. Den upptäcktes av InfoGuard.
+- Allt innehåll som dekrypteras via PGP Base64-kodas nu för att förhindra MIME-Structure-Injection.
+- Funktionen hashencrypt har lagts om till AES-256-CBC med PBKDF2.
+
+Därtill kommer uppdaterade bibliotek: OpenSSH 10.4 och OpenSSL 3.0.21 åtgärdar tillsammans över tjugo CVE:er. Bara av dessa skäl rekommenderas uppdateringen för produktiva system.
+
+## Nya funktioner för administrationen
+
+Tre ändringar i admin-GUI:t märks i vardagen:
+
+- **Separat MFA-inmatningsfält:** Den andra faktorn behöver inte längre läggas till lösenordet utan har ett eget fält. Det eliminerar en mångårig fallgrop vid inloggning.
+- **LDAP-autentisering för admin-GUI:t:** Administratörer kan nu autentisera sig mot en extern LDAP-server i stället för att underhålla lokala konton på appliancen. Konfigurationen beskrivs i artikeln om [anslutning av admin-GUI:t till Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung). Om HIN Mailgateway också har fått denna funktion testar jag fortfarande och kompletterar artikeln därefter; eftersom HIN använder samma firmwarebas utgår jag från det.
+- **AutoRenew-knapp för MPKI:** I inställningarna för MPKI-connectorn kan den automatiska certifikatförnyelsen startas manuellt via «Trigger AutoRenew...» .
+
+Dessutom använder appliancen nu konsekvent giltiga tidszoner (standard: Europe/Zurich), och System Object ID under System >> Advanced View valideras som en giltig OID.
+
+## E-postbearbetning och webbmail
+
+Fyra punkter har korrigerats i RuleEngine. Ämneshanteringen fungerar nu även vid okänd kodning. Meddelanden studsar om en signatur uttryckligen begärs men inte kan skapas; tidigare kunde sådana meddelanden fortsätta osignerade. Arkivkopior går nu via leveransfunktionen och får därmed ARC-rubriker. Och för PGP-meddelanden utan MDC-data ignoreras MDC-fel i stället för att störa bearbetningen.
+
+I webbmailen (GINA) har fyra fel åtgärdats: Den automatiska raderingen av oregistrerade konton efter att respitperioden löpt ut fungerar igen, funktionen hashdecrypt gav i vissa fall ett falskt positivt dekrypteringsresultat, tillägg av en bilaga tömde fälten Till och CC, och tidsangivelsen i SMS-loggarna var felaktig.
+
+## REST-API, kluster och säkerhetskopiering
+
+REST-API:t får korrigeringar på flera slutpunkter: /system/ifaliasconfig (hantering av null-värden), /system/applySysconfig (åtkomstkonfiguration), /crypto/domain/{domainName} (uppladdning av domäncertifikat) samt GET och POST /ssl/csr. Timeouten för REST-anrop har höjts från 300 till 900 sekunder, vilket gör långvariga förfrågningar, såsom större konfigurationsändringar, mer tillförlitliga.
+
+Vid klusterdrift blockerade en befintlig CARP-IP tidigare IP-inställningarna för en ny medlem; detta har åtgärdats. Före den dagliga skapandet av snapshots kontrollerar säkerhetskopieringen nu dessutom om databasen är skadad innan snapshoten skrivs.
+
+## Koppling till inloggningsfelet i 15.0.5
+
+Vid uppdatering av ett kluster till 15.0.5 kunde inloggningen sluta fungera på båda noderna. Felbilden och återställningen beskrivs i artikeln om [inloggningsfel efter uppdateringen till 15.0.5](/blog/hin-update-issue-version-15.0.5). Tillverkaren kände redan till problemet vid den tidpunkten och utlovade en korrigering i en kommande version.
+
+I release notes för 15.0.6 finns nu exakt en post som matchar denna felbild: «prevent password rehashing when cluster members use different firmware versions». Under en klusteruppdatering kör noderna oundvikligen tillfälligt med olika firmwareversioner. Om en nod under denna fas beräknar lösenordshashar på nytt och replikerar dem till klustret passar hasharna inte längre på den andra versionen, och inloggningen misslyckas på båda noderna, precis som vid det då observerade felet. Release notes nämner inte uttryckligen inloggningsfelet, men posten täcker exakt den konstellation som utlöste det. Orsaken har därmed hanterats i 15.0.6; den nödprocedur med upplösning av klustret som krävdes i 15.0.5 bör inte längre behövas vid framtida uppdateringar.
+
+## Mindre korrigeringar
+
+I e-postloggen har datumssorteringen korrigerats, som tidigare sorterade alfabetiskt i stället för kronologiskt, och den visade storleken på LFT-meddelanden stämmer åter. Åtkomst till obefintliga X-rubriker loggas inte längre. CertCentral-connectorn för MPKI hanterar inmatnings- och REST-fel mer robust.
+
+## Bedömning
+
+De två RuleEngine-felen från hotfixen talar för att hoppa över 15.0.6 och använda 15.0.6.1 direkt. Skapa snapshots av båda noderna i kluster före uppdateringen och följ uppdateringsordningen i tillverkarens dokumentation. Inloggningsfelet i 15.0.5 visade varför denna förberedelse inte bara är en formalitet.
+
+## Källor
+
+1.  [SEPPmail-dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Officiella release notes för 15.0.6 och 15.0.6.1 med alla enskilda punkter.
+
+2.  [HIN Mailgateway 15.0.5: Åtgärda inloggningsfel efter klusteruppdateringen](/blog/hin-update-issue-version-15.0.5): Varför snapshots och korrekt uppdateringsordning i klustret är avgörande.
+
+----
+
 # Anslut SEPPmail Admin-GUI till Active Directory: konfigurera LDAP-autentisering från 15.0.6
 
 URL: https://rafaelpfister.ch/sv/blog/anslut-seppmail-admin-gui-till-active-directory-konfigurera-ldap-autentisering-fran-15-0-6
@@ -20934,6 +21005,77 @@ Entra Domain Services er ikke en erstatning for Entra ID, men en bro: Tjenesten 
 3.  [Microsoft Learn – «Konfigurere Secure LDAP»](https://learn.microsoft.com/de-de/entra/identity/domain-services/tutorial-configure-ldaps): LDAPS med eget sertifikat for kryptert LDAP-tilgang.
 
 4.  [Koble SEPPmail Admin-GUI til Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung): Oppsett av LDAP-innlogging i Admin-GUI fra firmware 15.0.6.
+
+----
+
+# SEPPmail 15.0.6 og 15.0.6.1: Sikkerhetsrettelser og nye admin-funksjoner
+
+URL: https://rafaelpfister.ch/no/blog/seppmail-15-0-6-og-15-0-6-1-sikkerhetsrettelser-og-nye-admin-funksjoner
+Datum: 2026-07-29
+
+# SEPPmail 15.0.6 og 15.0.6.1: Sikkerhetsrettelser og nye admin-funksjoner
+
+SEPPmail publiserte patchutgivelsen 15.0.6 den 21. juli 2026, og hurtigreparasjonen 15.0.6.1 dagen etter. Patchutgivelsen lukker flere sårbarheter, oppdaterer OpenSSH og OpenSSL og gir merkbare forbedringer for administrasjon. Hurtigreparasjonen retter to feil i RuleEngine som ble introdusert eller synlige med 15.0.6. Endringene gjelder også appliances som drives som HIN Mailgateway, siden disse er basert på samme SEPPmail-fastvare.
+
+## Hurtigreparasjon 15.0.6.1 av 22. juli 2026
+
+Hurtigreparasjonen løser to punkter i RuleEngine. For det første hindret en udefinert verdi i Message-objektet at loggoppføringer ble skrevet til e-postloggen. Berørte meldinger gikk dermed gjennom systemet uten logging. For det andre gjenkjenner RuleEngine nå retningen til arkiverte e-poster, slik at leveringen behandles korrekt.
+
+De som allerede har installert 15.0.6 eller planlegger oppdateringen, bør gå direkte til 15.0.6.1.
+
+HIN-appliances har tilsynelatende også fått hurtigreparasjonen: En HIN Mailgateway med installert versjon 15.0.6-RC-42-g278c81f84 melder nå 15.0.6-RC-88-g916e513cc som neste versjon i 15.0-grenen. RC-betegnelsene i HIN-fastvaren kan ikke tilordnes direkte til en SEPPmail-utgivelse, men tidspunktet for tilbudet taler for hurtigreparasjonen.
+
+## Sikkerhetsrettelser i 15.0.6
+
+Den viktigste delen av patchutgivelsen er tre rettelser i sikkerhetsarkitekturen:
+
+- En mulig Path-Traversal-sårbarhet i PDF-genereringen er lukket. Den ble funnet av InfoGuard.
+- Alt innhold som dekrypteres med PGP, Base64-kodes nå for å forhindre MIME-Structure-Injection.
+- Funksjonen hashencrypt er endret til AES-256-CBC med PBKDF2.
+
+I tillegg kommer oppdaterte biblioteker: OpenSSH 10.4 og OpenSSL 3.0.21 retter til sammen over tjue CVE-er. Bare på grunn av disse punktene anbefales oppdateringen for produksjonssystemer.
+
+## Nye funksjoner for administrasjon
+
+Tre endringer i admin-GUI-en merkes i hverdagen:
+
+- **Separat MFA-inntastingsfelt:** Den andre faktoren må ikke lenger legges til passordet, men har sitt eget felt. Dette fjerner en langvarig fallgruve ved innlogging.
+- **LDAP-autentisering for admin-GUI-en:** Administratorer kan nå autentisere seg mot en ekstern LDAP-server i stedet for å vedlikeholde lokale kontoer på appliancen. Oppsettet er beskrevet i artikkelen om [tilkobling av admin-GUI-en til Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung). Om HIN Mailgateway også har fått denne funksjonen, tester jeg fortsatt og vil oppdatere artikkelen etterpå; siden HIN bruker samme fastvaregrunnlag, går jeg ut fra det.
+- **AutoRenew-knapp for MPKI:** I innstillingene for MPKI-konnektoren kan automatisk sertifikatfornyelse startes manuelt via «Trigger AutoRenew... ».
+
+I tillegg bruker appliancen nå konsekvent gyldige tidssoner (standard: Europe/Zurich), og System Object ID under System >> Advanced View valideres som en gyldig OID.
+
+## E-postbehandling og Webmail
+
+Fire punkter er rettet i RuleEngine. Behandlingen av emnefelt fungerer nå også ved ukjent encoding. Meldinger avvises når en signatur er eksplisitt forespurt, men ikke kan opprettes; tidligere kunne slike meldinger gå videre usignert. Arkivkopier går nå gjennom leveringsfunksjonen og får dermed ARC-hoder. Og for PGP-meldinger uten MDC-data ignoreres MDC-feil i stedet for å forstyrre behandlingen.
+
+I Webmail (GINA) er fire feil rettet: Automatisk sletting av ikke-registrerte kontoer etter utløpt karensperiode fungerer igjen, funksjonen hashdecrypt ga i enkelte tilfeller et falskt positivt dekrypteringsresultat, tillegg av et vedlegg tømte feltene Til og CC, og tidsvisningen i SMS-loggene var feil.
+
+## REST-API, klynge og sikkerhetskopi
+
+REST-API-et får rettelser i flere endepunkter: /system/ifaliasconfig (håndtering av null-verdier), /system/applySysconfig (tilgangskonfigurasjon), /crypto/domain/{domainName} (opplasting av domenesertifikater) samt GET og POST /ssl/csr. Tidsavbruddet for REST-kall er økt fra 300 til 900 sekunder, noe som gjør langvarige forespørsler som større konfigurasjonsendringer mer pålitelige.
+
+I klyngedrift blokkerte tidligere en eksisterende CARP-IP IP-innstillingene til et nylig lagt til medlem; dette er rettet. Før den daglige snapshot-opprettelsen kontrollerer sikkerhetskopieringen nå i tillegg om databasen er korrupt før snapshotet skrives.
+
+## Sammenheng med innloggingsutfallet i 15.0.5
+
+Ved oppdatering av en klynge til 15.0.5 kunne innloggingen svikte på begge nodene. Feilbildet og gjenopprettingen er beskrevet i artikkelen om [innloggingsutfall etter 15.0.5-oppdateringen](/blog/hin-update-issue-version-15.0.5). Produsenten kjente allerede til problemet og varslet den gang en rettelse i en kommende versjon.
+
+I Release Notes for 15.0.6 finnes nå nettopp én oppføring som passer med dette feilbildet: «prevent password rehashing when cluster members use different firmware versions». Under en klyngeoppdatering kjører nodene nødvendigvis midlertidig med ulike fastvareversjoner. Hvis én node i denne fasen beregner passordhasher på nytt og replikerer dem i klyngen, passer hashene ikke lenger med den andre versjonen, og innloggingen feiler på begge nodene, akkurat som ved utfallet som ble observert den gang. Release Notes nevner ikke eksplisitt innloggingsutfallet, men oppføringen dekker nøyaktig konstellasjonen som utløste det. Årsaken er dermed adressert i 15.0.6; nødprosedyren med oppløsning av klyngen som var nødvendig i 15.0.5, bør ikke lenger være nødvendig ved fremtidige oppdateringer.
+
+## Mindre rettelser
+
+I e-postloggen er datosorteringen rettet, som tidligere sorterte alfabetisk i stedet for kronologisk, og den viste størrelsen på LFT-meldinger stemmer igjen. Tilganger til ikke-eksisterende X-hoder logges ikke lenger. CertCentral-konnektoren til MPKI håndterer inndata- og REST-feil mer robust.
+
+## Vurdering
+
+De to RuleEngine-feilene fra hurtigreparasjonen taler for å hoppe over 15.0.6 og bruke 15.0.6.1 direkte. Opprett snapshots av begge noder i klynger før oppdateringen, og følg oppdateringsrekkefølgen i produsentens dokumentasjon. Innloggingsutfallet i 15.0.5 viste hvorfor denne forberedelsen ikke bare er en formalitet.
+
+## Kilder
+
+1.  [SEPPmail-dokumentasjon – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offisielle Release Notes for 15.0.6 og 15.0.6.1 med alle enkeltheter.
+
+2.  [HIN Mailgateway 15.0.5: Rett innloggingsutfall etter klyngeoppdateringen](/blog/hin-update-issue-version-15.0.5): Hvorfor snapshots og riktig oppdateringsrekkefølge i klyngen er avgjørende.
 
 ----
 
