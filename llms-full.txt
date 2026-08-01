@@ -3743,6 +3743,249 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Testing SMTP on Linux: From the TCP Connection to Delivered Email
+
+URL: https://rafaelpfister.ch/en/blog/testing-smtp-on-linux-from-the-tcp-connection-to-delivered-email
+Datum: 2026-07-31
+
+# Testing SMTP on Linux: From the TCP Connection to Delivered Email
+
+When a mail gateway suddenly stops delivering anything, the appliance logs often provide only the final stage of the story: a delivery fails, the queue grows, and an error message mentions a timeout. A manual command-line test is the only way to reveal the actual cause. SMTP is a plain-text protocol that can be spoken entirely by hand, which makes it one of the most useful diagnostic tools in mail operations.
+
+The second reason for manual testing: You usually cannot install anything on appliances. No package manager, no root privileges, no `swaks`. That is why all the following steps work with what is already available on virtually every Linux system.
+
+## Separate the layers
+
+A failed email delivery can fail at five different levels, each producing a different error pattern:
+
+1. **Name resolution:** The target host cannot be translated into an IP address.
+2. **TCP connection:** The connection to the port cannot be established or is reset.
+3. **SMTP dialog:** The connection is established, but the server rejects the sender, recipient, or content.
+4. **Transport encryption:** STARTTLS is missing, the certificate is invalid, or the TLS version does not match.
+5. **Sender verification:** The email is accepted but rejected by the recipient because of SPF, DKIM, or DMARC.
+
+Diagnostics improve dramatically when you test these layers individually and in sequence instead of sending a complete test email right away. A failed overall attempt only tells you that something does not work. Layer-by-layer testing tells you what.
+
+## Step 1: Name resolution
+
+```bash
+getent hosts relay.example.com
+```
+
+If the output remains empty, no name server is reachable from this host, or it does not answer external names. This is more common than you might think: appliances in isolated zones often receive only an internal resolver that knows exclusively its own zones.
+
+```bash
+cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
+```
+
+If resolution is unavailable, test directly against the IP address in the following steps. That is entirely sufficient for diagnostics and cleanly separates the DNS issue from the transport issue. In production, missing resolution is naturally still a separate finding that needs to be fixed.
+
+## Step 2: Port reachability
+
+Bash is sufficient for a basic TCP check. The pseudo-device `/dev/tcp` opens a connection without requiring `nc` or `telnet` to be installed:
+
+```bash
+timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
+```
+
+The exit code is the actual information here:
+
+| exit | Meaning |
+|---|---|
+| `0` | Connection established, port is open |
+| `124` | Timeout: packets are being dropped, typical of a firewall with a DROP rule |
+| `1` | Immediate rejection (RST) or no route |
+
+In practice, the difference between 124 and 1 is the most important clue of all. A timeout means that something along the path is silently dropping traffic, and that is almost always a firewall rule. An immediate RST, on the other hand, comes from a system that responds but does not offer the service.
+
+Check both relevant ports right away, plus any other target to determine whether the host is permitted to establish outbound connections at all:
+
+```bash
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+```
+
+If the comparison test also goes nowhere, the system generally has no direct outbound access and traffic must go through an internal relay or proxy. More on why this case is especially tricky below.
+
+If `/dev/tcp` is unavailable, the shell is not bash. The feature does not exist in `sh`, `ash`, or `ksh`, which is often misinterpreted as an apparent network issue:
+
+```bash
+ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
+```
+
+## Step 3: Listen first, do not send
+
+An SMTP server greets you on its own with a `220` banner. The most informative individual test is therefore to open a connection and do nothing:
+
+```bash
+{ exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
+```
+
+These few characters distinguish two completely different situations. If you receive a `220 mail.example.com ESMTP`, the remote end is speaking and all subsequent errors are in the dialog. If nothing arrives, it is not due to a wrongly formulated command on your end, because you have not sent one.
+
+The file descriptor remains open in the shell afterward. Close it before starting the next test; otherwise, you may continue working with an old, half-dead connection:
+
+```bash
+exec 3<&- 3>&-
+```
+
+## Step 4: The SMTP dialog by hand
+
+Once the banner is available, run the full dialog. A concurrent read process is important so you can see every response the moment it arrives. A script that sends everything first and reads afterward shows you nothing if the dialog breaks off midway:
+
+```bash
+{
+exec 3<>/dev/tcp/192.0.2.25/25
+cat <&3 & R=$!
+sleep 1; printf 'EHLO host.example.com\r\n' >&3
+sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
+sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
+sleep 2; printf 'DATA\r\n' >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 3; printf 'QUIT\r\n' >&3
+sleep 2; kill $R 2>/dev/null
+}
+```
+
+Two details determine success or frustration. SMTP requires CRLF as the line ending, so use `printf` with `\r\n`, not `echo`. And the period on a line by itself ends the message body; it must be sent as `\r\n.\r\n`.
+
+The expected sequence: `220` when establishing the connection, `250` in response to EHLO, `250 2.1.0` for MAIL FROM, `250 2.1.5` for RCPT TO, `354` for DATA, and finally `250 2.0.0 Ok: queued as <id>`. Note the queue ID. The operating provider can use it to trace the message if it never arrives at the recipient.
+
+The EHLO name deserves attention: Some relays check it against forward and reverse DNS and otherwise respond with `501` or `504`. Use the actual FQDN of the sending system, not the short name.
+
+## Step 5: STARTTLS and the certificate
+
+For an encrypted connection, `openssl s_client` performs the STARTTLS negotiation itself and then passes the channel to standard input:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
+```
+
+If you connect via the IP address because DNS is unavailable, hostname validation cannot work. The certificate name then does not match the numeric address. SNI and the verification name can be specified explicitly, without any DNS lookup:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Two error patterns occur regularly here and are often misinterpreted.
+
+**“Didn't find STARTTLS in server response, trying anyway”** means the server did not offer STARTTLS in its EHLO response. `openssl` still sends a TLS ClientHello, the server sees protocol garbage, and the connection ends with `wrong version number` or `write:errno=32` (EPIPE). Both messages are follow-on errors. The actual information is: no STARTTLS. Use the plain-text dialog from Step 4 to check which capabilities the server actually reports.
+
+**No STARTTLS on an internal hop** is often entirely correct. When a load balancer forwards the connection at Layer 4, it does not negotiate TLS; the system behind it does, with the actual destination. Testing in plain text on the internal segment is then not a security issue but simply the architecture.
+
+## Step 6: Python as an alternative
+
+If Python is available, you can avoid timing workarounds with `sleep`. The standard library is sufficient; nothing needs to be installed:
+
+```python
+#!/usr/bin/env python3
+import smtplib, ssl
+from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
+
+msg = EmailMessage()
+msg["From"] = "absender@example.com"
+msg["To"] = "empfaenger@example.net"
+msg["Subject"] = "Relay-Test"
+msg["Date"] = formatdate(localtime=True)
+msg["Message-ID"] = make_msgid(domain="example.com")
+msg.set_content("Testnachricht\n")
+
+ctx = ssl.create_default_context()
+ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+
+s = smtplib.SMTP("192.0.2.25", 25, timeout=30, local_hostname="host.example.com")
+s.set_debuglevel(1)
+s.ehlo()
+if s.has_extn("starttls"):
+    s.starttls(context=ctx, server_hostname="mail.example.com")
+    s.ehlo()
+    print("TLS:", s.sock.version(), s.sock.cipher()[0])
+s.send_message(msg)
+s.quit()
+```
+
+`set_debuglevel(1)` logs the complete dialog including all response codes, and `smtplib` reads every response synchronously. An interruption appears as `SMTPServerDisconnected` along with the last received line, instead of as a silent broken pipe.
+
+Two pitfalls: `server_hostname` is mandatory when connecting via an IP address; otherwise, Python verifies the certificate against the numeric address. And if you deliberately disable verification, `check_hostname = False` must come before `verify_mode = ssl.CERT_NONE`, or Python raises a `ValueError`.
+
+## Sender address, SPF, and alignment
+
+A test surprisingly often fails not at the transport layer but because of the selected sender address. Three points should be checked in advance.
+
+The sender domain must be an FQDN. An address such as `test@meine-testdomain` without a top-level domain is rejected by many MTAs during MAIL FROM with `501` or `553`.
+
+The domain must authorize the sending path being used. A look at the SPF record shows whether the outbound address is covered:
+
+```bash
+dig +short TXT example.com | grep spf1
+```
+
+And when DMARC is active, alignment is decisive. If the record contains `aspf=s`, the domain in the envelope (MAIL FROM) and the domain in the `From:` header must match exactly, not merely be related:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+With `p=reject`, a test email with unsuitable alignment disappears at the recipient without comment, even though your relay accepted it with `250 queued`. This is the most common cause of messages that are considered successful on the sending side but still never arrive.
+
+## When a load balancer is in between
+
+In larger environments, an appliance rarely sends directly to the internet. A virtual server on a load balancer commonly accepts the connection, rewrites it to a defined address using source NAT, and only then forwards it externally. This has an unpleasant consequence for diagnostics.
+
+A virtual server operating at Layer 4 acknowledges the TCP handshake immediately, before it has established its own connection to the destination. If that second connection fails, the client sees a successfully established connection that is immediately reset afterward: `Connection reset by peer`, without any SMTP banner. The issue is then neither on your side nor at the destination, but in the pool behind the virtual server—for example, because a member is marked down or the configured FQDN cannot be resolved.
+
+This also explains why a direct test against the internet destination must fail if the forwarding rule accepts only traffic from the already rewritten SNAT address. Connections with the original source address match no rule and are dropped. In such environments, always test against the intended virtual server, not the actual destination.
+
+A single line tells you which source address your system uses for a specific destination. The value after `src` is exactly the information the network team needs for the allowlist:
+
+```bash
+ip route get 192.0.2.25
+```
+
+If the system is behind NAT, the remote end does not see this address but the perimeter's public address. It cannot be determined from inside as long as no traffic gets through; it is specified in the NAT rule.
+
+## Error patterns at a glance
+
+| Observation | Likely cause |
+|---|---|
+| `Name or service not known` | No name resolution on the host |
+| Timeout, exit 124 | Firewall silently drops traffic (DROP) |
+| `Connection refused` | No service on the port or a REJECT rule |
+| Connection established, no banner, then RST | Load balancer accepts, backend unreachable |
+| `Didn't find STARTTLS` | Server does not offer transport encryption |
+| `wrong version number`, `errno=32` | Follow-on errors after forcing TLS without STARTTLS |
+| `501` / `553` during MAIL FROM | Sender domain is not an FQDN or is not permitted |
+| `554 relay access denied` | Source IP is not allowlisted on the relay |
+| `250 queued`, but no delivery | SPF, DKIM, or DMARC alignment at the recipient |
+
+## Load tests and rate limits
+
+For volume tests, one rule that is often overlooked in daily operations applies: The number of connections, not the number of messages, is the issue. Typical relays allow several hundred connections per minute but tens of thousands of messages. Therefore, keep one session open and send many envelopes through it instead of reconnecting for every message.
+
+In `smtplib`, this simply means using the same connection object multiple times and rebuilding the session in a controlled manner after a fixed number of messages. By contrast, anyone opening a new connection for every email hits the connection limit long before the message limit and triggers rejections that look like an issue on the remote side.
+
+## Conclusion
+
+The manual SMTP test is not a fallback for environments without tools; it is the most precise diagnostic available in mail operations. It cleanly separates name resolution, reachability, protocol dialog, and encryption, and provides an unambiguous result at every level. Those who first only listen, then conduct the dialog by hand, and take the response codes seriously can reach a conclusion within minutes that can substantiate a ticket with the network or provider team: source address, destination port, observed behavior, and exit code.
+
+## Sources
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Defines the SMTP dialog, command sequence, and the meaning of response codes.
+
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Describes STARTTLS as an extension, including behavior when the server does not offer it.
+
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Structure and evaluation of the SPF record for authorizing sending systems.
+
+4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Governs alignment between envelope and header senders as well as policy evaluation.
+
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Reference for the options used, including `-starttls`, `-servername` and `-verify_hostname`.
+
+6.  [Python documentation: smtplib](https://docs.python.org/3/library/smtplib.html): Standard library for SMTP sessions, including STARTTLS and debug output.
+
+7.  [Bash Reference Manual: Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Documents `/dev/tcp` as a bash-specific pseudo-device for network connections.
+
+----
+
 # Microsoft Entra Domain Services: LDAP and Kerberos for cloud-only environments
 
 URL: https://rafaelpfister.ch/en/blog/microsoft-entra-domain-services-ldap-and-kerberos-for-cloud-only-environments
@@ -7228,6 +7471,249 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Tester SMTP sous Linux : de la connexion TCP à l’e-mail délivré
+
+URL: https://rafaelpfister.ch/fr/blog/tester-smtp-sous-linux-de-la-connexion-tcp-a-l-e-mail-delivre
+Datum: 2026-07-31
+
+# Tester SMTP sous Linux : de la connexion TCP à l’e-mail délivré
+
+Lorsqu’une passerelle de messagerie cesse soudainement de délivrer des messages, les journaux de l’appliance ne fournissent souvent que la dernière étape de l’histoire : une livraison échoue, la file d’attente grossit, un message d’erreur mentionne un délai d’attente. Seul un test manuel depuis la ligne de commande permet d’en déterminer la véritable cause. SMTP est un protocole en texte clair que l’on peut entièrement utiliser à la main, ce qui en fait l’un des outils de diagnostic les plus pratiques en exploitation de messagerie.
+
+La seconde raison de recourir à un test manuel : il est généralement impossible d’installer quoi que ce soit sur les appliances. Pas de gestionnaire de paquets, pas de droits root, pas de `swaks`. Toutes les étapes suivantes fonctionnent donc avec ce qui est déjà disponible sur pratiquement tout système Linux.
+
+## Distinguer les couches
+
+Un envoi d’e-mail échoué peut échouer à cinq niveaux différents, chacun produisant un scénario d’erreur distinct :
+
+1. **Résolution de noms :** l’hôte cible ne peut pas être traduit en adresse IP.
+2. **Connexion TCP :** la connexion au port ne s’établit pas ou est réinitialisée.
+3. **Dialogue SMTP :** la connexion est établie, mais le serveur refuse l’expéditeur, le destinataire ou le contenu.
+4. **Chiffrement du transport :** STARTTLS est absent, le certificat n’est pas valide ou la version TLS ne convient pas.
+5. **Vérification de l’expéditeur :** l’e-mail est accepté puis rejeté chez le destinataire à cause de SPF, DKIM ou DMARC.
+
+Le diagnostic gagne énormément en efficacité lorsque vous vérifiez ces niveaux l’un après l’autre et séparément, au lieu d’envoyer immédiatement un e-mail de test complet. Un essai global échoué indique seulement que quelque chose ne fonctionne pas. La vérification par couche indique quoi.
+
+## Étape 1 : Résolution de noms
+
+```bash
+getent hosts relay.example.com
+```
+
+Si la sortie reste vide, aucun serveur de noms n’est accessible sur cet hôte ou il ne répond pas aux noms externes. Cela arrive plus souvent qu’on ne le pense : les appliances dans des zones isolées ne disposent souvent que d’un résolveur interne qui ne connaît que ses propres zones.
+
+```bash
+cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
+```
+
+Si la résolution manque, effectuez les tests suivants directement contre l’adresse IP. Cela suffit amplement pour le diagnostic et sépare clairement le problème DNS du problème de transport. En production, l’absence de résolution reste naturellement un constat distinct qu’il convient de corriger.
+
+## Étape 2 : Accessibilité du port
+
+Pour vérifier uniquement TCP, bash suffit. Le pseudo-périphérique `/dev/tcp` ouvre une connexion sans qu’il soit nécessaire d’installer `nc` ou `telnet` :
+
+```bash
+timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
+```
+
+Le code de sortie constitue ici l’information essentielle :
+
+| exit | Signification |
+|---|---|
+| `0` | La connexion est établie, le port est ouvert |
+| `124` | Délai d’attente : les paquets sont abandonnés, typique d’un pare-feu avec règle DROP |
+| `1` | Refus immédiat (RST) ou route absente |
+
+En pratique, la différence entre 124 et 1 est l’indication la plus importante. Un délai d’attente signifie que quelqu’un abandonne silencieusement le trafic en chemin, ce qui est presque toujours dû à une règle de pare-feu. Un RST immédiat provient au contraire d’un système qui répond, mais ne propose pas le service.
+
+Vérifiez immédiatement les deux ports pertinents ainsi qu’une autre destination quelconque afin de déterminer si l’hôte est autorisé à établir des connexions sortantes :
+
+```bash
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+```
+
+Si le contre-test échoue également, le système ne dispose généralement pas d’accès sortant direct et le trafic doit passer par un relais interne ou un proxy. Nous verrons plus bas pourquoi ce cas est particulièrement délicat.
+
+Si `/dev/tcp` est absent, le shell n’est pas bash. Sous `sh`, `ash` ou `ksh`, cette fonctionnalité n’existe pas, ce qui est souvent interprété à tort comme un problème réseau :
+
+```bash
+ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
+```
+
+## Étape 3 : Écouter d’abord, ne rien envoyer
+
+Un serveur SMTP se présente spontanément avec une bannière `220`. Le test individuel le plus parlant consiste donc à ouvrir une connexion sans rien faire :
+
+```bash
+{ exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
+```
+
+Ces quelques caractères distinguent deux situations totalement différentes. Si un `220 mail.example.com ESMTP` arrive, le serveur distant répond et toutes les erreurs ultérieures se trouvent dans le dialogue. Si rien n’arrive, ce n’est pas dû à une commande mal formulée de votre part, puisque vous n’en avez envoyé aucune.
+
+Le descripteur de fichier reste ensuite ouvert dans le shell. Fermez-le avant de lancer le test suivant, faute de quoi vous risquez de continuer à travailler avec une ancienne connexion à moitié morte :
+
+```bash
+exec 3<&- 3>&-
+```
+
+## Étape 4 : Le dialogue SMTP à la main
+
+Si la bannière apparaît, effectuez le dialogue complet. Il est important qu’un processus de lecture s’exécute en parallèle afin que vous voyiez chaque réponse au moment où elle arrive. Un script qui envoie tout d’abord puis lit ensuite ne vous montre rien en cas d’interruption au milieu du dialogue :
+
+```bash
+{
+exec 3<>/dev/tcp/192.0.2.25/25
+cat <&3 & R=$!
+sleep 1; printf 'EHLO host.example.com\r\n' >&3
+sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
+sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
+sleep 2; printf 'DATA\r\n' >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 3; printf 'QUIT\r\n' >&3
+sleep 2; kill $R 2>/dev/null
+}
+```
+
+Deux détails déterminent le succès ou la frustration. SMTP exige CRLF comme fin de ligne, donc `printf` avec `\r\n` et non `echo`. Et le point sur sa propre ligne termine la partie message ; il doit être envoyé sous la forme `\r\n.\r\n`.
+
+Le déroulement attendu : `220` lors de l’établissement de la connexion, `250` après EHLO, `250 2.1.0` après MAIL FROM, `250 2.1.5` après RCPT TO, `354` après DATA et enfin `250 2.0.0 Ok: queued as <id>`. Notez l’identifiant de file d’attente. Il permet au fournisseur exploitant le service de suivre le message s’il n’arrive jamais chez le destinataire.
+
+Le nom EHLO mérite une attention particulière : certains relais le vérifient par rapport au DNS direct et inverse et répondent sinon par `501` ou `504`. Utilisez le FQDN réel du système expéditeur, et non son nom court.
+
+## Étape 5 : STARTTLS et certificat
+
+Pour la connexion chiffrée, `openssl s_client` se charge lui-même de la négociation STARTTLS puis transmet le canal à l’entrée standard :
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Si vous vous connectez via l’adresse IP parce que DNS est indisponible, la vérification du nom d’hôte devient inopérante. Le nom du certificat ne correspond alors pas à l’adresse numérique. SNI et le nom à vérifier peuvent être définis explicitement, sans aucune requête DNS :
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Deux scénarios d’erreur apparaissent régulièrement ici et sont souvent mal interprétés.
+
+**« Didn't find STARTTLS in server response, trying anyway »** signifie que le serveur n’a pas proposé STARTTLS dans sa réponse EHLO. `openssl` envoie malgré tout un ClientHello TLS, le serveur y voit des données de protocole incohérentes et la connexion se termine par `wrong version number` ou `write:errno=32` (EPIPE). Ces deux messages sont des erreurs consécutives. L’information essentielle est : pas de STARTTLS. Consultez le dialogue en texte clair de l’étape 4 pour voir quelles capacités le serveur annonce réellement.
+
+**L’absence de STARTTLS sur un saut interne** est souvent parfaitement correcte. Lorsqu’un équilibreur de charge transmet la connexion en couche 4, ce n’est pas lui qui négocie TLS, mais le système situé derrière lui avec la destination réelle. Tester en texte clair sur le segment interne n’est alors pas un défaut de sécurité, mais simplement l’architecture.
+
+## Étape 6 : Python comme alternative
+
+Si Python est disponible, vous vous épargnez les ajustements de temporisation avec `sleep`. La bibliothèque standard suffit, aucune installation supplémentaire n’est nécessaire :
+
+```python
+#!/usr/bin/env python3
+import smtplib, ssl
+from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
+
+msg = EmailMessage()
+msg["From"] = "absender@example.com"
+msg["To"] = "empfaenger@example.net"
+msg["Subject"] = "Relay-Test"
+msg["Date"] = formatdate(localtime=True)
+msg["Message-ID"] = make_msgid(domain="example.com")
+msg.set_content("Testnachricht\n")
+
+ctx = ssl.create_default_context()
+ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+
+s = smtplib.SMTP("192.0.2.25", 25, timeout=30, local_hostname="host.example.com")
+s.set_debuglevel(1)
+s.ehlo()
+if s.has_extn("starttls"):
+    s.starttls(context=ctx, server_hostname="mail.example.com")
+    s.ehlo()
+    print("TLS:", s.sock.version(), s.sock.cipher()[0])
+s.send_message(msg)
+s.quit()
+```
+
+`set_debuglevel(1)` journalise le dialogue complet, y compris tous les codes de réponse, et `smtplib` lit chaque réponse de manière synchrone. Une interruption apparaît sous forme de `SMTPServerDisconnected` avec la dernière ligne reçue, plutôt que comme un Broken Pipe silencieux.
+
+Deux pièges : `server_hostname` est indispensable lors d’une connexion via une adresse IP, sans quoi Python vérifie le certificat par rapport à l’adresse numérique. Et si vous désactivez volontairement la vérification, `check_hostname = False` doit précéder `verify_mode = ssl.CERT_NONE`, sinon Python lève une `ValueError`.
+
+## Adresse d’expéditeur, SPF et alignement
+
+Un test échoue étonnamment souvent non pas au niveau du transport, mais à cause de l’adresse d’expéditeur choisie. Trois points doivent être vérifiés au préalable.
+
+Le domaine de l’expéditeur doit être un FQDN. Une adresse telle que `test@meine-testdomain` sans domaine de premier niveau est rejetée par de nombreux MTA dès MAIL FROM avec `501` ou `553`.
+
+Le domaine doit autoriser le chemin d’envoi utilisé. Un regard sur l’enregistrement SPF permet de voir si l’adresse sortante est couverte :
+
+```bash
+dig +short TXT example.com | grep spf1
+```
+
+Et lorsque DMARC est actif, l’alignement est déterminant. Si l’enregistrement contient `aspf=s`, le domaine dans l’enveloppe (MAIL FROM) et le domaine dans l’en-tête `From:` doivent correspondre exactement, et pas seulement être apparentés :
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+Avec `p=reject`, un e-mail de test dont l’alignement ne convient pas disparaît silencieusement chez le destinataire, bien que votre relais l’ait accepté avec `250 queued`. C’est la cause la plus fréquente des messages considérés comme envoyés avec succès côté expéditeur, mais qui n’arrivent jamais.
+
+## Lorsqu’un équilibreur de charge s’interpose
+
+Dans les environnements de grande taille, une appliance envoie rarement directement sur Internet. Il est courant de disposer d’un serveur virtuel sur un équilibreur de charge qui accepte la connexion, réécrit l’adresse en une adresse définie par Source-NAT, puis la transmet vers l’extérieur. Cela a une conséquence désagréable pour le diagnostic.
+
+Un serveur virtuel fonctionnant en couche 4 acquitte immédiatement le handshake TCP avant même d’avoir établi lui-même une connexion vers la destination. Si cette seconde connexion échoue, vous voyez côté client une connexion établie avec succès puis immédiatement réinitialisée : `Connection reset by peer`, sans aucune bannière SMTP. L’erreur ne se situe alors ni chez vous ni à destination, mais dans le pool derrière le serveur virtuel, par exemple parce qu’un membre est marqué down ou que le FQDN configuré ne peut pas être résolu.
+
+Cela explique également pourquoi un test directement vers la destination Internet doit échouer si la règle de transfert n’accepte que le trafic issu de l’adresse SNAT déjà réécrite. Les connexions avec l’adresse source originale ne correspondent à aucune règle et sont abandonnées. Dans de tels environnements, testez toujours contre le serveur virtuel prévu, et non contre la destination réelle.
+
+Une seule ligne indique quelle adresse source votre système utilise pour une destination donnée. La valeur après `src` est exactement l’information dont l’équipe réseau a besoin pour l’autorisation :
+
+```bash
+ip route get 192.0.2.25
+```
+
+Si le système se trouve derrière NAT, le serveur distant ne voit pas cette adresse, mais l’adresse publique du périmètre. Il est impossible de la déterminer depuis l’intérieur tant qu’aucun trafic ne passe ; elle figure dans la règle NAT.
+
+## Scénarios d’erreur en un coup d’œil
+
+| Observation | Cause probable |
+|---|---|
+| `Name or service not known` | Aucune résolution de noms sur l’hôte |
+| Délai d’attente, exit 124 | Le pare-feu abandonne silencieusement le trafic (DROP) |
+| `Connection refused` | Aucun service sur le port ou règle REJECT |
+| Connexion établie, pas de bannière, puis RST | L’équilibreur de charge accepte, backend inaccessible |
+| `Didn't find STARTTLS` | Le serveur ne propose pas de chiffrement du transport |
+| `wrong version number`, `errno=32` | Erreurs consécutives après TLS forcé sans STARTTLS |
+| `501` / `553` après MAIL FROM | Domaine expéditeur non FQDN ou non autorisé |
+| `554 relay access denied` | IP source non autorisée sur le relais |
+| `250 queued`, mais pas de livraison | Alignement SPF, DKIM ou DMARC chez le destinataire |
+
+## Tests de charge et limites de débit
+
+Pour les tests de volume, une règle souvent négligée au quotidien s’applique : le problème n’est pas le nombre de messages, mais le nombre de connexions. Les relais typiques autorisent quelques centaines de connexions par minute, mais des dizaines de milliers de messages. Gardez donc une session ouverte et envoyez-y de nombreuses enveloppes, plutôt que d’ouvrir une nouvelle connexion pour chaque message.
+
+Dans `smtplib`, cela signifie simplement réutiliser plusieurs fois le même objet de connexion et rétablir la session de manière contrôlée après un nombre fixe de messages. À l’inverse, ouvrir une nouvelle connexion par e-mail atteint la limite de connexions bien avant celle des messages et provoque des refus qui donnent l’impression d’un problème du côté distant.
+
+## Conclusion
+
+Le test SMTP manuel n’est pas une solution de secours pour les environnements sans outils, mais le diagnostic le plus précis disponible en exploitation de messagerie. Il distingue clairement la résolution de noms, l’accessibilité, le dialogue de protocole et le chiffrement, et fournit un résultat sans ambiguïté pour chaque niveau. En écoutant d’abord, puis en menant le dialogue à la main et en prenant les codes de réponse au sérieux, vous obtenez en quelques minutes un constat permettant d’étayer un ticket auprès de l’équipe réseau ou du fournisseur : avec l’adresse source, le port cible, le comportement observé et le code de sortie.
+
+## Sources
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Définit le dialogue SMTP, l’ordre des commandes et la signification des codes de réponse.
+
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Décrit STARTTLS comme extension, y compris le comportement lorsque le serveur ne le propose pas.
+
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Structure et évaluation de l’enregistrement SPF pour l’autorisation des systèmes expéditeurs.
+
+4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Régit l’alignement entre l’expéditeur de l’enveloppe et celui de l’en-tête, ainsi que l’évaluation de la politique.
+
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Référence des options utilisées, notamment `-starttls`, `-servername` et `-verify_hostname`.
+
+6.  [Documentation Python : smtplib](https://docs.python.org/3/library/smtplib.html): Bibliothèque standard pour les sessions SMTP, y compris STARTTLS et la sortie de débogage.
+
+7.  [Manuel de référence Bash : Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Documente `/dev/tcp` comme pseudo-périphérique propre à bash pour les connexions réseau.
 
 ----
 
@@ -10717,6 +11203,249 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# Testare SMTP su Linux: dalla connessione TCP all'email consegnata
+
+URL: https://rafaelpfister.ch/it/blog/testare-smtp-su-linux-dalla-connessione-tcp-all-email-consegnata
+Datum: 2026-07-31
+
+# Testare SMTP su Linux: dalla connessione TCP all'email consegnata
+
+Quando un mail gateway smette improvvisamente di consegnare messaggi, i log dell'appliance spesso mostrano solo l'ultima fase della storia: una consegna fallisce, la coda cresce, un messaggio di errore indica un timeout. La causa reale emerge solo con un test manuale dalla riga di comando. SMTP è un protocollo in chiaro che può essere gestito interamente a mano, ed è proprio questo a renderlo uno degli strumenti diagnostici più efficaci nella gestione della posta.
+
+Il secondo motivo per eseguire il test manualmente: sulle appliance di solito non è possibile installare nulla. Nessun gestore di pacchetti, nessun diritto root, nessun `swaks`. Tutti i passaggi seguenti funzionano quindi con ciò che è già disponibile praticamente su ogni sistema Linux.
+
+## Separare i livelli
+
+L'invio di un'email può fallire su cinque livelli diversi, e ciascuno produce un errore differente:
+
+1. **Risoluzione dei nomi:** l'host di destinazione non può essere tradotto in un indirizzo IP.
+2. **Connessione TCP:** la connessione alla porta non viene stabilita oppure viene reimpostata.
+3. **Dialogo SMTP:** la connessione è attiva, ma il server rifiuta mittente, destinatario o contenuto.
+4. **Cifratura del trasporto:** STARTTLS non è disponibile, il certificato non è valido oppure la versione TLS non è compatibile.
+5. **Verifica del mittente:** l'email viene accettata e scartata dal destinatario a causa di SPF, DKIM o DMARC.
+
+La diagnosi migliora notevolmente quando si verificano questi livelli uno dopo l'altro e separatamente, invece di inviare subito un'email di prova completa. Un tentativo complessivo fallito dice solo che qualcosa non funziona. La verifica per livelli indica cosa.
+
+## Passaggio 1: risoluzione dei nomi
+
+```bash
+getent hosts relay.example.com
+```
+
+Se l'output rimane vuoto, su questo host non è raggiungibile alcun nameserver oppure non risponde ai nomi esterni. È più frequente di quanto si pensi: le appliance in zone isolate ricevono spesso solo un resolver interno che conosce esclusivamente le proprie zone.
+
+```bash
+cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
+```
+
+Se la risoluzione manca, nei passaggi seguenti testate direttamente l'indirizzo IP. Per la diagnosi è del tutto sufficiente e separa chiaramente il problema DNS dal problema di trasporto. In produzione, naturalmente, la mancata risoluzione rimane un problema distinto da correggere.
+
+## Passaggio 2: raggiungibilità della porta
+
+Per la sola verifica TCP è sufficiente bash. Il dispositivo pseudo `/dev/tcp` apre una connessione senza richiedere l'installazione di `nc` o `telnet`:
+
+```bash
+timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
+```
+
+Qui l'informazione principale è il codice di uscita:
+
+| exit | Significato |
+|---|---|
+| `0` | Connessione stabilita, la porta è aperta |
+| `124` | Timeout: i pacchetti vengono scartati, tipico di un firewall con regola DROP |
+| `1` | Rifiuto immediato (RST) oppure route assente |
+
+Nella pratica, la differenza tra 124 e 1 è l'indizio più importante in assoluto. Un timeout significa che qualcuno lungo il percorso sta scartando silenziosamente il traffico, e quasi sempre si tratta di una regola firewall. Un RST immediato, invece, proviene da un sistema che risponde ma non offre il servizio.
+
+Verificate subito entrambe le porte rilevanti e anche un'altra destinazione qualsiasi, per capire se l'host può stabilire connessioni in uscita:
+
+```bash
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+```
+
+Se anche la controprova non produce risultati, il sistema non dispone in generale di accesso diretto in uscita e il traffico deve passare attraverso un relay interno o un proxy. Più avanti vedremo perché questo caso è particolarmente insidioso.
+
+Se manca `/dev/tcp`, la shell non è bash. In `sh`, `ash` o `ksh` questa funzionalità non esiste, cosa che viene spesso interpretata erroneamente come un problema di rete:
+
+```bash
+ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
+```
+
+## Passaggio 3: prima ascoltare, poi inviare
+
+Un server SMTP si presenta autonomamente con un banner `220`. Il singolo test più significativo consiste quindi nell'aprire una connessione e non fare nulla:
+
+```bash
+{ exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
+```
+
+Questi pochi caratteri distinguono due situazioni completamente diverse. Se arriva un `220 mail.example.com ESMTP`, l'altra parte comunica e tutti gli ulteriori errori sono nel dialogo. Se non arriva nulla, non dipende da un comando formulato male, perché non ne avete inviato alcuno.
+
+Il descrittore di file rimane aperto nella shell. Chiudetelo prima di avviare il test successivo, altrimenti potreste continuare a lavorare con una connessione vecchia e parzialmente inattiva:
+
+```bash
+exec 3<&- 3>&-
+```
+
+## Passaggio 4: il dialogo SMTP manuale
+
+Se il banner è presente, eseguite il dialogo completo. È importante avere un processo di lettura attivo, così da vedere ogni risposta nell'istante in cui arriva. Uno script che invia prima tutto e legge solo dopo non mostra nulla se l'interruzione avviene a metà dialogo:
+
+```bash
+{
+exec 3<>/dev/tcp/192.0.2.25/25
+cat <&3 & R=$!
+sleep 1; printf 'EHLO host.example.com\r\n' >&3
+sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
+sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
+sleep 2; printf 'DATA\r\n' >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 3; printf 'QUIT\r\n' >&3
+sleep 2; kill $R 2>/dev/null
+}
+```
+
+Due dettagli determinano il successo o la frustrazione. SMTP richiede CRLF come fine riga, quindi `printf` con `\r\n` e non `echo`. Inoltre, il punto su una riga separata termina la parte del messaggio; deve essere inviato come `\r\n.\r\n`.
+
+Il flusso previsto: `220` all'apertura della connessione, `250` in risposta a EHLO, `250 2.1.0` per MAIL FROM, `250 2.1.5` per RCPT TO, `354` per DATA e infine `250 2.0.0 Ok: queued as <id>`. Annotate l'ID della coda. Consente al provider che gestisce il servizio di tracciare il messaggio se non arriva mai al destinatario.
+
+Il nome EHLO merita attenzione: alcuni relay lo verificano rispetto al DNS diretto e inverso e altrimenti rispondono con `501` o `504`. Utilizzate l'FQDN effettivo del sistema mittente, non il nome breve.
+
+## Passaggio 5: STARTTLS e certificato
+
+Per la connessione cifrata, `openssl s_client` gestisce autonomamente la negoziazione STARTTLS e poi passa il canale allo standard input:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Se vi connettete tramite indirizzo IP perché manca il DNS, la verifica del nome host non può funzionare. Il nome nel certificato non corrisponde all'indirizzo numerico. SNI e nome da verificare possono essere impostati esplicitamente, senza alcuna interrogazione DNS:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Qui si presentano regolarmente due scenari di errore che vengono spesso interpretati in modo errato.
+
+**«Didn't find STARTTLS in server response, trying anyway»** significa che il server non ha offerto STARTTLS nella risposta EHLO. `openssl` invia comunque un TLS ClientHello, il server lo interpreta come dati di protocollo non validi e la connessione termina con `wrong version number` oppure `write:errno=32` (EPIPE). Entrambi i messaggi sono errori conseguenti. L'informazione reale è: nessun STARTTLS. Con il dialogo in chiaro del passaggio 4, verificate quali capability il server comunica effettivamente.
+
+**Nessun STARTTLS su un hop interno** è spesso del tutto corretto. Quando un load balancer inoltra la connessione a livello 4, non negozia lui TLS: lo fa il sistema posto dietro di esso verso la destinazione effettiva. Testare in chiaro sul segmento interno non è quindi una carenza di sicurezza, ma semplicemente parte dell'architettura.
+
+## Passaggio 6: Python come alternativa
+
+Se Python è disponibile, potete evitare la gestione manuale dei tempi con `sleep`. La libreria standard è sufficiente e non occorre installare nulla:
+
+```python
+#!/usr/bin/env python3
+import smtplib, ssl
+from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
+
+msg = EmailMessage()
+msg["From"] = "absender@example.com"
+msg["To"] = "empfaenger@example.net"
+msg["Subject"] = "Relay-Test"
+msg["Date"] = formatdate(localtime=True)
+msg["Message-ID"] = make_msgid(domain="example.com")
+msg.set_content("Testnachricht\n")
+
+ctx = ssl.create_default_context()
+ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+
+s = smtplib.SMTP("192.0.2.25", 25, timeout=30, local_hostname="host.example.com")
+s.set_debuglevel(1)
+s.ehlo()
+if s.has_extn("starttls"):
+    s.starttls(context=ctx, server_hostname="mail.example.com")
+    s.ehlo()
+    print("TLS:", s.sock.version(), s.sock.cipher()[0])
+s.send_message(msg)
+s.quit()
+```
+
+`set_debuglevel(1)` registra l'intero dialogo, inclusi tutti i codici di risposta, e `smtplib` legge ogni risposta in modo sincrono. Un'interruzione appare come `SMTPServerDisconnected` insieme all'ultima riga ricevuta, anziché come una Broken Pipe silenziosa.
+
+Due insidie: `server_hostname` è obbligatorio quando ci si connette tramite indirizzo IP, altrimenti Python verifica il certificato rispetto all'indirizzo numerico. Inoltre, se disattivate consapevolmente la verifica, `check_hostname = False` deve precedere `verify_mode = ssl.CERT_NONE`, altrimenti Python genera un `ValueError`.
+
+## Indirizzo del mittente, SPF e allineamento
+
+Un test sorprendentemente spesso non fallisce nel trasporto, ma nell'indirizzo del mittente scelto. Tre aspetti vanno verificati in anticipo.
+
+Il dominio del mittente deve essere un FQDN. Un indirizzo come `test@meine-testdomain` senza dominio di primo livello viene già rifiutato da molti MTA durante MAIL FROM con `501` o `553`.
+
+Il dominio deve autorizzare il percorso di invio utilizzato. Uno sguardo al record SPF mostra se l'indirizzo in uscita è coperto:
+
+```bash
+dig +short TXT example.com | grep spf1
+```
+
+Con DMARC attivo, è l'allineamento a decidere. Se il record contiene `aspf=s`, il dominio nell'envelope (MAIL FROM) e il dominio nell'header `From:` devono corrispondere esattamente, non essere soltanto correlati:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+Con `p=reject`, un'email di prova con allineamento non corretto scompare silenziosamente presso il destinatario, anche se il relay l'ha accettata con `250 queued`. È la causa più comune dei messaggi considerati inviati con successo dal lato mittente ma che non arrivano mai.
+
+## Quando è presente un load balancer
+
+Negli ambienti più grandi, un'appliance raramente invia direttamente su Internet. È comune usare un server virtuale su un load balancer, che accetta la connessione, riscrive l'indirizzo in un indirizzo definito tramite Source NAT e solo allora la inoltra all'esterno. Per la diagnosi ciò comporta una conseguenza spiacevole.
+
+Un server virtuale che lavora a livello 4 conferma immediatamente l'handshake TCP, prima ancora di aver stabilito una connessione verso la destinazione. Se questa seconda connessione fallisce, sul client vedrete una connessione stabilita con successo e immediatamente dopo reimpostata: `Connection reset by peer`, senza alcun banner SMTP. L'errore non è quindi vostro né della destinazione, ma nel pool dietro il server virtuale, ad esempio perché un membro è contrassegnato come down oppure l'FQDN configurato non viene risolto.
+
+Questo spiega anche perché un test diretto verso la destinazione Internet deve fallire quando la regola di inoltro accetta solo traffico proveniente dall'indirizzo SNAT già riscritto. Le connessioni con l'indirizzo sorgente originale non corrispondono a nessuna regola e vengono scartate. In questi ambienti, testate sempre il server virtuale previsto, non la destinazione effettiva.
+
+Quale indirizzo sorgente il sistema utilizza per una determinata destinazione è indicato da una sola riga. Il valore dopo `src` è esattamente l'informazione necessaria al team di rete per l'abilitazione:
+
+```bash
+ip route get 192.0.2.25
+```
+
+Se il sistema si trova dietro NAT, la controparte non vede questo indirizzo bensì quello pubblico del perimetro. Non è possibile determinarlo dall'interno finché nessun traffico riesce a passare; è indicato nella regola NAT.
+
+## Errori a colpo d'occhio
+
+| Osservazione | Causa probabile |
+|---|---|
+| `Name or service not known` | Nessuna risoluzione dei nomi sull'host |
+| Timeout, exit 124 | Il firewall scarta silenziosamente (DROP) |
+| `Connection refused` | Nessun servizio sulla porta oppure regola REJECT |
+| Connessione stabilita, nessun banner, poi RST | Il load balancer accetta, backend non raggiungibile |
+| `Didn't find STARTTLS` | Il server non offre la cifratura del trasporto |
+| `wrong version number`, `errno=32` | Errori conseguenti dopo TLS forzato senza STARTTLS |
+| `501` / `553` su MAIL FROM | Il dominio del mittente non è un FQDN oppure non è autorizzato |
+| `554 relay access denied` | IP sorgente non abilitato sul relay |
+| `250 queued`, ma nessuna consegna | Allineamento SPF, DKIM o DMARC presso il destinatario |
+
+## Test di carico e limiti di frequenza
+
+Per i test di volume vale una regola spesso trascurata nella pratica quotidiana: il problema non è il numero di messaggi, ma il numero di connessioni. I relay tipici consentono alcune centinaia di connessioni al minuto, ma decine di migliaia di messaggi. Mantenete quindi aperta una sessione e inviate molti envelope attraverso di essa, invece di riconnettervi per ogni messaggio.
+
+In `smtplib` ciò significa semplicemente riutilizzare più volte lo stesso oggetto di connessione e ristabilire la sessione in modo controllato dopo un numero fisso di messaggi. Chi invece apre una nuova connessione per ogni email raggiunge il limite di connessioni molto prima del limite di messaggi e provoca rifiuti che sembrano un problema della controparte.
+
+## Conclusione
+
+Il test SMTP manuale non è un espediente per ambienti privi di strumenti, ma la diagnosi più precisa disponibile nella gestione della posta. Separa chiaramente risoluzione dei nomi, raggiungibilità, dialogo di protocollo e cifratura, fornendo un risultato univoco per ogni livello. Chi prima ascolta soltanto, poi esegue manualmente il dialogo e prende sul serio i codici di risposta, arriva in pochi minuti a una conclusione con cui documentare un ticket al team di rete o al provider: con indirizzo sorgente, porta di destinazione, comportamento osservato e codice di uscita.
+
+## Fonti
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Definisce il dialogo SMTP, l'ordine dei comandi e il significato dei codici di risposta.
+
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Descrive STARTTLS come estensione, incluso il comportamento quando il server non la offre.
+
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Struttura e valutazione del record SPF per l'autorizzazione dei sistemi mittenti.
+
+4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Regola l'allineamento tra mittente envelope e header, nonché la valutazione delle policy.
+
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Riferimento per le opzioni utilizzate, tra cui `-starttls`, `-servername` e `-verify_hostname`.
+
+6.  [Documentazione Python: smtplib](https://docs.python.org/3/library/smtplib.html): Libreria standard per sessioni SMTP, inclusi STARTTLS e output di debug.
+
+7.  [Bash Reference Manual: Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Documenta `/dev/tcp` come dispositivo pseudo specifico di bash per le connessioni di rete.
+
+----
+
 # Microsoft Entra Domain Services: LDAP e Kerberos per ambienti solo cloud
 
 URL: https://rafaelpfister.ch/it/blog/microsoft-entra-domain-services-ldap-e-kerberos-per-ambienti-solo-cloud
@@ -14199,6 +14928,249 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Probar SMTP en Linux: desde la conexión TCP hasta el correo entregado
+
+URL: https://rafaelpfister.ch/es/blog/probar-smtp-en-linux-desde-la-conexion-tcp-hasta-el-correo-entregado
+Datum: 2026-07-31
+
+# Probar SMTP en Linux: desde la conexión TCP hasta el correo entregado
+
+Cuando una pasarela de correo deja de entregar mensajes de repente, los registros de la appliance suelen mostrar solo el final de la historia: falla una entrega, crece la cola, un mensaje de error indica un tiempo de espera agotado. La causa real solo se revela mediante una prueba manual desde la línea de comandos. SMTP es un protocolo de texto plano que puede comunicarse completamente a mano, y eso lo convierte en una de las herramientas de diagnóstico más agradecidas en la operación de correo.
+
+La segunda razón para realizar una prueba manual: normalmente no se puede instalar nada en las appliances. No hay gestor de paquetes, ni permisos de root, ni `swaks`. Por eso, todos los pasos siguientes funcionan con lo que ya está disponible en prácticamente cualquier sistema Linux.
+
+## Separar las capas
+
+Un envío de correo fallido puede fallar en cinco niveles distintos, y cada uno genera un patrón de error diferente:
+
+1. **Resolución de nombres:** El host de destino no se puede traducir a una dirección IP.
+2. **Conexión TCP:** No se establece la conexión al puerto o esta se restablece.
+3. **Diálogo SMTP:** La conexión está establecida, pero el servidor rechaza el remitente, el destinatario o el contenido.
+4. **Cifrado de transporte:** Falta STARTTLS, el certificado no es válido o la versión TLS no coincide.
+5. **Verificación del remitente:** El correo se acepta y se descarta en el destinatario debido a SPF, DKIM o DMARC.
+
+El diagnóstico mejora enormemente si comprueba estos niveles de forma individual y secuencial, en lugar de enviar directamente un correo de prueba completo. Un intento global fallido solo indica que algo no funciona. La comprobación por capas indica qué es.
+
+## Paso 1: Resolución de nombres
+
+```bash
+getent hosts relay.example.com
+```
+
+Si la salida permanece vacía, no hay ningún servidor de nombres accesible desde este host o no responde a nombres externos. Esto ocurre más a menudo de lo que parece: las appliances en zonas aisladas a menudo solo reciben un resolvedor interno que conoce exclusivamente sus propias zonas.
+
+```bash
+cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
+```
+
+Si falta la resolución, pruebe a continuación directamente con la dirección IP. Esto es totalmente suficiente para el diagnóstico y separa claramente el problema de DNS del problema de transporte. Para el funcionamiento en producción, la falta de resolución sigue siendo, naturalmente, un hallazgo independiente que debe corregirse.
+
+## Paso 2: Accesibilidad del puerto
+
+Para una comprobación TCP pura basta con bash. El pseudodispositivo `/dev/tcp` abre una conexión sin necesidad de tener instalados `nc` ni `telnet`:
+
+```bash
+timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
+```
+
+El código de salida es aquí la información fundamental:
+
+| exit | Significado |
+|---|---|
+| `0` | La conexión está establecida, el puerto está abierto |
+| `124` | Tiempo de espera agotado: se descartan paquetes, típico de un firewall con regla DROP |
+| `1` | Rechazo inmediato (RST) o falta de ruta |
+
+En la práctica, la diferencia entre 124 y 1 es la pista más importante. Un tiempo de espera agotado significa que alguien descarta silenciosamente en el camino, y casi siempre se trata de una regla de firewall. En cambio, un RST inmediato procede de un sistema que responde, pero no ofrece el servicio.
+
+Compruebe de inmediato ambos puertos relevantes y, además, cualquier otro destino para ver si el host tiene permitido establecer conexiones salientes:
+
+```bash
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+```
+
+Si tampoco funciona la comprobación adicional, el sistema no tiene salida directa en general y el tráfico debe pasar por un relay interno o un proxy. Más adelante explicamos por qué este caso es especialmente engañoso.
+
+Si falta `/dev/tcp`, el shell no es bash. En `sh`, `ash` o `ksh` esa función no existe, algo que a menudo se interpreta erróneamente como un problema de red:
+
+```bash
+ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
+```
+
+## Paso 3: Primero escuchar, no enviar
+
+Un servidor SMTP se saluda por sí mismo con un banner `220`. Por ello, la prueba individual más significativa consiste en abrir una conexión y no hacer nada:
+
+```bash
+{ exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
+```
+
+Estos pocos caracteres distinguen dos situaciones completamente diferentes. Si llega un `220 mail.example.com ESMTP`, el extremo remoto está hablando y todos los errores posteriores se encuentran en el diálogo. Si no llega nada, no se debe a un comando mal formulado por su parte, porque no ha enviado ninguno.
+
+El descriptor de archivo permanece abierto en el shell. Ciérrelo antes de iniciar la siguiente prueba; de lo contrario, podría continuar trabajando con una conexión antigua medio muerta:
+
+```bash
+exec 3<&- 3>&-
+```
+
+## Paso 4: El diálogo SMTP a mano
+
+Si aparece el banner, ejecute el diálogo completo. Es importante contar con un proceso de lectura en ejecución para ver cada respuesta en el momento en que llega. Un script que primero envía todo y luego lee no le mostrará nada si la conexión se interrumpe a mitad del diálogo:
+
+```bash
+{
+exec 3<>/dev/tcp/192.0.2.25/25
+cat <&3 & R=$!
+sleep 1; printf 'EHLO host.example.com\r\n' >&3
+sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
+sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
+sleep 2; printf 'DATA\r\n' >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 3; printf 'QUIT\r\n' >&3
+sleep 2; kill $R 2>/dev/null
+}
+```
+
+Dos detalles determinan el éxito o la frustración. SMTP exige CRLF como final de línea; por eso, `printf` con `\r\n` y no `echo`. Y el punto en una línea propia finaliza la parte del mensaje; debe enviarse como `\r\n.\r\n`.
+
+La secuencia esperada: `220` al establecer la conexión, `250` para EHLO, `250 2.1.0` para MAIL FROM, `250 2.1.5` para RCPT TO, `354` para DATA y, al final, `250 2.0.0 Ok: queued as <id>`. Anote el ID de cola. Con él se puede rastrear el mensaje con el proveedor operador si nunca llega al destinatario.
+
+El nombre EHLO merece atención: algunos relays lo verifican frente al DNS directo e inverso y, de lo contrario, responden con `501` o `504`. Utilice el FQDN real del sistema remitente, no el nombre corto.
+
+## Paso 5: STARTTLS y certificado
+
+Para la conexión cifrada, `openssl s_client` realiza la negociación STARTTLS por sí mismo y después entrega el canal a la entrada estándar:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Si se conecta mediante la dirección IP porque falta DNS, la comprobación del nombre de host no sirve. El nombre del certificado no coincide entonces con la dirección numérica. SNI y el nombre de comprobación pueden establecerse explícitamente, sin ninguna consulta DNS:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Aquí aparecen regularmente dos patrones de error que suelen interpretarse mal.
+
+**«Didn't find STARTTLS in server response, trying anyway»** significa que el servidor no ofreció STARTTLS en su respuesta EHLO. `openssl` envía aun así un TLS-ClientHello, el servidor lo ve como basura de protocolo y la conexión termina con `wrong version number` o `write:errno=32` (EPIPE). Ambos mensajes son errores consecuentes. La información real es: no hay STARTTLS. Consulte con el diálogo de texto plano del paso 4 qué capacidades informa realmente el servidor.
+
+**No tener STARTTLS en un salto interno** suele ser totalmente correcto. Si un balanceador de carga reenvía la conexión en la capa 4, no negocia él TLS, sino el sistema situado detrás de él frente al destino real. En ese caso, probar en texto plano en el segmento interno no es una deficiencia de seguridad, sino simplemente la arquitectura.
+
+## Paso 6: Python como alternativa
+
+Si Python está disponible, se ahorra los ajustes de temporización con `sleep`. La biblioteca estándar es suficiente; no es necesario instalar nada adicional:
+
+```python
+#!/usr/bin/env python3
+import smtplib, ssl
+from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
+
+msg = EmailMessage()
+msg["From"] = "absender@example.com"
+msg["To"] = "empfaenger@example.net"
+msg["Subject"] = "Relay-Test"
+msg["Date"] = formatdate(localtime=True)
+msg["Message-ID"] = make_msgid(domain="example.com")
+msg.set_content("Testnachricht\n")
+
+ctx = ssl.create_default_context()
+ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+
+s = smtplib.SMTP("192.0.2.25", 25, timeout=30, local_hostname="host.example.com")
+s.set_debuglevel(1)
+s.ehlo()
+if s.has_extn("starttls"):
+    s.starttls(context=ctx, server_hostname="mail.example.com")
+    s.ehlo()
+    print("TLS:", s.sock.version(), s.sock.cipher()[0])
+s.send_message(msg)
+s.quit()
+```
+
+`set_debuglevel(1)` registra el diálogo completo, incluidos todos los códigos de respuesta, y `smtplib` lee cada respuesta de forma síncrona. Una interrupción aparece como `SMTPServerDisconnected` junto con la última línea recibida, en lugar de como una tubería rota silenciosa.
+
+Dos trampas: `server_hostname` es obligatorio al conectar mediante una dirección IP; de lo contrario, Python verifica el certificado frente a la dirección numérica. Y si desactiva deliberadamente la comprobación, `check_hostname = False` debe situarse antes de `verify_mode = ssl.CERT_NONE`; de lo contrario, Python genera un `ValueError`.
+
+## Dirección del remitente, SPF y alineación
+
+Con sorprendente frecuencia, una prueba no falla en el transporte, sino en la dirección de remitente elegida. Hay tres puntos que deben comprobarse previamente.
+
+El dominio del remitente debe ser un FQDN. Una dirección como `test@meine-testdomain` sin dominio de nivel superior es rechazada por muchos MTA ya durante MAIL FROM con `501` o `553`.
+
+El dominio debe autorizar la ruta de envío utilizada. Una consulta del registro SPF muestra si la dirección saliente está cubierta:
+
+```bash
+dig +short TXT example.com | grep spf1
+```
+
+Y con DMARC activo decide la alineación. Si el registro contiene `aspf=s`, el dominio en el sobre (MAIL FROM) y el dominio en la cabecera `From:` deben coincidir exactamente, no basta con que estén relacionados:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+Con `p=reject` un correo de prueba con una alineación inadecuada desaparece silenciosamente en el destinatario, aunque su relay lo haya aceptado con `250 queued`. Esta es la causa más frecuente de mensajes que se consideran enviados correctamente en el lado emisor y, aun así, nunca llegan.
+
+## Cuando hay un balanceador de carga entre medias
+
+En entornos grandes, una appliance rara vez envía directamente a Internet. Lo habitual es un servidor virtual en un balanceador de carga que acepta la conexión, reescribe la dirección a una dirección definida mediante Source-NAT y solo entonces la reenvía al exterior. Esto tiene una consecuencia incómoda para el diagnóstico.
+
+Un servidor virtual que opera en la capa 4 confirma inmediatamente el handshake TCP, antes de haber establecido él mismo una conexión con el destino. Si esta segunda conexión falla, verá en el cliente una conexión establecida correctamente y restablecida inmediatamente después: `Connection reset by peer`, sin ningún banner SMTP. Entonces el error no está en su lado ni en el destino, sino en el pool detrás del servidor virtual, por ejemplo porque un miembro está marcado como down o porque no se resuelve el FQDN configurado.
+
+Esto también explica por qué una prueba directa contra el destino de Internet debe fallar si la regla de reenvío solo acepta tráfico procedente de la dirección SNAT ya reescrita. Las conexiones con la dirección de origen original no coinciden con ninguna regla y se descartan. En estos entornos, pruebe siempre contra el servidor virtual previsto, no contra el destino real.
+
+Una sola línea indica qué dirección de origen utiliza su sistema para un destino concreto. El valor detrás de `src` es exactamente el dato que el equipo de red necesita para la habilitación:
+
+```bash
+ip route get 192.0.2.25
+```
+
+Si el sistema se encuentra detrás de NAT, el extremo remoto no verá esta dirección, sino la dirección pública del perímetro. No puede determinarse desde dentro mientras no pase ningún tráfico; figura en la regla NAT.
+
+## Patrones de error de un vistazo
+
+| Observación | Causa probable |
+|---|---|
+| `Name or service not known` | No hay resolución de nombres en el host |
+| Tiempo de espera agotado, exit 124 | El firewall descarta silenciosamente (DROP) |
+| `Connection refused` | No hay servicio en el puerto o regla REJECT |
+| La conexión está establecida, no hay banner y luego RST | El balanceador de carga acepta, el backend no es accesible |
+| `Didn't find STARTTLS` | El servidor no ofrece cifrado de transporte |
+| `wrong version number`, `errno=32` | Errores consecuentes tras forzar TLS sin STARTTLS |
+| `501` / `553` en MAIL FROM | El dominio del remitente no es un FQDN o no está permitido |
+| `554 relay access denied` | La IP de origen no está autorizada en el relay |
+| `250 queued`, pero no hay entrega | SPF, DKIM o alineación DMARC en el destinatario |
+
+## Pruebas de carga y límites de tasa
+
+Para pruebas de volumen se aplica una regla que a menudo se pasa por alto en el día a día: el problema no es el número de mensajes, sino el número de conexiones. Los relays típicos permiten algunos cientos de conexiones por minuto, pero decenas de miles de mensajes. Por ello, mantenga una sesión abierta y envíe muchos sobres a través de ella, en lugar de volver a conectarse para cada mensaje.
+
+En `smtplib` esto significa simplemente reutilizar varias veces el mismo objeto de conexión y restablecer la sesión de forma controlada tras un número fijo de mensajes. En cambio, quien abre una conexión nueva por correo alcanza el límite de conexiones mucho antes que el límite de mensajes y provoca rechazos que parecen un problema del extremo remoto.
+
+## Conclusión
+
+La prueba SMTP manual no es un recurso de emergencia para entornos sin herramientas, sino el diagnóstico más preciso disponible en la operación de correo. Separa claramente la resolución de nombres, la accesibilidad, el diálogo de protocolo y el cifrado, y proporciona un resultado inequívoco para cada nivel. Quien primero solo escucha, luego realiza el diálogo a mano y toma en serio los códigos de respuesta, obtiene en pocos minutos una conclusión con la que documentar un ticket ante el equipo de red o el proveedor: con dirección de origen, puerto de destino, comportamiento observado y código de salida.
+
+## Fuentes
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Define el diálogo SMTP, el orden de los comandos y el significado de los códigos de respuesta.
+
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Describe STARTTLS como extensión, incluido el comportamiento cuando el servidor no lo ofrece.
+
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Estructura y evaluación del registro SPF para autorizar sistemas emisores.
+
+4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Regula la alineación entre el remitente del sobre y el de la cabecera, así como la evaluación de políticas.
+
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Referencia de las opciones utilizadas, entre ellas `-starttls`, `-servername` y `-verify_hostname`.
+
+6.  [Documentación de Python: smtplib](https://docs.python.org/3/library/smtplib.html): Biblioteca estándar para sesiones SMTP, incluidos STARTTLS y salida de depuración.
+
+7.  [Manual de referencia de Bash: Redirecciones](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Documenta `/dev/tcp` como pseudodispositivo propio de bash para conexiones de red.
 
 ----
 
@@ -17688,6 +18660,249 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Testa SMTP under Linux: från TCP-anslutning till levererat e-postmeddelande
+
+URL: https://rafaelpfister.ch/sv/blog/testa-smtp-under-linux-fran-tcp-anslutning-till-levererat-e-postmeddelande
+Datum: 2026-07-31
+
+# Testa SMTP under Linux: från TCP-anslutning till levererat e-postmeddelande
+
+När en e-postgateway plötsligt inte längre levererar något visar appliance-loggarna ofta bara slutet på historien: en leverans misslyckas, kön växer, ett felmeddelande nämner en timeout. Vad som faktiskt orsakar det visar först ett manuellt test från kommandoraden. SMTP är ett klartextprotokoll som går att kommunicera helt manuellt, och just det gör det till ett av de mest tacksamma diagnosverktygen i e-postdrift.
+
+Det andra skälet till det manuella testet: På appliances går det oftast inte att installera något. Ingen pakethanterare, inga root-rättigheter, inget `swaks`. Alla följande steg fungerar därför med det som redan finns på praktiskt taget varje Linux-system.
+
+## Separera lagren
+
+Ett misslyckat e-postutskick kan fallera på fem olika nivåer, och varje nivå ger en annan felbild:
+
+1. **Namnupplösning:** Målhosten kan inte översättas till en IP-adress.
+2. **TCP-anslutning:** Anslutningen till porten upprättas inte eller återställs.
+3. **SMTP-dialog:** Anslutningen är upprättad, men servern avvisar avsändare, mottagare eller innehåll.
+4. **Transportkryptering:** STARTTLS saknas, certifikatet är ogiltigt eller TLS-versionen passar inte.
+5. **Avsändarkontroll:** E-postmeddelandet accepteras men förkastas hos mottagaren på grund av SPF, DKIM eller DMARC.
+
+Diagnosen blir avsevärt bättre när du kontrollerar dessa nivåer efter varandra och var för sig, i stället för att genast skicka ett komplett testmejl. Ett misslyckat helhetsförsök säger bara att något inte fungerar. Lagerkontrollen visar vad.
+
+## Steg 1: Namnupplösning
+
+```bash
+getent hosts relay.example.com
+```
+
+Om utdata förblir tom finns ingen nåbar namnserver på denna host, eller så svarar den inte på externa namn. Det är vanligare än man tror: Appliances i avskilda zoner får ofta bara en intern resolver som enbart känner till egna zoner.
+
+```bash
+cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
+```
+
+Om upplösningen saknas testar du följande direkt mot IP-adressen. Det räcker helt för diagnosen och skiljer tydligt DNS-problemet från transportproblemet. I produktionsdrift är den saknade upplösningen naturligtvis ett eget fynd som måste åtgärdas.
+
+## Steg 2: Portens nåbarhet
+
+För en ren TCP-kontroll räcker bash. Pseudoenheten `/dev/tcp` öppnar en anslutning utan att `nc` eller `telnet` behöver vara installerade:
+
+```bash
+timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
+```
+
+Exit-koden är den faktiska informationen här:
+
+| exit | Betydelse |
+|---|---|
+| `0` | Anslutningen är upprättad, porten är öppen |
+| `124` | Timeout: paket förkastas, typiskt för en brandvägg med DROP-regel |
+| `1` | Omedelbar avvisning (RST) eller saknad route |
+
+Skillnaden mellan 124 och 1 är i praktiken den allra viktigaste ledtråden. En timeout innebär att någon på vägen förkastar tyst, och det är nästan alltid en brandväggsregel. Ett omedelbart RST kommer däremot från ett system som svarar men inte erbjuder tjänsten.
+
+Kontrollera genast båda relevanta portarna och dessutom ett valfritt annat mål för att se om hosten över huvud taget får upprätta utgående anslutningar:
+
+```bash
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+```
+
+Om även motkontrollen inte ger något resultat saknar systemet generellt direkt utgående trafik och trafiken ska gå via ett internt relay eller en proxy. Mer om varför detta fall är särskilt knepigt längre ned.
+
+Om `/dev/tcp` saknas är skalet inte bash. Under `sh`, `ash` eller `ksh` finns funktionen inte, vilket ofta feltolkas som ett nätverksproblem:
+
+```bash
+ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
+```
+
+## Steg 3: Lyssna först, skicka inte
+
+En SMTP-server hälsar själv med en `220`-banner. Det mest informativa enskilda testet är därför att öppna en anslutning och inte göra något:
+
+```bash
+{ exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
+```
+
+Dessa få tecken skiljer två helt olika situationer åt. Om ett `220 mail.example.com ESMTP` kommer talar motparten och alla ytterligare fel ligger i dialogen. Om inget kommer beror det inte på ett felaktigt formulerat kommando från din sida, eftersom du ju inte har skickat något.
+
+Fildeskriptorn förblir därefter öppen i skalet. Stäng den innan du startar nästa test, annars kan du råka fortsätta arbeta med en gammal, halvdöd anslutning:
+
+```bash
+exec 3<&- 3>&-
+```
+
+## Steg 4: SMTP-dialogen manuellt
+
+När bannern visas genomför du hela dialogen. Det är viktigt att en läsprocess kör parallellt så att du ser varje svar när det kommer. Ett skript som först skickar allt och sedan läser visar ingenting vid ett avbrott mitt i dialogen:
+
+```bash
+{
+exec 3<>/dev/tcp/192.0.2.25/25
+cat <&3 & R=$!
+sleep 1; printf 'EHLO host.example.com\r\n' >&3
+sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
+sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
+sleep 2; printf 'DATA\r\n' >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 3; printf 'QUIT\r\n' >&3
+sleep 2; kill $R 2>/dev/null
+}
+```
+
+Två detaljer avgör om det blir framgång eller frustration. SMTP kräver CRLF som radslut, därför `printf` med `\r\n` och inte `echo`. Punkten på en egen rad avslutar meddelandedelen; den måste skickas som `\r\n.\r\n`.
+
+Det förväntade förloppet: `220` vid anslutningen, `250` på EHLO, `250 2.1.0` på MAIL FROM, `250 2.1.5` på RCPT TO, `354` på DATA och slutligen `250 2.0.0 Ok: queued as <id>`. Anteckna kö-ID:t. Med det går det att spåra meddelandet hos den ansvariga leverantören om det aldrig kommer fram till mottagaren.
+
+EHLO-namnet förtjänar uppmärksamhet: Vissa relayer kontrollerar det mot forward- och reverse-DNS och svarar annars med `501` eller `504`. Använd det sändande systemets faktiska FQDN, inte kortnamnet.
+
+## Steg 5: STARTTLS och certifikat
+
+För den krypterade anslutningen sköter `openssl s_client` STARTTLS-förhandlingen själv och lämnar sedan över kanalen till standardindata:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Om du ansluter via IP-adressen eftersom DNS saknas blir värdnamnskontrollen verkningslös. Certifikatnamnet matchar då inte den numeriska adressen. SNI och kontrollnamn kan anges uttryckligen, helt utan DNS-uppslagning:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Två felbilder uppstår regelbundet här och tolkas ofta fel.
+
+**«Didn't find STARTTLS in server response, trying anyway»** betyder att servern inte erbjöd STARTTLS i sitt EHLO-svar. `openssl` skickar ändå ett TLS-ClientHello, servern ser protokollskräp i det och anslutningen avslutas med `wrong version number` eller `write:errno=32` (EPIPE). Båda meddelandena är följdfel. Den egentliga informationen är: ingen STARTTLS. Kontrollera med klartextdialogen från steg 4 vilka capabilities servern faktiskt rapporterar.
+
+**Ingen STARTTLS på ett internt hopp** är ofta helt korrekt. Om en lastbalanserare vidarebefordrar anslutningen på lager 4 förhandlar den inte själv om TLS, utan först systemet bakom den mot det egentliga målet. Att testa i klartext på det interna segmentet är då inte en säkerhetsbrist, utan helt enkelt arkitekturen.
+
+## Steg 6: Python som alternativ
+
+Om Python finns tillgängligt slipper du tidsstyrningskrånglet med `sleep`. Standardbiblioteket räcker, inget behöver installeras i efterhand:
+
+```python
+#!/usr/bin/env python3
+import smtplib, ssl
+from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
+
+msg = EmailMessage()
+msg["From"] = "absender@example.com"
+msg["To"] = "empfaenger@example.net"
+msg["Subject"] = "Relay-Test"
+msg["Date"] = formatdate(localtime=True)
+msg["Message-ID"] = make_msgid(domain="example.com")
+msg.set_content("Testnachricht\n")
+
+ctx = ssl.create_default_context()
+ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+
+s = smtplib.SMTP("192.0.2.25", 25, timeout=30, local_hostname="host.example.com")
+s.set_debuglevel(1)
+s.ehlo()
+if s.has_extn("starttls"):
+    s.starttls(context=ctx, server_hostname="mail.example.com")
+    s.ehlo()
+    print("TLS:", s.sock.version(), s.sock.cipher()[0])
+s.send_message(msg)
+s.quit()
+```
+
+`set_debuglevel(1)` loggar hela dialogen inklusive alla svarskoder, och `smtplib` läser varje svar synkront. Ett avbrott visas som `SMTPServerDisconnected` tillsammans med den senast mottagna raden, i stället för som en tyst Broken Pipe.
+
+Två fallgropar: `server_hostname` är obligatoriskt vid anslutning via en IP-adress, annars kontrollerar Python certifikatet mot den numeriska adressen. Och om du medvetet stänger av kontrollen måste `check_hostname = False` stå före `verify_mode = ssl.CERT_NONE`, annars ger Python ett `ValueError`.
+
+## Avsändaradress, SPF och alignment
+
+Ett test misslyckas förvånansvärt ofta inte på transporten, utan på den valda avsändaradressen. Tre punkter bör kontrolleras i förväg.
+
+Avsändardomänen måste vara ett FQDN. En adress som `test@meine-testdomain` utan toppdomän avvisas av många MTA:er redan vid MAIL FROM med `501` eller `553`.
+
+Domänen måste auktorisera den använda sändvägen. En titt på SPF-posten visar om den utgående adressen omfattas:
+
+```bash
+dig +short TXT example.com | grep spf1
+```
+
+Och med aktiv DMARC är det alignment som avgör. Om posten innehåller `aspf=s`, måste domänen i envelopen (MAIL FROM) och domänen i `From:`-headern stämma exakt överens, inte bara vara besläktade:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+Vid `p=reject` försvinner ett testmejl med olämpligt alignment hos mottagaren utan kommentar, trots att ditt relay har accepterat det med `250 queued`. Det är den vanligaste orsaken till meddelanden som anses framgångsrika på sändarsidan men ändå aldrig kommer fram.
+
+## När en lastbalanserare står emellan
+
+I större miljöer skickar en appliance sällan direkt ut på internet. Vanligt är en virtuell server på en lastbalanserare som tar emot anslutningen, skriver om den till en definierad adress via Source-NAT och först därefter vidarebefordrar den utåt. Det får en obehaglig konsekvens för diagnosen.
+
+En virtuell server som arbetar på lager 4 bekräftar TCP-handshaken omedelbart, innan den själv har upprättat en anslutning till målet. Om denna andra anslutning misslyckas ser du på klienten en framgångsrikt upprättad och omedelbart därefter återställd anslutning: `Connection reset by peer`, utan någon SMTP-banner. Felet ligger då varken hos dig eller vid målet, utan i poolen bakom den virtuella servern, till exempel eftersom en medlem är markerad som down eller det konfigurerade FQDN:et inte kan lösas upp.
+
+Det förklarar också varför ett test direkt mot internetmålet måste misslyckas om vidarebefordringsregeln bara accepterar trafik från den redan omskrivna SNAT-adressen. Anslutningar med den ursprungliga källadressen matchar ingen regel och förkastas. Testa alltid mot den avsedda virtuella servern i sådana miljöer, inte mot det egentliga målet.
+
+Vilken källadress ditt system använder för ett visst mål besvaras av en enda rad. Värdet efter `src` är exakt den uppgift som nätverksteamet behöver för att öppna åtkomst:
+
+```bash
+ip route get 192.0.2.25
+```
+
+Om systemet står bakom NAT ser motparten inte denna adress utan den publika adressen vid perimetern. Den går inte att fastställa inifrån så länge ingen trafik kommer igenom; den står i NAT-regeln.
+
+## Felbilder i korthet
+
+| Observation | Trolig orsak |
+|---|---|
+| `Name or service not known` | Ingen namnupplösning på hosten |
+| Timeout, exit 124 | Brandvägg förkastar tyst (DROP) |
+| `Connection refused` | Ingen tjänst på porten eller REJECT-regel |
+| Anslutningen är upprättad, ingen banner, sedan RST | Lastbalanseraren accepterar, backend är inte nåbar |
+| `Didn't find STARTTLS` | Servern erbjuder ingen transportkryptering |
+| `wrong version number`, `errno=32` | Följdfel efter tvingad TLS utan STARTTLS |
+| `501` / `553` på MAIL FROM | Avsändardomänen är inte ett FQDN eller inte tillåten |
+| `554 relay access denied` | Käll-IP är inte godkänd på relayet |
+| `250 queued`, men ingen leverans | SPF-, DKIM- eller DMARC-alignment hos mottagaren |
+
+## Belastningstester och rate limits
+
+För volymtester gäller en regel som ofta förbises i vardagen: Det är inte antalet meddelanden som är problemet, utan antalet anslutningar. Typiska relayer tillåter några hundra anslutningar per minut, men tiotusentals meddelanden. Håll därför en session öppen och skicka många envelopes genom den, i stället för att ansluta på nytt för varje meddelande.
+
+I `smtplib` innebär det helt enkelt att använda samma anslutningsobjekt flera gånger och kontrollerat bygga upp sessionen på nytt efter ett fast antal meddelanden. Den som i stället öppnar en ny anslutning per e-postmeddelande når anslutningsgränsen långt före meddelandegränsen och framkallar avvisningar som ser ut som ett problem hos motparten.
+
+## Slutsats
+
+Det manuella SMTP-testet är inte en nödlösning för miljöer utan verktyg, utan den mest precisa diagnos som finns tillgänglig i e-postdrift. Det skiljer tydligt namnupplösning, nåbarhet, protokolldialog och kryptering från varandra och ger ett entydigt resultat för varje nivå. Den som först bara lyssnar, sedan genomför dialogen manuellt och tar svarskoderna på allvar får på några minuter ett underlag för ett ärende till nätverks- eller leverantörsteamet: med källadress, målport, observerat beteende och exit-kod.
+
+## Källor
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Definierar SMTP-dialogen, kommandoordningen och innebörden av svarskoderna.
+
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Beskriver STARTTLS som en utökning, inklusive beteendet när servern inte erbjuder den.
+
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Struktur och utvärdering av SPF-posten för auktorisering av sändande system.
+
+4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Reglerar alignment mellan envelope- och header-avsändare samt policyutvärdering.
+
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Referens för de använda alternativen, bland annat `-starttls`, `-servername` och `-verify_hostname`.
+
+6.  [Python-dokumentation: smtplib](https://docs.python.org/3/library/smtplib.html): Standardbibliotek för SMTP-sessioner inklusive STARTTLS och debug-utdata.
+
+7.  [Bash Reference Manual: Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Dokumenterar `/dev/tcp` som en bash-specifik pseudoenhet för nätverksanslutningar.
+
+----
+
 # Microsoft Entra Domain Services: LDAP och Kerberos för miljöer som enbart använder molnet
 
 URL: https://rafaelpfister.ch/sv/blog/microsoft-entra-domain-services-ldap-och-kerberos-for-miljoer-som-enbart-anvander-molnet
@@ -21171,6 +22386,249 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Teste SMTP under Linux: fra TCP-forbindelse til levert e-post
+
+URL: https://rafaelpfister.ch/no/blog/teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post
+Datum: 2026-07-31
+
+# Teste SMTP under Linux: fra TCP-forbindelse til levert e-post
+
+Når en e-postgateway plutselig ikke lenger leverer noe, viser appliance-loggene ofte bare siste ledd i historien: en levering feiler, køen vokser, og en feilmelding angir en tidsavbrudd. Hva som faktisk er årsaken, viser først en manuell test fra kommandolinjen. SMTP er en klartekstprotokoll som kan snakkes helt manuelt, og nettopp derfor er den et av de mest takknemlige diagnoseverktøyene i e-postdrift.
+
+Den andre grunnen til den manuelle testen: På appliances kan man som regel ikke installere noe. Ingen pakkebehandler, ingen root-rettigheter, ingen `swaks`. Alle følgende trinn fungerer derfor med det som allerede finnes på praktisk talt alle Linux-systemer.
+
+## Skill lagene fra hverandre
+
+En mislykket e-postsending kan feile på fem ulike nivåer, og hvert av dem gir et annet feilmønster:
+
+1. **Navneoppløsning:** Målverten kan ikke oversettes til en IP-adresse.
+2. **TCP-forbindelse:** Forbindelsen til porten opprettes ikke eller blir tilbakestilt.
+3. **SMTP-dialog:** Forbindelsen er opprettet, men serveren avviser avsender, mottaker eller innhold.
+4. **Transportkryptering:** STARTTLS mangler, sertifikatet er ugyldig eller TLS-versjonen passer ikke.
+5. **Avsenderkontroll:** E-posten aksepteres og forkastes hos mottakeren på grunn av SPF, DKIM eller DMARC.
+
+Diagnosen blir betydelig bedre når du kontrollerer disse nivåene etter tur og hver for seg, i stedet for å sende en fullstendig test-e-post med én gang. Et mislykket totalforsøk forteller deg bare at noe ikke fungerer. Lagkontrollen forteller deg hva.
+
+## Trinn 1: Navneoppløsning
+
+```bash
+getent hosts relay.example.com
+```
+
+Hvis utdataene forblir tomme, er ingen navneserver tilgjengelig fra denne verten, eller den svarer ikke på eksterne navn. Dette er vanligere enn man skulle tro: Appliances i isolerte soner får ofte bare en intern resolver som utelukkende kjenner egne soner.
+
+```bash
+cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
+```
+
+Hvis oppløsningen mangler, tester du videre direkte mot IP-adressen. Det er fullt tilstrekkelig for diagnostikken og skiller DNS-problemet rent fra transportproblemet. I produksjonsdrift er manglende oppløsning selvsagt fortsatt et eget funn som må rettes.
+
+## Trinn 2: Portens tilgjengelighet
+
+For ren TCP-kontroll er bash tilstrekkelig. Pseudoenheten `/dev/tcp` åpner en forbindelse uten at `nc` eller `telnet` må være installert:
+
+```bash
+timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
+```
+
+Exit-koden er den egentlige informasjonen her:
+
+| exit | Betydning |
+|---|---|
+| `0` | Forbindelsen er opprettet, porten er åpen |
+| `124` | Tidsavbrudd: Pakker forkastes, typisk for en brannmur med DROP-regel |
+| `1` | Umiddelbar avvisning (RST) eller manglende rute |
+
+Forskjellen mellom 124 og 1 er i praksis det viktigste sporet av alle. Et tidsavbrudd betyr at noen på veien forkaster trafikken uten å svare, og det er nesten alltid en brannmurregel. En umiddelbar RST kommer derimot fra et system som svarer, men ikke tilbyr tjenesten.
+
+Kontroller begge relevante porter med én gang, og i tillegg et valgfritt annet mål for å se om verten i det hele tatt har lov til å opprette utgående forbindelser:
+
+```bash
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+```
+
+Hvis også motprøven ikke gir noe resultat, har systemet generelt ingen direkte utgående tilgang, og trafikken må gå via et internt relay eller en proxy. Lenger nede forklares hvorfor dette tilfellet er særlig vanskelig.
+
+Hvis `/dev/tcp` mangler, er ikke skallet bash. I `sh`, `ash` eller `ksh` finnes ikke funksjonen, noe som ofte feiltolkes som et nettverksproblem:
+
+```bash
+ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
+```
+
+## Trinn 3: Lytt først, ikke send
+
+En SMTP-server hilser av seg selv med et `220`-banner. Den mest informative enkeltstående testen er derfor å åpne en forbindelse og ikke gjøre noe:
+
+```bash
+{ exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
+```
+
+Disse få tegnene skiller to helt ulike situasjoner. Hvis et `220 mail.example.com ESMTP` kommer, snakker motparten og alle videre feil ligger i dialogen. Hvis ingenting kommer, skyldes det ikke en feilformulert kommando fra din side, for du har jo ikke sendt noen.
+
+Fildeskriptoren forblir deretter åpen i skallet. Lukk den før du starter neste test, ellers kan du ende opp med å arbeide videre med en gammel, halvdød forbindelse:
+
+```bash
+exec 3<&- 3>&-
+```
+
+## Trinn 4: SMTP-dialogen for hånd
+
+Når banneret vises, gjennomfører du hele dialogen. Det er viktig med en samtidig leseprosess, slik at du ser hvert svar idet det kommer. Et skript som først sender alt og deretter leser, viser deg ingenting dersom forbindelsen brytes midt i dialogen:
+
+```bash
+{
+exec 3<>/dev/tcp/192.0.2.25/25
+cat <&3 & R=$!
+sleep 1; printf 'EHLO host.example.com\r\n' >&3
+sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
+sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
+sleep 2; printf 'DATA\r\n' >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 3; printf 'QUIT\r\n' >&3
+sleep 2; kill $R 2>/dev/null
+}
+```
+
+To detaljer avgjør om det blir suksess eller frustrasjon. SMTP krever CRLF som linjeslutt, derfor `printf` med `\r\n` og ikke `echo`. Og punktumet på en egen linje avslutter meldingsdelen; det må sendes som `\r\n.\r\n`.
+
+Forventet forløp: `220` ved opprettelse av forbindelsen, `250` på EHLO, `250 2.1.0` på MAIL FROM, `250 2.1.5` på RCPT TO, `354` på DATA og til slutt `250 2.0.0 Ok: queued as <id>`. Noter kø-ID-en. Med den kan meldingen spores hos den driftsansvarlige leverandøren dersom den aldri kommer frem hos mottakeren.
+
+EHLO-navnet fortjener oppmerksomhet: Enkelte relayer kontrollerer det mot Forward- og Reverse-DNS og svarer ellers med `501` eller `504`. Bruk den faktiske FQDN-en til det sendende systemet, ikke kortnavnet.
+
+## Trinn 5: STARTTLS og sertifikat
+
+For den krypterte forbindelsen utfører `openssl s_client` selv STARTTLS-forhandlingen og overfører deretter kanalen til standardinndata:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
+```
+
+Hvis du kobler til via IP-adressen fordi DNS mangler, blir vertsnavnkontrollen meningsløs. Sertifikatnavnet passer da ikke til den numeriske adressen. SNI og kontrollnavn kan settes eksplisitt, helt uten DNS-oppslag:
+
+```bash
+openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+```
+
+To feilmønstre dukker jevnlig opp her og blir ofte feiltolket.
+
+**«Didn't find STARTTLS in server response, trying anyway»** betyr at serveren ikke tilbød STARTTLS i sitt EHLO-svar. `openssl` sender likevel et TLS-ClientHello, serveren oppfatter dette som protokollsøppel, og forbindelsen avsluttes med `wrong version number` eller `write:errno=32` (EPIPE). Begge meldingene er følgefeil. Den egentlige informasjonen er: ingen STARTTLS. Se i klartekstdialogen fra trinn 4 hvilke egenskaper serveren faktisk melder.
+
+**Ingen STARTTLS på et internt hopp** er ofte helt korrekt. Hvis en lastbalanserer videresender forbindelsen på lag 4, forhandler ikke den TLS, men systemet bak den gjør det først mot det faktiske målet. Å teste i klartekst på det interne segmentet er da ikke en sikkerhetsmangel, men ganske enkelt arkitekturen.
+
+## Trinn 6: Python som alternativ
+
+Hvis Python finnes, slipper du tidsstyringsarbeidet med `sleep`. Standardbiblioteket er tilstrekkelig; ingenting må installeres i tillegg:
+
+```python
+#!/usr/bin/env python3
+import smtplib, ssl
+from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
+
+msg = EmailMessage()
+msg["From"] = "absender@example.com"
+msg["To"] = "empfaenger@example.net"
+msg["Subject"] = "Relay-Test"
+msg["Date"] = formatdate(localtime=True)
+msg["Message-ID"] = make_msgid(domain="example.com")
+msg.set_content("Testnachricht\n")
+
+ctx = ssl.create_default_context()
+ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+
+s = smtplib.SMTP("192.0.2.25", 25, timeout=30, local_hostname="host.example.com")
+s.set_debuglevel(1)
+s.ehlo()
+if s.has_extn("starttls"):
+    s.starttls(context=ctx, server_hostname="mail.example.com")
+    s.ehlo()
+    print("TLS:", s.sock.version(), s.sock.cipher()[0])
+s.send_message(msg)
+s.quit()
+```
+
+`set_debuglevel(1)` logger hele dialogen, inkludert alle svarkoder, og `smtplib` leser hvert svar synkront. Et avbrudd vises som `SMTPServerDisconnected` sammen med den siste mottatte linjen, i stedet for som en stille Broken Pipe.
+
+To fallgruver: `server_hostname` er obligatorisk når du kobler til via en IP-adresse, ellers kontrollerer Python sertifikatet mot den numeriske adressen. Og hvis du bevisst slår av kontrollen, må `check_hostname = False` stå før `verify_mode = ssl.CERT_NONE`, ellers kaster Python en `ValueError`.
+
+## Avsenderadresse, SPF og alignment
+
+En test feiler overraskende ofte ikke i transporten, men på grunn av valgt avsenderadresse. Tre punkter bør kontrolleres på forhånd.
+
+Avsenderdomenet må være en FQDN. En adresse som `test@meine-testdomain` uten toppnivådomene avvises av mange MTA-er allerede ved MAIL FROM med `501` eller `553`.
+
+Domenet må autorisere den benyttede sendingsveien. Et blikk på SPF-posten viser om den utgående adressen er dekket:
+
+```bash
+dig +short TXT example.com | grep spf1
+```
+
+Og med aktiv DMARC avgjør alignment. Hvis posten inneholder `aspf=s`, må domenet i konvolutten (MAIL FROM) og domenet i `From:`-headeren være nøyaktig identiske, ikke bare beslektede:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+Ved `p=reject` forsvinner en test-e-post med upassende alignment hos mottakeren uten kommentar, selv om relayet ditt har akseptert den med `250 queued`. Dette er den vanligste årsaken til meldinger som anses som vellykket sendt på avsendersiden, men som likevel aldri kommer frem.
+
+## Når en lastbalanserer står imellom
+
+I større miljøer sender en appliance sjelden direkte til Internett. Vanlig er en virtuell server på en lastbalanserer som tar imot forbindelsen, omskriver den til en definert adresse via Source-NAT og først deretter videresender den utad. Dette har en ubehagelig konsekvens for diagnostikken.
+
+En virtuell server som arbeider på lag 4, kvitterer TCP-handshaken umiddelbart før den selv har opprettet en forbindelse til målet. Hvis denne andre forbindelsen feiler, ser klienten en vellykket opprettet og umiddelbart deretter tilbakestilt forbindelse: `Connection reset by peer`, uten noe SMTP-banner. Feilen ligger da ikke hos deg eller målet, men i poolen bak den virtuelle serveren, for eksempel fordi et medlem er markert som down eller den lagrede FQDN-en ikke kan slås opp.
+
+Dette forklarer også hvorfor en test direkte mot Internettmålet må feile dersom videresendingsregelen bare aksepterer trafikk fra den allerede omskrevne SNAT-adressen. Forbindelser med den opprinnelige kildeadressen passer ikke med noen regel og forkastes. I slike miljøer må du alltid teste mot den tiltenkte virtuelle serveren, ikke mot det faktiske målet.
+
+Hvilken kildeadresse systemet ditt bruker for et bestemt mål, besvares med én enkelt linje. Verdien etter `src` er nøyaktig opplysningen nettverksteamet trenger for å åpne opp:
+
+```bash
+ip route get 192.0.2.25
+```
+
+Hvis systemet står bak NAT, ser motparten ikke denne, men perimeterens offentlige adresse. Den kan ikke fastslås innenfra så lenge ingen trafikk slipper gjennom; den står i NAT-regelen.
+
+## Feilmønstre i korte trekk
+
+| Observasjon | Sannsynlig årsak |
+|---|---|
+| `Name or service not known` | Ingen navneoppløsning på verten |
+| Tidsavbrudd, exit 124 | Brannmur forkaster uten svar (DROP) |
+| `Connection refused` | Ingen tjeneste på porten eller REJECT-regel |
+| Forbindelsen er opprettet, intet banner, deretter RST | Lastbalanserer aksepterer, backend er ikke tilgjengelig |
+| `Didn't find STARTTLS` | Serveren tilbyr ingen transportkryptering |
+| `wrong version number`, `errno=32` | Følgefeil etter tvunget TLS uten STARTTLS |
+| `501` / `553` på MAIL FROM | Avsenderdomene er ikke en FQDN eller ikke tillatt |
+| `554 relay access denied` | Kilde-IP er ikke godkjent hos relayet |
+| `250 queued`, men ingen levering | SPF-, DKIM- eller DMARC-alignment hos mottakeren |
+
+## Lasttester og rate limits
+
+For volumtester gjelder en regel som ofte overses i hverdagen: Det er ikke antallet meldinger som er problemet, men antallet forbindelser. Typiske relayer tillater noen hundre forbindelser per minutt, men titusenvis av meldinger. Hold derfor en sesjon åpen og send mange konvolutter gjennom den, i stedet for å opprette en ny forbindelse for hver melding.
+
+I `smtplib` betyr dette ganske enkelt å bruke det samme forbindelsesobjektet flere ganger og kontrollert opprette sesjonen på nytt etter et fast antall meldinger. Den som i stedet åpner en ny forbindelse per e-post, når forbindelsesgrensen lenge før meldingsgrensen og fremprovoserer avvisninger som ser ut som et problem hos motparten.
+
+## Konklusjon
+
+Den manuelle SMTP-testen er ikke en nødløsning for miljøer uten verktøy, men den mest presise diagnosen som er tilgjengelig i e-postdrift. Den skiller navneoppløsning, tilgjengelighet, protokolldialog og kryptering rent fra hverandre og gir et entydig resultat for hvert nivå. Den som først bare lytter, deretter fører dialogen manuelt og tar svarkodene på alvor, kan i løpet av få minutter gi en uttalelse som dokumenterer en sak overfor nettverks- eller leverandørteamet: med kildeadresse, målport, observert atferd og exit-kode.
+
+## Kilder
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Definerer SMTP-dialogen, kommandorekkefølgen og betydningen av svarkodene.
+
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Beskriver STARTTLS som utvidelse, inkludert virkemåten når serveren ikke tilbyr den.
+
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Struktur og evaluering av SPF-posten for autorisering av sendende systemer.
+
+4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Regulerer alignment mellom konvolutt- og headeravsender samt evaluering av policyen.
+
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Referanse for de benyttede alternativene, blant annet `-starttls`, `-servername` og `-verify_hostname`.
+
+6.  [Python-dokumentasjon: smtplib](https://docs.python.org/3/library/smtplib.html): Standardbibliotek for SMTP-sesjoner, inkludert STARTTLS og feilsøkingsutdata.
+
+7.  [Bash Reference Manual: Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Dokumenterer `/dev/tcp` som en bash-spesifikk pseudoenhet for nettverksforbindelser.
 
 ----
 
