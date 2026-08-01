@@ -23,16 +23,18 @@ HIN erneuert 2026 die Plattform für Identität und Zugriff. Die erste Frist lä
 
 **Betroffen sind das HIN Access Gateway (AGW), der HIN Client und die Authentisierungsmittel. Das HIN Mailgateway ist nicht betroffen.** Es wird ebenfalls abgelöst, aber in einem separaten Vorhaben mit eigenem Fahrplan.
 
-Kurze Einordnung vorab:
-
-- **Kein eigenes Mailgateway im Betrieb?** Dann ist die Tabelle unten Ihr vollständiger Handlungsbedarf.
-- **Eigenes Mailgateway im Betrieb?** Dann steht zusätzlich die Ablösung durch «Stargate» an, breiter Rollout ab Q3 2026. Wer den Migrationspfad vorab geklärt haben will, kann sich für einen kostenlosen Check der bestehenden Umgebung registrieren.
-
-<aside class="offer-box">
-  <span class="offer-box__tag">Angebot</span>
-  <p><strong>Vorbereitung auf die Stargate-Migration.</strong> Kostenloser Check Ihrer bestehenden Gateway-Umgebung, mit Empfehlung für den Migrationspfad.</p>
-  <a class="offer-box__cta" href="/stargate">Kostenlos registrieren</a>
-</aside>
+<div class="choice-row">
+  <a class="choice" href="#die-fristen">
+    <span class="choice__label">Ihre Situation</span>
+    <span class="choice__title">Nur AGW im Betrieb</span>
+    <span class="choice__hint">Die Fristen unten sind Ihr vollständiger Handlungsbedarf. →</span>
+  </a>
+  <a class="choice" href="/stargate">
+    <span class="choice__label">Ihre Situation</span>
+    <span class="choice__title">Zusätzlich Migrationsbedarf beim Mailgateway</span>
+    <span class="choice__hint">Dann steht auch die Ablösung durch «Stargate» an, breiter Rollout ab Q3 2026. Kostenloser Check Ihrer Umgebung. →</span>
+  </a>
+</div>
 
 ## Die Fristen
 
@@ -49,8 +51,6 @@ Kurze Einordnung vorab:
 ## Access Gateway ist nicht Mailgateway
 
 Beide tragen Gateway im Namen und werden regelmässig verwechselt. Das Access Gateway steuert den Zugriff auf HIN-geschützte Anwendungen und berührt den Mailverkehr nicht. Das Mailgateway steht in der Mailstrecke und verschlüsselt Nachrichten.
-
-Eine Praxis kann also von sämtlichen Fristen betroffen sein, ohne je ein Mailgateway betrieben zu haben, während umgekehrt ein Mailgateway-Betreiber beim Access Gateway völlig unberührt bleiben kann.
 
 ## Access Gateway: Firewall und Version 4
 
@@ -104,7 +104,7 @@ Der Aufwand liegt damit auf einer ganz anderen Ebene. Die Plattformerneuerung ve
 
 <aside class="offer-box">
   <span class="offer-box__tag">Kostenloser Check</span>
-  <p><strong>Ihr Migrationspfad sollte vor der Terminbuchung feststehen.</strong> Ich sehe mir Ihre bestehende Gateway-Umgebung an und gebe Ihnen eine Empfehlung dazu, unabhängig davon, ob Sie die Migration danach selbst durchführen oder sich begleiten lassen.</p>
+  <p><strong>Sie müssen nicht wissen, wo Sie stehen. Genau dafür ist der Check da.</strong> Ich sehe mir Ihre bestehende Gateway-Umgebung an und sage Ihnen, was vor dem Migrationsfenster zu erledigen ist, unabhängig davon, ob Sie danach selbst migrieren oder sich begleiten lassen.</p>
   <a class="offer-box__cta" href="/stargate">Jetzt registrieren</a>
 </aside>
 
