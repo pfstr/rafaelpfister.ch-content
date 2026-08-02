@@ -7586,6 +7586,118 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 
 ----
 
+# Renouvellement de la plateforme HIN 2026 : Access Gateway, Client et échéances jusqu’au 14 septembre
+
+URL: https://rafaelpfister.ch/fr/blog/renouvellement-de-la-plateforme-hin-2026-access-gateway-client-et-echeances-jusqu-au-14
+Datum: 2026-08-01
+
+# Renouvellement de la plateforme HIN 2026 : Access Gateway, Client et échéances jusqu’au 14 septembre
+
+En 2026, HIN renouvelle sa plateforme d’identité et d’accès. La première échéance arrive à expiration le 14 août 2026, suivie du grand changement le 14 septembre 2026.
+
+**Sont concernés le HIN Access Gateway (AGW), le HIN Client et les moyens d’authentification. Le HIN Mailgateway n’est pas concerné.** Il sera également remplacé, mais dans le cadre d’un projet distinct avec son propre calendrier.
+
+<div class="choice-row">
+  <a class="choice" href="#die-fristen">
+    <span class="choice__label">Votre situation</span>
+    <span class="choice__title">Seul l’AGW est en service</span>
+    <span class="choice__hint">Les échéances ci-dessous constituent l’ensemble des actions à entreprendre. →</span>
+  </a>
+  <a class="choice" href="/stargate">
+    <span class="choice__label">Votre situation</span>
+    <span class="choice__title">Besoin de migration supplémentaire pour le Mailgateway</span>
+    <span class="choice__hint">Le remplacement par « Stargate » est alors également prévu, avec un déploiement à grande échelle à partir du T3 2026. Vérification gratuite de votre environnement. →</span>
+  </a>
+</div>
+
+## Les échéances
+
+| Date | Mesure | Concerne |
+|---|---|---|
+| 14.08.2026 | Autorisation dans le pare-feu pour `idp.id.hin.ch` (`185.154.38.46`, `193.168.215.45`) | Exploitants d’AGW |
+| 17.08.2026 | Installation automatique de l’AGW version 4 | Exploitants d’AGW |
+| à partir de la mi-août | Installation manuelle de HIN Client 4.0 recommandée | Tous les utilisateurs du Client |
+| 14.09.2026 | Migration des points de terminaison SAML | Fédérations, connexions au DEP |
+| 14.09.2026 | Expiration des jetons matériels et des identités de test | Utilisateurs de jetons, intégration |
+| 14.09.2026 | Reconfiguration de l’application Authenticator | Utilisateurs de l’application |
+| 14.09.2026 | Mise à jour forcée vers HIN Client 4.0 | Tous les utilisateurs du Client |
+
+## Access Gateway n’est pas Mailgateway
+
+Les deux portent le nom de Gateway et sont régulièrement confondus. L’Access Gateway contrôle l’accès aux applications protégées par HIN et n’intervient pas dans le trafic e-mail. Le Mailgateway se trouve sur le cheminement des e-mails et chiffre les messages.
+
+## Access Gateway : pare-feu et version 4
+
+D’ici au 14 août, l’AGW doit pouvoir atteindre `idp.id.hin.ch`. Il s’agit d’une modification du pare-feu, et non d’un réglage dans la passerelle ; elle relève donc souvent du responsable réseau plutôt que de l’administrateur de la passerelle.
+
+À partir du 17 août, la version 4 sera installée automatiquement. Conditions requises : AGW en version 3.1.50 ou supérieure, et Kerberos activé comme méthode d’authentification. Pour la connexion à Active Directory, un compte LDAP disposant de droits de lecture est nécessaire.
+
+Les personnes ne remplissant pas les conditions ne seront pas mises à jour, et l’expérience montre que cela ne devient apparent que lorsque plus personne ne peut se connecter. Il est donc préférable de vérifier dès maintenant la version plutôt qu’en septembre.
+
+## SAML : nouveaux points de terminaison, moins d’attributs
+
+```text
+Föderationsdienst
+  broker.hin.ch/realms/HINBroker/protocol/saml/descriptor
+
+EPD-Zugang
+  idp.id.hin.ch/auth/realms/hinid/protocol/saml/descriptor
+```
+
+Ce changement modifie les formats d’attributs et les bindings. L’ensemble des attributs est réduit au GLN, au nom, à la date de naissance et au sexe.
+
+C’est à ce niveau que les intégrations se rompent. Toute application exploitant d’autres attributs pour les rôles ou la séparation des mandants ne les recevra plus après le 14 septembre. L’erreur ne se manifestera pas par un échec de connexion, mais par des autorisations manquantes dans le système cible.
+
+Les identités de test expirent à la même date ; toute personne souhaitant tester le changement dans un environnement d’intégration devrait donc le faire auparavant.
+
+Les organisations qui exploitent une fédération exploitent presque toujours aussi leur propre infrastructure e-mail. Pour elles, le renouvellement de la plateforme et le [remplacement du Mailgateway par « Stargate »](/stargate) tombent la même année : ils sont techniquement indépendants, mais concurrencent les mêmes personnes et les mêmes fenêtres de maintenance.
+
+## Jetons, application et HIN Client 4.0
+
+Les jetons matériels ne sont plus délivrés et expirent le 14 septembre. Alternatives : HIN Client, code SMS ou application Authenticator. L’application elle-même reste valable jusqu’au 14 septembre et devra ensuite être reconfigurée via le portail en libre-service.
+
+Au plus tard le 14 septembre, HIN Client sera automatiquement mis à jour vers la version 4.0 ; une installation manuelle est possible à partir de la mi-août via `download.hin.ch`. La connexion s’effectue désormais via le navigateur.
+
+Le point critique concerne les prérequis système : **la version 4.0 exige Windows 11 ou macOS 14.** Les appareils plus anciens doivent être mis à jour ou remplacés auparavant. Pour une partie des cabinets, l’échéance n’est donc pas une tâche logicielle, mais une tâche d’approvisionnement. Ceux qui ne s’en aperçoivent qu’en septembre devront composer avec les délais de livraison et la réinstallation du logiciel du cabinet.
+
+## Cinq questions pour faire le point
+
+1. Quelle version d’AGW est utilisée et Kerberos est-il actif ?
+2. Le pare-feu autorise-t-il les connexions sortantes vers `idp.id.hin.ch` ?
+3. Combien de postes de travail utilisent encore Windows 10 ou macOS 13 et versions antérieures ?
+4. Combien de jetons matériels sont utilisés et vers quelle solution les personnes concernées vont-elles migrer ?
+5. Une application exploite-t-elle des attributs HIN qui disparaîtront à l’avenir ?
+
+Les réponses aux questions 3 et 5 déterminent l’effort nécessaire. Le reste peut être réalisé en quelques heures et est documenté par HIN.
+
+## Le deuxième projet : « Stargate »
+
+Indépendamment de cela, HIN remplace le Mailgateway par le nouveau HIN Gateway, connu en interne sous le nom de projet « Stargate », une approche Data Mesh sur le plan technique, avec chiffrement de bout en bout et gestion décentralisée des clés. Il ne s’agit pas d’un remplacement de l’appliance, mais d’un changement d’architecture.
+
+L’effort se situe donc à un tout autre niveau. Le renouvellement de la plateforme requiert surtout le respect des délais concernant une règle de pare-feu, une version et un remplacement d’appareil, tandis qu’avec Stargate, c’est le cheminement productif des e-mails lui-même qui est remis en question : l’ensemble des règles élaboré au fil du temps, le matériel de clé, le traitement des destinataires sans identité HIN et la question de la solution de repli en cas de problème. Puisque la migration se déroule dans des créneaux réservés de quatre heures et que HIN recommande un mois de préparation, un tel rendez-vous ne laisse aucune place aux questions non résolues.
+
+<aside class="offer-box">
+  <span class="offer-box__tag">Vérification gratuite</span>
+  <p><strong>Vous n’avez pas besoin de savoir où vous en êtes. C’est précisément à cela que sert cette vérification.</strong> J’examine votre environnement de passerelle existant et vous indique ce qui doit être fait avant la fenêtre de migration, que vous effectuiez ensuite vous-même la migration ou que vous choisissiez un accompagnement.</p>
+  <a class="offer-box__cta" href="/stargate">S’inscrire maintenant</a>
+</aside>
+
+## Sources
+
+1.  [Renouvellement de la plateforme HIN : ces adaptations techniques sont nécessaires pour les membres HIN](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): échéances en août et septembre, points de terminaison SAML, ensemble d’attributs réduit, autorisations de pare-feu.
+
+2.  [Le nouveau HIN Client est disponible : ce qui change pour les membres HIN](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): version 4.0, prérequis du système d’exploitation, connexion basée sur le navigateur.
+
+3.  [HIN Gateway : communication sécurisée au sein de la communauté HIN](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm): remplacement du Mailgateway, architecture, modèles d’exploitation, migration dans des créneaux réservés.
+
+4.  [Configuration du HIN Access Gateway](https://cdn.hin.ch/agw/manual/DE/4-konfiguration-des-hin-access-gateway.html): rôle de l’AGW dans la gestion des accès.
+
+5.  [Connexion à Active Directory](https://cdn.hin.ch/agw/manual/DE/5-anbindung-active-directory.html): Kerberos et le compte LDAP avec droits de lecture.
+
+6.  [HIN AG : « Du Mailgateway au Data Mesh »](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): contexte de « Stargate », nœuds décentralisés, calendrier.
+
+----
+
 # Tester SMTP sous Linux : de la connexion TCP à l’e-mail délivré
 
 URL: https://rafaelpfister.ch/fr/blog/tester-smtp-sous-linux-de-la-connexion-tcp-a-l-e-mail-delivre
@@ -11315,6 +11427,118 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# Rinnovo della piattaforma HIN 2026: Access Gateway, Client e scadenze fino al 14 settembre
+
+URL: https://rafaelpfister.ch/it/blog/rinnovo-della-piattaforma-hin-2026-access-gateway-client-e-scadenze-fino-al-14-settembre
+Datum: 2026-08-01
+
+# Rinnovo della piattaforma HIN 2026: Access Gateway, Client e scadenze fino al 14 settembre
+
+Nel 2026 HIN rinnova la piattaforma per identità e accesso. La prima scadenza è il 14 agosto 2026, mentre la grande transizione seguirà il 14 settembre 2026.
+
+**Sono interessati HIN Access Gateway (AGW), HIN Client e i metodi di autenticazione. HIN Mailgateway non è interessato.** Sarà anch'esso sostituito, ma nell'ambito di un progetto separato con una propria tabella di marcia.
+
+<div class="choice-row">
+  <a class="choice" href="#die-fristen">
+    <span class="choice__label">La vostra situazione</span>
+    <span class="choice__title">Solo AGW in esercizio</span>
+    <span class="choice__hint">Le scadenze riportate sotto comprendono tutte le azioni necessarie. →</span>
+  </a>
+  <a class="choice" href="/stargate">
+    <span class="choice__label">La vostra situazione</span>
+    <span class="choice__title">Necessità di migrazione aggiuntiva per il mail gateway</span>
+    <span class="choice__hint">È quindi imminente anche la sostituzione con «Stargate», con rollout su larga scala dal terzo trimestre 2026. Verifica gratuita del vostro ambiente. →</span>
+  </a>
+</div>
+
+## Le scadenze
+
+| Data | Misura | Riguarda |
+|---|---|---|
+| 14.08.2026 | Abilitazione del firewall per `idp.id.hin.ch` (`185.154.38.46`, `193.168.215.45`) | Gestori AGW |
+| 17.08.2026 | Installazione automatica di AGW versione 4 | Gestori AGW |
+| da metà agosto | Consigliata l'installazione manuale di HIN Client 4.0 | Tutti gli utenti Client |
+| 14.09.2026 | Endpoint SAML migrati | Federazioni, collegamenti EPD |
+| 14.09.2026 | Scadenza di token hardware e identità di test | Utenti di token, integrazioni |
+| 14.09.2026 | Nuova configurazione dell'app Authenticator | Utenti dell'app |
+| 14.09.2026 | Aggiornamento forzato a HIN Client 4.0 | Tutti gli utenti Client |
+
+## Access Gateway non è Mailgateway
+
+Entrambi hanno Gateway nel nome e vengono regolarmente confusi. Access Gateway controlla l'accesso alle applicazioni protette da HIN e non riguarda il traffico e-mail. Mailgateway si trova nel percorso della posta e cifra i messaggi.
+
+## Access Gateway: firewall e versione 4
+
+Entro il 14 agosto l'AGW deve poter raggiungere `idp.id.hin.ch`. Si tratta di una modifica del firewall, non di un'impostazione nel Gateway, e quindi spesso compete al responsabile della rete anziché all'amministratore del Gateway.
+
+Dal 17 agosto verrà installata automaticamente la versione 4. Requisiti: AGW alla versione 3.1.50 o successiva e Kerberos attivo come metodo di autenticazione. Per il collegamento ad Active Directory è necessario un account LDAP con diritti di lettura.
+
+Chi non soddisfa i requisiti non verrà aggiornato, e l'esperienza dimostra che questo si nota solo quando nessuno riesce più ad accedere. È quindi meglio verificare ora la versione anziché a settembre.
+
+## SAML: nuovi endpoint, meno attributi
+
+```text
+Föderationsdienst
+  broker.hin.ch/realms/HINBroker/protocol/saml/descriptor
+
+EPD-Zugang
+  idp.id.hin.ch/auth/realms/hinid/protocol/saml/descriptor
+```
+
+Con il passaggio cambiano i formati degli attributi e i binding. L'insieme degli attributi viene ridotto a GLN, nome, data di nascita e sesso.
+
+Questo è il punto che interrompe le integrazioni. Ogni applicazione che utilizza altri attributi per ruoli o separazione dei mandanti non li riceverà più dopo il 14 settembre. L'errore non si manifesta come errore di accesso, ma come autorizzazione mancante nel sistema di destinazione.
+
+Le identità di test scadono nella stessa data; chi desidera quindi sperimentare la transizione in un ambiente di integrazione dovrebbe farlo prima.
+
+Chi gestisce una federazione gestisce quasi sempre anche una propria infrastruttura e-mail. Per queste organizzazioni, il rinnovo della piattaforma coincide nello stesso anno con la [sostituzione del Mailgateway con «Stargate»](/stargate): tecnicamente indipendenti, ma in competizione per le stesse persone e finestre di manutenzione.
+
+## Token, app e HIN Client 4.0
+
+I token hardware non vengono più emessi e scadono il 14 settembre. Alternative: HIN Client, codice SMS o app Authenticator. L'app stessa resta valida fino al 14 settembre e dovrà poi essere nuovamente configurata tramite il portale self-service.
+
+HIN Client verrà aggiornato automaticamente alla versione 4.0 entro e non oltre il 14 settembre; l'installazione manuale è disponibile da metà agosto tramite `download.hin.ch`. Il login avverrà ora tramite browser.
+
+Il punto critico sono i requisiti di sistema: **la versione 4.0 richiede Windows 11 o macOS 14.** I dispositivi più vecchi devono essere aggiornati o sostituiti prima. Per una parte degli studi, la scadenza non è quindi una questione software, ma di approvvigionamento. Chi se ne accorge solo a settembre dovrà fare i conti con tempi di consegna e reinstallazione del software dello studio.
+
+## Cinque domande per fare il punto
+
+1. Quale versione AGW è in esecuzione e Kerberos è attivo?
+2. Il firewall consente in uscita `idp.id.hin.ch`?
+3. Quante postazioni di lavoro utilizzano ancora Windows 10 o macOS 13 e versioni precedenti?
+4. Quanti token hardware sono in uso e a cosa passeranno gli utenti interessati?
+5. Un'applicazione utilizza attributi HIN che in futuro verranno eliminati?
+
+Le risposte alle domande 3 e 5 determinano l'impegno necessario. Il resto si completa in poche ore ed è documentato da HIN.
+
+## Il secondo progetto: «Stargate»
+
+Indipendentemente da questo, HIN sostituisce Mailgateway con il nuovo HIN Gateway, internamente progetto «Stargate», tecnicamente un approccio Data Mesh con crittografia end-to-end e gestione decentralizzata delle chiavi. Non si tratta della sostituzione dell'appliance, ma di un cambiamento architetturale.
+
+L'impegno si colloca quindi su un livello completamente diverso. Il rinnovo della piattaforma richiede soprattutto il rispetto delle scadenze per una regola firewall, una versione e la sostituzione di un dispositivo, mentre con Stargate è il percorso di posta produttivo stesso a essere rimesso in discussione: l'insieme di regole consolidato, il materiale delle chiavi, la gestione dei destinatari senza identità HIN e la domanda su quale soluzione adottare se qualcosa non funziona come previsto. Poiché la migrazione si svolge in finestre di quattro ore prenotate e HIN raccomanda un mese di preparazione, un simile appuntamento non ammette questioni aperte.
+
+<aside class="offer-box">
+  <span class="offer-box__tag">Verifica gratuita</span>
+  <p><strong>Non dovete sapere a che punto siete. È proprio a questo che serve la verifica.</strong> Esamino il vostro ambiente Gateway esistente e vi dico cosa deve essere fatto prima della finestra di migrazione, indipendentemente dal fatto che eseguiate poi la migrazione autonomamente o con assistenza.</p>
+  <a class="offer-box__cta" href="/stargate">Registratevi ora</a>
+</aside>
+
+## Fonti
+
+1.  [Rinnovo della piattaforma HIN: questi adeguamenti tecnici sono necessari per i membri HIN](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): scadenze ad agosto e settembre, endpoint SAML, insieme di attributi ridotto, abilitazioni del firewall.
+
+2.  [Il nuovo HIN Client è disponibile: cosa cambia per i membri HIN](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): versione 4.0, requisiti del sistema operativo, accesso basato sul browser.
+
+3.  [HIN Gateway: comunicazione sicura all'interno della Community HIN](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm): sostituzione di Mailgateway, architettura, modelli operativi, migrazione in finestre temporali prenotate.
+
+4.  [Configurazione di HIN Access Gateway](https://cdn.hin.ch/agw/manual/DE/4-konfiguration-des-hin-access-gateway.html): ruolo dell'AGW nella gestione degli accessi.
+
+5.  [Collegamento ad Active Directory](https://cdn.hin.ch/agw/manual/DE/5-anbindung-active-directory.html): Kerberos e l'account LDAP con diritti di lettura.
+
+6.  [HIN AG: «Dal Mailgateway al Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): informazioni di contesto su «Stargate», nodi decentralizzati, calendario.
+
+----
+
 # Testare SMTP su Linux: dalla connessione TCP all'email consegnata
 
 URL: https://rafaelpfister.ch/it/blog/testare-smtp-su-linux-dalla-connessione-tcp-all-email-consegnata
@@ -15040,6 +15264,118 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Renovación de la plataforma HIN 2026: Access Gateway, Client y los plazos hasta el 14 de septiembre
+
+URL: https://rafaelpfister.ch/es/blog/renovacion-de-la-plataforma-hin-2026-access-gateway-client-y-los-plazos-hasta-el-14-de
+Datum: 2026-08-01
+
+# Renovación de la plataforma HIN 2026: Access Gateway, Client y los plazos hasta el 14 de septiembre
+
+En 2026, HIN renovará la plataforma de identidad y acceso. El primer plazo vence el 14 de agosto de 2026; el gran cambio tendrá lugar el 14 de septiembre de 2026.
+
+**Se ven afectados el HIN Access Gateway (AGW), el HIN Client y los medios de autenticación. El HIN Mailgateway no se ve afectado.** También será sustituido, pero en un proyecto independiente con su propio calendario.
+
+<div class="choice-row">
+  <a class="choice" href="#die-fristen">
+    <span class="choice__label">Su situación</span>
+    <span class="choice__title">Solo AGW en funcionamiento</span>
+    <span class="choice__hint">Los plazos indicados a continuación cubren todas las medidas que debe tomar. →</span>
+  </a>
+  <a class="choice" href="/stargate">
+    <span class="choice__label">Su situación</span>
+    <span class="choice__title">Además, necesidad de migración del gateway de correo</span>
+    <span class="choice__hint">También está pendiente la sustitución por «Stargate», con despliegue amplio a partir del T3 de 2026. Revisión gratuita de su entorno. →</span>
+  </a>
+</div>
+
+## Los plazos
+
+| Fecha | Medida | Afecta a |
+|---|---|---|
+| 14.08.2026 | Habilitación de firewall para `idp.id.hin.ch` (`185.154.38.46`, `193.168.215.45`) | Operadores de AGW |
+| 17.08.2026 | Instalación automática de AGW versión 4 | Operadores de AGW |
+| a partir de mediados de agosto | Se recomienda la instalación manual de HIN Client 4.0 | Todos los usuarios de Client |
+| 14.09.2026 | Endpoints SAML migrados | Federaciones, conexiones al EPD |
+| 14.09.2026 | Caducan los tokens de hardware y las identidades de prueba | Usuarios de tokens, integración |
+| 14.09.2026 | Reconfigurar la aplicación Authenticator | Usuarios de la aplicación |
+| 14.09.2026 | Actualización obligatoria a HIN Client 4.0 | Todos los usuarios de Client |
+
+## Access Gateway no es Mailgateway
+
+Ambos llevan Gateway en el nombre y se confunden con frecuencia. El Access Gateway controla el acceso a aplicaciones protegidas por HIN y no afecta al tráfico de correo. El Mailgateway se encuentra en la ruta del correo y cifra los mensajes.
+
+## Access Gateway: firewall y versión 4
+
+Hasta el 14 de agosto, el AGW debe poder acceder a `idp.id.hin.ch`. Se trata de un cambio en el firewall, no de una configuración en el gateway, por lo que suele corresponder al responsable de red y no al administrador del gateway.
+
+A partir del 17 de agosto se instalará automáticamente la versión 4. Requisito: AGW en versión 3.1.50 o superior y Kerberos activo como método de autenticación. Para la conexión con Active Directory se necesita una cuenta LDAP con permisos de lectura.
+
+Quien no cumpla los requisitos no será actualizado, y la experiencia demuestra que esto solo se detecta cuando ya nadie puede iniciar sesión. Por tanto, es mejor comprobar ahora la versión que hacerlo en septiembre.
+
+## SAML: nuevos endpoints, menos atributos
+
+```text
+Föderationsdienst
+  broker.hin.ch/realms/HINBroker/protocol/saml/descriptor
+
+EPD-Zugang
+  idp.id.hin.ch/auth/realms/hinid/protocol/saml/descriptor
+```
+
+Con el cambio se modifican los formatos de atributos y los bindings. El conjunto de atributos se reduce a GLN, nombre, fecha de nacimiento y sexo.
+
+Este es el punto que rompe las integraciones. Cualquier aplicación que utilice otros atributos para roles o separación de mandantes dejará de recibirlos después del 14 de septiembre. El error no se manifestará como un fallo de inicio de sesión, sino como la ausencia de permisos en el sistema de destino.
+
+Las identidades de prueba caducan en la misma fecha; quien desee probar el cambio en un entorno de integración debería hacerlo antes.
+
+Quien opera una federación casi siempre opera también su propia infraestructura de correo. Para estas organizaciones, la renovación de la plataforma coincide en el mismo año con la [sustitución del Mailgateway por «Stargate»](/stargate): técnicamente son independientes, pero compiten por las mismas personas y ventanas de mantenimiento.
+
+## Token, aplicación y HIN Client 4.0
+
+Ya no se emiten tokens de hardware y caducan el 14 de septiembre. Alternativas: HIN Client, código SMS o aplicación Authenticator. La propia aplicación seguirá siendo válida hasta el 14 de septiembre y después deberá configurarse de nuevo a través del portal de autoservicio.
+
+HIN Client se actualizará automáticamente a la versión 4.0 a más tardar el 14 de septiembre; la instalación manual estará disponible desde mediados de agosto a través de `download.hin.ch`. El inicio de sesión se realizará ahora mediante el navegador.
+
+El punto crítico son los requisitos del sistema: **la versión 4.0 requiere Windows 11 o macOS 14.** Los dispositivos más antiguos deben actualizarse o sustituirse antes. Para una parte de las consultas, el plazo no es por tanto una tarea de software, sino de adquisición. Quien lo advierta solo en septiembre tendrá que lidiar con plazos de entrega y la reinstalación del software de la consulta.
+
+## Cinco preguntas para determinar la situación
+
+1. ¿Qué versión de AGW está en funcionamiento y está activo Kerberos?
+2. ¿El firewall permite conexiones salientes a `idp.id.hin.ch`?
+3. ¿Cuántos puestos de trabajo siguen funcionando con Windows 10 o macOS 13 y versiones anteriores?
+4. ¿Cuántos tokens de hardware están en uso y a qué alternativa cambiarán las personas afectadas?
+5. ¿Alguna aplicación utiliza atributos HIN que dejarán de estar disponibles?
+
+Las respuestas a las preguntas 3 y 5 determinan el esfuerzo. El resto se resuelve en pocas horas y está documentado por HIN.
+
+## El segundo proyecto: «Stargate»
+
+De forma independiente, HIN sustituye el Mailgateway por el nuevo HIN Gateway, denominado internamente proyecto «Stargate», un enfoque técnico de Data Mesh con cifrado de extremo a extremo y gestión descentralizada de claves. No se trata de sustituir el appliance, sino de un cambio de arquitectura.
+
+Por tanto, el esfuerzo se sitúa en un nivel completamente distinto. La renovación de la plataforma exige sobre todo cumplir los plazos de una regla de firewall, una versión y la sustitución de un dispositivo, mientras que con Stargate se pone en cuestión la propia ruta productiva de correo: el conjunto de reglas desarrollado con el tiempo, el material de claves, el tratamiento de destinatarios sin identidad HIN y la cuestión de a qué recurrir si algo no funciona como se esperaba. Dado que la migración se realiza en ventanas reservadas de cuatro horas y HIN recomienda un mes de preparación, una cita de este tipo no admite asuntos pendientes.
+
+<aside class="offer-box">
+  <span class="offer-box__tag">Revisión gratuita</span>
+  <p><strong>No necesita saber cuál es su situación. Precisamente para eso está la revisión.</strong> Revisaré su entorno de gateway existente y le indicaré qué debe hacerse antes de la ventana de migración, independientemente de que luego migre por su cuenta o cuente con acompañamiento.</p>
+  <a class="offer-box__cta" href="/stargate">Registrarse ahora</a>
+</aside>
+
+## Fuentes
+
+1.  [Renovación de la plataforma HIN: estos ajustes técnicos son necesarios para los miembros de HIN](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): plazos en agosto y septiembre, endpoints SAML, conjunto reducido de atributos, habilitaciones de firewall.
+
+2.  [Ya está disponible el nuevo HIN Client: esto cambia para los miembros de HIN](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): versión 4.0, requisitos del sistema operativo, inicio de sesión basado en navegador.
+
+3.  [HIN Gateway: comunicación segura dentro de la comunidad HIN](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm): sustitución del Mailgateway, arquitectura, modelos operativos, migración en ventanas reservadas.
+
+4.  [Configuración del HIN Access Gateway](https://cdn.hin.ch/agw/manual/DE/4-konfiguration-des-hin-access-gateway.html): función del AGW en la gestión de accesos.
+
+5.  [Conexión con Active Directory](https://cdn.hin.ch/agw/manual/DE/5-anbindung-active-directory.html): Kerberos y la cuenta LDAP con permisos de lectura.
+
+6.  [HIN AG: «Del Mailgateway al Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): contexto de «Stargate», nodos descentralizados, calendario.
 
 ----
 
@@ -18772,6 +19108,118 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# HIN-plattformsförnyelse 2026: Access Gateway, Client och tidsfristerna fram till 14 september
+
+URL: https://rafaelpfister.ch/sv/blog/hin-plattformsfornyelse-2026-access-gateway-client-och-tidsfristerna-fram-till-14-september
+Datum: 2026-08-01
+
+# HIN-plattformsförnyelse 2026: Access Gateway, Client och tidsfristerna fram till 14 september
+
+HIN förnyar 2026 plattformen för identitet och åtkomst. Den första tidsfristen löper ut den 14 augusti 2026, den stora omställningen följer den 14 september 2026.
+
+**HIN Access Gateway (AGW), HIN Client och autentiseringsmetoderna berörs. HIN Mailgateway berörs inte.** Det kommer också att ersättas, men i ett separat projekt med en egen tidsplan.
+
+<div class="choice-row">
+  <a class="choice" href="#die-fristen">
+    <span class="choice__label">Din situation</span>
+    <span class="choice__title">Endast AGW i drift</span>
+    <span class="choice__hint">Tidsfristerna nedan är hela ditt åtgärdsbehov. →</span>
+  </a>
+  <a class="choice" href="/stargate">
+    <span class="choice__label">Din situation</span>
+    <span class="choice__title">Dessutom migrationsbehov för Mailgateway</span>
+    <span class="choice__hint">Då står även ersättningen med «Stargate» på tur, med bred utrullning från Q3 2026. Kostnadsfri kontroll av din miljö. →</span>
+  </a>
+</div>
+
+## Tidsfristerna
+
+| Datum | Åtgärd | Berör |
+|---|---|---|
+| 14.08.2026 | Brandväggsöppning för `idp.id.hin.ch` (`185.154.38.46`, `193.168.215.45`) | AGW-operatörer |
+| 17.08.2026 | Automatisk installation av AGW version 4 | AGW-operatörer |
+| från mitten av augusti | Manuell installation av HIN Client 4.0 rekommenderas | Alla Client-användare |
+| 14.09.2026 | SAML-slutpunkter migrerade | Federationer, EPD-anslutningar |
+| 14.09.2026 | Hårdvarutoken och testidentiteter upphör att gälla | Token-användare, integration |
+| 14.09.2026 | Konfigurera Authenticator App på nytt | App-användare |
+| 14.09.2026 | Tvingande uppdatering till HIN Client 4.0 | Alla Client-användare |
+
+## Access Gateway är inte Mailgateway
+
+Båda har Gateway i namnet och förväxlas regelbundet. Access Gateway styr åtkomsten till HIN-skyddade applikationer och påverkar inte e-posttrafiken. Mailgateway står i e-postflödet och krypterar meddelanden.
+
+## Access Gateway: brandvägg och version 4
+
+Senast den 14 augusti måste AGW kunna nå `idp.id.hin.ch`. Det är en brandväggsändring, inte en inställning i gatewayet, och ligger därför ofta hos den nätverksansvariga snarare än hos gatewayansvarig.
+
+Från den 17 augusti installeras version 4 automatiskt. Förutsättning: AGW på version 3.1.50 eller senare och Kerberos aktiverat som autentiseringsmetod. För anslutningen till Active Directory krävs ett LDAP-konto med läsbehörighet.
+
+Den som inte uppfyller förutsättningarna uppdateras inte, och erfarenhetsmässigt märks det först när ingen längre kan logga in. Därför är det bättre att kontrollera versionen nu än i september.
+
+## SAML: nya slutpunkter, färre attribut
+
+```text
+Föderationsdienst
+  broker.hin.ch/realms/HINBroker/protocol/saml/descriptor
+
+EPD-Zugang
+  idp.id.hin.ch/auth/realms/hinid/protocol/saml/descriptor
+```
+
+I samband med bytet ändras attributformat och bindningar. Attributmängden reduceras till GLN, namn, födelsedatum och kön.
+
+Detta är punkten som bryter integrationer. Varje applikation som använder ytterligare attribut för roller eller klientseparering får dem inte längre efter den 14 september. Felet visar sig inte som ett inloggningsfel, utan som saknad behörighet i målsystemet.
+
+Testidentiteter upphör att gälla samma datum, så den som vill testa omställningen i en integrationsmiljö bör göra det innan dess.
+
+Den som driver en federation driver nästan alltid också en egen e-postinfrastruktur. För dessa organisationer hamnar plattformsförnyelsen och [ersättningen av Mailgateway med «Stargate»](/stargate) under samma år: tekniskt oberoende, men konkurrerande om samma personer och underhållsfönster.
+
+## Token, app och HIN Client 4.0
+
+Hårdvarutoken utfärdas inte längre och upphör att gälla den 14 september. Alternativ: HIN Client, SMS-kod eller Authenticator App. Appen i sig är giltig till den 14 september och måste därefter konfigureras på nytt via självserviceportalen.
+
+HIN Client uppdateras automatiskt till version 4.0 senast den 14 september, med manuell installation från mitten av augusti via `download.hin.ch`. Inloggningen sker nu via webbläsaren.
+
+Den kritiska punkten är systemkraven: **Version 4.0 kräver Windows 11 eller macOS 14.** Äldre enheter måste uppdateras eller bytas ut före dess. För en del mottagningar är tidsfristen därför inte en mjukvaruuppgift, utan en inköpsuppgift. Den som upptäcker detta först i september får kämpa med leveranstider och ominstallation av mottagningens programvara.
+
+## Fem frågor för nulägesbedömning
+
+1. Vilken AGW-version körs, och är Kerberos aktivt?
+2. Tillåter brandväggen utgående trafik till `idp.id.hin.ch`?
+3. Hur många arbetsplatser kör fortfarande Windows 10 eller macOS 13 och äldre?
+4. Hur många hårdvarutoken används, och vad byter de berörda till?
+5. Använder en applikation HIN-attribut som kommer att försvinna?
+
+Svaren på 3 och 5 avgör arbetsinsatsen. Resten kan göras på några timmar och är dokumenterat av HIN.
+
+## Det andra projektet: «Stargate»
+
+Oberoende av detta ersätter HIN Mailgateway med det nya HIN Gateway, internt projekt «Stargate», tekniskt en Data-Mesh-metod med end-to-end-kryptering och decentraliserad nyckelhantering. Det handlar inte om ett byte av appliance, utan om en arkitekturförändring.
+
+Arbetsinsatsen ligger därmed på en helt annan nivå. Plattformsförnyelsen kräver framför allt att tidsfristerna hålls för en brandväggsregel, en versionsnivå och ett enhetsbyte, medan själva e-postflödet i produktion står på spel med Stargate: de uppbyggda regelverken, nyckelmaterialet, hanteringen av mottagare utan HIN-identitet och frågan om vad man återgår till om något inte fungerar som förväntat. Eftersom migreringen sker i bokade fyratimmarsfönster och HIN rekommenderar en månads förberedelser, tolererar ett sådant tillfälle inga öppna punkter.
+
+<aside class="offer-box">
+  <span class="offer-box__tag">Kostnadsfri kontroll</span>
+  <p><strong>Du behöver inte veta var du står. Det är precis vad kontrollen är till för.</strong> Jag granskar din befintliga gatewaymiljö och berättar vad som behöver göras före migrationsfönstret, oavsett om du sedan migrerar själv eller tar hjälp.</p>
+  <a class="offer-box__cta" href="/stargate">Registrera dig nu</a>
+</aside>
+
+## Källor
+
+1.  [HIN-plattformsförnyelse: Dessa tekniska anpassningar krävs för HIN-medlemmar](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): Tidsfrister i augusti och september, SAML-slutpunkter, reducerad attributmängd, brandväggsöppningar.
+
+2.  [Den nya HIN Client är här: detta ändras för HIN-medlemmar](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): Version 4.0, operativsystemkrav, webbläsarbaserad inloggning.
+
+3.  [HIN Gateway: Säker kommunikation inom HIN Community](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm): Ersättning av Mailgateway, arkitektur, driftmodeller, migrering i bokade tidsfönster.
+
+4.  [Konfiguration av HIN Access Gateway](https://cdn.hin.ch/agw/manual/DE/4-konfiguration-des-hin-access-gateway.html): AGW:s roll i åtkomsthanteringen.
+
+5.  [Anslutning till Active Directory](https://cdn.hin.ch/agw/manual/DE/5-anbindung-active-directory.html): Kerberos och LDAP-kontot med läsbehörighet.
+
+6.  [HIN AG: «Från Mailgateway till Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): Bakgrund om «Stargate», decentraliserade noder, tidsplan.
+
+----
+
 # Testa SMTP under Linux: från TCP-anslutning till levererat e-postmeddelande
 
 URL: https://rafaelpfister.ch/sv/blog/testa-smtp-under-linux-fran-tcp-anslutning-till-levererat-e-postmeddelande
@@ -22498,6 +22946,118 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# HIN-plattformfornyelse 2026: Access Gateway, Client og fristene frem til 14. september
+
+URL: https://rafaelpfister.ch/no/blog/hin-plattformfornyelse-2026-access-gateway-client-og-fristene-frem-til-14-september
+Datum: 2026-08-01
+
+# HIN-plattformfornyelse 2026: Access Gateway, Client og fristene frem til 14. september
+
+HIN fornyer plattformen for identitet og tilgang i 2026. Den første fristen utløper 14. august 2026, den store omstillingen følger 14. september 2026.
+
+**Berørt er HIN Access Gateway (AGW), HIN Client og autentiseringsmidlene. HIN Mailgateway er ikke berørt.** Det erstattes også, men i et separat prosjekt med egen tidsplan.
+
+<div class="choice-row">
+  <a class="choice" href="#die-fristen">
+    <span class="choice__label">Din situasjon</span>
+    <span class="choice__title">Bare AGW i drift</span>
+    <span class="choice__hint">Fristene nedenfor utgjør hele handlingsbehovet ditt. →</span>
+  </a>
+  <a class="choice" href="/stargate">
+    <span class="choice__label">Din situasjon</span>
+    <span class="choice__title">I tillegg migreringsbehov for Mailgateway</span>
+    <span class="choice__hint">Da står også erstatningen med «Stargate» for tur, med bred utrulling fra tredje kvartal 2026. Gratis gjennomgang av miljøet ditt. →</span>
+  </a>
+</div>
+
+## Fristene
+
+| Dato | Tiltak | Gjelder |
+|---|---|---|
+| 14.08.2026 | Brannmuråpning for `idp.id.hin.ch` (`185.154.38.46`, `193.168.215.45`) | AGW-operatører |
+| 17.08.2026 | Automatisk installasjon av AGW versjon 4 | AGW-operatører |
+| fra midten av august | Manuell installasjon av HIN Client 4.0 anbefales | Alle Client-brukere |
+| 14.09.2026 | SAML-endepunkter migrert | Føderasjoner, EPD-tilkoblinger |
+| 14.09.2026 | Maskinvaretoken og testidentiteter utløper | Token-brukere, integrasjon |
+| 14.09.2026 | Konfigurer Authenticator App på nytt | App-brukere |
+| 14.09.2026 | Tvungen oppdatering til HIN Client 4.0 | Alle Client-brukere |
+
+## Access Gateway er ikke Mailgateway
+
+Begge har Gateway i navnet og forveksles jevnlig. Access Gateway styrer tilgang til HIN-beskyttede applikasjoner og berører ikke e-posttrafikken. Mailgateway står i e-postløypen og krypterer meldinger.
+
+## Access Gateway: brannmur og versjon 4
+
+Innen 14. august må AGW kunne nå `idp.id.hin.ch`. Dette er en brannmurendring, ikke en innstilling i gatewayet, og ligger derfor ofte hos den nettverksansvarlige i stedet for gateway-administratoren.
+
+Fra 17. august installeres versjon 4 automatisk. Forutsetning: AGW på versjon 3.1.50 eller nyere, og Kerberos aktivert som autentiseringsmetode. For tilkoblingen til Active Directory kreves en LDAP-konto med leserettigheter.
+
+De som ikke oppfyller forutsetningene, blir ikke oppdatert, og erfaringen viser at dette først oppdages når ingen lenger kan logge inn. Det er derfor bedre å kontrollere versjonen nå enn i september.
+
+## SAML: nye endepunkter, færre attributter
+
+```text
+Föderationsdienst
+  broker.hin.ch/realms/HINBroker/protocol/saml/descriptor
+
+EPD-Zugang
+  idp.id.hin.ch/auth/realms/hinid/protocol/saml/descriptor
+```
+
+Med overgangen endres attributtformatene og bindingene. Attributtmengden reduseres til GLN, navn, fødselsdato og kjønn.
+
+Dette er punktet som bryter integrasjoner. Alle applikasjoner som bruker ytterligere attributter for roller eller klientseparasjon, får dem ikke lenger etter 14. september. Feilen viser seg ikke som en innloggingsfeil, men som manglende tilgang i målsystemet.
+
+Testidentiteter utløper samme dato, så de som ønsker å teste omstillingen i et integrasjonsmiljø, bør gjøre det før dette.
+
+De som driver en føderasjon, driver nesten alltid også egen e-postinfrastruktur. For disse organisasjonene faller plattformfornyelsen og [erstatningen av Mailgateway med «Stargate»](/stargate) i samme år: teknisk uavhengige, men konkurrerende om de samme personene og vedlikeholdsvinduene.
+
+## Token, app og HIN Client 4.0
+
+Maskinvaretoken utstedes ikke lenger og utløper 14. september. Alternativer: HIN Client, SMS-kode eller Authenticator App. Selve appen er gyldig frem til 14. september og må deretter konfigureres på nytt via selvbetjeningsportalen.
+
+HIN Client oppdateres automatisk til versjon 4.0 senest 14. september, med manuell installasjon fra midten av august via `download.hin.ch`. Innloggingen skjer nå via nettleseren.
+
+Det kritiske punktet er systemkravene: **Versjon 4.0 krever Windows 11 eller macOS 14.** Eldre enheter må oppdateres eller erstattes på forhånd. For en del praksiser er fristen dermed ikke en programvareoppgave, men en anskaffelsesoppgave. De som først oppdager dette i september, må håndtere leveringstider og nyinstallasjon av praksisprogramvaren.
+
+## Fem spørsmål for å kartlegge situasjonen
+
+1. Hvilken AGW-versjon kjører, og er Kerberos aktiv?
+2. Tillater brannmuren utgående tilgang til `idp.id.hin.ch`?
+3. Hvor mange arbeidsstasjoner kjører fortsatt Windows 10 eller macOS 13 og eldre?
+4. Hvor mange maskinvaretoken er i bruk, og hva skal de berørte bytte til?
+5. Bruker en applikasjon HIN-attributter som vil falle bort?
+
+Svarene på 3 og 5 bestemmer omfanget. Resten kan gjøres på noen få timer og er dokumentert av HIN.
+
+## Det andre prosjektet: «Stargate»
+
+Uavhengig av dette erstatter HIN Mailgateway med det nye HIN Gateway, internt kalt prosjekt «Stargate», teknisk sett en Data-Mesh-tilnærming med ende-til-ende-kryptering og desentralisert nøkkelhåndtering. Det er ikke snakk om å bytte ut appliance-en, men om et arkitekturskifte.
+
+Arbeidsomfanget ligger dermed på et helt annet nivå. Plattformfornyelsen krever først og fremst at frister overholdes for en brannmurregel, en versjon og utskifting av en enhet, mens selve e-postløypen i produksjon står til vurdering med Stargate: det opparbeidede regelverket, nøkkelmaterialet, håndteringen av mottakere uten HIN-identitet og spørsmålet om hva man faller tilbake på dersom noe ikke går som forventet. Siden migreringen skjer i bestilte firetimersvinduer og HIN anbefaler én måneds forberedelse, tåler en slik avtale ingen uavklarte punkter.
+
+<aside class="offer-box">
+  <span class="offer-box__tag">Gratis gjennomgang</span>
+  <p><strong>Du trenger ikke å vite hvor du står. Det er nettopp derfor gjennomgangen finnes.</strong> Jeg ser på det eksisterende gateway-miljøet ditt og forteller deg hva som må gjøres før migreringsvinduet, uavhengig av om du migrerer selv etterpå eller får bistand.</p>
+  <a class="offer-box__cta" href="/stargate">Registrer deg nå</a>
+</aside>
+
+## Kilder
+
+1.  [HIN-plattformfornyelse: Disse tekniske tilpasningene er nødvendige for HIN-medlemmer](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): Frister i august og september, SAML-endepunkter, redusert attributtmengde, brannmuråpninger.
+
+2.  [Den nye HIN Client er her: Dette endres for HIN-medlemmer](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): Versjon 4.0, operativsystemkrav, nettleserbasert innlogging.
+
+3.  [HIN Gateway: Sikker kommunikasjon innenfor HIN-fellesskapet](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm): Erstatning av Mailgateway, arkitektur, driftsmodeller, migrering i bestilte tidsvinduer.
+
+4.  [Konfigurasjon av HIN Access Gateway](https://cdn.hin.ch/agw/manual/DE/4-konfiguration-des-hin-access-gateway.html): AGWs rolle i tilgangsadministrasjon.
+
+5.  [Tilkobling av Active Directory](https://cdn.hin.ch/agw/manual/DE/5-anbindung-active-directory.html): Kerberos og LDAP-kontoen med leserettigheter.
+
+6.  [HIN AG: «Fra Mailgateway til Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): Bakgrunn for «Stargate», desentraliserte noder, tidsplan.
 
 ----
 
