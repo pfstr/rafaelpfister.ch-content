@@ -1,6 +1,7 @@
 ---
 name: "Proton Drive"
 slug: "proton-drive"
+hub: "opensource"
 url: "https://rafaelpfister.ch/blog/thema/proton-drive"
 ---
 

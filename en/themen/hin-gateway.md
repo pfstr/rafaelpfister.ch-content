@@ -1,6 +1,7 @@
 ---
 name: "HIN Gateway"
 slug: "hin-gateway"
+hub: "messaging"
 url: "https://rafaelpfister.ch/en/blog/topic/hin-gateway"
 ---
 

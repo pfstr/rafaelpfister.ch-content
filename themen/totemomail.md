@@ -1,6 +1,7 @@
 ---
 name: "Totemomail"
 slug: "totemomail"
+hub: "messaging"
 url: "https://rafaelpfister.ch/blog/thema/totemomail"
 ---
 

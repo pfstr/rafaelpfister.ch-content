@@ -1,6 +1,7 @@
 ---
 name: "Exchange OnPrem / Hybrid"
 slug: "exchange-onprem-hybrid"
+hub: "messaging"
 url: "https://rafaelpfister.ch/en/blog/topic/exchange-onprem-hybrid"
 ---
 

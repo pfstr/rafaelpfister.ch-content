@@ -1,6 +1,7 @@
 ---
 name: "Rclone"
 slug: "rclone"
+hub: "opensource"
 url: "https://rafaelpfister.ch/en/blog/topic/rclone"
 ---
 

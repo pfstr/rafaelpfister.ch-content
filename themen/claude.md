@@ -1,6 +1,7 @@
 ---
 name: "Claude"
 slug: "claude"
+hub: "ai-automation"
 url: "https://rafaelpfister.ch/blog/thema/claude"
 ---
 

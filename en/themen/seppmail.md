@@ -1,6 +1,7 @@
 ---
 name: "SEPPmail"
 slug: "seppmail"
+hub: "messaging"
 url: "https://rafaelpfister.ch/en/blog/topic/seppmail"
 ---
 

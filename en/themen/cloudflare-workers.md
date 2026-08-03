@@ -1,6 +1,7 @@
 ---
 name: "Cloudflare Workers"
 slug: "cloudflare-workers"
+hub: "ai-automation"
 url: "https://rafaelpfister.ch/en/blog/topic/cloudflare-workers"
 ---
 

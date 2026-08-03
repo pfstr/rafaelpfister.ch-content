@@ -1,6 +1,7 @@
 ---
 name: "Home Assistant und IoT"
 slug: "smart-home-iot"
+hub: "opensource"
 url: "https://rafaelpfister.ch/blog/thema/smart-home-iot"
 ---
 

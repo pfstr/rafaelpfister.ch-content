@@ -1,6 +1,7 @@
 ---
 name: "Paperless-ngx"
 slug: "paperless-ngx"
+hub: "opensource"
 url: "https://rafaelpfister.ch/blog/thema/paperless-ngx"
 ---
 
