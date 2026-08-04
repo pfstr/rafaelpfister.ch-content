@@ -32,7 +32,7 @@ Dazu kommen zwei weitere Eigenheiten, die Cisco in der Technote zur SMA dokument
 - Die SMA akzeptiert beim Import nur das PEM-Format. Eine PFX-Datei (PKCS#12) muss vor der Installation konvertiert werden.
 - Die SMA erzeugt selbst weder Schlüssel noch CSRs. Das Schlüsselpaar muss ausserhalb der Appliance entstehen; die drei gangbaren Wege dazu weiter unten.
 
-Ein einzelnes Zertifikat kann wahlweise alle Dienste bedienen (eingehendes und ausgehendes TLS, HTTPS-Verwaltungszugriff, LDAPS) oder pro Dienst separat hinterlegt werden. In den meisten Umgebungen ist ein Zertifikat für alles die pragmatische Wahl.
+Ein einzelnes Zertifikat kann wahlweise alle Dienste bedienen (eingehendes und ausgehendes TLS, HTTPS-Verwaltungszugriff, LDAPS) oder pro Dienst separat hinterlegt werden. Gesteuert wird das an genau einer Stelle, nämlich der ersten Frage des `certconfig`-Dialogs: `Do you want to use one certificate/key for receiving, delivery, HTTPS management access, and LDAPS?`. Ein `y` weist dasselbe Paar allen vier Diensten zu, ein `n` führt dieselbe Abfrage einmal je Dienst durch. Eine separate Zuweisungsmaske wie auf der ESA gibt es nicht, und über die GUI lässt sich daran nichts ändern. In den meisten Umgebungen ist ein Zertifikat für alles die pragmatische Wahl: Die Namensliste deckt die FQDNs der Appliances ohnehin ab, und getrennte Schlüsselpaare vervielfachen den Aufwand bei jeder Erneuerung.
 
 ## Namen festlegen: CN und SAN
 
@@ -55,9 +55,33 @@ Weil die SMA keine Schlüssel erzeugt, muss das Schlüsselpaar auf einem der fol
 2. Die CA erzeugt das Schlüsselpaar und liefert eine PFX-Datei. Funktioniert, hat aber zwei Haken: Der Schlüssel reist durch fremde Hände (das Passwort gehört deshalb in einen separaten Kanal und nicht in dieselbe Mail wie die Datei), und je nach CA-Werkzeug kommt eine RC2-verschlüsselte PFX zurück, die OpenSSL 3 nur mit Zusatzaufwand öffnet; dazu unten mehr.
 3. Der Umweg über eine ESA, dokumentiert in der Cisco-Technote: Dort unter `Network > Certificates` ein Zertifikat mit dem CN der SMA anlegen, den CSR herunterladen und von der CA signieren lassen, das signierte Zertifikat wieder auf die ESA hochladen und das Ganze als PFX exportieren. Auch hier steht am Ende die Konvertierung nach PEM an.
 
-## Schlüssel und CSR mit OpenSSL erzeugen
+## OpenSSL unter Windows starten
 
-Für den ersten Weg braucht es OpenSSL auf einem System innerhalb der Umgebung, etwa einem Admin-Server. Die Light-Edition der Windows-Builds von Shining Light Productions genügt, der Installer ist rund 6 MB gross und lässt sich gegen die von slproweb publizierte Prüfsummenliste verifizieren.
+Alle folgenden Schritte laufen über OpenSSL, auf einem System innerhalb der Umgebung, etwa einem Admin-Server. Die Light-Edition der Windows-Builds von Shining Light Productions genügt, der Installer ist rund 6 MB gross und lässt sich gegen die von slproweb publizierte Prüfsummenliste verifizieren.
+
+Der Installer legt alles unter `C:\Program Files\OpenSSL-Win64` ab, die ausführbare Datei liegt in `bin\openssl.exe`. In den Suchpfad trägt er sich nicht ein: Wer in einer frischen Eingabeaufforderung `openssl` tippt, bekommt eine Fehlermeldung. Drei Wege führen zum Ziel:
+
+- Im Startmenü den Eintrag `Win64 OpenSSL Command Prompt` aufrufen. Er startet die `start.bat` aus dem Installationsverzeichnis, setzt die Umgebung und begrüsst mit der Ausgabe von `openssl version -a`. In diesem Fenster funktioniert `openssl` direkt.
+- Den vollständigen Pfad angeben: `"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version`.
+- `C:\Program Files\OpenSSL-Win64\bin` dauerhaft in die Umgebungsvariable `Path` eintragen, danach steht `openssl` in jeder Shell zur Verfügung.
+
+Ohne zusätzliche Installation kommt aus, wer Git für Windows schon einsetzt: Es bringt sein eigenes OpenSSL mit (`C:\Program Files\Git\mingw64\bin\openssl.exe`), in der Git Bash liegt es sofort im Suchpfad. Aktuelle Git-Versionen liefern OpenSSL 3.5 samt aktivem Legacy-Provider, das `-legacy` aus dem Abschnitt zur PFX-Konvertierung funktioniert dort also ebenfalls. Kontrollieren lässt sich das so:
+
+```bash
+openssl list -providers -provider legacy
+```
+
+Eine Stolperfalle hat die Git Bash allerdings: Sie hält Argumente, die mit `/` beginnen, für Pfade und schreibt sie um. Aus `-subj "/C=CH/O=Example AG/CN=..."` wird `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, und OpenSSL bricht ab:
+
+```text
+req: subject name is expected to be in the format /type0=value0/type1=value1/type2=...
+where characters may be escaped by \. This name is not in that format:
+'C:/Program Files/Git/C=CH/O=Example AG/CN=spam-quarantine.example.ch'
+```
+
+Ein vorangestelltes `MSYS_NO_PATHCONV=1` schaltet die Umschreibung für den einzelnen Aufruf ab. In Eingabeaufforderung, PowerShell und im OpenSSL-Command-Prompt tritt das Problem nicht auf.
+
+## Schlüssel und CSR mit OpenSSL erzeugen
 
 Ein einzelner Aufruf erzeugt Schlüssel und CSR mit der kompletten SAN-Liste:
 
@@ -124,6 +148,8 @@ paste cert in PEM format (end with '.'):
 
 Jetzt den Block von `-----BEGIN CERTIFICATE-----` bis `-----END CERTIFICATE-----` aus der PEM-Datei einfügen und mit einem einzelnen `.` auf eigener Zeile abschliessen. Danach fragt der Dialog den privaten Schlüssel ab, zum Schluss optional das Intermediate-Zertifikat der CA. Das Intermediate gehört mit hinein, sonst fehlt den Clients die Kette und je nach Browser bleibt die Warnung trotz gültigem Zertifikat bestehen.
 
+Hier fällt auch die Entscheidung über die Dienstzuordnung: Wer die Eingangsfrage mit `n` beantwortet, durchläuft genau diese Abfolge einmal je Dienst, also für Receiving, Delivery, HTTPS-Verwaltungszugriff und LDAPS getrennt. Ein `y` erledigt alle vier in einem Durchgang.
+
 Zwei Punkte entscheiden über Erfolg und Misserfolg: Die Session nicht mit Ctrl+C beenden, das verwirft alle Änderungen sofort. Und am Schluss `commit` ausführen, erst damit ist das Zertifikat aktiv. Bei zwei Appliances wiederholt sich der Ablauf auf beiden, die Zertifikatskonfiguration wird zwischen SMAs nicht synchronisiert.
 
 ## Kontrolle
@@ -151,6 +177,8 @@ Die Ausgabe muss den neuen Subject und das neue Ablaufdatum zeigen. Auf der Appl
 6.  [XCA: X Certificate and Key Management](https://hohnstaedt.de/xca/): quelloffenes Werkzeug für Import und Export von PKCS#12- und PEM-Strukturen.
 
 7.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): Windows-Builds von Shining Light Productions, auf die das OpenSSL-Projekt verweist, inklusive publizierter Prüfsummenliste.
+
+8.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): Beschreibung der automatischen Pfadumschreibung, die in der Git Bash das `-subj`-Argument verändert, samt `MSYS_NO_PATHCONV`.
 
 ----
 
