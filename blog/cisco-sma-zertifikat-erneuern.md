@@ -1,5 +1,5 @@
 ---
-title: "Zertifikat auf der Cisco SMA erneuern: von der PFX-Datei bis certconfig"
+title: "Zertifikat auf der Cisco SMA erneuern"
 navTitle: "SMA-Zertifikat"
 description: "Zertifikate lassen sich auf der Cisco SMA nur über die CLI und nur im PEM-Format einspielen, eigene Schlüssel erzeugt die Appliance nicht. Der Artikel zeigt drei Wege zum neuen Schlüsselpaar, geht den empfohlenen OpenSSL-Weg im Detail durch und erklärt, warum OpenSSL 3 ältere PFX-Dateien mit dem Fehler RC2-40-CBC ablehnt und was dagegen hilft."
 date: "2026-08-04"
@@ -15,7 +15,7 @@ url: "https://rafaelpfister.ch/blog/cisco-sma-zertifikat-erneuern"
 aiPrompt: |
   Du bist mein Assistent für die Zertifikatserneuerung auf einer Cisco SMA (Secure Email and Web Manager). Führe mich Schritt für Schritt durch den Ablauf aus diesem Artikel: 1. Wahl des Wegs zum Schlüsselpaar (OpenSSL-CSR in der eigenen Umgebung, PFX von der CA oder Umweg über eine ESA), 2. CN- und SAN-Liste für meine Hostnamen, 3. je nach Weg CSR-Erzeugung mit OpenSSL oder Konvertierung der PFX-Datei nach PEM inklusive Umgang mit dem Fehler RC2-40-CBC, 4. Installation über certconfig in der CLI, 5. Kontrolle. Frage mich zuerst nach den Hostnamen meiner Appliances und der Quarantäneseite, ob die ausstellende CA intern oder öffentlich ist und welche OpenSSL-Version ich installiert habe. Passe alle Befehle an meine Dateinamen an und erinnere mich vor dem Abschluss daran, die certconfig-Session nicht mit Ctrl+C zu beenden und die Änderung mit commit zu aktivieren.
 ---
-# Zertifikat auf der Cisco SMA erneuern: von der PFX-Datei bis certconfig
+# Zertifikat auf der Cisco SMA erneuern
 
 Die Cisco SMA (Security Management Appliance, inzwischen unter dem Namen Cisco Secure Email and Web Manager geführt) übernimmt in vielen Mailumgebungen die zentrale Spam-Quarantäne und das Reporting für die Secure-Email-Gateways. Ihr HTTPS-Zertifikat deckt die Admin-GUI und die Quarantäneseite ab, auf der Endbenutzer ihre zurückgehaltenen Mails sichten und freigeben. Läuft es ab, bricht kein Mailfluss zusammen. Sichtbar wird der Ablauf trotzdem sofort: Jeder Aufruf der Quarantäneseite endet mit einer Zertifikatswarnung im Browser, und ausgerechnet die Benutzer, denen Awareness-Schulungen beibringen, bei solchen Warnungen nicht weiterzuklicken, sollen sie dann ignorieren.
 

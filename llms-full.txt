@@ -12,12 +12,12 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# Zertifikat auf der Cisco SMA erneuern: von der PFX-Datei bis certconfig
+# Zertifikat auf der Cisco SMA erneuern
 
 URL: https://rafaelpfister.ch/blog/cisco-sma-zertifikat-erneuern
 Datum: 2026-08-04
 
-# Zertifikat auf der Cisco SMA erneuern: von der PFX-Datei bis certconfig
+# Zertifikat auf der Cisco SMA erneuern
 
 Die Cisco SMA (Security Management Appliance, inzwischen unter dem Namen Cisco Secure Email and Web Manager geführt) übernimmt in vielen Mailumgebungen die zentrale Spam-Quarantäne und das Reporting für die Secure-Email-Gateways. Ihr HTTPS-Zertifikat deckt die Admin-GUI und die Quarantäneseite ab, auf der Endbenutzer ihre zurückgehaltenen Mails sichten und freigeben. Läuft es ab, bricht kein Mailfluss zusammen. Sichtbar wird der Ablauf trotzdem sofort: Jeder Aufruf der Quarantäneseite endet mit einer Zertifikatswarnung im Browser, und ausgerechnet die Benutzer, denen Awareness-Schulungen beibringen, bei solchen Warnungen nicht weiterzuklicken, sollen sie dann ignorieren.
 
