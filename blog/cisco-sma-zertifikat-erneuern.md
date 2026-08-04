@@ -1,10 +1,10 @@
 ---
 title: "Zertifikat auf der Cisco SMA erneuern"
 navTitle: "SMA-Zertifikat"
-description: "Zertifikate lassen sich auf der Cisco SMA nur über die CLI und nur im PEM-Format einspielen, eigene Schlüssel erzeugt die Appliance nicht. Der Artikel zeigt drei Wege zum neuen Schlüsselpaar, geht den empfohlenen OpenSSL-Weg im Detail durch und erklärt, warum OpenSSL 3 ältere PFX-Dateien mit dem Fehler RC2-40-CBC ablehnt und was dagegen hilft."
+description: "Zertifikate lassen sich auf der Cisco SMA nur über die CLI einspielen, und aktuelle AsyncOS-Versionen validieren beim Import die komplette Kette: Ohne hinterlegte Root-CA scheitert er. Der Artikel zeigt die Wege zum neuen Schlüsselpaar, den OpenSSL-Weg im Detail, den Umgang mit dem RC2-40-CBC-Fehler von OpenSSL 3 und den Import der internen Root-CA in den Truststore der Appliance."
 date: "2026-08-04"
 kategorie: "Cisco ESA / SMA"
-timeToRead: "10 Min. Lesezeit"
+timeToRead: "11 Min. Lesezeit"
 themen:
   - "cisco-esa-sma"
   - "smtp-mailflow"
@@ -13,24 +13,24 @@ slug: "cisco-sma-zertifikat-erneuern"
 translationId: "article-69d93a1e5e081848"
 url: "https://rafaelpfister.ch/blog/cisco-sma-zertifikat-erneuern"
 aiPrompt: |
-  Du bist mein Assistent für die Zertifikatserneuerung auf einer Cisco SMA (Secure Email and Web Manager). Führe mich Schritt für Schritt durch den Ablauf aus diesem Artikel: 1. Wahl des Wegs zum Schlüsselpaar (OpenSSL-CSR in der eigenen Umgebung, PFX von der CA oder Umweg über eine ESA), 2. CN- und SAN-Liste für meine Hostnamen, 3. je nach Weg CSR-Erzeugung mit OpenSSL oder Konvertierung der PFX-Datei nach PEM inklusive Umgang mit dem Fehler RC2-40-CBC, 4. Installation über certconfig in der CLI, 5. Kontrolle. Frage mich zuerst nach den Hostnamen meiner Appliances und der Quarantäneseite, ob die ausstellende CA intern oder öffentlich ist und welche OpenSSL-Version ich installiert habe. Passe alle Befehle an meine Dateinamen an und erinnere mich vor dem Abschluss daran, die certconfig-Session nicht mit Ctrl+C zu beenden und die Änderung mit commit zu aktivieren.
+  Du bist mein Assistent für die Zertifikatserneuerung auf einer Cisco SMA (Secure Email and Web Manager). Führe mich Schritt für Schritt durch den Ablauf aus diesem Artikel: 1. Wahl des Wegs zum Schlüsselpaar (OpenSSL-CSR in der eigenen Umgebung, PFX von der CA oder Umweg über eine ESA), 2. CN- und SAN-Liste für meine Hostnamen, 3. je nach Weg CSR-Erzeugung mit OpenSSL oder Konvertierung der PFX-Datei nach PEM inklusive Umgang mit dem Fehler RC2-40-CBC, 4. bei interner CA Import der Root-CA in die Custom-Liste der Appliance, 5. Installation über certconfig in der CLI, 6. Kontrolle. Frage mich zuerst nach den Hostnamen meiner Appliances und der Quarantäneseite, ob die ausstellende CA intern oder öffentlich ist und welche OpenSSL-Version ich installiert habe. Passe alle Befehle an meine Dateinamen an und erinnere mich vor dem Abschluss daran, die certconfig-Session nicht mit Ctrl+C zu beenden und die Änderung mit commit zu aktivieren.
 ---
 # Zertifikat auf der Cisco SMA erneuern
 
 Die Cisco SMA (Security Management Appliance, inzwischen unter dem Namen Cisco Secure Email and Web Manager geführt) übernimmt in vielen Mailumgebungen die zentrale Spam-Quarantäne und das Reporting für die Secure-Email-Gateways. Ihr HTTPS-Zertifikat deckt die Admin-GUI und die Quarantäneseite ab, auf der Endbenutzer ihre zurückgehaltenen Mails sichten und freigeben. Läuft es ab, bricht kein Mailfluss zusammen. Sichtbar wird der Ablauf trotzdem sofort: Jeder Aufruf der Quarantäneseite endet mit einer Zertifikatswarnung im Browser, und ausgerechnet die Benutzer, denen Awareness-Schulungen beibringen, bei solchen Warnungen nicht weiterzuklicken, sollen sie dann ignorieren.
 
-Bei einer Erneuerung in einem Kundenprojekt war die Appliance selbst der einfache Teil. Gestolpert bin ich über OpenSSL 3, das die PFX-Datei der internen CA mit einem kryptischen Fehler zu `RC2-40-CBC` quittierte. Dazu weiter unten mehr.
+Bei einer Erneuerung in einem Kundenprojekt gab es gleich zwei Stolpersteine: Erst quittierte OpenSSL 3 die PFX-Datei der internen CA mit einem kryptischen Fehler zu `RC2-40-CBC`, dann verweigerte die Appliance den Import des fertigen Zertifikats, weil ihr die ausstellende Root-CA nicht bekannt war. Beide Hürden samt Lösung weiter unten.
 
 ## Was die SMA anders macht als die ESA
 
-Auf der ESA lässt sich der komplette Zertifikatslebenszyklus über die GUI abwickeln (`Network > Certificates`). Die SMA kann das nicht: Zertifikate werden ausschliesslich über die CLI eingespielt, mit dem Befehl `certconfig` in einer SSH-Session. Die GUI der SMA zeigt Zertifikate nur an.
+Auf der ESA lässt sich der komplette Zertifikatslebenszyklus über die GUI abwickeln (`Network > Certificates`). Die SMA kann das nicht: Das Serverzertifikat wird ausschliesslich über die CLI eingespielt, mit dem Befehl `certconfig` in einer SSH-Session. Die GUI der SMA zeigt Zertifikate nur an; einzig die Listen der vertrauenswürdigen Zertifizierungsstellen lassen sich dort pflegen, dazu später mehr.
 
-Dazu kommen zwei weitere Eigenheiten, die Cisco in der Technote zur SMA dokumentiert:
+Dazu kommen zwei weitere Eigenheiten:
 
-- Die SMA akzeptiert beim Import nur das PEM-Format. Eine PFX-Datei (PKCS#12) muss vor der Installation konvertiert werden.
-- Die SMA erzeugt selbst weder Schlüssel noch CSRs. Das Schlüsselpaar muss ausserhalb der Appliance entstehen; die drei gangbaren Wege dazu weiter unten.
+- Der Einfüge-Dialog akzeptiert nur das PEM-Format. Eine PFX-Datei (PKCS#12) muss vor der Installation konvertiert werden; aktuelle AsyncOS-Versionen bieten daneben einen direkten PKCS#12-Import an, dafür muss die Datei aber erst auf die Appliance gelangen.
+- Ältere AsyncOS-Versionen (der Stand der Cisco-Technote) erzeugen selbst weder Schlüssel noch CSRs, das Schlüsselpaar muss ausserhalb entstehen; die drei gangbaren Wege dazu weiter unten. Aktuelle Versionen können mit `certconfig > CERTIFICATE > NEW` ein Self-Signed-Zertifikat samt CSR direkt auf der Appliance erzeugen. Für ein gemeinsames Zertifikat über mehrere Appliances hilft das jedoch nicht, weil der private Schlüssel die Appliance dabei nie verlässt.
 
-Ein einzelnes Zertifikat kann wahlweise alle Dienste bedienen (eingehendes und ausgehendes TLS, HTTPS-Verwaltungszugriff, LDAPS) oder pro Dienst separat hinterlegt werden. Gesteuert wird das an genau einer Stelle, nämlich der ersten Frage des `certconfig`-Dialogs: `Do you want to use one certificate/key for receiving, delivery, HTTPS management access, and LDAPS?`. Ein `y` weist dasselbe Paar allen vier Diensten zu, ein `n` führt dieselbe Abfrage einmal je Dienst durch. Eine separate Zuweisungsmaske wie auf der ESA gibt es nicht, und über die GUI lässt sich daran nichts ändern. In den meisten Umgebungen ist ein Zertifikat für alles die pragmatische Wahl: Die Namensliste deckt die FQDNs der Appliances ohnehin ab, und getrennte Schlüsselpaare vervielfachen den Aufwand bei jeder Erneuerung.
+Ein einzelnes Zertifikat kann wahlweise alle Dienste bedienen (eingehendes und ausgehendes TLS, HTTPS-Verwaltungszugriff, LDAPS) oder pro Dienst separat hinterlegt werden. Gesteuert wird das im `certconfig`-Dialog; die Kopfzeile des Befehls zeigt jederzeit die aktive Zuweisung (`Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.`). Eine separate Zuweisungsmaske wie auf der ESA gibt es nicht, und über die GUI lässt sich daran nichts ändern. In den meisten Umgebungen ist ein Zertifikat für alles die pragmatische Wahl: Die Namensliste deckt die FQDNs der Appliances ohnehin ab, und getrennte Schlüsselpaare vervielfachen den Aufwand bei jeder Erneuerung.
 
 ## Namen festlegen: CN und SAN
 
@@ -47,7 +47,7 @@ Zwei Hinweise dazu: Browser werten seit langem nur noch die SAN-Einträge aus, d
 
 ## Drei Wege zum neuen Schlüsselpaar
 
-Weil die SMA keine Schlüssel erzeugt, muss das Schlüsselpaar auf einem der folgenden Wege entstehen:
+Für ein Zertifikat, das mehrere Appliances und den Quarantäne-Hostnamen abdeckt, muss das Schlüsselpaar ausserhalb der Appliance entstehen. Drei Wege haben sich etabliert:
 
 1. Schlüssel und CSR mit OpenSSL innerhalb der eigenen Umgebung erzeugen. Der private Schlüssel entsteht dort, wo er gebraucht wird, und verlässt die Umgebung nie. Der empfohlene Weg, Details im nächsten Abschnitt.
 2. Die CA erzeugt das Schlüsselpaar und liefert eine PFX-Datei. Funktioniert, hat aber zwei Haken: Der Schlüssel reist durch fremde Hände (das Passwort gehört deshalb in einen separaten Kanal und nicht in dieselbe Mail wie die Datei), und je nach CA-Werkzeug kommt eine RC2-verschlüsselte PFX zurück, die OpenSSL 3 nur mit Zusatzaufwand öffnet; dazu unten mehr.
@@ -127,26 +127,49 @@ Als grafische Alternative funktioniert XCA (X Certificate and Key Management): D
 
 Noch ein Wort zur Bezugsquelle: Das OpenSSL-Projekt veröffentlicht selbst keine Windows-Binaries, sondern verweist auf Builds Dritter wie Win64 OpenSSL von Shining Light Productions. Download-Portale mit eigenen Installern sind für ein Kryptowerkzeug die falsche Adresse.
 
+## Interne Root-CA zuerst in den Truststore der Appliance
+
+Aktuelle AsyncOS-Versionen validieren beim Anlegen eines Zertifikatsprofils die komplette Kette. Stammt das Zertifikat von einer internen CA, deren Root die Appliance nicht kennt, bricht der Import mit dieser Meldung ab:
+
+```text
+Cannot import certificate: The certificate authority validation could not be
+trusted for certificate because unable to get local issuer certificate
+```
+
+Die Appliance führt zwei Listen vertrauenswürdiger Zertifizierungsstellen: die mitgelieferte Systemliste und eine Custom-Liste für eigene CAs. Die interne Root-CA gehört in die Custom-Liste, und zwar bevor das Serverzertifikat eingespielt wird. Benötigt wird nur das öffentliche CA-Zertifikat als PEM-Datei (`-----BEGIN CERTIFICATE-----` bis `-----END CERTIFICATE-----`), kein privater Schlüssel.
+
+So kommt die Root-CA über die Weboberfläche auf die Appliance:
+
+1. `Network > Certificates` öffnen.
+2. Im Abschnitt `Certificate Authorities` auf `Edit Settings` klicken.
+3. Bei `Custom List` die Option `Enable` wählen.
+4. Über `Choose File` die PEM-Datei hochladen.
+5. `Submit` und anschliessend `Commit Changes` ausführen.
+6. Unter `Network > Certificates > Manage Trusted Root Certificates` kontrollieren, dass die CA in der Liste der benutzerdefinierten Zertifikate erscheint.
+
+Existiert bereits eine Custom-Liste, diese vorher exportieren und die neue CA an das bestehende PEM-Bundle anhängen: Der Import ersetzt die Liste, sonst verschwinden früher hinterlegte CAs. Bei einer Kette mit Zwischenstufe zuerst die Root-CA importieren, danach die Intermediate-CA. AsyncOS prüft beim Import unter anderem Ablaufdatum, Duplikate und das gesetzte `CA:TRUE`-Flag und lehnt eine Intermediate ab, solange die zugehörige Root fehlt. Derselbe Import geht auch über die CLI: `certconfig > CERTAUTHORITY > CUSTOM > IMPORT`, danach `commit`.
+
+Zwei Abgrenzungen dazu: Für Updates über einen TLS-inspizierenden Proxy führt die SMA einen separaten Truststore (`updateconfig > TRUSTED_CERTIFICATES > ADD`), die Custom-CA-Liste greift dort nicht. Und die Root-CA auf der SMA beseitigt keine Browserwarnungen: Die Clients brauchen die Root weiterhin über die eigene Zertifikatsverteilung, typischerweise per GPO, und die Appliance muss das Serverzertifikat samt Intermediate ausliefern.
+
 ## Installation mit certconfig
 
-Auf der SMA per SSH anmelden und `certconfig` starten. Der Dialog fragt zuerst, ob ein Zertifikat für alle Dienste gelten soll:
+Auf der SMA per SSH anmelden und `certconfig` starten. Auf aktuellen AsyncOS-Versionen arbeitet der Dialog mit Zertifikatsprofilen:
 
 ```text
 sma01.example.ch> certconfig
 
+Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.
+
 Choose the operation you want to perform:
-- SETUP - Configure security certificates and keys.
-[]> setup
-
-Do you want to use one certificate/key for receiving, delivery,
-HTTPS management access, and LDAPS? [Y]> y
-
-paste cert in PEM format (end with '.'):
+- CERTIFICATE - Import, Create a request, Edit or Remove Certificate Profiles
+- CERTAUTHORITY - Manage System and Customized Authorities
+- CRL - Manage Certificate Revocation Lists
+[]> certificate
 ```
 
-Jetzt den Block von `-----BEGIN CERTIFICATE-----` bis `-----END CERTIFICATE-----` aus der PEM-Datei einfügen und mit einem einzelnen `.` auf eigener Zeile abschliessen. Danach fragt der Dialog den privaten Schlüssel ab, zum Schluss optional das Intermediate-Zertifikat der CA. Das Intermediate gehört mit hinein, sonst fehlt den Clients die Kette und je nach Browser bleibt die Warnung trotz gültigem Zertifikat bestehen.
+Hinter `CERTIFICATE` liegen die Operationen `IMPORT` (PKCS#12-Datei, die zuvor auf die Appliance geladen wurde), `PASTE` (Zertifikat in die CLI einfügen), `NEW` (Self-Signed-Zertifikat samt CSR erzeugen), `EDIT`, `EXPORT`, `DELETE` und `PRINT` (zeigt die Zuweisung an die Dienste). Der übliche Weg über SSH ist `PASTE`: Der Dialog fragt einen Namen für das Profil ab, danach das Zertifikat, den privaten Schlüssel und optional das Intermediate-Zertifikat der CA, jeweils als PEM-Block, abgeschlossen mit einem einzelnen `.` auf eigener Zeile. Eine abschliessende Frage nach der FQDN-Prüfung des Common Name lässt sich mit dem Vorgabewert beantworten. Das Intermediate gehört mit ins Profil, sonst fehlt den Clients die Kette und je nach Browser bleibt die Warnung trotz gültigem Zertifikat bestehen.
 
-Hier fällt auch die Entscheidung über die Dienstzuordnung: Wer die Eingangsfrage mit `n` beantwortet, durchläuft genau diese Abfolge einmal je Dienst, also für Receiving, Delivery, HTTPS-Verwaltungszugriff und LDAPS getrennt. Ein `y` erledigt alle vier in einem Durchgang.
+Ältere AsyncOS-Versionen (der Stand der Cisco-Technote) zeigen stattdessen einen `SETUP`-Dialog. Er beginnt mit der Frage `Do you want to use one certificate/key for receiving, delivery, HTTPS management access, and LDAPS?`: Ein `y` weist dasselbe Paar allen vier Diensten zu, ein `n` durchläuft die Abfrage von Zertifikat, Schlüssel und Intermediate einmal je Dienst. Das Einfüge-Prinzip ist identisch.
 
 Zwei Punkte entscheiden über Erfolg und Misserfolg: Die Session nicht mit Ctrl+C beenden, das verwirft alle Änderungen sofort. Und am Schluss `commit` ausführen, erst damit ist das Zertifikat aktiv. Bei zwei Appliances wiederholt sich der Ablauf auf beiden, die Zertifikatskonfiguration wird zwischen SMAs nicht synchronisiert.
 
@@ -162,18 +185,20 @@ Die Ausgabe muss den neuen Subject und das neue Ablaufdatum zeigen. Auf der Appl
 
 ## Quellen
 
-1.  [How to Generate and Install a Certificate on an SMA](https://www.cisco.com/c/en/us/support/docs/security/content-security-management-appliance/118460-technote-sma-00.html): Cisco-Technote mit dem certconfig-Ablauf, der PEM-Vorgabe und dem Hinweis, dass die SMA selbst keine Zertifikate erzeugt.
+1.  [How to Generate and Install a Certificate on an SMA](https://www.cisco.com/c/en/us/support/docs/security/content-security-management-appliance/118460-technote-sma-00.html): Cisco-Technote mit dem certconfig-Ablauf älterer AsyncOS-Versionen, der PEM-Vorgabe und den Wegen zur Zertifikatserzeugung über ESA oder OpenSSL.
 
-2.  [Comprehensive Spam Quarantine Setup Guide on ESA and SMA](https://www.cisco.com/c/en/us/support/docs/security/email-security-appliance/118692-configure-esa-00.html): Cisco-Anleitung zur Spam-Quarantäne inklusive Endbenutzerzugriff über HTTPS auf Port 83.
+2.  [Common Administrative Tasks, AsyncOS 16.0 für Cisco Secure Email and Web Manager](https://www.cisco.com/c/en/us/td/docs/security/security_management/sma/sma16-0/user_guide/b_sma_admin_guide_16_0/b_NGSMA_Admin_Guide_chapter_01011.html): Admin-Guide-Kapitel mit der Verwaltung der Certificate-Authority-Listen (System- und Custom-Liste) samt der Prüfungen beim CA-Import.
 
-3.  [openssl-req](https://docs.openssl.org/master/man1/openssl-req/): Referenz für die Erzeugung von Schlüssel und CSR, inklusive `-addext` für die SAN-Liste.
+3.  [Comprehensive Spam Quarantine Setup Guide on ESA and SMA](https://www.cisco.com/c/en/us/support/docs/security/email-security-appliance/118692-configure-esa-00.html): Cisco-Anleitung zur Spam-Quarantäne inklusive Endbenutzerzugriff über HTTPS auf Port 83.
 
-4.  [openssl-pkcs12](https://docs.openssl.org/master/man1/openssl-pkcs12/): Referenz der Konvertierungsoptionen, unter anderem `-noenc` (früher `-nodes`) und `-legacy`.
+4.  [openssl-req](https://docs.openssl.org/master/man1/openssl-req/): Referenz für die Erzeugung von Schlüssel und CSR, inklusive `-addext` für die SAN-Liste.
 
-5.  [OpenSSL 3.0 Migration Guide](https://docs.openssl.org/3.0/man7/migration_guide/): Hintergrund zur Auslagerung der Altalgorithmen in den Legacy-Provider.
+5.  [openssl-pkcs12](https://docs.openssl.org/master/man1/openssl-pkcs12/): Referenz der Konvertierungsoptionen, unter anderem `-noenc` (früher `-nodes`) und `-legacy`.
 
-6.  [XCA: X Certificate and Key Management](https://hohnstaedt.de/xca/): quelloffenes Werkzeug für Import und Export von PKCS#12- und PEM-Strukturen.
+6.  [OpenSSL 3.0 Migration Guide](https://docs.openssl.org/3.0/man7/migration_guide/): Hintergrund zur Auslagerung der Altalgorithmen in den Legacy-Provider.
 
-7.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): Windows-Builds von Shining Light Productions, auf die das OpenSSL-Projekt verweist, inklusive publizierter Prüfsummenliste.
+7.  [XCA: X Certificate and Key Management](https://hohnstaedt.de/xca/): quelloffenes Werkzeug für Import und Export von PKCS#12- und PEM-Strukturen.
 
-8.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): Beschreibung der automatischen Pfadumschreibung, die in der Git Bash das `-subj`-Argument verändert, samt `MSYS_NO_PATHCONV`.
+8.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): Windows-Builds von Shining Light Productions, auf die das OpenSSL-Projekt verweist, inklusive publizierter Prüfsummenliste.
+
+9.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): Beschreibung der automatischen Pfadumschreibung, die in der Git Bash das `-subj`-Argument verändert, samt `MSYS_NO_PATHCONV`.
