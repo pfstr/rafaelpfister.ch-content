@@ -11,6 +11,9 @@ themen:
 produkte:
   - "proton-drive"
   - "rclone"
+protokolle:
+  - "storage"
+  - "releases"
 related:
   - "paperless-dokumente-clouddienst-auslagern"
   - "rclone-mount-in-docker-container"

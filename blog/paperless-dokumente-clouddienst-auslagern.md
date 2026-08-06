@@ -9,6 +9,8 @@ themen:
   - "paperless-ngx"
 produkte:
   - "paperless-ngx"
+protokolle:
+  - "storage"
 related:
   - "rclone-mount-in-docker-container"
   - "proton-drive-linux-status"

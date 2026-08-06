@@ -9,6 +9,9 @@ themen:
   - "rclone"
 produkte:
   - "rclone"
+protokolle:
+  - "container"
+  - "storage"
 related:
   - "paperless-dokumente-clouddienst-auslagern"
 slug: "rclone-mount-in-docker-container"

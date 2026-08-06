@@ -12,6 +12,7 @@ produkte:
 protokolle:
   - "ldap"
   - "tls"
+  - "haertung"
 slug: "seppmail-admin-gui-ldap-authentifizierung"
 translationId: "article-21092a3dad6b84cb"
 url: "https://rafaelpfister.ch/blog/seppmail-admin-gui-ldap-authentifizierung"

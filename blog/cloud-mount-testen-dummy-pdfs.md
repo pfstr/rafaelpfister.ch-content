@@ -11,6 +11,8 @@ produkte:
   - "rclone"
 protokolle:
   - "backup-dr"
+  - "storage"
+  - "troubleshooting"
 related:
   - "rclone-mount-in-docker-container"
   - "paperless-dokumente-clouddienst-auslagern"

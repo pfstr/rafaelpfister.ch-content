@@ -16,6 +16,8 @@ protokolle:
   - "tls"
   - "dns"
   - "verschluesselung"
+  - "mail-auth"
+  - "troubleshooting"
 slug: "smtp-verbindung-testen-linux"
 translationId: "article-cb44a92c03a47bc0"
 url: "https://rafaelpfister.ch/blog/smtp-verbindung-testen-linux"

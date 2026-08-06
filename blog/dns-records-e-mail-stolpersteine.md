@@ -15,6 +15,7 @@ protokolle:
   - "smtp"
   - "tls"
   - "verschluesselung"
+  - "mail-auth"
 hauptthema: "smtp-mailflow"
 related:
   - "smtp-verbindung-testen-linux"

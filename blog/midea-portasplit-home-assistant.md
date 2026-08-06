@@ -9,6 +9,8 @@ themen:
   - "smart-home-iot"
 produkte:
   - "home-assistant"
+protokolle:
+  - "apis"
 related:
   - "midea-portasplit-home-assistant-einrichten"
   - "serverloser-newsletter-cloudflare-workers-d1"

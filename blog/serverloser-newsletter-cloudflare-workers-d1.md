@@ -9,6 +9,8 @@ themen:
   - "cloudflare-workers"
 produkte:
   - "cloudflare-workers"
+protokolle:
+  - "apis"
 slug: "serverloser-newsletter-cloudflare-workers-d1"
 translationId: "article-4e7139acdb90923b"
 url: "https://rafaelpfister.ch/blog/serverloser-newsletter-cloudflare-workers-d1"

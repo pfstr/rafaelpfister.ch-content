@@ -14,6 +14,7 @@ protokolle:
   - "dns"
   - "smtp"
   - "verschluesselung"
+  - "mail-auth"
 hauptthema: "smtp-mailflow"
 related:
   - "massenmailing-provider-wechsel-checkliste"

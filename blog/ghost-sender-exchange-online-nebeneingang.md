@@ -12,6 +12,8 @@ produkte:
 protokolle:
   - "smtp"
   - "dns"
+  - "mail-auth"
+  - "troubleshooting"
 slug: "ghost-sender-exchange-online-nebeneingang"
 translationId: "article-d8dc8d1da6379d67"
 url: "https://rafaelpfister.ch/blog/ghost-sender-exchange-online-nebeneingang"

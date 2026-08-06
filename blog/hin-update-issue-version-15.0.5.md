@@ -13,6 +13,7 @@ produkte:
   - "hin"
 protokolle:
   - "releases"
+  - "troubleshooting"
 url: https://rafaelpfister.ch/blog/hin-update-issue-version-15.0.5
 draft: false
 ---

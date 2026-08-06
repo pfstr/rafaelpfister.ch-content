@@ -13,6 +13,7 @@ protokolle:
   - "smtp"
   - "dns"
   - "tls"
+  - "mail-auth"
 hauptthema: "smtp-mailflow"
 related:
   - "e-mail-security-gateway-evaluieren"

@@ -14,6 +14,7 @@ protokolle:
   - "tls"
   - "smtp"
   - "ldap"
+  - "troubleshooting"
 hauptthema: "cisco-esa-sma"
 slug: "cisco-sma-zertifikat-erneuern"
 translationId: "article-69d93a1e5e081848"

@@ -11,6 +11,7 @@ produkte:
   - "home-assistant"
 protokolle:
   - "tcp"
+  - "apis"
 related:
   - "midea-portasplit-home-assistant"
   - "serverloser-newsletter-cloudflare-workers-d1"
