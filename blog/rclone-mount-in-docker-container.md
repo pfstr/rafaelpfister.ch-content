@@ -7,6 +7,8 @@ kategorie: "Rclone"
 timeToRead: "9 Min. Lesezeit"
 themen:
   - "rclone"
+produkte:
+  - "rclone"
 related:
   - "paperless-dokumente-clouddienst-auslagern"
 slug: "rclone-mount-in-docker-container"

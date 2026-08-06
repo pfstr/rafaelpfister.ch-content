@@ -7,6 +7,10 @@ kategorie: "Claude"
 timeToRead: "12 Min. Lesezeit"
 themen:
   - "claude"
+produkte:
+  - "claude"
+protokolle:
+  - "tcp"
 slug: "claude-code-vps-debian-absichern"
 translationId: "article-f932e9e537d7704a"
 url: "https://rafaelpfister.ch/blog/claude-code-vps-debian-absichern"

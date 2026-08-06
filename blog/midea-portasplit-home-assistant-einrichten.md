@@ -7,6 +7,10 @@ kategorie: "Home Assistant und IoT"
 timeToRead: "14 Min. Lesezeit"
 themen:
   - "smart-home-iot"
+produkte:
+  - "home-assistant"
+protokolle:
+  - "tcp"
 related:
   - "midea-portasplit-home-assistant"
   - "serverloser-newsletter-cloudflare-workers-d1"

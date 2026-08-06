@@ -8,6 +8,9 @@ timeToRead: "8 Min. Lesezeit"
 themen:
   - "proton-drive"
   - "rclone"
+produkte:
+  - "proton-drive"
+  - "rclone"
 related:
   - "paperless-dokumente-clouddienst-auslagern"
   - "rclone-mount-in-docker-container"

@@ -7,6 +7,8 @@ kategorie: "Home Assistant und IoT"
 timeToRead: "11 Min. Lesezeit"
 themen:
   - "smart-home-iot"
+produkte:
+  - "home-assistant"
 related:
   - "midea-portasplit-home-assistant"
   - "midea-portasplit-home-assistant-einrichten"

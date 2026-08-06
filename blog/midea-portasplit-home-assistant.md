@@ -7,6 +7,8 @@ kategorie: "Home Assistant und IoT"
 timeToRead: "9 Min. Lesezeit"
 themen:
   - "smart-home-iot"
+produkte:
+  - "home-assistant"
 related:
   - "midea-portasplit-home-assistant-einrichten"
   - "serverloser-newsletter-cloudflare-workers-d1"

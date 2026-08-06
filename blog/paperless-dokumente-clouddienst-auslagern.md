@@ -7,6 +7,8 @@ kategorie: "Paperless-ngx"
 timeToRead: "6 Min. Lesezeit"
 themen:
   - "paperless-ngx"
+produkte:
+  - "paperless-ngx"
 related:
   - "rclone-mount-in-docker-container"
   - "proton-drive-linux-status"
