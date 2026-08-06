@@ -1,7 +1,7 @@
 ---
 name: "Microsoft 365 / Exchange"
 slug: "microsoft-365-exchange"
-hub: "messaging"
+hub: "admin-hub"
 url: "https://rafaelpfister.ch/en/blog/topic/microsoft-365-exchange"
 ---
 

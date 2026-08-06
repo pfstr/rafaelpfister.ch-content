@@ -20266,6 +20266,203 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Förnya certifikatet på Cisco SMA
+
+URL: https://rafaelpfister.ch/sv/blog/fornya-certifikatet-pa-cisco-sma
+Datum: 2026-08-04
+
+# Förnya certifikatet på Cisco SMA
+
+Cisco SMA (Security Management Appliance, numera under namnet Cisco Secure Email and Web Manager) hanterar i många e-postmiljöer central skräppostkarantän och rapportering för Secure Email-gatewayerna. Dess HTTPS-certifikat täcker admin-GUI:t och karantänsidan där slutanvändare kan granska och frisläppa sina kvarhållna e-postmeddelanden. När det löper ut bryts inget e-postflöde. Utgången märks ändå omedelbart: varje öppning av karantänsidan avslutas med en certifikatvarning i webbläsaren, och just de användare som medvetenhetsutbildningar lär att inte klicka vidare vid sådana varningar förväntas då ignorera dem.
+
+Vid en förnyelse i ett kundprojekt fanns det två fallgropar: först svarade OpenSSL 3 på PFX-filen från den interna CA:n med ett kryptiskt fel om `RC2-40-CBC`, därefter vägrade enheten att importera det färdiga certifikatet eftersom den inte kände till den utfärdande rot-CA:n. Båda hindren och deras lösningar beskrivs längre ned.
+
+## Vad SMA gör annorlunda än ESA
+
+På ESA kan hela certifikatlivscykeln hanteras via GUI:t (`Network > Certificates`). SMA kan inte det: servercertifikatet installeras uteslutande via CLI, med kommandot `certconfig` i en SSH-session. SMA:s GUI visar endast certifikat; enbart listorna över betrodda certifikatutfärdare kan hanteras där, mer om det senare.
+
+Därtill finns två ytterligare särdrag:
+
+- Klistra in-dialogen accepterar endast PEM-formatet. En PFX-fil (PKCS#12) måste konverteras före installationen; aktuella AsyncOS-versioner erbjuder dessutom direktimport av PKCS#12, men filen måste först överföras till enheten.
+- Äldre AsyncOS-versioner (enligt Cisco-technoten) skapar varken nycklar eller CSR:er själva, så nyckelparet måste skapas utanför enheten; de tre möjliga sätten beskrivs längre ned. Aktuella versioner kan med `certconfig > CERTIFICATE > NEW` skapa ett självsignerat certifikat med CSR direkt på enheten. Det hjälper dock inte för ett gemensamt certifikat över flera enheter, eftersom den privata nyckeln då aldrig lämnar enheten.
+
+Ett enskilt certifikat kan antingen användas för alla tjänster (inkommande och utgående TLS, HTTPS-administrationsåtkomst, LDAPS) eller lagras separat för varje tjänst. Detta styrs i dialogen `certconfig`; kommandots rubrik visar alltid den aktiva tilldelningen (`Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.`). Det finns ingen separat tilldelningsdialog som på ESA, och inget kan ändras via GUI:t. I de flesta miljöer är ett certifikat för allt det pragmatiska valet: namnlistan omfattar ändå enheternas FQDN:er, och separata nyckelpar mångdubblar arbetet vid varje förnyelse.
+
+Att dialogen på en karantänenhet frågar efter inkommande och utgående TLS är vid första anblicken förvirrande, eftersom SMA inte ligger i någon MX-sökväg. Den använder ändå SMTP i båda riktningarna. Inkommande (Receiving) är mottagningssidan: ESA:erna levererar karantänsatta meddelanden via SMTP till SMA, till den centrala skräppostkarantänen på port 6025 och till de centrala policy-, virus- och utbrottskarantänerna på port 7025; de senare anslutningarna är TLS-krypterade som standard, och SMA presenterar då just detta certifikat. Utgående (Delivery) är sändningssidan: om en användare frisläpper ett meddelande från karantänen levererar SMA själv det via sina SMTP-rutter tillbaka till e-postflödet, och enheten skickar även karantänmeddelanden, schemalagda rapporter och varningar som egna e-postmeddelanden. För förnyelsen innebär detta: HTTPS är i praktiken kritiskt, och de båda SMTP-tjänsterna följer helt enkelt med när certifikatet används för alla tjänster.
+
+## Fastställ namn: CN och SAN
+
+Oavsett vägen till nyckelparet fastställs namnlistan först. Common Name ska vara värdnamnet som användarna använder för att öppna karantänsidan. SAN-listan ska dessutom innehålla enheternas FQDN:er, så att direktåtkomst till admin-GUI:t också fungerar utan varning. För en miljö med två enheter ser namnlistan ut så här:
+
+| Fält | Värde |
+|---|---|
+| CN | `spam-quarantine.example.ch` |
+| SAN | `spam-quarantine.example.ch` |
+| SAN | `sma01.example.ch` |
+| SAN | `sma02.example.ch` |
+
+Två kommentarer: webbläsare utvärderar sedan länge endast SAN-poster, CN ensamt räcker inte. Karantänens värdnamn måste därför också finnas som SAN. Och korta värdnamn utan domändel (exempelvis `SMA01`) utfärdas endast av en intern CA; offentliga CA:er signerar inte interna namn.
+
+## Tre vägar till det nya nyckelparet
+
+För ett certifikat som täcker flera enheter och karantänens värdnamn måste nyckelparet skapas utanför enheten. Tre etablerade sätt finns:
+
+1. Skapa nyckel och CSR med OpenSSL inom den egna miljön. Den privata nyckeln skapas där den behövs och lämnar aldrig miljön. Den rekommenderade metoden, med detaljer i nästa avsnitt.
+2. CA:n skapar nyckelparet och levererar en PFX-fil. Det fungerar, men har två nackdelar: nyckeln passerar genom andra händer (lösenordet bör därför skickas via en separat kanal och inte i samma e-postmeddelande som filen), och beroende på CA-verktyg kan en RC2-krypterad PFX returneras, som OpenSSL 3 endast öppnar med extra arbete; mer om detta nedan.
+3. Omvägen via en ESA, dokumenterad i Cisco-technoten: skapa där under `Network > Certificates` ett certifikat med SMA:ns CN, hämta CSR:en och låt CA:n signera den, ladda upp det signerade certifikatet till ESA:n igen och exportera allt som PFX. Även här krävs till slut konvertering till PEM.
+
+## Starta OpenSSL under Windows
+
+Alla följande steg körs med OpenSSL på ett system inom miljön, exempelvis en administrationsserver. Light Edition av Windows-byggena från Shining Light Productions räcker, installationsprogrammet är cirka 6 MB stort och kan verifieras mot checksummalistan som slproweb publicerar.
+
+Installationsprogrammet lägger allt under `C:\Program Files\OpenSSL-Win64` och den körbara filen finns i `bin\openssl.exe`. Den läggs inte till i sökvägen: den som skriver `openssl` i en ny kommandotolk får ett felmeddelande. Tre sätt leder till målet:
+
+- Öppna posten `Win64 OpenSSL Command Prompt` i Start-menyn. Den startar `start.bat` från installationskatalogen, ställer in miljön och hälsar med utdata från `openssl version -a`. I detta fönster fungerar `openssl` direkt.
+- Ange den fullständiga sökvägen: `"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version`.
+- Lägg permanent till `C:\Program Files\OpenSSL-Win64\bin` i miljövariabeln `Path`; därefter är `openssl` tillgängligt i varje skal.
+
+Den som redan använder Git för Windows klarar sig utan ytterligare installation: det inkluderar eget OpenSSL (`C:\Program Files\Git\mingw64\bin\openssl.exe`), och i Git Bash finns det direkt i sökvägen. Aktuella Git-versioner levererar OpenSSL 3.5 med aktiv Legacy-provider, så `-legacy` från avsnittet om PFX-konvertering fungerar även där. Det kan kontrolleras så här:
+
+```bash
+openssl list -providers -provider legacy
+```
+
+Git Bash har dock en fallgrop: den tolkar argument som börjar med `/` som sökvägar och skriver om dem. Av `-subj "/C=CH/O=Example AG/CN=..."` blir `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, och OpenSSL avbryts:
+
+```text
+req: subject name is expected to be in the format /type0=value0/type1=value1/type2=...
+where characters may be escaped by \. This name is not in that format:
+'C:/Program Files/Git/C=CH/O=Example AG/CN=spam-quarantine.example.ch'
+```
+
+Ett inledande `MSYS_NO_PATHCONV=1` stänger av omskrivningen för det enskilda anropet. Problemet uppstår inte i Kommandotolken, PowerShell eller OpenSSL Command Prompt.
+
+## Skapa nyckel och CSR med OpenSSL
+
+Ett enda anrop skapar nyckel och CSR med hela SAN-listan:
+
+```bash
+openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+```
+
+CSR-filen skickas till CA:n och nyckeln stannar på servern. Det signerade certifikatet återkommer med Intermediate-certifikatet, vanligen direkt som PEM. Därmed finns allt redo för installationen och PFX-konvertering bortfaller helt med denna metod.
+
+Nyckelfilen är okrypterad (`-noenc`), eftersom `certconfig` förväntar sig den i just detta skick. Fram till installationen ska den behållas på servern med restriktiva behörigheter och därefter raderas eller flyttas till lösenordshanteraren.
+
+## Konvertera PFX till PEM
+
+Detta och nästa avsnitt gäller väg 2 och 3, som båda avslutas med en PFX-fil. `certconfig` förväntar sig certifikat och privat nyckel som PEM, med okrypterad nyckel. Båda uppgifterna utförs med ett enda OpenSSL-anrop:
+
+```bash
+openssl pkcs12 -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
+```
+
+`-noenc` (fram till OpenSSL 3.0 hette alternativet `-nodes`) skriver den privata nyckeln utan lösenfras i utdatafilen. Frågan efter importlösenordet sker utan eko, och inga asterisker visas heller. Den skapade PEM-filen innehåller certifikat, nyckel och medföljande kedjecertifikat i en fil och måste därför skyddas: radera den efter installationen eller flytta den till lösenordshanteraren.
+
+## När OpenSSL 3 vägrar PFX-filen
+
+För äldre PFX-filer avbryts konverteringen i OpenSSL 3.x med detta meddelande:
+
+```text
+Error outputting keys and certificates
+error:0308010C:digital envelope routines:inner_evp_generic_fetch:unsupported:
+crypto/evp/evp_fetch.c: Global default library context, Algorithm (RC2-40-CBC : 0)
+```
+
+Orsaken är inte en defekt fil utan ett designbeslut: OpenSSL 3 har flyttat äldre algoritmer som RC2, RC4 och DES till en separat Legacy-provider, som inte laddas som standard. Många PFX-exporter från äldre Windows-system och CA-verktyg krypterar dock certifikatdelen av containern just med RC2-40-CBC. OpenSSL 1.1 öppnade sådana filer utan problem, medan OpenSSL 3 avvisar dem.
+
+Lösningen är ett enda ytterligare alternativ:
+
+```bash
+openssl pkcs12 -legacy -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
+```
+
+`-legacy` laddar Legacy-providern för detta anrop, och därefter kör konverteringen igenom. Förutsättningen är en OpenSSL-installation som innehåller Legacy-providern; så är fallet med vanliga Windows-byggen.
+
+Den som vill bli av med felet permanent bör åtgärda källan och låta PFX-filen exporteras med modern kryptering: aktuella exportdialoger och CA-verktyg erbjuder AES-256, vilket helt eliminerar Legacy-omvägen.
+
+Som grafiskt alternativ fungerar XCA (X Certificate and Key Management): läs in PFX-filen via `Importieren > PKCS#12`, exportera sedan certifikatet som PEM på fliken `Zertifikate` och nyckeln separat som okrypterad PEM på fliken `Private Schlüssel`. Båda exporterna behövs, eftersom `certconfig` frågar efter certifikat och nyckel separat. XCA innehåller sitt eget kryptobibliotek och öppnar även containrar med Legacy-algoritmer.
+
+Ett ord om nedladdningskällan: OpenSSL-projektet publicerar inga Windows-binärer själva utan hänvisar till tredjepartsbyggen som Win64 OpenSSL från Shining Light Productions. Nedladdningsportaler med egna installationsprogram är fel adress för ett kryptoverktyg.
+
+## Importera först intern rot-CA till enhetens truststore
+
+Aktuella AsyncOS-versioner validerar hela kedjan när en certifikatprofil skapas. Om certifikatet kommer från en intern CA vars rot enheten inte känner till avbryts importen med detta meddelande:
+
+```text
+Cannot import certificate: The certificate authority validation could not be
+trusted for certificate because unable to get local issuer certificate
+```
+
+Enheten har två listor över betrodda certifikatutfärdare: den medföljande systemlistan och en Custom-lista för egna CA:er. Den interna rot-CA:n hör hemma i Custom-listan, och den måste läggas in innan servercertifikatet installeras. Endast det offentliga CA-certifikatet som PEM-fil behövs (`-----BEGIN CERTIFICATE-----` till `-----END CERTIFICATE-----`), ingen privat nyckel.
+
+Så här överförs rot-CA:n till enheten via webbgränssnittet:
+
+1. Öppna `Network > Certificates`.
+2. Klicka på `Edit Settings` i avsnittet `Certificate Authorities`.
+3. Välj alternativet `Enable` vid `Custom List`.
+4. Ladda upp PEM-filen via `Choose File`.
+5. Kör `Submit` och därefter `Commit Changes`.
+6. Kontrollera under `Network > Certificates > Manage Trusted Root Certificates` att CA:n visas i listan över anpassade certifikat.
+
+Om det redan finns en Custom-lista ska den först exporteras och den nya CA:n läggas till i det befintliga PEM-paketet: importen ersätter listan, annars försvinner tidigare lagrade CA:er. I en kedja med mellanliggande steg importeras först rot-CA:n och sedan Intermediate-CA:n. AsyncOS kontrollerar vid import bland annat utgångsdatum, dubbletter och den satta flaggan `CA:TRUE` och avvisar en Intermediate så länge den tillhörande roten saknas. Samma import kan även göras via CLI: `certconfig > CERTAUTHORITY > CUSTOM > IMPORT`, därefter `commit`.
+
+Två avgränsningar: för uppdateringar via en TLS-inspekterande proxy har SMA en separat truststore (`updateconfig > TRUSTED_CERTIFICATES > ADD`), och Custom-CA-listan används inte där. Och rot-CA:n på SMA eliminerar inte webbläsarvarningar: klienterna behöver fortfarande roten via sin egen certifikatdistribution, vanligtvis via GPO, och enheten måste leverera servercertifikatet tillsammans med Intermediate-certifikatet.
+
+## Installation med certconfig
+
+Logga in på SMA via SSH och starta `certconfig`. I aktuella AsyncOS-versioner arbetar dialogen med certifikatprofiler:
+
+```text
+sma01.example.ch> certconfig
+
+Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.
+
+Choose the operation you want to perform:
+- CERTIFICATE - Import, Create a request, Edit or Remove Certificate Profiles
+- CERTAUTHORITY - Manage System and Customized Authorities
+- CRL - Manage Certificate Revocation Lists
+[]> certificate
+```
+
+Bakom `CERTIFICATE` finns åtgärderna `IMPORT` (PKCS#12-fil som tidigare laddats upp till enheten), `PASTE` (klistra in certifikat i CLI), `NEW` (skapa självsignerat certifikat med CSR), `EDIT`, `EXPORT`, `DELETE` och `PRINT` (visar tilldelningen till tjänsterna). Den vanliga vägen via SSH är `PASTE`: dialogen frågar efter ett namn för profilen, därefter certifikatet, den privata nyckeln och valfritt Intermediate-certifikat från CA:n, var och en som PEM-block och avslutad med en enskild `.` på en egen rad. En avslutande fråga om FQDN-kontrollen av Common Name kan besvaras med standardvärdet. Intermediate-certifikatet måste ingå i profilen, annars saknar klienterna kedjan och beroende på webbläsare kan varningen kvarstå trots giltigt certifikat.
+
+Äldre AsyncOS-versioner (enligt Cisco-technoten) visar i stället en dialog `SETUP`. Den börjar med frågan `Do you want to use one certificate/key for receiving, delivery, HTTPS management access, and LDAPS?`: ett `y` tilldelar samma par till alla fyra tjänster, medan ett `n` går igenom frågan om certifikat, nyckel och Intermediate en gång per tjänst. Principen för inklistring är identisk.
+
+Två punkter avgör om det lyckas: avsluta inte sessionen med Ctrl+C, eftersom det omedelbart förkastar alla ändringar. Kör också `commit` i slutet; först då blir certifikatet aktivt. Vid två enheter upprepas proceduren på båda, eftersom certifikatkonfigurationen inte synkroniseras mellan SMA:er.
+
+## Kontroll
+
+Det snabbaste testet körs utifrån mot karantänsidan. Slutanvändaråtkomsten till skräppostkarantänen ligger som standard på HTTPS-port 83, om inget annat konfigurerades vid aktiveringen:
+
+```bash
+openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+```
+
+Utdata måste visa det nya Subject och det nya utgångsdatumet. På enheten listar `certconfig` med åtgärden `PRINT` de aktiva certifikaten, och webbläsarkontrollen mot admin-GUI:t och karantänsidan bekräftar att kedjan är korrekt uppbyggd.
+
+## Källor
+
+1.  [How to Generate and Install a Certificate on an SMA](https://www.cisco.com/c/en/us/support/docs/security/content-security-management-appliance/118460-technote-sma-00.html): Cisco-technote med certconfig-processen för äldre AsyncOS-versioner, PEM-kravet och sätten att skapa certifikat via ESA eller OpenSSL.
+
+2.  [Common Administrative Tasks, AsyncOS 16.0 för Cisco Secure Email and Web Manager](https://www.cisco.com/c/en/us/td/docs/security/security_management/sma/sma16-0/user_guide/b_sma_admin_guide_16_0/b_NGSMA_Admin_Guide_chapter_01011.html): Kapitel i administrationsguiden om hantering av Certificate Authority-listor (system- och Custom-lista), inklusive kontroller vid CA-import.
+
+3.  [Comprehensive Spam Quarantine Setup Guide on ESA and SMA](https://www.cisco.com/c/en/us/support/docs/security/email-security-appliance/118692-configure-esa-00.html): Cisco-guide för skräppostkarantän, inklusive slutanvändaråtkomst via HTTPS på port 83.
+
+4.  [openssl-req](https://docs.openssl.org/master/man1/openssl-req/): Referens för att skapa nyckel och CSR, inklusive `-addext` för SAN-listan.
+
+5.  [openssl-pkcs12](https://docs.openssl.org/master/man1/openssl-pkcs12/): Referens för konverteringsalternativen, bland annat `-noenc` (tidigare `-nodes`) och `-legacy`.
+
+6.  [OpenSSL 3.0 Migration Guide](https://docs.openssl.org/3.0/man7/migration_guide/): Bakgrund om flytten av äldre algoritmer till Legacy-providern.
+
+7.  [XCA: X Certificate and Key Management](https://hohnstaedt.de/xca/): Verktyg med öppen källkod för import och export av PKCS#12- och PEM-strukturer.
+
+8.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): Windows-byggen från Shining Light Productions, som OpenSSL-projektet hänvisar till, inklusive publicerad checksummalista.
+
+9.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): Beskrivning av den automatiska sökvägsomskrivningen som i Git Bash ändrar argumentet `-subj`, inklusive `MSYS_NO_PATHCONV`.
+
+----
+
 # HIN-plattformsförnyelse 2026: Access Gateway, Client och tidsfristerna fram till 14 september
 
 URL: https://rafaelpfister.ch/sv/blog/hin-plattformsfornyelse-2026-access-gateway-client-och-tidsfristerna-fram-till-14-september
@@ -24104,6 +24301,203 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Fornye sertifikat på Cisco SMA
+
+URL: https://rafaelpfister.ch/no/blog/fornye-sertifikat-pa-cisco-sma
+Datum: 2026-08-04
+
+# Fornye sertifikat på Cisco SMA
+
+Cisco SMA (Security Management Appliance, nå markedsført under navnet Cisco Secure Email and Web Manager) håndterer i mange e-postmiljøer den sentrale spam-karantenen og rapporteringen for Secure Email-gatewayene. HTTPS-sertifikatet dekker admin-GUI-en og karantenesiden, der sluttbrukere kan se gjennom og frigi tilbakeholdte e-poster. Når det utløper, stopper ikke e-postflyten. Likevel blir utløpet straks synlig: Hvert besøk på karantenesiden ender med en sertifikatadvarsel i nettleseren, og nettopp brukerne som opplæring i sikkerhetsbevissthet lærer å ikke klikke videre ved slike advarsler, skal da ignorere dem.
+
+Ved en fornyelse i et kundeprosjekt oppstod det to hindringer: Først avviste OpenSSL 3 PFX-filen fra den interne CA-en med en kryptisk feil om `RC2-40-CBC`, deretter nektet appliance-en å importere det ferdige sertifikatet fordi den ikke kjente den utstedende rot-CA-en. Begge hindringene og løsningene følger lenger ned.
+
+## Hva SMA gjør annerledes enn ESA
+
+På ESA kan hele sertifikatlivssyklusen håndteres via GUI-en (`Network > Certificates`). SMA kan ikke det: Serversertifikatet installeres utelukkende via CLI, med kommandoen `certconfig` i en SSH-økt. SMA-GUI-en viser bare sertifikater; bare listene over klarerte sertifiseringsinstanser kan vedlikeholdes der, mer om det senere.
+
+I tillegg kommer to andre særtrekk:
+
+- Innlimingsdialogen godtar bare PEM-formatet. En PFX-fil (PKCS#12) må konverteres før installasjon; aktuelle AsyncOS-versjoner tilbyr også direkte PKCS#12-import, men filen må først overføres til appliance-en.
+- Eldre AsyncOS-versjoner (slik Cisco-teknote-en beskriver dem) oppretter verken nøkler eller CSR-er selv, så nøkkelparet må opprettes utenfor; de tre aktuelle metodene følger lenger ned. Aktuelle versjoner kan med `certconfig > CERTIFICATE > NEW` opprette et selvsignert sertifikat med CSR direkte på appliance-en. Dette hjelper imidlertid ikke for et felles sertifikat på tvers av flere applikasjoner, fordi den private nøkkelen da aldri forlater appliance-en.
+
+Ett sertifikat kan enten brukes for alle tjenester (inngående og utgående TLS, HTTPS-administrasjonstilgang, LDAPS) eller lagres separat for hver tjeneste. Dette styres i dialogen `certconfig`; kommandotittelen viser alltid den aktive tildelingen (`Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.`). Det finnes ingen separat tildelingsdialog som på ESA, og dette kan ikke endres via GUI-en. I de fleste miljøer er ett sertifikat for alt det pragmatiske valget: Navnelisten dekker uansett FQDN-ene til appliance-ene, og separate nøkkelpar mangedobler arbeidet ved hver fornyelse.
+
+At dialogen på en karantene-appliance spør om innkommende og utgående TLS, virker ved første øyekast forvirrende, siden SMA ikke står i noen MX-bane. Den kommuniserer likevel SMTP i begge retninger. Inngående (Receiving) er mottakssiden: ESA-ene leverer karantenelagte meldinger via SMTP til SMA, til den sentrale spam-karantenen på port 6025 og til de sentrale policy-, virus- og outbreak-karantenene på port 7025; de sistnevnte forbindelsene er TLS-kryptert som standard, og SMA presenterer nettopp dette sertifikatet der. Utgående (Delivery) er sendesiden: Når en bruker frigir en melding fra karantenen, leverer SMA den selv tilbake til e-postflyten via SMTP-rutene sine, og appliance-en sender også karantenevarsler, planlagte rapporter og varsler som egne e-poster. For fornyelsen betyr dette: HTTPS er i praksis kritisk, mens de to SMTP-tjenestene bare følger med når sertifikatet brukes for alle tjenester.
+
+## Fastsett navn: CN og SAN
+
+Uavhengig av veien til nøkkelparet må navnelisten først fastsettes. Common Name skal være vertsnavnet brukerne bruker for å åpne karantenesiden. SAN-listen skal i tillegg inneholde FQDN-ene til appliance-ene, slik at også direkte tilgang til admin-GUI-en fungerer uten advarsel. For et miljø med to appliance-er ser navnelisten slik ut:
+
+| Felt | Verdi |
+|---|---|
+| CN | `spam-quarantine.example.ch` |
+| SAN | `spam-quarantine.example.ch` |
+| SAN | `sma01.example.ch` |
+| SAN | `sma02.example.ch` |
+
+To merknader: Nettlesere har lenge kun vurdert SAN-oppføringene, CN alene er ikke nok. Karantenevertsnavnet må derfor også stå som SAN. Og korte vertsnavn uten domeneandel (for eksempel `SMA01`) utstedes bare av en intern CA; offentlige CA-er signerer ikke interne navn.
+
+## Tre veier til det nye nøkkelparet
+
+For et sertifikat som dekker flere appliance-er og karantenevertsnavnet, må nøkkelparet opprettes utenfor appliance-en. Tre metoder har etablert seg:
+
+1. Opprett nøkkel og CSR med OpenSSL i eget miljø. Den private nøkkelen opprettes der den skal brukes og forlater aldri miljøet. Den anbefalte metoden, med detaljer i neste avsnitt.
+2. CA-en oppretter nøkkelparet og leverer en PFX-fil. Dette fungerer, men har to ulemper: Nøkkelen går gjennom fremmede hender (passordet bør derfor sendes i en separat kanal og ikke i samme e-post som filen), og avhengig av CA-verktøyet kan du få tilbake en RC2-kryptert PFX som OpenSSL 3 bare åpner med ekstra innsats; mer om dette nedenfor.
+3. Omveien via en ESA, dokumentert i Cisco-teknote-en: Opprett et sertifikat med SMA-ens CN under `Network > Certificates`, last ned CSR-en og få den signert av CA-en, last det signerte sertifikatet opp igjen til ESA-en og eksporter alt som PFX. Også her må det til slutt konverteres til PEM.
+
+## Starte OpenSSL på Windows
+
+Alle følgende trinn utføres med OpenSSL på et system i miljøet, for eksempel en administrasjonsserver. Light Edition av Windows-byggene fra Shining Light Productions er tilstrekkelig; installasjonsfilen er på omtrent 6 MB og kan verifiseres mot sjekksumlisten publisert av slproweb.
+
+Installereren legger alt under `C:\Program Files\OpenSSL-Win64` , og den kjørbare filen ligger i `bin\openssl.exe`. Den legger seg ikke til i søkestien: Den som skriver `openssl` i en ny ledetekst, får en feilmelding. Tre veier fører til målet:
+
+- Åpne oppføringen `Win64 OpenSSL Command Prompt` fra Start-menyen. Den starter `start.bat` fra installasjonskatalogen, setter opp miljøet og viser utdata fra `openssl version -a`. I dette vinduet fungerer `openssl` direkte.
+- Oppgi hele banen: `"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version`.
+- Legg `C:\Program Files\OpenSSL-Win64\bin` permanent til miljøvariabelen `Path`; deretter er `openssl` tilgjengelig i alle skall.
+
+De som allerede bruker Git for Windows, klarer seg uten ekstra installasjon: Det inkluderer sin egen OpenSSL (`C:\Program Files\Git\mingw64\bin\openssl.exe`), og i Git Bash ligger den umiddelbart i søkestien. Aktuelle Git-versjoner leverer OpenSSL 3.5 med aktiv Legacy Provider, så `-legacy` fra avsnittet om PFX-konvertering fungerer også der. Dette kan kontrolleres slik:
+
+```bash
+openssl list -providers -provider legacy
+```
+
+Git Bash har imidlertid én fallgruve: Den tolker argumenter som begynner med `/` som stier og skriver dem om. Av `-subj "/C=CH/O=Example AG/CN=..."` blir `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, og OpenSSL avbryter:
+
+```text
+req: subject name is expected to be in the format /type0=value0/type1=value1/type2=...
+where characters may be escaped by \. This name is not in that format:
+'C:/Program Files/Git/C=CH/O=Example AG/CN=spam-quarantine.example.ch'
+```
+
+En innledende `MSYS_NO_PATHCONV=1` deaktiverer omskrivingen for det enkelte kallet. Problemet oppstår ikke i ledeteksten, PowerShell eller OpenSSL Command Prompt.
+
+## Opprette nøkkel og CSR med OpenSSL
+
+Ett enkelt kall oppretter nøkkel og CSR med hele SAN-listen:
+
+```bash
+openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+```
+
+CSR-filen sendes til CA-en, mens nøkkelen blir liggende på serveren. Du får tilbake det signerte sertifikatet med intermediate-sertifikatet, vanligvis direkte som PEM. Da er alt klart for installasjonen, og PFX-konvertering faller helt bort med denne metoden.
+
+Nøkkelfilen er ukryptert (`-noenc`), fordi `certconfig` forventer den slik. Frem til installasjonen oppbevares den med restriktive tillatelser på serveren, og deretter slettes den eller flyttes til passordbehandleren.
+
+## Konvertere PFX til PEM
+
+Dette og neste avsnitt gjelder metode 2 og 3, som ender med en PFX-fil. `certconfig` forventer sertifikat og privat nøkkel som PEM, og nøkkelen må være ukryptert. Begge deler håndteres av ett enkelt OpenSSL-kall:
+
+```bash
+openssl pkcs12 -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
+```
+
+`-noenc` (frem til OpenSSL 3.0 het alternativet `-nodes`) skriver den private nøkkelen uten passfrase til utdatafilen. Importpassordet etterspørres uten ekko, og det vises heller ingen stjerner. Den opprettede PEM-filen inneholder sertifikat, nøkkel og medfølgende kjedesertifikater i én fil og må beskyttes tilsvarende: Slett den etter installasjonen eller flytt den til passordbehandleren.
+
+## Når OpenSSL 3 avviser PFX-filen
+
+Med eldre PFX-filer avbrytes konverteringen i OpenSSL 3.x med denne meldingen:
+
+```text
+Error outputting keys and certificates
+error:0308010C:digital envelope routines:inner_evp_generic_fetch:unsupported:
+crypto/evp/evp_fetch.c: Global default library context, Algorithm (RC2-40-CBC : 0)
+```
+
+Årsaken er ikke en ødelagt fil, men en designbeslutning: OpenSSL 3 har flyttet gamle algoritmer som RC2, RC4 og DES til en separat Legacy Provider, som ikke lastes som standard. Mange PFX-eksporter fra eldre Windows-systemer og CA-verktøy krypterer imidlertid sertifikatdelen av containeren nettopp med RC2-40-CBC. OpenSSL 1.1 åpnet slike filer uten problemer, mens OpenSSL 3 avviser dem.
+
+Løsningen er ett ekstra alternativ:
+
+```bash
+openssl pkcs12 -legacy -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
+```
+
+`-legacy` laster også Legacy Provider for dette kallet, og deretter fullføres konverteringen. Forutsetningen er en OpenSSL-installasjon som inkluderer Legacy Provider; dette er tilfellet for de vanlige Windows-byggene.
+
+Den som vil bli kvitt feilen permanent, kan løse den ved kilden og eksportere PFX-filen med moderne kryptering: Aktuelle eksportdialoger og CA-verktøy tilbyr AES-256, slik at Legacy-omveien faller helt bort.
+
+Som grafisk alternativ fungerer XCA (X Certificate and Key Management): Importer PFX-filen via `Importieren > PKCS#12`, eksporter deretter sertifikatet som PEM fra fanen `Zertifikate` og nøkkelen separat som ukryptert PEM fra fanen `Private Schlüssel`. Begge eksportene er nødvendige, `certconfig` ber om sertifikat og nøkkel hver for seg. XCA har sitt eget kryptobibliotek og åpner også containere med gamle algoritmer.
+
+Et ord om nedlastingskilden: OpenSSL-prosjektet publiserer ikke selv Windows-binærfiler, men viser til tredjepartsbygg som Win64 OpenSSL fra Shining Light Productions. Nedlastingsportaler med egne installasjonsprogrammer er feil sted for et kryptoverktøy.
+
+## Importer intern rot-CA i appliance-ens tillitslager først
+
+Aktuelle AsyncOS-versjoner validerer hele kjeden når en sertifikatprofil opprettes. Hvis sertifikatet kommer fra en intern CA som appliance-en ikke kjenner roten til, avbrytes importen med denne meldingen:
+
+```text
+Cannot import certificate: The certificate authority validation could not be
+trusted for certificate because unable to get local issuer certificate
+```
+
+Appliance-en har to lister over klarerte sertifiseringsinstanser: den medfølgende systemlisten og en egendefinert liste for egne CA-er. Den interne rot-CA-en hører hjemme i den egendefinerte listen, og den må importeres før serversertifikatet installeres. Du trenger bare det offentlige CA-sertifikatet som PEM-fil (`-----BEGIN CERTIFICATE-----` til `-----END CERTIFICATE-----`), ikke noen privat nøkkel.
+
+Slik får du rot-CA-en til appliance-en via webgrensesnittet:
+
+1. Åpne `Network > Certificates`.
+2. Klikk på `Edit Settings` i avsnittet `Certificate Authorities`.
+3. Velg alternativet `Enable` ved `Custom List`.
+4. Last opp PEM-filen med `Choose File`.
+5. Utfør `Submit` og deretter `Commit Changes`.
+6. Kontroller under `Network > Certificates > Manage Trusted Root Certificates` at CA-en vises i listen over egendefinerte sertifikater.
+
+Hvis det allerede finnes en egendefinert liste, eksporter den først og legg den nye CA-en til i det eksisterende PEM-bundlet: Importen erstatter listen, ellers forsvinner tidligere lagrede CA-er. Ved en kjede med mellomledd må du først importere rot-CA-en, deretter intermediate-CA-en. AsyncOS kontrollerer ved import blant annet utløpsdato, duplikater og det angitte `CA:TRUE`-flagget, og avviser en intermediate så lenge den tilhørende roten mangler. Den samme importen kan også gjøres via CLI: `certconfig > CERTAUTHORITY > CUSTOM > IMPORT`, deretter `commit`.
+
+To avgrensninger: For oppdateringer via en TLS-inspeksjonsproxy bruker SMA et separat tillitslager (`updateconfig > TRUSTED_CERTIFICATES > ADD`), og den egendefinerte CA-listen gjelder ikke der. Og rot-CA-en på SMA fjerner ikke nettleseradvarsler: Klientene trenger fortsatt rot-CA-en gjennom sin egen sertifikatdistribusjon, typisk via GPO, og appliance-en må levere serversertifikatet med intermediate-sertifikatet.
+
+## Installasjon med certconfig
+
+Logg på SMA via SSH og start `certconfig`. På aktuelle AsyncOS-versjoner arbeider dialogen med sertifikatprofiler:
+
+```text
+sma01.example.ch> certconfig
+
+Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.
+
+Choose the operation you want to perform:
+- CERTIFICATE - Import, Create a request, Edit or Remove Certificate Profiles
+- CERTAUTHORITY - Manage System and Customized Authorities
+- CRL - Manage Certificate Revocation Lists
+[]> certificate
+```
+
+Bak `CERTIFICATE` ligger operasjonene `IMPORT` (PKCS#12-fil som tidligere er lastet opp til appliance-en), `PASTE` (lim inn sertifikat i CLI-en), `NEW` (opprett selvsignert sertifikat med CSR), `EDIT`, `EXPORT`, `DELETE` og `PRINT` (viser tildelingen til tjenestene). Den vanlige metoden via SSH er `PASTE`: Dialogen ber om et navn på profilen, deretter sertifikatet, den private nøkkelen og eventuelt CA-ens intermediate-sertifikat, hver som en PEM-blokk avsluttet med én enkelt `.` på egen linje. Et avsluttende spørsmål om FQDN-kontroll av Common Name kan besvares med standardverdien. Intermediate-sertifikatet må inkluderes i profilen, ellers mangler klientene kjeden, og avhengig av nettleseren kan advarselen vedvare til tross for gyldig sertifikat.
+
+Eldre AsyncOS-versjoner (slik Cisco-teknote-en beskriver dem) viser i stedet en `SETUP`-dialog. Den starter med spørsmålet `Do you want to use one certificate/key for receiving, delivery, HTTPS management access, and LDAPS?`: Et `y` tildeler samme par til alle fire tjenester, mens et `n` går gjennom spørsmålene om sertifikat, nøkkel og intermediate én gang per tjeneste. Prinsippet for innliming er identisk.
+
+To punkter avgjør om det lykkes eller ikke: Ikke avslutt økten med Ctrl+C, da forkastes alle endringer umiddelbart. Kjør til slutt `commit`; først da er sertifikatet aktivt. Med to appliance-er gjentas prosessen på begge, sertifikatkonfigurasjonen synkroniseres ikke mellom SMA-er.
+
+## Kontroll
+
+Den raskeste testen utføres utenfra mot karantenesiden. Sluttbrukertilgangen til spam-karantenen ligger som standard på HTTPS-port 83, dersom ikke noe annet ble konfigurert ved aktivering:
+
+```bash
+openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+```
+
+Utdataene må vise det nye Subject og den nye utløpsdatoen. På appliance-en viser `certconfig` med operasjonen `PRINT` de aktive sertifikatene, og nettleserkontrollen mot admin-GUI-en og karantenesiden bekrefter at kjeden er korrekt bygget opp.
+
+## Kilder
+
+1.  [How to Generate and Install a Certificate on an SMA](https://www.cisco.com/c/en/us/support/docs/security/content-security-management-appliance/118460-technote-sma-00.html): Cisco-teknote med certconfig-prosessen for eldre AsyncOS-versjoner, PEM-kravet og metodene for sertifikatopprettelse via ESA eller OpenSSL.
+
+2.  [Common Administrative Tasks, AsyncOS 16.0 for Cisco Secure Email and Web Manager](https://www.cisco.com/c/en/us/td/docs/security/security_management/sma/sma16-0/user_guide/b_sma_admin_guide_16_0/b_NGSMA_Admin_Guide_chapter_01011.html): Kapittel i administrasjonsveiledningen om håndtering av Certificate Authority-listene (system- og egendefinert liste), inkludert kontrollene ved CA-import.
+
+3.  [Comprehensive Spam Quarantine Setup Guide on ESA and SMA](https://www.cisco.com/c/en/us/support/docs/security/email-security-appliance/118692-configure-esa-00.html): Cisco-veiledning om spam-karantene, inkludert sluttbrukertilgang via HTTPS på port 83.
+
+4.  [openssl-req](https://docs.openssl.org/master/man1/openssl-req/): Referanse for opprettelse av nøkkel og CSR, inkludert `-addext` for SAN-listen.
+
+5.  [openssl-pkcs12](https://docs.openssl.org/master/man1/openssl-pkcs12/): Referanse for konverteringsalternativene, blant annet `-noenc` (tidligere `-nodes`) og `-legacy`.
+
+6.  [OpenSSL 3.0 Migration Guide](https://docs.openssl.org/3.0/man7/migration_guide/): Bakgrunn om utflyttingen av gamle algoritmer til Legacy Provider.
+
+7.  [XCA: X Certificate and Key Management](https://hohnstaedt.de/xca/): Åpen kildekode-verktøy for import og eksport av PKCS#12- og PEM-strukturer.
+
+8.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): Windows-bygg fra Shining Light Productions, som OpenSSL-prosjektet viser til, inkludert publisert sjekksumliste.
+
+9.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): Beskrivelse av den automatiske stiomskrivingen som endrer argumentet `-subj` i Git Bash, inkludert `MSYS_NO_PATHCONV`.
 
 ----
 

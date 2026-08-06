@@ -1,7 +1,7 @@
 ---
 name: "Cisco ESA / SMA"
 slug: "cisco-esa-sma"
-hub: "messaging"
+hub: "admin-hub"
 url: "https://rafaelpfister.ch/blog/thema/cisco-esa-sma"
 ---
 

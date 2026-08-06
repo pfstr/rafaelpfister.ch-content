@@ -1,7 +1,7 @@
 ---
 name: "Microsoft Entra"
 slug: "microsoft-entra"
-hub: "messaging"
+hub: "admin-hub"
 url: "https://rafaelpfister.ch/blog/thema/microsoft-entra"
 ---
 

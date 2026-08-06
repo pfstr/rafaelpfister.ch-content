@@ -10,6 +10,10 @@ timeToRead: 11 Min. Lesezeit
 themen:
   - microsoft-entra
   - active-directory-entra
+produkte:
+  - "entra"
+protokolle:
+  - "releases"
 url: https://rafaelpfister.ch/blog/entra-connect-2-6-84-0
 draft: false
 ---

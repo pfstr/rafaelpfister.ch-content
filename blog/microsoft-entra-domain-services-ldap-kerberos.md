@@ -7,6 +7,12 @@ kategorie: "Active Directory / Entra"
 timeToRead: "8 Min. Lesezeit"
 themen:
   - "active-directory-entra"
+produkte:
+  - "entra"
+protokolle:
+  - "ldap"
+  - "dns"
+  - "tcp"
 slug: "microsoft-entra-domain-services-ldap-kerberos"
 translationId: "article-9c271900a94406b8"
 url: "https://rafaelpfister.ch/blog/microsoft-entra-domain-services-ldap-kerberos"

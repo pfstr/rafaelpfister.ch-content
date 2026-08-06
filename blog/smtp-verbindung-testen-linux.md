@@ -8,6 +8,14 @@ timeToRead: "10 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
   - "e-mail-verschluesselung"
+produkte:
+  - "uebergreifend"
+protokolle:
+  - "smtp"
+  - "tcp"
+  - "tls"
+  - "dns"
+  - "verschluesselung"
 slug: "smtp-verbindung-testen-linux"
 translationId: "article-cb44a92c03a47bc0"
 url: "https://rafaelpfister.ch/blog/smtp-verbindung-testen-linux"

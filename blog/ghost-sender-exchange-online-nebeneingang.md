@@ -7,6 +7,11 @@ kategorie: "Microsoft 365 / Exchange"
 timeToRead: "9 Min. Lesezeit"
 themen:
   - "microsoft-365-exchange"
+produkte:
+  - "exchange"
+protokolle:
+  - "smtp"
+  - "dns"
 slug: "ghost-sender-exchange-online-nebeneingang"
 translationId: "article-d8dc8d1da6379d67"
 url: "https://rafaelpfister.ch/blog/ghost-sender-exchange-online-nebeneingang"

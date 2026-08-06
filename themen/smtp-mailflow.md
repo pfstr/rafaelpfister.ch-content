@@ -1,7 +1,7 @@
 ---
 name: "SMTP und Mailflow"
 slug: "smtp-mailflow"
-hub: "messaging"
+hub: "admin-hub"
 url: "https://rafaelpfister.ch/blog/thema/smtp-mailflow"
 ---
 

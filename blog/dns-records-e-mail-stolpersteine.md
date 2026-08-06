@@ -8,6 +8,13 @@ timeToRead: "15 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
   - "e-mail-verschluesselung"
+produkte:
+  - "uebergreifend"
+protokolle:
+  - "dns"
+  - "smtp"
+  - "tls"
+  - "verschluesselung"
 hauptthema: "smtp-mailflow"
 related:
   - "smtp-verbindung-testen-linux"

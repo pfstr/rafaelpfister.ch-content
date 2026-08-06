@@ -7,6 +7,11 @@ kategorie: "SEPPmail"
 timeToRead: "7 Min. Lesezeit"
 themen:
   - "seppmail"
+produkte:
+  - "seppmail"
+protokolle:
+  - "ldap"
+  - "tls"
 slug: "seppmail-admin-gui-ldap-authentifizierung"
 translationId: "article-21092a3dad6b84cb"
 url: "https://rafaelpfister.ch/blog/seppmail-admin-gui-ldap-authentifizierung"

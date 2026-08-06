@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 660" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#222222"/>
+    </marker>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#286983"/>
+    </marker>
+  </defs>
+
+  <!-- Schicht 1: Versandquellen -->
+  <rect x="20" y="16" width="880" height="112" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="36" y="40" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">VERSANDQUELLEN (IHRE KONTROLLE)</text>
+  <rect x="36" y="54" width="196" height="56" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="134" y="78" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Eigener Mailserver</text>
+  <text x="134" y="96" font-size="10.5" fill="#757087" text-anchor="middle">Exchange / M365</text>
+  <rect x="248" y="54" width="196" height="56" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="346" y="78" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">ERP und Fachanwendungen</text>
+  <text x="346" y="96" font-size="10.5" fill="#757087" text-anchor="middle">Rechnungen, Mahnungen</text>
+  <rect x="460" y="54" width="196" height="56" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="558" y="78" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Newsletter-Dienstleister</text>
+  <text x="558" y="96" font-size="10.5" fill="#757087" text-anchor="middle">vertraglich eingebunden</text>
+  <rect x="672" y="54" width="196" height="56" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="770" y="78" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Geräte und Systeme</text>
+  <text x="770" y="96" font-size="10.5" fill="#757087" text-anchor="middle">Scanner, Monitoring</text>
+  <rect x="624" y="46" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="639" y="58.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M6</text>
+  <rect x="836" y="46" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="851" y="58.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M2</text>
+
+  <!-- Pfeil zu DNS -->
+  <line x1="460" y1="128" x2="460" y2="162" stroke="#222222" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="472" y="150" font-size="11" fill="#757087">jede Quelle signiert (DKIM) und ist im SPF erfasst</text>
+
+  <!-- Schicht 2: DNS -->
+  <rect x="20" y="166" width="880" height="104" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="36" y="190" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">IHRE DOMAIN IM DNS</text>
+  <rect x="36" y="202" width="270" height="52" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="171" y="224" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">SPF-Record</text>
+  <text x="171" y="242" font-size="10.5" fill="#757087" text-anchor="middle">alle legitimen Quellen, konsolidiert</text>
+  <rect x="322" y="202" width="270" height="52" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="457" y="224" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">DKIM-Selektoren</text>
+  <text x="457" y="242" font-size="10.5" fill="#757087" text-anchor="middle">eigener Schlüssel je Quelle</text>
+  <rect x="608" y="202" width="270" height="52" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="743" y="224" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">DMARC-Policy + Reporting</text>
+  <text x="743" y="242" font-size="10.5" fill="#757087" text-anchor="middle">Ziel p=reject, rua-Adresse</text>
+  <rect x="274" y="194" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="289" y="206.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M1</text>
+  <rect x="560" y="194" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="575" y="206.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M2</text>
+  <rect x="846" y="194" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="861" y="206.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M3</text>
+
+  <!-- Vertrauensgrenze -->
+  <line x1="20" y1="296" x2="900" y2="296" stroke="#7a2f16" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="36" y="290" font-size="10.5" font-weight="600" fill="#7a2f16">VERTRAUENSGRENZE: AB HIER ENTSCHEIDEN FREMDE SYSTEME ANHAND IHRER DNS-VORGABEN</text>
+  <line x1="460" y1="270" x2="460" y2="316" stroke="#222222" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Schicht 3: Empfaenger -->
+  <rect x="20" y="320" width="880" height="96" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="36" y="344" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">EMPFANGENDE MAILSERVER (GOOGLE, MICROSOFT, PARTNER, KUNDEN)</text>
+  <text x="36" y="372" font-size="12" fill="#222222">prüfen jede eingehende Mail: SPF bestanden? DKIM-Signatur gültig? Absenderdomain im Alignment?</text>
+  <text x="36" y="392" font-size="12" fill="#222222">und wenden Ihre Policy an:</text>
+  <rect x="196" y="379" width="72" height="18" rx="9" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="232" y="392" font-size="10.5" font-weight="600" fill="#757087" text-anchor="middle">p=none</text>
+  <rect x="276" y="379" width="100" height="18" rx="9" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="326" y="392" font-size="10.5" font-weight="600" fill="#757087" text-anchor="middle">p=quarantine</text>
+  <rect x="384" y="379" width="80" height="18" rx="9" fill="#286983"/>
+  <text x="424" y="392" font-size="10.5" font-weight="700" fill="#ffffff" text-anchor="middle">p=reject</text>
+  <text x="476" y="392" font-size="10.5" fill="#757087">= Fälschungen werden abgewiesen</text>
+
+  <!-- Rueckkanal -->
+  <path d="M 880 416 L 880 452" stroke="#286983" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrowAccent)" fill="none"/>
+  <text x="700" y="440" font-size="11" fill="#286983">tägliche Aggregatberichte (RUA)</text>
+
+  <!-- Schicht 4: Auswertung und Betrieb -->
+  <rect x="20" y="456" width="880" height="112" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="36" y="480" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">AUSWERTUNG UND BETRIEB (IHRE KONTROLLE)</text>
+  <rect x="36" y="494" width="410" height="60" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="241" y="516" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Report-Auswertung</text>
+  <text x="241" y="534" font-size="10.5" fill="#757087" text-anchor="middle">unbekannte Quellen erkennen, Missbrauch sichtbar machen</text>
+  <rect x="462" y="494" width="406" height="60" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="665" y="516" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Betriebsprozesse</text>
+  <text x="665" y="534" font-size="10.5" fill="#757087" text-anchor="middle">Quellen-Onboarding, Schlüsselrotation, Vorfall-Triage</text>
+  <rect x="414" y="486" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="429" y="498.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M4</text>
+  <rect x="836" y="486" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="851" y="498.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">M5</text>
+
+  <!-- Rueckfuehrung zu Quellen -->
+  <path d="M 20 512 C 4 512 4 91 20 91" stroke="#286983" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrowAccent)" fill="none"/>
+  <text x="30" y="588" font-size="11" fill="#286983">legitime Nachzügler-Quellen werden nachgerüstet, bevor die Policy verschärft wird</text>
+
+  <!-- Legende -->
+  <line x1="36" y1="614" x2="66" y2="614" stroke="#222222" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="72" y="618" font-size="10.5" fill="#757087">Mailfluss</text>
+  <line x1="150" y1="614" x2="180" y2="614" stroke="#286983" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <text x="186" y="618" font-size="10.5" fill="#757087">Berichts- und Korrekturfluss</text>
+  <rect x="340" y="605" width="30" height="17" rx="8.5" fill="#286983"/>
+  <text x="355" y="617.5" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">Mx</text>
+  <text x="378" y="618" font-size="10.5" fill="#757087">Massnahme (Kapitel 2)</text>
+  <line x1="520" y1="614" x2="550" y2="614" stroke="#7a2f16" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="556" y="618" font-size="10.5" fill="#757087">Vertrauensgrenze</text>
+  <text x="36" y="646" font-size="10.5" fill="#757087">Adressiert: RFC 7489 (DMARC) · RFC 7208 (SPF) · RFC 6376 (DKIM) · Google/Yahoo-Senderrichtlinien · Art. 8 revDSG</text>
+</svg>

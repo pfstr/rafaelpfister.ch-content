@@ -1,7 +1,7 @@
 ---
 name: "E-Mail-Verschlüsselung"
 slug: "e-mail-verschluesselung"
-hub: "messaging"
+hub: "admin-hub"
 url: "https://rafaelpfister.ch/blog/thema/e-mail-verschluesselung"
 ---
 

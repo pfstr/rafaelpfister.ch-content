@@ -8,6 +8,12 @@ timeToRead: "11 Min. Lesezeit"
 themen:
   - "cisco-esa-sma"
   - "smtp-mailflow"
+produkte:
+  - "cisco"
+protokolle:
+  - "tls"
+  - "smtp"
+  - "ldap"
 hauptthema: "cisco-esa-sma"
 slug: "cisco-sma-zertifikat-erneuern"
 translationId: "article-69d93a1e5e081848"

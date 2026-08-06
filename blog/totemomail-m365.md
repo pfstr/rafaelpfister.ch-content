@@ -7,6 +7,11 @@ kategorie: "Totemomail"
 timeToRead: "10 Min. Lesezeit"
 themen:
   - "totemomail"
+produkte:
+  - "totemomail"
+  - "exchange"
+protokolle:
+  - "smtp"
 slug: "totemomail-m365"
 translationId: "article-60a86616507315fa"
 url: "https://rafaelpfister.ch/blog/totemomail-m365"

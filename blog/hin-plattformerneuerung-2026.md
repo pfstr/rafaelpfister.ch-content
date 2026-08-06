@@ -8,6 +8,11 @@ timeToRead: "5 Min. Lesezeit"
 themen:
   - "hin-gateway"
   - "active-directory-entra"
+produkte:
+  - "hin"
+protokolle:
+  - "tcp"
+  - "migration"
 related:
   - "hin-mailgateway-backup-disaster-recovery"
   - "hin-update-issue-version-15.0.5"

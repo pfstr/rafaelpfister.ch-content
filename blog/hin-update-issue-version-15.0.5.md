@@ -9,6 +9,10 @@ kategorie: HIN-Gateway
 timeToRead: 3 Min. Lesezeit
 themen:
   - hin-gateway
+produkte:
+  - "hin"
+protokolle:
+  - "releases"
 url: https://rafaelpfister.ch/blog/hin-update-issue-version-15.0.5
 draft: false
 ---
