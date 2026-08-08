@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">SEPPmail: SMTP-Pfad, Verschlüsselungsentscheidung und Betriebszustände</title>
+  <desc id="desc">Interaktive Admin-Grafik mit SMTP-Annahme, Ruleset, S/MIME, OpenPGP, TLS, GINA, LDAP, Schlüsselbestand, Cluster, Monitoring und Recovery. Jeder Block verlinkt zur Erklärung oder Herstellerquelle.</desc>
+  <style>
+    :root { color-scheme: light; }
+    .bg { fill: #f8f5ef; }
+    .panel { fill: #fffdfa; stroke: #d9d2c7; stroke-width: 2; }
+    .hit { fill: #e7f1f4; stroke: #26748f; stroke-width: 2; transition: fill .16s ease, stroke .16s ease, filter .16s ease; }
+    .hit.gold { fill: #f7edcf; stroke: #987126; }
+    .hit.red { fill: #f5e4df; stroke: #93492f; }
+    .hit.green { fill: #e5f0e7; stroke: #4f7758; }
+    .hit.violet { fill: #ece7f2; stroke: #675578; }
+    a:hover .hit, a:focus .hit { fill: #d2e9ee; stroke: #0d5872; filter: drop-shadow(0 5px 7px rgba(23, 69, 84, .22)); }
+    a:hover .hit.gold, a:focus .hit.gold { fill: #f2dfad; stroke: #7c5811; }
+    a:hover .hit.red, a:focus .hit.red { fill: #f2d8cf; stroke: #743321; }
+    a:hover .hit.green, a:focus .hit.green { fill: #dbeadf; stroke: #315f3c; }
+    a:hover .hit.violet, a:focus .hit.violet { fill: #e5d9ed; stroke: #59436c; }
+    a:focus { outline: none; }
+    a:focus .hit { stroke-width: 4; }
+    .kicker { font: 700 15px Arial, sans-serif; letter-spacing: 2px; fill: #6b6576; }
+    .headline { font: 700 30px Arial, sans-serif; fill: #151515; }
+    .section { font: 700 15px Arial, sans-serif; letter-spacing: 1.8px; fill: #6b6576; }
+    .label { font: 700 18px Arial, sans-serif; fill: #10212a; }
+    .body { font: 400 13px Arial, sans-serif; fill: #4f5960; }
+    .mono { font: 700 12px Consolas, monospace; fill: #243841; }
+    .small { font: 400 11px Arial, sans-serif; fill: #6b6576; }
+    .arrow { fill: none; stroke: #26748f; stroke-width: 4; marker-end: url(#arrow); }
+    .arrow.gold { stroke: #987126; marker-end: url(#arrowGold); }
+    .arrow.dashed { stroke: #8b8791; stroke-width: 3; stroke-dasharray: 8 7; marker-end: url(#arrowGrey); }
+    .chip { fill: #f1eee8; stroke: #d3ccc2; stroke-width: 1.5; transition: fill .16s ease, stroke .16s ease; }
+    a:hover .chip, a:focus .chip { fill: #d9ebef; stroke: #26748f; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#26748f"/></marker>
+    <marker id="arrowGold" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#987126"/></marker>
+    <marker id="arrowGrey" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8b8791"/></marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="1000"/>
+  <text class="kicker" x="70" y="52">SEPPMAIL · SMTP · POLICY · SCHLÜSSEL · RECOVERY</text>
+  <text class="headline" x="70" y="88">Eine Nachricht durchläuft mehrere getrennte Vertrauens- und Zustandsräume</text>
+
+  <rect class="panel" x="58" y="118" width="1284" height="290" rx="24"/>
+  <text class="section" x="82" y="152">1 · INLINE-MAILFLUSS · TCP-ERREICHBARKEIT IST NOCH KEINE VERARBEITUNG</text>
+
+  <a href="/kb/dns#dns-im-mail--und-identitätsbetrieb" target="_top" tabindex="0">
+    <rect class="hit gold" x="82" y="184" width="180" height="104" rx="18"/>
+    <text class="label" x="104" y="218">Internet / MX</text>
+    <text class="body" x="104" y="244">DNS · Smarthost · Peer</text>
+    <text class="mono" x="104" y="268">Name → erster Hop</text>
+  </a>
+  <path class="arrow" d="M262 236 H304"/>
+
+  <a href="/kb/seppmail#smtp-annahme-routing-und-relaygrenze" target="_top" tabindex="0">
+    <rect class="hit" x="308" y="184" width="198" height="104" rx="18"/>
+    <text class="label" x="330" y="218">Postfix / SMTP</text>
+    <text class="body" x="330" y="244">Managed Domain · Relay</text>
+    <text class="mono" x="330" y="268">250 = Verantwortung</text>
+  </a>
+  <path class="arrow" d="M506 236 H548"/>
+
+  <a href="/kb/seppmail#ruleset-policies-und-entscheidungsnachweis" target="_top" tabindex="0">
+    <rect class="hit violet" x="552" y="184" width="220" height="104" rx="18"/>
+    <text class="label" x="574" y="218">Ruleset / Policy</text>
+    <text class="body" x="574" y="244">Richtung · Trigger · Flag</text>
+    <text class="mono" x="574" y="268">encrypt | GINA | bounce</text>
+  </a>
+  <path class="arrow" d="M772 236 H814"/>
+
+  <a href="/kb/seppmail#smime-openpgp-und-tls-als-getrennte-schutzebenen" target="_top" tabindex="0">
+    <rect class="hit green" x="818" y="184" width="228" height="104" rx="18"/>
+    <text class="label" x="840" y="218">Kryptoaktion</text>
+    <text class="body" x="840" y="244">Signieren · Ver-/Entschlüsseln</text>
+    <text class="mono" x="840" y="268">Key + Trust + Policy</text>
+  </a>
+  <path class="arrow" d="M1046 236 H1088"/>
+
+  <a href="/kb/exchange#routing-accepted-domains-und-konnektoren" target="_top" tabindex="0">
+    <rect class="hit gold" x="1092" y="184" width="222" height="104" rx="18"/>
+    <text class="label" x="1114" y="218">Nächster Hop</text>
+    <text class="body" x="1114" y="244">Mailserver · EXO · Internet</text>
+    <text class="mono" x="1114" y="268">Queue · Connector · TLS</text>
+  </a>
+
+  <a href="/kb/smtp#annahmegrenze-250-nach-end-of-data" target="_top" tabindex="0">
+    <rect class="hit red" x="308" y="316" width="230" height="60" rx="15"/>
+    <text class="label" x="330" y="342">Annahmegrenze</text>
+    <text class="body" x="330" y="363">SMTP-Dialog und Queue-ID belegen</text>
+  </a>
+  <path class="arrow dashed" d="M538 346 H584"/>
+  <a href="/kb/seppmail#ruleset-policies-und-entscheidungsnachweis" target="_top" tabindex="0">
+    <rect class="hit violet" x="588" y="316" width="254" height="60" rx="15"/>
+    <text class="label" x="610" y="342">Entscheidungsgrenze</text>
+    <text class="body" x="610" y="363">gespeichert ≠ aktives Ruleset</text>
+  </a>
+  <path class="arrow dashed" d="M842 346 H888"/>
+  <a href="/kb/seppmail#monitoring-logging-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit red" x="892" y="316" width="244" height="60" rx="15"/>
+    <text class="label" x="914" y="342">Zustellgrenze</text>
+    <text class="body" x="914" y="363">Next Hop, Retry und Queuealter</text>
+  </a>
+
+  <rect class="panel" x="58" y="428" width="1284" height="252" rx="24"/>
+  <text class="section" x="82" y="462">2 · VERFAHREN UND ZUSTAND · «VERSCHLÜSSELT» BRAUCHT EIN KONKRETES OBJEKT</text>
+
+  <a href="/kb/verschluesselung" target="_top" tabindex="0">
+    <rect class="hit green" x="82" y="496" width="198" height="106" rx="18"/>
+    <text class="label" x="104" y="530">S/MIME</text>
+    <text class="body" x="104" y="556">CMS · X.509 · CA-Pfad</text>
+    <text class="mono" x="104" y="580">cert + private key</text>
+  </a>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9580" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="hit green" x="300" y="496" width="198" height="106" rx="18"/>
+    <text class="label" x="322" y="530">OpenPGP</text>
+    <text class="body" x="322" y="556">Fingerprint · User ID</text>
+    <text class="mono" x="322" y="580">public + secret key</text>
+  </a>
+
+  <a href="/kb/tls#tls-policy-bei-smtp" target="_top" tabindex="0">
+    <rect class="hit gold" x="518" y="496" width="198" height="106" rx="18"/>
+    <text class="label" x="540" y="530">SMTP-TLS</text>
+    <text class="body" x="540" y="556">Hop-zu-Hop · Peer-Policy</text>
+    <text class="mono" x="540" y="580">session ≠ message</text>
+  </a>
+
+  <a href="/kb/seppmail#gina-als-webdienst-mit-identität-und-speicher" target="_top" tabindex="0">
+    <rect class="hit violet" x="736" y="496" width="198" height="106" rx="18"/>
+    <text class="label" x="758" y="530">GINA / HTTPS</text>
+    <text class="body" x="758" y="556">Konto · Passwort · Mail</text>
+    <text class="mono" x="758" y="580">web state + key</text>
+  </a>
+
+  <a href="/kb/seppmail#verzeichnis-und-lebenszyklus-für-schlüssel-und-zertifikate" target="_top" tabindex="0">
+    <rect class="hit red" x="954" y="496" width="360" height="106" rx="18"/>
+    <text class="label" x="976" y="530">Schlüssel- und Vertrauensbestand</text>
+    <text class="body" x="976" y="556">Private Keys · Empfängerschlüssel · CA · OCSP/CRL</text>
+    <text class="mono" x="976" y="580">Ablauf · Widerruf · Restore</text>
+  </a>
+
+  <a href="/kb/ldap#bind-sasl-und-tls-vertrauensgrenzen" target="_top" tabindex="0">
+    <rect class="hit gold" x="300" y="620" width="240" height="40" rx="16"/>
+    <text class="body" x="330" y="646">LDAP(S): Identität · Gruppe · Key</text>
+  </a>
+  <path class="arrow dashed" d="M540 640 H594"/>
+  <a href="/kb/seppmail#ruleset-policies-und-entscheidungsnachweis" target="_top" tabindex="0">
+    <rect class="hit violet" x="598" y="620" width="254" height="40" rx="16"/>
+    <text class="body" x="626" y="646">Policy: Wahl oder Fail Closed</text>
+  </a>
+  <path class="arrow dashed" d="M852 640 H906"/>
+  <a href="/kb/seppmail#monitoring-logging-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit red" x="910" y="620" width="226" height="40" rx="16"/>
+    <text class="body" x="940" y="646">Nachweis: Log + Testmail</text>
+  </a>
+
+  <rect class="panel" x="58" y="700" width="1284" height="184" rx="24"/>
+  <text class="section" x="82" y="734">3 · BETRIEBSGRENZEN · VERFÜGBARKEIT, BEOBACHTUNG UND WIEDERHERSTELLUNG</text>
+
+  <a href="/kb/seppmail#cluster-frontendbackend-trennung-und-fehlerdomänen" target="_top" tabindex="0">
+    <rect class="hit" x="82" y="764" width="250" height="82" rx="18"/>
+    <text class="label" x="104" y="796">Cluster / VIP</text>
+    <text class="body" x="104" y="822">SSH · NTP · physische Sender-IP</text>
+  </a>
+  <a href="https://docs.seppmail.com/en/04_com_09_cl_05_frontend-backend-cluster.html" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="hit violet" x="350" y="764" width="250" height="82" rx="18"/>
+    <text class="label" x="372" y="796">Frontend / Backend</text>
+    <text class="body" x="372" y="822">DMZ-Verarbeitung · Keys im Backend</text>
+  </a>
+  <a href="/kb/seppmail#monitoring-logging-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit gold" x="618" y="764" width="218" height="82" rx="18"/>
+    <text class="label" x="640" y="796">Monitoring</text>
+    <text class="body" x="640" y="822">Postmaster · SNMP · Syslog</text>
+  </a>
+  <a href="/kb/seppmail#monitoring-logging-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit red" x="854" y="764" width="218" height="82" rx="18"/>
+    <text class="label" x="876" y="796">Backup</text>
+    <text class="body" x="876" y="822">Datei · Passwort · externe Kopie</text>
+  </a>
+  <a href="/kb/seppmail#monitoring-logging-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit green" x="1090" y="764" width="224" height="82" rx="18"/>
+    <text class="label" x="1112" y="796">Restoretest</text>
+    <text class="body" x="1112" y="822">SMTP · Regeln · historische Keys</text>
+  </a>
+
+  <text class="section" x="70" y="922">PRIMÄRQUELLEN · MAILFLUSS, POLICY, GINA, CLUSTER UND RECOVERY</text>
+  <a href="https://docs.seppmail.com/en/07_mi_06_ms__mail-system.html" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="70" y="942" width="214" height="38" rx="18"/><text class="small" x="126" y="966">Mail System</text></a>
+  <a href="https://docs.seppmail.com/ch/07_mi_07_mp_01_ep_01_addedit-encryption-policy.html" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="300" y="942" width="214" height="38" rx="18"/><text class="small" x="344" y="966">Encryption Policy</text></a>
+  <a href="https://docs.seppmail.com/en/07_mi_17_gd__gina-domains.html" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="530" y="942" width="214" height="38" rx="18"/><text class="small" x="582" y="966">GINA Domains</text></a>
+  <a href="https://docs.seppmail.com/en/04_com_09_cl_05_frontend-backend-cluster.html" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="760" y="942" width="246" height="38" rx="18"/><text class="small" x="800" y="966">Frontend/Backend Cluster</text></a>
+  <a href="https://downloads.seppmail.com/wp-content/uploads/docu/Quick-Setup-Guide-en.pdf" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="1022" y="942" width="312" height="38" rx="18"/><text class="small" x="1104" y="966">Quick Setup / Backup</text></a>
+</svg>
