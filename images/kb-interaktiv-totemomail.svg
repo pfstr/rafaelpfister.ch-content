@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Totemomail und Kiteworks EPG: Mailflow, Schutzverfahren und Plattformwechsel</title>
+  <desc id="desc">Interaktive Admin-Grafik mit SMTP-Mailflow, Policy, S/MIME, OpenPGP, TLS, WebMail, Schlüsselbestand, Legacy-Totemomail, Datenmigration, Kiteworks EPG, Monitoring und Recovery.</desc>
+  <style>
+    :root { color-scheme: light; }
+    .bg { fill: #f8f5ef; }
+    .panel { fill: #fffdfa; stroke: #d9d2c7; stroke-width: 2; }
+    .hit { fill: #e7f1f4; stroke: #26748f; stroke-width: 2; transition: fill .16s ease, stroke .16s ease, filter .16s ease; }
+    .hit.gold { fill: #f7edcf; stroke: #987126; }
+    .hit.red { fill: #f5e4df; stroke: #93492f; }
+    .hit.green { fill: #e5f0e7; stroke: #4f7758; }
+    .hit.violet { fill: #ece7f2; stroke: #675578; }
+    a:hover .hit, a:focus .hit { fill: #d2e9ee; stroke: #0d5872; filter: drop-shadow(0 5px 7px rgba(23, 69, 84, .22)); }
+    a:hover .hit.gold, a:focus .hit.gold { fill: #f2dfad; stroke: #7c5811; }
+    a:hover .hit.red, a:focus .hit.red { fill: #f2d8cf; stroke: #743321; }
+    a:hover .hit.green, a:focus .hit.green { fill: #dbeadf; stroke: #315f3c; }
+    a:hover .hit.violet, a:focus .hit.violet { fill: #e5d9ed; stroke: #59436c; }
+    a:focus { outline: none; }
+    a:focus .hit { stroke-width: 4; }
+    .kicker { font: 700 15px Arial, sans-serif; letter-spacing: 2px; fill: #6b6576; }
+    .headline { font: 700 30px Arial, sans-serif; fill: #151515; }
+    .section { font: 700 15px Arial, sans-serif; letter-spacing: 1.8px; fill: #6b6576; }
+    .label { font: 700 18px Arial, sans-serif; fill: #10212a; }
+    .body { font: 400 13px Arial, sans-serif; fill: #4f5960; }
+    .mono { font: 700 12px Consolas, monospace; fill: #243841; }
+    .small { font: 400 11px Arial, sans-serif; fill: #6b6576; }
+    .arrow { fill: none; stroke: #26748f; stroke-width: 4; marker-end: url(#arrow); }
+    .arrow.gold { stroke: #987126; marker-end: url(#arrowGold); }
+    .arrow.dashed { stroke: #8b8791; stroke-width: 3; stroke-dasharray: 8 7; marker-end: url(#arrowGrey); }
+    .chip { fill: #f1eee8; stroke: #d3ccc2; stroke-width: 1.5; transition: fill .16s ease, stroke .16s ease; }
+    a:hover .chip, a:focus .chip { fill: #d9ebef; stroke: #26748f; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#26748f"/></marker>
+    <marker id="arrowGold" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#987126"/></marker>
+    <marker id="arrowGrey" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8b8791"/></marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="1000"/>
+  <text class="kicker" x="70" y="52">TOTEMOMAIL → KITEWORKS EPG · MAILFLOW · POLICY · MIGRATION</text>
+  <text class="headline" x="70" y="88">Der Produktname wechselt, die Betriebsgrenzen müssen neu nachgewiesen werden</text>
+
+  <rect class="panel" x="58" y="118" width="1284" height="282" rx="24"/>
+  <text class="section" x="82" y="152">1 · SMTP-INLINE-PFAD · ANNAHME, POLICY UND NÄCHSTER HOP SIND GETRENNTE ZUSTÄNDE</text>
+
+  <a href="/kb/dns#dns-im-mail--und-identitätsbetrieb" target="_top" tabindex="0">
+    <rect class="hit gold" x="82" y="184" width="176" height="102" rx="18"/>
+    <text class="label" x="104" y="218">Internet / MX</text>
+    <text class="body" x="104" y="244">DNS · Filter · Smarthost</text>
+    <text class="mono" x="104" y="268">erster Hop</text>
+  </a>
+  <path class="arrow" d="M258 235 H300"/>
+  <a href="/kb/totemomail#smtp-mailflow-und-schleifenrisiko" target="_top" tabindex="0">
+    <rect class="hit" x="304" y="184" width="190" height="102" rx="18"/>
+    <text class="label" x="326" y="218">SMTP Gateway</text>
+    <text class="body" x="326" y="244">Session · Envelope · DATA</text>
+    <text class="mono" x="326" y="268">250 = übernommen</text>
+  </a>
+  <path class="arrow" d="M494 235 H536"/>
+  <a href="/kb/totemomail#policy-engine-und-identitätsentscheidung" target="_top" tabindex="0">
+    <rect class="hit violet" x="540" y="184" width="218" height="102" rx="18"/>
+    <text class="label" x="562" y="218">Policy Engine</text>
+    <text class="body" x="562" y="244">Richtung · Identität · Label</text>
+    <text class="mono" x="562" y="268">action + failure path</text>
+  </a>
+  <path class="arrow" d="M758 235 H800"/>
+  <a href="/kb/totemomail#schutzverfahren-und-umschlüsselung" target="_top" tabindex="0">
+    <rect class="hit green" x="804" y="184" width="220" height="102" rx="18"/>
+    <text class="label" x="826" y="218">Schutzverfahren</text>
+    <text class="body" x="826" y="244">S/MIME · PGP · TLS · Portal</text>
+    <text class="mono" x="826" y="268">key + trust + scope</text>
+  </a>
+  <path class="arrow" d="M1024 235 H1066"/>
+  <a href="/kb/exchange#routing-accepted-domains-und-konnektoren" target="_top" tabindex="0">
+    <rect class="hit gold" x="1070" y="184" width="244" height="102" rx="18"/>
+    <text class="label" x="1092" y="218">Nächster Hop</text>
+    <text class="body" x="1092" y="244">EXO · Mailserver · Internet</text>
+    <text class="mono" x="1092" y="268">queue + connector</text>
+  </a>
+
+  <a href="/kb/smtp#annahmegrenze-250-nach-end-of-data" target="_top" tabindex="0">
+    <rect class="hit red" x="304" y="312" width="228" height="58" rx="15"/>
+    <text class="label" x="326" y="338">Annahmegrenze</text>
+    <text class="body" x="326" y="360">DATA-Endantwort + Gateway-ID</text>
+  </a>
+  <path class="arrow dashed" d="M532 341 H576"/>
+  <a href="/kb/totemomail#policy-engine-und-identitätsentscheidung" target="_top" tabindex="0">
+    <rect class="hit violet" x="580" y="312" width="248" height="58" rx="15"/>
+    <text class="label" x="602" y="338">Entscheidungsgrenze</text>
+    <text class="body" x="602" y="360">Input · Regel · Aktion · Fehler</text>
+  </a>
+  <path class="arrow dashed" d="M828 341 H872"/>
+  <a href="/kb/totemomail#monitoring-und-sicherheitsbetrieb" target="_top" tabindex="0">
+    <rect class="hit red" x="876" y="312" width="260" height="58" rx="15"/>
+    <text class="label" x="898" y="338">Zustellgrenze</text>
+    <text class="body" x="898" y="360">Next Hop · Retry · Trace · Portal</text>
+  </a>
+
+  <rect class="panel" x="58" y="420" width="1284" height="254" rx="24"/>
+  <text class="section" x="82" y="454">2 · SCHUTZPFADE · JEDER PFAD HAT EIGENE SCHLÜSSEL, IDENTITÄTEN UND RECOVERYOBJEKTE</text>
+
+  <a href="/kb/verschluesselung" target="_top" tabindex="0">
+    <rect class="hit green" x="82" y="488" width="190" height="104" rx="18"/>
+    <text class="label" x="104" y="522">S/MIME</text>
+    <text class="body" x="104" y="548">CMS · X.509 · CA-Pfad</text>
+    <text class="mono" x="104" y="572">cert + private key</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9580" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="hit green" x="288" y="488" width="190" height="104" rx="18"/>
+    <text class="label" x="310" y="522">OpenPGP</text>
+    <text class="body" x="310" y="548">Fingerprint · User ID</text>
+    <text class="mono" x="310" y="572">public + secret key</text>
+  </a>
+  <a href="/kb/tls#tls-policy-bei-smtp" target="_top" tabindex="0">
+    <rect class="hit gold" x="494" y="488" width="190" height="104" rx="18"/>
+    <text class="label" x="516" y="522">SMTP-TLS</text>
+    <text class="body" x="516" y="548">Hop · Peer · Downgrade</text>
+    <text class="mono" x="516" y="572">session ≠ message</text>
+  </a>
+  <a href="/kb/totemomail#webmail-und-portalzustellung" target="_top" tabindex="0">
+    <rect class="hit violet" x="700" y="488" width="190" height="104" rx="18"/>
+    <text class="label" x="722" y="522">WebMail</text>
+    <text class="body" x="722" y="548">Konto · Passwort · Inhalt</text>
+    <text class="mono" x="722" y="572">HTTPS + web state</text>
+  </a>
+  <a href="https://www.kiteworks.com/sites/default/files/resources/sp/Packaging%20and%20Licensing%20-%20Kiteworks%20Enterprise%208.0%20-%20FINAL%202023-04-12.pdf" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="hit" x="906" y="488" width="190" height="104" rx="18"/>
+    <text class="label" x="928" y="522">Internal Encryption</text>
+    <text class="body" x="928" y="548">Client ↔ Cloud ↔ Gateway</text>
+    <text class="mono" x="928" y="572">at rest + in transit</text>
+  </a>
+  <a href="/kb/totemomail#verzeichnis-und-schlüssel-mit-lizenzzählung" target="_top" tabindex="0">
+    <rect class="hit red" x="1112" y="488" width="202" height="104" rx="18"/>
+    <text class="label" x="1134" y="522">Key / Directory</text>
+    <text class="body" x="1134" y="548">LDAP · Trust · Lifetime</text>
+    <text class="mono" x="1134" y="572">identity + inventory</text>
+  </a>
+
+  <a href="/kb/totemomail#schutzverfahren-und-umschlüsselung" target="_top" tabindex="0">
+    <rect class="hit red" x="288" y="614" width="250" height="40" rx="16"/>
+    <text class="body" x="316" y="640">Umschlüsselung: Klartextgrenze</text>
+  </a>
+  <path class="arrow dashed" d="M538 634 H588"/>
+  <a href="/kb/totemomail#policy-engine-und-identitätsentscheidung" target="_top" tabindex="0">
+    <rect class="hit violet" x="592" y="614" width="246" height="40" rx="16"/>
+    <text class="body" x="622" y="640">Fail Closed oder definierter Fallback</text>
+  </a>
+  <path class="arrow dashed" d="M838 634 H888"/>
+  <a href="/kb/totemomail#hochverfügbarkeit-mit-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit green" x="892" y="614" width="244" height="40" rx="16"/>
+    <text class="body" x="922" y="640">Historische Entschlüsselung testen</text>
+  </a>
+
+  <rect class="panel" x="58" y="694" width="1284" height="190" rx="24"/>
+  <text class="section" x="82" y="728">3 · PRODUKTGENERATION · DATENKOPIE IST NOCH KEIN ABGENOMMENER PLATTFORMWECHSEL</text>
+
+  <a href="/kb/totemomail#technologiestack-und-nachweisbare-produktgrenzen" target="_top" tabindex="0">
+    <rect class="hit gold" x="82" y="760" width="236" height="86" rx="18"/>
+    <text class="label" x="104" y="793">Legacy Totemomail</text>
+    <text class="body" x="104" y="819">TSP · Java TCM · externe DB möglich</text>
+  </a>
+  <path class="arrow" d="M318 803 H360"/>
+  <a href="/kb/totemomail#migration-von-totemomail-zu-epg" target="_top" tabindex="0">
+    <rect class="hit violet" x="364" y="760" width="220" height="86" rx="18"/>
+    <text class="label" x="386" y="793">Transfer / Cutover</text>
+    <text class="body" x="386" y="819">DB · Policy · Keys · Portal · DNS</text>
+  </a>
+  <path class="arrow" d="M584 803 H626"/>
+  <a href="https://www.kiteworks.com/sites/default/files/resources/sp/FAQs%20-%20totemoMAIL%20to%20EPG%20Update%20-%20FINAL%202023-04-03.pdf" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="hit" x="630" y="760" width="224" height="86" rx="18"/>
+    <text class="label" x="652" y="793">Kiteworks EPG</text>
+    <text class="body" x="652" y="819">HVA · integrierte DB · kein OS-Zugriff</text>
+  </a>
+  <a href="/kb/totemomail#hochverfügbarkeit-mit-backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit green" x="872" y="760" width="204" height="86" rx="18"/>
+    <text class="label" x="894" y="793">HA / Recovery</text>
+    <text class="body" x="894" y="819">Cluster · Backup · Restoretest</text>
+  </a>
+  <a href="/kb/totemomail#monitoring-und-sicherheitsbetrieb" target="_top" tabindex="0">
+    <rect class="hit red" x="1094" y="760" width="220" height="86" rx="18"/>
+    <text class="label" x="1116" y="793">Audit / Monitoring</text>
+    <text class="body" x="1116" y="819">Mail-ID · Syslog · Zeit · SIEM</text>
+  </a>
+
+  <text class="section" x="70" y="922">PRIMÄRQUELLEN · PRODUKTLINIE, EPG-FUNKTIONEN, JAVA-KRYPTOMODUL UND MIGRATION</text>
+  <a href="https://www.kiteworks.com/sites/default/files/resources/sp/FAQs%20-%20totemoMAIL%20to%20EPG%20Update%20-%20FINAL%202023-04-03.pdf" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="70" y="942" width="234" height="38" rx="18"/><text class="small" x="116" y="966">Totemomail → EPG FAQ</text></a>
+  <a href="https://www.kiteworks.com/sites/default/files/resources/kiteworks-brief-top-6-reasons-to-add-email-encryption-with-the-email-protection-gateway-epg-to-kiteworks.pdf" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="320" y="942" width="224" height="38" rx="18"/><text class="small" x="372" y="966">EPG capability brief</text></a>
+  <a href="https://www.kiteworks.com/sites/default/files/resources/sp/Packaging%20and%20Licensing%20-%20Kiteworks%20Enterprise%208.0%20-%20FINAL%202023-04-12.pdf" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="560" y="942" width="224" height="38" rx="18"/><text class="small" x="604" y="966">EPG feature matrix</text></a>
+  <a href="https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/3500" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="800" y="942" width="226" height="38" rx="18"/><text class="small" x="846" y="966">NIST TCM certificate</text></a>
+  <a href="https://csrc.nist.gov/CSRC/media/projects/cryptographic-module-validation-program/documents/security-policies/140sp3500.pdf" target="_blank" rel="noopener noreferrer" tabindex="0"><rect class="chip" x="1042" y="942" width="292" height="38" rx="18"/><text class="small" x="1120" y="966">TCM security policy</text></a>
+</svg>
