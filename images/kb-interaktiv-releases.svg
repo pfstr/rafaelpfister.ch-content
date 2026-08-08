@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Release- und Updatebetrieb als kontrollierte Zustandsänderung</title>
+  <desc id="desc">Interaktive Übersicht des Releaseobjekts und seiner Vertrauenskette, der Risikopriorisierung, verschiedener Architekturansätze sowie des gestuften Rollouts mit Hold, Abort, Rollback und Verifikation.</desc>
+  <style>
+    :root { color-scheme: light; }
+    text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #101828; }
+    .eyebrow { font-size: 16px; font-weight: 800; letter-spacing: 2px; fill: #667085; }
+    .title { font-size: 30px; font-weight: 800; }
+    .subtitle { font-size: 15px; fill: #475467; }
+    .section { font-size: 15px; font-weight: 800; letter-spacing: 1.25px; fill: #667085; }
+    .label { font-size: 17px; font-weight: 800; }
+    .body { font-size: 13.5px; fill: #344054; }
+    .small { font-size: 12px; fill: #475467; }
+    .tiny { font-size: 11px; fill: #667085; }
+    .frame { fill: #fff; stroke: #d8d2c8; stroke-width: 2; }
+    .hit { fill: #f7f4ee; stroke: #cfc7ba; stroke-width: 2; transition: fill .18s ease, stroke .18s ease, transform .18s ease; transform-box: fill-box; transform-origin: center; }
+    .hit-blue { fill: #e8f3f7; stroke: #28718c; }
+    .hit-green { fill: #eaf5ef; stroke: #3b7d5b; }
+    .hit-red { fill: #f8ece6; stroke: #8b3a1b; }
+    .hit-violet { fill: #f0ebf7; stroke: #70558e; }
+    .chip { fill: #f7f4ee; stroke: #cfc7ba; stroke-width: 1.5; transition: fill .18s ease, stroke .18s ease, transform .18s ease; transform-box: fill-box; transform-origin: center; }
+    .arrow { stroke: #28718c; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .arrow-red { stroke: #8b3a1b; stroke-width: 2.5; fill: none; marker-end: url(#arrowRed); }
+    .loop { stroke: #70558e; stroke-width: 2.5; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrowViolet); }
+    a { cursor: pointer; outline: none; }
+    a:hover .hit, a:focus .hit { fill: #d9edf4; stroke: #0d6a8a; transform: translateY(-3px); }
+    a:hover .hit-green, a:focus .hit-green { fill: #d5ecdf; stroke: #246844; }
+    a:hover .hit-red, a:focus .hit-red { fill: #f3d8cc; stroke: #7a2d12; }
+    a:hover .hit-violet, a:focus .hit-violet { fill: #e3d8ef; stroke: #5c3e7e; }
+    a:hover .chip, a:focus .chip { fill: #d9edf4; stroke: #0d6a8a; transform: translateY(-2px); }
+    a:hover text, a:focus text { fill: #064c66; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#28718c"/></marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8b3a1b"/></marker>
+    <marker id="arrowViolet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#70558e"/></marker>
+  </defs>
+
+  <rect width="1400" height="1000" fill="#fbfaf7"/>
+  <text class="eyebrow" x="36" y="42">RELEASES · ARTEFAKT, RISIKO, ROLLOUT UND BETRIEBSNACHWEIS</text>
+  <text class="title" x="36" y="82">Ein Update ist eine kontrollierte Zustandsänderung – kein Installergebnis</text>
+  <text class="subtitle" x="36" y="110">Alle Blöcke sind klickbar und führen zum Artikelabschnitt, Betriebsmodell oder zur Primärquelle</text>
+
+  <rect class="frame" x="28" y="136" width="1344" height="206" rx="22"/>
+  <text class="section" x="52" y="168">1 · RELEASEOBJEKT UND VERTRAUENSKETTE</text>
+
+  <a href="/kb/releases#releaseobjekt-und-vertrauenskette" target="_top" tabindex="0"><rect class="hit hit-blue" x="52" y="192" width="228" height="116" rx="15"/><text class="label" x="166" y="222" text-anchor="middle">Artefakt</text><text class="body" x="166" y="248" text-anchor="middle">Paket · Image · Firmware</text><text class="small" x="166" y="272" text-anchor="middle">Bytes · Digest · Ziel</text><text class="tiny" x="166" y="294" text-anchor="middle">exakte Release-Einheit</text></a>
+  <path class="arrow" d="M288 250 H320"/>
+  <a href="https://theupdateframework.io/specification/latest/" target="_top" tabindex="0"><rect class="hit hit-green" x="328" y="192" width="228" height="116" rx="15"/><text class="label" x="442" y="222" text-anchor="middle">Metadaten</text><text class="body" x="442" y="248" text-anchor="middle">Version · Kanal · Target</text><text class="small" x="442" y="272" text-anchor="middle">Root · Timestamp · Snapshot</text><text class="tiny" x="442" y="294" text-anchor="middle">TUF-Rollen</text></a>
+  <path class="arrow" d="M564 250 H596"/>
+  <a href="https://slsa.dev/spec/v1.2/" target="_top" tabindex="0"><rect class="hit hit-violet" x="604" y="192" width="228" height="116" rx="15"/><text class="label" x="718" y="222" text-anchor="middle">Herkunft</text><text class="body" x="718" y="248" text-anchor="middle">Signatur · Schlüssel</text><text class="small" x="718" y="272" text-anchor="middle">Build · Inputs · Provenance</text><text class="tiny" x="718" y="294" text-anchor="middle">wer autorisierte welche Bytes?</text></a>
+  <path class="arrow" d="M840 250 H872"/>
+  <a href="/kb/releases#versionen-kanäle-und-supportgrenzen" target="_top" tabindex="0"><rect class="hit hit-red" x="880" y="192" width="228" height="116" rx="15"/><text class="label" x="994" y="222" text-anchor="middle">Kompatibilität</text><text class="body" x="994" y="248" text-anchor="middle">Ausgang · Ziel · Runtime</text><text class="small" x="994" y="272" text-anchor="middle">DB · OS · Plugins · Hardware</text><text class="tiny" x="994" y="294" text-anchor="middle">Supportmenge statt Einzelversion</text></a>
+  <path class="arrow" d="M1116 250 H1148"/>
+  <a href="/kb/releases#rollback-roll-forward-und-datenmigration" target="_top" tabindex="0"><rect class="hit hit-red" x="1156" y="192" width="192" height="116" rx="15"/><text class="label" x="1252" y="222" text-anchor="middle">Zustand</text><text class="body" x="1252" y="248" text-anchor="middle">Config · Schema</text><text class="small" x="1252" y="272" text-anchor="middle">Queue · Index · Keys</text><text class="tiny" x="1252" y="294" text-anchor="middle">reversibel?</text></a>
+
+  <rect class="frame" x="28" y="360" width="1344" height="190" rx="22"/>
+  <text class="section" x="52" y="392">2 · PATCHFRIST AUS MEHREREN SIGNALEN ABLEITEN</text>
+
+  <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_top" tabindex="0"><rect class="hit hit-red" x="52" y="416" width="238" height="104" rx="14"/><text class="label" x="171" y="448" text-anchor="middle">Ausnutzung</text><text class="body" x="171" y="474" text-anchor="middle">KEV · Herstellerbeleg</text><text class="small" x="171" y="500" text-anchor="middle">in freier Wildbahn beobachtet</text></a>
+  <a href="https://www.first.org/cvss/v4.0/specification-document" target="_top" tabindex="0"><rect class="hit hit-blue" x="310" y="416" width="238" height="104" rx="14"/><text class="label" x="429" y="448" text-anchor="middle">Technische Schwere</text><text class="body" x="429" y="474" text-anchor="middle">CVSS · Vector · Kontext</text><text class="small" x="429" y="500" text-anchor="middle">Score ≠ eigener Termin</text></a>
+  <a href="https://www.first.org/epss/model" target="_top" tabindex="0"><rect class="hit hit-violet" x="568" y="416" width="238" height="104" rx="14"/><text class="label" x="687" y="448" text-anchor="middle">Wahrscheinlichkeit</text><text class="body" x="687" y="474" text-anchor="middle">EPSS · beobachtetes Exploitrisiko</text><text class="small" x="687" y="500" text-anchor="middle">kein Schadensmass</text></a>
+  <a href="/kb/haertung" target="_top" tabindex="0"><rect class="hit hit-green" x="826" y="416" width="238" height="104" rx="14"/><text class="label" x="945" y="448" text-anchor="middle">Eigene Exposition</text><text class="body" x="945" y="474" text-anchor="middle">Funktion · Pfad · Identität</text><text class="small" x="945" y="500" text-anchor="middle">Kompensationskontrollen</text></a>
+  <a href="/kb/backup-dr" target="_top" tabindex="0"><rect class="hit hit-green" x="1084" y="416" width="264" height="104" rx="14"/><text class="label" x="1216" y="448" text-anchor="middle">Betrieb &amp; Recovery</text><text class="body" x="1216" y="474" text-anchor="middle">Ausfall · Daten · Rollback</text><text class="small" x="1216" y="500" text-anchor="middle">Frist + Eigentümer + Ausnahme</text></a>
+
+  <rect class="frame" x="28" y="568" width="1344" height="190" rx="22"/>
+  <text class="section" x="52" y="600">3 · ARCHITEKTUR BESTIMMT FEHLERDOMÄNE UND RÜCKWEG</text>
+
+  <a href="/kb/releases#architekturansätze-für-updates" target="_top" tabindex="0"><rect class="hit hit-red" x="52" y="624" width="306" height="104" rx="14"/><text class="label" x="205" y="656" text-anchor="middle">In-place / Appliance</text><text class="body" x="205" y="682" text-anchor="middle">Knoten im Wartungsmodus ändern</text><text class="small" x="205" y="708" text-anchor="middle">Installer · Boot · Firmware · Config</text></a>
+  <a href="/kb/releases#architekturansätze-für-updates" target="_top" tabindex="0"><rect class="hit hit-violet" x="378" y="624" width="306" height="104" rx="14"/><text class="label" x="531" y="656" text-anchor="middle">Stateful Cluster</text><text class="body" x="531" y="682" text-anchor="middle">Rolle verschieben · Mischversion</text><text class="small" x="531" y="708" text-anchor="middle">Quorum · Replikation · Rebuild</text></a>
+  <a href="https://kubernetes.io/docs/tasks/run-application/update-deployment-rolling/" target="_top" tabindex="0"><rect class="hit hit-blue" x="704" y="624" width="306" height="104" rx="14"/><text class="label" x="857" y="656" text-anchor="middle">Image / Container</text><text class="body" x="857" y="682" text-anchor="middle">Canary · Rolling · Blue/Green</text><text class="small" x="857" y="708" text-anchor="middle">Image-Rollback ≠ Datenrollback</text></a>
+  <a href="/kb/releases#architekturansätze-für-updates" target="_top" tabindex="0"><rect class="hit hit-green" x="1030" y="624" width="318" height="104" rx="14"/><text class="label" x="1189" y="656" text-anchor="middle">SaaS / Managed</text><text class="body" x="1189" y="682" text-anchor="middle">Herstellerwellen · Feature Flag</text><text class="small" x="1189" y="708" text-anchor="middle">Tenant · API · Integration verifizieren</text></a>
+
+  <rect class="frame" x="28" y="776" width="1344" height="196" rx="22"/>
+  <text class="section" x="52" y="808">4 · PROGRESSIVER ROLLOUT MIT VORHER DEFINIERTEN ENTSCHEIDUNGEN</text>
+
+  <a href="/kb/releases#qualifikation-vor-dem-wartungsfenster" target="_top" tabindex="0"><rect class="chip" x="52" y="836" width="174" height="48" rx="24"/><text class="small" x="139" y="865" text-anchor="middle">1 · Qualifizieren</text></a>
+  <path class="arrow" d="M232 860 H256"/>
+  <a href="/kb/releases#gestufter-rollout-und-abbruchkriterien" target="_top" tabindex="0"><rect class="chip" x="264" y="836" width="174" height="48" rx="24"/><text class="small" x="351" y="865" text-anchor="middle">2 · Pilot / Canary</text></a>
+  <path class="arrow" d="M444 860 H468"/>
+  <a href="/kb/releases#gestufter-rollout-und-abbruchkriterien" target="_top" tabindex="0"><rect class="chip" x="476" y="836" width="174" height="48" rx="24"/><text class="small" x="563" y="865" text-anchor="middle">3 · frühe Welle</text></a>
+  <path class="arrow" d="M656 860 H680"/>
+  <a href="/kb/releases#gestufter-rollout-und-abbruchkriterien" target="_top" tabindex="0"><rect class="chip" x="688" y="836" width="174" height="48" rx="24"/><text class="small" x="775" y="865" text-anchor="middle">4 · breite Wellen</text></a>
+  <path class="arrow" d="M868 860 H892"/>
+  <a href="/kb/releases#messaging-spezifische-abnahme" target="_top" tabindex="0"><rect class="chip" x="900" y="836" width="174" height="48" rx="24"/><text class="small" x="987" y="865" text-anchor="middle">5 · Verifizieren</text></a>
+  <path class="arrow" d="M1080 860 H1104"/>
+  <a href="/kb/releases#gestufter-rollout-und-abbruchkriterien" target="_top" tabindex="0"><rect class="chip" x="1112" y="836" width="236" height="48" rx="24"/><text class="small" x="1230" y="865" text-anchor="middle">6 · Nachbeobachten</text></a>
+
+  <a href="/kb/releases#gestufter-rollout-und-abbruchkriterien" target="_top" tabindex="0"><rect class="hit hit-violet" x="264" y="902" width="330" height="48" rx="14"/><text class="small" x="429" y="931" text-anchor="middle">HOLD · Welle pausieren · Evidenz sichern</text></a>
+  <a href="/kb/releases#rollback-roll-forward-und-datenmigration" target="_top" tabindex="0"><rect class="hit hit-red" x="614" y="902" width="350" height="48" rx="14"/><text class="small" x="789" y="931" text-anchor="middle">ABORT · Rollback, Roll-forward oder Restore</text></a>
+  <a href="/kb/troubleshooting" target="_top" tabindex="0"><rect class="hit hit-green" x="984" y="902" width="364" height="48" rx="14"/><text class="small" x="1166" y="931" text-anchor="middle">CLOSE · Soll/Ist + Mailflow + Monitoring belegt</text></a>
+  <path class="loop" d="M789 958 C789 992 139 992 139 892"/>
+</svg>

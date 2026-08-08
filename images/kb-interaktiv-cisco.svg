@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Cisco Secure Email: Mailpipeline, Zustandsräume und Admin-Grenzen</title>
+  <desc id="desc">Interaktive Architekturübersicht mit SMTP-Sender, Secure Email Gateways, Receipt, Work Queue, Delivery, Mailserver, Secure Email and Web Manager, Konfigurationscluster, Quarantänen und Kontrollpunkten.</desc>
+  <style>
+    :root { color-scheme: light; }
+    text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #101828; }
+    .eyebrow { font-size: 16px; font-weight: 800; letter-spacing: 2px; fill: #667085; }
+    .title { font-size: 30px; font-weight: 800; }
+    .subtitle { font-size: 15px; fill: #475467; }
+    .section { font-size: 15px; font-weight: 800; letter-spacing: 1.3px; fill: #667085; }
+    .label { font-size: 20px; font-weight: 800; }
+    .body { font-size: 15px; fill: #344054; }
+    .small { font-size: 13px; fill: #475467; }
+    .arrow { stroke: #28718c; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .arrow-state { stroke: #8b3a1b; stroke-width: 3; fill: none; stroke-dasharray: 9 7; marker-end: url(#arrowState); }
+    .frame { fill: #fff; stroke: #d8d2c8; stroke-width: 2; }
+    .hit { fill: #f7f4ee; stroke: #cfc7ba; stroke-width: 2; transition: fill .18s ease, stroke .18s ease, transform .18s ease; transform-box: fill-box; transform-origin: center; }
+    .hit-blue { fill: #e8f3f7; stroke: #28718c; }
+    .hit-red { fill: #f8ece6; stroke: #8b3a1b; }
+    .hit-green { fill: #eaf5ef; stroke: #3b7d5b; }
+    .chip { fill: #f7f4ee; stroke: #cfc7ba; stroke-width: 1.5; transition: fill .18s ease, stroke .18s ease; }
+    a { cursor: pointer; outline: none; }
+    a:hover .hit, a:focus .hit { fill: #d9edf4; stroke: #0d6a8a; transform: translateY(-3px); }
+    a:hover .hit-red, a:focus .hit-red { fill: #f3d8cc; stroke: #7a2d12; }
+    a:hover .hit-green, a:focus .hit-green { fill: #d5ecdf; stroke: #246844; }
+    a:hover .chip, a:focus .chip { fill: #d9edf4; stroke: #0d6a8a; }
+    a:hover text, a:focus text { fill: #064c66; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#28718c"/></marker>
+    <marker id="arrowState" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8b3a1b"/></marker>
+  </defs>
+  <rect width="1400" height="1000" fill="#fbfaf7"/>
+  <text class="eyebrow" x="36" y="42">CISCO SECURE EMAIL · PIPELINE UND ZUSTANDSRÄUME</text>
+  <text class="title" x="36" y="82">Konfigurationscluster, Mail-HA und zentrale Daten sind drei verschiedene Dinge</text>
+  <text class="subtitle" x="36" y="110">Durchgezogen: Nachrichtenpfad · gestrichelt: Management-, Export- und Quarantänepfade</text>
+
+  <rect class="frame" x="28" y="138" width="270" height="566" rx="22"/>
+  <rect class="frame" x="320" y="138" width="760" height="566" rx="22"/>
+  <rect class="frame" x="1102" y="138" width="270" height="566" rx="22"/>
+  <text class="section" x="52" y="171">SMTP-GEGENSTELLEN</text>
+  <text class="section" x="344" y="171">SECURE EMAIL GATEWAY · LOKALER NACHRICHTENZUSTAND</text>
+  <text class="section" x="1126" y="171">MAILSYSTEM UND MANAGEMENT</text>
+
+  <a href="/kb/smtp" target="_top" tabindex="0">
+    <rect class="hit" x="52" y="198" width="222" height="100" rx="16"/>
+    <text class="label" x="163" y="236" text-anchor="middle">Internet-MTA</text>
+    <text class="body" x="163" y="264" text-anchor="middle">MX · TCP 25 · STARTTLS</text>
+    <text class="small" x="163" y="285" text-anchor="middle">Envelope und DATA</text>
+  </a>
+  <a href="/kb/cisco#receipt-listener-hat-und-rat" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="52" y="340" width="222" height="104" rx="16"/>
+    <text class="label" x="163" y="378" text-anchor="middle">interner MTA</text>
+    <text class="body" x="163" y="406" text-anchor="middle">Smarthost · Private Listener</text>
+    <text class="small" x="163" y="428" text-anchor="middle">Relay nur autorisiert</text>
+  </a>
+  <a href="/kb/dns" target="_top" tabindex="0">
+    <rect class="hit" x="52" y="486" width="222" height="80" rx="16"/>
+    <text class="label" x="163" y="520" text-anchor="middle">DNS</text>
+    <text class="body" x="163" y="548" text-anchor="middle">MX · A/AAAA · PTR</text>
+  </a>
+
+  <a href="/kb/cisco#receipt-listener-hat-und-rat" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="346" y="198" width="210" height="142" rx="16"/>
+    <text class="label" x="451" y="234" text-anchor="middle">Receipt</text>
+    <text class="body" x="451" y="264" text-anchor="middle">Listener · HAT</text>
+    <text class="body" x="451" y="289" text-anchor="middle">Sender Group · RAT</text>
+    <text class="small" x="451" y="316" text-anchor="middle">Annahmegrenze · ICID/MID</text>
+  </a>
+  <a href="/kb/cisco#work-queue-reihenfolge-splintering-und-policy" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="596" y="198" width="228" height="142" rx="16"/>
+    <text class="label" x="710" y="234" text-anchor="middle">Work Queue</text>
+    <text class="body" x="710" y="264" text-anchor="middle">Message Filter · Policy</text>
+    <text class="body" x="710" y="289" text-anchor="middle">Scan · Splinter · Quarantäne</text>
+    <text class="small" x="710" y="316" text-anchor="middle">Reihenfolge ist Sicherheitslogik</text>
+  </a>
+  <a href="/kb/cisco#delivery-smtp-routes-destination-controls-und-queue" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="864" y="198" width="190" height="142" rx="16"/>
+    <text class="label" x="959" y="234" text-anchor="middle">Delivery</text>
+    <text class="body" x="959" y="264" text-anchor="middle">SMTP Routes</text>
+    <text class="body" x="959" y="289" text-anchor="middle">Destination Controls</text>
+    <text class="small" x="959" y="316" text-anchor="middle">Queue · Retry · DCID</text>
+  </a>
+  <path class="arrow" d="M274 248 H344"/>
+  <path class="arrow" d="M274 392 H320 V294 H344"/>
+  <path class="arrow" d="M556 269 H594"/>
+  <path class="arrow" d="M824 269 H862"/>
+
+  <a href="/kb/cisco#konfigurationscluster-ist-keine-mail-ha" target="_top" tabindex="0">
+    <rect class="hit" x="346" y="382" width="334" height="106" rx="16"/>
+    <text class="label" x="513" y="418" text-anchor="middle">SEG 1 ↔ SEG 2</text>
+    <text class="body" x="513" y="446" text-anchor="middle">peer-to-peer Konfigurationscluster</text>
+    <text class="small" x="513" y="470" text-anchor="middle">keine Queue- oder Sessionreplikation</text>
+  </a>
+  <a href="/kb/cisco#technologiestack-und-administrationsflächen" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="720" y="382" width="334" height="106" rx="16"/>
+    <text class="label" x="887" y="418" text-anchor="middle">AsyncOS</text>
+    <text class="body" x="887" y="446" text-anchor="middle">GUI · SSH-CLI · REST · XML</text>
+    <text class="small" x="887" y="470" text-anchor="middle">Appliancegrenze statt Paketbetrieb</text>
+  </a>
+  <a href="/kb/cisco#monitoring-und-incident-triage" target="_top" tabindex="0">
+    <rect class="hit" x="346" y="530" width="334" height="112" rx="16"/>
+    <text class="label" x="513" y="567" text-anchor="middle">Logs und Alerts</text>
+    <text class="body" x="513" y="596" text-anchor="middle">ICID · MID · DCID · Syslog</text>
+    <text class="small" x="513" y="620" text-anchor="middle">SNMP · API · Ressourcenstatus</text>
+  </a>
+  <a href="/kb/cisco#backup-recovery-und-upgrade" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="720" y="530" width="334" height="112" rx="16"/>
+    <text class="label" x="887" y="567" text-anchor="middle">Lokaler Zustand</text>
+    <text class="body" x="887" y="596" text-anchor="middle">Queue · Quarantäne · Schlüssel</text>
+    <text class="small" x="887" y="620" text-anchor="middle">Configexport allein ist kein Backup</text>
+  </a>
+
+  <a href="/kb/exchange" target="_top" tabindex="0">
+    <rect class="hit" x="1126" y="198" width="222" height="104" rx="16"/>
+    <text class="label" x="1237" y="236" text-anchor="middle">Mailserver</text>
+    <text class="body" x="1237" y="264" text-anchor="middle">Exchange · M365 · anderer MTA</text>
+    <text class="small" x="1237" y="286" text-anchor="middle">Connector · eigene Queue</text>
+  </a>
+  <a href="/kb/cisco#sma-tracking-reporting-und-quarantänen" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="1126" y="350" width="222" height="136" rx="16"/>
+    <text class="label" x="1237" y="386" text-anchor="middle">SMA</text>
+    <text class="body" x="1237" y="415" text-anchor="middle">Tracking · Reporting</text>
+    <text class="body" x="1237" y="440" text-anchor="middle">zentrale Quarantänen</text>
+    <text class="small" x="1237" y="466" text-anchor="middle">abgeleiteter, eigener Zustand</text>
+  </a>
+  <a href="/kb/cisco#produktrollen-und-vertrauensgrenzen" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="1126" y="534" width="222" height="106" rx="16"/>
+    <text class="label" x="1237" y="570" text-anchor="middle">Threat Defense</text>
+    <text class="body" x="1237" y="598" text-anchor="middle">Gateway · Journal · API</text>
+    <text class="small" x="1237" y="622" text-anchor="middle">separate Cloudgrenze</text>
+  </a>
+  <path class="arrow" d="M1054 269 H1124"/>
+  <path class="arrow-state" d="M1054 586 H1080 V418 H1124"/>
+  <path class="arrow-state" d="M680 586 H700 V680 H1237 V642"/>
+
+  <rect class="frame" x="28" y="734" width="1344" height="154" rx="22"/>
+  <text class="section" x="52" y="768">ADMIN-KONTROLLPUNKTE · JEDE FEHLERDOMÄNE BRAUCHT EINEN EIGENEN NACHWEIS</text>
+  <a href="/kb/cisco#receipt-listener-hat-und-rat" target="_top" tabindex="0">
+    <rect class="hit" x="52" y="792" width="242" height="70" rx="16"/>
+    <text class="body" x="173" y="821" text-anchor="middle">Annahme · Listener · HAT/RAT</text>
+    <text class="small" x="173" y="844" text-anchor="middle">SMTP-Endantwort und MID</text>
+  </a>
+  <a href="/kb/cisco#work-queue-reihenfolge-splintering-und-policy" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="316" y="792" width="242" height="70" rx="16"/>
+    <text class="body" x="437" y="821" text-anchor="middle">Policy · Scan · Splinter</text>
+    <text class="small" x="437" y="844" text-anchor="middle">jede MID bis zum Endzustand</text>
+  </a>
+  <a href="/kb/cisco#delivery-smtp-routes-destination-controls-und-queue" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="580" y="792" width="242" height="70" rx="16"/>
+    <text class="body" x="701" y="821" text-anchor="middle">Delivery · Route · TLS</text>
+    <text class="small" x="701" y="844" text-anchor="middle">Queuealter und Zielantwort</text>
+  </a>
+  <a href="/kb/cisco#sma-tracking-reporting-und-quarantänen" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="844" y="792" width="242" height="70" rx="16"/>
+    <text class="body" x="965" y="821" text-anchor="middle">SMA · Tracking · Quarantäne</text>
+    <text class="small" x="965" y="844" text-anchor="middle">Import, Kapazität, Freigabe</text>
+  </a>
+  <a href="/kb/cisco#backup-recovery-und-upgrade" target="_top" tabindex="0">
+    <rect class="hit" x="1108" y="792" width="238" height="70" rx="16"/>
+    <text class="body" x="1227" y="821" text-anchor="middle">Restore · Failover · Rollback</text>
+    <text class="small" x="1227" y="844" text-anchor="middle">Config, Queue und Daten getrennt</text>
+  </a>
+
+  <text class="section" x="36" y="928">PRIMÄRQUELLEN DER ARCHITEKTUR</text>
+  <a href="https://www.cisco.com/c/en/us/td/docs/security/esa/esa16-0/user_guide/b_ESA_Admin_Guide_16-0/b_ESA_Admin_Guide_12_1_chapter_011.html" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="310" y="904" width="244" height="42" rx="20"/>
+    <text class="small" x="432" y="930" text-anchor="middle">Cisco Email Pipeline ↗</text>
+  </a>
+  <a href="https://www.cisco.com/c/en/us/td/docs/security/esa/esa16-0/user_guide/b_ESA_Admin_Guide_16-0/b_ESA_Admin_Guide_12_1_chapter_0101000.html" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="572" y="904" width="252" height="42" rx="20"/>
+    <text class="small" x="698" y="930" text-anchor="middle">Cisco Cluster Guide ↗</text>
+  </a>
+  <a href="https://www.cisco.com/c/en/us/td/docs/security/security_management/sma/sma16-0/user_guide/b_sma_admin_guide_16_0/b_NGSMA_Admin_Guide_chapter_0100.html" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="842" y="904" width="236" height="42" rx="20"/>
+    <text class="small" x="960" y="930" text-anchor="middle">Cisco SMA Tracking ↗</text>
+  </a>
+  <a href="https://www.cisco.com/c/en/us/products/collateral/security/cloud-email-security/datasheet-c78-742868.html" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="1096" y="904" width="250" height="42" rx="20"/>
+    <text class="small" x="1221" y="930" text-anchor="middle">Cisco Secure Email ↗</text>
+  </a>
+  <text class="small" x="36" y="976">Hover oder Fokus hebt Blöcke hervor · Klick öffnet Artikelabschnitt oder Originalquelle</text>
+</svg>

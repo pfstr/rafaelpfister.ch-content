@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">PowerShell-Laufzeit, Vertrauensgrenzen und kontrollierte Administration</title>
+  <desc id="desc">Klickbare Architekturkarte von Host, Engine, Runspace und Objektpipeline über Module, Provider und Produkt-APIs zu WSMan- und SSH-Remoting, JEA, Serialisierung sowie dem administrativen Regelkreis aus Ermitteln, Planen, Ändern, Verifizieren und Protokollieren.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6d7586"/>
+    </marker>
+    <filter id="shadow" x="-15%" y="-20%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#1d2940" flood-opacity=".12"/>
+    </filter>
+    <style>
+      .bg{fill:#faf7f1}.panel{fill:#fff;stroke:#d9d3c8;stroke-width:2}.band{fill:#f0ece4}
+      .hit{fill:#edf5f7;stroke:#26718c;stroke-width:2;transition:fill .18s ease,stroke .18s ease,transform .18s ease}
+      .hit-warm{fill:#f8eee7;stroke:#934022;stroke-width:2;transition:fill .18s ease,stroke .18s ease}
+      .hit-dark{fill:#e8ebf3;stroke:#4a587b;stroke-width:2;transition:fill .18s ease,stroke .18s ease}
+      .hit-green{fill:#edf4ec;stroke:#4f7655;stroke-width:2;transition:fill .18s ease,stroke .18s ease}
+      a:hover .hit,a:focus .hit{fill:#cde8ef;stroke:#0b5e7a}
+      a:hover .hit-warm,a:focus .hit-warm{fill:#f3d8c8;stroke:#7b2c10}
+      a:hover .hit-dark,a:focus .hit-dark{fill:#d7ddec;stroke:#334267}
+      a:hover .hit-green,a:focus .hit-green{fill:#d7ead7;stroke:#365d3d}
+      a:focus{outline:none}a:focus rect{stroke-width:4}
+      .kicker{font:700 15px system-ui,sans-serif;letter-spacing:1.8px;fill:#6d6b7d}
+      .title{font:800 30px system-ui,sans-serif;fill:#142238}.sub{font:400 17px system-ui,sans-serif;fill:#59657a}
+      .label{font:700 18px system-ui,sans-serif;fill:#142238}.small{font:400 14px system-ui,sans-serif;fill:#536176}
+      .tiny{font:600 13px system-ui,sans-serif;fill:#536176}.arrow{stroke:#6d7586;stroke-width:2.2;fill:none;marker-end:url(#arrow)}
+      .dash{stroke:#8d95a4;stroke-width:2;stroke-dasharray:7 7;fill:none}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="1000"/>
+  <text class="kicker" x="38" y="42">POWERSHELL · ADMIN-LAUFZEIT UND KONTROLLFLÄCHEN</text>
+  <text class="title" x="38" y="82">Objekte durchlaufen Kontexte – Rechte und Fehlergrenzen nicht</text>
+  <text class="sub" x="38" y="113">Jeder Block führt zum erklärenden Abschnitt oder zur primären Dokumentation.</text>
+
+  <rect class="panel" filter="url(#shadow)" x="28" y="140" width="1344" height="220" rx="20"/>
+  <text class="kicker" x="52" y="174">AUSFÜHRUNG IM PROZESS</text>
+
+  <a href="/kb/powershell#architektur-der-laufzeit" tabindex="0" aria-label="Host">
+    <rect class="hit" x="52" y="198" width="210" height="112" rx="14"/>
+    <text class="label" x="157" y="235" text-anchor="middle">Host</text>
+    <text class="small" x="157" y="261" text-anchor="middle">Konsole · Editor · Dienst</text>
+    <text class="tiny" x="157" y="285" text-anchor="middle">I/O und Interaktion</text>
+  </a>
+  <path class="arrow" d="M266 254 H293"/>
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/overview" tabindex="0" aria-label="PowerShell Engine">
+    <rect class="hit" x="297" y="198" width="210" height="112" rx="14"/>
+    <text class="label" x="402" y="235" text-anchor="middle">Engine</text>
+    <text class="small" x="402" y="261" text-anchor="middle">Parser · Binder · .NET</text>
+    <text class="tiny" x="402" y="285" text-anchor="middle">Edition und Policy</text>
+  </a>
+  <path class="arrow" d="M511 254 H538"/>
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/learn/glossary" tabindex="0" aria-label="Runspace">
+    <rect class="hit" x="542" y="198" width="210" height="112" rx="14"/>
+    <text class="label" x="647" y="235" text-anchor="middle">Runspace</text>
+    <text class="small" x="647" y="261" text-anchor="middle">Session State · Identität</text>
+    <text class="tiny" x="647" y="285" text-anchor="middle">Module · Variablen · Drives</text>
+  </a>
+  <path class="arrow" d="M756 254 H783"/>
+  <a href="/kb/powershell#die-objektpipeline" tabindex="0" aria-label="Objektpipeline">
+    <rect class="hit" x="787" y="198" width="250" height="112" rx="14"/>
+    <text class="label" x="912" y="235" text-anchor="middle">Objektpipeline</text>
+    <text class="small" x="912" y="261" text-anchor="middle">Binding · Enumeration</text>
+    <text class="tiny" x="912" y="285" text-anchor="middle">Objekte und Streams</text>
+  </a>
+  <path class="arrow" d="M1041 254 H1068"/>
+  <a href="/kb/powershell#produktmodule-und-http-apis" tabindex="0" aria-label="Command Processor und Adapter">
+    <rect class="hit-warm" x="1072" y="198" width="276" height="112" rx="14"/>
+    <text class="label" x="1210" y="235" text-anchor="middle">Command / Adapter</text>
+    <text class="small" x="1210" y="261" text-anchor="middle">Cmdlet · Skript · native App</text>
+    <text class="tiny" x="1210" y="285" text-anchor="middle">OS · Store · Remote-API</text>
+  </a>
+
+  <rect class="panel" filter="url(#shadow)" x="28" y="382" width="650" height="290" rx="20"/>
+  <text class="kicker" x="52" y="416">DATEN- UND ERWEITERUNGSMODELL</text>
+  <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_objects" tabindex="0" aria-label="Typisierte Objekte">
+    <rect class="hit" x="52" y="438" width="185" height="88" rx="13"/>
+    <text class="label" x="144" y="471" text-anchor="middle">Objekte</text>
+    <text class="small" x="144" y="498" text-anchor="middle">Typ · Property · Methode</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_output_streams" tabindex="0" aria-label="PowerShell Streams">
+    <rect class="hit" x="258" y="438" width="185" height="88" rx="13"/>
+    <text class="label" x="350" y="471" text-anchor="middle">Streams</text>
+    <text class="small" x="350" y="498" text-anchor="middle">Output · Error · Info</text>
+  </a>
+  <a href="/kb/powershell#befehlsauflösung-module-und-provider" tabindex="0" aria-label="Befehlsauflösung">
+    <rect class="hit" x="464" y="438" width="190" height="88" rx="13"/>
+    <text class="label" x="559" y="471" text-anchor="middle">Auflösung</text>
+    <text class="small" x="559" y="498" text-anchor="middle">Type · Source · Version</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_modules" tabindex="0" aria-label="PowerShell Module">
+    <rect class="hit-dark" x="52" y="548" width="185" height="88" rx="13"/>
+    <text class="label" x="144" y="581" text-anchor="middle">Module</text>
+    <text class="small" x="144" y="608" text-anchor="middle">psm1 · DLL · psd1</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/lang-spec/chapter-03" tabindex="0" aria-label="PowerShell Provider">
+    <rect class="hit-dark" x="258" y="548" width="185" height="88" rx="13"/>
+    <text class="label" x="350" y="581" text-anchor="middle">Provider</text>
+    <text class="small" x="350" y="608" text-anchor="middle">Drive-ähnliche Stores</text>
+  </a>
+  <a href="/kb/apis" tabindex="0" aria-label="HTTP- und Produkt-APIs">
+    <rect class="hit-warm" x="464" y="548" width="190" height="88" rx="13"/>
+    <text class="label" x="559" y="581" text-anchor="middle">Produkt-API</text>
+    <text class="small" x="559" y="608" text-anchor="middle">REST · CIM · WSMan</text>
+  </a>
+
+  <rect class="panel" filter="url(#shadow)" x="700" y="382" width="672" height="290" rx="20"/>
+  <text class="kicker" x="724" y="416">REMOTING UND VERTRAUENSGRENZEN</text>
+  <a href="/kb/powershell#remoting-lokaler-client-transport-entfernter-runspace" tabindex="0" aria-label="Lokaler Adminclient">
+    <rect class="hit-dark" x="724" y="438" width="190" height="88" rx="13"/>
+    <text class="label" x="819" y="471" text-anchor="middle">Adminclient</text>
+    <text class="small" x="819" y="498" text-anchor="middle">Code · Token · Policy</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_requirements" tabindex="0" aria-label="WSMan und WinRM">
+    <rect class="hit-warm" x="935" y="438" width="190" height="88" rx="13"/>
+    <text class="label" x="1030" y="471" text-anchor="middle">WSMan / WinRM</text>
+    <text class="small" x="1030" y="498" text-anchor="middle">Windows Endpoint</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/security/remoting/ssh-remoting-in-powershell" tabindex="0" aria-label="SSH Remoting">
+    <rect class="hit-warm" x="1146" y="438" width="202" height="88" rx="13"/>
+    <text class="label" x="1247" y="471" text-anchor="middle">SSH</text>
+    <text class="small" x="1247" y="498" text-anchor="middle">plattformübergreifend</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/security/remoting/jea/overview" tabindex="0" aria-label="Just Enough Administration">
+    <rect class="hit-green" x="724" y="548" width="190" height="88" rx="13"/>
+    <text class="label" x="819" y="581" text-anchor="middle">JEA</text>
+    <text class="small" x="819" y="608" text-anchor="middle">Endpoint · Rolle · Konto</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_output" tabindex="0" aria-label="Remote Runspace und Serialisierung">
+    <rect class="hit-dark" x="935" y="548" width="190" height="88" rx="13"/>
+    <text class="label" x="1030" y="581" text-anchor="middle">Remote Runspace</text>
+    <text class="small" x="1030" y="608" text-anchor="middle">lokaler Zielkontext</text>
+  </a>
+  <a href="/kb/powershell#serialisierung-und-objektverlust" tabindex="0" aria-label="Deserialisierter Snapshot">
+    <rect class="hit" x="1146" y="548" width="202" height="88" rx="13"/>
+    <text class="label" x="1247" y="581" text-anchor="middle">Deserialisiert</text>
+    <text class="small" x="1247" y="608" text-anchor="middle">Snapshot ohne Methoden</text>
+  </a>
+  <path class="dash" d="M924 429 V646"/>
+  <text class="tiny" x="933" y="658">Transport- und Identitätsgrenze</text>
+
+  <rect class="panel" filter="url(#shadow)" x="28" y="694" width="1344" height="200" rx="20"/>
+  <text class="kicker" x="52" y="728">KONTROLLIERTER ADMIN-REGELKREIS</text>
+  <a href="/kb/powershell#diagnose-erst-ausführungskontext-dann-zielprodukt" tabindex="0" aria-label="Ermitteln">
+    <rect class="hit" x="52" y="752" width="220" height="92" rx="14"/>
+    <text class="label" x="162" y="787" text-anchor="middle">1 · Ermitteln</text>
+    <text class="small" x="162" y="816" text-anchor="middle">Kontext · Ist · Abhängigkeit</text>
+  </a>
+  <path class="arrow" d="M276 798 H301"/>
+  <a href="/kb/powershell#sichere-änderungssemantik-und-idempotenz" tabindex="0" aria-label="Planen">
+    <rect class="hit" x="305" y="752" width="220" height="92" rx="14"/>
+    <text class="label" x="415" y="787" text-anchor="middle">2 · Planen</text>
+    <text class="small" x="415" y="816" text-anchor="middle">Soll · Delta · Genehmigung</text>
+  </a>
+  <path class="arrow" d="M529 798 H554"/>
+  <a href="https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-shouldprocess" tabindex="0" aria-label="Ändern mit ShouldProcess">
+    <rect class="hit-warm" x="558" y="752" width="250" height="92" rx="14"/>
+    <text class="label" x="683" y="787" text-anchor="middle">3 · Ändern</text>
+    <text class="small" x="683" y="816" text-anchor="middle">ShouldProcess · Checkpoint</text>
+  </a>
+  <path class="arrow" d="M812 798 H837"/>
+  <a href="/kb/powershell#was-ein-admin-auf-einen-blick-festhalten-sollte" tabindex="0" aria-label="Verifizieren">
+    <rect class="hit-green" x="841" y="752" width="220" height="92" rx="14"/>
+    <text class="label" x="951" y="787" text-anchor="middle">4 · Verifizieren</text>
+    <text class="small" x="951" y="816" text-anchor="middle">Readback · Funktionstest</text>
+  </a>
+  <path class="arrow" d="M1065 798 H1090"/>
+  <a href="/kb/powershell#logging-transcripts-und-datenschutz" tabindex="0" aria-label="Protokollieren">
+    <rect class="hit-dark" x="1094" y="752" width="254" height="92" rx="14"/>
+    <text class="label" x="1221" y="787" text-anchor="middle">5 · Protokollieren</text>
+    <text class="small" x="1221" y="816" text-anchor="middle">Run-ID · Request-ID · Ergebnis</text>
+  </a>
+
+  <text class="kicker" x="38" y="928">BETRIEBLICHE QUERSCHNITTSTHEMEN</text>
+  <a href="/kb/powershell#execution-policy-signaturen-und-anwendungskontrolle" tabindex="0" aria-label="Signatur und Anwendungskontrolle">
+    <rect class="hit-warm" x="38" y="946" width="300" height="38" rx="19"/>
+    <text class="tiny" x="188" y="970" text-anchor="middle">Signatur · App Control · Language Mode</text>
+  </a>
+  <a href="/kb/powershell#geheimnisse-und-nicht-interaktive-identitäten" tabindex="0" aria-label="Workload Identity und Vault">
+    <rect class="hit-green" x="358" y="946" width="300" height="38" rx="19"/>
+    <text class="tiny" x="508" y="970" text-anchor="middle">Workload Identity · Vault · Rotation</text>
+  </a>
+  <a href="/kb/powershell#fehlersemantik-sichtbare-rote-zeile-ist-kein-exitmodell" tabindex="0" aria-label="Fehler und Exitmodell">
+    <rect class="hit" x="678" y="946" width="300" height="38" rx="19"/>
+    <text class="tiny" x="828" y="970" text-anchor="middle">ErrorRecord · Exitcode · Retry</text>
+  </a>
+  <a href="/kb/powershell#parallelität-jobs-und-runspaces" tabindex="0" aria-label="Parallelität und Zielsystemgrenzen">
+    <rect class="hit-dark" x="998" y="946" width="364" height="38" rx="19"/>
+    <text class="tiny" x="1180" y="970" text-anchor="middle">Parallelität · Throttling · Fehlerdomäne</text>
+  </a>
+</svg>

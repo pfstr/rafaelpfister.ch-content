@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">E-Mail-Verschlüsselung: Schutzmodelle, Klartextgrenzen und Schlüsselzustand</title>
+  <desc id="desc">Interaktive Übersicht von Transport-TLS, Client-zu-Client S/MIME und OpenPGP, Gateway-zu-Gateway, Portalzustellung, Metadaten sowie Schlüssel- und Recoverygrenzen.</desc>
+  <style>
+    :root { color-scheme: light; }
+    text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #101828; }
+    .eyebrow { font-size: 16px; font-weight: 800; letter-spacing: 2px; fill: #667085; }
+    .title { font-size: 30px; font-weight: 800; }
+    .subtitle { font-size: 15px; fill: #475467; }
+    .section { font-size: 15px; font-weight: 800; letter-spacing: 1.3px; fill: #667085; }
+    .label { font-size: 19px; font-weight: 800; }
+    .body { font-size: 15px; fill: #344054; }
+    .small { font-size: 13px; fill: #475467; }
+    .arrow { stroke: #28718c; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .arrow-red { stroke: #8b3a1b; stroke-width: 3; fill: none; stroke-dasharray: 9 7; marker-end: url(#arrowRed); }
+    .frame { fill: #fff; stroke: #d8d2c8; stroke-width: 2; }
+    .hit { fill: #f7f4ee; stroke: #cfc7ba; stroke-width: 2; transition: fill .18s ease, stroke .18s ease, transform .18s ease; transform-box: fill-box; transform-origin: center; }
+    .hit-blue { fill: #e8f3f7; stroke: #28718c; }
+    .hit-red { fill: #f8ece6; stroke: #8b3a1b; }
+    .hit-green { fill: #eaf5ef; stroke: #3b7d5b; }
+    .chip { fill: #f7f4ee; stroke: #cfc7ba; stroke-width: 1.5; transition: fill .18s ease, stroke .18s ease; }
+    a { cursor: pointer; outline: none; }
+    a:hover .hit, a:focus .hit { fill: #d9edf4; stroke: #0d6a8a; transform: translateY(-3px); }
+    a:hover .hit-red, a:focus .hit-red { fill: #f3d8cc; stroke: #7a2d12; }
+    a:hover .hit-green, a:focus .hit-green { fill: #d5ecdf; stroke: #246844; }
+    a:hover .chip, a:focus .chip { fill: #d9edf4; stroke: #0d6a8a; }
+    a:hover text, a:focus text { fill: #064c66; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#28718c"/></marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8b3a1b"/></marker>
+  </defs>
+  <rect width="1400" height="1000" fill="#fbfaf7"/>
+  <text class="eyebrow" x="36" y="42">E-MAIL-VERSCHLÜSSELUNG · KLARTEXT, SCHLÜSSEL UND ZUSTAND</text>
+  <text class="title" x="36" y="82">Das Verfahren allein verrät nicht, wo eine Nachricht lesbar ist</text>
+  <text class="subtitle" x="36" y="110">Jeder klickbare Block führt zum zugehörigen Betriebsmodell, Standard oder Admin-Nachweis</text>
+
+  <rect class="frame" x="28" y="138" width="1344" height="520" rx="22"/>
+  <text class="section" x="52" y="171">VIER SCHUTZMODELLE · UNTERSCHIEDLICHE KRYPTOGRAFISCHE ENDPUNKTE</text>
+
+  <a href="/kb/verschluesselung#smtp-tls-schutz-pro-transporthop" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="52" y="196" width="294" height="124" rx="16"/>
+    <text class="label" x="199" y="232" text-anchor="middle">1 · SMTP-TLS</text>
+    <text class="body" x="199" y="260" text-anchor="middle">MTA ↔ MTA · ein Hop</text>
+    <text class="small" x="199" y="285" text-anchor="middle">Klartext auf jedem Mailserver</text>
+    <text class="small" x="199" y="307" text-anchor="middle">Policy: DANE · MTA-STS · REQUIRETLS</text>
+  </a>
+  <a href="/kb/verschluesselung#smime-cms-x509-und-mime" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="386" y="196" width="294" height="124" rx="16"/>
+    <text class="label" x="533" y="232" text-anchor="middle">2 · S/MIME</text>
+    <text class="body" x="533" y="260" text-anchor="middle">MIME · CMS · X.509/PKIX</text>
+    <text class="small" x="533" y="285" text-anchor="middle">Client oder Gateway hält Private Key</text>
+    <text class="small" x="533" y="307" text-anchor="middle">SignedData ≠ EnvelopedData</text>
+  </a>
+  <a href="/kb/verschluesselung#openpgp-format-ist-nicht-vertrauensmodell" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="720" y="196" width="294" height="124" rx="16"/>
+    <text class="label" x="867" y="232" text-anchor="middle">3 · OpenPGP</text>
+    <text class="body" x="867" y="260" text-anchor="middle">Packets · Keys · PGP/MIME</text>
+    <text class="small" x="867" y="285" text-anchor="middle">Fingerprint statt kurzer Key ID</text>
+    <text class="small" x="867" y="307" text-anchor="middle">Format ≠ Web of Trust</text>
+  </a>
+  <a href="/kb/verschluesselung#portalzustellung-webanwendung-statt-empfängerschlüssel" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="1054" y="196" width="294" height="124" rx="16"/>
+    <text class="label" x="1201" y="232" text-anchor="middle">4 · Webportal</text>
+    <text class="body" x="1201" y="260" text-anchor="middle">Benachrichtigung · Link · Login</text>
+    <text class="small" x="1201" y="285" text-anchor="middle">Inhalt im Portalzustand</text>
+    <text class="small" x="1201" y="307" text-anchor="middle">MFA · Retention · sichere Antwort</text>
+  </a>
+
+  <a href="/kb/smtp" target="_top" tabindex="0">
+    <rect class="hit" x="52" y="366" width="210" height="92" rx="16"/>
+    <text class="label" x="157" y="400" text-anchor="middle">SMTP-Envelope</text>
+    <text class="body" x="157" y="428" text-anchor="middle">Routing bleibt sichtbar</text>
+    <text class="small" x="157" y="449" text-anchor="middle">MAIL FROM · RCPT TO</text>
+  </a>
+  <a href="/kb/verschluesselung#gatewaymodell-zentrale-policy-und-zentrale-klartextmacht" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="294" y="366" width="244" height="92" rx="16"/>
+    <text class="label" x="416" y="400" text-anchor="middle">Mail-Gateway</text>
+    <text class="body" x="416" y="428" text-anchor="middle">Policy · Klartext · Key Store</text>
+    <text class="small" x="416" y="449" text-anchor="middle">Krypto-Endpunkt der Organisation</text>
+  </a>
+  <a href="/kb/verschluesselung#metadaten-header-und-archivierung" target="_top" tabindex="0">
+    <rect class="hit" x="570" y="366" width="244" height="92" rx="16"/>
+    <text class="label" x="692" y="400" text-anchor="middle">äussere Header</text>
+    <text class="body" x="692" y="428" text-anchor="middle">Subject · From · Received</text>
+    <text class="small" x="692" y="449" text-anchor="middle">Schutz ist implementationsabhängig</text>
+  </a>
+  <a href="/kb/verschluesselung#schlüssel-und-zertifikatslebenszyklus" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="846" y="366" width="244" height="92" rx="16"/>
+    <text class="label" x="968" y="400" text-anchor="middle">Schlüsselzustand</text>
+    <text class="body" x="968" y="428" text-anchor="middle">Fingerprint · Zweck · Status</text>
+    <text class="small" x="968" y="449" text-anchor="middle">Rotation · Widerruf · Historie</text>
+  </a>
+  <a href="/kb/verschluesselung#backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="1122" y="366" width="226" height="92" rx="16"/>
+    <text class="label" x="1235" y="400" text-anchor="middle">Recovery</text>
+    <text class="body" x="1235" y="428" text-anchor="middle">Chiffretext + Decryption Key</text>
+    <text class="small" x="1235" y="449" text-anchor="middle">Signaturschlüssel trennen</text>
+  </a>
+
+  <a href="/kb/tls" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="52" y="510" width="244" height="102" rx="16"/>
+    <text class="label" x="174" y="545" text-anchor="middle">Transportnachweis</text>
+    <text class="body" x="174" y="573" text-anchor="middle">TLS-Handshake · Policy · Report</text>
+    <text class="small" x="174" y="596" text-anchor="middle">Queue bei Fehler beobachten</text>
+  </a>
+  <a href="/kb/mail-auth" target="_top" tabindex="0">
+    <rect class="hit" x="322" y="510" width="244" height="102" rx="16"/>
+    <text class="label" x="444" y="545" text-anchor="middle">Signaturreihenfolge</text>
+    <text class="body" x="444" y="573" text-anchor="middle">S/MIME / PGP · DKIM</text>
+    <text class="small" x="444" y="596" text-anchor="middle">Änderung kann Signatur brechen</text>
+  </a>
+  <a href="/kb/verschluesselung#monitoring-und-störungsanalyse" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="592" y="510" width="244" height="102" rx="16"/>
+    <text class="label" x="714" y="545" text-anchor="middle">Entscheidungsnachweis</text>
+    <text class="body" x="714" y="573" text-anchor="middle">Policy · Fingerprint · Endzustand</text>
+    <text class="small" x="714" y="596" text-anchor="middle">kein stiller Fallback</text>
+  </a>
+  <a href="/kb/verschluesselung#portalzustellung-webanwendung-statt-empfängerschlüssel" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="862" y="510" width="244" height="102" rx="16"/>
+    <text class="label" x="984" y="545" text-anchor="middle">Portalidentität</text>
+    <text class="body" x="984" y="573" text-anchor="middle">Konto · OTP/MFA · Session</text>
+    <text class="small" x="984" y="596" text-anchor="middle">Link allein ist kein Login</text>
+  </a>
+  <a href="/kb/verschluesselung#backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="1132" y="510" width="216" height="102" rx="16"/>
+    <text class="label" x="1240" y="545" text-anchor="middle">Restoretest</text>
+    <text class="body" x="1240" y="573" text-anchor="middle">alte + neue Schlüssel</text>
+    <text class="small" x="1240" y="596" text-anchor="middle">Original und Archivkopie</text>
+  </a>
+  <path class="arrow" d="M346 258 H384"/>
+  <path class="arrow" d="M680 258 H718"/>
+  <path class="arrow-red" d="M1014 258 H1052"/>
+
+  <rect class="frame" x="28" y="690" width="1344" height="198" rx="22"/>
+  <text class="section" x="52" y="724">ADMIN-MINIMUM · VOR DER PRODUKTWAHL FESTLEGEN</text>
+  <a href="/kb/verschluesselung#schutzmodelle-und-klartextgrenzen" target="_top" tabindex="0">
+    <rect class="hit" x="52" y="748" width="242" height="102" rx="16"/>
+    <text class="body" x="173" y="782" text-anchor="middle">Klartextstellen</text>
+    <text class="small" x="173" y="807" text-anchor="middle">Client · MTA · Gateway · Portal</text>
+    <text class="small" x="173" y="830" text-anchor="middle">pro Richtung benennen</text>
+  </a>
+  <a href="/kb/verschluesselung#schlüssel-und-zertifikatslebenszyklus" target="_top" tabindex="0">
+    <rect class="hit hit-green" x="316" y="748" width="242" height="102" rx="16"/>
+    <text class="body" x="437" y="782" text-anchor="middle">Schlüsselinhaber</text>
+    <text class="small" x="437" y="807" text-anchor="middle">Signatur ≠ Entschlüsselung</text>
+    <text class="small" x="437" y="830" text-anchor="middle">Fingerprint und Zweck</text>
+  </a>
+  <a href="/kb/verschluesselung#metadaten-header-und-archivierung" target="_top" tabindex="0">
+    <rect class="hit" x="580" y="748" width="242" height="102" rx="16"/>
+    <text class="body" x="701" y="782" text-anchor="middle">Metadaten und Original</text>
+    <text class="small" x="701" y="807" text-anchor="middle">Envelope · Header · MIME</text>
+    <text class="small" x="701" y="830" text-anchor="middle">Archivdarstellung festlegen</text>
+  </a>
+  <a href="/kb/verschluesselung#monitoring-und-störungsanalyse" target="_top" tabindex="0">
+    <rect class="hit hit-blue" x="844" y="748" width="242" height="102" rx="16"/>
+    <text class="body" x="965" y="782" text-anchor="middle">Fallback und Endzustand</text>
+    <text class="small" x="965" y="807" text-anchor="middle">encrypted · portal · retry</text>
+    <text class="small" x="965" y="830" text-anchor="middle">jede Entscheidung auditieren</text>
+  </a>
+  <a href="/kb/verschluesselung#backup-und-recovery" target="_top" tabindex="0">
+    <rect class="hit hit-red" x="1108" y="748" width="238" height="102" rx="16"/>
+    <text class="body" x="1227" y="782" text-anchor="middle">Recoveryfähigkeit</text>
+    <text class="small" x="1227" y="807" text-anchor="middle">Daten + Keys + Trusthistorie</text>
+    <text class="small" x="1227" y="830" text-anchor="middle">mit altem Chiffretext testen</text>
+  </a>
+
+  <text class="section" x="36" y="928">PRIMÄRQUELLEN DER MODELLE</text>
+  <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-177r1.pdf" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="310" y="904" width="244" height="42" rx="20"/>
+    <text class="small" x="432" y="930" text-anchor="middle">NIST Trustworthy Email ↗</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc8551" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="572" y="904" width="220" height="42" rx="20"/>
+    <text class="small" x="682" y="930" text-anchor="middle">S/MIME 4.0 ↗</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9580" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="810" y="904" width="220" height="42" rx="20"/>
+    <text class="small" x="920" y="930" text-anchor="middle">OpenPGP ↗</text>
+  </a>
+  <a href="https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="1048" y="904" width="298" height="42" rx="20"/>
+    <text class="small" x="1197" y="930" text-anchor="middle">NIST Key Management ↗</text>
+  </a>
+  <text class="small" x="36" y="976">Hover oder Fokus hebt Blöcke hervor · Klick öffnet Artikelabschnitt oder Originalquelle</text>
+</svg>
