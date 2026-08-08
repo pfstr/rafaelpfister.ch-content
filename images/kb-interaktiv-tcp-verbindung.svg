@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">TCP-Verbindungslebenszyklus und Diagnosepunkte</title>
+  <desc id="desc">Interaktive Darstellung von Handshake, Datenphase, Fenstern, Retransmission, Verbindungsabbau und typischen Fehlersignalen. Alle fachlichen Blöcke führen zu passenden Artikelabschnitten oder Primärquellen.</desc>
+  <style>
+    :root { color-scheme: light; }
+    text { font-family: Inter, "Segoe UI", Arial, sans-serif; fill: #151515; }
+    .bg { fill: #faf7f2; }
+    .panel { fill: #fff; stroke: #d8d2c9; stroke-width: 2; }
+    .soft { fill: #f2eee8; stroke: #d8d2c9; stroke-width: 2; }
+    .blue { fill: #e6f1f4; stroke: #26748f; stroke-width: 2; }
+    .rose { fill: #f8ece8; stroke: #8f371b; stroke-width: 2; }
+    .green { fill: #edf4ed; stroke: #4d7450; stroke-width: 2; }
+    .dash { fill: #fff; stroke: #bdb5aa; stroke-width: 2; stroke-dasharray: 9 8; }
+    .kicker { font-size: 17px; letter-spacing: 2.2px; font-weight: 700; fill: #6e667b; }
+    .h1 { font-size: 34px; font-weight: 760; }
+    .h2 { font-size: 23px; font-weight: 720; }
+    .label { font-size: 19px; font-weight: 700; }
+    .body { font-size: 16px; fill: #55505e; }
+    .small { font-size: 14px; fill: #6e667b; }
+    .mono { font-family: "Cascadia Mono", Consolas, monospace; font-size: 16px; font-weight: 700; }
+    .arrow { stroke: #242424; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .arrow-blue { stroke: #26748f; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+    .arrow-rose { stroke: #8f371b; stroke-width: 3; fill: none; marker-end: url(#arrowRose); stroke-dasharray: 8 6; }
+    .lifeline { stroke: #bdb5aa; stroke-width: 2; stroke-dasharray: 7 8; }
+    a { outline: none; cursor: pointer; }
+    a .hit { transition: fill .16s ease, stroke .16s ease, filter .16s ease; }
+    a:hover .hit, a:focus .hit { fill: #d8ebf0; stroke: #0f607c; filter: drop-shadow(0 4px 6px rgba(15,96,124,.17)); }
+    a:hover .risk, a:focus .risk { fill: #f4ddd5; stroke: #7c2e16; filter: drop-shadow(0 4px 6px rgba(124,46,22,.14)); }
+    a:hover .source, a:focus .source { fill: #e1eff3; stroke: #26748f; }
+    a:focus .hit, a:focus .risk, a:focus .source { stroke-width: 4; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#242424"/></marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#26748f"/></marker>
+    <marker id="arrowRose" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#8f371b"/></marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="900"/>
+  <text class="kicker" x="48" y="48">TCP · VERBINDUNG · ZUSTAND · DIAGNOSE</text>
+  <text class="h1" x="48" y="88">Vom SYN bis TIME-WAIT</text>
+  <text class="body" x="48" y="118">Eine Verbindung ist ein Zustandsautomat. Paketfolgen zeigen, an welcher Systemgrenze sie scheitert.</text>
+
+  <rect class="panel" x="42" y="142" width="1316" height="500" rx="20"/>
+  <text class="kicker" x="80" y="181">CLIENT / AKTIVES ÖFFNEN</text>
+  <text class="kicker" x="565" y="181">NETZ UND MIDDLEBOXES</text>
+  <text class="kicker" x="1050" y="181">SERVER / PASSIVES ÖFFNEN</text>
+  <line class="lifeline" x1="235" y1="205" x2="235" y2="605"/>
+  <line class="lifeline" x1="1165" y1="205" x2="1165" y2="605"/>
+
+  <a href="/kb/tcp#verbindungsaufbau-datentransfer-und-abbau" target="_top" tabindex="0">
+    <title>Drei-Wege-Handshake im Artikel öffnen</title>
+    <rect class="blue hit" x="72" y="212" width="326" height="88" rx="15"/>
+    <text class="label" x="94" y="245">1 · SYN</text>
+    <text class="mono" x="94" y="274">SYN  seq=x  MSS · WS · SACK</text>
+  </a>
+  <path class="arrow-blue" d="M398 256 H1115"/>
+  <text class="small" x="608" y="246">Route · Firewall · NAT · Load Balancer</text>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5" target="_top" tabindex="0">
+    <title>RFC 9293: Opening and Closing Connections</title>
+    <rect class="blue hit" x="1002" y="310" width="326" height="88" rx="15"/>
+    <text class="label" x="1024" y="343">2 · SYN + ACK</text>
+    <text class="mono" x="1024" y="372">SYN ACK  seq=y  ack=x+1</text>
+  </a>
+  <path class="arrow-blue" d="M1002 354 H285"/>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2" target="_top" tabindex="0">
+    <title>RFC 9293: TCP State Machine Overview</title>
+    <rect class="green hit" x="72" y="408" width="326" height="88" rx="15"/>
+    <text class="label" x="94" y="441">3 · ACK → ESTABLISHED</text>
+    <text class="mono" x="94" y="470">ACK  ack=y+1</text>
+  </a>
+  <path class="arrow" d="M398 452 H1115"/>
+
+  <a href="/kb/tcp#sequenznummern-acks-und-retransmission" target="_top" tabindex="0">
+    <title>Sequenznummern und Retransmission im Artikel öffnen</title>
+    <rect class="soft hit" x="438" y="512" width="524" height="98" rx="15"/>
+    <text class="label" x="462" y="544">Datenphase: Byte-Stream in beide Richtungen</text>
+    <text class="mono" x="462" y="574">SEQ · kumulative ACKs · SACK · RTO</text>
+    <text class="small" x="462" y="598">wirksam: min(rwnd, cwnd) · Verlust löst Wiederholung aus</text>
+  </a>
+  <path class="arrow-blue" d="M398 558 H438"/>
+  <path class="arrow-blue" d="M962 577 H1115"/>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.6" target="_top" tabindex="0">
+    <title>RFC 9293: Closing a Connection</title>
+    <rect class="soft hit" x="72" y="512" width="326" height="98" rx="15"/>
+    <text class="label" x="94" y="545">FIN / ACK</text>
+    <text class="body" x="94" y="574">jede Richtung schliesst separat</text>
+    <text class="small" x="94" y="599">aktiver Abschluss endet in TIME-WAIT</text>
+  </a>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0">
+    <title>RFC 9293: Reset Generation</title>
+    <rect class="soft hit" x="1002" y="512" width="326" height="98" rx="15"/>
+    <text class="label" x="1024" y="545">FIN / ACK</text>
+    <text class="body" x="1024" y="574">RST bricht stattdessen sofort ab</text>
+    <text class="small" x="1024" y="599">Ursprung und Zeitpunkt des RST prüfen</text>
+  </a>
+
+  <text class="kicker" x="48" y="687">ADMIN-SIGNALE · KLICK FÜHRT ZUR ERKLÄRUNG ODER PRIMÄRQUELLE</text>
+  <a href="/kb/tcp#signalbild-und-wahrscheinlichste-systemgrenze" target="_top" tabindex="0">
+    <title>SYN ohne Antwort: Diagnosematrix öffnen</title>
+    <rect class="rose risk" x="42" y="708" width="205" height="112" rx="16"/>
+    <text class="label" x="62" y="741">SYN → ∅</text>
+    <text class="body" x="62" y="770">Timeout / Drop</text>
+    <text class="small" x="62" y="797">Route · Filter · Rückweg</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0">
+    <title>RFC 9293: Reset Generation</title>
+    <rect class="rose risk" x="263" y="708" width="205" height="112" rx="16"/>
+    <text class="label" x="283" y="741">SYN → RST</text>
+    <text class="body" x="283" y="770">Connection refused</text>
+    <text class="small" x="283" y="797">kein akzeptierender Socket</text>
+  </a>
+  <a href="/kb/tcp#diagnose-vom-socket-bis-zum-paket" target="_top" tabindex="0">
+    <title>Handshake ohne Banner: Diagnose öffnen</title>
+    <rect class="blue hit" x="484" y="708" width="205" height="112" rx="16"/>
+    <text class="label" x="504" y="741">ESTABLISHED</text>
+    <text class="body" x="504" y="770">aber kein Banner</text>
+    <text class="small" x="504" y="797">Anwendung / Backend</text>
+  </a>
+  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0">
+    <title>Wireshark TCP Analysis</title>
+    <rect class="rose risk" x="705" y="708" width="205" height="112" rx="16"/>
+    <text class="label" x="725" y="741">Retransmission</text>
+    <text class="body" x="725" y="770">Verlust oder Sichtlücke</text>
+    <text class="small" x="725" y="797">Gegenmitschnitt korrelieren</text>
+  </a>
+  <a href="/kb/tcp#flusskontrolle-und-staukontrolle" target="_top" tabindex="0">
+    <title>Flusskontrolle und Zero Window öffnen</title>
+    <rect class="rose risk" x="926" y="708" width="205" height="112" rx="16"/>
+    <text class="label" x="946" y="741">Zero Window</text>
+    <text class="body" x="946" y="770">Empfänger liest nicht</text>
+    <text class="small" x="946" y="797">App · CPU · Storage</text>
+  </a>
+  <a href="/kb/tcp#die-zustande-als-betriebsindikatoren" target="_top" tabindex="0">
+    <title>CLOSE-WAIT und TIME-WAIT im Artikel öffnen</title>
+    <rect class="blue hit" x="1147" y="708" width="211" height="112" rx="16"/>
+    <text class="label" x="1167" y="741">CLOSE-WAIT</text>
+    <text class="body" x="1167" y="770">lokale App schliesst nicht</text>
+    <text class="small" x="1167" y="797">Alter und Prozess prüfen</text>
+  </a>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293" target="_top" tabindex="0"><rect class="soft source" x="42" y="842" width="310" height="40" rx="20"/><text class="small" x="76" y="868">[1] RFC 9293 · Kern und Zustände</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc6298" target="_top" tabindex="0"><rect class="soft source" x="367" y="842" width="280" height="40" rx="20"/><text class="small" x="403" y="868">[2] RFC 6298 · RTO</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc5681" target="_top" tabindex="0"><rect class="soft source" x="662" y="842" width="300" height="40" rx="20"/><text class="small" x="696" y="868">[3] RFC 5681 · cwnd</text></a>
+  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0"><rect class="soft source" x="977" y="842" width="381" height="40" rx="20"/><text class="small" x="1011" y="868">[4] Wireshark · Analysesignale</text></a>
+</svg>
