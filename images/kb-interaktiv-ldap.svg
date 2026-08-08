@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">LDAP vom Clientzugriff bis zur Verzeichnisimplementierung</title>
+  <desc id="desc">Interaktive Administrationsgrafik zu Transport, Bind, LDAP-Operationen, BER-Nachrichten, DIT und den nicht durch LDAP standardisierten Serverkomponenten. Alle fachlichen Blöcke und Quellen sind verlinkt.</desc>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #171717; }
+    .bg { fill: #f8f5ef; }
+    .panel { fill: #fffdfa; stroke: #d8d2c8; stroke-width: 2; }
+    .hit { fill: #eef5f6; stroke: #26748f; stroke-width: 2; transition: fill .16s ease, stroke .16s ease, filter .16s ease; }
+    .hit.gold { fill: #f8f1df; stroke: #a77a1f; }
+    .hit.red { fill: #f8efec; stroke: #984a35; }
+    .hit.green { fill: #eef5ef; stroke: #4f7a59; }
+    .hit.violet { fill: #f3eff7; stroke: #765f89; }
+    a:hover .hit, a:focus .hit { fill: #d2e9ee; stroke: #0d5872; filter: drop-shadow(0 5px 7px rgba(23, 69, 84, .22)); }
+    a:hover .hit.gold, a:focus .hit.gold { fill: #f2dfad; stroke: #7c5811; }
+    a:hover .hit.red, a:focus .hit.red { fill: #f2d8cf; stroke: #743321; }
+    a:hover .hit.green, a:focus .hit.green { fill: #dbeadf; stroke: #315f3c; }
+    a:hover .hit.violet, a:focus .hit.violet { fill: #e5d9ed; stroke: #59436c; }
+    a:focus { outline: none; }
+    .kicker { font-size: 15px; font-weight: 750; letter-spacing: 2.1px; fill: #6f697e; }
+    .title { font-size: 30px; font-weight: 780; }
+    .section { font-size: 15px; font-weight: 780; letter-spacing: 1.8px; fill: #6f697e; }
+    .box-title { font-size: 17px; font-weight: 760; }
+    .box-copy { font-size: 13px; fill: #4f4a55; }
+    .mono { font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace; font-size: 13px; font-weight: 680; }
+    .tiny { font-size: 11px; fill: #6b6574; }
+    .chip { fill: #f2eee7; stroke: #d3ccc1; stroke-width: 1.4; transition: fill .16s ease, stroke .16s ease; }
+    a:hover .chip, a:focus .chip { fill: #d9ebef; stroke: #26748f; }
+    .arrow { fill: none; stroke: #26748f; stroke-width: 3; marker-end: url(#arrow); }
+    .arrow-gold { fill: none; stroke: #a77a1f; stroke-width: 3; marker-end: url(#arrowGold); }
+    .dash { fill: none; stroke: #8e8996; stroke-width: 2; stroke-dasharray: 7 7; marker-end: url(#arrowMuted); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#26748f"/></marker>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a77a1f"/></marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8e8996"/></marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="1000"/>
+  <text class="kicker" x="70" y="45">LDAP · PROTOKOLLZUSTAND · DATENMODELL · SERVERGRENZE</text>
+  <text class="title" x="70" y="80">Vom Dienstziel bis zum Entry: Was der Standard festlegt – und was nicht</text>
+
+  <rect class="panel" x="60" y="110" width="1280" height="210" rx="20"/>
+  <text class="section" x="85" y="145">1 · VERBINDUNG UND SITZUNG · JEDE GRENZE GETRENNT PRÜFEN</text>
+
+  <a href="/kb/dns" target="_top" tabindex="0">
+    <rect class="hit gold" x="85" y="170" width="230" height="112" rx="16"/>
+    <text class="box-title" x="108" y="202">Dienstziel</text>
+    <text class="box-copy" x="108" y="229">DNS · SRV · DC Locator</text>
+    <text class="mono" x="108" y="257">Name → Ziel und Port</text>
+  </a>
+  <path class="arrow-gold" d="M 315 226 H 365"/>
+  <a href="/kb/tcp" target="_top" tabindex="0">
+    <rect class="hit" x="370" y="170" width="220" height="112" rx="16"/>
+    <text class="box-title" x="393" y="202">TCP</text>
+    <text class="box-copy" x="393" y="229">389 · 636 · 3268 · 3269</text>
+    <text class="mono" x="393" y="257">Socket und Zeitbudget</text>
+  </a>
+  <path class="arrow" d="M 590 226 H 640"/>
+  <a href="/kb/tls" target="_top" tabindex="0">
+    <rect class="hit green" x="645" y="170" width="220" height="112" rx="16"/>
+    <text class="box-title" x="668" y="202">TLS</text>
+    <text class="box-copy" x="668" y="229">StartTLS oder implizit</text>
+    <text class="mono" x="668" y="257">Identität · CA · Name</text>
+  </a>
+  <path class="arrow" d="M 865 226 H 915"/>
+  <a href="/kb/ldap#bind-sasl-und-tls-vertrauensgrenzen" target="_top" tabindex="0">
+    <rect class="hit violet" x="920" y="170" width="220" height="112" rx="16"/>
+    <text class="box-title" x="943" y="202">Bind · SASL</text>
+    <text class="box-copy" x="943" y="229">anonym · simple · GSSAPI</text>
+    <text class="mono" x="943" y="257">AuthN + Security Layer</text>
+  </a>
+  <path class="arrow" d="M 1140 226 H 1190"/>
+  <a href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0">
+    <rect class="hit red" x="1195" y="170" width="120" height="112" rx="16"/>
+    <text class="box-title" x="1218" y="202">LDAP</text>
+    <text class="box-copy" x="1218" y="229">Sitzung</text>
+    <text class="mono" x="1218" y="257">Ops</text>
+  </a>
+
+  <rect class="panel" x="60" y="340" width="1280" height="350" rx="20"/>
+  <text class="section" x="85" y="375">2 · LDAPMESSAGE UND DIT · ANFRAGE, RESULTAT UND STEUERDATEN AUSEINANDERHALTEN</text>
+
+  <a href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0">
+    <rect class="hit" x="85" y="405" width="230" height="110" rx="16"/>
+    <text class="box-title" x="108" y="438">Operation</text>
+    <text class="box-copy" x="108" y="466">Bind · Search · Modify</text>
+    <text class="mono" x="108" y="493">messageID + protocolOp</text>
+  </a>
+  <a href="/kb/ldap#paging-sortierung-und-sich-ändernde-resultate" target="_top" tabindex="0">
+    <rect class="hit gold" x="85" y="540" width="230" height="110" rx="16"/>
+    <text class="box-title" x="108" y="573">Controls</text>
+    <text class="box-copy" x="108" y="601">Paging · Sortierung</text>
+    <text class="mono" x="108" y="628">OID · criticality · value</text>
+  </a>
+  <path class="arrow" d="M 315 460 H 385"/>
+  <path class="arrow-gold" d="M 315 595 H 385"/>
+
+  <a href="/kb/ldap#protokollstack-und-sitzungsmodell" target="_top" tabindex="0">
+    <rect class="hit violet" x="390" y="405" width="245" height="245" rx="18"/>
+    <text class="box-title" x="418" y="440">LDAPMessage in BER</text>
+    <text class="box-copy" x="418" y="469">ASN.1-Datentypen</text>
+    <text class="mono" x="418" y="500">SEQUENCE</text>
+    <text class="mono" x="418" y="530">INTEGER messageID</text>
+    <text class="mono" x="418" y="560">CHOICE protocolOp</text>
+    <text class="mono" x="418" y="590">Controls optional</text>
+    <text class="box-copy" x="418" y="622">binär, längencodiert</text>
+  </a>
+  <path class="arrow" d="M 635 527 H 705"/>
+
+  <a href="/kb/ldap#search-basis-scope-filter-und-attributprojektion" target="_top" tabindex="0">
+    <rect class="hit" x="710" y="405" width="250" height="110" rx="16"/>
+    <text class="box-title" x="735" y="438">Search Request</text>
+    <text class="box-copy" x="735" y="466">base · scope · filter · attrs</text>
+    <text class="mono" x="735" y="493">nicht: freie SQL-Suche</text>
+  </a>
+  <a href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0">
+    <rect class="hit red" x="710" y="540" width="250" height="110" rx="16"/>
+    <text class="box-title" x="735" y="573">Result Stream</text>
+    <text class="box-copy" x="735" y="601">Entry(s) · Referral · Done</text>
+    <text class="mono" x="735" y="628">Resultcode ist Teil der Antwort</text>
+  </a>
+
+  <path class="arrow-gold" d="M 960 460 H 1030"/>
+  <path class="arrow" d="M 1030 595 H 965"/>
+  <a href="/kb/ldap#datenmodell-dit-entry-attribut-und-schema" target="_top" tabindex="0">
+    <rect class="hit green" x="1035" y="405" width="280" height="245" rx="18"/>
+    <text class="box-title" x="1063" y="440">Directory Information Tree</text>
+    <text class="mono" x="1063" y="475">dc=example,dc=ch</text>
+    <line x1="1175" y1="486" x2="1175" y2="515" stroke="#4f7a59" stroke-width="2"/>
+    <text class="mono" x="1063" y="540">ou=People</text>
+    <line x1="1175" y1="552" x2="1175" y2="580" stroke="#4f7a59" stroke-width="2"/>
+    <text class="mono" x="1063" y="605">uid=alice · Entry</text>
+    <text class="box-copy" x="1063" y="630">DN · Attribute · Object Classes</text>
+  </a>
+
+  <rect class="panel" x="60" y="710" width="1280" height="140" rx="20"/>
+  <text class="section" x="85" y="745">3 · SERVERIMPLEMENTIERUNG · DURCH LDAP NICHT STANDARDISIERT</text>
+  <a href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0">
+    <rect class="hit red" x="85" y="770" width="225" height="55" rx="14"/>
+    <text class="box-title" x="198" y="804" text-anchor="middle">ACL · Policy Engine</text>
+  </a>
+  <a href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0">
+    <rect class="hit gold" x="335" y="770" width="225" height="55" rx="14"/>
+    <text class="box-title" x="448" y="804" text-anchor="middle">Index · Storage</text>
+  </a>
+  <a href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0">
+    <rect class="hit violet" x="585" y="770" width="225" height="55" rx="14"/>
+    <text class="box-title" x="698" y="804" text-anchor="middle">Replikation · Konsistenz</text>
+  </a>
+  <a href="/kb/ldap#active-directory-als-ldap-serverprofil" target="_top" tabindex="0">
+    <rect class="hit green" x="835" y="770" width="225" height="55" rx="14"/>
+    <text class="box-title" x="948" y="804" text-anchor="middle">AD · Global Catalog</text>
+  </a>
+  <a href="/kb/ldap#diagnosewerkzeuge" target="_top" tabindex="0">
+    <rect class="hit" x="1085" y="770" width="230" height="55" rx="14"/>
+    <text class="box-title" x="1200" y="804" text-anchor="middle">Metriken · Diagnose</text>
+  </a>
+
+  <text class="section" x="70" y="885">PRIMÄRQUELLEN · PROTOKOLL, SCHEMA, SICHERHEIT UND SERVERPROFIL</text>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4511" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="70" y="905" width="210" height="48" rx="22"/><text class="tiny" x="175" y="934" text-anchor="middle">RFC 4511 · Protocol</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4512" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="300" y="905" width="210" height="48" rx="22"/><text class="tiny" x="405" y="934" text-anchor="middle">RFC 4512 · Models</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4513" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="530" y="905" width="210" height="48" rx="22"/><text class="tiny" x="635" y="934" text-anchor="middle">RFC 4513 · Security</text>
+  </a>
+  <a href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="760" y="905" width="250" height="48" rx="22"/><text class="tiny" x="885" y="934" text-anchor="middle">MS-ADTS · Active Directory</text>
+  </a>
+  <a href="https://www.openldap.org/doc/admin26/replication.html" target="_blank" rel="noopener noreferrer" tabindex="0">
+    <rect class="chip" x="1030" y="905" width="300" height="48" rx="22"/><text class="tiny" x="1180" y="934" text-anchor="middle">OpenLDAP · Replication Models</text>
+  </a>
+
+  <text class="tiny" x="70" y="980">Fokus oder Hover hebt jedes Ziel hervor. Interne Ziele öffnen die Admin-Erklärung; Quellenchips führen zur Primärquelle.</text>
+</svg>
