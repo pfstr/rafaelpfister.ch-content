@@ -1,10 +1,10 @@
 ---
-title: "Controlar Midea PortaSplit localmente con Home Assistant y usarla de forma segura"
-navTitle: "Configurar PortaSplit"
-description: "Desde la integración comunitaria adecuada hasta la VLAN de IoT: así se configura la PortaSplit, se protegen el token y la clave, y se limitan los accesos a la nube y a la red."
+title: "Control Midea PortaSplit locally with Home Assistant and operate it securely"
+navTitle: "Set up PortaSplit"
+description: "From the right community integration to an IoT VLAN: how to set up PortaSplit, protect tokens and keys, and restrict cloud and network access."
 date: "2026-07-24"
-kategorie: "Home Assistant e IoT"
-timeToRead: "14 min de lectura"
+kategorie: "Home Assistant and IoT"
+timeToRead: "14 min read"
 themen:
   - smart-home-iot
 related:
@@ -12,107 +12,108 @@ related:
   - serverloser-newsletter-cloudflare-workers-d1
 slug: "controlar-midea-portasplit-localmente-con-home-assistant-y-usarla-de-forma-segura"
 translationOf: "midea-portasplit-home-assistant-einrichten"
-url: "https://rafaelpfister.ch/es/blog/controlar-midea-portasplit-localmente-con-home-assistant-y-usarla-de-forma-segura"
 translationId: article-36e7710abe426781
-translationReview: automatic
-translationSourceHash: ba9c7be984e6ce08724b05d9227acbac222522d3b8fac91639b48289312caba8
-translatedAt: 2026-07-29T12:29:38.950Z
+translationReview: required
+translationSourceHash: 859c24ec38af3b4b931702c7be50cf2224580d30045559ba089224d0de25339c
+translatedAt: 2026-08-08T14:20:18.797Z
+url: https://rafaelpfister.ch/es/blog/controlar-midea-portasplit-localmente-con-home-assistant-y-usarla-de-forma-segura
+translationModel: gpt-5.6-terra
 ---
 
-La Midea PortaSplit puede controlarse directamente en la red local mediante Home Assistant después de configurarla. Para ello, la integración comunitaria necesita dos credenciales específicas del dispositivo procedentes de la nube de Midea: token y clave.
+The Midea PortaSplit can be controlled directly on the local network via Home Assistant after setup. To do so, the community integration requires two device-specific credentials from the Midea Cloud: a token and a key.
 
-Este artículo explica la selección, configuración y protección de la integración. Las soluciones descritas proceden de la comunidad y no cuentan con soporte oficial ni de Midea ni de Home Assistant. Por ello, los cambios de firmware o de la nube pueden afectar a su funcionamiento en cualquier momento. El contexto sobre la interfaz de tokens y la advertencia ambigua sobre su desactivación se encuentra en el [análisis de las API de la nube de Midea](/blog/midea-v2-cloud-api-portasplit-home-assistant).
+This article guides you through selecting, setting up and securing the integration. The solutions described come from the community and are not officially supported by either Midea or Home Assistant. Firmware or cloud changes may therefore affect their behaviour at any time. Background information on the token interface and the ambiguous shutdown warning can be found in the [analysis of the Midea Cloud APIs](/blog/midea-v2-cloud-api-portasplit-home-assistant).
 
-## Cómo funciona el control local
+## How local control works
 
-Una vez configurados, los comandos de control se envían directamente de Home Assistant a la PortaSplit:
+Once configured, the actual control commands are sent directly from Home Assistant to the PortaSplit:
 
 ```text
 Home Assistant → lokales Netzwerk → Midea PortaSplit
 ```
 
-Un comando de conmutación no tiene que pasar por un servidor externo de Midea, el tiempo de respuesta es breve, una avería de la nube de Midea no paraliza necesariamente el control local ya configurado y, en principio, el dispositivo sigue siendo controlable incluso sin acceso a Internet.
+A switching command does not need to go through an external Midea server, response times are short, an outage of the Midea Cloud does not necessarily disable already configured local control, and the device can generally still be controlled without internet access.
 
-Sin embargo, en los dispositivos más recientes con el denominado protocolo V3, la PortaSplit no acepta comandos locales sin protección. Home Assistant necesita dos valores específicos del dispositivo, un token y una clave, que sirven para autenticar y cifrar la conexión local. Durante la configuración inicial, la integración los obtiene una única vez a través de una interfaz de la nube de Midea y luego los guarda localmente; no se requiere una conexión a la nube para el control posterior.
+However, on newer devices using the so-called V3 protocol, the PortaSplit does not accept local commands without protection. Home Assistant requires two device-specific values, a token and a key, which are used to authenticate and encrypt the local connection. During the initial setup, the integration retrieves them once through a Midea Cloud interface and then stores them locally; no cloud connection is required for subsequent control.
 
-Simplificado, el proceso es el siguiente:
+In simplified form, the process looks like this:
 
-1. La PortaSplit se conecta a MSmartHome.
-2. Home Assistant inicia sesión en una nube de Midea.
-3. Home Assistant obtiene el ID del dispositivo, el token y la clave.
-4. El token y la clave se guardan localmente.
-5. Home Assistant controla la PortaSplit directamente en la LAN.
+1. PortaSplit is connected to MSmartHome.
+2. Home Assistant logs in to a Midea Cloud.
+3. Home Assistant receives the device ID, token and key.
+4. Token and key are stored locally.
+5. Home Assistant controls the PortaSplit directly on the LAN.
 
-## Qué integración es adecuada
+## Which integration is suitable
 
 ### Midea Smart AC
 
-El repositorio <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> se centra en los aparatos de aire acondicionado Midea y modelos OEM relacionados, y admite los tipos de dispositivo `0xAC` y `0xCC`. Ofrece control local, configuración gráfica, detección automática, configuración manual con token y clave, así como consulta automática de las capacidades del dispositivo. El «Out Silent Mode» de la PortaSplit cuenta con soporte explícito.
+The repository <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> focuses on Midea air conditioners and related OEM models and supports the device types `0xAC` and `0xCC`. It offers local control, graphical setup, automatic discovery, manual setup with token and key, and automatic querying of device capabilities. The PortaSplit's “Out Silent Mode” is explicitly supported.
 
-Como indicio de compatibilidad, el proyecto menciona, entre otras, las aplicaciones Artic King, Midea Air, NetHome Plus, SmartHome o MSmartHome, Toshiba AC NA y 美的美居. En Europa, la PortaSplit utiliza habitualmente MSmartHome y, por tanto, encaja en este ecosistema.
+As an indication of compatibility, the project names the apps Artic King, Midea Air, NetHome Plus, SmartHome or MSmartHome, Toshiba AC NA and 美的美居, among others. In Europe, the PortaSplit typically uses MSmartHome and therefore fits into this ecosystem.
 
 ### Midea AC LAN
 
-El repositorio <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> no solo admite equipos de aire acondicionado, sino también muchas otras categorías de dispositivos Midea: deshumidificadores, ventiladores, purificadores de aire, lavadoras, secadoras, lavavajillas, equipos de agua caliente, bombas de calor, frigoríficos y más, en parte también bajo marcas de terceros como Carrier o Electrolux. También ofrece comunicación local, detección automática de dispositivos y sensores adicionales y, según la descripción del proyecto, mantiene una conexión TCP más prolongada con el dispositivo para sincronizar rápidamente los cambios de estado. Requiere al menos Home Assistant 2024.4.1.
+The repository <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> supports not only air conditioners, but also numerous other Midea device classes: dehumidifiers, fans, air purifiers, washing machines, dryers, dishwashers, water heaters, heat pumps, refrigerators and more, in some cases under third-party brands such as Carrier or Electrolux. It also offers local communication, automatic device discovery and additional sensors and, according to the project description, keeps a longer TCP connection to the device open to synchronise status changes promptly. Home Assistant 2024.4.1 or later is required.
 
-La mayor desventaja actualmente es la advertencia del desarrollador: las API de tokens en la nube utilizadas para añadir nuevos dispositivos se están desactivando gradualmente. Esto podría imposibilitar añadir nuevos dispositivos más adelante.
+The biggest disadvantage at present is the developer's warning: the cloud token APIs used to add new devices are being phased out. This may make it impossible to add new devices later.
 
-### Recomendación
+### Recommendation
 
-Para una instalación exclusivamente con PortaSplit, empezaría con `Midea Smart AC` y tendría `Midea AC LAN` presente como alternativa. `Midea Smart AC` está más orientada a equipos de aire acondicionado y documenta explícitamente las funciones actuales de la PortaSplit.
+For a PortaSplit-only installation, I would start with `Midea Smart AC` and keep `Midea AC LAN` in mind as an alternative. `Midea Smart AC` is more tightly focused on air conditioners and explicitly documents the current PortaSplit functions.
 
-No tiene sentido utilizar ambas integraciones a la vez y de forma permanente con el mismo dispositivo. Varias conexiones simultáneas provocan problemas de estado, tráfico de red innecesario y un comportamiento difícil de seguir.
+It is not advisable to operate both integrations simultaneously and permanently with the same device. Multiple parallel connections lead to status issues, unnecessary network traffic and behaviour that is difficult to trace.
 
-## Qué aporta la integración
+## What the integration provides
 
-Después de la configuración, la PortaSplit aparece como una entidad de tipo `climate` en Home Assistant. Según el firmware y la integración, están disponibles, entre otras, las siguientes funciones:
+After setup, the PortaSplit appears as a `climate` entity in Home Assistant. Depending on the firmware and integration, the following functions are available, among others:
 
-- Encendido y apagado
-- Ajustar la temperatura objetivo
-- Leer la temperatura ambiente actual
-- Refrigeración, deshumidificación y funcionamiento exclusivo del ventilador
-- Ajustar la velocidad del ventilador
-- Controlar la función Swing
-- Modo Eco y Boost
-- Leer la humedad del aire
-- Mostrar códigos de error
-- Leer valores de energía y potencia
-- Mostrar valores del compresor
-- Activar el modo silencioso de la unidad exterior
+- Switch on and off
+- Set target temperature
+- Read the current room temperature
+- Cooling, dehumidification and fan-only operation
+- Set fan speed
+- Control the swing function
+- Eco and boost mode
+- Read humidity
+- Display error codes
+- Read energy and power values
+- Display compressor values
+- Activate the outdoor unit's quiet mode
 
-Las entidades que aparecen realmente dependen del modelo, el firmware, el protocolo utilizado y la integración correspondiente. `Midea Smart AC` consulta las capacidades comunicadas por el dispositivo y oculta las funciones que el modelo no admite. `Midea AC LAN` también documenta amplias entidades de climatización, entre ellas temperatura, humedad del aire, potencia actual, energía total, frecuencia del compresor, estado de la bomba y diversos modos de funcionamiento, y menciona métodos propios para decodificar los datos de energía de determinados subtipos de PortaSplit.
+Which entities actually appear depends on the model, firmware, protocol used and the relevant integration. `Midea Smart AC` queries the capabilities reported by the device and hides functions that the model does not support. `Midea AC LAN` also documents extensive climate entities, including temperature, humidity, current power, total energy, compressor frequency, pump status and various operating modes, and specifies its own methods for decoding energy data for certain PortaSplit subtypes.
 
-No todas las mediciones mostradas tienen por qué ser correctas. En particular, el consumo energético y la potencia se transmiten en formatos distintos en los diferentes modelos de Midea. Si Home Assistant muestra valores claramente erróneos, normalmente debe ajustarse el método de decodificación utilizado y el dispositivo no está averiado.
+Not every displayed measurement is necessarily correct. Energy consumption and power in particular are transmitted in different formats by different Midea models. If Home Assistant shows obviously incorrect values, the decoding method in use usually needs to be adjusted rather than the device being defective.
 
-## Requisitos
+## Requirements
 
-Se necesita una Midea PortaSplit con función Wi-Fi, una red Wi-Fi de 2,4 GHz, la aplicación MSmartHome, una cuenta de usuario de Midea, Home Assistant, HACS y acceso de red entre Home Assistant y la PortaSplit. Primero debe conectarse la PortaSplit normalmente con la aplicación MSmartHome y solo después añadirla a Home Assistant.
+You need a Midea PortaSplit with Wi-Fi functionality, a 2.4 GHz Wi-Fi network, the MSmartHome app, a Midea user account, Home Assistant, HACS and network access between Home Assistant and PortaSplit. The PortaSplit should first be connected normally using the MSmartHome app, then added to Home Assistant.
 
-## Paso 1: conectar la PortaSplit a MSmartHome
+## Step 1: Connect PortaSplit to MSmartHome
 
-1. Instalar la aplicación MSmartHome.
-2. Crear una cuenta de Midea o iniciar sesión.
-3. Poner la PortaSplit en modo de emparejamiento Wi-Fi.
-4. Conectar el dispositivo a la red Wi-Fi de 2,4 GHz.
-5. Comprobar que la PortaSplit se puede controlar mediante la aplicación.
+1. Install the MSmartHome app.
+2. Create a Midea account or sign in.
+3. Put the PortaSplit into Wi-Fi pairing mode.
+4. Connect the device to the 2.4 GHz Wi-Fi network.
+5. Check whether the PortaSplit can be controlled through the app.
 
-Muchos dispositivos IoT siguen admitiendo únicamente 2,4 GHz. Si el router utiliza el mismo SSID para 2,4 y 5 GHz, la configuración suele funcionar de todos modos. Si hay problemas, puede ayudar proporcionar temporalmente una red Wi-Fi independiente de 2,4 GHz.
+Many IoT devices still support only 2.4 GHz. If the router uses the same SSID for 2.4 and 5 GHz, setup will usually still work. If you encounter problems, it helps to provide a separate 2.4 GHz Wi-Fi network temporarily.
 
-## Paso 2: instalar HACS
+## Step 2: Install HACS
 
-HACS es la tienda comunitaria de Home Assistant. Permite instalar integraciones comunitarias que no forman parte de Home Assistant Core. Tras instalar HACS, se abre HACS, se accede a las integraciones, se busca `Midea Smart AC`, se descarga la integración y se reinicia Home Assistant. Como alternativa, se puede buscar `Midea AC LAN`.
+HACS is the Home Assistant Community Store. It lets you install community integrations that are not part of Home Assistant Core. After installing HACS, open HACS, go to Integrations, search for `Midea Smart AC`, download the integration and restart Home Assistant. Alternatively, you can search for `Midea AC LAN`.
 
-HACS simplifica la instalación y las actualizaciones. Sin embargo, no convierte una integración personalizada en un componente de Home Assistant revisado oficialmente. Esta diferencia es importante desde el punto de vista de la seguridad y se aborda más abajo.
+HACS simplifies installation and updates. However, it does not make a custom integration an officially reviewed Home Assistant component. This distinction is significant from a security perspective and is discussed below.
 
-## Paso 3: añadir Midea Smart AC
+## Step 3: Add Midea Smart AC
 
-Después de reiniciar, vaya a Ajustes, Dispositivos y servicios y Añadir integración, busque `Midea Smart AC` y, a continuación, seleccione `Discover devices`. La integración puede buscar en toda la red local o consultar específicamente la dirección IP de la PortaSplit.
+After restarting, go to Settings, Devices & Services and Add Integration, then search for `Midea Smart AC` and select `Discover devices`. The integration can either scan the entire local network or query the PortaSplit's IP address directly.
 
-Si se encuentra el dispositivo, en los dispositivos V3 más recientes la integración necesita la región, la cuenta de Midea, la contraseña y el ID del dispositivo, así como el token y la clave derivados de ellos. La región de la nube debe coincidir con la cuenta utilizada. En caso de problemas, el proyecto recomienda probar también las demás regiones disponibles.
+If the device is found, the integration requires the region, Midea account, password and device ID for newer V3 devices, as well as the token and key derived from them. The cloud region must match the account in use. In case of problems, the project recommends trying the other available regions as well.
 
-### Configuración manual
+### Manual setup
 
-Si la configuración automática falla, el dispositivo puede configurarse manualmente. Para `Midea Smart AC` se requieren los siguientes datos:
+If automatic setup fails, the device can be configured manually. `Midea Smart AC` requires the following details:
 
 ```text
 Device ID
@@ -123,35 +124,35 @@ Token
 Key
 ```
 
-El puerto predeterminado documentado es:
+The documented default port is:
 
 ```text
 6444/TCP
 ```
 
-Para los dispositivos V3, la documentación indica que el token es una cadena hexadecimal de 128 caracteres y la clave una cadena hexadecimal de 64 caracteres. Ambos valores son secretos y deben tratarse en consecuencia. Quien no quiera obtener las credenciales mediante Discovery puede recuperarlas con su propia cuenta usando la CLI `msmart-ng`.
+For V3 devices, the documentation specifies the token as a 128-character hexadecimal string and the key as a 64-character hexadecimal string. Both values are secrets and must be treated accordingly. If you do not want to obtain the credentials through discovery, you can retrieve them with your own account using the `msmart-ng` CLI.
 
-## Usar la PortaSplit de forma segura
+## Operating the PortaSplit securely
 
-Quien controla la PortaSplit localmente recupera parte del control de la nube del fabricante, pero también traslada la responsabilidad a su propia red. Los siguientes puntos ayudan a que el token y la clave causen poco daño incluso ante un incidente y a que el dispositivo permanezca correctamente aislado.
+Anyone controlling the PortaSplit locally regains part of the control from the manufacturer's cloud, but also shifts responsibility to their own network. The following measures ensure that a token or key causes little damage even in the event of an incident and that the device remains properly isolated.
 
-### El token y la clave son secretos
+### Token and key are secrets
 
-El token y la clave autentican la comunicación local con el dispositivo y deben tratarse como una contraseña. Para el funcionamiento, lo más importante es que no figuren en registros, copias de seguridad sin cifrar ni repositorios.
+The token and key authenticate local communication with the device and must be treated like a password. Above all, this means they do not belong in logs, unencrypted backups or a repository.
 
-### Sin redirección de puertos hacia la PortaSplit
+### No port forwarding to the PortaSplit
 
-El error evitable más frecuente sería hacer que el puerto local del dispositivo fuera accesible directamente desde Internet. Una regla como esta sería peligrosa:
+The most common avoidable mistake would be making the local device port directly accessible from the internet. A rule like this would be dangerous:
 
 ```text
 Internet → TCP 6444 → PortaSplit
 ```
 
-No hay una buena razón para hacer accesible la PortaSplit directamente desde Internet. Home Assistant ya se encuentra en la red local y actúa como instancia de control. El router no debe tener ninguna redirección de puertos hacia la PortaSplit, UPnP debe restringirse o desactivarse si es posible, las conexiones entrantes deben bloquearse de forma predeterminada y no debe utilizarse una autorización DMZ para el dispositivo.
+There is no good reason to make the PortaSplit directly accessible from the internet. Home Assistant is already on the local network and acts as the controlling instance. The router should have no port forwarding to the PortaSplit, should restrict or disable UPnP where possible, block incoming connections by default and not use a DMZ rule for the device.
 
-### VLAN de IoT propia
+### Dedicated IoT VLAN
 
-La mejor arquitectura de red es una red de IoT independiente:
+The best network architecture is a separate IoT network:
 
 ```text
 VLAN 10: vertrauenswürdige Clients
@@ -160,7 +161,7 @@ VLAN 30: IoT-Geräte
 VLAN 40: Gäste
 ```
 
-La PortaSplit se encuentra en la VLAN de IoT. Home Assistant puede acceder específicamente al dispositivo, pero la PortaSplit no puede acceder libremente a PC, NAS y otros sistemas internos. Una posible lógica de firewall:
+The PortaSplit is located in the IoT VLAN. Home Assistant may access the device in a targeted manner, but the PortaSplit must not be able to access PCs, NAS devices and other internal systems freely. One possible firewall policy is:
 
 ```text
 Home Assistant → PortaSplit: erlauben
@@ -171,69 +172,69 @@ PortaSplit → Management-Netz: blockieren
 Internet → PortaSplit: blockieren
 ```
 
-Durante la configuración inicial, el dispositivo necesita acceso a Internet a la nube de Midea. Tras configurar correctamente el control local, se puede probar si es posible bloquear el acceso saliente a Internet. No debe aplicarse inmediatamente un bloqueo definitivo. Primero hay que comprobar si el control local sigue funcionando, si el dispositivo permanece accesible tras reiniciarlo, si resiste un reinicio del router, si sigue respondiendo incluso después de varios días, si la aplicación MSmartHome sigue siendo necesaria y si siguen ofreciéndose actualizaciones de firmware. Quien quiera seguir utilizando la nube y las actualizaciones de firmware puede permitir temporalmente el acceso saliente a Internet y bloquearlo de nuevo después.
+During initial setup, the device requires internet access to the Midea Cloud. After local setup is successful, you can test whether outbound internet access can be blocked. Do not apply a final block immediately. First check whether local control still works, whether the device remains reachable after a restart, whether it survives a router restart, whether it still responds after several days, whether the MSmartHome app is still needed and whether firmware updates are still offered. If you want to continue using cloud features and firmware updates, you can temporarily allow outbound internet access and block it again afterwards.
 
-### La segmentación de red puede impedir Discovery
+### Network segmentation can prevent discovery
 
-La búsqueda automática de dispositivos se basa a menudo en tráfico broadcast o multicast, que normalmente no se enruta a través de los límites de las VLAN. Por ello, es posible que Home Assistant no encuentre automáticamente la PortaSplit aunque se permita una conexión IP normal.
+Automatic device discovery often relies on broadcast or multicast traffic, which is normally not routed across VLAN boundaries. Home Assistant may therefore fail to discover the PortaSplit automatically even if a regular IP connection would be allowed.
 
-En ese caso, ayuda configurar temporalmente la PortaSplit en la misma VLAN que Home Assistant, indicar manualmente la IP del dispositivo, utilizar una función adecuada de retransmisión de broadcast o definir reglas de firewall específicas después de la configuración. Desde el punto de vista de la seguridad, la configuración manual suele ser incluso la mejor opción, ya que no es necesario permitir tráfico broadcast adicional entre las redes.
+In that case, it helps to set up the PortaSplit temporarily in the same VLAN as Home Assistant, specify the device IP manually, use a suitable broadcast relay function or define targeted firewall rules after setup. Manual configuration is often even the better option from a security perspective because no additional broadcast traffic needs to be allowed between the networks.
 
-### Asignación DHCP estática
+### Static DHCP assignment
 
-La PortaSplit debe recibir una asignación DHCP fija en el router:
+The PortaSplit should receive a fixed DHCP assignment on the router:
 
 ```text
 PortaSplit → 192.168.30.25
 ```
 
-Una reserva DHCP suele ser preferible a una IP estática configurada en el dispositivo. Home Assistant encuentra el dispositivo de forma fiable, las reglas de firewall pueden limitarse a una dirección fija, el análisis de errores se simplifica y la asignación se mantiene estable después de reiniciar el router o el dispositivo. Así, una regla de firewall puede formularse de forma muy restrictiva:
+A DHCP reservation is generally preferable to a static IP configured on the device. Home Assistant reliably finds the device, firewall rules can be restricted to a fixed address, troubleshooting becomes easier and the assignment remains stable after router or device restarts. This allows a firewall rule to be formulated very narrowly:
 
 ```text
 Home-Assistant-IP → 192.168.30.25:6444/TCP
 ```
 
-El puerto realmente necesario debe verificarse con la integración y el propio dispositivo.
+The port actually required must be verified based on the integration and your own device.
 
-### Home Assistant como ancla central de confianza
+### Home Assistant as the central trust anchor
 
-Quien controla la PortaSplit localmente traslada parte de la confianza desde la nube de Midea a Home Assistant. Si Home Assistant se ve comprometido, un atacante podría controlar no solo el aire acondicionado, sino todo el hogar inteligente.
+Anyone controlling the PortaSplit locally partly shifts trust from the Midea Cloud to Home Assistant. If Home Assistant is compromised, an attacker may control not only the air conditioner but the entire smart home.
 
-Por ello, Home Assistant debe actualizarse periódicamente, no debe publicarse mediante una redirección de puertos sin protección, debe estar protegido con una contraseña fuerte y única, utilizar autenticación multifactor, crear copias de seguridad cifradas, contener solo los complementos necesarios y no permitir acceso SSH innecesario desde Internet. Para el acceso remoto, una VPN, Home Assistant Cloud o un proxy inverso correctamente configurado son mejores opciones que una simple redirección de puertos al puerto 8123.
+Home Assistant should therefore be updated regularly, not exposed through unprotected port forwarding, protected with a strong, unique password, use multi-factor authentication, create encrypted backups, contain only necessary add-ons and not allow unnecessary SSH access from the internet. For remote access, a VPN, Home Assistant Cloud or a properly configured reverse proxy are better options than simple port forwarding to port 8123.
 
-### HACS y el riesgo de cadena de suministro
+### HACS and supply-chain risk
 
-`Midea Smart AC` y `Midea AC LAN` son integraciones personalizadas. Se ejecutan dentro de Home Assistant y, por tanto, tienen amplio acceso a su entorno de ejecución. Una integración maliciosa o comprometida podría teóricamente leer datos de configuración, extraer secretos, establecer conexiones de red, escanear dispositivos en la red local, leer estados de otras entidades, transferir datos a sistemas externos y afectar a la disponibilidad de Home Assistant.
+`Midea Smart AC` and `Midea AC LAN` are custom integrations. They run inside Home Assistant and therefore receive extensive access to its runtime environment. A malicious or compromised integration could theoretically read configuration data, extract secrets, establish network connections, scan devices on the local network, read states of other entities, transmit data to external systems and impair Home Assistant availability.
 
-Esto no significa que las integraciones mencionadas sean maliciosas. Ambos proyectos son públicos, se desarrollan activamente y cuentan con una comunidad visible. Sin embargo, el código abierto no es una garantía automática de seguridad. Antes de instalar, conviene al menos comprobar si el repositorio se mantiene activamente, si hay lanzamientos regulares, cuántas personas contribuyen al código, si existen problemas de seguridad abiertos, si recientemente han cambiado los mantenedores o propietarios del repositorio, si HACS apunta al repositorio esperado y si una actualización incluye cambios inusualmente grandes o inexplicables.
+This does not mean that the integrations mentioned are malicious. Both projects are publicly visible, actively developed and have a visible community. However, open source is not an automatic security guarantee. Before installation, it is worth checking at least whether the repository is actively maintained, whether there are regular releases, how many people contribute code, whether there are open security issues, whether maintainers or repository owners have recently changed, whether HACS points to the expected repository and whether an update contains unusually large or unexplained changes.
 
-Las actualizaciones no deben instalarse a ciegas inmediatamente después de su publicación. Especialmente en sistemas de hogar inteligente críticos para la seguridad, conviene esperar unos días y revisar las notas de la versión y los problemas reportados.
+Updates should not be installed blindly immediately after release. Especially for security-critical smart-home systems, it makes sense to wait a few days and review release notes and reported issues.
 
-### Proteger la cuenta en la nube
+### Secure the cloud account
 
-Mientras se utilice la nube de Midea para la configuración o el control mediante la aplicación, la cuenta de Midea también sigue formando parte del modelo de seguridad. Debe tener una contraseña única que no se comparta con otros servicios, un gestor de contraseñas, autenticación multifactor si se ofrece, eliminación de teléfonos inteligentes y sesiones antiguas, evitar cuentas compartidas y revisar periódicamente qué dispositivos están registrados en la cuenta.
+As long as the Midea Cloud is used for setup or app control, the Midea account remains part of the security model. It should have a unique password that is not shared with other services, a password manager, multi-factor authentication where offered, old smartphones and sessions removed, no shared accounts and regular checks of which devices are registered in the account.
 
-Si la integración de Home Assistant solicita nombre de usuario y contraseña durante la configuración, debe comprobarse si las credenciales se utilizan solo para obtener el token una vez o si se guardan permanentemente. Los desarrolladores de `Midea Smart AC` escriben que los dispositivos no se vinculan a cuentas integradas de la integración después de configurarlos y que el token y la clave también pueden obtenerse manualmente mediante la CLI con la propia cuenta. Siempre que sea posible, debe preferirse la cuenta propia a cuentas colectivas externas o integradas.
+If the Home Assistant integration requests a username and password during setup, check whether the credentials are used only for the one-time token retrieval or stored permanently. The developers of `Midea Smart AC` state that devices are not linked to built-in integration accounts after setup and that the token and key can also be obtained manually through the CLI using your own account. Where possible, your own account should be preferred over third-party or integrated shared accounts.
 
-### ¿Bloquear la nube o no?
+### Block the cloud or not?
 
-Después de una configuración correcta surge la pregunta de si debe bloquearse completamente el acceso a Internet de la PortaSplit. A favor del bloqueo están una menor telemetría, menor dependencia de servicios externos, una vía de ataque más reducida a través de la nube del fabricante, el hecho de que el dispositivo no pueda contactar con destinos externos arbitrarios y un menor efecto de los cambios en la nube.
+After successful setup, the question arises whether the PortaSplit's internet access should be blocked completely. Arguments in favour of blocking include less telemetry, reduced dependence on external services, a smaller attack path through the manufacturer's cloud, the fact that the device cannot contact arbitrary external destinations and reduced impact from cloud-side changes.
 
-En contra está que la aplicación MSmartHome podría dejar de funcionar fuera de la red doméstica, que no se descargarían actualizaciones de firmware, que podrían fallar las funciones de hora o de nube, que un nuevo inicio de sesión o una restauración serían más difíciles y que algunos dispositivos reaccionan de forma inesperada tras largos periodos sin conexión.
+Arguments against it are that the MSmartHome app may no longer work outside the home network, firmware updates may no longer download, time or cloud functions may fail, signing in again or restoring access may become more difficult, and some devices may react unexpectedly after being offline for a long time.
 
-Una secuencia pragmática: configurar el dispositivo normalmente, probar Home Assistant y la aplicación, guardar el token y la configuración, bloquear el acceso a Internet, reiniciar el dispositivo y Home Assistant, observar durante varios días y, si es necesario, volver a permitir el acceso a Internet solo temporalmente.
+A pragmatic sequence is: set up the device normally, test Home Assistant and the app, back up the token and configuration, block internet access, restart the device and Home Assistant, observe them for several days and, if necessary, temporarily re-enable internet access only.
 
-### Actualizaciones de firmware: ¿mejora de seguridad o riesgo de integración?
+### Firmware updates: security gain or integration risk?
 
-Las actualizaciones de firmware son un dilema en los dispositivos IoT. Pueden corregir vulnerabilidades conocidas, mejorar la estabilidad, modernizar mecanismos de seguridad y aportar nuevas funciones. Pero también pueden cambiar interfaces locales, romper integraciones basadas en ingeniería inversa, invalidar tokens, desactivar la API local e introducir nuevas dependencias de la nube.
+Firmware updates are a dilemma for IoT devices. They can close known vulnerabilities, improve stability, modernise security mechanisms and add new functions. But they can also change local interfaces, break reverse-engineered integrations, invalidate tokens, disable the local API and introduce new cloud dependencies.
 
-Por ejemplo, el firmware de PortaSplit distribuido en enero de 2026 incorporó un nuevo modo silencioso para la unidad exterior que reduce el ruido en unos 6 decibelios. Las integraciones comunitarias tuvieron primero que analizarlo e implementarlo, como se documenta en un issue de GitHub específico para la PortaSplit.
+For example, the PortaSplit firmware released in January 2026 introduced a new quiet mode for the outdoor unit that reduces noise by around 6 decibels. The community integrations first had to understand and implement it, as documented in a dedicated GitHub issue for the PortaSplit.
 
-De ello se deduce: no impedir las actualizaciones de firmware por principio; antes de actualizar, comprobar si otros usuarios de Home Assistant informan de problemas, guardar previamente la configuración y el token, crear una copia de seguridad de Home Assistant y probar por completo el control local después de la actualización. Seguridad no significa «no actualizar nunca». Un firmware obsoleto puede ser más peligroso que una integración temporalmente incompatible.
+This means that firmware updates should not be prevented categorically: before an update, check whether other Home Assistant users report problems, back up the configuration and token beforehand, create a Home Assistant backup and fully test local control after the update. Security does not mean “never update”. Outdated firmware can be more dangerous than a temporarily incompatible integration.
 
-### Los registros de depuración contienen datos sensibles
+### Debug logs contain sensitive data
 
-En caso de problemas, los proyectos de código abierto suelen solicitar registros de depuración. La documentación de `Midea AC LAN` muestra cómo activar el registro para los dos componentes relevantes:
+When problems occur, open-source projects often request debug logs. The documentation for `Midea AC LAN` shows how to enable logging for the two relevant components:
 
 ```yaml
 logger:
@@ -243,92 +244,92 @@ logger:
     midealocal: debug
 ```
 
-Después, los registros se pueden descargar mediante Ajustes, Sistema y Registros. Según la integración y el caso de error, estos registros pueden contener direcciones IP locales, ID del dispositivo, número de serie, identificador de modelo, respuestas de la nube, información de la cuenta, token o partes de él, paquetes de red, así como marcas de tiempo y patrones de uso. Por ello, deben revisarse y censurarse los valores sensibles antes de subirlos a un issue público de GitHub.
+You can then download the logs through Settings, System and Logs. Depending on the integration and the error, such logs may contain local IP addresses, device ID, serial number, model identifier, cloud responses, account information, token or parts of it, network packets, as well as timestamps and usage behaviour. Before uploading them to a public GitHub issue, review and redact sensitive values.
 
-Una vez finalizada la resolución del problema, debe eliminarse de nuevo el registro de depuración. Mantenerlo activado permanentemente no solo aumenta el consumo de almacenamiento, sino también la cantidad de información sensible en las copias de seguridad.
+Once troubleshooting is complete, debug logging should be removed again. Permanently enabled debug logging not only increases storage consumption, it also increases the amount of sensitive information in backups.
 
-### Lo que dice Midea sobre la seguridad
+### What Midea itself says about security
 
-Midea promociona su ecosistema SmartHome con orientación a varios estándares de seguridad y privacidad, entre ellos EN 303 645, UK PSTI, NIST, tratamiento de datos conforme al RGPD y requisitos de la Directiva de equipos radioeléctricos de la UE. Son señales positivas, pero no indican cómo se implementan realmente cada firmware de PortaSplit, cada endpoint de nube y cada API local. Las afirmaciones de certificación y marketing no sustituyen una revisión técnica del dispositivo concreto.
+Midea promotes its SmartHome ecosystem as being aligned with several security and data-protection standards, including EN 303 645, UK PSTI, NIST, GDPR-compliant data processing and the requirements of the EU Radio Equipment Directive. These are positive signals, but they do not say how every individual PortaSplit firmware, cloud endpoint and local API is actually implemented. Certification and marketing claims do not replace a technical assessment of the specific device.
 
-Del mismo modo, sería erróneo deducir de la advertencia de una integración comunitaria que la PortaSplit sea insegura en general. El problema descrito afecta a la arquitectura de los tokens persistentes y a su uso por clientes no oficiales.
+Likewise, it would be wrong to infer from a community integration warning that the PortaSplit is generally insecure. The described issue concerns the architecture of long-lived tokens and their use by unofficial clients.
 
-### Riesgo según el escenario
+### Risk by scenario
 
-| Escenario | Riesgo | Motivo |
+| Scenario | Risk | Reason |
 | --- | --- | --- |
-| Red doméstica normal sin redirección de puertos | manejable | Un atacante necesita primero acceso a la Wi-Fi, Home Assistant o una copia de seguridad. |
-| Red doméstica plana con muchos dispositivos IoT inseguros | medio | Otro dispositivo IoT comprometido puede acceder a PortaSplit o Home Assistant en la misma red. |
-| PortaSplit accesible directamente desde Internet | alto | El dispositivo nunca debe publicarse mediante redirección de puertos. |
-| Token y clave públicos en GitHub | alto | Los secretos deben considerarse comprometidos; no está garantizado que puedan revocarse. |
-| VLAN de IoT independiente, firewall restrictivo, control local | comparativamente bajo | Incluso si existe una vulnerabilidad en el dispositivo, la libertad de movimiento en la red queda muy limitada. |
+| Normal home network without port forwarding | manageable | An attacker must first gain access to Wi-Fi, Home Assistant or a backup. |
+| Flat home network with many insecure IoT devices | medium | Another compromised IoT device can reach PortaSplit or Home Assistant on the same network. |
+| PortaSplit directly accessible from the internet | high | The device should never be exposed through port forwarding. |
+| Token and key public on GitHub | high | The secrets must be considered compromised; whether they can be revoked is not guaranteed. |
+| Separate IoT VLAN, restrictive firewall, local control | comparatively low | Even if the device has a vulnerability, its freedom of movement on the network is severely restricted. |
 
-## Copia de seguridad de la configuración
+## Back up the configuration
 
-Guardar el token, la clave y la configuración es el paso único más importante: una vez cerradas las interfaces de tokens en la nube, una copia de seguridad será la única forma de realizar una nueva configuración. `Midea AC LAN` guarda un archivo de configuración JSON para dispositivos V3 después de una configuración correcta. La ruta documentada es:
+Backing up the token, key and configuration is the most important one-time step: once the cloud token interfaces are closed, a backup is the only way to set up the device again. `Midea AC LAN` stores a JSON configuration file for V3 devices after successful setup. The documented path is:
 
 ```text
 /config/.storage/midea_ac_lan/
 ```
 
-El archivo lleva como nombre el ID del dispositivo:
+The file uses the device ID as its filename:
 
 ```text
 <device-id>.json
 ```
 
-Este archivo no es una nota de texto normal. Puede contener el ID del dispositivo, número de serie, dirección IP, token, clave, información del protocolo y parámetros de la nube y del dispositivo. Por tanto:
+This file is not an ordinary text note. It may contain the device ID, serial number, IP address, token, key, protocol information and cloud and device parameters. Accordingly:
 
-- No subirlo a un repositorio público de GitHub.
-- No publicarlo en foros.
-- No compartirlo como captura de pantalla sin censurar.
-- No enviarlo por correo electrónico sin cifrar.
+- Do not upload it to a public GitHub repository.
+- Do not post it in forums.
+- Do not share it as an unredacted screenshot.
+- Do not send it by unencrypted email.
 
-Incluso un repositorio Git privado no es automáticamente el lugar adecuado para almacenarlo, porque los secretos permanecen en el historial de Git aunque después se eliminen del archivo actual. Son más adecuados una copia de seguridad cifrada, un gestor de contraseñas con archivo adjunto, una copia de seguridad cifrada en NAS, un medio sin conexión cifrado o un archivo cifrado con una contraseña guardada por separado.
+Even a private Git repository is not automatically the right storage location because secrets remain in Git history even if they are later removed from the current file. Better options include an encrypted backup, a password manager with file attachment, an encrypted NAS backup, encrypted offline media or an encrypted archive with the password stored separately.
 
-Para hacer una copia de seguridad mediante el terminal de Home Assistant:
+To back it up through the Home Assistant terminal:
 
 ```bash
 cd /config/.storage/midea_ac_lan
 ls -la
 ```
 
-Mostrar archivo:
+Display the file:
 
 ```bash
 cat <device-id>.json
 ```
 
-Para copiarlo, el archivo no debe transferirse mediante un servicio web público. Es mejor crear un archivo cifrado que luego se traslade a una copia de seguridad cifrada:
+To copy it, do not transfer the file through a public web service. An encrypted archive, subsequently moved to an encrypted backup, is preferable:
 
 ```bash
 tar -czf /config/midea-ac-lan-backup.tar.gz \
   /config/.storage/midea_ac_lan
 ```
 
-Los archivos de `.storage` no deben editarse manualmente. El desarrollador recomienda expresamente no eliminar ni modificar directamente el archivo JSON en caso de problemas, sino renombrarlo y guardarlo antes de realizar cambios.
+The files in `.storage` should not be edited manually. The developer explicitly recommends neither deleting nor directly modifying the JSON file in case of problems, but renaming and backing it up before making changes.
 
-Una copia de seguridad completa de Home Assistant también contiene estos archivos. Aun así, tiene sentido disponer de una copia independiente, porque las copias de seguridad de Home Assistant pueden dañarse, una restauración puede sobrescribir la integración, el archivo podría ser necesario específicamente para una nueva configuración posterior y una copia de seguridad nunca debe estar solo en el mismo sistema.
+A complete Home Assistant backup also includes these files. A separate copy is nevertheless sensible because Home Assistant backups can become corrupted, a restore can overwrite the integration, the file may be specifically needed for later reconfiguration, and a backup should never exist only on the same system.
 
-## Eliminar secretos de un repositorio Git publicado
+## Remove secrets from a published Git repository
 
-Si se publicó por error un archivo JSON en GitHub, no basta con eliminarlo normalmente y crear un nuevo commit. El archivo sigue siendo recuperable en el historial de Git. Como mínimo, son necesarios estos pasos:
+If a JSON file was accidentally published on GitHub, normal deletion and a new commit are not enough. The file remains retrievable in Git history. At minimum, these steps are required:
 
-1. Poner inmediatamente el repositorio como privado, si es posible.
-2. Eliminar el archivo de todo el historial de Git.
-3. Tener en cuenta las cachés y forks de GitHub.
-4. Tratar el token como comprometido.
-5. Eliminar el dispositivo de la cuenta de Midea y volver a conectarlo si eso genera nuevas claves.
-6. Configurar de nuevo la integración de Home Assistant.
-7. Cambiar la contraseña de la cuenta de Midea si las credenciales también se vieron afectadas.
+1. Make the repository private immediately, if possible.
+2. Remove the file from the entire Git history.
+3. Take GitHub caches and forks into account.
+4. Treat the token as compromised.
+5. Remove the device from the Midea account and reconnect it if this generates new keys.
+6. Set up the Home Assistant integration again.
+7. Change the Midea account password if the credentials were also affected.
 
-Que el emparejamiento de nuevo genere realmente un nuevo token varía según el dispositivo y la arquitectura de la nube. No debe confiarse en que cambiar la contraseña de la cuenta invalide automáticamente el token local del dispositivo.
+Whether pairing again actually generates a new token varies depending on the device and cloud architecture. Do not rely on changing the account password to automatically invalidate the local device token.
 
-## Automatizaciones útiles
+## Useful automations
 
-Tras una integración correcta, la PortaSplit puede funcionar de forma mucho más inteligente. Los ID de entidad deben adaptarse a la propia instalación.
+After successful integration, the PortaSplit can be operated much more intelligently. Adjust the entity IDs to your own installation.
 
-Refrigerar solo con las ventanas cerradas:
+Cool only when windows are closed:
 
 ```yaml
 alias: PortaSplit nur bei geschlossenen Fenstern
@@ -343,7 +344,7 @@ actions:
       entity_id: climate.portasplit
 ```
 
-Encender cuando la temperatura ambiente sea alta:
+Switch on at high room temperature:
 
 ```yaml
 alias: PortaSplit bei Hitze einschalten
@@ -374,7 +375,7 @@ actions:
       temperature: 24
 ```
 
-Preenfriar antes de ir a dormir:
+Pre-cool before going to sleep:
 
 ```yaml
 alias: Schlafzimmer vorkühlen
@@ -395,7 +396,7 @@ actions:
       temperature: 23
 ```
 
-Apagar cuando no haya nadie en casa:
+Switch off when nobody is home:
 
 ```yaml
 alias: PortaSplit bei Abwesenheit ausschalten
@@ -412,7 +413,7 @@ actions:
       entity_id: climate.portasplit
 ```
 
-## Configuración recomendada de un vistazo
+## Recommended configuration at a glance
 
 ```text
 1. PortaSplit mit MSmartHome einrichten
@@ -429,7 +430,7 @@ actions:
 12. Firmware- und Integrationsupdates kontrolliert durchführen
 ```
 
-La dirección de comunicación deseada es la siguiente:
+The desired communication direction is therefore as follows:
 
 ```text
 Home Assistant
@@ -444,24 +445,24 @@ Midea PortaSplit
     └── Internet nur bei Bedarf
 ```
 
-## Estado operativo recomendado
+## Recommended operating state
 
-La Midea PortaSplit se integra sorprendentemente bien en Home Assistant. Tras una configuración correcta, puede controlarse localmente e incorporarse en automatizaciones, lo que elimina gran parte de la dependencia de la nube para el funcionamiento diario.
+The Midea PortaSplit integrates surprisingly well with Home Assistant. After successful setup, it can be controlled locally and included in automations, eliminating a large part of cloud dependence for day-to-day operation.
 
-Desde el punto de vista de la seguridad, la integración es aceptable si se siguen algunas reglas básicas: no redirigir puertos, mantener secretos el token y la clave, cifrar las copias de seguridad, revisar los registros de depuración antes de publicarlos, proteger Home Assistant, segmentar los dispositivos IoT, limitar el acceso saliente a Internet a lo necesario y no instalar actualizaciones de firmware y HACS a ciegas. Utilizada de este modo, la PortaSplit sigue siendo un potente equipo de aire acondicionado y, al mismo tiempo, una parte sensata de un hogar inteligente controlado localmente.
+From a security perspective, the integration is acceptable if some basic rules are followed: no port forwarding, keep token and key secret, encrypt backups, review debug logs before publication, secure Home Assistant, segment IoT devices, restrict outbound internet access to what is necessary, and do not install firmware and HACS updates blindly. Operated this way, the PortaSplit remains a powerful air conditioner while also becoming a sensibly integrated component of a locally controlled smart home.
 
-## Fuentes
+## Sources
 
-1.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: integración `Midea Smart AC`: tipos de dispositivo admitidos `0xAC` y `0xCC`, PortaSplit con «Out Silent Mode», uso de la nube para obtener el token y la clave en dispositivos V3, configuración manual y puerto predeterminado 6444.
+1.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: `Midea Smart AC` integration: supported device types `0xAC` and `0xCC`, PortaSplit with “Out Silent Mode”, cloud use to obtain token and key for V3 devices, manual configuration and default port 6444.
 
-2.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: integración `Midea AC LAN`: categorías de dispositivos admitidas, conexión TCP más prolongada para sincronizar el estado y versión mínima Home Assistant 2024.4.1.
+2.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: `Midea AC LAN` integration: supported device classes, longer TCP connection for status synchronisation and minimum Home Assistant version 2024.4.1.
 
-3.  [midea_ac_lan: documentación de las entidades de climatización](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md): entidades y atributos para equipos de aire acondicionado, incluidos potencia, energía total, frecuencia del compresor y métodos de decodificación para los valores energéticos de subtipos individuales.
+3.  [midea_ac_lan: documentation of climate entities](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md): entities and attributes for air conditioners, including power, total energy, compressor frequency and decoding methods for energy values of individual subtypes.
 
-4.  [midea_ac_lan: indicaciones de depuración y configuración](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/debug.md): ubicación de la configuración del dispositivo en `/config/.storage/midea_ac_lan/`, recomendación de guardar en lugar de eliminar el archivo JSON y configuración de logger para registros de depuración.
+4.  [midea_ac_lan: debug and configuration notes](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/debug.md): device configuration stored under `/config/.storage/midea_ac_lan/`, recommendation to back up rather than delete the JSON file, and logger configuration for debug logs.
 
-5.  [Issue 779: Out Silent Mode de la PortaSplit](https://github.com/wuwentao/midea_ac_lan/issues/779): solicitud de soporte para el modo silencioso de la unidad exterior introducido con la actualización de firmware de enero de 2026, que reduce el ruido en unos 6 decibelios.
+5.  [Issue 779: PortaSplit Out Silent Mode](https://github.com/wuwentao/midea_ac_lan/issues/779): request for support for the quiet mode of the outdoor unit introduced with the January 2026 firmware update, which reduces noise by around 6 decibels.
 
-6.  [Midea SmartHome](https://www.midea.com/global/smarthome): información del fabricante sobre los estándares de seguridad y privacidad EN 303 645, PSTI, NIST, RGPD y RED DA.
+6.  [Midea SmartHome](https://www.midea.com/global/smarthome): manufacturer information on the security and data-protection standards EN 303 645, PSTI, NIST, GDPR and RED DA.
 
-7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): instalación y gestión de integraciones personalizadas que no forman parte de Home Assistant Core.
+7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): installation and management of custom integrations that are not part of Home Assistant Core.

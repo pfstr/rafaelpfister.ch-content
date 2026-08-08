@@ -9,6 +9,7 @@ themen:
   - "totemomail"
 produkte:
   - "totemomail"
+  - "apache-james"
   - "exchange"
 protokolle:
   - "smtp"
