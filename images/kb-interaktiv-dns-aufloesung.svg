@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 940" role="img" aria-labelledby="title desc">
+  <title id="title">DNS-Auflösung, Delegation, Cache und DNSSEC</title>
+  <desc id="desc">Interaktive Darstellung des RFC-definierten Wegs von Anwendung und Stub Resolver über rekursiven Resolver und Cache zu Root, TLD und autoritativer Zone. Zusätzliche Blöcke zeigen DNSSEC-Vertrauenskette und wichtige Diagnosesignale. Alle fachlichen Blöcke führen zum Artikel oder zur Primärquelle.</desc>
+  <style>
+    :root { color-scheme: light; }
+    text { font-family: Inter, "Segoe UI", Arial, sans-serif; fill: #151515; }
+    .bg { fill: #faf7f2; }
+    .panel { fill: #fff; stroke: #d8d2c9; stroke-width: 2; }
+    .soft { fill: #f2eee8; stroke: #d8d2c9; stroke-width: 2; }
+    .blue { fill: #e6f1f4; stroke: #26748f; stroke-width: 2; }
+    .green { fill: #edf4ed; stroke: #4d7450; stroke-width: 2; }
+    .rose { fill: #f8ece8; stroke: #8f371b; stroke-width: 2; }
+    .gold { fill: #f8f1dd; stroke: #9a6d12; stroke-width: 2; }
+    .kicker { font-size: 17px; letter-spacing: 2.1px; font-weight: 700; fill: #6e667b; }
+    .h1 { font-size: 34px; font-weight: 760; }
+    .h2 { font-size: 22px; font-weight: 740; }
+    .label { font-size: 18px; font-weight: 720; }
+    .body { font-size: 15px; fill: #55505e; }
+    .small { font-size: 13px; fill: #6e667b; }
+    .mono { font-family: "Cascadia Mono", Consolas, monospace; font-size: 14px; font-weight: 700; }
+    .arrow { stroke: #242424; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .arrow-blue { stroke: #26748f; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+    .arrow-gold { stroke: #9a6d12; stroke-width: 3; fill: none; marker-end: url(#arrowGold); }
+    .return { stroke: #4d7450; stroke-width: 3; fill: none; stroke-dasharray: 8 6; marker-end: url(#arrowGreen); }
+    a { outline: none; cursor: pointer; }
+    a .hit, a .risk, a .source { transition: fill .16s ease, stroke .16s ease, filter .16s ease; }
+    a:hover .hit, a:focus .hit { fill: #d7eaf0; stroke: #0f607c; filter: drop-shadow(0 4px 6px rgba(15,96,124,.18)); }
+    a:hover .risk, a:focus .risk { fill: #f3dcd4; stroke: #7c2e16; filter: drop-shadow(0 4px 6px rgba(124,46,22,.14)); }
+    a:hover .source, a:focus .source { fill: #e1eff3; stroke: #26748f; }
+    a:focus .hit, a:focus .risk, a:focus .source { stroke-width: 4; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#242424"/></marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#26748f"/></marker>
+    <marker id="arrowGold" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#9a6d12"/></marker>
+    <marker id="arrowGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#4d7450"/></marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="940"/>
+  <text class="kicker" x="46" y="46">DNS · AUFLÖSUNG · DELEGATION · CACHE · DNSSEC</text>
+  <text class="h1" x="46" y="86">Wer weiss was – und welche Antwort sieht der Client?</text>
+
+  <rect class="panel" x="40" y="115" width="1320" height="438" rx="20"/>
+  <text class="kicker" x="70" y="151">REKURSIVE ANFRAGE UND ITERATIVE AUFLÖSUNG</text>
+
+  <a href="/kb/dns#architektur-und-rollen" target="_top" tabindex="0">
+    <title>Anwendung und Stub Resolver im Artikel öffnen</title>
+    <rect class="blue hit" x="70" y="178" width="245" height="92" rx="15"/>
+    <text class="label" x="92" y="211">Anwendung</text>
+    <text class="body" x="92" y="239">Stub Resolver</text>
+    <text class="mono" x="92" y="260">QNAME · QTYPE</text>
+  </a>
+  <path class="arrow-blue" d="M315 224 H400"/>
+  <text class="small" x="326" y="213">RD=1</text>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc9499#section-6" target="_top" tabindex="0">
+    <title>RFC 9499: Rekursiver Resolver</title>
+    <rect class="blue hit" x="400" y="178" width="270" height="92" rx="15"/>
+    <text class="label" x="422" y="211">Rekursiver Resolver</text>
+    <text class="body" x="422" y="239">Cache · Iteration · Policy</text>
+    <text class="small" x="422" y="260">optional: DNSSEC-Validator</text>
+  </a>
+  <path class="arrow-blue" d="M670 224 H755"/>
+
+  <a href="/kb/dns#cache-ttl-und-negative-antworten" target="_top" tabindex="0">
+    <title>Cache, TTL und negative Antworten im Artikel öffnen</title>
+    <rect class="gold hit" x="755" y="178" width="245" height="92" rx="15"/>
+    <text class="label" x="777" y="211">Resolvercache</text>
+    <text class="body" x="777" y="239">RRset oder Negativcache</text>
+    <text class="mono" x="777" y="260">TTL &gt; 0 ?</text>
+  </a>
+  <path class="return" d="M1000 224 H1085"/>
+
+  <a href="/kb/dns#technischer-aufbau-einer-dns-nachricht" target="_top" tabindex="0">
+    <title>DNS-Endantwort und Flags im Artikel öffnen</title>
+    <rect class="green hit" x="1085" y="178" width="245" height="92" rx="15"/>
+    <text class="label" x="1107" y="211">Endantwort</text>
+    <text class="body" x="1107" y="239">Answer · Authority · RCODE</text>
+    <text class="mono" x="1107" y="260">AA · AD · TTL</text>
+  </a>
+
+  <path class="arrow-gold" d="M877 270 V316 H190 V345"/>
+  <text class="small" x="735" y="307">Cache Miss: Delegationskette verfolgen</text>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2" target="_top" tabindex="0">
+    <title>RFC 1034: Iterative Auflösung ab Root</title>
+    <rect class="soft hit" x="70" y="345" width="245" height="114" rx="15"/>
+    <text class="label" x="92" y="379">Root-Zone „.“</text>
+    <text class="body" x="92" y="407">Referral auf ch.</text>
+    <text class="mono" x="92" y="433">NS + nötiges Glue</text>
+  </a>
+  <path class="arrow" d="M315 402 H400"/>
+
+  <a href="/kb/dns#delegation-glue-und-autorität" target="_top" tabindex="0">
+    <title>Delegation und Glue im Artikel öffnen</title>
+    <rect class="soft hit" x="400" y="345" width="270" height="114" rx="15"/>
+    <text class="label" x="422" y="379">TLD-Zone „ch.“</text>
+    <text class="body" x="422" y="407">Referral auf example.ch.</text>
+    <text class="mono" x="422" y="433">NS + In-Bailiwick Glue</text>
+  </a>
+  <path class="arrow" d="M670 402 H755"/>
+
+  <a href="/kb/dns#delegation-glue-und-autorität" target="_top" tabindex="0">
+    <title>Autoritative Zone und AA-Bit im Artikel öffnen</title>
+    <rect class="blue hit" x="755" y="345" width="245" height="114" rx="15"/>
+    <text class="label" x="777" y="379">example.ch.</text>
+    <text class="body" x="777" y="407">autoritative Zone</text>
+    <text class="mono" x="777" y="433">AA=1 · SOA Serial</text>
+  </a>
+  <path class="arrow-blue" d="M1000 402 H1085"/>
+
+  <a href="/kb/smtp" target="_top" tabindex="0">
+    <title>MX und SMTP im Wissensbereich öffnen</title>
+    <rect class="green hit" x="1085" y="345" width="245" height="114" rx="15"/>
+    <text class="label" x="1107" y="379">MX-RRset</text>
+    <text class="body" x="1107" y="407">10 mail.example.ch.</text>
+    <text class="mono" x="1107" y="433">→ A / AAAA → SMTP</text>
+  </a>
+
+  <path class="return" d="M1208 459 V505 H535 V270"/>
+  <text class="small" x="790" y="497">Antwort wird gecacht, validiert und an den Stub zurückgegeben</text>
+
+  <rect class="panel" x="40" y="573" width="1320" height="151" rx="20"/>
+  <text class="kicker" x="70" y="608">DNSSEC · VERTRAUENSKETTE UND ERGEBNIS</text>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4033#section-3.1" target="_top" tabindex="0">
+    <title>RFC 4033: Trust Anchor und Authentifizierungskette</title>
+    <rect class="gold hit" x="70" y="627" width="245" height="68" rx="14"/>
+    <text class="label" x="92" y="655">Trust Anchor</text>
+    <text class="body" x="92" y="680">lokaler Ausgangspunkt</text>
+  </a>
+  <path class="arrow-gold" d="M315 661 H400"/>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4034#section-5" target="_top" tabindex="0">
+    <title>RFC 4034: DS-Record</title>
+    <rect class="gold hit" x="400" y="627" width="245" height="68" rx="14"/>
+    <text class="label" x="422" y="655">Parent: DS</text>
+    <text class="body" x="422" y="680">verweist auf Child-Key</text>
+  </a>
+  <path class="arrow-gold" d="M645 661 H730"/>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4034#section-2" target="_top" tabindex="0">
+    <title>RFC 4034: DNSKEY und RRSIG</title>
+    <rect class="gold hit" x="730" y="627" width="270" height="68" rx="14"/>
+    <text class="label" x="752" y="655">Child: DNSKEY + RRSIG</text>
+    <text class="body" x="752" y="680">signiertes RRset prüfen</text>
+  </a>
+  <path class="arrow-gold" d="M1000 661 H1085"/>
+  <a href="/kb/dns#dnssec-und-vertrauenskette" target="_top" tabindex="0">
+    <title>DNSSEC-Ergebnis und SERVFAIL im Artikel öffnen</title>
+    <rect class="green hit" x="1085" y="627" width="245" height="68" rx="14"/>
+    <text class="label" x="1107" y="655">Secure oder Bogus</text>
+    <text class="body" x="1107" y="680">AD-Antwort oder SERVFAIL</text>
+  </a>
+
+  <text class="kicker" x="46" y="763">ADMIN-SIGNALE · KLICK FÜHRT ZUR ERKLÄRUNG ODER PRIMÄRQUELLE</text>
+  <a href="/kb/dns#technischer-aufbau-einer-dns-nachricht" target="_top" tabindex="0">
+    <title>AA-Flag und antwortenden Server prüfen</title>
+    <rect class="blue hit" x="40" y="783" width="245" height="84" rx="15"/>
+    <text class="label" x="62" y="814">AA + Server</text>
+    <text class="body" x="62" y="841">Quelle oder Cache?</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc2308" target="_top" tabindex="0">
+    <title>RFC 2308: NXDOMAIN, NODATA und negative Caches</title>
+    <rect class="rose risk" x="305" y="783" width="245" height="84" rx="15"/>
+    <text class="label" x="327" y="814">NXDOMAIN / NODATA</text>
+    <text class="body" x="327" y="841">SOA + negative TTL</text>
+  </a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc7766" target="_top" tabindex="0">
+    <title>RFC 7766: DNS-Transport über TCP</title>
+    <rect class="rose risk" x="570" y="783" width="245" height="84" rx="15"/>
+    <text class="label" x="592" y="814">TC / Timeout</text>
+    <text class="body" x="592" y="841">TCP/53 mitprüfen</text>
+  </a>
+  <a href="/kb/dns#diagnose" target="_top" tabindex="0">
+    <title>DNS-Diagnosewerkzeuge im Artikel öffnen</title>
+    <rect class="blue hit" x="835" y="783" width="245" height="84" rx="15"/>
+    <text class="label" x="857" y="814">Resolver ≠ Autorität</text>
+    <text class="body" x="857" y="841">beide Pfade vergleichen</text>
+  </a>
+  <a href="/kb/dns#monitoring-und-betriebskriterien" target="_top" tabindex="0">
+    <title>DNS-Monitoring und Zonenreplikation im Artikel öffnen</title>
+    <rect class="blue hit" x="1100" y="783" width="260" height="84" rx="15"/>
+    <text class="label" x="1122" y="814">Serial + Signaturen</text>
+    <text class="body" x="1122" y="841">Replikation und Ablauf</text>
+  </a>
+
+  <a href="https://datatracker.ietf.org/doc/html/rfc1034" target="_top" tabindex="0"><rect class="soft source" x="40" y="889" width="245" height="34" rx="17"/><text class="small" x="71" y="911">[1] RFC 1034 · Modell</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc1035" target="_top" tabindex="0"><rect class="soft source" x="305" y="889" width="245" height="34" rx="17"/><text class="small" x="336" y="911">[2] RFC 1035 · Format</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9499" target="_top" tabindex="0"><rect class="soft source" x="570" y="889" width="245" height="34" rx="17"/><text class="small" x="601" y="911">[3] RFC 9499 · Rollen</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc2308" target="_top" tabindex="0"><rect class="soft source" x="835" y="889" width="245" height="34" rx="17"/><text class="small" x="866" y="911">[4] RFC 2308 · Cache</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc4033" target="_top" tabindex="0"><rect class="soft source" x="1100" y="889" width="260" height="34" rx="17"/><text class="small" x="1131" y="911">[5] RFC 4033 · DNSSEC</text></a>
+</svg>
