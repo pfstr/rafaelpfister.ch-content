@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 980" role="img" aria-labelledby="title desc">
+  <title id="title">Exchange Online: Nachrichten-, Client- und Administrationspfade</title>
+  <desc id="desc">Klickbare Übersicht von DNS und EOP über Transport und Postfach bis zu Entra ID, PowerShell, Graph, Message Trace und Aufbewahrung.</desc>
+  <style>
+    :root{color-scheme:light} text{font-family:Inter,Arial,sans-serif;fill:#111112}.bg{fill:#faf7f2}.panel{fill:#fff;stroke:#d9d2c9;stroke-width:2}.hit{fill:#eef5f7;stroke:#286983;stroke-width:2;transition:fill .15s,stroke .15s}.cloud{fill:#f5eee8;stroke:#8b3a1c}.ops{fill:#edf4ee;stroke:#3f6f4e}.link{cursor:pointer;outline:none}.link:hover .hit,.link:focus .hit{fill:#d5edf4;stroke:#8b3a1c;stroke-width:4}.link:hover .cloud,.link:focus .cloud{fill:#f4d9cc;stroke:#286983;stroke-width:4}.link:hover .ops,.link:focus .ops{fill:#d7eadc;stroke:#8b3a1c;stroke-width:4}.h{font-size:28px;font-weight:750}.k{font-size:20px;font-weight:700}.s{font-size:15px;fill:#52525b}.label{font-size:13px;font-weight:700;letter-spacing:1.4px;fill:#6b6470}.arrow{stroke:#286983;stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#286983"/></marker></defs>
+  <rect class="bg" width="1400" height="980"/>
+  <text class="label" x="60" y="56">EXCHANGE ONLINE · VOM INTERNET BIS ZUM BETRIEBSNACHWEIS</text>
+  <text class="h" x="60" y="96">Wer entscheidet was – und wo sieht es der Admin?</text>
+
+  <a data-link-hint="1" href="/kb/dns" target="_top" tabindex="0" class="link" aria-label="Öffnet den KB-Artikel DNS">
+    <title>Öffnet: DNS – /kb/dns</title><rect class="hit" x="55" y="150" width="220" height="105" rx="16"/><text class="k" x="165" y="192" text-anchor="middle">DNS und MX</text><text class="s" x="165" y="220" text-anchor="middle">Wo beginnt Internetmail?</text>
+  </a>
+  <a data-link-hint="2" href="https://learn.microsoft.com/en-us/defender-office-365/eop-about" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange Online Protection">
+    <title>Öffnet: Exchange Online Protection – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/defender-office-365/eop-about</title><rect class="hit" x="330" y="150" width="240" height="105" rx="16"/><text class="k" x="450" y="192" text-anchor="middle">EOP</text><text class="s" x="450" y="220" text-anchor="middle">Annahme und Filterung</text>
+  </a>
+  <a data-link-hint="3" href="https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-to-route-mail" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange-Online-Connectoren">
+    <title>Öffnet: Exchange-Online-Connectoren – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-to-route-mail</title><rect class="hit" x="625" y="150" width="240" height="105" rx="16"/><text class="k" x="745" y="192" text-anchor="middle">Transport</text><text class="s" x="745" y="220" text-anchor="middle">Regeln und Routing</text>
+  </a>
+  <a data-link-hint="4" href="https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange-Online-Empfängern">
+    <title>Öffnet: Empfänger und Postfächer – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online</title><rect class="hit" x="920" y="150" width="240" height="105" rx="16"/><text class="k" x="1040" y="192" text-anchor="middle">Postfach</text><text class="s" x="1040" y="220" text-anchor="middle">Mail, Kalender, Kontakte</text>
+  </a>
+  <path class="arrow" d="M275 202H325"/><path class="arrow" d="M570 202H620"/><path class="arrow" d="M865 202H915"/>
+
+  <rect class="panel" x="55" y="315" width="1290" height="250" rx="22"/>
+  <text class="label" x="85" y="354">CLIENT UND IDENTITÄT</text>
+  <a data-link-hint="5" href="/kb/entra" target="_top" tabindex="0" class="link" aria-label="Öffnet den KB-Artikel Microsoft Entra ID">
+    <title>Öffnet: Microsoft Entra ID – /kb/entra</title><rect class="cloud" x="90" y="390" width="245" height="120" rx="16"/><text class="k" x="212" y="435" text-anchor="middle">Microsoft Entra ID</text><text class="s" x="212" y="464" text-anchor="middle">Anmeldung und Token</text>
+  </a>
+  <a data-link-hint="6" href="https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/clients-and-mobile-in-exchange-online" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange-Online-Clients">
+    <title>Öffnet: Outlook und mobile Clients – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/clients-and-mobile-in-exchange-online</title><rect class="cloud" x="390" y="390" width="245" height="120" rx="16"/><text class="k" x="512" y="435" text-anchor="middle">Outlook und OWA</text><text class="s" x="512" y="464" text-anchor="middle">HTTPS zum Postfach</text>
+  </a>
+  <a data-link-hint="7" href="https://learn.microsoft.com/en-us/powershell/exchange/exchange-online-powershell" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange Online PowerShell">
+    <title>Öffnet: Exchange Online PowerShell – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/powershell/exchange/exchange-online-powershell</title><rect class="cloud" x="690" y="390" width="245" height="120" rx="16"/><text class="k" x="812" y="435" text-anchor="middle">PowerShell und EAC</text><text class="s" x="812" y="464" text-anchor="middle">RBAC-Verwaltung</text>
+  </a>
+  <a data-link-hint="8" href="https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsoft Graphs Mail-API-Dokumentation">
+    <title>Öffnet: Microsoft Graph Mail API – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview</title><rect class="cloud" x="990" y="390" width="245" height="120" rx="16"/><text class="k" x="1112" y="435" text-anchor="middle">Microsoft Graph</text><text class="s" x="1112" y="464" text-anchor="middle">Apps und Automatisierung</text>
+  </a>
+  <path class="arrow" d="M335 450H385"/><path class="arrow" d="M635 450H685"/><path class="arrow" d="M935 450H985"/>
+
+  <rect class="panel" x="55" y="625" width="1290" height="270" rx="22"/>
+  <text class="label" x="85" y="664">BETRIEB UND RECOVERY</text>
+  <a data-link-hint="9" href="https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Message Trace">
+    <title>Öffnet: Message Trace – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message</title><rect class="ops" x="90" y="705" width="270" height="125" rx="16"/><text class="k" x="225" y="750" text-anchor="middle">Message Trace</text><text class="s" x="225" y="780" text-anchor="middle">Ereignisse einer Nachricht</text>
+  </a>
+  <a data-link-hint="10" href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-exchange-monitoring?view=o365-worldwide" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange Online Monitoring">
+    <title>Öffnet: Service Health und Monitoring – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-exchange-monitoring?view=o365-worldwide</title><rect class="ops" x="405" y="705" width="270" height="125" rx="16"/><text class="k" x="540" y="750" text-anchor="middle">Service Health</text><text class="s" x="540" y="780" text-anchor="middle">Dienstweite Störungen</text>
+  </a>
+  <a data-link-hint="11" href="https://learn.microsoft.com/en-us/purview/retention-policies-exchange" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur Exchange-Aufbewahrung">
+    <title>Öffnet: Retention und Holds – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/purview/retention-policies-exchange</title><rect class="ops" x="720" y="705" width="270" height="125" rx="16"/><text class="k" x="855" y="750" text-anchor="middle">Retention und Holds</text><text class="s" x="855" y="780" text-anchor="middle">Inhalte erhalten</text>
+  </a>
+  <a data-link-hint="12" href="https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur Exchange-Online-Datenresilienz">
+    <title>Öffnet: Exchange Online Data Resiliency – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency</title><rect class="ops" x="1035" y="705" width="270" height="125" rx="16"/><text class="k" x="1170" y="750" text-anchor="middle">Dienstresilienz</text><text class="s" x="1170" y="780" text-anchor="middle">Kopien und Transport</text>
+  </a>
+  <text class="s" x="700" y="940" text-anchor="middle">Hover zeigt das Linkziel · Klick öffnet KB oder offizielle Microsoft-Dokumentation</text>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: DNS – /kb/dns</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online Protection – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/defender-office-365/eop-about</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Exchange-Online-Connectoren – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-to-route-mail</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Empfänger und Postfächer – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Microsoft Entra ID – /kb/entra</text><text class="link-target-address" x="26" y="60">Ziel: /kb/entra</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Outlook und mobile Clients – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/clients-and-mobile-in-exchange-online</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online PowerShell – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/powershell/exchange/exchange-online-powershell</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Microsoft Graph Mail API – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/graph/api/resources/mail-api-overview</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Message Trace – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Service Health und Monitoring – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-exchange-monitoring?view=o365-worldwide</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Retention und Holds – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/purview/retention-policies-exchange</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online Data Resiliency – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency</text></g>
+  </g></svg>

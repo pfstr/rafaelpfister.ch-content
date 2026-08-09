@@ -43,8 +43,8 @@
   <rect class="panel" x="40" y="115" width="1320" height="438" rx="20"/>
   <text class="kicker" x="70" y="151">REKURSIVE ANFRAGE UND ITERATIVE AUFLÖSUNG</text>
 
-  <a href="/kb/dns#architektur-und-rollen" target="_top" tabindex="0" aria-label="Anwendung – Stub Resolver – QNAME · QTYPE">
-    <title>Anwendung und Stub Resolver im Artikel öffnen</title>
+  <a data-link-hint="1" href="/kb/dns#architektur-und-rollen" target="_top" tabindex="0" aria-label="Anwendung – Stub Resolver – QNAME · QTYPE">
+    <title>Öffnet: Anwendung und Stub Resolver im Artikel öffnen — Ziel: /kb/dns#architektur-und-rollen</title>
     <rect class="blue hit" x="70" y="178" width="245" height="92" rx="15"/>
     <text class="label" x="92" y="211">Anwendung</text>
     <text class="body" x="92" y="239">Stub Resolver</text>
@@ -53,8 +53,8 @@
   <path class="arrow-blue" d="M315 224 H400"/>
   <text class="small" x="326" y="213">RD=1</text>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9499#section-6" target="_top" tabindex="0" aria-label="Rekursiver Resolver – Cache · Iteration · Policy – optional: DNSSEC-Validator">
-    <title>RFC 9499: Rekursiver Resolver</title>
+  <a data-link-hint="2" href="https://datatracker.ietf.org/doc/html/rfc9499#section-6" target="_top" tabindex="0" aria-label="Rekursiver Resolver – Cache · Iteration · Policy – optional: DNSSEC-Validator">
+    <title>Öffnet: RFC 9499: Rekursiver Resolver — Ziel: https://datatracker.ietf.org/doc/html/rfc9499#section-6</title>
     <rect class="blue hit" x="400" y="178" width="270" height="92" rx="15"/>
     <text class="label" x="422" y="211">Rekursiver Resolver</text>
     <text class="body" x="422" y="239">Cache · Iteration · Policy</text>
@@ -62,8 +62,8 @@
   </a>
   <path class="arrow-blue" d="M670 224 H755"/>
 
-  <a href="/kb/dns#cache-ttl-und-negative-antworten" target="_top" tabindex="0" aria-label="Resolvercache – RRset oder Negativcache – TTL &gt; 0 ?">
-    <title>Cache, TTL und negative Antworten im Artikel öffnen</title>
+  <a data-link-hint="3" href="/kb/dns#cache-ttl-und-negative-antworten" target="_top" tabindex="0" aria-label="Resolvercache – RRset oder Negativcache – TTL &gt; 0 ?">
+    <title>Öffnet: Cache, TTL und negative Antworten im Artikel öffnen — Ziel: /kb/dns#cache-ttl-und-negative-antworten</title>
     <rect class="gold hit" x="755" y="178" width="245" height="92" rx="15"/>
     <text class="label" x="777" y="211">Resolvercache</text>
     <text class="body" x="777" y="239">RRset oder Negativcache</text>
@@ -71,8 +71,8 @@
   </a>
   <path class="return" d="M1000 224 H1085"/>
 
-  <a href="/kb/dns#technischer-aufbau-einer-dns-nachricht" target="_top" tabindex="0" aria-label="Endantwort – Answer · Authority · RCODE – AA · AD · TTL">
-    <title>DNS-Endantwort und Flags im Artikel öffnen</title>
+  <a data-link-hint="4" href="/kb/dns#technischer-aufbau-einer-dns-nachricht" target="_top" tabindex="0" aria-label="Endantwort – Answer · Authority · RCODE – AA · AD · TTL">
+    <title>Öffnet: DNS-Endantwort und Flags im Artikel öffnen — Ziel: /kb/dns#technischer-aufbau-einer-dns-nachricht</title>
     <rect class="green hit" x="1085" y="178" width="245" height="92" rx="15"/>
     <text class="label" x="1107" y="211">Endantwort</text>
     <text class="body" x="1107" y="239">Answer · Authority · RCODE</text>
@@ -82,8 +82,8 @@
   <path class="arrow-gold" d="M877 270 V316 H190 V345"/>
   <text class="small" x="735" y="307">Cache Miss: Delegationskette verfolgen</text>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2" target="_top" tabindex="0" aria-label="Root-Zone „.“ – Referral auf ch. – NS + nötiges Glue">
-    <title>RFC 1034: Iterative Auflösung ab Root</title>
+  <a data-link-hint="5" href="https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2" target="_top" tabindex="0" aria-label="Root-Zone „.“ – Referral auf ch. – NS + nötiges Glue">
+    <title>Öffnet: RFC 1034: Iterative Auflösung ab Root — Ziel: https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2</title>
     <rect class="soft hit" x="70" y="345" width="245" height="114" rx="15"/>
     <text class="label" x="92" y="379">Root-Zone „.“</text>
     <text class="body" x="92" y="407">Referral auf ch.</text>
@@ -91,8 +91,8 @@
   </a>
   <path class="arrow" d="M315 402 H400"/>
 
-  <a href="/kb/dns#delegation-glue-und-autorität" target="_top" tabindex="0" aria-label="TLD-Zone „ch.“ – Referral auf example.ch. – NS + In-Bailiwick Glue">
-    <title>Delegation und Glue im Artikel öffnen</title>
+  <a data-link-hint="6" href="/kb/dns#delegation-glue-und-autorität" target="_top" tabindex="0" aria-label="TLD-Zone „ch.“ – Referral auf example.ch. – NS + In-Bailiwick Glue">
+    <title>Öffnet: Delegation und Glue im Artikel öffnen — Ziel: /kb/dns#delegation-glue-und-autorität</title>
     <rect class="soft hit" x="400" y="345" width="270" height="114" rx="15"/>
     <text class="label" x="422" y="379">TLD-Zone „ch.“</text>
     <text class="body" x="422" y="407">Referral auf example.ch.</text>
@@ -100,8 +100,8 @@
   </a>
   <path class="arrow" d="M670 402 H755"/>
 
-  <a href="/kb/dns#delegation-glue-und-autorität" target="_top" tabindex="0" aria-label="example.ch. – autoritative Zone – AA=1 · SOA Serial">
-    <title>Autoritative Zone und AA-Bit im Artikel öffnen</title>
+  <a data-link-hint="7" href="/kb/dns#delegation-glue-und-autorität" target="_top" tabindex="0" aria-label="example.ch. – autoritative Zone – AA=1 · SOA Serial">
+    <title>Öffnet: Autoritative Zone und AA-Bit im Artikel öffnen — Ziel: /kb/dns#delegation-glue-und-autorität</title>
     <rect class="blue hit" x="755" y="345" width="245" height="114" rx="15"/>
     <text class="label" x="777" y="379">example.ch.</text>
     <text class="body" x="777" y="407">autoritative Zone</text>
@@ -109,8 +109,8 @@
   </a>
   <path class="arrow-blue" d="M1000 402 H1085"/>
 
-  <a href="/kb/smtp" target="_top" tabindex="0" aria-label="MX-RRset – 10 mail.example.ch. – → A / AAAA → SMTP">
-    <title>MX und SMTP im Wissensbereich öffnen</title>
+  <a data-link-hint="8" href="/kb/smtp" target="_top" tabindex="0" aria-label="MX-RRset – 10 mail.example.ch. – → A / AAAA → SMTP">
+    <title>Öffnet: MX und SMTP im Wissensbereich öffnen — Ziel: /kb/smtp</title>
     <rect class="green hit" x="1085" y="345" width="245" height="114" rx="15"/>
     <text class="label" x="1107" y="379">MX-RRset</text>
     <text class="body" x="1107" y="407">10 mail.example.ch.</text>
@@ -122,69 +122,128 @@
 
   <rect class="panel" x="40" y="573" width="1320" height="151" rx="20"/>
   <text class="kicker" x="70" y="608">DNSSEC · VERTRAUENSKETTE UND ERGEBNIS</text>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4033#section-3.1" target="_top" tabindex="0" aria-label="Trust Anchor – lokaler Ausgangspunkt">
-    <title>RFC 4033: Trust Anchor und Authentifizierungskette</title>
+  <a data-link-hint="9" href="https://datatracker.ietf.org/doc/html/rfc4033#section-3.1" target="_top" tabindex="0" aria-label="Trust Anchor – lokaler Ausgangspunkt">
+    <title>Öffnet: RFC 4033: Trust Anchor und Authentifizierungskette — Ziel: https://datatracker.ietf.org/doc/html/rfc4033#section-3.1</title>
     <rect class="gold hit" x="70" y="627" width="245" height="68" rx="14"/>
     <text class="label" x="92" y="655">Trust Anchor</text>
     <text class="body" x="92" y="680">lokaler Ausgangspunkt</text>
   </a>
   <path class="arrow-gold" d="M315 661 H400"/>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4034#section-5" target="_top" tabindex="0" aria-label="Parent: DS – verweist auf Child-Key">
-    <title>RFC 4034: DS-Record</title>
+  <a data-link-hint="10" href="https://datatracker.ietf.org/doc/html/rfc4034#section-5" target="_top" tabindex="0" aria-label="Parent: DS – verweist auf Child-Key">
+    <title>Öffnet: RFC 4034: DS-Record — Ziel: https://datatracker.ietf.org/doc/html/rfc4034#section-5</title>
     <rect class="gold hit" x="400" y="627" width="245" height="68" rx="14"/>
     <text class="label" x="422" y="655">Parent: DS</text>
     <text class="body" x="422" y="680">verweist auf Child-Key</text>
   </a>
   <path class="arrow-gold" d="M645 661 H730"/>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4034#section-2" target="_top" tabindex="0" aria-label="Child: DNSKEY + RRSIG – signiertes RRset prüfen">
-    <title>RFC 4034: DNSKEY und RRSIG</title>
+  <a data-link-hint="11" href="https://datatracker.ietf.org/doc/html/rfc4034#section-2" target="_top" tabindex="0" aria-label="Child: DNSKEY + RRSIG – signiertes RRset prüfen">
+    <title>Öffnet: RFC 4034: DNSKEY und RRSIG — Ziel: https://datatracker.ietf.org/doc/html/rfc4034#section-2</title>
     <rect class="gold hit" x="730" y="627" width="270" height="68" rx="14"/>
     <text class="label" x="752" y="655">Child: DNSKEY + RRSIG</text>
     <text class="body" x="752" y="680">signiertes RRset prüfen</text>
   </a>
   <path class="arrow-gold" d="M1000 661 H1085"/>
-  <a href="/kb/dns#dnssec-und-vertrauenskette" target="_top" tabindex="0" aria-label="Secure oder Bogus – AD-Antwort oder SERVFAIL">
-    <title>DNSSEC-Ergebnis und SERVFAIL im Artikel öffnen</title>
+  <a data-link-hint="12" href="/kb/dns#dnssec-und-vertrauenskette" target="_top" tabindex="0" aria-label="Secure oder Bogus – AD-Antwort oder SERVFAIL">
+    <title>Öffnet: DNSSEC-Ergebnis und SERVFAIL im Artikel öffnen — Ziel: /kb/dns#dnssec-und-vertrauenskette</title>
     <rect class="green hit" x="1085" y="627" width="245" height="68" rx="14"/>
     <text class="label" x="1107" y="655">Secure oder Bogus</text>
     <text class="body" x="1107" y="680">AD-Antwort oder SERVFAIL</text>
   </a>
 
   <text class="kicker" x="46" y="763">ADMIN-SIGNALE · KLICK FÜHRT ZUR ERKLÄRUNG ODER PRIMÄRQUELLE</text>
-  <a href="/kb/dns#technischer-aufbau-einer-dns-nachricht" target="_top" tabindex="0" aria-label="AA + Server – Quelle oder Cache?">
-    <title>AA-Flag und antwortenden Server prüfen</title>
+  <a data-link-hint="13" href="/kb/dns#technischer-aufbau-einer-dns-nachricht" target="_top" tabindex="0" aria-label="AA + Server – Quelle oder Cache?">
+    <title>Öffnet: AA-Flag und antwortenden Server prüfen — Ziel: /kb/dns#technischer-aufbau-einer-dns-nachricht</title>
     <rect class="blue hit" x="40" y="783" width="245" height="84" rx="15"/>
     <text class="label" x="62" y="814">AA + Server</text>
     <text class="body" x="62" y="841">Quelle oder Cache?</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc2308" target="_top" tabindex="0" aria-label="NXDOMAIN / NODATA – SOA + negative TTL">
-    <title>RFC 2308: NXDOMAIN, NODATA und negative Caches</title>
+  <a data-link-hint="14" href="https://datatracker.ietf.org/doc/html/rfc2308" target="_top" tabindex="0" aria-label="NXDOMAIN / NODATA – SOA + negative TTL">
+    <title>Öffnet: RFC 2308: NXDOMAIN, NODATA und negative Caches — Ziel: https://datatracker.ietf.org/doc/html/rfc2308</title>
     <rect class="rose risk" x="305" y="783" width="245" height="84" rx="15"/>
     <text class="label" x="327" y="814">NXDOMAIN / NODATA</text>
     <text class="body" x="327" y="841">SOA + negative TTL</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc7766" target="_top" tabindex="0" aria-label="TC / Timeout – TCP/53 mitprüfen">
-    <title>RFC 7766: DNS-Transport über TCP</title>
+  <a data-link-hint="15" href="https://datatracker.ietf.org/doc/html/rfc7766" target="_top" tabindex="0" aria-label="TC / Timeout – TCP/53 mitprüfen">
+    <title>Öffnet: RFC 7766: DNS-Transport über TCP — Ziel: https://datatracker.ietf.org/doc/html/rfc7766</title>
     <rect class="rose risk" x="570" y="783" width="245" height="84" rx="15"/>
     <text class="label" x="592" y="814">TC / Timeout</text>
     <text class="body" x="592" y="841">TCP/53 mitprüfen</text>
   </a>
-  <a href="/kb/dns#diagnose" target="_top" tabindex="0" aria-label="Resolver ≠ Autorität – beide Pfade vergleichen">
-    <title>DNS-Diagnosewerkzeuge im Artikel öffnen</title>
+  <a data-link-hint="16" href="/kb/dns#diagnose" target="_top" tabindex="0" aria-label="Resolver ≠ Autorität – beide Pfade vergleichen">
+    <title>Öffnet: DNS-Diagnosewerkzeuge im Artikel öffnen — Ziel: /kb/dns#diagnose</title>
     <rect class="blue hit" x="835" y="783" width="245" height="84" rx="15"/>
     <text class="label" x="857" y="814">Resolver ≠ Autorität</text>
     <text class="body" x="857" y="841">beide Pfade vergleichen</text>
   </a>
-  <a href="/kb/dns#monitoring-und-betriebskriterien" target="_top" tabindex="0" aria-label="Serial + Signaturen – Replikation und Ablauf">
-    <title>DNS-Monitoring und Zonenreplikation im Artikel öffnen</title>
+  <a data-link-hint="17" href="/kb/dns#monitoring-und-betriebskriterien" target="_top" tabindex="0" aria-label="Serial + Signaturen – Replikation und Ablauf">
+    <title>Öffnet: DNS-Monitoring und Zonenreplikation im Artikel öffnen — Ziel: /kb/dns#monitoring-und-betriebskriterien</title>
     <rect class="blue hit" x="1100" y="783" width="260" height="84" rx="15"/>
     <text class="label" x="1122" y="814">Serial + Signaturen</text>
     <text class="body" x="1122" y="841">Replikation und Ablauf</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc1034" target="_top" tabindex="0" aria-label="[1] RFC 1034 · Modell"><rect class="soft source" x="40" y="889" width="245" height="34" rx="17"/><text class="small" x="71" y="911">[1] RFC 1034 · Modell</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc1035" target="_top" tabindex="0" aria-label="[2] RFC 1035 · Format"><rect class="soft source" x="305" y="889" width="245" height="34" rx="17"/><text class="small" x="336" y="911">[2] RFC 1035 · Format</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9499" target="_top" tabindex="0" aria-label="[3] RFC 9499 · Rollen"><rect class="soft source" x="570" y="889" width="245" height="34" rx="17"/><text class="small" x="601" y="911">[3] RFC 9499 · Rollen</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc2308" target="_top" tabindex="0" aria-label="[4] RFC 2308 · Cache"><rect class="soft source" x="835" y="889" width="245" height="34" rx="17"/><text class="small" x="866" y="911">[4] RFC 2308 · Cache</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4033" target="_top" tabindex="0" aria-label="[5] RFC 4033 · DNSSEC"><rect class="soft source" x="1100" y="889" width="260" height="34" rx="17"/><text class="small" x="1131" y="911">[5] RFC 4033 · DNSSEC</text></a>
-</svg>
+  <a data-link-hint="18" href="https://datatracker.ietf.org/doc/html/rfc1034" target="_top" tabindex="0" aria-label="[1] RFC 1034 · Modell">
+    <title>Öffnet: [1] RFC 1034 · Modell — Ziel: https://datatracker.ietf.org/doc/html/rfc1034</title><rect class="soft source" x="40" y="889" width="245" height="34" rx="17"/><text class="small" x="71" y="911">[1] RFC 1034 · Modell</text></a>
+  <a data-link-hint="19" href="https://datatracker.ietf.org/doc/html/rfc1035" target="_top" tabindex="0" aria-label="[2] RFC 1035 · Format">
+    <title>Öffnet: [2] RFC 1035 · Format — Ziel: https://datatracker.ietf.org/doc/html/rfc1035</title><rect class="soft source" x="305" y="889" width="245" height="34" rx="17"/><text class="small" x="336" y="911">[2] RFC 1035 · Format</text></a>
+  <a data-link-hint="20" href="https://datatracker.ietf.org/doc/html/rfc9499" target="_top" tabindex="0" aria-label="[3] RFC 9499 · Rollen">
+    <title>Öffnet: [3] RFC 9499 · Rollen — Ziel: https://datatracker.ietf.org/doc/html/rfc9499</title><rect class="soft source" x="570" y="889" width="245" height="34" rx="17"/><text class="small" x="601" y="911">[3] RFC 9499 · Rollen</text></a>
+  <a data-link-hint="21" href="https://datatracker.ietf.org/doc/html/rfc2308" target="_top" tabindex="0" aria-label="[4] RFC 2308 · Cache">
+    <title>Öffnet: [4] RFC 2308 · Cache — Ziel: https://datatracker.ietf.org/doc/html/rfc2308</title><rect class="soft source" x="835" y="889" width="245" height="34" rx="17"/><text class="small" x="866" y="911">[4] RFC 2308 · Cache</text></a>
+  <a data-link-hint="22" href="https://datatracker.ietf.org/doc/html/rfc4033" target="_top" tabindex="0" aria-label="[5] RFC 4033 · DNSSEC">
+    <title>Öffnet: [5] RFC 4033 · DNSSEC — Ziel: https://datatracker.ietf.org/doc/html/rfc4033</title><rect class="soft source" x="1100" y="889" width="260" height="34" rx="17"/><text class="small" x="1131" y="911">[5] RFC 4033 · DNSSEC</text></a>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+svg:has(a[data-link-hint="21"]:hover) .link-target-copy-21,svg:has(a[data-link-hint="21"]:focus) .link-target-copy-21{opacity:1}
+svg:has(a[data-link-hint="22"]:hover) .link-target-copy-22,svg:has(a[data-link-hint="22"]:focus) .link-target-copy-22{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Anwendung und Stub Resolver im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#architektur-und-rollen</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9499: Rekursiver Resolver</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9499#section-6</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Cache, TTL und negative Antworten im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#cache-ttl-und-negative-antworten</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: DNS-Endantwort und Flags im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#technischer-aufbau-einer-dns-nachricht</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: RFC 1034: Iterative Auflösung ab Root</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Delegation und Glue im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#delegation-glue-und-autorität</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Autoritative Zone und AA-Bit im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#delegation-glue-und-autorität</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: MX und SMTP im Wissensbereich öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4033: Trust Anchor und Authentifizierungskette</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4033#section-3.1</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4034: DS-Record</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4034#section-5</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4034: DNSKEY und RRSIG</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4034#section-2</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: DNSSEC-Ergebnis und SERVFAIL im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#dnssec-und-vertrauenskette</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: AA-Flag und antwortenden Server prüfen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#technischer-aufbau-einer-dns-nachricht</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: RFC 2308: NXDOMAIN, NODATA und negative Caches</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc2308</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: RFC 7766: DNS-Transport über TCP</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc7766</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: DNS-Diagnosewerkzeuge im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#diagnose</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: DNS-Monitoring und Zonenreplikation im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns#monitoring-und-betriebskriterien</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: [1] RFC 1034 · Modell</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc1034</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: [2] RFC 1035 · Format</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc1035</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: [3] RFC 9499 · Rollen</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9499</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: [4] RFC 2308 · Cache</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc2308</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: [5] RFC 4033 · DNSSEC</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4033</text></g>
+  </g></svg>

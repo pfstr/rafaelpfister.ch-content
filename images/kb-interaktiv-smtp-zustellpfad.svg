@@ -41,10 +41,10 @@
   <text class="h1" x="44" y="82">Vom Benutzer bis zur Mailbox: Wer trägt wann Verantwortung?</text>
 
   <rect class="panel" x="36" y="108" width="1328" height="260" rx="20"/>
-  <text class="kicker" x="64" y="142">ROLLEN UND SYSTEMGRENZEN</text>
+  <text class="kicker" x="64" y="142">ROLLEN UND ÜBERGABEPUNKTE</text>
 
-  <a href="/kb/smtp#rollen-und-systemgrenzen" target="_top" tabindex="0" aria-label="MUA – Nachricht erstellen – User + Client">
-    <title>MUA und Rollenmodell im Artikel öffnen</title>
+  <a data-link-hint="1" href="/kb/smtp#rollen-und-zuständigkeiten" target="_top" tabindex="0" aria-label="MUA – Nachricht erstellen – User + Client">
+    <title>Öffnet: MUA und Rollenmodell im Artikel öffnen — Ziel: /kb/smtp#rollen-und-zuständigkeiten</title>
     <rect class="blue hit" x="62" y="167" width="184" height="112" rx="15"/>
     <text class="label" x="84" y="201">MUA</text>
     <text class="body" x="84" y="227">Nachricht erstellen</text>
@@ -53,8 +53,8 @@
   <path class="arrow-blue" d="M246 223 H282"/>
   <text class="small" x="252" y="209">465 / 587</text>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc6409#section-2.1" target="_top" tabindex="0" aria-label="MSA – AUTH · Rechte · Policy – Submission">
-    <title>RFC 6409: Message Submission Agent</title>
+  <a data-link-hint="2" href="https://datatracker.ietf.org/doc/html/rfc6409#section-2.1" target="_top" tabindex="0" aria-label="MSA – AUTH · Rechte · Policy – Submission">
+    <title>Öffnet: RFC 6409: Message Submission Agent — Ziel: https://datatracker.ietf.org/doc/html/rfc6409#section-2.1</title>
     <rect class="violet hit" x="282" y="167" width="184" height="112" rx="15"/>
     <text class="label" x="304" y="201">MSA</text>
     <text class="body" x="304" y="227">AUTH · Rechte · Policy</text>
@@ -62,8 +62,8 @@
   </a>
   <path class="arrow-blue" d="M466 223 H502"/>
 
-  <a href="/kb/smtp#queue-retry-und-dsn" target="_top" tabindex="0" aria-label="ausgehender MTA – Router · Scheduler · Retry – persistente Queue">
-    <title>Queue, Retry und DSN im Artikel öffnen</title>
+  <a data-link-hint="3" href="/kb/smtp#queue-retry-und-dsn" target="_top" tabindex="0" aria-label="ausgehender MTA – Router · Scheduler · Retry – persistente Queue">
+    <title>Öffnet: Queue, Retry und DSN im Artikel öffnen — Ziel: /kb/smtp#queue-retry-und-dsn</title>
     <rect class="gold hit" x="502" y="167" width="232" height="112" rx="15"/>
     <text class="label" x="524" y="201">ausgehender MTA</text>
     <text class="body" x="524" y="227">Router · Scheduler · Retry</text>
@@ -72,8 +72,8 @@
   <path class="arrow-gold" d="M734 223 H864"/>
   <text class="small" x="758" y="209">SMTP · TCP 25</text>
 
-  <a href="/kb/smtp#annahmegrenze-250-nach-end-of-data" target="_top" tabindex="0" aria-label="eingehender MTA – Policy · Scan · durable write – 250 = Verantwortung">
-    <title>Annahmegrenze des eingehenden MTA öffnen</title>
+  <a data-link-hint="4" href="/kb/smtp#annahmegrenze-250-nach-end-of-data" target="_top" tabindex="0" aria-label="eingehender MTA – Policy · Scan · durable write – 250 = Verantwortung">
+    <title>Öffnet: Annahmegrenze des eingehenden MTA öffnen — Ziel: /kb/smtp#annahmegrenze-250-nach-end-of-data</title>
     <rect class="rose risk" x="864" y="167" width="214" height="112" rx="15"/>
     <text class="label" x="886" y="201">eingehender MTA</text>
     <text class="body" x="886" y="227">Policy · Scan · durable write</text>
@@ -81,24 +81,24 @@
   </a>
   <path class="arrow-blue" d="M1078 223 H1114"/>
 
-  <a href="/kb/smtp#lokale-zustellung-mit-lmtp" target="_top" tabindex="0" aria-label="MDA / Mailbox – LMTP · Store · Quota – Status je Empfänger">
-    <title>LMTP und lokale Zustellung im Artikel öffnen</title>
+  <a data-link-hint="5" href="/kb/smtp#lokale-zustellung-mit-lmtp" target="_top" tabindex="0" aria-label="MDA / Mailbox – LMTP · Store · Quota – Status je Empfänger">
+    <title>Öffnet: LMTP und lokale Zustellung im Artikel öffnen — Ziel: /kb/smtp#lokale-zustellung-mit-lmtp</title>
     <rect class="green hit" x="1114" y="167" width="222" height="112" rx="15"/>
     <text class="label" x="1136" y="201">MDA / Mailbox</text>
     <text class="body" x="1136" y="227">LMTP · Store · Quota</text>
     <text class="mono" x="1136" y="254">Status je Empfänger</text>
   </a>
 
-  <a href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · MX → A / AAAA">
-    <title>DNS-Artikel zu MX und Zielauflösung öffnen</title>
+  <a data-link-hint="6" href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · MX → A / AAAA">
+    <title>Öffnet: DNS-Artikel zu MX und Zielauflösung öffnen — Ziel: /kb/dns</title>
     <rect class="soft hit" x="568" y="300" width="210" height="48" rx="12"/>
     <text class="label" x="590" y="330">DNS · MX → A / AAAA</text>
   </a>
   <path class="dash" d="M618 279 V300"/>
   <path class="dash" d="M778 324 H970 V279"/>
 
-  <a href="/kb/tls" target="_top" tabindex="0" aria-label="TLS · DANE · MTA-STS">
-    <title>TLS-Artikel zur Kanal- und Zertifikatsprüfung öffnen</title>
+  <a data-link-hint="7" href="/kb/tls" target="_top" tabindex="0" aria-label="TLS · DANE · MTA-STS">
+    <title>Öffnet: TLS-Artikel zur Kanal- und Zertifikatsprüfung öffnen — Ziel: /kb/tls</title>
     <rect class="soft hit" x="812" y="300" width="232" height="48" rx="12"/>
     <text class="label" x="834" y="330">TLS · DANE · MTA-STS</text>
   </a>
@@ -106,8 +106,8 @@
   <rect class="panel" x="36" y="388" width="1328" height="220" rx="20"/>
   <text class="kicker" x="64" y="424">SMTP-SITZUNG · EINE TRANSAKTION · ANTWORTEN GEHÖREN ZUR JEWEILIGEN PHASE</text>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.2.1" target="_top" tabindex="0" aria-label="220 – Greeting – Listener bereit">
-    <title>RFC 5321: 220 Service ready</title>
+  <a data-link-hint="8" href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.2.1" target="_top" tabindex="0" aria-label="220 – Greeting – Listener bereit">
+    <title>Öffnet: RFC 5321: 220 Service ready — Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.2.1</title>
     <rect class="soft hit" x="62" y="454" width="142" height="96" rx="13"/>
     <text class="label" x="82" y="486">220</text>
     <text class="body" x="82" y="512">Greeting</text>
@@ -115,8 +115,8 @@
   </a>
   <path class="arrow" d="M204 502 H226"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.1" target="_top" tabindex="0" aria-label="EHLO – Capabilities – 250-…">
-    <title>RFC 5321: EHLO und ESMTP-Fähigkeiten</title>
+  <a data-link-hint="9" href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.1" target="_top" tabindex="0" aria-label="EHLO – Capabilities – 250-…">
+    <title>Öffnet: RFC 5321: EHLO und ESMTP-Fähigkeiten — Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.1</title>
     <rect class="blue hit" x="226" y="454" width="142" height="96" rx="13"/>
     <text class="label" x="246" y="486">EHLO</text>
     <text class="body" x="246" y="512">Capabilities</text>
@@ -124,8 +124,8 @@
   </a>
   <path class="arrow" d="M368 502 H390"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc3207#section-4" target="_top" tabindex="0" aria-label="STARTTLS – 220 → TLS – danach EHLO">
-    <title>RFC 3207: STARTTLS setzt den SMTP-Zustand zurück</title>
+  <a data-link-hint="10" href="https://datatracker.ietf.org/doc/html/rfc3207#section-4" target="_top" tabindex="0" aria-label="STARTTLS – 220 → TLS – danach EHLO">
+    <title>Öffnet: RFC 3207: STARTTLS setzt den SMTP-Zustand zurück — Ziel: https://datatracker.ietf.org/doc/html/rfc3207#section-4</title>
     <rect class="violet hit" x="390" y="454" width="158" height="96" rx="13"/>
     <text class="label" x="410" y="486">STARTTLS</text>
     <text class="body" x="410" y="512">220 → TLS</text>
@@ -133,8 +133,8 @@
   </a>
   <path class="arrow" d="M548 502 H570"/>
 
-  <a href="/kb/smtp#envelope-und-nachrichteninhalt" target="_top" tabindex="0" aria-label="MAIL FROM – Reverse Path – 1 pro Transaktion">
-    <title>Envelope-Absender und MAIL FROM im Artikel öffnen</title>
+  <a data-link-hint="11" href="/kb/smtp#envelope-und-nachrichteninhalt" target="_top" tabindex="0" aria-label="MAIL FROM – Reverse Path – 1 pro Transaktion">
+    <title>Öffnet: Envelope-Absender und MAIL FROM im Artikel öffnen — Ziel: /kb/smtp#envelope-und-nachrichteninhalt</title>
     <rect class="gold hit" x="570" y="454" width="158" height="96" rx="13"/>
     <text class="label" x="590" y="486">MAIL FROM</text>
     <text class="body" x="590" y="512">Reverse Path</text>
@@ -142,8 +142,8 @@
   </a>
   <path class="arrow" d="M728 502 H750"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.3" target="_top" tabindex="0" aria-label="RCPT TO × n – Forward Paths – Status je RCPT">
-    <title>RFC 5321: RCPT TO und Status pro Empfänger</title>
+  <a data-link-hint="12" href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.3" target="_top" tabindex="0" aria-label="RCPT TO × n – Forward Paths – Status je RCPT">
+    <title>Öffnet: RFC 5321: RCPT TO und Status pro Empfänger — Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.3</title>
     <rect class="gold hit" x="750" y="454" width="158" height="96" rx="13"/>
     <text class="label" x="770" y="486">RCPT TO × n</text>
     <text class="body" x="770" y="512">Forward Paths</text>
@@ -151,8 +151,8 @@
   </a>
   <path class="arrow" d="M908 502 H930"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.4" target="_top" tabindex="0" aria-label="DATA → 354 – Header + Body – CRLF . CRLF">
-    <title>RFC 5321: DATA, 354 und End-of-Data</title>
+  <a data-link-hint="13" href="https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.4" target="_top" tabindex="0" aria-label="DATA → 354 – Header + Body – CRLF . CRLF">
+    <title>Öffnet: RFC 5321: DATA, 354 und End-of-Data — Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.4</title>
     <rect class="blue hit" x="930" y="454" width="170" height="96" rx="13"/>
     <text class="label" x="950" y="486">DATA → 354</text>
     <text class="body" x="950" y="512">Header + Body</text>
@@ -160,8 +160,8 @@
   </a>
   <path class="arrow-gold" d="M1100 502 H1122"/>
 
-  <a href="/kb/smtp#annahmegrenze-250-nach-end-of-data" target="_top" tabindex="0" aria-label="finales 250 – nach End-of-Data – Verantwortung wechselt">
-    <title>Finales 250 und Zustellverantwortung im Artikel öffnen</title>
+  <a data-link-hint="14" href="/kb/smtp#annahmegrenze-250-nach-end-of-data" target="_top" tabindex="0" aria-label="finales 250 – nach End-of-Data – Verantwortung wechselt">
+    <title>Öffnet: Finales 250 und Zustellverantwortung im Artikel öffnen — Ziel: /kb/smtp#annahmegrenze-250-nach-end-of-data</title>
     <rect class="rose risk" x="1122" y="446" width="214" height="112" rx="13"/>
     <text class="label" x="1142" y="480">finales 250</text>
     <text class="body" x="1142" y="507">nach End-of-Data</text>
@@ -172,16 +172,16 @@
   <rect class="panel" x="36" y="628" width="1328" height="158" rx="20"/>
   <text class="kicker" x="64" y="662">ZWEI GETRENNTE OBJEKTE · ROUTING KOMMT NICHT AUS FROM: ODER TO:</text>
 
-  <a href="/kb/smtp#envelope-und-nachrichteninhalt" target="_top" tabindex="0" aria-label="Envelope · Transportzustand – MAIL FROM · RCPT TO × n · DSN-Parameter · nicht Teil des sichtbaren Inhalts">
-    <title>SMTP-Envelope im Artikel öffnen</title>
+  <a data-link-hint="15" href="/kb/smtp#envelope-und-nachrichteninhalt" target="_top" tabindex="0" aria-label="Envelope · Transportzustand – MAIL FROM · RCPT TO × n · DSN-Parameter · nicht Teil des sichtbaren Inhalts">
+    <title>Öffnet: SMTP-Envelope im Artikel öffnen — Ziel: /kb/smtp#envelope-und-nachrichteninhalt</title>
     <rect class="gold hit" x="64" y="682" width="590" height="78" rx="14"/>
     <text class="label" x="86" y="713">Envelope · Transportzustand</text>
     <text class="body" x="86" y="738">MAIL FROM · RCPT TO × n · DSN-Parameter · nicht Teil des sichtbaren Inhalts</text>
   </a>
   <path class="arrow-blue" d="M654 721 H746"/>
   <text class="small" x="674" y="706">DATA trägt</text>
-  <a href="https://datatracker.ietf.org/doc/html/rfc5322#section-2.1" target="_top" tabindex="0" aria-label="Nachrichteninhalt · RFC 5322 / MIME – From: · To: · Message-ID: · weitere Header · Leerzeile · Body">
-    <title>RFC 5322: Nachrichteninhalt aus Header und Body</title>
+  <a data-link-hint="16" href="https://datatracker.ietf.org/doc/html/rfc5322#section-2.1" target="_top" tabindex="0" aria-label="Nachrichteninhalt · RFC 5322 / MIME – From: · To: · Message-ID: · weitere Header · Leerzeile · Body">
+    <title>Öffnet: RFC 5322: Nachrichteninhalt aus Header und Body — Ziel: https://datatracker.ietf.org/doc/html/rfc5322#section-2.1</title>
     <rect class="blue hit" x="746" y="682" width="590" height="78" rx="14"/>
     <text class="label" x="768" y="713">Nachrichteninhalt · RFC 5322 / MIME</text>
     <text class="body" x="768" y="738">From: · To: · Message-ID: · weitere Header · Leerzeile · Body</text>
@@ -190,50 +190,110 @@
   <rect class="panel" x="36" y="806" width="1328" height="118" rx="20"/>
   <text class="kicker" x="64" y="838">ADMIN-BEWEISKETTE · KEINE EINZELNE ID BESCHREIBT DEN GESAMTEN WEG</text>
 
-  <a href="/kb/smtp#queue-retry-und-dsn" target="_top" tabindex="0" aria-label="Queue-ID · Alter · Next Hop">
-    <title>Queue-Zustand und Retry im Artikel öffnen</title>
+  <a data-link-hint="17" href="/kb/smtp#queue-retry-und-dsn" target="_top" tabindex="0" aria-label="Queue-ID · Alter · Next Hop">
+    <title>Öffnet: Queue-Zustand und Retry im Artikel öffnen — Ziel: /kb/smtp#queue-retry-und-dsn</title>
     <rect class="gold hit" x="64" y="854" width="286" height="48" rx="12"/>
     <text class="label" x="84" y="884">Queue-ID · Alter · Next Hop</text>
   </a>
-  <a href="/kb/smtp#antwortcodes-und-diagnosebedeutung" target="_top" tabindex="0" aria-label="Phase · 4xx/5xx · x.y.z">
-    <title>SMTP- und Enhanced Status Codes im Artikel öffnen</title>
+  <a data-link-hint="18" href="/kb/smtp#antwortcodes-und-diagnosebedeutung" target="_top" tabindex="0" aria-label="Phase · 4xx/5xx · x.y.z">
+    <title>Öffnet: SMTP- und Enhanced Status Codes im Artikel öffnen — Ziel: /kb/smtp#antwortcodes-und-diagnosebedeutung</title>
     <rect class="rose risk" x="374" y="854" width="286" height="48" rx="12"/>
     <text class="label" x="394" y="884">Phase · 4xx/5xx · x.y.z</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc3848" target="_top" tabindex="0" aria-label="Received · ESMTPSA · Zeit">
-    <title>RFC 3848: SMTP- und LMTP-Transmission Types in Received</title>
+  <a data-link-hint="19" href="https://datatracker.ietf.org/doc/html/rfc3848" target="_top" tabindex="0" aria-label="Received · ESMTPSA · Zeit">
+    <title>Öffnet: RFC 3848: SMTP- und LMTP-Transmission Types in Received — Ziel: https://datatracker.ietf.org/doc/html/rfc3848</title>
     <rect class="blue hit" x="684" y="854" width="286" height="48" rx="12"/>
     <text class="label" x="704" y="884">Received · ESMTPSA · Zeit</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc3464" target="_top" tabindex="0" aria-label="DSN · Reporting-/Remote-MTA · Empfänger">
-    <title>RFC 3464: Delivery Status Notification</title>
+  <a data-link-hint="20" href="https://datatracker.ietf.org/doc/html/rfc3464" target="_top" tabindex="0" aria-label="DSN · Reporting-/Remote-MTA · Empfänger">
+    <title>Öffnet: RFC 3464: Delivery Status Notification — Ziel: https://datatracker.ietf.org/doc/html/rfc3464</title>
     <rect class="green hit" x="994" y="854" width="342" height="48" rx="12"/>
     <text class="label" x="1014" y="884">DSN · Reporting-/Remote-MTA · Empfänger</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc5321" target="_top" tabindex="0" aria-label="RFC 5321 · SMTP">
-    <title>Primärquelle RFC 5321 öffnen</title>
+  <a data-link-hint="21" href="https://datatracker.ietf.org/doc/html/rfc5321" target="_top" tabindex="0" aria-label="RFC 5321 · SMTP">
+    <title>Öffnet: Primärquelle RFC 5321 öffnen — Ziel: https://datatracker.ietf.org/doc/html/rfc5321</title>
     <rect class="soft source" x="54" y="946" width="236" height="34" rx="17"/>
     <text class="small" x="172" y="968" text-anchor="middle">RFC 5321 · SMTP</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc6409" target="_top" tabindex="0" aria-label="RFC 6409 · Submission">
-    <title>Primärquelle RFC 6409 öffnen</title>
+  <a data-link-hint="22" href="https://datatracker.ietf.org/doc/html/rfc6409" target="_top" tabindex="0" aria-label="RFC 6409 · Submission">
+    <title>Öffnet: Primärquelle RFC 6409 öffnen — Ziel: https://datatracker.ietf.org/doc/html/rfc6409</title>
     <rect class="soft source" x="308" y="946" width="236" height="34" rx="17"/>
     <text class="small" x="426" y="968" text-anchor="middle">RFC 6409 · Submission</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc3207" target="_top" tabindex="0" aria-label="RFC 3207 · STARTTLS">
-    <title>Primärquelle RFC 3207 öffnen</title>
+  <a data-link-hint="23" href="https://datatracker.ietf.org/doc/html/rfc3207" target="_top" tabindex="0" aria-label="RFC 3207 · STARTTLS">
+    <title>Öffnet: Primärquelle RFC 3207 öffnen — Ziel: https://datatracker.ietf.org/doc/html/rfc3207</title>
     <rect class="soft source" x="562" y="946" width="236" height="34" rx="17"/>
     <text class="small" x="680" y="968" text-anchor="middle">RFC 3207 · STARTTLS</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc3464" target="_top" tabindex="0" aria-label="RFC 3464 · DSN">
-    <title>Primärquelle RFC 3464 öffnen</title>
+  <a data-link-hint="24" href="https://datatracker.ietf.org/doc/html/rfc3464" target="_top" tabindex="0" aria-label="RFC 3464 · DSN">
+    <title>Öffnet: Primärquelle RFC 3464 öffnen — Ziel: https://datatracker.ietf.org/doc/html/rfc3464</title>
     <rect class="soft source" x="816" y="946" width="236" height="34" rx="17"/>
     <text class="small" x="934" y="968" text-anchor="middle">RFC 3464 · DSN</text>
   </a>
-  <a href="https://www.iana.org/assignments/smtp/smtp.xhtml" target="_top" tabindex="0" aria-label="IANA · SMTP Extensions">
-    <title>IANA-Register der SMTP-Erweiterungen öffnen</title>
+  <a data-link-hint="25" href="https://www.iana.org/assignments/smtp/smtp.xhtml" target="_top" tabindex="0" aria-label="IANA · SMTP Extensions">
+    <title>Öffnet: IANA-Register der SMTP-Erweiterungen öffnen — Ziel: https://www.iana.org/assignments/smtp/smtp.xhtml</title>
     <rect class="soft source" x="1070" y="946" width="276" height="34" rx="17"/>
     <text class="small" x="1208" y="968" text-anchor="middle">IANA · SMTP Extensions</text>
   </a>
-</svg>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+svg:has(a[data-link-hint="21"]:hover) .link-target-copy-21,svg:has(a[data-link-hint="21"]:focus) .link-target-copy-21{opacity:1}
+svg:has(a[data-link-hint="22"]:hover) .link-target-copy-22,svg:has(a[data-link-hint="22"]:focus) .link-target-copy-22{opacity:1}
+svg:has(a[data-link-hint="23"]:hover) .link-target-copy-23,svg:has(a[data-link-hint="23"]:focus) .link-target-copy-23{opacity:1}
+svg:has(a[data-link-hint="24"]:hover) .link-target-copy-24,svg:has(a[data-link-hint="24"]:focus) .link-target-copy-24{opacity:1}
+svg:has(a[data-link-hint="25"]:hover) .link-target-copy-25,svg:has(a[data-link-hint="25"]:focus) .link-target-copy-25{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: MUA und Rollenmodell im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#rollen-und-zuständigkeiten</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: RFC 6409: Message Submission Agent</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc6409#section-2.1</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Queue, Retry und DSN im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#queue-retry-und-dsn</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Annahmegrenze des eingehenden MTA öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#annahmegrenze-250-nach-end-of-data</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: LMTP und lokale Zustellung im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#lokale-zustellung-mit-lmtp</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: DNS-Artikel zu MX und Zielauflösung öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: TLS-Artikel zur Kanal- und Zertifikatsprüfung öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tls</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: RFC 5321: 220 Service ready</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.2.1</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: RFC 5321: EHLO und ESMTP-Fähigkeiten</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.1</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: RFC 3207: STARTTLS setzt den SMTP-Zustand zurück</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc3207#section-4</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Envelope-Absender und MAIL FROM im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#envelope-und-nachrichteninhalt</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: RFC 5321: RCPT TO und Status pro Empfänger</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.3</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: RFC 5321: DATA, 354 und End-of-Data</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5321#section-4.1.1.4</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Finales 250 und Zustellverantwortung im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#annahmegrenze-250-nach-end-of-data</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: SMTP-Envelope im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#envelope-und-nachrichteninhalt</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: RFC 5322: Nachrichteninhalt aus Header und Body</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5322#section-2.1</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: Queue-Zustand und Retry im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#queue-retry-und-dsn</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: SMTP- und Enhanced Status Codes im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#antwortcodes-und-diagnosebedeutung</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: RFC 3848: SMTP- und LMTP-Transmission Types in Received</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc3848</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: RFC 3464: Delivery Status Notification</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc3464</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: Primärquelle RFC 5321 öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5321</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: Primärquelle RFC 6409 öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc6409</text></g>
+    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="38">Öffnet: Primärquelle RFC 3207 öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc3207</text></g>
+    <g class="link-target-copy link-target-copy-24"><text class="link-target-label" x="26" y="38">Öffnet: Primärquelle RFC 3464 öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc3464</text></g>
+    <g class="link-target-copy link-target-copy-25"><text class="link-target-label" x="26" y="38">Öffnet: IANA-Register der SMTP-Erweiterungen öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://www.iana.org/assignments/smtp/smtp.xhtml</text></g>
+  </g></svg>

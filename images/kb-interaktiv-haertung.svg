@@ -43,17 +43,20 @@
   <rect class="frame" x="28" y="136" width="1344" height="300" rx="22"/>
   <text class="section" x="52" y="168">1 · VERSCHIEDENE EINTRITTSWEGE BRAUCHEN VERSCHIEDENE POLICIES</text>
 
-  <a href="/kb/smtp" target="_top" tabindex="0" aria-label="Internet-Relay · SMTP 25 – unbekannte MTAs · untrusted content">
+  <a data-link-hint="1" href="/kb/smtp" target="_top" tabindex="0" aria-label="Internet-Relay · SMTP 25 – unbekannte MTAs · untrusted content">
+    <title>Öffnet: Internet-Relay · SMTP 25 – unbekannte MTAs · untrusted content — Ziel: /kb/smtp</title>
     <rect class="hit hit-red" x="52" y="190" width="286" height="76" rx="14"/>
     <text class="label" x="195" y="220" text-anchor="middle">Internet-Relay · SMTP 25</text>
     <text class="small" x="195" y="246" text-anchor="middle">unbekannte MTAs · untrusted content</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc8314" target="_top" tabindex="0" aria-label="Submission &amp; Access – Benutzeridentität · TLS · Rate Limit">
+  <a data-link-hint="2" href="https://datatracker.ietf.org/doc/html/rfc8314" target="_top" tabindex="0" aria-label="Submission &amp; Access – Benutzeridentität · TLS · Rate Limit">
+    <title>Öffnet: Submission &amp; Access – Benutzeridentität · TLS · Rate Limit — Ziel: https://datatracker.ietf.org/doc/html/rfc8314</title>
     <rect class="hit hit-green" x="52" y="282" width="286" height="76" rx="14"/>
     <text class="label" x="195" y="312" text-anchor="middle">Submission &amp; Access</text>
     <text class="small" x="195" y="338" text-anchor="middle">Benutzeridentität · TLS · Rate Limit</text>
   </a>
-  <a href="/kb/haertung#managementebene-und-administrationspfade" target="_top" tabindex="0" aria-label="Management · API · SSH · Updates">
+  <a data-link-hint="3" href="/kb/haertung#managementebene-und-administrationspfade" target="_top" tabindex="0" aria-label="Management · API · SSH · Updates">
+    <title>Öffnet: Management · API · SSH · Updates — Ziel: /kb/haertung#managementebene-und-administrationspfade</title>
     <rect class="hit hit-violet" x="52" y="374" width="286" height="42" rx="12"/>
     <text class="body" x="195" y="401" text-anchor="middle">Management · API · SSH · Updates</text>
   </a>
@@ -65,7 +68,8 @@
   <rect class="boundary" x="410" y="178" width="938" height="238" rx="18"/>
   <text class="tiny" x="430" y="200">KONTROLLIERTE PLATTFORMGRENZE</text>
 
-  <a href="/kb/haertung#least-functionality-dienste-ports-und-software" target="_top" tabindex="0" aria-label="Edge / Listener – Port · Prozess · Limits – Relay ≠ Adminzugang">
+  <a data-link-hint="4" href="/kb/haertung#least-functionality-dienste-ports-und-software" target="_top" tabindex="0" aria-label="Edge / Listener – Port · Prozess · Limits – Relay ≠ Adminzugang">
+    <title>Öffnet: Edge / Listener – Port · Prozess · Limits – Relay ≠ Adminzugang — Ziel: /kb/haertung#least-functionality-dienste-ports-und-software</title>
     <rect class="hit hit-blue" x="430" y="216" width="200" height="116" rx="14"/>
     <text class="label" x="530" y="248" text-anchor="middle">Edge / Listener</text>
     <text class="body" x="530" y="274" text-anchor="middle">Port · Prozess · Limits</text>
@@ -73,7 +77,8 @@
     <text class="small" x="530" y="319" text-anchor="middle">Default Deny je Richtung</text>
   </a>
   <path class="arrow" d="M638 274 H674"/>
-  <a href="/kb/mail-auth" target="_top" tabindex="0" aria-label="Policy &amp; Auth – SPF · DKIM · DMARC – Identität · Rollen">
+  <a data-link-hint="5" href="/kb/mail-auth" target="_top" tabindex="0" aria-label="Policy &amp; Auth – SPF · DKIM · DMARC – Identität · Rollen">
+    <title>Öffnet: Policy &amp; Auth – SPF · DKIM · DMARC – Identität · Rollen — Ziel: /kb/mail-auth</title>
     <rect class="hit hit-green" x="682" y="216" width="200" height="116" rx="14"/>
     <text class="label" x="782" y="248" text-anchor="middle">Policy &amp; Auth</text>
     <text class="body" x="782" y="274" text-anchor="middle">SPF · DKIM · DMARC</text>
@@ -81,7 +86,8 @@
     <text class="small" x="782" y="319" text-anchor="middle">TLS- und Relay-Policy</text>
   </a>
   <path class="arrow" d="M890 274 H926"/>
-  <a href="/kb/haertung#anwendung-daten-parser-und-schlüssel" target="_top" tabindex="0" aria-label="Parser &amp; Pipeline – MIME · AV · Sandbox – minimale Rechte">
+  <a data-link-hint="6" href="/kb/haertung#anwendung-daten-parser-und-schlüssel" target="_top" tabindex="0" aria-label="Parser &amp; Pipeline – MIME · AV · Sandbox – minimale Rechte">
+    <title>Öffnet: Parser &amp; Pipeline – MIME · AV · Sandbox – minimale Rechte — Ziel: /kb/haertung#anwendung-daten-parser-und-schlüssel</title>
     <rect class="hit hit-red" x="934" y="216" width="200" height="116" rx="14"/>
     <text class="label" x="1034" y="248" text-anchor="middle">Parser &amp; Pipeline</text>
     <text class="body" x="1034" y="274" text-anchor="middle">MIME · AV · Sandbox</text>
@@ -89,7 +95,8 @@
     <text class="small" x="1034" y="319" text-anchor="middle">begrenzter Egress</text>
   </a>
   <path class="arrow" d="M1142 274 H1178"/>
-  <a href="/kb/backup-dr" target="_top" tabindex="0" aria-label="Zustand – Queue · DB – Blob · Keys">
+  <a data-link-hint="7" href="/kb/backup-dr" target="_top" tabindex="0" aria-label="Zustand – Queue · DB – Blob · Keys">
+    <title>Öffnet: Zustand – Queue · DB – Blob · Keys — Ziel: /kb/backup-dr</title>
     <rect class="hit hit-violet" x="1186" y="216" width="142" height="116" rx="14"/>
     <text class="label" x="1257" y="248" text-anchor="middle">Zustand</text>
     <text class="body" x="1257" y="274" text-anchor="middle">Queue · DB</text>
@@ -97,46 +104,56 @@
     <text class="small" x="1257" y="319" text-anchor="middle">Recovery</text>
   </a>
 
-  <a href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · Namen"><rect class="chip" x="430" y="352" width="176" height="42" rx="21"/><text class="small" x="518" y="378" text-anchor="middle">DNS · Namen</text></a>
-  <a href="/kb/ldap" target="_top" tabindex="0" aria-label="LDAP · Identität"><rect class="chip" x="620" y="352" width="176" height="42" rx="21"/><text class="small" x="708" y="378" text-anchor="middle">LDAP · Identität</text></a>
-  <a href="/kb/tls" target="_top" tabindex="0" aria-label="TLS · PKI · Trust"><rect class="chip" x="810" y="352" width="176" height="42" rx="21"/><text class="small" x="898" y="378" text-anchor="middle">TLS · PKI · Trust</text></a>
-  <a href="/kb/verschluesselung" target="_top" tabindex="0" aria-label="S/MIME · OpenPGP · Schlüssel"><rect class="chip" x="1000" y="352" width="328" height="42" rx="21"/><text class="small" x="1164" y="378" text-anchor="middle">S/MIME · OpenPGP · Schlüssel</text></a>
+  <a data-link-hint="8" href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · Namen">
+    <title>Öffnet: DNS · Namen — Ziel: /kb/dns</title><rect class="chip" x="430" y="352" width="176" height="42" rx="21"/><text class="small" x="518" y="378" text-anchor="middle">DNS · Namen</text></a>
+  <a data-link-hint="9" href="/kb/ldap" target="_top" tabindex="0" aria-label="LDAP · Identität">
+    <title>Öffnet: LDAP · Identität — Ziel: /kb/ldap</title><rect class="chip" x="620" y="352" width="176" height="42" rx="21"/><text class="small" x="708" y="378" text-anchor="middle">LDAP · Identität</text></a>
+  <a data-link-hint="10" href="/kb/tls" target="_top" tabindex="0" aria-label="TLS · PKI · Trust">
+    <title>Öffnet: TLS · PKI · Trust — Ziel: /kb/tls</title><rect class="chip" x="810" y="352" width="176" height="42" rx="21"/><text class="small" x="898" y="378" text-anchor="middle">TLS · PKI · Trust</text></a>
+  <a data-link-hint="11" href="/kb/verschluesselung" target="_top" tabindex="0" aria-label="S/MIME · OpenPGP · Schlüssel">
+    <title>Öffnet: S/MIME · OpenPGP · Schlüssel — Ziel: /kb/verschluesselung</title><rect class="chip" x="1000" y="352" width="328" height="42" rx="21"/><text class="small" x="1164" y="378" text-anchor="middle">S/MIME · OpenPGP · Schlüssel</text></a>
 
   <rect class="frame" x="28" y="454" width="1344" height="294" rx="22"/>
   <text class="section" x="52" y="486">2 · SECHS KONTROLLFLÄCHEN · EIN GEMEINSAMER SOLLZUSTAND</text>
 
-  <a href="/kb/haertung#least-functionality-dienste-ports-und-software" target="_top" tabindex="0" aria-label="Host &amp; Runtime – Pakete · Dienste · Listener · Prozessrechte – CM-7 · Least Functionality">
+  <a data-link-hint="12" href="/kb/haertung#least-functionality-dienste-ports-und-software" target="_top" tabindex="0" aria-label="Host &amp; Runtime – Pakete · Dienste · Listener · Prozessrechte – CM-7 · Least Functionality">
+    <title>Öffnet: Host &amp; Runtime – Pakete · Dienste · Listener · Prozessrechte – CM-7 · Least Functionality — Ziel: /kb/haertung#least-functionality-dienste-ports-und-software</title>
     <rect class="hit hit-blue" x="52" y="510" width="404" height="92" rx="15"/>
     <text class="label" x="254" y="542" text-anchor="middle">Host &amp; Runtime</text>
     <text class="body" x="254" y="568" text-anchor="middle">Pakete · Dienste · Listener · Prozessrechte</text>
     <text class="small" x="254" y="590" text-anchor="middle">CM-7 · Least Functionality</text>
   </a>
-  <a href="/kb/haertung#identitäten-konten-und-least-privilege" target="_top" tabindex="0" aria-label="Identität &amp; Berechtigung – MFA · persönliche Admins · Service-Identitäten – Least Privilege · Complete Mediation">
+  <a data-link-hint="13" href="/kb/haertung#identitäten-konten-und-least-privilege" target="_top" tabindex="0" aria-label="Identität &amp; Berechtigung – MFA · persönliche Admins · Service-Identitäten – Least Privilege · Complete Mediation">
+    <title>Öffnet: Identität &amp; Berechtigung – MFA · persönliche Admins · Service-Identitäten – Least Privilege · Complete Mediation — Ziel: /kb/haertung#identitäten-konten-und-least-privilege</title>
     <rect class="hit hit-green" x="482" y="510" width="404" height="92" rx="15"/>
     <text class="label" x="684" y="542" text-anchor="middle">Identität &amp; Berechtigung</text>
     <text class="body" x="684" y="568" text-anchor="middle">MFA · persönliche Admins · Service-Identitäten</text>
     <text class="small" x="684" y="590" text-anchor="middle">Least Privilege · Complete Mediation</text>
   </a>
-  <a href="/kb/haertung#managementebene-und-administrationspfade" target="_top" tabindex="0" aria-label="Managementebene – Adminzone · Bastion · API · SSH · AAA – getrennt vom produktiven Datenfluss">
+  <a data-link-hint="14" href="/kb/haertung#managementebene-und-administrationspfade" target="_top" tabindex="0" aria-label="Managementebene – Adminzone · Bastion · API · SSH · AAA – getrennt vom produktiven Datenfluss">
+    <title>Öffnet: Managementebene – Adminzone · Bastion · API · SSH · AAA – getrennt vom produktiven Datenfluss — Ziel: /kb/haertung#managementebene-und-administrationspfade</title>
     <rect class="hit hit-violet" x="912" y="510" width="436" height="92" rx="15"/>
     <text class="label" x="1130" y="542" text-anchor="middle">Managementebene</text>
     <text class="body" x="1130" y="568" text-anchor="middle">Adminzone · Bastion · API · SSH · AAA</text>
     <text class="small" x="1130" y="590" text-anchor="middle">getrennt vom produktiven Datenfluss</text>
   </a>
 
-  <a href="/kb/haertung#netzwerkpfade-default-deny-mit-expliziter-richtung" target="_top" tabindex="0" aria-label="Netz &amp; Protokolle – gerichtete Allow-List · Segmentierung · TLS – Ingress und Egress explizit">
+  <a data-link-hint="15" href="/kb/haertung#netzwerkpfade-default-deny-mit-expliziter-richtung" target="_top" tabindex="0" aria-label="Netz &amp; Protokolle – gerichtete Allow-List · Segmentierung · TLS – Ingress und Egress explizit">
+    <title>Öffnet: Netz &amp; Protokolle – gerichtete Allow-List · Segmentierung · TLS – Ingress und Egress explizit — Ziel: /kb/haertung#netzwerkpfade-default-deny-mit-expliziter-richtung</title>
     <rect class="hit hit-blue" x="52" y="624" width="404" height="92" rx="15"/>
     <text class="label" x="254" y="656" text-anchor="middle">Netz &amp; Protokolle</text>
     <text class="body" x="254" y="682" text-anchor="middle">gerichtete Allow-List · Segmentierung · TLS</text>
     <text class="small" x="254" y="704" text-anchor="middle">Ingress und Egress explizit</text>
   </a>
-  <a href="/kb/haertung#anwendung-daten-parser-und-schlüssel" target="_top" tabindex="0" aria-label="Anwendung &amp; Daten – Queue · Parser · Temp · Secrets · Schlüssel – Ressourcen- und Schadensradius begrenzen">
+  <a data-link-hint="16" href="/kb/haertung#anwendung-daten-parser-und-schlüssel" target="_top" tabindex="0" aria-label="Anwendung &amp; Daten – Queue · Parser · Temp · Secrets · Schlüssel – Ressourcen- und Schadensradius begrenzen">
+    <title>Öffnet: Anwendung &amp; Daten – Queue · Parser · Temp · Secrets · Schlüssel – Ressourcen- und Schadensradius begrenzen — Ziel: /kb/haertung#anwendung-daten-parser-und-schlüssel</title>
     <rect class="hit hit-red" x="482" y="624" width="404" height="92" rx="15"/>
     <text class="label" x="684" y="656" text-anchor="middle">Anwendung &amp; Daten</text>
     <text class="body" x="684" y="682" text-anchor="middle">Queue · Parser · Temp · Secrets · Schlüssel</text>
     <text class="small" x="684" y="704" text-anchor="middle">Ressourcen- und Schadensradius begrenzen</text>
   </a>
-  <a href="/kb/haertung#patches-images-und-lieferkette" target="_top" tabindex="0" aria-label="Lieferkette &amp; Telemetrie – Images · Updates · Herkunft · Logs · Drift – verifizieren und Veränderungen erkennen">
+  <a data-link-hint="17" href="/kb/haertung#patches-images-und-lieferkette" target="_top" tabindex="0" aria-label="Lieferkette &amp; Telemetrie – Images · Updates · Herkunft · Logs · Drift – verifizieren und Veränderungen erkennen">
+    <title>Öffnet: Lieferkette &amp; Telemetrie – Images · Updates · Herkunft · Logs · Drift – verifizieren und Veränderungen erkennen — Ziel: /kb/haertung#patches-images-und-lieferkette</title>
     <rect class="hit hit-violet" x="912" y="624" width="436" height="92" rx="15"/>
     <text class="label" x="1130" y="656" text-anchor="middle">Lieferkette &amp; Telemetrie</text>
     <text class="body" x="1130" y="682" text-anchor="middle">Images · Updates · Herkunft · Logs · Drift</text>
@@ -146,25 +163,105 @@
   <rect class="frame" x="28" y="766" width="1344" height="206" rx="22"/>
   <text class="section" x="52" y="798">3 · BASELINE-LIFECYCLE · HÄRTUNG BLEIBT NUR MIT RÜCKKOPPLUNG WIRKSAM</text>
 
-  <a href="/kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung" target="_top" tabindex="0" aria-label="1 · Inventarisieren"><rect class="chip" x="52" y="820" width="180" height="48" rx="24"/><text class="small" x="142" y="849" text-anchor="middle">1 · Inventarisieren</text></a>
+  <a data-link-hint="18" href="/kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung" target="_top" tabindex="0" aria-label="1 · Inventarisieren">
+    <title>Öffnet: 1 · Inventarisieren — Ziel: /kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung</title><rect class="chip" x="52" y="820" width="180" height="48" rx="24"/><text class="small" x="142" y="849" text-anchor="middle">1 · Inventarisieren</text></a>
   <path class="arrow" d="M238 844 H264"/>
-  <a href="https://www.cisecurity.org/cis-benchmarks" target="_top" tabindex="0" aria-label="2 · Referenz wählen"><rect class="chip" x="272" y="820" width="180" height="48" rx="24"/><text class="small" x="362" y="849" text-anchor="middle">2 · Referenz wählen</text></a>
+  <a data-link-hint="19" href="https://www.cisecurity.org/cis-benchmarks" target="_top" tabindex="0" aria-label="2 · Referenz wählen">
+    <title>Öffnet: 2 · Referenz wählen — Ziel: https://www.cisecurity.org/cis-benchmarks</title><rect class="chip" x="272" y="820" width="180" height="48" rx="24"/><text class="small" x="362" y="849" text-anchor="middle">2 · Referenz wählen</text></a>
   <path class="arrow" d="M458 844 H484"/>
-  <a href="/kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung" target="_top" tabindex="0" aria-label="3 · Tailoring"><rect class="chip" x="492" y="820" width="180" height="48" rx="24"/><text class="small" x="582" y="849" text-anchor="middle">3 · Tailoring</text></a>
+  <a data-link-hint="20" href="/kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung" target="_top" tabindex="0" aria-label="3 · Tailoring">
+    <title>Öffnet: 3 · Tailoring — Ziel: /kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung</title><rect class="chip" x="492" y="820" width="180" height="48" rx="24"/><text class="small" x="582" y="849" text-anchor="middle">3 · Tailoring</text></a>
   <path class="arrow" d="M678 844 H704"/>
-  <a href="/kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung" target="_top" tabindex="0" aria-label="4 · Pilotieren"><rect class="chip" x="712" y="820" width="180" height="48" rx="24"/><text class="small" x="802" y="849" text-anchor="middle">4 · Pilotieren</text></a>
+  <a data-link-hint="21" href="/kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung" target="_top" tabindex="0" aria-label="4 · Pilotieren">
+    <title>Öffnet: 4 · Pilotieren — Ziel: /kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung</title><rect class="chip" x="712" y="820" width="180" height="48" rx="24"/><text class="small" x="802" y="849" text-anchor="middle">4 · Pilotieren</text></a>
   <path class="arrow" d="M898 844 H924"/>
-  <a href="/kb/haertung#logging-telemetrie-und-drift" target="_top" tabindex="0" aria-label="5 · Ausrollen"><rect class="chip" x="932" y="820" width="180" height="48" rx="24"/><text class="small" x="1022" y="849" text-anchor="middle">5 · Ausrollen</text></a>
+  <a data-link-hint="22" href="/kb/haertung#logging-telemetrie-und-drift" target="_top" tabindex="0" aria-label="5 · Ausrollen">
+    <title>Öffnet: 5 · Ausrollen — Ziel: /kb/haertung#logging-telemetrie-und-drift</title><rect class="chip" x="932" y="820" width="180" height="48" rx="24"/><text class="small" x="1022" y="849" text-anchor="middle">5 · Ausrollen</text></a>
   <path class="arrow" d="M1118 844 H1144"/>
-  <a href="/kb/haertung#logging-telemetrie-und-drift" target="_top" tabindex="0" aria-label="6 · Drift &amp; Alarm"><rect class="chip" x="1152" y="820" width="196" height="48" rx="24"/><text class="small" x="1250" y="849" text-anchor="middle">6 · Drift &amp; Alarm</text></a>
+  <a data-link-hint="23" href="/kb/haertung#logging-telemetrie-und-drift" target="_top" tabindex="0" aria-label="6 · Drift &amp; Alarm">
+    <title>Öffnet: 6 · Drift &amp; Alarm — Ziel: /kb/haertung#logging-telemetrie-und-drift</title><rect class="chip" x="1152" y="820" width="196" height="48" rx="24"/><text class="small" x="1250" y="849" text-anchor="middle">6 · Drift &amp; Alarm</text></a>
 
   <path class="arrow-red" d="M1250 876 C1250 902 142 902 142 876"/>
   <text class="tiny" x="696" y="912" text-anchor="middle">Befund → Risiko/Abweichung → Baseline oder System korrigieren → erneut verifizieren</text>
 
-  <a href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final" target="_top" tabindex="0" aria-label="NIST SP 800-53"><rect class="chip" x="52" y="928" width="196" height="30" rx="15"/><text class="tiny" x="150" y="948" text-anchor="middle">NIST SP 800-53</text></a>
-  <a href="https://csrc.nist.gov/pubs/sp/800/207/final" target="_top" tabindex="0" aria-label="NIST SP 800-207"><rect class="chip" x="262" y="928" width="196" height="30" rx="15"/><text class="tiny" x="360" y="948" text-anchor="middle">NIST SP 800-207</text></a>
-  <a href="https://www.cisecurity.org/controls/secure-configuration-of-enterprise-assets-and-software" target="_top" tabindex="0" aria-label="CIS Control 4"><rect class="chip" x="472" y="928" width="196" height="30" rx="15"/><text class="tiny" x="570" y="948" text-anchor="middle">CIS Control 4</text></a>
-  <a href="https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure" target="_top" tabindex="0" aria-label="CISA Hardening"><rect class="chip" x="682" y="928" width="196" height="30" rx="15"/><text class="tiny" x="780" y="948" text-anchor="middle">CISA Hardening</text></a>
-  <a href="https://csrc.nist.gov/pubs/sp/800/177/r1/final" target="_top" tabindex="0" aria-label="NIST SP 800-177"><rect class="chip" x="892" y="928" width="196" height="30" rx="15"/><text class="tiny" x="990" y="948" text-anchor="middle">NIST SP 800-177</text></a>
-  <a href="https://web.mit.edu/Saltzer/www/publications/protection/Basic.html" target="_top" tabindex="0" aria-label="Saltzer / Schroeder"><rect class="chip" x="1102" y="928" width="246" height="30" rx="15"/><text class="tiny" x="1225" y="948" text-anchor="middle">Saltzer / Schroeder</text></a>
-</svg>
+  <a data-link-hint="24" href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final" target="_top" tabindex="0" aria-label="NIST SP 800-53">
+    <title>Öffnet: NIST SP 800-53 — Ziel: https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final</title><rect class="chip" x="52" y="928" width="196" height="30" rx="15"/><text class="tiny" x="150" y="948" text-anchor="middle">NIST SP 800-53</text></a>
+  <a data-link-hint="25" href="https://csrc.nist.gov/pubs/sp/800/207/final" target="_top" tabindex="0" aria-label="NIST SP 800-207">
+    <title>Öffnet: NIST SP 800-207 — Ziel: https://csrc.nist.gov/pubs/sp/800/207/final</title><rect class="chip" x="262" y="928" width="196" height="30" rx="15"/><text class="tiny" x="360" y="948" text-anchor="middle">NIST SP 800-207</text></a>
+  <a data-link-hint="26" href="https://www.cisecurity.org/controls/secure-configuration-of-enterprise-assets-and-software" target="_top" tabindex="0" aria-label="CIS Control 4">
+    <title>Öffnet: CIS Control 4 — Ziel: https://www.cisecurity.org/controls/secure-configuration-of-enterprise-assets-and-software</title><rect class="chip" x="472" y="928" width="196" height="30" rx="15"/><text class="tiny" x="570" y="948" text-anchor="middle">CIS Control 4</text></a>
+  <a data-link-hint="27" href="https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure" target="_top" tabindex="0" aria-label="CISA Hardening">
+    <title>Öffnet: CISA Hardening — Ziel: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure</title><rect class="chip" x="682" y="928" width="196" height="30" rx="15"/><text class="tiny" x="780" y="948" text-anchor="middle">CISA Hardening</text></a>
+  <a data-link-hint="28" href="https://csrc.nist.gov/pubs/sp/800/177/r1/final" target="_top" tabindex="0" aria-label="NIST SP 800-177">
+    <title>Öffnet: NIST SP 800-177 — Ziel: https://csrc.nist.gov/pubs/sp/800/177/r1/final</title><rect class="chip" x="892" y="928" width="196" height="30" rx="15"/><text class="tiny" x="990" y="948" text-anchor="middle">NIST SP 800-177</text></a>
+  <a data-link-hint="29" href="https://web.mit.edu/Saltzer/www/publications/protection/Basic.html" target="_top" tabindex="0" aria-label="Saltzer / Schroeder">
+    <title>Öffnet: Saltzer / Schroeder — Ziel: https://web.mit.edu/Saltzer/www/publications/protection/Basic.html</title><rect class="chip" x="1102" y="928" width="246" height="30" rx="15"/><text class="tiny" x="1225" y="948" text-anchor="middle">Saltzer / Schroeder</text></a>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+svg:has(a[data-link-hint="21"]:hover) .link-target-copy-21,svg:has(a[data-link-hint="21"]:focus) .link-target-copy-21{opacity:1}
+svg:has(a[data-link-hint="22"]:hover) .link-target-copy-22,svg:has(a[data-link-hint="22"]:focus) .link-target-copy-22{opacity:1}
+svg:has(a[data-link-hint="23"]:hover) .link-target-copy-23,svg:has(a[data-link-hint="23"]:focus) .link-target-copy-23{opacity:1}
+svg:has(a[data-link-hint="24"]:hover) .link-target-copy-24,svg:has(a[data-link-hint="24"]:focus) .link-target-copy-24{opacity:1}
+svg:has(a[data-link-hint="25"]:hover) .link-target-copy-25,svg:has(a[data-link-hint="25"]:focus) .link-target-copy-25{opacity:1}
+svg:has(a[data-link-hint="26"]:hover) .link-target-copy-26,svg:has(a[data-link-hint="26"]:focus) .link-target-copy-26{opacity:1}
+svg:has(a[data-link-hint="27"]:hover) .link-target-copy-27,svg:has(a[data-link-hint="27"]:focus) .link-target-copy-27{opacity:1}
+svg:has(a[data-link-hint="28"]:hover) .link-target-copy-28,svg:has(a[data-link-hint="28"]:focus) .link-target-copy-28{opacity:1}
+svg:has(a[data-link-hint="29"]:hover) .link-target-copy-29,svg:has(a[data-link-hint="29"]:focus) .link-target-copy-29{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Internet-Relay · SMTP 25 – unbekannte MTAs · untrusted content</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Submission &amp; Access – Benutzeridentität · TLS · Rate Limit</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc8314</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Management · API · SSH · Updates</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#managementebene-und-administrationspfade</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Edge / Listener – Port · Prozess · Limits – Relay ≠ Adminzugang</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#least-functionality-dienste-ports-und-software</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Policy &amp; Auth – SPF · DKIM · DMARC – Identität · Rollen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Parser &amp; Pipeline – MIME · AV · Sandbox – minimale Rechte</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#anwendung-daten-parser-und-schlüssel</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Zustand – Queue · DB – Blob · Keys</text><text class="link-target-address" x="26" y="60">Ziel: /kb/backup-dr</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: DNS · Namen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: LDAP · Identität</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: TLS · PKI · Trust</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tls</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: S/MIME · OpenPGP · Schlüssel</text><text class="link-target-address" x="26" y="60">Ziel: /kb/verschluesselung</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Host &amp; Runtime – Pakete · Dienste · Listener · Prozessrechte – CM-7 · Least Functionality</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#least-functionality-dienste-ports-und-software</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Identität &amp; Berechtigung – MFA · persönliche Admins · Service-Identitäten – Least Privilege · Complete Mediation</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#identitäten-konten-und-least-privilege</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Managementebene – Adminzone · Bastion · API · SSH · AAA – getrennt vom produktiven Datenfluss</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#managementebene-und-administrationspfade</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: Netz &amp; Protokolle – gerichtete Allow-List · Segmentierung · TLS – Ingress und Egress explizit</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#netzwerkpfade-default-deny-mit-expliziter-richtung</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: Anwendung &amp; Daten – Queue · Parser · Temp · Secrets · Schlüssel – Ressourcen- und Schadensradius begrenzen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#anwendung-daten-parser-und-schlüssel</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: Lieferkette &amp; Telemetrie – Images · Updates · Herkunft · Logs · Drift – verifizieren und Veränderungen erkennen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#patches-images-und-lieferkette</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: 1 · Inventarisieren</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: 2 · Referenz wählen</text><text class="link-target-address" x="26" y="60">Ziel: https://www.cisecurity.org/cis-benchmarks</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: 3 · Tailoring</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: 4 · Pilotieren</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#baseline-lifecycle-und-kontrollierte-abweichung</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: 5 · Ausrollen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#logging-telemetrie-und-drift</text></g>
+    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="38">Öffnet: 6 · Drift &amp; Alarm</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung#logging-telemetrie-und-drift</text></g>
+    <g class="link-target-copy link-target-copy-24"><text class="link-target-label" x="26" y="38">Öffnet: NIST SP 800-53</text><text class="link-target-address" x="26" y="60">Ziel: https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final</text></g>
+    <g class="link-target-copy link-target-copy-25"><text class="link-target-label" x="26" y="38">Öffnet: NIST SP 800-207</text><text class="link-target-address" x="26" y="60">Ziel: https://csrc.nist.gov/pubs/sp/800/207/final</text></g>
+    <g class="link-target-copy link-target-copy-26"><text class="link-target-label" x="26" y="38">Öffnet: CIS Control 4</text><text class="link-target-address" x="26" y="60">Ziel: https://www.cisecurity.org/controls/secure-configuration-of-enterprise-assets-and-software</text></g>
+    <g class="link-target-copy link-target-copy-27"><text class="link-target-label" x="26" y="38">Öffnet: CISA Hardening</text><text class="link-target-address" x="26" y="60">Ziel: https://www.cisa.gov/resources-tools/resources/enhanced-visibility-and-hardening-guidance-communications-infrastructure</text></g>
+    <g class="link-target-copy link-target-copy-28"><text class="link-target-label" x="26" y="38">Öffnet: NIST SP 800-177</text><text class="link-target-address" x="26" y="60">Ziel: https://csrc.nist.gov/pubs/sp/800/177/r1/final</text></g>
+    <g class="link-target-copy link-target-copy-29"><text class="link-target-label" x="26" y="38">Öffnet: Saltzer / Schroeder</text><text class="link-target-address" x="26" y="60">Ziel: https://web.mit.edu/Saltzer/www/publications/protection/Basic.html</text></g>
+  </g></svg>

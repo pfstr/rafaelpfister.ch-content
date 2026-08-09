@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Exchange On-Premises: Server-, Transport- und Datenbankarchitektur</title>
+  <desc id="desc">Klickbare Übersicht von Client und SMTP über Mailboxserver, Transportdienste, Active Directory, ESE-Datenbanken, DAG und Betriebswerkzeuge.</desc>
+  <style>
+    text{font-family:Inter,Arial,sans-serif;fill:#111112}.bg{fill:#faf7f2}.panel{fill:#fff;stroke:#d9d2c9;stroke-width:2}.hit{fill:#eef5f7;stroke:#286983;stroke-width:2;transition:fill .15s,stroke .15s}.data{fill:#f5eee8;stroke:#8b3a1c}.ops{fill:#edf4ee;stroke:#3f6f4e}.link{cursor:pointer;outline:none}.link:hover .hit,.link:focus .hit{fill:#d5edf4;stroke:#8b3a1c;stroke-width:4}.link:hover .data,.link:focus .data{fill:#f4d9cc;stroke:#286983;stroke-width:4}.link:hover .ops,.link:focus .ops{fill:#d7eadc;stroke:#8b3a1c;stroke-width:4}.h{font-size:28px;font-weight:750}.k{font-size:20px;font-weight:700}.s{font-size:15px;fill:#52525b}.label{font-size:13px;font-weight:700;letter-spacing:1.4px;fill:#6b6470}.arrow{stroke:#286983;stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#286983"/></marker></defs>
+  <rect class="bg" width="1400" height="1000"/>
+  <text class="label" x="55" y="55">EXCHANGE ON-PREMISES · NORMALER WEG UND BETRIEBSNACHWEIS</text>
+  <text class="h" x="55" y="95">Vom Frontend bis zur aktiven Datenbankkopie</text>
+
+  <a data-link-hint="1" href="https://learn.microsoft.com/en-us/exchange/architecture/client-access/client-access" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur Client-Access-Architektur">
+    <title>Öffnet: Client Access Services – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/architecture/client-access/client-access</title><rect class="hit" x="55" y="145" width="250" height="110" rx="16"/><text class="k" x="180" y="190" text-anchor="middle">HTTPS-Frontend</text><text class="s" x="180" y="220" text-anchor="middle">Outlook, OWA, APIs</text>
+  </a>
+  <a data-link-hint="2" href="https://learn.microsoft.com/en-us/exchange/architecture/architecture" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur Exchange-Serverarchitektur">
+    <title>Öffnet: Mailboxserver – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/architecture/architecture</title><rect class="hit" x="365" y="145" width="270" height="110" rx="16"/><text class="k" x="500" y="190" text-anchor="middle">Mailboxserver</text><text class="s" x="500" y="220" text-anchor="middle">Frontends und Backends</text>
+  </a>
+  <a data-link-hint="3" href="https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur Exchange-Transport-Pipeline">
+    <title>Öffnet: Transport-Pipeline – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow</title><rect class="hit" x="695" y="145" width="270" height="110" rx="16"/><text class="k" x="830" y="190" text-anchor="middle">Transport Service</text><text class="s" x="830" y="220" text-anchor="middle">Queue, Regeln, Routing</text>
+  </a>
+  <a data-link-hint="4" href="https://learn.microsoft.com/en-us/exchange/architecture/edge-transport-servers/edge-transport-servers" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Edge Transport">
+    <title>Öffnet: Edge Transport – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/architecture/edge-transport-servers/edge-transport-servers</title><rect class="hit" x="1025" y="145" width="270" height="110" rx="16"/><text class="k" x="1160" y="190" text-anchor="middle">Edge Transport</text><text class="s" x="1160" y="220" text-anchor="middle">Optional im Perimeternetz</text>
+  </a>
+  <path class="arrow" d="M305 200H360"/><path class="arrow" d="M635 200H690"/><path class="arrow" d="M1025 225H970"/>
+
+  <rect class="panel" x="55" y="315" width="1290" height="265" rx="22"/>
+  <text class="label" x="85" y="354">DATEN UND VERZEICHNIS</text>
+  <a data-link-hint="5" href="https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Active Directory in Exchange Server">
+    <title>Öffnet: Active Directory – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory</title><rect class="data" x="90" y="400" width="260" height="120" rx="16"/><text class="k" x="220" y="445" text-anchor="middle">Active Directory</text><text class="s" x="220" y="475" text-anchor="middle">Organisation und Empfänger</text>
+  </a>
+  <a data-link-hint="6" href="https://learn.microsoft.com/en-us/exchange/client-developer/backup-restore/transaction-logs-and-checkpoint-files-for-backup-and-restore-in-exchange" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu ESE-Datenbank und Transaktionslogs">
+    <title>Öffnet: ESE, Logs und Checkpoint – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/client-developer/backup-restore/transaction-logs-and-checkpoint-files-for-backup-and-restore-in-exchange</title><rect class="data" x="405" y="400" width="260" height="120" rx="16"/><text class="k" x="535" y="445" text-anchor="middle">ESE-Mailboxdatenbank</text><text class="s" x="535" y="475" text-anchor="middle">.edb, Logs, Checkpoint</text>
+  </a>
+  <a data-link-hint="7" href="https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Database Availability Groups">
+    <title>Öffnet: Database Availability Group – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups</title><rect class="data" x="720" y="400" width="260" height="120" rx="16"/><text class="k" x="850" y="445" text-anchor="middle">DAG</text><text class="s" x="850" y="475" text-anchor="middle">Aktive und passive Kopien</text>
+  </a>
+  <a data-link-hint="8" href="https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/transport-high-availability" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur Transporthochverfügbarkeit">
+    <title>Öffnet: Shadow Redundancy und Safety Net – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/transport-high-availability</title><rect class="data" x="1035" y="400" width="260" height="120" rx="16"/><text class="k" x="1165" y="445" text-anchor="middle">Transportkopien</text><text class="s" x="1165" y="475" text-anchor="middle">Shadow und Safety Net</text>
+  </a>
+  <path class="arrow" d="M350 460H400"/><path class="arrow" d="M665 460H715"/><path class="arrow" d="M980 460H1030"/>
+
+  <rect class="panel" x="55" y="640" width="1290" height="270" rx="22"/>
+  <text class="label" x="85" y="679">BETRIEB, DIAGNOSE UND RECOVERY</text>
+  <a data-link-hint="9" href="https://learn.microsoft.com/en-us/exchange/high-availability/managed-availability/managed-availability" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Managed Availability">
+    <title>Öffnet: Managed Availability – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/managed-availability/managed-availability</title><rect class="ops" x="90" y="720" width="270" height="125" rx="16"/><text class="k" x="225" y="765" text-anchor="middle">Health Sets</text><text class="s" x="225" y="795" text-anchor="middle">Probes und Monitors</text>
+  </a>
+  <a data-link-hint="10" href="https://learn.microsoft.com/en-us/exchange/mail-flow/queues/queues" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange-Queues">
+    <title>Öffnet: Queues – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/queues/queues</title><rect class="ops" x="405" y="720" width="270" height="125" rx="16"/><text class="k" x="540" y="765" text-anchor="middle">Queue und Tracking</text><text class="s" x="540" y="795" text-anchor="middle">Next Hop und Ereignisse</text>
+  </a>
+  <a data-link-hint="11" href="https://learn.microsoft.com/en-us/exchange/high-availability/manage-ha/monitor-dags" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur DAG-Überwachung">
+    <title>Öffnet: DAG überwachen – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/manage-ha/monitor-dags</title><rect class="ops" x="720" y="720" width="270" height="125" rx="16"/><text class="k" x="855" y="765" text-anchor="middle">DAG-Status</text><text class="s" x="855" y="795" text-anchor="middle">Copy und Replay</text>
+  </a>
+  <a data-link-hint="12" href="https://learn.microsoft.com/en-us/exchange/high-availability/disaster-recovery/disaster-recovery" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Backup und Recovery">
+    <title>Öffnet: Backup und Recovery – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/disaster-recovery/disaster-recovery</title><rect class="ops" x="1035" y="720" width="270" height="125" rx="16"/><text class="k" x="1170" y="765" text-anchor="middle">Recovery</text><text class="s" x="1170" y="795" text-anchor="middle">Server, DB und Elemente</text>
+  </a>
+  <text class="s" x="700" y="955" text-anchor="middle">Hover zeigt das Linkziel · Klick öffnet die offizielle Microsoft-Dokumentation</text>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Client Access Services – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/client-access/client-access</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Mailboxserver – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/architecture</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Transport-Pipeline – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Edge Transport – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/edge-transport-servers/edge-transport-servers</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Active Directory – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: ESE, Logs und Checkpoint – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/client-developer/backup-restore/transaction-logs-and-checkpoint-files-for-backup-and-restore-in-exchange</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Database Availability Group – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Shadow Redundancy und Safety Net – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/transport-high-availability</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Managed Availability – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/managed-availability/managed-availability</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Queues – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/queues/queues</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: DAG überwachen – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/manage-ha/monitor-dags</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Backup und Recovery – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/disaster-recovery/disaster-recovery</text></g>
+  </g></svg>

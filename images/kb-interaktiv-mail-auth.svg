@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
-  <title id="title">SPF-, DKIM- und DMARC-Auswertung mit Identitäten und Trust Boundary</title>
+  <title id="title">SPF-, DKIM- und DMARC-Auswertung mit Identitäten und Vertrauensbereich</title>
   <desc id="desc">Interaktive Administrationsgrafik vom SMTP-Eingang über SPF- und DKIM-Prüfung, Alignment und DMARC-Policy bis zu Authentication-Results und Reports. Alle fachlichen Blöcke und Quellen sind verlinkt.</desc>
   <style>
     :root { color-scheme: light; }
@@ -45,25 +45,29 @@
   <rect class="panel" x="60" y="110" width="1280" height="210" rx="20"/>
   <text class="section" x="85" y="145">1 · VIER EINGABEN AUS DREI TECHNISCHEN EBENEN</text>
 
-  <a href="/kb/smtp#envelope-und-nachrichteninhalt" target="_top" tabindex="0" aria-label="Client-IP · HELO – TCP-/SMTP-Hop am Border-MTA – SPF-Eingabe">
+  <a data-link-hint="1" href="/kb/smtp#envelope-und-nachrichteninhalt" target="_top" tabindex="0" aria-label="Client-IP · HELO – TCP-/SMTP-Hop am Border-MTA – SPF-Eingabe">
+    <title>Öffnet: Client-IP · HELO – TCP-/SMTP-Hop am Border-MTA – SPF-Eingabe — Ziel: /kb/smtp#envelope-und-nachrichteninhalt</title>
     <rect class="hit" x="85" y="170" width="255" height="112" rx="16"/>
     <text class="box-title" x="108" y="202">Client-IP · HELO</text>
     <text class="box-copy" x="108" y="229">TCP-/SMTP-Hop am Border-MTA</text>
     <text class="mono" x="108" y="257">SPF-Eingabe</text>
   </a>
-  <a href="/kb/mail-auth#spf-autorisierung-der-verbindenden-ip" target="_top" tabindex="0" aria-label="RFC5321.MailFrom – Envelope · Return Path – SPF-Domain">
+  <a data-link-hint="2" href="/kb/mail-auth#spf-autorisierung-der-verbindenden-ip" target="_top" tabindex="0" aria-label="RFC5321.MailFrom – Envelope · Return Path – SPF-Domain">
+    <title>Öffnet: RFC5321.MailFrom – Envelope · Return Path – SPF-Domain — Ziel: /kb/mail-auth#spf-autorisierung-der-verbindenden-ip</title>
     <rect class="hit gold" x="385" y="170" width="255" height="112" rx="16"/>
     <text class="box-title" x="408" y="202">RFC5321.MailFrom</text>
     <text class="box-copy" x="408" y="229">Envelope · Return Path</text>
     <text class="mono" x="408" y="257">SPF-Domain</text>
   </a>
-  <a href="/kb/mail-auth#dkim-signatur-einer-domain" target="_top" tabindex="0" aria-label="DKIM d= · s= – Signing Domain · Selektor – Signatur + DNS-Key">
+  <a data-link-hint="3" href="/kb/mail-auth#dkim-signatur-einer-domain" target="_top" tabindex="0" aria-label="DKIM d= · s= – Signing Domain · Selektor – Signatur + DNS-Key">
+    <title>Öffnet: DKIM d= · s= – Signing Domain · Selektor – Signatur + DNS-Key — Ziel: /kb/mail-auth#dkim-signatur-einer-domain</title>
     <rect class="hit violet" x="685" y="170" width="255" height="112" rx="16"/>
     <text class="box-title" x="708" y="202">DKIM d= · s=</text>
     <text class="box-copy" x="708" y="229">Signing Domain · Selektor</text>
     <text class="mono" x="708" y="257">Signatur + DNS-Key</text>
   </a>
-  <a href="/kb/mail-auth#dmarc-alignment-policy-und-auswertung" target="_top" tabindex="0" aria-label="RFC5322.From – sichtbare Author Domain – DMARC-Vergleichsziel">
+  <a data-link-hint="4" href="/kb/mail-auth#dmarc-alignment-policy-und-auswertung" target="_top" tabindex="0" aria-label="RFC5322.From – sichtbare Author Domain – DMARC-Vergleichsziel">
+    <title>Öffnet: RFC5322.From – sichtbare Author Domain – DMARC-Vergleichsziel — Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</title>
     <rect class="hit red" x="985" y="170" width="330" height="112" rx="16"/>
     <text class="box-title" x="1008" y="202">RFC5322.From</text>
     <text class="box-copy" x="1008" y="229">sichtbare Author Domain</text>
@@ -73,13 +77,15 @@
   <rect class="panel" x="60" y="340" width="1280" height="315" rx="20"/>
   <text class="section" x="85" y="375">2 · EMPFÄNGERPIPELINE · ROHRESULTAT UND ALIGNMENT GETRENNT HALTEN</text>
 
-  <a href="/kb/mail-auth#lookup-budget-und-abhängigkeiten" target="_top" tabindex="0" aria-label="SPF auswerten – IP + MailFrom/HELO + DNS – pass / fail / error">
+  <a data-link-hint="5" href="/kb/mail-auth#lookup-budget-und-abhängigkeiten" target="_top" tabindex="0" aria-label="SPF auswerten – IP + MailFrom/HELO + DNS – pass / fail / error">
+    <title>Öffnet: SPF auswerten – IP + MailFrom/HELO + DNS – pass / fail / error — Ziel: /kb/mail-auth#lookup-budget-und-abhängigkeiten</title>
     <rect class="hit gold" x="85" y="405" width="270" height="125" rx="16"/>
     <text class="box-title" x="110" y="438">SPF auswerten</text>
     <text class="box-copy" x="110" y="466">IP + MailFrom/HELO + DNS</text>
     <text class="mono" x="110" y="494">pass / fail / error</text>
   </a>
-  <a href="/kb/mail-auth#schlüssel-algorithmen-und-rotation" target="_top" tabindex="0" aria-label="DKIM verifizieren – Header · Body · DNS-Key">
+  <a data-link-hint="6" href="/kb/mail-auth#schlüssel-algorithmen-und-rotation" target="_top" tabindex="0" aria-label="DKIM verifizieren – Header · Body · DNS-Key">
+    <title>Öffnet: DKIM verifizieren – Header · Body · DNS-Key — Ziel: /kb/mail-auth#schlüssel-algorithmen-und-rotation</title>
     <rect class="hit violet" x="85" y="550" width="270" height="75" rx="16"/>
     <text class="box-title" x="110" y="582">DKIM verifizieren</text>
     <text class="mono" x="110" y="606">Header · Body · DNS-Key</text>
@@ -88,7 +94,8 @@
   <path class="arrow" d="M 355 468 H 440"/>
   <path class="arrow" d="M 355 587 H 440"/>
 
-  <a href="/kb/mail-auth#dmarc-alignment-policy-und-auswertung" target="_top" tabindex="0" aria-label="Alignment je Mechanismus – SPF-Domain ↔ Author Domain – DKIM d= ↔ Author Domain">
+  <a data-link-hint="7" href="/kb/mail-auth#dmarc-alignment-policy-und-auswertung" target="_top" tabindex="0" aria-label="Alignment je Mechanismus – SPF-Domain ↔ Author Domain – DKIM d= ↔ Author Domain">
+    <title>Öffnet: Alignment je Mechanismus – SPF-Domain ↔ Author Domain – DKIM d= ↔ Author Domain — Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</title>
     <rect class="hit" x="445" y="405" width="300" height="220" rx="18"/>
     <text class="box-title" x="475" y="440">Alignment je Mechanismus</text>
     <text class="box-copy" x="475" y="472">SPF-Domain ↔ Author Domain</text>
@@ -100,7 +107,8 @@
   </a>
 
   <path class="arrow-gold" d="M 745 515 H 825"/>
-  <a href="/kb/mail-auth#policy-record-und-tags" target="_top" tabindex="0" aria-label="DMARC – SPF aligned pass – ODER">
+  <a data-link-hint="8" href="/kb/mail-auth#policy-record-und-tags" target="_top" tabindex="0" aria-label="DMARC – SPF aligned pass – ODER">
+    <title>Öffnet: DMARC – SPF aligned pass – ODER — Ziel: /kb/mail-auth#policy-record-und-tags</title>
     <rect class="hit red" x="830" y="405" width="230" height="220" rx="18"/>
     <text class="box-title" x="860" y="440">DMARC</text>
     <text class="mono" x="860" y="474">SPF aligned pass</text>
@@ -113,13 +121,15 @@
 
   <path class="arrow" d="M 1060 478 H 1125"/>
   <path class="arrow-gold" d="M 1060 568 H 1125"/>
-  <a href="/kb/mail-auth#authentication-results-richtig-vertrauen" target="_top" tabindex="0" aria-label="Auth-Results – nur innerhalb – Trust Boundary">
+  <a data-link-hint="9" href="/kb/mail-auth#authentication-results-richtig-vertrauen" target="_top" tabindex="0" aria-label="Auth-Results – nur innerhalb – Vertrauensbereich">
+    <title>Öffnet: Auth-Results – nur innerhalb – Vertrauensbereich — Ziel: /kb/mail-auth#authentication-results-richtig-vertrauen</title>
     <rect class="hit green" x="1130" y="405" width="185" height="95" rx="16"/>
     <text class="box-title" x="1152" y="438">Auth-Results</text>
     <text class="box-copy" x="1152" y="466">nur innerhalb</text>
-    <text class="mono" x="1152" y="488">Trust Boundary</text>
+    <text class="mono" x="1152" y="488">Vertrauensbereich</text>
   </a>
-  <a href="/kb/mail-auth#reporting-als-betriebliche-datenpipeline" target="_top" tabindex="0" aria-label="Reports – XML/GZIP · RUA – Zeitreihe ≠ Einzelfall">
+  <a data-link-hint="10" href="/kb/mail-auth#reporting-als-betriebliche-datenpipeline" target="_top" tabindex="0" aria-label="Reports – XML/GZIP · RUA – Zeitreihe ≠ Einzelfall">
+    <title>Öffnet: Reports – XML/GZIP · RUA – Zeitreihe ≠ Einzelfall — Ziel: /kb/mail-auth#reporting-als-betriebliche-datenpipeline</title>
     <rect class="hit green" x="1130" y="525" width="185" height="100" rx="16"/>
     <text class="box-title" x="1152" y="558">Reports</text>
     <text class="box-copy" x="1152" y="584">XML/GZIP · RUA</text>
@@ -128,43 +138,100 @@
 
   <rect class="panel" x="60" y="675" width="1280" height="175" rx="20"/>
   <text class="section" x="85" y="710">3 · INDIREKTE FLÜSSE · KEIN MECHANISMUS ÜBERLEBT JEDE MUTATION</text>
-  <a href="/kb/mail-auth#weiterleitung-und-spf-domain" target="_top" tabindex="0" aria-label="Forwarder – neue Client-IP → SPF kann brechen">
+  <a data-link-hint="11" href="/kb/mail-auth#weiterleitung-und-spf-domain" target="_top" tabindex="0" aria-label="Forwarder – neue Client-IP → SPF kann brechen">
+    <title>Öffnet: Forwarder – neue Client-IP → SPF kann brechen — Ziel: /kb/mail-auth#weiterleitung-und-spf-domain</title>
     <rect class="hit gold" x="85" y="735" width="300" height="82" rx="15"/>
     <text class="box-title" x="108" y="766">Forwarder</text>
     <text class="box-copy" x="108" y="794">neue Client-IP → SPF kann brechen</text>
   </a>
-  <a href="/kb/mail-auth#indirekte-flüsse-und-typische-bruchstellen" target="_top" tabindex="0" aria-label="Mailingliste / Gateway – Body/Header geändert → DKIM kann brechen">
+  <a data-link-hint="12" href="/kb/mail-auth#indirekte-flüsse-und-typische-bruchstellen" target="_top" tabindex="0" aria-label="Mailingliste / Gateway – Body/Header geändert → DKIM kann brechen">
+    <title>Öffnet: Mailingliste / Gateway – Body/Header geändert → DKIM kann brechen — Ziel: /kb/mail-auth#indirekte-flüsse-und-typische-bruchstellen</title>
     <rect class="hit violet" x="420" y="735" width="300" height="82" rx="15"/>
     <text class="box-title" x="443" y="766">Mailingliste / Gateway</text>
     <text class="box-copy" x="443" y="794">Body/Header geändert → DKIM kann brechen</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc8617" rel="noopener noreferrer" tabindex="0" aria-label="ARC · experimentell – signierter Kontext, kein Freipass" target="_top">
+  <a data-link-hint="13" href="https://datatracker.ietf.org/doc/html/rfc8617" rel="noopener noreferrer" tabindex="0" aria-label="ARC · experimentell – signierter Kontext, kein Freipass" target="_top">
+    <title>Öffnet: ARC · experimentell – signierter Kontext, kein Freipass — Ziel: https://datatracker.ietf.org/doc/html/rfc8617</title>
     <rect class="hit" x="755" y="735" width="265" height="82" rx="15"/>
     <text class="box-title" x="778" y="766">ARC · experimentell</text>
     <text class="box-copy" x="778" y="794">signierter Kontext, kein Freipass</text>
   </a>
-  <a href="/kb/mail-auth#fehler-systematisch-einer-grenze-zuordnen" target="_top" tabindex="0" aria-label="Admin-Beweiskette – Hop · Domain · Resultat · Mutation">
+  <a data-link-hint="14" href="/kb/mail-auth#fehler-systematisch-einer-grenze-zuordnen" target="_top" tabindex="0" aria-label="Admin-Beweiskette – Hop · Domain · Resultat · Mutation">
+    <title>Öffnet: Admin-Beweiskette – Hop · Domain · Resultat · Mutation — Ziel: /kb/mail-auth#fehler-systematisch-einer-grenze-zuordnen</title>
     <rect class="hit green" x="1055" y="735" width="260" height="82" rx="15"/>
     <text class="box-title" x="1078" y="766">Admin-Beweiskette</text>
     <text class="box-copy" x="1078" y="794">Hop · Domain · Resultat · Mutation</text>
   </a>
 
   <text class="section" x="70" y="885">PRIMÄRQUELLEN · DETAILS UND GRENZEN</text>
-  <a href="https://datatracker.ietf.org/doc/html/rfc7208" rel="noopener noreferrer" tabindex="0" aria-label="RFC 7208 · SPF" target="_top">
+  <a data-link-hint="15" href="https://datatracker.ietf.org/doc/html/rfc7208" rel="noopener noreferrer" tabindex="0" aria-label="RFC 7208 · SPF" target="_top">
+    <title>Öffnet: RFC 7208 · SPF — Ziel: https://datatracker.ietf.org/doc/html/rfc7208</title>
     <rect class="chip" x="70" y="905" width="215" height="48" rx="22"/><text class="tiny" x="177" y="934" text-anchor="middle">RFC 7208 · SPF</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc6376" rel="noopener noreferrer" tabindex="0" aria-label="RFC 6376 · DKIM" target="_top">
+  <a data-link-hint="16" href="https://datatracker.ietf.org/doc/html/rfc6376" rel="noopener noreferrer" tabindex="0" aria-label="RFC 6376 · DKIM" target="_top">
+    <title>Öffnet: RFC 6376 · DKIM — Ziel: https://datatracker.ietf.org/doc/html/rfc6376</title>
     <rect class="chip" x="305" y="905" width="215" height="48" rx="22"/><text class="tiny" x="412" y="934" text-anchor="middle">RFC 6376 · DKIM</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9989" rel="noopener noreferrer" tabindex="0" aria-label="RFC 9989 · DMARC" target="_top">
+  <a data-link-hint="17" href="https://datatracker.ietf.org/doc/html/rfc9989" rel="noopener noreferrer" tabindex="0" aria-label="RFC 9989 · DMARC" target="_top">
+    <title>Öffnet: RFC 9989 · DMARC — Ziel: https://datatracker.ietf.org/doc/html/rfc9989</title>
     <rect class="chip" x="540" y="905" width="215" height="48" rx="22"/><text class="tiny" x="647" y="934" text-anchor="middle">RFC 9989 · DMARC</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9990" rel="noopener noreferrer" tabindex="0" aria-label="RFC 9990 · Aggregate Reports" target="_top">
+  <a data-link-hint="18" href="https://datatracker.ietf.org/doc/html/rfc9990" rel="noopener noreferrer" tabindex="0" aria-label="RFC 9990 · Aggregate Reports" target="_top">
+    <title>Öffnet: RFC 9990 · Aggregate Reports — Ziel: https://datatracker.ietf.org/doc/html/rfc9990</title>
     <rect class="chip" x="775" y="905" width="245" height="48" rx="22"/><text class="tiny" x="897" y="934" text-anchor="middle">RFC 9990 · Aggregate Reports</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc8601" rel="noopener noreferrer" tabindex="0" aria-label="RFC 8601 · Authentication-Results" target="_top">
+  <a data-link-hint="19" href="https://datatracker.ietf.org/doc/html/rfc8601" rel="noopener noreferrer" tabindex="0" aria-label="RFC 8601 · Authentication-Results" target="_top">
+    <title>Öffnet: RFC 8601 · Authentication-Results — Ziel: https://datatracker.ietf.org/doc/html/rfc8601</title>
     <rect class="chip" x="1040" y="905" width="290" height="48" rx="22"/><text class="tiny" x="1185" y="934" text-anchor="middle">RFC 8601 · Authentication-Results</text>
   </a>
 
   <text class="tiny" x="70" y="980">Fokus oder Hover hebt jedes Ziel hervor. Interne Ziele öffnen die passende Admin-Erklärung; RFC-Chips führen zur Primärquelle.</text>
-</svg>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Client-IP · HELO – TCP-/SMTP-Hop am Border-MTA – SPF-Eingabe</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#envelope-und-nachrichteninhalt</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: RFC5321.MailFrom – Envelope · Return Path – SPF-Domain</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#spf-autorisierung-der-verbindenden-ip</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: DKIM d= · s= – Signing Domain · Selektor – Signatur + DNS-Key</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#dkim-signatur-einer-domain</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: RFC5322.From – sichtbare Author Domain – DMARC-Vergleichsziel</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: SPF auswerten – IP + MailFrom/HELO + DNS – pass / fail / error</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#lookup-budget-und-abhängigkeiten</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: DKIM verifizieren – Header · Body · DNS-Key</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#schlüssel-algorithmen-und-rotation</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Alignment je Mechanismus – SPF-Domain ↔ Author Domain – DKIM d= ↔ Author Domain</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: DMARC – SPF aligned pass – ODER</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#policy-record-und-tags</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Auth-Results – nur innerhalb – Vertrauensbereich</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#authentication-results-richtig-vertrauen</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Reports – XML/GZIP · RUA – Zeitreihe ≠ Einzelfall</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#reporting-als-betriebliche-datenpipeline</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Forwarder – neue Client-IP → SPF kann brechen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#weiterleitung-und-spf-domain</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Mailingliste / Gateway – Body/Header geändert → DKIM kann brechen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#indirekte-flüsse-und-typische-bruchstellen</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: ARC · experimentell – signierter Kontext, kein Freipass</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc8617</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Admin-Beweiskette – Hop · Domain · Resultat · Mutation</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#fehler-systematisch-einer-grenze-zuordnen</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: RFC 7208 · SPF</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc7208</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: RFC 6376 · DKIM</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc6376</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9989 · DMARC</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9989</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9990 · Aggregate Reports</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9990</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: RFC 8601 · Authentication-Results</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc8601</text></g>
+  </g></svg>

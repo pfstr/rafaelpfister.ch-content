@@ -32,7 +32,7 @@
   </defs>
   <rect width="1400" height="1000" fill="#fbfaf7"/>
   <text class="eyebrow" x="36" y="42">HIN · VERTRAUENSRAUM, EDGE UND MAILZUSTAND</text>
-  <text class="title" x="36" y="82">Transport, Identität und Mailbox sind getrennte Fehlerdomänen</text>
+  <text class="title" x="36" y="82">Transport, Identität und Mailbox können unabhängig ausfallen</text>
   <text class="subtitle" x="36" y="110">Durchgezogene Linien: klassischer beziehungsweise lokaler Mailpfad · gestrichelt: veröffentlichtes Stargate-Zielbild</text>
 
   <rect class="frame" x="28" y="138" width="404" height="570" rx="22"/>
@@ -42,19 +42,22 @@
   <text class="section" x="478" y="171">HIN-PLATTFORM · VERTRAUENS- UND DIENSTGRENZE</text>
   <text class="section" x="992" y="171">ORGANISATION B ODER EXTERNER EMPFÄNGER</text>
 
-  <a href="/kb/hin#smtp-routing-und-annahmegrenzen" target="_top" tabindex="0" aria-label="Mailserver · KIS · Geräte – Connectoren · Queue · Message-ID – lokaler Zustands- und Relaybereich">
+  <a data-link-hint="1" href="/kb/hin#smtp-routing-und-annahmegrenzen" target="_top" tabindex="0" aria-label="Mailserver · KIS · Geräte – Connectoren · Queue · Message-ID – lokaler Zustands- und Relaybereich">
+    <title>Öffnet: Mailserver · KIS · Geräte – Connectoren · Queue · Message-ID – lokaler Zustands- und Relaybereich — Ziel: /kb/hin#smtp-routing-und-annahmegrenzen</title>
     <rect class="hit" x="54" y="194" width="352" height="92" rx="16"/>
     <text class="label" x="230" y="228" text-anchor="middle">Mailserver · KIS · Geräte</text>
     <text class="body" x="230" y="255" text-anchor="middle">Connectoren · Queue · Message-ID</text>
     <text class="small" x="230" y="275" text-anchor="middle">lokaler Zustands- und Relaybereich</text>
   </a>
-  <a href="/kb/smtp" target="_top" tabindex="0" aria-label="SMTP · Annahme">
+  <a data-link-hint="2" href="/kb/smtp" target="_top" tabindex="0" aria-label="SMTP · Annahme">
+    <title>Öffnet: SMTP · Annahme — Ziel: /kb/smtp</title>
     <rect class="chip" x="153" y="306" width="154" height="38" rx="19"/>
     <text class="small" x="230" y="330" text-anchor="middle">SMTP · Annahme</text>
   </a>
   <path class="arrow" d="M230 286 V304"/>
 
-  <a href="/kb/hin#architekturansatz-vertrauensraum-mit-edge-komponenten" target="_top" tabindex="0" aria-label="klassisches MGW / AGW – VM oder historische Hardware – Mailtransport · PKI · Access am Edge">
+  <a data-link-hint="3" href="/kb/hin#architekturansatz-vertrauensraum-mit-edge-komponenten" target="_top" tabindex="0" aria-label="klassisches MGW / AGW – VM oder historische Hardware – Mailtransport · PKI · Access am Edge">
+    <title>Öffnet: klassisches MGW / AGW – VM oder historische Hardware – Mailtransport · PKI · Access am Edge — Ziel: /kb/hin#architekturansatz-vertrauensraum-mit-edge-komponenten</title>
     <rect class="hit hit-blue" x="54" y="365" width="352" height="112" rx="16"/>
     <text class="label" x="230" y="402" text-anchor="middle">klassisches MGW / AGW</text>
     <text class="body" x="230" y="430" text-anchor="middle">VM oder historische Hardware</text>
@@ -62,7 +65,8 @@
   </a>
   <path class="arrow" d="M230 344 V363"/>
 
-  <a href="/kb/hin#stargate-als-zielarchitektur" target="_top" tabindex="0" aria-label="Stargate · Zielbild – Mesh-Knoten pro Organisation – Microservices · REST · VM / Container">
+  <a data-link-hint="4" href="/kb/hin#stargate-als-zielarchitektur" target="_top" tabindex="0" aria-label="Stargate · Zielbild – Mesh-Knoten pro Organisation – Microservices · REST · VM / Container">
+    <title>Öffnet: Stargate · Zielbild – Mesh-Knoten pro Organisation – Microservices · REST · VM / Container — Ziel: /kb/hin#stargate-als-zielarchitektur</title>
     <rect class="hit hit-red" x="54" y="520" width="352" height="128" rx="16"/>
     <text class="label" x="230" y="557" text-anchor="middle">Stargate · Zielbild</text>
     <text class="body" x="230" y="585" text-anchor="middle">Mesh-Knoten pro Organisation</text>
@@ -70,27 +74,31 @@
     <text class="small" x="230" y="632" text-anchor="middle">SMTP-kompatibler lokaler Rand</text>
   </a>
 
-  <a href="/kb/hin#identität-und-pki-mit-autorisierung" target="_top" tabindex="0" aria-label="HIN Identität – Schlüsselpaar · X.509 – Registrierung · Sperre">
+  <a data-link-hint="5" href="/kb/hin#identität-und-pki-mit-autorisierung" target="_top" tabindex="0" aria-label="HIN Identität – Schlüsselpaar · X.509 – Registrierung · Sperre">
+    <title>Öffnet: HIN Identität – Schlüsselpaar · X.509 – Registrierung · Sperre — Ziel: /kb/hin#identität-und-pki-mit-autorisierung</title>
     <rect class="hit hit-green" x="482" y="194" width="212" height="118" rx="16"/>
     <text class="label" x="588" y="230" text-anchor="middle">HIN Identität</text>
     <text class="body" x="588" y="258" text-anchor="middle">Schlüsselpaar · X.509</text>
     <text class="small" x="588" y="282" text-anchor="middle">Registrierung · Sperre</text>
   </a>
-  <a href="/kb/hin#mailpfade-und-schutzentscheidungen" target="_top" tabindex="0" aria-label="Postfix · MXEngine – Transport · Verarbeitung – OPA/Rego · S/MIME · Route">
+  <a data-link-hint="6" href="/kb/hin#mailpfade-und-schutzentscheidungen" target="_top" tabindex="0" aria-label="Postfix · MXEngine – Transport · Verarbeitung – OPA/Rego · S/MIME · Route">
+    <title>Öffnet: Postfix · MXEngine – Transport · Verarbeitung – OPA/Rego · S/MIME · Route — Ziel: /kb/hin#mailpfade-und-schutzentscheidungen</title>
     <rect class="hit hit-blue" x="708" y="194" width="210" height="118" rx="16"/>
     <text class="label" x="813" y="230" text-anchor="middle">Postfix · MXEngine</text>
     <text class="body" x="813" y="258" text-anchor="middle">Transport · Verarbeitung</text>
     <text class="small" x="813" y="282" text-anchor="middle">OPA/Rego · S/MIME · Route</text>
   </a>
 
-  <a href="/kb/hin#mailstore-und-clientzugriff-mit-token" target="_top" tabindex="0" aria-label="Mailstore – Zimbra · Webmail – separat: IMAP · POP">
+  <a data-link-hint="7" href="/kb/hin#mailstore-und-clientzugriff-mit-token" target="_top" tabindex="0" aria-label="Mailstore – Zimbra · Webmail – separat: IMAP · POP">
+    <title>Öffnet: Mailstore – Zimbra · Webmail – separat: IMAP · POP — Ziel: /kb/hin#mailstore-und-clientzugriff-mit-token</title>
     <rect class="hit" x="482" y="346" width="212" height="126" rx="16"/>
     <text class="label" x="588" y="382" text-anchor="middle">Mailstore</text>
     <text class="body" x="588" y="410" text-anchor="middle">Zimbra · Webmail</text>
     <text class="small" x="588" y="434" text-anchor="middle">separat: IMAP · POP</text>
     <text class="small" x="588" y="454" text-anchor="middle">Submission · Token</text>
   </a>
-  <a href="/kb/hin#identität-und-pki-mit-autorisierung" target="_top" tabindex="0" aria-label="HIN Access – Client · AGW · ACS – SAML · OAuth 2.0">
+  <a data-link-hint="8" href="/kb/hin#identität-und-pki-mit-autorisierung" target="_top" tabindex="0" aria-label="HIN Access – Client · AGW · ACS – SAML · OAuth 2.0">
+    <title>Öffnet: HIN Access – Client · AGW · ACS – SAML · OAuth 2.0 — Ziel: /kb/hin#identität-und-pki-mit-autorisierung</title>
     <rect class="hit" x="708" y="346" width="210" height="126" rx="16"/>
     <text class="label" x="813" y="382" text-anchor="middle">HIN Access</text>
     <text class="body" x="813" y="410" text-anchor="middle">Client · AGW · ACS</text>
@@ -98,7 +106,8 @@
     <text class="small" x="813" y="454" text-anchor="middle">AuthN ≠ Autorisierung</text>
   </a>
 
-  <a href="/kb/hin#stargate-als-zielarchitektur" target="_top" tabindex="0" aria-label="Stargate-zu-Stargate – IDAgent · WireGuard · Port 19818 – PostgreSQL · Vault · MinIO · Docker">
+  <a data-link-hint="9" href="/kb/hin#stargate-als-zielarchitektur" target="_top" tabindex="0" aria-label="Stargate-zu-Stargate – IDAgent · WireGuard · Port 19818 – PostgreSQL · Vault · MinIO · Docker">
+    <title>Öffnet: Stargate-zu-Stargate – IDAgent · WireGuard · Port 19818 – PostgreSQL · Vault · MinIO · Docker — Ziel: /kb/hin#stargate-als-zielarchitektur</title>
     <rect class="hit hit-red" x="482" y="508" width="436" height="140" rx="16"/>
     <text class="label" x="700" y="548" text-anchor="middle">Stargate-zu-Stargate</text>
     <text class="body" x="700" y="578" text-anchor="middle">IDAgent · WireGuard · Port 19818</text>
@@ -106,25 +115,29 @@
     <text class="small" x="700" y="626" text-anchor="middle">Promtail/Loki · Node Exporter · Metriken</text>
   </a>
 
-  <a href="/kb/hin#smtp-routing-und-annahmegrenzen" target="_top" tabindex="0" aria-label="Mailserver der Gegenstelle – neue SMTP-Grenze · eigene Queue – HIN-Teilnehmer oder Organisation">
+  <a data-link-hint="10" href="/kb/hin#smtp-routing-und-annahmegrenzen" target="_top" tabindex="0" aria-label="Mailserver der Gegenstelle – neue SMTP-Grenze · eigene Queue – HIN-Teilnehmer oder Organisation">
+    <title>Öffnet: Mailserver der Gegenstelle – neue SMTP-Grenze · eigene Queue – HIN-Teilnehmer oder Organisation — Ziel: /kb/hin#smtp-routing-und-annahmegrenzen</title>
     <rect class="hit" x="994" y="194" width="352" height="92" rx="16"/>
     <text class="label" x="1170" y="228" text-anchor="middle">Mailserver der Gegenstelle</text>
     <text class="body" x="1170" y="255" text-anchor="middle">neue SMTP-Grenze · eigene Queue</text>
     <text class="small" x="1170" y="275" text-anchor="middle">HIN-Teilnehmer oder Organisation</text>
   </a>
-  <a href="/kb/hin#mailpfade-und-schutzentscheidungen" target="_top" tabindex="0" aria-label="Nichtmitglieder-Portal – Benachrichtigung · Webobjekt – Mobilnummer · SMS-Code · Antwort">
+  <a data-link-hint="11" href="/kb/hin#mailpfade-und-schutzentscheidungen" target="_top" tabindex="0" aria-label="Nichtmitglieder-Portal – Benachrichtigung · Webobjekt – Mobilnummer · SMS-Code · Antwort">
+    <title>Öffnet: Nichtmitglieder-Portal – Benachrichtigung · Webobjekt – Mobilnummer · SMS-Code · Antwort — Ziel: /kb/hin#mailpfade-und-schutzentscheidungen</title>
     <rect class="hit hit-green" x="994" y="326" width="352" height="122" rx="16"/>
     <text class="label" x="1170" y="363" text-anchor="middle">Nichtmitglieder-Portal</text>
     <text class="body" x="1170" y="391" text-anchor="middle">Benachrichtigung · Webobjekt</text>
     <text class="small" x="1170" y="416" text-anchor="middle">Mobilnummer · SMS-Code · Antwort</text>
   </a>
-  <a href="/kb/hin#mailstore-und-clientzugriff-mit-token" target="_top" tabindex="0" aria-label="Clientzugriff – Webmail oder IMAP / POP / Submission – separat vom Gatewaytransport prüfen">
+  <a data-link-hint="12" href="/kb/hin#mailstore-und-clientzugriff-mit-token" target="_top" tabindex="0" aria-label="Clientzugriff – Webmail oder IMAP / POP / Submission – separat vom Gatewaytransport prüfen">
+    <title>Öffnet: Clientzugriff – Webmail oder IMAP / POP / Submission – separat vom Gatewaytransport prüfen — Ziel: /kb/hin#mailstore-und-clientzugriff-mit-token</title>
     <rect class="hit" x="994" y="488" width="352" height="106" rx="16"/>
     <text class="label" x="1170" y="526" text-anchor="middle">Clientzugriff</text>
     <text class="body" x="1170" y="554" text-anchor="middle">Webmail oder IMAP / POP / Submission</text>
     <text class="small" x="1170" y="577" text-anchor="middle">separat vom Gatewaytransport prüfen</text>
   </a>
-  <a href="/kb/hin#monitoring-und-incident-triage" target="_top" tabindex="0" aria-label="Scope: Benutzer · Identität · Route · Plattform">
+  <a data-link-hint="13" href="/kb/hin#monitoring-und-incident-triage" target="_top" tabindex="0" aria-label="Scope: Benutzer · Identität · Route · Plattform">
+    <title>Öffnet: Scope: Benutzer · Identität · Route · Plattform — Ziel: /kb/hin#monitoring-und-incident-triage</title>
     <rect class="hit hit-blue" x="994" y="624" width="352" height="56" rx="16"/>
     <text class="body" x="1170" y="658" text-anchor="middle">Scope: Benutzer · Identität · Route · Plattform</text>
   </a>
@@ -137,48 +150,111 @@
 
   <rect class="frame" x="28" y="734" width="1344" height="154" rx="22"/>
   <text class="section" x="52" y="768">ADMIN-KONTROLLPUNKTE · JEDER BLOCK IST EIN EIGENER NACHWEIS</text>
-  <a href="/kb/hin#smtp-routing-und-annahmegrenzen" target="_top" tabindex="0" aria-label="SMTP · Queue · Message-ID – Annahme bis nächster Hop">
+  <a data-link-hint="14" href="/kb/hin#smtp-routing-und-annahmegrenzen" target="_top" tabindex="0" aria-label="SMTP · Queue · Message-ID – Annahme bis nächster Hop">
+    <title>Öffnet: SMTP · Queue · Message-ID – Annahme bis nächster Hop — Ziel: /kb/hin#smtp-routing-und-annahmegrenzen</title>
     <rect class="hit" x="52" y="792" width="242" height="70" rx="16"/>
     <text class="body" x="173" y="821" text-anchor="middle">SMTP · Queue · Message-ID</text>
     <text class="small" x="173" y="844" text-anchor="middle">Annahme bis nächster Hop</text>
   </a>
-  <a href="/kb/hin#identität-und-pki-mit-autorisierung" target="_top" tabindex="0" aria-label="Identität · Schlüssel · Zertifikat – Inhaber · Gültigkeit · Sperre">
+  <a data-link-hint="15" href="/kb/hin#identität-und-pki-mit-autorisierung" target="_top" tabindex="0" aria-label="Identität · Schlüssel · Zertifikat – Inhaber · Gültigkeit · Sperre">
+    <title>Öffnet: Identität · Schlüssel · Zertifikat – Inhaber · Gültigkeit · Sperre — Ziel: /kb/hin#identität-und-pki-mit-autorisierung</title>
     <rect class="hit hit-green" x="316" y="792" width="242" height="70" rx="16"/>
     <text class="body" x="437" y="821" text-anchor="middle">Identität · Schlüssel · Zertifikat</text>
     <text class="small" x="437" y="844" text-anchor="middle">Inhaber · Gültigkeit · Sperre</text>
   </a>
-  <a href="/kb/hin#diagnosewerkzeuge" target="_top" tabindex="0" aria-label="DNS · TCP · TLS · Socket – Messstelle und Richtung">
+  <a data-link-hint="16" href="/kb/hin#diagnosewerkzeuge" target="_top" tabindex="0" aria-label="DNS · TCP · TLS · Socket – Messstelle und Richtung">
+    <title>Öffnet: DNS · TCP · TLS · Socket – Messstelle und Richtung — Ziel: /kb/hin#diagnosewerkzeuge</title>
     <rect class="hit hit-blue" x="580" y="792" width="242" height="70" rx="16"/>
     <text class="body" x="701" y="821" text-anchor="middle">DNS · TCP · TLS · Socket</text>
     <text class="small" x="701" y="844" text-anchor="middle">Messstelle und Richtung</text>
   </a>
-  <a href="/kb/hin#hochverfügbarkeit-mit-backup-und-recovery" target="_top" tabindex="0" aria-label="Backup · Restore · Rollback – pro Zustandsraum testen">
+  <a data-link-hint="17" href="/kb/hin#hochverfügbarkeit-mit-backup-und-recovery" target="_top" tabindex="0" aria-label="Backup · Restore · Rollback – pro Zustandsraum testen">
+    <title>Öffnet: Backup · Restore · Rollback – pro Zustandsraum testen — Ziel: /kb/hin#hochverfügbarkeit-mit-backup-und-recovery</title>
     <rect class="hit hit-red" x="844" y="792" width="242" height="70" rx="16"/>
     <text class="body" x="965" y="821" text-anchor="middle">Backup · Restore · Rollback</text>
     <text class="small" x="965" y="844" text-anchor="middle">pro Zustandsraum testen</text>
   </a>
-  <a href="https://status.hin.ch/" rel="noopener noreferrer" tabindex="0" aria-label="HIN Status – zentral ≠ lokaler Nachweis ↗" target="_top">
+  <a data-link-hint="18" href="https://status.hin.ch/" rel="noopener noreferrer" tabindex="0" aria-label="HIN Status – zentral ≠ lokaler Nachweis ↗" target="_top">
+    <title>Öffnet: HIN Status – zentral ≠ lokaler Nachweis ↗ — Ziel: https://status.hin.ch/</title>
     <rect class="hit" x="1108" y="792" width="238" height="70" rx="16"/>
     <text class="body" x="1227" y="821" text-anchor="middle">HIN Status</text>
     <text class="small" x="1227" y="844" text-anchor="middle">zentral ≠ lokaler Nachweis ↗</text>
   </a>
 
   <text class="section" x="36" y="928">PRIMÄRQUELLEN DER ARCHITEKTUR</text>
-  <a href="https://support.hin.ch/de/service/hin-gateway.cfm" rel="noopener noreferrer" tabindex="0" aria-label="HIN Gateway / Stargate ↗" target="_top">
+  <a data-link-hint="19" href="https://support.hin.ch/de/service/hin-gateway.cfm" rel="noopener noreferrer" tabindex="0" aria-label="HIN Gateway / Stargate ↗" target="_top">
+    <title>Öffnet: HIN Gateway / Stargate ↗ — Ziel: https://support.hin.ch/de/service/hin-gateway.cfm</title>
     <rect class="chip" x="310" y="904" width="250" height="42" rx="20"/>
     <text class="small" x="435" y="930" text-anchor="middle">HIN Gateway / Stargate ↗</text>
   </a>
-  <a href="https://www.hin.ch/files/pdf1/hin-gateway-top-level-system-overview.pdf" rel="noopener noreferrer" tabindex="0" aria-label="System Overview ↗" target="_top">
+  <a data-link-hint="20" href="https://www.hin.ch/files/pdf1/hin-gateway-top-level-system-overview.pdf" rel="noopener noreferrer" tabindex="0" aria-label="System Overview ↗" target="_top">
+    <title>Öffnet: System Overview ↗ — Ziel: https://www.hin.ch/files/pdf1/hin-gateway-top-level-system-overview.pdf</title>
     <rect class="chip" x="578" y="904" width="278" height="42" rx="20"/>
     <text class="small" x="717" y="930" text-anchor="middle">System Overview ↗</text>
   </a>
-  <a href="https://www.hin.ch/de/services/hin-mail/hin-mail.cfm" rel="noopener noreferrer" tabindex="0" aria-label="HIN Mail ↗" target="_top">
+  <a data-link-hint="21" href="https://www.hin.ch/de/services/hin-mail/hin-mail.cfm" rel="noopener noreferrer" tabindex="0" aria-label="HIN Mail ↗" target="_top">
+    <title>Öffnet: HIN Mail ↗ — Ziel: https://www.hin.ch/de/services/hin-mail/hin-mail.cfm</title>
     <rect class="chip" x="874" y="904" width="204" height="42" rx="20"/>
     <text class="small" x="976" y="930" text-anchor="middle">HIN Mail ↗</text>
   </a>
-  <a href="https://www.wireguard.com/protocol/" rel="noopener noreferrer" tabindex="0" aria-label="WireGuard Protocol ↗" target="_top">
+  <a data-link-hint="22" href="https://www.wireguard.com/protocol/" rel="noopener noreferrer" tabindex="0" aria-label="WireGuard Protocol ↗" target="_top">
+    <title>Öffnet: WireGuard Protocol ↗ — Ziel: https://www.wireguard.com/protocol/</title>
     <rect class="chip" x="1096" y="904" width="250" height="42" rx="20"/>
     <text class="small" x="1221" y="930" text-anchor="middle">WireGuard Protocol ↗</text>
   </a>
   <text class="small" x="36" y="976">Hover oder Fokus hebt Blöcke hervor · Klick öffnet Artikelabschnitt oder Originalquelle</text>
-</svg>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+svg:has(a[data-link-hint="21"]:hover) .link-target-copy-21,svg:has(a[data-link-hint="21"]:focus) .link-target-copy-21{opacity:1}
+svg:has(a[data-link-hint="22"]:hover) .link-target-copy-22,svg:has(a[data-link-hint="22"]:focus) .link-target-copy-22{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Mailserver · KIS · Geräte – Connectoren · Queue · Message-ID – lokaler Zustands- und Relaybereich</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#smtp-routing-und-annahmegrenzen</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: SMTP · Annahme</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: klassisches MGW / AGW – VM oder historische Hardware – Mailtransport · PKI · Access am Edge</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#architekturansatz-vertrauensraum-mit-edge-komponenten</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Stargate · Zielbild – Mesh-Knoten pro Organisation – Microservices · REST · VM / Container</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#stargate-als-zielarchitektur</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: HIN Identität – Schlüsselpaar · X.509 – Registrierung · Sperre</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#identität-und-pki-mit-autorisierung</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Postfix · MXEngine – Transport · Verarbeitung – OPA/Rego · S/MIME · Route</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#mailpfade-und-schutzentscheidungen</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Mailstore – Zimbra · Webmail – separat: IMAP · POP</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#mailstore-und-clientzugriff-mit-token</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: HIN Access – Client · AGW · ACS – SAML · OAuth 2.0</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#identität-und-pki-mit-autorisierung</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Stargate-zu-Stargate – IDAgent · WireGuard · Port 19818 – PostgreSQL · Vault · MinIO · Docker</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#stargate-als-zielarchitektur</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Mailserver der Gegenstelle – neue SMTP-Grenze · eigene Queue – HIN-Teilnehmer oder Organisation</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#smtp-routing-und-annahmegrenzen</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Nichtmitglieder-Portal – Benachrichtigung · Webobjekt – Mobilnummer · SMS-Code · Antwort</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#mailpfade-und-schutzentscheidungen</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Clientzugriff – Webmail oder IMAP / POP / Submission – separat vom Gatewaytransport prüfen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#mailstore-und-clientzugriff-mit-token</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Scope: Benutzer · Identität · Route · Plattform</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#monitoring-und-incident-triage</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: SMTP · Queue · Message-ID – Annahme bis nächster Hop</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#smtp-routing-und-annahmegrenzen</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: Identität · Schlüssel · Zertifikat – Inhaber · Gültigkeit · Sperre</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#identität-und-pki-mit-autorisierung</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: DNS · TCP · TLS · Socket – Messstelle und Richtung</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#diagnosewerkzeuge</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: Backup · Restore · Rollback – pro Zustandsraum testen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hin#hochverfügbarkeit-mit-backup-und-recovery</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: HIN Status – zentral ≠ lokaler Nachweis ↗</text><text class="link-target-address" x="26" y="60">Ziel: https://status.hin.ch/</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: HIN Gateway / Stargate ↗</text><text class="link-target-address" x="26" y="60">Ziel: https://support.hin.ch/de/service/hin-gateway.cfm</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: System Overview ↗</text><text class="link-target-address" x="26" y="60">Ziel: https://www.hin.ch/files/pdf1/hin-gateway-top-level-system-overview.pdf</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: HIN Mail ↗</text><text class="link-target-address" x="26" y="60">Ziel: https://www.hin.ch/de/services/hin-mail/hin-mail.cfm</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: WireGuard Protocol ↗</text><text class="link-target-address" x="26" y="60">Ziel: https://www.wireguard.com/protocol/</text></g>
+  </g></svg>

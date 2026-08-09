@@ -38,7 +38,7 @@
   <rect class="bg" width="1400" height="900"/>
   <text class="kicker" x="48" y="48">TCP · VERBINDUNG · ZUSTAND · DIAGNOSE</text>
   <text class="h1" x="48" y="88">Vom SYN bis TIME-WAIT</text>
-  <text class="body" x="48" y="118">Eine Verbindung ist ein Zustandsautomat. Paketfolgen zeigen, an welcher Systemgrenze sie scheitert.</text>
+  <text class="body" x="48" y="118">Eine Verbindung ist ein Zustandsautomat. Paketfolgen zeigen, an welchem Schritt sie scheitert.</text>
 
   <rect class="panel" x="42" y="142" width="1316" height="500" rx="20"/>
   <text class="kicker" x="80" y="181">CLIENT / AKTIVES ÖFFNEN</text>
@@ -47,8 +47,8 @@
   <line class="lifeline" x1="235" y1="205" x2="235" y2="605"/>
   <line class="lifeline" x1="1165" y1="205" x2="1165" y2="605"/>
 
-  <a href="/kb/tcp#verbindungsaufbau-datentransfer-und-abbau" target="_top" tabindex="0" aria-label="1 · SYN – SYN seq=x MSS · WS · SACK">
-    <title>Drei-Wege-Handshake im Artikel öffnen</title>
+  <a data-link-hint="1" href="/kb/tcp#verbindungsaufbau-datentransfer-und-abbau" target="_top" tabindex="0" aria-label="1 · SYN – SYN seq=x MSS · WS · SACK">
+    <title>Öffnet: Drei-Wege-Handshake im Artikel öffnen — Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</title>
     <rect class="blue hit" x="72" y="212" width="326" height="88" rx="15"/>
     <text class="label" x="94" y="245">1 · SYN</text>
     <text class="mono" x="94" y="274">SYN  seq=x  MSS · WS · SACK</text>
@@ -56,24 +56,24 @@
   <path class="arrow-blue" d="M398 256 H1115"/>
   <text class="small" x="608" y="246">Route · Firewall · NAT · Load Balancer</text>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5" target="_top" tabindex="0" aria-label="2 · SYN + ACK – SYN ACK seq=y ack=x+1">
-    <title>RFC 9293: Opening and Closing Connections</title>
+  <a data-link-hint="2" href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5" target="_top" tabindex="0" aria-label="2 · SYN + ACK – SYN ACK seq=y ack=x+1">
+    <title>Öffnet: RFC 9293: Opening and Closing Connections — Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5</title>
     <rect class="blue hit" x="1002" y="310" width="326" height="88" rx="15"/>
     <text class="label" x="1024" y="343">2 · SYN + ACK</text>
     <text class="mono" x="1024" y="372">SYN ACK  seq=y  ack=x+1</text>
   </a>
   <path class="arrow-blue" d="M1002 354 H285"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2" target="_top" tabindex="0" aria-label="3 · ACK → ESTABLISHED – ACK ack=y+1">
-    <title>RFC 9293: TCP State Machine Overview</title>
+  <a data-link-hint="3" href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2" target="_top" tabindex="0" aria-label="3 · ACK → ESTABLISHED – ACK ack=y+1">
+    <title>Öffnet: RFC 9293: TCP State Machine Overview — Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2</title>
     <rect class="green hit" x="72" y="408" width="326" height="88" rx="15"/>
     <text class="label" x="94" y="441">3 · ACK → ESTABLISHED</text>
     <text class="mono" x="94" y="470">ACK  ack=y+1</text>
   </a>
   <path class="arrow" d="M398 452 H1115"/>
 
-  <a href="/kb/tcp#sequenznummern-acks-und-retransmission" target="_top" tabindex="0" aria-label="Datenphase: Byte-Stream in beide Richtungen – SEQ · kumulative ACKs · SACK · RTO – wirksam: min(rwnd, cwnd) · Verlust löst Wiederholung aus">
-    <title>Sequenznummern und Retransmission im Artikel öffnen</title>
+  <a data-link-hint="4" href="/kb/tcp#sequenznummern-acks-und-retransmission" target="_top" tabindex="0" aria-label="Datenphase: Byte-Stream in beide Richtungen – SEQ · kumulative ACKs · SACK · RTO – wirksam: min(rwnd, cwnd) · Verlust löst Wiederholung aus">
+    <title>Öffnet: Sequenznummern und Retransmission im Artikel öffnen — Ziel: /kb/tcp#sequenznummern-acks-und-retransmission</title>
     <rect class="soft hit" x="438" y="512" width="524" height="98" rx="15"/>
     <text class="label" x="462" y="544">Datenphase: Byte-Stream in beide Richtungen</text>
     <text class="mono" x="462" y="574">SEQ · kumulative ACKs · SACK · RTO</text>
@@ -82,16 +82,16 @@
   <path class="arrow-blue" d="M398 558 H438"/>
   <path class="arrow-blue" d="M962 577 H1115"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.6" target="_top" tabindex="0" aria-label="FIN / ACK – jede Richtung schliesst separat – aktiver Abschluss endet in TIME-WAIT">
-    <title>RFC 9293: Closing a Connection</title>
+  <a data-link-hint="5" href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.6" target="_top" tabindex="0" aria-label="FIN / ACK – jede Richtung schliesst separat – aktiver Abschluss endet in TIME-WAIT">
+    <title>Öffnet: RFC 9293: Closing a Connection — Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.6</title>
     <rect class="soft hit" x="72" y="512" width="326" height="98" rx="15"/>
     <text class="label" x="94" y="545">FIN / ACK</text>
     <text class="body" x="94" y="574">jede Richtung schliesst separat</text>
     <text class="small" x="94" y="599">aktiver Abschluss endet in TIME-WAIT</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0" aria-label="FIN / ACK – RST bricht stattdessen sofort ab – Ursprung und Zeitpunkt des RST prüfen">
-    <title>RFC 9293: Reset Generation</title>
+  <a data-link-hint="6" href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0" aria-label="FIN / ACK – RST bricht stattdessen sofort ab – Ursprung und Zeitpunkt des RST prüfen">
+    <title>Öffnet: RFC 9293: Reset Generation — Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</title>
     <rect class="soft hit" x="1002" y="512" width="326" height="98" rx="15"/>
     <text class="label" x="1024" y="545">FIN / ACK</text>
     <text class="body" x="1024" y="574">RST bricht stattdessen sofort ab</text>
@@ -99,51 +99,97 @@
   </a>
 
   <text class="kicker" x="48" y="687">ADMIN-SIGNALE · KLICK FÜHRT ZUR ERKLÄRUNG ODER PRIMÄRQUELLE</text>
-  <a href="/kb/tcp#signalbild-und-wahrscheinlichste-systemgrenze" target="_top" tabindex="0" aria-label="SYN → ∅ – Timeout / Drop – Route · Filter · Rückweg">
-    <title>SYN ohne Antwort: Diagnosematrix öffnen</title>
+  <a data-link-hint="7" href="/kb/tcp#diagnose-vom-socket-bis-zum-paket" target="_top" tabindex="0" aria-label="SYN → ∅ – Timeout / Drop – Route · Filter · Rückweg">
+    <title>Öffnet: SYN ohne Antwort: Diagnosematrix öffnen — Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</title>
     <rect class="rose risk" x="42" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="62" y="741">SYN → ∅</text>
     <text class="body" x="62" y="770">Timeout / Drop</text>
     <text class="small" x="62" y="797">Route · Filter · Rückweg</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0" aria-label="SYN → RST – Connection refused – kein akzeptierender Socket">
-    <title>RFC 9293: Reset Generation</title>
+  <a data-link-hint="8" href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0" aria-label="SYN → RST – Connection refused – kein akzeptierender Socket">
+    <title>Öffnet: RFC 9293: Reset Generation — Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</title>
     <rect class="rose risk" x="263" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="283" y="741">SYN → RST</text>
     <text class="body" x="283" y="770">Connection refused</text>
     <text class="small" x="283" y="797">kein akzeptierender Socket</text>
   </a>
-  <a href="/kb/tcp#diagnose-vom-socket-bis-zum-paket" target="_top" tabindex="0" aria-label="ESTABLISHED – aber kein Banner – Anwendung / Backend">
-    <title>Handshake ohne Banner: Diagnose öffnen</title>
+  <a data-link-hint="9" href="/kb/tcp#diagnose-vom-socket-bis-zum-paket" target="_top" tabindex="0" aria-label="ESTABLISHED – aber kein Banner – Anwendung / Backend">
+    <title>Öffnet: Handshake ohne Banner: Diagnose öffnen — Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</title>
     <rect class="blue hit" x="484" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="504" y="741">ESTABLISHED</text>
     <text class="body" x="504" y="770">aber kein Banner</text>
     <text class="small" x="504" y="797">Anwendung / Backend</text>
   </a>
-  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="Retransmission – Verlust oder Sichtlücke – Gegenmitschnitt korrelieren">
-    <title>Wireshark TCP Analysis</title>
+  <a data-link-hint="10" href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="Retransmission – Verlust oder Sichtlücke – Gegenmitschnitt korrelieren">
+    <title>Öffnet: Wireshark TCP Analysis — Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</title>
     <rect class="rose risk" x="705" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="725" y="741">Retransmission</text>
     <text class="body" x="725" y="770">Verlust oder Sichtlücke</text>
     <text class="small" x="725" y="797">Gegenmitschnitt korrelieren</text>
   </a>
-  <a href="/kb/tcp#flusskontrolle-und-staukontrolle" target="_top" tabindex="0" aria-label="Zero Window – Empfänger liest nicht – App · CPU · Storage">
-    <title>Flusskontrolle und Zero Window öffnen</title>
+  <a data-link-hint="11" href="/kb/tcp#flusskontrolle-und-staukontrolle" target="_top" tabindex="0" aria-label="Zero Window – Empfänger liest nicht – App · CPU · Storage">
+    <title>Öffnet: Flusskontrolle und Zero Window öffnen — Ziel: /kb/tcp#flusskontrolle-und-staukontrolle</title>
     <rect class="rose risk" x="926" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="946" y="741">Zero Window</text>
     <text class="body" x="946" y="770">Empfänger liest nicht</text>
     <text class="small" x="946" y="797">App · CPU · Storage</text>
   </a>
-  <a href="/kb/tcp#die-zustande-als-betriebsindikatoren" target="_top" tabindex="0" aria-label="CLOSE-WAIT – lokale App schliesst nicht – Alter und Prozess prüfen">
-    <title>CLOSE-WAIT und TIME-WAIT im Artikel öffnen</title>
+  <a data-link-hint="12" href="/kb/tcp#verbindungsaufbau-datentransfer-und-abbau" target="_top" tabindex="0" aria-label="CLOSE-WAIT – lokale App schliesst nicht – Alter und Prozess prüfen">
+    <title>Öffnet: CLOSE-WAIT und TIME-WAIT im Artikel öffnen — Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</title>
     <rect class="blue hit" x="1147" y="708" width="211" height="112" rx="16"/>
     <text class="label" x="1167" y="741">CLOSE-WAIT</text>
     <text class="body" x="1167" y="770">lokale App schliesst nicht</text>
     <text class="small" x="1167" y="797">Alter und Prozess prüfen</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293" target="_top" tabindex="0" aria-label="[1] RFC 9293 · Kern und Zustände"><rect class="soft source" x="42" y="842" width="310" height="40" rx="20"/><text class="small" x="76" y="868">[1] RFC 9293 · Kern und Zustände</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc6298" target="_top" tabindex="0" aria-label="[2] RFC 6298 · RTO"><rect class="soft source" x="367" y="842" width="280" height="40" rx="20"/><text class="small" x="403" y="868">[2] RFC 6298 · RTO</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc5681" target="_top" tabindex="0" aria-label="[3] RFC 5681 · cwnd"><rect class="soft source" x="662" y="842" width="300" height="40" rx="20"/><text class="small" x="696" y="868">[3] RFC 5681 · cwnd</text></a>
-  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="[4] Wireshark · Analysesignale"><rect class="soft source" x="977" y="842" width="381" height="40" rx="20"/><text class="small" x="1011" y="868">[4] Wireshark · Analysesignale</text></a>
-</svg>
+  <a data-link-hint="13" href="https://datatracker.ietf.org/doc/html/rfc9293" target="_top" tabindex="0" aria-label="[1] RFC 9293 · Kern und Zustände">
+    <title>Öffnet: [1] RFC 9293 · Kern und Zustände — Ziel: https://datatracker.ietf.org/doc/html/rfc9293</title><rect class="soft source" x="42" y="842" width="310" height="40" rx="20"/><text class="small" x="76" y="868">[1] RFC 9293 · Kern und Zustände</text></a>
+  <a data-link-hint="14" href="https://datatracker.ietf.org/doc/html/rfc6298" target="_top" tabindex="0" aria-label="[2] RFC 6298 · RTO">
+    <title>Öffnet: [2] RFC 6298 · RTO — Ziel: https://datatracker.ietf.org/doc/html/rfc6298</title><rect class="soft source" x="367" y="842" width="280" height="40" rx="20"/><text class="small" x="403" y="868">[2] RFC 6298 · RTO</text></a>
+  <a data-link-hint="15" href="https://datatracker.ietf.org/doc/html/rfc5681" target="_top" tabindex="0" aria-label="[3] RFC 5681 · cwnd">
+    <title>Öffnet: [3] RFC 5681 · cwnd — Ziel: https://datatracker.ietf.org/doc/html/rfc5681</title><rect class="soft source" x="662" y="842" width="300" height="40" rx="20"/><text class="small" x="696" y="868">[3] RFC 5681 · cwnd</text></a>
+  <a data-link-hint="16" href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="[4] Wireshark · Analysesignale">
+    <title>Öffnet: [4] Wireshark · Analysesignale — Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</title><rect class="soft source" x="977" y="842" width="381" height="40" rx="20"/><text class="small" x="1011" y="868">[4] Wireshark · Analysesignale</text></a>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Drei-Wege-Handshake im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Opening and Closing Connections</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: TCP State Machine Overview</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Sequenznummern und Retransmission im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#sequenznummern-acks-und-retransmission</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Closing a Connection</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.6</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Reset Generation</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: SYN ohne Antwort: Diagnosematrix öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Reset Generation</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Handshake ohne Banner: Diagnose öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Wireshark TCP Analysis</text><text class="link-target-address" x="26" y="60">Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Flusskontrolle und Zero Window öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#flusskontrolle-und-staukontrolle</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: CLOSE-WAIT und TIME-WAIT im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: [1] RFC 9293 · Kern und Zustände</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: [2] RFC 6298 · RTO</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc6298</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: [3] RFC 5681 · cwnd</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5681</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: [4] Wireshark · Analysesignale</text><text class="link-target-address" x="26" y="60">Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</text></g>
+  </g></svg>

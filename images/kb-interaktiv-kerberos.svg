@@ -44,19 +44,22 @@
 
   <rect class="panel" x="60" y="110" width="1280" height="180" rx="20"/>
   <text class="section" x="85" y="145">1 · VORAUSSETZUNGEN · DISCOVERY, ZEIT UND KDC SIND TEIL DES PROTOKOLLPFADS</text>
-  <a href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · Realm-Mapping · SRV – _kerberos._tcp · Target · Port · Site – Client wählt einen KDC">
+  <a data-link-hint="1" href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · Realm-Mapping · SRV – _kerberos._tcp · Target · Port · Site – Client wählt einen KDC">
+    <title>Öffnet: DNS · Realm-Mapping · SRV – _kerberos._tcp · Target · Port · Site – Client wählt einen KDC — Ziel: /kb/dns</title>
     <rect class="hit gold" x="85" y="170" width="360" height="90" rx="16"/>
     <text class="box-title" x="112" y="203">DNS · Realm-Mapping · SRV</text>
     <text class="box-copy" x="112" y="230">_kerberos._tcp · Target · Port · Site</text>
     <text class="mono" x="112" y="250">Client wählt einen KDC</text>
   </a>
-  <a href="/kb/kerberos#tickets-zeiten-flags-und-transport" target="_top" tabindex="0" aria-label="Zeit · UDP/TCP 88 – Clock Skew · Antwortgrösse · TCP-Fallback – Freshness + Erreichbarkeit">
+  <a data-link-hint="2" href="/kb/kerberos#tickets-zeiten-flags-und-transport" target="_top" tabindex="0" aria-label="Zeit · UDP/TCP 88 – Clock Skew · Antwortgrösse · TCP-Fallback – Freshness + Erreichbarkeit">
+    <title>Öffnet: Zeit · UDP/TCP 88 – Clock Skew · Antwortgrösse · TCP-Fallback – Freshness + Erreichbarkeit — Ziel: /kb/kerberos#tickets-zeiten-flags-und-transport</title>
     <rect class="hit red" x="520" y="170" width="360" height="90" rx="16"/>
     <text class="box-title" x="547" y="203">Zeit · UDP/TCP 88</text>
     <text class="box-copy" x="547" y="230">Clock Skew · Antwortgrösse · TCP-Fallback</text>
     <text class="mono" x="547" y="250">Freshness + Erreichbarkeit</text>
   </a>
-  <a href="/kb/kerberos#architekturansatz-vertrauenswürdige-dritte-instanz" target="_top" tabindex="0" aria-label="KDC · AS + TGS – Principal-Keys · Realm-Policy · Audit – vertrauenswürdige dritte Instanz">
+  <a data-link-hint="3" href="/kb/kerberos#architekturansatz-vertrauenswürdige-dritte-instanz" target="_top" tabindex="0" aria-label="KDC · AS + TGS – Principal-Keys · Realm-Policy · Audit – vertrauenswürdige dritte Instanz">
+    <title>Öffnet: KDC · AS + TGS – Principal-Keys · Realm-Policy · Audit – vertrauenswürdige dritte Instanz — Ziel: /kb/kerberos#architekturansatz-vertrauenswürdige-dritte-instanz</title>
     <rect class="hit violet" x="955" y="170" width="360" height="90" rx="16"/>
     <text class="box-title" x="982" y="203">KDC · AS + TGS</text>
     <text class="box-copy" x="982" y="230">Principal-Keys · Realm-Policy · Audit</text>
@@ -66,7 +69,8 @@
   <rect class="panel" x="60" y="310" width="1280" height="360" rx="20"/>
   <text class="section" x="85" y="345">2 · DREI AUSTAUSCHE · TGT UND SERVICE-TICKET SIND NICHT DASSELBE</text>
 
-  <a href="/kb/kerberos#principals-realms-schlüssel-und-zustandsobjekte" target="_top" tabindex="0" aria-label="Client – Principal + Long-Term Key – Credential Cache">
+  <a data-link-hint="4" href="/kb/kerberos#principals-realms-und-schlüsselmaterial" target="_top" tabindex="0" aria-label="Client – Principal + Long-Term Key – Credential Cache">
+    <title>Öffnet: Client – Principal + Long-Term Key – Credential Cache — Ziel: /kb/kerberos#principals-realms-und-schlüsselmaterial</title>
     <rect class="hit" x="85" y="380" width="210" height="230" rx="18"/>
     <text class="box-title" x="112" y="415">Client</text>
     <text class="box-copy" x="112" y="447">Principal + Long-Term Key</text>
@@ -79,13 +83,15 @@
 
   <path class="arrow" d="M 295 415 H 360"/>
   <path class="arrow-gold" d="M 360 480 H 295"/>
-  <a href="/kb/kerberos#protokollfluss-as-tgs-und-ap" target="_top" tabindex="0" aria-label="AS Exchange – AS-REQ → AS-REP – Pre-Auth · Client-Key">
+  <a data-link-hint="5" href="/kb/kerberos#protokollfluss-as-tgs-und-ap" target="_top" tabindex="0" aria-label="AS Exchange – AS-REQ → AS-REP – Pre-Auth · Client-Key">
+    <title>Öffnet: AS Exchange – AS-REQ → AS-REP – Pre-Auth · Client-Key — Ziel: /kb/kerberos#protokollfluss-as-tgs-und-ap</title>
     <rect class="hit violet" x="365" y="380" width="230" height="100" rx="16"/>
     <text class="box-title" x="392" y="413">AS Exchange</text>
     <text class="mono" x="392" y="440">AS-REQ → AS-REP</text>
     <text class="box-copy" x="392" y="462">Pre-Auth · Client-Key</text>
   </a>
-  <a href="/kb/kerberos#protokollfluss-as-tgs-und-ap" target="_top" tabindex="0" aria-label="TGS Exchange – TGS-REQ → TGS-REP – TGT · SPN · Flags">
+  <a data-link-hint="6" href="/kb/kerberos#protokollfluss-as-tgs-und-ap" target="_top" tabindex="0" aria-label="TGS Exchange – TGS-REQ → TGS-REP – TGT · SPN · Flags">
+    <title>Öffnet: TGS Exchange – TGS-REQ → TGS-REP – TGT · SPN · Flags — Ziel: /kb/kerberos#protokollfluss-as-tgs-und-ap</title>
     <rect class="hit gold" x="365" y="510" width="230" height="100" rx="16"/>
     <text class="box-title" x="392" y="543">TGS Exchange</text>
     <text class="mono" x="392" y="570">TGS-REQ → TGS-REP</text>
@@ -94,13 +100,15 @@
 
   <path class="arrow" d="M 595 430 H 655"/>
   <path class="arrow-gold" d="M 655 560 H 595"/>
-  <a href="/kb/kerberos#tickets-zeiten-flags-und-transport" target="_top" tabindex="0" aria-label="Ticket-Granting Ticket – für krbtgt/REALM – bezieht weitere Tickets">
+  <a data-link-hint="7" href="/kb/kerberos#tickets-zeiten-flags-und-transport" target="_top" tabindex="0" aria-label="Ticket-Granting Ticket – für krbtgt/REALM – bezieht weitere Tickets">
+    <title>Öffnet: Ticket-Granting Ticket – für krbtgt/REALM – bezieht weitere Tickets — Ziel: /kb/kerberos#tickets-zeiten-flags-und-transport</title>
     <rect class="hit green" x="660" y="380" width="245" height="100" rx="16"/>
     <text class="box-title" x="687" y="413">Ticket-Granting Ticket</text>
     <text class="box-copy" x="687" y="440">für krbtgt/REALM</text>
     <text class="mono" x="687" y="462">bezieht weitere Tickets</text>
   </a>
-  <a href="/kb/kerberos#principals-realms-schlüssel-und-zustandsobjekte" target="_top" tabindex="0" aria-label="Service-Ticket – für genau einen Serverprincipal – Session Key + Authz Data">
+  <a data-link-hint="8" href="/kb/kerberos#principals-realms-und-schlüsselmaterial" target="_top" tabindex="0" aria-label="Service-Ticket – für genau einen Serverprincipal – Session Key + Authz Data">
+    <title>Öffnet: Service-Ticket – für genau einen Serverprincipal – Session Key + Authz Data — Ziel: /kb/kerberos#principals-realms-und-schlüsselmaterial</title>
     <rect class="hit green" x="660" y="510" width="245" height="100" rx="16"/>
     <text class="box-title" x="687" y="543">Service-Ticket</text>
     <text class="box-copy" x="687" y="570">für genau einen Serverprincipal</text>
@@ -108,13 +116,15 @@
   </a>
 
   <path class="arrow" d="M 905 560 H 970"/>
-  <a href="/kb/kerberos#protokollfluss-as-tgs-und-ap" target="_top" tabindex="0" aria-label="AP Exchange am Dienst – AP-REQ → optional AP-REP – Ticket + Authenticator · Mutual Auth">
+  <a data-link-hint="9" href="/kb/kerberos#protokollfluss-as-tgs-und-ap" target="_top" tabindex="0" aria-label="AP Exchange am Dienst – AP-REQ → optional AP-REP – Ticket + Authenticator · Mutual Auth">
+    <title>Öffnet: AP Exchange am Dienst – AP-REQ → optional AP-REP – Ticket + Authenticator · Mutual Auth — Ziel: /kb/kerberos#protokollfluss-as-tgs-und-ap</title>
     <rect class="hit red" x="975" y="380" width="340" height="100" rx="16"/>
     <text class="box-title" x="1002" y="413">AP Exchange am Dienst</text>
     <text class="mono" x="1002" y="440">AP-REQ → optional AP-REP</text>
     <text class="box-copy" x="1002" y="462">Ticket + Authenticator · Mutual Auth</text>
   </a>
-  <a href="/kb/kerberos#einbettung-in-anwendungsprotokolle" target="_top" tabindex="0" aria-label="GSS-API · SSPI · SPNEGO – HTTP · SMB · LDAP/SASL · Datenbank – Mechanismus + Target Name prüfen">
+  <a data-link-hint="10" href="/kb/kerberos#einbettung-in-anwendungsprotokolle" target="_top" tabindex="0" aria-label="GSS-API · SSPI · SPNEGO – HTTP · SMB · LDAP/SASL · Datenbank – Mechanismus + Target Name prüfen">
+    <title>Öffnet: GSS-API · SSPI · SPNEGO – HTTP · SMB · LDAP/SASL · Datenbank – Mechanismus + Target Name prüfen — Ziel: /kb/kerberos#einbettung-in-anwendungsprotokolle</title>
     <rect class="hit" x="975" y="510" width="340" height="100" rx="16"/>
     <text class="box-title" x="1002" y="543">GSS-API · SSPI · SPNEGO</text>
     <text class="box-copy" x="1002" y="570">HTTP · SMB · LDAP/SASL · Datenbank</text>
@@ -126,48 +136,108 @@
 
   <rect class="panel" x="60" y="690" width="1280" height="160" rx="20"/>
   <text class="section" x="85" y="725">3 · ADMIN-GRENZEN · EIN GÜLTIGES TICKET BEWEIST NICHT DIE GESAMTE KETTE</text>
-  <a href="/kb/kerberos#active-directory-als-kerberos-realm" target="_top" tabindex="0" aria-label="SPN · Konto · PAC – KDC-Ausstellung + Autorisierung">
+  <a data-link-hint="11" href="/kb/kerberos#active-directory-als-kerberos-realm" target="_top" tabindex="0" aria-label="SPN · Konto · PAC – KDC-Ausstellung + Autorisierung">
+    <title>Öffnet: SPN · Konto · PAC – KDC-Ausstellung + Autorisierung — Ziel: /kb/kerberos#active-directory-als-kerberos-realm</title>
     <rect class="hit green" x="85" y="750" width="225" height="70" rx="14"/>
     <text class="box-title" x="198" y="779" text-anchor="middle">SPN · Konto · PAC</text>
     <text class="box-copy" x="198" y="804" text-anchor="middle">KDC-Ausstellung + Autorisierung</text>
   </a>
-  <a href="/kb/kerberos#principals-realms-schlüssel-und-zustandsobjekte" target="_top" tabindex="0" aria-label="Keytab · KVNO – Enctype + Dienstschlüssel">
+  <a data-link-hint="12" href="/kb/kerberos#principals-realms-und-schlüsselmaterial" target="_top" tabindex="0" aria-label="Keytab · KVNO – Enctype + Dienstschlüssel">
+    <title>Öffnet: Keytab · KVNO – Enctype + Dienstschlüssel — Ziel: /kb/kerberos#principals-realms-und-schlüsselmaterial</title>
     <rect class="hit gold" x="335" y="750" width="225" height="70" rx="14"/>
     <text class="box-title" x="448" y="779" text-anchor="middle">Keytab · KVNO</text>
     <text class="box-copy" x="448" y="804" text-anchor="middle">Enctype + Dienstschlüssel</text>
   </a>
-  <a href="/kb/kerberos#trusts-und-cross-realm-pfade" target="_top" tabindex="0" aria-label="Trust · Referral – Cross-Realm-TGT-Pfad">
+  <a data-link-hint="13" href="/kb/kerberos#trusts-und-cross-realm-pfade" target="_top" tabindex="0" aria-label="Trust · Referral – Cross-Realm-TGT-Pfad">
+    <title>Öffnet: Trust · Referral – Cross-Realm-TGT-Pfad — Ziel: /kb/kerberos#trusts-und-cross-realm-pfade</title>
     <rect class="hit violet" x="585" y="750" width="225" height="70" rx="14"/>
     <text class="box-title" x="698" y="779" text-anchor="middle">Trust · Referral</text>
     <text class="box-copy" x="698" y="804" text-anchor="middle">Cross-Realm-TGT-Pfad</text>
   </a>
-  <a href="/kb/kerberos#delegation-und-der-double-hop" target="_top" tabindex="0" aria-label="Delegation · S4U – Frontend → Backend">
+  <a data-link-hint="14" href="/kb/kerberos#delegation-und-der-double-hop" target="_top" tabindex="0" aria-label="Delegation · S4U – Frontend → Backend">
+    <title>Öffnet: Delegation · S4U – Frontend → Backend — Ziel: /kb/kerberos#delegation-und-der-double-hop</title>
     <rect class="hit red" x="835" y="750" width="225" height="70" rx="14"/>
     <text class="box-title" x="948" y="779" text-anchor="middle">Delegation · S4U</text>
     <text class="box-copy" x="948" y="804" text-anchor="middle">Frontend → Backend</text>
   </a>
-  <a href="/kb/kerberos#betriebsmodell-monitoring-und-recovery" target="_top" tabindex="0" aria-label="Cache · Audit · Recovery – 4768 · 4769 · Replay">
+  <a data-link-hint="15" href="/kb/kerberos#betriebsmodell-monitoring-und-recovery" target="_top" tabindex="0" aria-label="Cache · Audit · Recovery – 4768 · 4769 · Replay">
+    <title>Öffnet: Cache · Audit · Recovery – 4768 · 4769 · Replay — Ziel: /kb/kerberos#betriebsmodell-monitoring-und-recovery</title>
     <rect class="hit" x="1085" y="750" width="230" height="70" rx="14"/>
     <text class="box-title" x="1200" y="779" text-anchor="middle">Cache · Audit · Recovery</text>
     <text class="box-copy" x="1200" y="804" text-anchor="middle">4768 · 4769 · Replay</text>
   </a>
 
   <text class="section" x="70" y="885">PRIMÄRQUELLEN · KERNPROTOKOLL, WINDOWS-ERWEITERUNGEN UND GSS-INTEGRATION</text>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4120" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4120 · Kerberos V5" target="_top">
+  <a data-link-hint="16" href="https://datatracker.ietf.org/doc/html/rfc4120" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4120 · Kerberos V5" target="_top">
+    <title>Öffnet: RFC 4120 · Kerberos V5 — Ziel: https://datatracker.ietf.org/doc/html/rfc4120</title>
     <rect class="chip" x="70" y="905" width="210" height="48" rx="22"/><text class="tiny" x="175" y="934" text-anchor="middle">RFC 4120 · Kerberos V5</text>
   </a>
-  <a href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/" rel="noopener noreferrer" tabindex="0" aria-label="MS-KILE · AD Kerberos" target="_top">
+  <a data-link-hint="17" href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/" rel="noopener noreferrer" tabindex="0" aria-label="MS-KILE · AD Kerberos" target="_top">
+    <title>Öffnet: MS-KILE · AD Kerberos — Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/</title>
     <rect class="chip" x="300" y="905" width="210" height="48" rx="22"/><text class="tiny" x="405" y="934" text-anchor="middle">MS-KILE · AD Kerberos</text>
   </a>
-  <a href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/166d8064-c863-41e1-9c23-edaaa5f36962" rel="noopener noreferrer" tabindex="0" aria-label="MS-PAC · Authorization" target="_top">
+  <a data-link-hint="18" href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/166d8064-c863-41e1-9c23-edaaa5f36962" rel="noopener noreferrer" tabindex="0" aria-label="MS-PAC · Authorization" target="_top">
+    <title>Öffnet: MS-PAC · Authorization — Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/166d8064-c863-41e1-9c23-edaaa5f36962</title>
     <rect class="chip" x="530" y="905" width="210" height="48" rx="22"/><text class="tiny" x="635" y="934" text-anchor="middle">MS-PAC · Authorization</text>
   </a>
-  <a href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/36d103d2-61a6-42d5-a725-74de3205cdaf" rel="noopener noreferrer" tabindex="0" aria-label="MS-SFU · Delegation" target="_top">
+  <a data-link-hint="19" href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/36d103d2-61a6-42d5-a725-74de3205cdaf" rel="noopener noreferrer" tabindex="0" aria-label="MS-SFU · Delegation" target="_top">
+    <title>Öffnet: MS-SFU · Delegation — Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/36d103d2-61a6-42d5-a725-74de3205cdaf</title>
     <rect class="chip" x="760" y="905" width="250" height="48" rx="22"/><text class="tiny" x="885" y="934" text-anchor="middle">MS-SFU · Delegation</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4121" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4121 · Kerberos GSS-API" target="_top">
+  <a data-link-hint="20" href="https://datatracker.ietf.org/doc/html/rfc4121" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4121 · Kerberos GSS-API" target="_top">
+    <title>Öffnet: RFC 4121 · Kerberos GSS-API — Ziel: https://datatracker.ietf.org/doc/html/rfc4121</title>
     <rect class="chip" x="1030" y="905" width="300" height="48" rx="22"/><text class="tiny" x="1180" y="934" text-anchor="middle">RFC 4121 · Kerberos GSS-API</text>
   </a>
 
   <text class="tiny" x="70" y="980">Fokus oder Hover hebt jedes Ziel hervor. Interne Ziele öffnen die Admin-Erklärung; Quellenchips führen zur Primärquelle.</text>
-</svg>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: DNS · Realm-Mapping · SRV – _kerberos._tcp · Target · Port · Site – Client wählt einen KDC</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Zeit · UDP/TCP 88 – Clock Skew · Antwortgrösse · TCP-Fallback – Freshness + Erreichbarkeit</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#tickets-zeiten-flags-und-transport</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: KDC · AS + TGS – Principal-Keys · Realm-Policy · Audit – vertrauenswürdige dritte Instanz</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#architekturansatz-vertrauenswürdige-dritte-instanz</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Client – Principal + Long-Term Key – Credential Cache</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#principals-realms-und-schlüsselmaterial</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: AS Exchange – AS-REQ → AS-REP – Pre-Auth · Client-Key</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#protokollfluss-as-tgs-und-ap</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: TGS Exchange – TGS-REQ → TGS-REP – TGT · SPN · Flags</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#protokollfluss-as-tgs-und-ap</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Ticket-Granting Ticket – für krbtgt/REALM – bezieht weitere Tickets</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#tickets-zeiten-flags-und-transport</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Service-Ticket – für genau einen Serverprincipal – Session Key + Authz Data</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#principals-realms-und-schlüsselmaterial</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: AP Exchange am Dienst – AP-REQ → optional AP-REP – Ticket + Authenticator · Mutual Auth</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#protokollfluss-as-tgs-und-ap</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: GSS-API · SSPI · SPNEGO – HTTP · SMB · LDAP/SASL · Datenbank – Mechanismus + Target Name prüfen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#einbettung-in-anwendungsprotokolle</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: SPN · Konto · PAC – KDC-Ausstellung + Autorisierung</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#active-directory-als-kerberos-realm</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Keytab · KVNO – Enctype + Dienstschlüssel</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#principals-realms-und-schlüsselmaterial</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Trust · Referral – Cross-Realm-TGT-Pfad</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#trusts-und-cross-realm-pfade</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Delegation · S4U – Frontend → Backend</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#delegation-und-der-double-hop</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: Cache · Audit · Recovery – 4768 · 4769 · Replay</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos#betriebsmodell-monitoring-und-recovery</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4120 · Kerberos V5</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4120</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: MS-KILE · AD Kerberos</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: MS-PAC · Authorization</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-pac/166d8064-c863-41e1-9c23-edaaa5f36962</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: MS-SFU · Delegation</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/36d103d2-61a6-42d5-a725-74de3205cdaf</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4121 · Kerberos GSS-API</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4121</text></g>
+  </g></svg>

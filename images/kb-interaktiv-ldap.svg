@@ -45,35 +45,40 @@
   <rect class="panel" x="60" y="110" width="1280" height="210" rx="20"/>
   <text class="section" x="85" y="145">1 · VERBINDUNG UND SITZUNG · JEDE GRENZE GETRENNT PRÜFEN</text>
 
-  <a href="/kb/dns" target="_top" tabindex="0" aria-label="Dienstziel – DNS · SRV · DC Locator – Name → Ziel und Port">
+  <a data-link-hint="1" href="/kb/dns" target="_top" tabindex="0" aria-label="Dienstziel – DNS · SRV · DC Locator – Name → Ziel und Port">
+    <title>Öffnet: Dienstziel – DNS · SRV · DC Locator – Name → Ziel und Port — Ziel: /kb/dns</title>
     <rect class="hit gold" x="85" y="170" width="230" height="112" rx="16"/>
     <text class="box-title" x="108" y="202">Dienstziel</text>
     <text class="box-copy" x="108" y="229">DNS · SRV · DC Locator</text>
     <text class="mono" x="108" y="257">Name → Ziel und Port</text>
   </a>
   <path class="arrow-gold" d="M 315 226 H 365"/>
-  <a href="/kb/tcp" target="_top" tabindex="0" aria-label="TCP – 389 · 636 · 3268 · 3269 – Socket und Zeitbudget">
+  <a data-link-hint="2" href="/kb/tcp" target="_top" tabindex="0" aria-label="TCP – 389 · 636 · 3268 · 3269 – Socket und Zeitbudget">
+    <title>Öffnet: TCP – 389 · 636 · 3268 · 3269 – Socket und Zeitbudget — Ziel: /kb/tcp</title>
     <rect class="hit" x="370" y="170" width="220" height="112" rx="16"/>
     <text class="box-title" x="393" y="202">TCP</text>
     <text class="box-copy" x="393" y="229">389 · 636 · 3268 · 3269</text>
     <text class="mono" x="393" y="257">Socket und Zeitbudget</text>
   </a>
   <path class="arrow" d="M 590 226 H 640"/>
-  <a href="/kb/tls" target="_top" tabindex="0" aria-label="TLS – StartTLS oder implizit – Identität · CA · Name">
+  <a data-link-hint="3" href="/kb/tls" target="_top" tabindex="0" aria-label="TLS – StartTLS oder implizit – Identität · CA · Name">
+    <title>Öffnet: TLS – StartTLS oder implizit – Identität · CA · Name — Ziel: /kb/tls</title>
     <rect class="hit green" x="645" y="170" width="220" height="112" rx="16"/>
     <text class="box-title" x="668" y="202">TLS</text>
     <text class="box-copy" x="668" y="229">StartTLS oder implizit</text>
     <text class="mono" x="668" y="257">Identität · CA · Name</text>
   </a>
   <path class="arrow" d="M 865 226 H 915"/>
-  <a href="/kb/ldap#bind-sasl-und-tls-vertrauensgrenzen" target="_top" tabindex="0" aria-label="Bind · SASL – anonym · simple · GSSAPI – AuthN + Security Layer">
+  <a data-link-hint="4" href="/kb/ldap#bind-sasl-und-tls-vertrauensgrenzen" target="_top" tabindex="0" aria-label="Bind · SASL – anonym · simple · GSSAPI – AuthN + Security Layer">
+    <title>Öffnet: Bind · SASL – anonym · simple · GSSAPI – AuthN + Security Layer — Ziel: /kb/ldap#bind-sasl-und-tls-vertrauensgrenzen</title>
     <rect class="hit violet" x="920" y="170" width="220" height="112" rx="16"/>
     <text class="box-title" x="943" y="202">Bind · SASL</text>
     <text class="box-copy" x="943" y="229">anonym · simple · GSSAPI</text>
     <text class="mono" x="943" y="257">AuthN + Security Layer</text>
   </a>
   <path class="arrow" d="M 1140 226 H 1190"/>
-  <a href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0" aria-label="LDAP – Sitzung – Ops">
+  <a data-link-hint="5" href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0" aria-label="LDAP – Sitzung – Ops">
+    <title>Öffnet: LDAP – Sitzung – Ops — Ziel: /kb/ldap#operationen-und-zustandswechsel</title>
     <rect class="hit red" x="1195" y="170" width="120" height="112" rx="16"/>
     <text class="box-title" x="1218" y="202">LDAP</text>
     <text class="box-copy" x="1218" y="229">Sitzung</text>
@@ -83,13 +88,15 @@
   <rect class="panel" x="60" y="340" width="1280" height="350" rx="20"/>
   <text class="section" x="85" y="375">2 · LDAPMESSAGE UND DIT · ANFRAGE, RESULTAT UND STEUERDATEN AUSEINANDERHALTEN</text>
 
-  <a href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0" aria-label="Operation – Bind · Search · Modify – messageID + protocolOp">
+  <a data-link-hint="6" href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0" aria-label="Operation – Bind · Search · Modify – messageID + protocolOp">
+    <title>Öffnet: Operation – Bind · Search · Modify – messageID + protocolOp — Ziel: /kb/ldap#operationen-und-zustandswechsel</title>
     <rect class="hit" x="85" y="405" width="230" height="110" rx="16"/>
     <text class="box-title" x="108" y="438">Operation</text>
     <text class="box-copy" x="108" y="466">Bind · Search · Modify</text>
     <text class="mono" x="108" y="493">messageID + protocolOp</text>
   </a>
-  <a href="/kb/ldap#paging-sortierung-und-sich-ändernde-resultate" target="_top" tabindex="0" aria-label="Controls – Paging · Sortierung – OID · criticality · value">
+  <a data-link-hint="7" href="/kb/ldap#paging-sortierung-und-sich-ändernde-resultate" target="_top" tabindex="0" aria-label="Controls – Paging · Sortierung – OID · criticality · value">
+    <title>Öffnet: Controls – Paging · Sortierung – OID · criticality · value — Ziel: /kb/ldap#paging-sortierung-und-sich-ändernde-resultate</title>
     <rect class="hit gold" x="85" y="540" width="230" height="110" rx="16"/>
     <text class="box-title" x="108" y="573">Controls</text>
     <text class="box-copy" x="108" y="601">Paging · Sortierung</text>
@@ -98,7 +105,8 @@
   <path class="arrow" d="M 315 460 H 385"/>
   <path class="arrow-gold" d="M 315 595 H 385"/>
 
-  <a href="/kb/ldap#protokollstack-und-sitzungsmodell" target="_top" tabindex="0" aria-label="LDAPMessage in BER – ASN.1-Datentypen – SEQUENCE">
+  <a data-link-hint="8" href="/kb/ldap#protokollstack-und-sitzungsmodell" target="_top" tabindex="0" aria-label="LDAPMessage in BER – ASN.1-Datentypen – SEQUENCE">
+    <title>Öffnet: LDAPMessage in BER – ASN.1-Datentypen – SEQUENCE — Ziel: /kb/ldap#protokollstack-und-sitzungsmodell</title>
     <rect class="hit violet" x="390" y="405" width="245" height="245" rx="18"/>
     <text class="box-title" x="418" y="440">LDAPMessage in BER</text>
     <text class="box-copy" x="418" y="469">ASN.1-Datentypen</text>
@@ -110,13 +118,15 @@
   </a>
   <path class="arrow" d="M 635 527 H 705"/>
 
-  <a href="/kb/ldap#search-basis-scope-filter-und-attributprojektion" target="_top" tabindex="0" aria-label="Search Request – base · scope · filter · attrs – nicht: freie SQL-Suche">
+  <a data-link-hint="9" href="/kb/ldap#search-basis-scope-filter-und-attributprojektion" target="_top" tabindex="0" aria-label="Search Request – base · scope · filter · attrs – nicht: freie SQL-Suche">
+    <title>Öffnet: Search Request – base · scope · filter · attrs – nicht: freie SQL-Suche — Ziel: /kb/ldap#search-basis-scope-filter-und-attributprojektion</title>
     <rect class="hit" x="710" y="405" width="250" height="110" rx="16"/>
     <text class="box-title" x="735" y="438">Search Request</text>
     <text class="box-copy" x="735" y="466">base · scope · filter · attrs</text>
     <text class="mono" x="735" y="493">nicht: freie SQL-Suche</text>
   </a>
-  <a href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0" aria-label="Result Stream – Entry(s) · Referral · Done – Resultcode ist Teil der Antwort">
+  <a data-link-hint="10" href="/kb/ldap#operationen-und-zustandswechsel" target="_top" tabindex="0" aria-label="Result Stream – Entry(s) · Referral · Done – Resultcode ist Teil der Antwort">
+    <title>Öffnet: Result Stream – Entry(s) · Referral · Done – Resultcode ist Teil der Antwort — Ziel: /kb/ldap#operationen-und-zustandswechsel</title>
     <rect class="hit red" x="710" y="540" width="250" height="110" rx="16"/>
     <text class="box-title" x="735" y="573">Result Stream</text>
     <text class="box-copy" x="735" y="601">Entry(s) · Referral · Done</text>
@@ -125,7 +135,8 @@
 
   <path class="arrow-gold" d="M 960 460 H 1030"/>
   <path class="arrow" d="M 1030 595 H 965"/>
-  <a href="/kb/ldap#datenmodell-dit-entry-attribut-und-schema" target="_top" tabindex="0" aria-label="Directory Information Tree – dc=example,dc=ch – ou=People">
+  <a data-link-hint="11" href="/kb/ldap#datenmodell-dit-entry-attribut-und-schema" target="_top" tabindex="0" aria-label="Directory Information Tree – dc=example,dc=ch – ou=People">
+    <title>Öffnet: Directory Information Tree – dc=example,dc=ch – ou=People — Ziel: /kb/ldap#datenmodell-dit-entry-attribut-und-schema</title>
     <rect class="hit green" x="1035" y="405" width="280" height="245" rx="18"/>
     <text class="box-title" x="1063" y="440">Directory Information Tree</text>
     <text class="mono" x="1063" y="475">dc=example,dc=ch</text>
@@ -138,43 +149,105 @@
 
   <rect class="panel" x="60" y="710" width="1280" height="140" rx="20"/>
   <text class="section" x="85" y="745">3 · SERVERIMPLEMENTIERUNG · DURCH LDAP NICHT STANDARDISIERT</text>
-  <a href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0" aria-label="ACL · Policy Engine">
+  <a data-link-hint="12" href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0" aria-label="ACL · Policy Engine">
+    <title>Öffnet: ACL · Policy Engine — Ziel: /kb/ldap#integrations--und-betriebsmodelle</title>
     <rect class="hit red" x="85" y="770" width="225" height="55" rx="14"/>
     <text class="box-title" x="198" y="804" text-anchor="middle">ACL · Policy Engine</text>
   </a>
-  <a href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0" aria-label="Index · Storage">
+  <a data-link-hint="13" href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0" aria-label="Index · Storage">
+    <title>Öffnet: Index · Storage — Ziel: /kb/ldap#integrations--und-betriebsmodelle</title>
     <rect class="hit gold" x="335" y="770" width="225" height="55" rx="14"/>
     <text class="box-title" x="448" y="804" text-anchor="middle">Index · Storage</text>
   </a>
-  <a href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0" aria-label="Replikation · Konsistenz">
+  <a data-link-hint="14" href="/kb/ldap#integrations--und-betriebsmodelle" target="_top" tabindex="0" aria-label="Replikation · Konsistenz">
+    <title>Öffnet: Replikation · Konsistenz — Ziel: /kb/ldap#integrations--und-betriebsmodelle</title>
     <rect class="hit violet" x="585" y="770" width="225" height="55" rx="14"/>
     <text class="box-title" x="698" y="804" text-anchor="middle">Replikation · Konsistenz</text>
   </a>
-  <a href="/kb/ldap#active-directory-als-ldap-serverprofil" target="_top" tabindex="0" aria-label="AD · Global Catalog">
+  <a data-link-hint="15" href="/kb/ldap#active-directory-als-ldap-serverprofil" target="_top" tabindex="0" aria-label="AD · Global Catalog">
+    <title>Öffnet: AD · Global Catalog — Ziel: /kb/ldap#active-directory-als-ldap-serverprofil</title>
     <rect class="hit green" x="835" y="770" width="225" height="55" rx="14"/>
     <text class="box-title" x="948" y="804" text-anchor="middle">AD · Global Catalog</text>
   </a>
-  <a href="/kb/ldap#diagnosewerkzeuge" target="_top" tabindex="0" aria-label="Metriken · Diagnose">
+  <a data-link-hint="16" href="/kb/ldap#diagnosewerkzeuge" target="_top" tabindex="0" aria-label="Metriken · Diagnose">
+    <title>Öffnet: Metriken · Diagnose — Ziel: /kb/ldap#diagnosewerkzeuge</title>
     <rect class="hit" x="1085" y="770" width="230" height="55" rx="14"/>
     <text class="box-title" x="1200" y="804" text-anchor="middle">Metriken · Diagnose</text>
   </a>
 
   <text class="section" x="70" y="885">PRIMÄRQUELLEN · PROTOKOLL, SCHEMA, SICHERHEIT UND SERVERPROFIL</text>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4511" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4511 · Protocol" target="_top">
+  <a data-link-hint="17" href="https://datatracker.ietf.org/doc/html/rfc4511" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4511 · Protocol" target="_top">
+    <title>Öffnet: RFC 4511 · Protocol — Ziel: https://datatracker.ietf.org/doc/html/rfc4511</title>
     <rect class="chip" x="70" y="905" width="210" height="48" rx="22"/><text class="tiny" x="175" y="934" text-anchor="middle">RFC 4511 · Protocol</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4512" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4512 · Models" target="_top">
+  <a data-link-hint="18" href="https://datatracker.ietf.org/doc/html/rfc4512" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4512 · Models" target="_top">
+    <title>Öffnet: RFC 4512 · Models — Ziel: https://datatracker.ietf.org/doc/html/rfc4512</title>
     <rect class="chip" x="300" y="905" width="210" height="48" rx="22"/><text class="tiny" x="405" y="934" text-anchor="middle">RFC 4512 · Models</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc4513" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4513 · Security" target="_top">
+  <a data-link-hint="19" href="https://datatracker.ietf.org/doc/html/rfc4513" rel="noopener noreferrer" tabindex="0" aria-label="RFC 4513 · Security" target="_top">
+    <title>Öffnet: RFC 4513 · Security — Ziel: https://datatracker.ietf.org/doc/html/rfc4513</title>
     <rect class="chip" x="530" y="905" width="210" height="48" rx="22"/><text class="tiny" x="635" y="934" text-anchor="middle">RFC 4513 · Security</text>
   </a>
-  <a href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/" rel="noopener noreferrer" tabindex="0" aria-label="MS-ADTS · Active Directory" target="_top">
+  <a data-link-hint="20" href="https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/" rel="noopener noreferrer" tabindex="0" aria-label="MS-ADTS · Active Directory" target="_top">
+    <title>Öffnet: MS-ADTS · Active Directory — Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/</title>
     <rect class="chip" x="760" y="905" width="250" height="48" rx="22"/><text class="tiny" x="885" y="934" text-anchor="middle">MS-ADTS · Active Directory</text>
   </a>
-  <a href="https://www.openldap.org/doc/admin25/replication.html" rel="noopener noreferrer" tabindex="0" aria-label="OpenLDAP · Replication Models" target="_top">
+  <a data-link-hint="21" href="https://www.openldap.org/doc/admin25/replication.html" rel="noopener noreferrer" tabindex="0" aria-label="OpenLDAP · Replication Models" target="_top">
+    <title>Öffnet: OpenLDAP · Replication Models — Ziel: https://www.openldap.org/doc/admin25/replication.html</title>
     <rect class="chip" x="1030" y="905" width="300" height="48" rx="22"/><text class="tiny" x="1180" y="934" text-anchor="middle">OpenLDAP · Replication Models</text>
   </a>
 
   <text class="tiny" x="70" y="980">Fokus oder Hover hebt jedes Ziel hervor. Interne Ziele öffnen die Admin-Erklärung; Quellenchips führen zur Primärquelle.</text>
-</svg>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+svg:has(a[data-link-hint="21"]:hover) .link-target-copy-21,svg:has(a[data-link-hint="21"]:focus) .link-target-copy-21{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Dienstziel – DNS · SRV · DC Locator – Name → Ziel und Port</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: TCP – 389 · 636 · 3268 · 3269 – Socket und Zeitbudget</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: TLS – StartTLS oder implizit – Identität · CA · Name</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tls</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Bind · SASL – anonym · simple · GSSAPI – AuthN + Security Layer</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#bind-sasl-und-tls-vertrauensgrenzen</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: LDAP – Sitzung – Ops</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#operationen-und-zustandswechsel</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Operation – Bind · Search · Modify – messageID + protocolOp</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#operationen-und-zustandswechsel</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Controls – Paging · Sortierung – OID · criticality · value</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#paging-sortierung-und-sich-ändernde-resultate</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: LDAPMessage in BER – ASN.1-Datentypen – SEQUENCE</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#protokollstack-und-sitzungsmodell</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Search Request – base · scope · filter · attrs – nicht: freie SQL-Suche</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#search-basis-scope-filter-und-attributprojektion</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Result Stream – Entry(s) · Referral · Done – Resultcode ist Teil der Antwort</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#operationen-und-zustandswechsel</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Directory Information Tree – dc=example,dc=ch – ou=People</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#datenmodell-dit-entry-attribut-und-schema</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: ACL · Policy Engine</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#integrations--und-betriebsmodelle</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Index · Storage</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#integrations--und-betriebsmodelle</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Replikation · Konsistenz</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#integrations--und-betriebsmodelle</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: AD · Global Catalog</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#active-directory-als-ldap-serverprofil</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: Metriken · Diagnose</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap#diagnosewerkzeuge</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4511 · Protocol</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4511</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4512 · Models</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4512</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: RFC 4513 · Security</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc4513</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: MS-ADTS · Active Directory</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: OpenLDAP · Replication Models</text><text class="link-target-address" x="26" y="60">Ziel: https://www.openldap.org/doc/admin25/replication.html</text></g>
+  </g></svg>

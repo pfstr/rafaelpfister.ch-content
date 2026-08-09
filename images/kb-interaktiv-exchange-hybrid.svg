@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Exchange Hybrid: Verzeichnis-, Koexistenz- und Migrationsverbindungen</title>
+  <desc id="desc">Klickbare Übersicht von Active Directory und Entra-Synchronisation über Empfänger, HCW, OAuth, Frei-Gebucht, Autodiscover, Mailboxverschiebung und SMTP.</desc>
+  <style>
+    text{font-family:Inter,Arial,sans-serif;fill:#111112}.bg{fill:#faf7f2}.panel{fill:#fff;stroke:#d9d2c9;stroke-width:2}.left{fill:#f5eee8;stroke:#8b3a1c;stroke-width:2}.right{fill:#eef5f7;stroke:#286983;stroke-width:2}.bridge{fill:#edf4ee;stroke:#3f6f4e;stroke-width:2}.link{cursor:pointer;outline:none}.link:hover .left,.link:focus .left,.link:hover .right,.link:focus .right,.link:hover .bridge,.link:focus .bridge{fill:#d5edf4;stroke:#8b3a1c;stroke-width:4}.h{font-size:28px;font-weight:750}.k{font-size:19px;font-weight:700}.s{font-size:14px;fill:#52525b}.label{font-size:13px;font-weight:700;letter-spacing:1.4px;fill:#6b6470}.arrow{stroke:#286983;stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#286983"/></marker></defs>
+  <rect class="bg" width="1400" height="1000"/>
+  <text class="label" x="55" y="55">EXCHANGE HYBRID · GETRENNTE SYSTEME, ABGESTIMMTE VERBINDUNGEN</text>
+  <text class="h" x="55" y="95">Welche Funktion verwendet welchen Weg?</text>
+
+  <rect class="panel" x="50" y="135" width="600" height="760" rx="22"/><rect class="panel" x="750" y="135" width="600" height="760" rx="22"/>
+  <text class="label" x="85" y="175">LOKALE ORGANISATION</text><text class="label" x="785" y="175">MICROSOFT 365</text>
+
+  <a data-link-hint="1" href="https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Active Directory in Exchange">
+    <title>Öffnet: Active Directory – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory</title><rect class="left" x="90" y="215" width="230" height="105" rx="16"/><text class="k" x="205" y="257" text-anchor="middle">Active Directory</text><text class="s" x="205" y="285" text-anchor="middle">Benutzer und Attribute</text>
+  </a>
+  <a data-link-hint="2" href="https://learn.microsoft.com/en-us/exchange/manage-hybrid-exchange-recipients-with-management-tools" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zur lokalen Empfängerverwaltung">
+    <title>Öffnet: Exchange Management Tools – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/manage-hybrid-exchange-recipients-with-management-tools</title><rect class="left" x="370" y="215" width="230" height="105" rx="16"/><text class="k" x="485" y="257" text-anchor="middle">Management Tools</text><text class="s" x="485" y="285" text-anchor="middle">Exchange-Attribute</text>
+  </a>
+  <a data-link-hint="3" href="/kb/entra" target="_top" tabindex="0" class="link" aria-label="Öffnet den KB-Artikel Microsoft Entra ID">
+    <title>Öffnet: Microsoft Entra ID – /kb/entra</title><rect class="right" x="790" y="215" width="230" height="105" rx="16"/><text class="k" x="905" y="257" text-anchor="middle">Microsoft Entra ID</text><text class="s" x="905" y="285" text-anchor="middle">Cloudidentität</text>
+  </a>
+  <a data-link-hint="4" href="https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Exchange-Online-Empfängern">
+    <title>Öffnet: Exchange Online Empfänger – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online</title><rect class="right" x="1070" y="215" width="230" height="105" rx="16"/><text class="k" x="1185" y="257" text-anchor="middle">Exchange Online</text><text class="s" x="1185" y="285" text-anchor="middle">Cloudpostfach</text>
+  </a>
+
+  <a data-link-hint="5" href="https://learn.microsoft.com/en-us/exchange/hybrid-deployment-prerequisites" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Hybridvoraussetzungen und Verzeichnissynchronisation">
+    <title>Öffnet: Verzeichnissynchronisation – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment-prerequisites</title><rect class="bridge" x="515" y="365" width="370" height="100" rx="16"/><text class="k" x="700" y="405" text-anchor="middle">Entra-Synchronisation</text><text class="s" x="700" y="433" text-anchor="middle">Objekte und unterstützte Attribute</text>
+  </a>
+  <path class="arrow" d="M320 267H510V410"/><path class="arrow" d="M885 410V267H1025"/>
+
+  <a data-link-hint="6" href="https://learn.microsoft.com/en-us/exchange/hybrid-configuration-wizard" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zum Hybrid Configuration Wizard">
+    <title>Öffnet: Hybrid Configuration Wizard – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-configuration-wizard</title><rect class="bridge" x="515" y="500" width="370" height="100" rx="16"/><text class="k" x="700" y="540" text-anchor="middle">Hybrid Configuration Wizard</text><text class="s" x="700" y="568" text-anchor="middle">stimmt beide Organisationen ab</text>
+  </a>
+
+  <a data-link-hint="7" href="https://learn.microsoft.com/en-us/exchange/configure-oauth-authentication-between-exchange-and-exchange-online-organizations-exchange-2013-help" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu OAuth zwischen Exchange-Organisationen">
+    <title>Öffnet: Exchange Hybrid OAuth – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/configure-oauth-authentication-between-exchange-and-exchange-online-organizations-exchange-2013-help</title><rect class="bridge" x="115" y="650" width="250" height="115" rx="16"/><text class="k" x="240" y="694" text-anchor="middle">OAuth</text><text class="s" x="240" y="723" text-anchor="middle">Dienstaufrufe absichern</text>
+  </a>
+  <a data-link-hint="8" href="https://learn.microsoft.com/en-us/exchange/sharing/sharing" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Frei-Gebucht und Sharing">
+    <title>Öffnet: Frei/Gebucht und Sharing – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/sharing/sharing</title><rect class="bridge" x="405" y="650" width="250" height="115" rx="16"/><text class="k" x="530" y="694" text-anchor="middle">Frei/Gebucht</text><text class="s" x="530" y="723" text-anchor="middle">Organisationsbeziehung</text>
+  </a>
+  <a data-link-hint="9" href="https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Hybrid-Mailboxverschiebungen">
+    <title>Öffnet: Remote Move – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes</title><rect class="bridge" x="745" y="650" width="250" height="115" rx="16"/><text class="k" x="870" y="694" text-anchor="middle">Remote Move</text><text class="s" x="870" y="723" text-anchor="middle">Mailboxdaten verschieben</text>
+  </a>
+  <a data-link-hint="10" href="/kb/hybrid-mailfluss" target="_top" tabindex="0" class="link" aria-label="Öffnet den KB-Artikel Hybrid-Mailfluss">
+    <title>Öffnet: Hybrid-Mailfluss – /kb/hybrid-mailfluss</title><rect class="bridge" x="1035" y="650" width="250" height="115" rx="16"/><text class="k" x="1160" y="694" text-anchor="middle">SMTP/TLS</text><text class="s" x="1160" y="723" text-anchor="middle">Nachrichten transportieren</text>
+  </a>
+
+  <a data-link-hint="11" href="https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Autodiscover">
+    <title>Öffnet: Autodiscover – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover</title><rect class="bridge" x="400" y="805" width="280" height="70" rx="14"/><text class="k" x="540" y="848" text-anchor="middle">Autodiscover</text>
+  </a>
+  <a data-link-hint="12" href="https://learn.microsoft.com/en-us/microsoft-365/enterprise/hybrid-modern-auth-overview" target="_top" tabindex="0" class="link" aria-label="Öffnet Microsofts Dokumentation zu Hybrid Modern Authentication">
+    <title>Öffnet: Hybrid Modern Authentication – learn.microsoft.com — Ziel: https://learn.microsoft.com/en-us/microsoft-365/enterprise/hybrid-modern-auth-overview</title><rect class="bridge" x="720" y="805" width="280" height="70" rx="14"/><text class="k" x="860" y="837" text-anchor="middle">HMA</text><text class="s" x="860" y="860" text-anchor="middle">eigener Client-Tokenpfad</text>
+  </a>
+  <text class="s" x="700" y="955" text-anchor="middle">Hover zeigt das Linkziel · Jeder Kasten steht für einen eigenen technischen Weg</text>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Active Directory – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Management Tools – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/manage-hybrid-exchange-recipients-with-management-tools</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Microsoft Entra ID – /kb/entra</text><text class="link-target-address" x="26" y="60">Ziel: /kb/entra</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online Empfänger – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Verzeichnissynchronisation – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment-prerequisites</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid Configuration Wizard – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-configuration-wizard</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Hybrid OAuth – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/configure-oauth-authentication-between-exchange-and-exchange-online-organizations-exchange-2013-help</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Frei/Gebucht und Sharing – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/sharing/sharing</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Remote Move – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid-Mailfluss – /kb/hybrid-mailfluss</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hybrid-mailfluss</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Autodiscover – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid Modern Authentication – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/microsoft-365/enterprise/hybrid-modern-auth-overview</text></g>
+  </g></svg>

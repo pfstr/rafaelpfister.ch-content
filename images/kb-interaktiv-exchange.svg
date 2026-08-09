@@ -37,13 +37,14 @@
   </defs>
 
   <rect class="bg" width="1400" height="1000"/>
-  <text class="kicker" x="70" y="52">MICROSOFT EXCHANGE · TRANSPORT · STORE · SERVICEGRENZEN</text>
+  <text class="kicker" x="70" y="52">MICROSOFT EXCHANGE · TRANSPORT · STORE · ZUSTÄNDIGKEITEN</text>
   <text class="headline" x="70" y="88">Eine Nachricht, mehrere unabhängige Zustandsräume</text>
 
   <rect class="panel" x="58" y="118" width="1284" height="300" rx="24"/>
   <text class="section" x="82" y="152">1 · SMTP-TRANSPORT · ANNAHME IST NOCH KEINE MAILBOXZUSTELLUNG</text>
 
-  <a href="/kb/smtp#rollen-und-systemgrenzen" target="_top" tabindex="0" aria-label="Internet / Gateway – MX · SMTP · TLS-Peer – Envelope ≠ Header">
+  <a data-link-hint="1" href="/kb/smtp#rollen-und-zuständigkeiten" target="_top" tabindex="0" aria-label="Internet / Gateway – MX · SMTP · TLS-Peer – Envelope ≠ Header">
+    <title>Öffnet: Internet / Gateway – MX · SMTP · TLS-Peer – Envelope ≠ Header — Ziel: /kb/smtp#rollen-und-zuständigkeiten</title>
     <rect class="hit gold" x="82" y="184" width="172" height="106" rx="18"/>
     <text class="label" x="102" y="218">Internet / Gateway</text>
     <text class="body" x="102" y="244">MX · SMTP · TLS-Peer</text>
@@ -51,7 +52,8 @@
   </a>
   <path class="arrow" d="M254 237 H300"/>
 
-  <a href="/kb/exchange#transport-pipeline-annahme-kategorisierung-queue-und-zustellung" target="_top" tabindex="0" aria-label="Front End – Receive Connector – SMTP proxy · stateless">
+  <a data-link-hint="2" href="/kb/exchange-on-premises#die-transport-pipeline-schritt-für-schritt" target="_top" tabindex="0" aria-label="Front End – Receive Connector – SMTP proxy · stateless">
+    <title>Öffnet: Front End – Receive Connector – SMTP proxy · stateless — Ziel: /kb/exchange-on-premises#die-transport-pipeline-schritt-für-schritt</title>
     <rect class="hit" x="304" y="184" width="176" height="106" rx="18"/>
     <text class="label" x="326" y="218">Front End</text>
     <text class="body" x="326" y="244">Receive Connector</text>
@@ -59,7 +61,8 @@
   </a>
   <path class="arrow" d="M480 237 H526"/>
 
-  <a href="/kb/exchange#routing-accepted-domains-und-konnektoren" target="_top" tabindex="0" aria-label="Transport Service – Routing · Regeln · Agents – Queue · Next Hop">
+  <a data-link-hint="3" href="/kb/exchange-on-premises#routing-domains-und-connectors" target="_top" tabindex="0" aria-label="Transport Service – Routing · Regeln · Agents – Queue · Next Hop">
+    <title>Öffnet: Transport Service – Routing · Regeln · Agents – Queue · Next Hop — Ziel: /kb/exchange-on-premises#routing-domains-und-connectors</title>
     <rect class="hit violet" x="530" y="184" width="196" height="106" rx="18"/>
     <text class="label" x="552" y="218">Transport Service</text>
     <text class="body" x="552" y="244">Routing · Regeln · Agents</text>
@@ -67,7 +70,8 @@
   </a>
   <path class="arrow" d="M726 237 H772"/>
 
-  <a href="/kb/exchange#transport-pipeline-annahme-kategorisierung-queue-und-zustellung" target="_top" tabindex="0" aria-label="Mailbox Transport – Delivery · Submission – Transport ↔ Store">
+  <a data-link-hint="4" href="/kb/exchange-on-premises#die-transport-pipeline-schritt-für-schritt" target="_top" tabindex="0" aria-label="Mailbox Transport – Delivery · Submission – Transport ↔ Store">
+    <title>Öffnet: Mailbox Transport – Delivery · Submission – Transport ↔ Store — Ziel: /kb/exchange-on-premises#die-transport-pipeline-schritt-für-schritt</title>
     <rect class="hit" x="776" y="184" width="196" height="106" rx="18"/>
     <text class="label" x="798" y="218">Mailbox Transport</text>
     <text class="body" x="798" y="244">Delivery · Submission</text>
@@ -75,26 +79,30 @@
   </a>
   <path class="arrow" d="M972 237 H1018"/>
 
-  <a href="/kb/exchange#mailbox-store-ese-und-datenbankkopien" target="_top" tabindex="0" aria-label="Mailbox Store · ESE – aktive Datenbank · Logs · Checkpoint – Write-ahead state">
+  <a data-link-hint="5" href="/kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint" target="_top" tabindex="0" aria-label="Mailbox Store · ESE – aktive Datenbank · Logs · Checkpoint – Write-ahead state">
+    <title>Öffnet: Mailbox Store · ESE – aktive Datenbank · Logs · Checkpoint – Write-ahead state — Ziel: /kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint</title>
     <rect class="hit green" x="1022" y="184" width="292" height="106" rx="18"/>
     <text class="label" x="1044" y="218">Mailbox Store · ESE</text>
     <text class="body" x="1044" y="244">aktive Datenbank · Logs · Checkpoint</text>
     <text class="mono" x="1044" y="268">Write-ahead state</text>
   </a>
 
-  <a href="/kb/exchange#routing-accepted-domains-und-konnektoren" target="_top" tabindex="0" aria-label="Accepted Domain – authoritative · relay · recipient scope">
+  <a data-link-hint="6" href="/kb/exchange-on-premises#routing-domains-und-connectors" target="_top" tabindex="0" aria-label="Accepted Domain – authoritative · relay · recipient scope">
+    <title>Öffnet: Accepted Domain – authoritative · relay · recipient scope — Ziel: /kb/exchange-on-premises#routing-domains-und-connectors</title>
     <rect class="hit gold" x="304" y="318" width="240" height="66" rx="16"/>
     <text class="label" x="324" y="345">Accepted Domain</text>
     <text class="body" x="324" y="369">authoritative · relay · recipient scope</text>
   </a>
   <path class="arrow dashed" d="M544 351 H584"/>
-  <a href="/kb/exchange#mailbox-store-ese-und-datenbankkopien" target="_top" tabindex="0" aria-label="Shadow · Safety Net – Transportkopien vor / nach Delivery">
+  <a data-link-hint="7" href="/kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint" target="_top" tabindex="0" aria-label="Shadow · Safety Net – Transportkopien vor / nach Delivery">
+    <title>Öffnet: Shadow · Safety Net – Transportkopien vor / nach Delivery — Ziel: /kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint</title>
     <rect class="hit green" x="588" y="318" width="252" height="66" rx="16"/>
     <text class="label" x="608" y="345">Shadow · Safety Net</text>
     <text class="body" x="608" y="369">Transportkopien vor / nach Delivery</text>
   </a>
   <path class="arrow dashed" d="M840 351 H880"/>
-  <a href="/kb/mail-auth" target="_top" tabindex="0" aria-label="Policy / EOP – Auth · Filter · Rule · Bifurcation">
+  <a data-link-hint="8" href="/kb/mail-auth" target="_top" tabindex="0" aria-label="Policy / EOP – Auth · Filter · Rule · Bifurcation">
+    <title>Öffnet: Policy / EOP – Auth · Filter · Rule · Bifurcation — Ziel: /kb/mail-auth</title>
     <rect class="hit red" x="884" y="318" width="250" height="66" rx="16"/>
     <text class="label" x="904" y="345">Policy / EOP</text>
     <text class="body" x="904" y="369">Auth · Filter · Rule · Bifurcation</text>
@@ -103,34 +111,39 @@
   <rect class="panel" x="58" y="438" width="1284" height="236" rx="24"/>
   <text class="section" x="82" y="472">2 · CLIENTZUGRIFF · FRONTEND, IDENTITÄT UND AKTIVE DATENBANK SIND EIGENE GRENZEN</text>
 
-  <a href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · Autodiscover – SCP · CNAME · HTTPS-URL – Name → Endpoint">
+  <a data-link-hint="9" href="/kb/dns" target="_top" tabindex="0" aria-label="DNS · Autodiscover – SCP · CNAME · HTTPS-URL – Name → Endpoint">
+    <title>Öffnet: DNS · Autodiscover – SCP · CNAME · HTTPS-URL – Name → Endpoint — Ziel: /kb/dns</title>
     <rect class="hit gold" x="82" y="504" width="204" height="112" rx="18"/>
     <text class="label" x="104" y="538">DNS · Autodiscover</text>
     <text class="body" x="104" y="564">SCP · CNAME · HTTPS-URL</text>
     <text class="mono" x="104" y="589">Name → Endpoint</text>
   </a>
   <path class="arrow" d="M286 560 H338"/>
-  <a href="/kb/exchange#clientzugriff-discovery-und-apis" target="_top" tabindex="0" aria-label="Client Access Frontend – MAPI/HTTP · OWA · EWS – HTTPS proxy · auth">
+  <a data-link-hint="10" href="/kb/exchange-on-premises#clientzugriff-und-autodiscover" target="_top" tabindex="0" aria-label="Client Access Frontend – MAPI/HTTP · OWA · EWS – HTTPS proxy · auth">
+    <title>Öffnet: Client Access Frontend – MAPI/HTTP · OWA · EWS – HTTPS proxy · auth — Ziel: /kb/exchange-on-premises#clientzugriff-und-autodiscover</title>
     <rect class="hit" x="342" y="504" width="238" height="112" rx="18"/>
     <text class="label" x="364" y="538">Client Access Frontend</text>
     <text class="body" x="364" y="564">MAPI/HTTP · OWA · EWS</text>
     <text class="mono" x="364" y="589">HTTPS proxy · auth</text>
   </a>
   <path class="arrow" d="M580 560 H632"/>
-  <a href="/kb/kerberos" target="_top" tabindex="0" aria-label="Identität – Kerberos · OAuth · RBAC – Principal + Scope">
+  <a data-link-hint="11" href="/kb/kerberos" target="_top" tabindex="0" aria-label="Identität – Kerberos · OAuth · RBAC – Principal + Scope">
+    <title>Öffnet: Identität – Kerberos · OAuth · RBAC – Principal + Scope — Ziel: /kb/kerberos</title>
     <rect class="hit violet" x="636" y="504" width="210" height="112" rx="18"/>
     <text class="label" x="658" y="538">Identität</text>
     <text class="body" x="658" y="564">Kerberos · OAuth · RBAC</text>
     <text class="mono" x="658" y="589">Principal + Scope</text>
   </a>
   <path class="arrow" d="M846 560 H898"/>
-  <a href="/kb/exchange#mailbox-store-ese-und-datenbankkopien" target="_top" tabindex="0" aria-label="Backend / Store – aktive DB-Kopie · Session – Mailbox state">
+  <a data-link-hint="12" href="/kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint" target="_top" tabindex="0" aria-label="Backend / Store – aktive DB-Kopie · Session – Mailbox state">
+    <title>Öffnet: Backend / Store – aktive DB-Kopie · Session – Mailbox state — Ziel: /kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint</title>
     <rect class="hit green" x="902" y="504" width="226" height="112" rx="18"/>
     <text class="label" x="924" y="538">Backend / Store</text>
     <text class="body" x="924" y="564">aktive DB-Kopie · Session</text>
     <text class="mono" x="924" y="589">Mailbox state</text>
   </a>
-  <a href="/kb/ldap" target="_top" tabindex="0" aria-label="Verzeichnis – Empfänger · Topologie – AD / Entra">
+  <a data-link-hint="13" href="/kb/ldap" target="_top" tabindex="0" aria-label="Verzeichnis – Empfänger · Topologie – AD / Entra">
+    <title>Öffnet: Verzeichnis – Empfänger · Topologie – AD / Entra — Ziel: /kb/ldap</title>
     <rect class="hit gold" x="1152" y="504" width="162" height="112" rx="18"/>
     <text class="label" x="1174" y="538">Verzeichnis</text>
     <text class="body" x="1174" y="564">Empfänger · Topologie</text>
@@ -141,36 +154,102 @@
   <rect class="panel" x="58" y="694" width="1284" height="192" rx="24"/>
   <text class="section" x="82" y="728">3 · ADMIN-GRENZEN · «EXCHANGE LÄUFT» IST KEIN ENDE-ZU-ENDE-NACHWEIS</text>
 
-  <a href="/kb/exchange#mailbox-store-ese-und-datenbankkopien" target="_top" tabindex="0" aria-label="DAG · Active Manager – Copy · Replay · Mount · Quorum">
+  <a data-link-hint="14" href="/kb/exchange-on-premises#database-availability-group-und-active-manager" target="_top" tabindex="0" aria-label="DAG · Active Manager – Copy · Replay · Mount · Quorum">
+    <title>Öffnet: DAG · Active Manager – Copy · Replay · Mount · Quorum — Ziel: /kb/exchange-on-premises#database-availability-group-und-active-manager</title>
     <rect class="hit green" x="82" y="758" width="220" height="88" rx="18"/>
     <text class="label" x="104" y="792">DAG · Active Manager</text>
     <text class="body" x="104" y="818">Copy · Replay · Mount · Quorum</text>
   </a>
-  <a href="/kb/exchange#exchange-online-als-kontrollierte-servicegrenze" target="_top" tabindex="0" aria-label="Exchange Online – Tenantzustand ≠ Hostzustand">
+  <a data-link-hint="15" href="/kb/exchange-online#vom-tenant-zum-postfach" target="_top" tabindex="0" aria-label="Exchange Online – Tenantzustand ≠ Hostzustand">
+    <title>Öffnet: Exchange Online – verwalteter Tenant statt einzelner Hosts — Ziel: /kb/exchange-online#vom-tenant-zum-postfach</title>
     <rect class="hit violet" x="322" y="758" width="218" height="88" rx="18"/>
     <text class="label" x="344" y="792">Exchange Online</text>
     <text class="body" x="344" y="818">Tenantzustand ≠ Hostzustand</text>
   </a>
-  <a href="/kb/exchange#hybrid-mehrere-kontrollflächen-ein-sichtbarer-namensraum" target="_top" tabindex="0" aria-label="Hybrid – SOA · Sync · OAuth · SMTP">
+  <a data-link-hint="16" href="/kb/exchange-hybrid#die-bausteine-in-sinnvoller-reihenfolge" target="_top" tabindex="0" aria-label="Hybrid – SOA · Sync · OAuth · SMTP">
+    <title>Öffnet: Hybrid – Empfängerhoheit · Sync · OAuth · SMTP — Ziel: /kb/exchange-hybrid#die-bausteine-in-sinnvoller-reihenfolge</title>
     <rect class="hit red" x="560" y="758" width="220" height="88" rx="18"/>
     <text class="label" x="582" y="792">Hybrid</text>
     <text class="body" x="582" y="818">SOA · Sync · OAuth · SMTP</text>
   </a>
-  <a href="/kb/exchange#sicherheits--und-berechtigungsgrenzen" target="_top" tabindex="0" aria-label="Trust Boundaries – TLS-Peer · Connector · RBAC">
+  <a data-link-hint="17" href="/kb/exchange-on-premises#sicherheit-und-administrative-kontrolle" target="_top" tabindex="0" aria-label="Sicherheit – TLS-Peer · Connector · RBAC">
+    <title>Öffnet: Sicherheit – TLS-Peer · Connector · RBAC — Ziel: /kb/exchange-on-premises#sicherheit-und-administrative-kontrolle</title>
     <rect class="hit gold" x="800" y="758" width="220" height="88" rx="18"/>
-    <text class="label" x="822" y="792">Trust Boundaries</text>
+    <text class="label" x="822" y="792">Sicherheitsgrenzen</text>
     <text class="body" x="822" y="818">TLS-Peer · Connector · RBAC</text>
   </a>
-  <a href="/kb/exchange#diagnosewerkzeuge" target="_top" tabindex="0" aria-label="Trace · Queue · Health – Network Message ID · Next Hop · DB">
+  <a data-link-hint="18" href="/kb/exchange-on-premises#betrieb-vom-symptom-zum-konkreten-server" target="_top" tabindex="0" aria-label="Trace · Queue · Health – Network Message ID · Next Hop · DB">
+    <title>Öffnet: Trace · Queue · Health – Network Message ID · Next Hop · DB — Ziel: /kb/exchange-on-premises#betrieb-vom-symptom-zum-konkreten-server</title>
     <rect class="hit" x="1040" y="758" width="274" height="88" rx="18"/>
     <text class="label" x="1062" y="792">Trace · Queue · Health</text>
     <text class="body" x="1062" y="818">Network Message ID · Next Hop · DB</text>
   </a>
 
   <text class="section" x="70" y="925">PRIMÄRQUELLEN · ARCHITEKTUR, TRANSPORT, RESILIENZ UND HYBRID</text>
-  <a href="https://learn.microsoft.com/en-us/exchange/architecture/architecture" rel="noopener noreferrer" tabindex="0" aria-label="Exchange Server architecture" target="_top"><rect class="chip" x="70" y="944" width="226" height="38" rx="18"/><text class="small" x="94" y="968">Exchange Server architecture</text></a>
-  <a href="https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow" rel="noopener noreferrer" tabindex="0" aria-label="Transport pipeline" target="_top"><rect class="chip" x="312" y="944" width="226" height="38" rx="18"/><text class="small" x="352" y="968">Transport pipeline</text></a>
-  <a href="https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups" rel="noopener noreferrer" tabindex="0" aria-label="DAG / Active Manager" target="_top"><rect class="chip" x="554" y="944" width="226" height="38" rx="18"/><text class="small" x="612" y="968">DAG / Active Manager</text></a>
-  <a href="https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency" rel="noopener noreferrer" tabindex="0" aria-label="Online data resiliency" target="_top"><rect class="chip" x="796" y="944" width="226" height="38" rx="18"/><text class="small" x="844" y="968">Online data resiliency</text></a>
-  <a href="https://learn.microsoft.com/en-us/exchange/exchange-hybrid" rel="noopener noreferrer" tabindex="0" aria-label="Exchange hybrid deployments" target="_top"><rect class="chip" x="1038" y="944" width="296" height="38" rx="18"/><text class="small" x="1122" y="968">Exchange hybrid deployments</text></a>
-</svg>
+  <a data-link-hint="19" href="https://learn.microsoft.com/en-us/exchange/architecture/architecture" rel="noopener noreferrer" tabindex="0" aria-label="Exchange Server architecture" target="_top">
+    <title>Öffnet: Exchange Server architecture — Ziel: https://learn.microsoft.com/en-us/exchange/architecture/architecture</title><rect class="chip" x="70" y="944" width="226" height="38" rx="18"/><text class="small" x="94" y="968">Exchange Server architecture</text></a>
+  <a data-link-hint="20" href="https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow" rel="noopener noreferrer" tabindex="0" aria-label="Transport pipeline" target="_top">
+    <title>Öffnet: Transport pipeline — Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow</title><rect class="chip" x="312" y="944" width="226" height="38" rx="18"/><text class="small" x="352" y="968">Transport pipeline</text></a>
+  <a data-link-hint="21" href="https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups" rel="noopener noreferrer" tabindex="0" aria-label="DAG / Active Manager" target="_top">
+    <title>Öffnet: DAG / Active Manager — Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups</title><rect class="chip" x="554" y="944" width="226" height="38" rx="18"/><text class="small" x="612" y="968">DAG / Active Manager</text></a>
+  <a data-link-hint="22" href="https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency" rel="noopener noreferrer" tabindex="0" aria-label="Online data resiliency" target="_top">
+    <title>Öffnet: Online data resiliency — Ziel: https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency</title><rect class="chip" x="796" y="944" width="226" height="38" rx="18"/><text class="small" x="844" y="968">Online data resiliency</text></a>
+  <a data-link-hint="23" href="https://learn.microsoft.com/en-us/exchange/exchange-hybrid" rel="noopener noreferrer" tabindex="0" aria-label="Exchange hybrid deployments" target="_top">
+    <title>Öffnet: Exchange hybrid deployments — Ziel: https://learn.microsoft.com/en-us/exchange/exchange-hybrid</title><rect class="chip" x="1038" y="944" width="296" height="38" rx="18"/><text class="small" x="1122" y="968">Exchange hybrid deployments</text></a>
+  <style>
+    .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
+    svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
+    .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
+    .link-target-copy{opacity:0}
+    .link-target-label{font:700 16px system-ui,-apple-system,"Segoe UI",sans-serif;fill:#ffffff}
+    .link-target-address{font:500 12px ui-monospace,"SFMono-Regular",Consolas,monospace;fill:#bfe7ff}
+svg:has(a[data-link-hint="1"]:hover) .link-target-copy-1,svg:has(a[data-link-hint="1"]:focus) .link-target-copy-1{opacity:1}
+svg:has(a[data-link-hint="2"]:hover) .link-target-copy-2,svg:has(a[data-link-hint="2"]:focus) .link-target-copy-2{opacity:1}
+svg:has(a[data-link-hint="3"]:hover) .link-target-copy-3,svg:has(a[data-link-hint="3"]:focus) .link-target-copy-3{opacity:1}
+svg:has(a[data-link-hint="4"]:hover) .link-target-copy-4,svg:has(a[data-link-hint="4"]:focus) .link-target-copy-4{opacity:1}
+svg:has(a[data-link-hint="5"]:hover) .link-target-copy-5,svg:has(a[data-link-hint="5"]:focus) .link-target-copy-5{opacity:1}
+svg:has(a[data-link-hint="6"]:hover) .link-target-copy-6,svg:has(a[data-link-hint="6"]:focus) .link-target-copy-6{opacity:1}
+svg:has(a[data-link-hint="7"]:hover) .link-target-copy-7,svg:has(a[data-link-hint="7"]:focus) .link-target-copy-7{opacity:1}
+svg:has(a[data-link-hint="8"]:hover) .link-target-copy-8,svg:has(a[data-link-hint="8"]:focus) .link-target-copy-8{opacity:1}
+svg:has(a[data-link-hint="9"]:hover) .link-target-copy-9,svg:has(a[data-link-hint="9"]:focus) .link-target-copy-9{opacity:1}
+svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-hint="10"]:focus) .link-target-copy-10{opacity:1}
+svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
+svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
+svg:has(a[data-link-hint="13"]:hover) .link-target-copy-13,svg:has(a[data-link-hint="13"]:focus) .link-target-copy-13{opacity:1}
+svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-hint="14"]:focus) .link-target-copy-14{opacity:1}
+svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
+svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
+svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
+svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
+svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
+svg:has(a[data-link-hint="20"]:hover) .link-target-copy-20,svg:has(a[data-link-hint="20"]:focus) .link-target-copy-20{opacity:1}
+svg:has(a[data-link-hint="21"]:hover) .link-target-copy-21,svg:has(a[data-link-hint="21"]:focus) .link-target-copy-21{opacity:1}
+svg:has(a[data-link-hint="22"]:hover) .link-target-copy-22,svg:has(a[data-link-hint="22"]:focus) .link-target-copy-22{opacity:1}
+svg:has(a[data-link-hint="23"]:hover) .link-target-copy-23,svg:has(a[data-link-hint="23"]:focus) .link-target-copy-23{opacity:1}
+  </style>
+  <g class="link-target-ui" aria-hidden="true" pointer-events="none">
+    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Internet / Gateway – MX · SMTP · TLS-Peer – Envelope ≠ Header</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#rollen-und-zuständigkeiten</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Front End – Receive Connector – SMTP proxy · stateless</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#die-transport-pipeline-schritt-für-schritt</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Transport Service – Routing · Regeln · Agents – Queue · Next Hop</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#routing-domains-und-connectors</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Mailbox Transport – Delivery · Submission – Transport ↔ Store</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#die-transport-pipeline-schritt-für-schritt</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Mailbox Store · ESE – aktive Datenbank · Logs · Checkpoint – Write-ahead state</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Accepted Domain – authoritative · relay · recipient scope</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#routing-domains-und-connectors</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Shadow · Safety Net – Transportkopien vor / nach Delivery</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Policy / EOP – Auth · Filter · Rule · Bifurcation</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: DNS · Autodiscover – SCP · CNAME · HTTPS-URL – Name → Endpoint</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Client Access Frontend – MAPI/HTTP · OWA · EWS – HTTPS proxy · auth</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#clientzugriff-und-autodiscover</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Identität – Kerberos · OAuth · RBAC – Principal + Scope</text><text class="link-target-address" x="26" y="60">Ziel: /kb/kerberos</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Backend / Store – aktive DB-Kopie · Session – Mailbox state</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#mailboxdatenbank-logs-und-checkpoint</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Verzeichnis – Empfänger · Topologie – AD / Entra</text><text class="link-target-address" x="26" y="60">Ziel: /kb/ldap</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: DAG · Active Manager – Copy · Replay · Mount · Quorum</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#database-availability-group-und-active-manager</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online – verwalteter Tenant statt einzelner Hosts</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-online#vom-tenant-zum-postfach</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid – Empfängerhoheit · Sync · OAuth · SMTP</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-hybrid#die-bausteine-in-sinnvoller-reihenfolge</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: Sicherheit – TLS-Peer · Connector · RBAC</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#sicherheit-und-administrative-kontrolle</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: Trace · Queue · Health – Network Message ID · Next Hop · DB</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises#betrieb-vom-symptom-zum-konkreten-server</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Server architecture</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/architecture</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: Transport pipeline</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: DAG / Active Manager</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: Online data resiliency</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency</text></g>
+    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="38">Öffnet: Exchange hybrid deployments</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/exchange-hybrid</text></g>
+  </g></svg>
