@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid meet">
   <title id="title">Kerberos-Vertrauensmodell vom KDC bis zum Anwendungsdienst</title>
   <desc id="desc">Interaktive Administrationsgrafik zu DNS und Zeit, Authentication Service, Ticket-Granting Service, TGT und Service-Ticket, AP-Austausch, SPN, Keytab, PAC, Trust und Delegation. Alle fachlichen Blöcke und Quellen sind verlinkt.</desc>
   <style>

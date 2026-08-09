@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid meet">
   <title id="title">Container-Stack, Isolationsgrenzen und Betriebszustand</title>
   <desc id="desc">Interaktive Adminübersicht über OCI-Artefakt, Engine, Runtime, Kernelisolation, Netzwerk, Storage, Sicherheit, Rollout und Recovery. Jeder Baustein ist verlinkt.</desc>
   <style>

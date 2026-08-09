@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1116" role="img" aria-labelledby="title desc">
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1116" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid meet">
   <title id="title">Home Assistant: Datenpfade, Core, Persistenz und Betrieb</title>
   <desc id="desc">Klickbare Architekturkarte von lokalen Geräten, Cloud-APIs, Discovery, MQTT und Funkbrücken über Integrationen, Registries, Event Bus, State Machine, Service Registry und Automationen bis zu Recorder, APIs, Laufzeit, Monitoring, Backup und Restore.</desc>
   <defs>

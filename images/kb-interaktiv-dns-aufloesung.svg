@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1016" role="img" aria-labelledby="title desc">
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1016" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid meet">
   <title id="title">DNS-Auflösung, Delegation, Cache und DNSSEC</title>
   <desc id="desc">Interaktive Darstellung des RFC-definierten Wegs von Anwendung und Stub Resolver über rekursiven Resolver und Cache zu Root, TLD und autoritativer Zone. Zusätzliche Blöcke zeigen DNSSEC-Vertrauenskette und wichtige Diagnosesignale. Alle fachlichen Blöcke führen zum Artikel oder zur Primärquelle.</desc>
   <style>

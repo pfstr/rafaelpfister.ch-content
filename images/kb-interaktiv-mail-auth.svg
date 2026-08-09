@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid meet">
   <title id="title">SPF-, DKIM- und DMARC-Auswertung mit Identitäten und Vertrauensbereich</title>
   <desc id="desc">Interaktive Administrationsgrafik vom SMTP-Eingang über SPF- und DKIM-Prüfung, Alignment und DMARC-Policy bis zu Authentication-Results und Reports. Alle fachlichen Blöcke und Quellen sind verlinkt.</desc>
   <style>
