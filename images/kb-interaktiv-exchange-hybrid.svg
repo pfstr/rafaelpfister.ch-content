@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
   <title id="title">Exchange Hybrid: Verzeichnis-, Koexistenz- und Migrationsverbindungen</title>
   <desc id="desc">Klickbare Übersicht von Active Directory und Entra-Synchronisation über Empfänger, HCW, OAuth, Frei-Gebucht, Autodiscover, Mailboxverschiebung und SMTP.</desc>
   <style>
@@ -55,6 +55,8 @@
   </a>
   <text class="s" x="700" y="955" text-anchor="middle">Hover zeigt das Linkziel · Jeder Kasten steht für einen eigenen technischen Weg</text>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -74,18 +76,20 @@ svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-h
 svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
 svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1400" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Active Directory – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Management Tools – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/manage-hybrid-exchange-recipients-with-management-tools</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Microsoft Entra ID – /kb/entra</text><text class="link-target-address" x="26" y="60">Ziel: /kb/entra</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online Empfänger – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Verzeichnissynchronisation – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment-prerequisites</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid Configuration Wizard – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-configuration-wizard</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Hybrid OAuth – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/configure-oauth-authentication-between-exchange-and-exchange-online-organizations-exchange-2013-help</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Frei/Gebucht und Sharing – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/sharing/sharing</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Remote Move – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid-Mailfluss – /kb/hybrid-mailfluss</text><text class="link-target-address" x="26" y="60">Ziel: /kb/hybrid-mailfluss</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Autodiscover – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid Modern Authentication – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/microsoft-365/enterprise/hybrid-modern-auth-overview</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: Active Directory – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/plan-and-deploy/active-directory/active-directory</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: Exchange Management Tools – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/manage-hybrid-exchange-recipients-with-management-tools</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: Microsoft Entra ID – /kb/entra</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/entra</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: Exchange Online Empfänger – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/recipients-in-exchange-online</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: Verzeichnissynchronisation – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment-prerequisites</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: Hybrid Configuration Wizard – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-configuration-wizard</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: Exchange Hybrid OAuth – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/configure-oauth-authentication-between-exchange-and-exchange-online-organizations-exchange-2013-help</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: Frei/Gebucht und Sharing – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/sharing/sharing</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: Remote Move – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: Hybrid-Mailfluss – /kb/hybrid-mailfluss</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/hybrid-mailfluss</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: Autodiscover – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: Hybrid Modern Authentication – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/microsoft-365/enterprise/hybrid-modern-auth-overview</text></g>
   </g></svg>

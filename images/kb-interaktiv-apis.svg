@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
   <title id="title">API-Architektur und Betriebsnachweis</title>
   <desc id="desc">Interaktive Übersicht über Aufrufpfad, Vertrag, Identität, Zuverlässigkeit, Events und Observability einer API. Alle Bausteine sind anklickbar.</desc>
   <style>
@@ -88,6 +88,8 @@
   <text class="t note" x="50" y="910">Minimaler Incident-Beleg: Client · Principal · Audience/Scope · Endpoint · Vertragsversion · Deadline · Request-/Trace-/Job-ID · Ergebnis</text>
   <text class="t note" x="40" y="978">Interaktive Infografik · Primärstandards und vertiefende KB-Abschnitte öffnen sich per Klick oder Tastaturfokus.</text>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -123,34 +125,36 @@ svg:has(a[data-link-hint="26"]:hover) .link-target-copy-26,svg:has(a[data-link-h
 svg:has(a[data-link-hint="27"]:hover) .link-target-copy-27,svg:has(a[data-link-hint="27"]:focus) .link-target-copy-27{opacity:1}
 svg:has(a[data-link-hint="28"]:hover) .link-target-copy-28,svg:has(a[data-link-hint="28"]:focus) .link-target-copy-28{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1400" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Client und Automation</text><text class="link-target-address" x="26" y="60">Ziel: /kb/powershell</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: DNS und Endpoint</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: TLS und Serveridentität</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tls</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: API Gateway</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#api-gateway-und-vertrauensgrenzen</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Authentisierung und Autorisierung</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#authentisierung-ist-nicht-autorisierung</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Service und Ressource</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#rest-ist-ein-architekturstil-kein-datenformat</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Zustand oder Queue</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#webhooks-events-und-asynchrone-apis</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: URI und Methode</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc3986.html</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: HTTP-Semantik</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc9110.html</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: JSON-Repräsentation</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc8259.html</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: OpenAPI-Vertrag</text><text class="link-target-address" x="26" y="60">Ziel: https://spec.openapis.org/oas/</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Problem Details</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc9457.html</text></g>
-    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Pagination und Links</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc8288.html</text></g>
-    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Deprecation und Lifecycle</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc9745.html</text></g>
-    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: OAuth 2.0</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc6749.html</text></g>
-    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: OpenID Connect und JWT</text><text class="link-target-address" x="26" y="60">Ziel: https://openid.net/specs/openid-connect-core-1_0.html</text></g>
-    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: Mutual TLS und DPoP</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc8705.html</text></g>
-    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: Deadline</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#timeouts-deadlines-und-partielle-ausführung</text></g>
-    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: Retry und Idempotenz</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#retries-backoff-und-idempotenz</text></g>
-    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: ETag und If-Match</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#optimistische-nebenläufigkeit</text></g>
-    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: Rate Limit und 429</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc6585.html</text></g>
-    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: Webhook-Signatur</text><text class="link-target-address" x="26" y="60">Ziel: https://www.rfc-editor.org/rfc/rfc9421.html</text></g>
-    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="38">Öffnet: CloudEvents</text><text class="link-target-address" x="26" y="60">Ziel: https://github.com/cloudevents/spec</text></g>
-    <g class="link-target-copy link-target-copy-24"><text class="link-target-label" x="26" y="38">Öffnet: AsyncAPI</text><text class="link-target-address" x="26" y="60">Ziel: https://www.asyncapi.com/docs/reference/specification/latest</text></g>
-    <g class="link-target-copy link-target-copy-25"><text class="link-target-label" x="26" y="38">Öffnet: Request-ID</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#fehlerkörper-und-korrelation</text></g>
-    <g class="link-target-copy link-target-copy-26"><text class="link-target-label" x="26" y="38">Öffnet: Trace und Spans</text><text class="link-target-address" x="26" y="60">Ziel: https://opentelemetry.io/docs/specs/otel/trace/</text></g>
-    <g class="link-target-copy link-target-copy-27"><text class="link-target-label" x="26" y="38">Öffnet: Auditnachweis</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#observability-und-beweisbare-aufrufe</text></g>
-    <g class="link-target-copy link-target-copy-28"><text class="link-target-label" x="26" y="38">Öffnet: Reconciliation und Dead Letter Queue</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis#webhooks-events-und-asynchrone-apis</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: Client und Automation</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/powershell</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: DNS und Endpoint</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: TLS und Serveridentität</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tls</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: API Gateway</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#api-gateway-und-vertrauensgrenzen</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: Authentisierung und Autorisierung</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#authentisierung-ist-nicht-autorisierung</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: Service und Ressource</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#rest-ist-ein-architekturstil-kein-datenformat</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: Zustand oder Queue</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#webhooks-events-und-asynchrone-apis</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: URI und Methode</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc3986.html</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: HTTP-Semantik</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc9110.html</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: JSON-Repräsentation</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc8259.html</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: OpenAPI-Vertrag</text><text class="link-target-address" x="26" y="-20">Ziel: https://spec.openapis.org/oas/</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: Problem Details</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc9457.html</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="-42">Öffnet: Pagination und Links</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc8288.html</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="-42">Öffnet: Deprecation und Lifecycle</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc9745.html</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="-42">Öffnet: OAuth 2.0</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc6749.html</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="-42">Öffnet: OpenID Connect und JWT</text><text class="link-target-address" x="26" y="-20">Ziel: https://openid.net/specs/openid-connect-core-1_0.html</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="-42">Öffnet: Mutual TLS und DPoP</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc8705.html</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="-42">Öffnet: Deadline</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#timeouts-deadlines-und-partielle-ausführung</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="-42">Öffnet: Retry und Idempotenz</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#retries-backoff-und-idempotenz</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="-42">Öffnet: ETag und If-Match</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#optimistische-nebenläufigkeit</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="-42">Öffnet: Rate Limit und 429</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc6585.html</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="-42">Öffnet: Webhook-Signatur</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.rfc-editor.org/rfc/rfc9421.html</text></g>
+    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="-42">Öffnet: CloudEvents</text><text class="link-target-address" x="26" y="-20">Ziel: https://github.com/cloudevents/spec</text></g>
+    <g class="link-target-copy link-target-copy-24"><text class="link-target-label" x="26" y="-42">Öffnet: AsyncAPI</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.asyncapi.com/docs/reference/specification/latest</text></g>
+    <g class="link-target-copy link-target-copy-25"><text class="link-target-label" x="26" y="-42">Öffnet: Request-ID</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#fehlerkörper-und-korrelation</text></g>
+    <g class="link-target-copy link-target-copy-26"><text class="link-target-label" x="26" y="-42">Öffnet: Trace und Spans</text><text class="link-target-address" x="26" y="-20">Ziel: https://opentelemetry.io/docs/specs/otel/trace/</text></g>
+    <g class="link-target-copy link-target-copy-27"><text class="link-target-label" x="26" y="-42">Öffnet: Auditnachweis</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#observability-und-beweisbare-aufrufe</text></g>
+    <g class="link-target-copy link-target-copy-28"><text class="link-target-label" x="26" y="-42">Öffnet: Reconciliation und Dead Letter Queue</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis#webhooks-events-und-asynchrone-apis</text></g>
   </g></svg>

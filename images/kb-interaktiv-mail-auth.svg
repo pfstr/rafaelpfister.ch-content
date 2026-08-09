@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
   <title id="title">SPF-, DKIM- und DMARC-Auswertung mit Identitäten und Vertrauensbereich</title>
   <desc id="desc">Interaktive Administrationsgrafik vom SMTP-Eingang über SPF- und DKIM-Prüfung, Alignment und DMARC-Policy bis zu Authentication-Results und Reports. Alle fachlichen Blöcke und Quellen sind verlinkt.</desc>
   <style>
@@ -187,6 +187,8 @@
 
   <text class="tiny" x="70" y="980">Fokus oder Hover hebt jedes Ziel hervor. Interne Ziele öffnen die passende Admin-Erklärung; RFC-Chips führen zur Primärquelle.</text>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -213,25 +215,27 @@ svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-h
 svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
 svg:has(a[data-link-hint="19"]:hover) .link-target-copy-19,svg:has(a[data-link-hint="19"]:focus) .link-target-copy-19{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1400" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Client-IP · HELO – TCP-/SMTP-Hop am Border-MTA – SPF-Eingabe</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp#envelope-und-nachrichteninhalt</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: RFC5321.MailFrom – Envelope · Return Path – SPF-Domain</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#spf-autorisierung-der-verbindenden-ip</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: DKIM d= · s= – Signing Domain · Selektor – Signatur + DNS-Key</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#dkim-signatur-einer-domain</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: RFC5322.From – sichtbare Author Domain – DMARC-Vergleichsziel</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: SPF auswerten – IP + MailFrom/HELO + DNS – pass / fail / error</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#lookup-budget-und-abhängigkeiten</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: DKIM verifizieren – Header · Body · DNS-Key</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#schlüssel-algorithmen-und-rotation</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Alignment je Mechanismus – SPF-Domain ↔ Author Domain – DKIM d= ↔ Author Domain</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: DMARC – SPF aligned pass – ODER</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#policy-record-und-tags</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Auth-Results – nur innerhalb – Vertrauensbereich</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#authentication-results-richtig-vertrauen</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Reports – XML/GZIP · RUA – Zeitreihe ≠ Einzelfall</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#reporting-als-betriebliche-datenpipeline</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Forwarder – neue Client-IP → SPF kann brechen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#weiterleitung-und-spf-domain</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Mailingliste / Gateway – Body/Header geändert → DKIM kann brechen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#indirekte-flüsse-und-typische-bruchstellen</text></g>
-    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: ARC · experimentell – signierter Kontext, kein Freipass</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc8617</text></g>
-    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Admin-Beweiskette – Hop · Domain · Resultat · Mutation</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth#fehler-systematisch-einer-grenze-zuordnen</text></g>
-    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: RFC 7208 · SPF</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc7208</text></g>
-    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: RFC 6376 · DKIM</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc6376</text></g>
-    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9989 · DMARC</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9989</text></g>
-    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9990 · Aggregate Reports</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9990</text></g>
-    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: RFC 8601 · Authentication-Results</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc8601</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: Client-IP · HELO – TCP-/SMTP-Hop am Border-MTA – SPF-Eingabe</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/smtp#envelope-und-nachrichteninhalt</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: RFC5321.MailFrom – Envelope · Return Path – SPF-Domain</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#spf-autorisierung-der-verbindenden-ip</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: DKIM d= · s= – Signing Domain · Selektor – Signatur + DNS-Key</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#dkim-signatur-einer-domain</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: RFC5322.From – sichtbare Author Domain – DMARC-Vergleichsziel</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: SPF auswerten – IP + MailFrom/HELO + DNS – pass / fail / error</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#lookup-budget-und-abhängigkeiten</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: DKIM verifizieren – Header · Body · DNS-Key</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#schlüssel-algorithmen-und-rotation</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: Alignment je Mechanismus – SPF-Domain ↔ Author Domain – DKIM d= ↔ Author Domain</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#dmarc-alignment-policy-und-auswertung</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: DMARC – SPF aligned pass – ODER</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#policy-record-und-tags</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: Auth-Results – nur innerhalb – Vertrauensbereich</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#authentication-results-richtig-vertrauen</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: Reports – XML/GZIP · RUA – Zeitreihe ≠ Einzelfall</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#reporting-als-betriebliche-datenpipeline</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: Forwarder – neue Client-IP → SPF kann brechen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#weiterleitung-und-spf-domain</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: Mailingliste / Gateway – Body/Header geändert → DKIM kann brechen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#indirekte-flüsse-und-typische-bruchstellen</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="-42">Öffnet: ARC · experimentell – signierter Kontext, kein Freipass</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc8617</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="-42">Öffnet: Admin-Beweiskette – Hop · Domain · Resultat · Mutation</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth#fehler-systematisch-einer-grenze-zuordnen</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 7208 · SPF</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc7208</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 6376 · DKIM</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc6376</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9989 · DMARC</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9989</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9990 · Aggregate Reports</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9990</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 8601 · Authentication-Results</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc8601</text></g>
   </g></svg>

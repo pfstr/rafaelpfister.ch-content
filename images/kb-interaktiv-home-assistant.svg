@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1040" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1116" role="img" aria-labelledby="title desc">
   <title id="title">Home Assistant: Datenpfade, Core, Persistenz und Betrieb</title>
   <desc id="desc">Klickbare Architekturkarte von lokalen Geräten, Cloud-APIs, Discovery, MQTT und Funkbrücken über Integrationen, Registries, Event Bus, State Machine, Service Registry und Automationen bis zu Recorder, APIs, Laufzeit, Monitoring, Backup und Restore.</desc>
   <defs>
@@ -94,6 +94,8 @@
 
   <text x="50" y="1020" class="note">Adminregel: Config, Registry, Recorder, Broker, Funkzustand, Proxy und Schlüssel als getrennte Schutzobjekte behandeln.</text>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -132,37 +134,39 @@ svg:has(a[data-link-hint="29"]:hover) .link-target-copy-29,svg:has(a[data-link-h
 svg:has(a[data-link-hint="30"]:hover) .link-target-copy-30,svg:has(a[data-link-hint="30"]:focus) .link-target-copy-30{opacity:1}
 svg:has(a[data-link-hint="31"]:hover) .link-target-copy-31,svg:has(a[data-link-hint="31"]:focus) .link-target-copy-31{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1400" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Lokale Geräte und Dienste</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Hersteller-Cloud-APIs</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: mDNS und SSDP Discovery</text><text class="link-target-address" x="26" y="60">Ziel: /kb/dns</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: MQTT Broker</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/mqtt/</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Funk- und Protokollbrücken</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/matter/</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Python-Integrationen</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/architecture_components/</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Config Entries</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/config_entries_index/</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Device Registry</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/device_registry_index/</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Entity Registry</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/entity_registry_index/</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Entitäten</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/architecture/devices-and-services/</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Event Bus</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/architecture/core/</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: State Machine</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/architecture/core/</text></g>
-    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Service Registry</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/architecture/core/</text></g>
-    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Automationen und Scripts</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/docs/automation/basics/</text></g>
-    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: Automation Traces und Kontext</text><text class="link-target-address" x="26" y="60">Ziel: /kb/troubleshooting</text></g>
-    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: Recorder</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/recorder/</text></g>
-    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: SQLite oder externe SQL-Datenbank</text><text class="link-target-address" x="26" y="60">Ziel: /kb/storage</text></g>
-    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: REST API</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/api/rest/</text></g>
-    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="38">Öffnet: WebSocket API</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/api/websocket/</text></g>
-    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="38">Öffnet: Frontend und HTTP</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/http/</text></g>
-    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="38">Öffnet: Benutzer, Tokens und MFA</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/auth_api/</text></g>
-    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="38">Öffnet: API-Verträge und Monitoring</text><text class="link-target-address" x="26" y="60">Ziel: /kb/apis</text></g>
-    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="38">Öffnet: TLS und Reverse Proxy</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tls</text></g>
-    <g class="link-target-copy link-target-copy-24"><text class="link-target-label" x="26" y="38">Öffnet: Härtung und Netzwerksegmentierung</text><text class="link-target-address" x="26" y="60">Ziel: /kb/haertung</text></g>
-    <g class="link-target-copy link-target-copy-25"><text class="link-target-label" x="26" y="38">Öffnet: Home Assistant OS</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/operating-system/</text></g>
-    <g class="link-target-copy link-target-copy-26"><text class="link-target-label" x="26" y="38">Öffnet: Supervisor</text><text class="link-target-address" x="26" y="60">Ziel: https://developers.home-assistant.io/docs/supervisor/</text></g>
-    <g class="link-target-copy link-target-copy-27"><text class="link-target-label" x="26" y="38">Öffnet: Home Assistant Container</text><text class="link-target-address" x="26" y="60">Ziel: /kb/container</text></g>
-    <g class="link-target-copy link-target-copy-28"><text class="link-target-label" x="26" y="38">Öffnet: System Health und Logs</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/integrations/system_health/</text></g>
-    <g class="link-target-copy link-target-copy-29"><text class="link-target-label" x="26" y="38">Öffnet: Updates und kontrollierter Rollout</text><text class="link-target-address" x="26" y="60">Ziel: /kb/releases</text></g>
-    <g class="link-target-copy link-target-copy-30"><text class="link-target-label" x="26" y="38">Öffnet: Verschlüsselte Home Assistant Backups</text><text class="link-target-address" x="26" y="60">Ziel: https://www.home-assistant.io/common-tasks/general/</text></g>
-    <g class="link-target-copy link-target-copy-31"><text class="link-target-label" x="26" y="38">Öffnet: Restoretest und Disaster Recovery</text><text class="link-target-address" x="26" y="60">Ziel: /kb/backup-dr</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: Lokale Geräte und Dienste</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: Hersteller-Cloud-APIs</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: mDNS und SSDP Discovery</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/dns</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: MQTT Broker</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/mqtt/</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: Funk- und Protokollbrücken</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/matter/</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: Python-Integrationen</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/architecture_components/</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: Config Entries</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/config_entries_index/</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: Device Registry</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/device_registry_index/</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: Entity Registry</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/entity_registry_index/</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: Entitäten</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/architecture/devices-and-services/</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: Event Bus</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/architecture/core/</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: State Machine</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/architecture/core/</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="-42">Öffnet: Service Registry</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/architecture/core/</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="-42">Öffnet: Automationen und Scripts</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/docs/automation/basics/</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="-42">Öffnet: Automation Traces und Kontext</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/troubleshooting</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="-42">Öffnet: Recorder</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/recorder/</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="-42">Öffnet: SQLite oder externe SQL-Datenbank</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/storage</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="-42">Öffnet: REST API</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/api/rest/</text></g>
+    <g class="link-target-copy link-target-copy-19"><text class="link-target-label" x="26" y="-42">Öffnet: WebSocket API</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/api/websocket/</text></g>
+    <g class="link-target-copy link-target-copy-20"><text class="link-target-label" x="26" y="-42">Öffnet: Frontend und HTTP</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/http/</text></g>
+    <g class="link-target-copy link-target-copy-21"><text class="link-target-label" x="26" y="-42">Öffnet: Benutzer, Tokens und MFA</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/auth_api/</text></g>
+    <g class="link-target-copy link-target-copy-22"><text class="link-target-label" x="26" y="-42">Öffnet: API-Verträge und Monitoring</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/apis</text></g>
+    <g class="link-target-copy link-target-copy-23"><text class="link-target-label" x="26" y="-42">Öffnet: TLS und Reverse Proxy</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tls</text></g>
+    <g class="link-target-copy link-target-copy-24"><text class="link-target-label" x="26" y="-42">Öffnet: Härtung und Netzwerksegmentierung</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/haertung</text></g>
+    <g class="link-target-copy link-target-copy-25"><text class="link-target-label" x="26" y="-42">Öffnet: Home Assistant OS</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/operating-system/</text></g>
+    <g class="link-target-copy link-target-copy-26"><text class="link-target-label" x="26" y="-42">Öffnet: Supervisor</text><text class="link-target-address" x="26" y="-20">Ziel: https://developers.home-assistant.io/docs/supervisor/</text></g>
+    <g class="link-target-copy link-target-copy-27"><text class="link-target-label" x="26" y="-42">Öffnet: Home Assistant Container</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/container</text></g>
+    <g class="link-target-copy link-target-copy-28"><text class="link-target-label" x="26" y="-42">Öffnet: System Health und Logs</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/integrations/system_health/</text></g>
+    <g class="link-target-copy link-target-copy-29"><text class="link-target-label" x="26" y="-42">Öffnet: Updates und kontrollierter Rollout</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/releases</text></g>
+    <g class="link-target-copy link-target-copy-30"><text class="link-target-label" x="26" y="-42">Öffnet: Verschlüsselte Home Assistant Backups</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.home-assistant.io/common-tasks/general/</text></g>
+    <g class="link-target-copy link-target-copy-31"><text class="link-target-label" x="26" y="-42">Öffnet: Restoretest und Disaster Recovery</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/backup-dr</text></g>
   </g></svg>

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" role="img" aria-labelledby="title desc" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1280 956" role="img" aria-labelledby="title desc" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
   <title id="title">Apache-James-Betriebsmodelle im Vergleich</title>
   <desc id="desc">Vergleich von JPA Legacy, PostgreSQL und Distributed James mit Komponenten, Skalierung, Recovery und typischen Betriebsrisiken.</desc>
   <defs>
@@ -200,6 +200,8 @@
     <text x="1080" y="838" text-anchor="middle" font-size="9.8" font-weight="650" fill="#222">[4] Persistence · Mailbox und Repository</text>
   </a>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -225,24 +227,26 @@ svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-h
 svg:has(a[data-link-hint="17"]:hover) .link-target-copy-17,svg:has(a[data-link-hint="17"]:focus) .link-target-copy-17{opacity:1}
 svg:has(a[data-link-hint="18"]:hover) .link-target-copy-18,svg:has(a[data-link-hint="18"]:focus) .link-target-copy-18{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1280" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1256" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 1: offizielle Apache-James-Downloads</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/download.cgi</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: KB-Artikel zu SMTP öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Apache-Quelle zum JPA-Profil öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/download.cgi</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Apache-James-Quellrepository öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://github.com/apache/james-project</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 1: offizielle Apache-James-Downloads</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/download.cgi</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 2: Apache James 3.9.0 Release</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Apache James 3.9.0 Release öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: Apache-Quelle zur PostgreSQL-Implementierung öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Apache-Quelle zu den skalierbaren PostgreSQL-Komponenten öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 1: offizielle Apache-James-Downloads</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/download.cgi</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 3: Managing Distributed James</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: Apache-Dokumentation zu Distributed James öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
-    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: Apache-Dokumentation zu Cassandra in Distributed James öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
-    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: Apache-Dokumentation zu S3, OpenSearch und RabbitMQ öffnen</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
-    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 1: offizielle Downloads und Profile</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/download.cgi</text></g>
-    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 2: Release 3.9.0</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
-    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 3: Distributed James Operations</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
-    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="38">Öffnet: Quelle 4: Apache James Persistence</text><text class="link-target-address" x="26" y="60">Ziel: https://james.apache.org/server/feature-persistence.html</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1256" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 1: offizielle Apache-James-Downloads</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/download.cgi</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: KB-Artikel zu SMTP öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/smtp</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-Quelle zum JPA-Profil öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/download.cgi</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-James-Quellrepository öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://github.com/apache/james-project</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 1: offizielle Apache-James-Downloads</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/download.cgi</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 2: Apache James 3.9.0 Release</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: Apache James 3.9.0 Release öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-Quelle zur PostgreSQL-Implementierung öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-Quelle zu den skalierbaren PostgreSQL-Komponenten öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 1: offizielle Apache-James-Downloads</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/download.cgi</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 3: Managing Distributed James</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-Dokumentation zu Distributed James öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-Dokumentation zu Cassandra in Distributed James öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="-42">Öffnet: Apache-Dokumentation zu S3, OpenSearch und RabbitMQ öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 1: offizielle Downloads und Profile</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/download.cgi</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 2: Release 3.9.0</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/james/update/2025/09/25/james-3.9.0.html</text></g>
+    <g class="link-target-copy link-target-copy-17"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 3: Distributed James Operations</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/server/manage-guice-distributed-james.html</text></g>
+    <g class="link-target-copy link-target-copy-18"><text class="link-target-label" x="26" y="-42">Öffnet: Quelle 4: Apache James Persistence</text><text class="link-target-address" x="26" y="-20">Ziel: https://james.apache.org/server/feature-persistence.html</text></g>
   </g></svg>

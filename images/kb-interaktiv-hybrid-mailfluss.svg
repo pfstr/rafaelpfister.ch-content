@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -76 1400 1076" role="img" aria-labelledby="title desc">
   <title id="title">Hybrid-Mailfluss: direkte und zentrale SMTP-Routen</title>
   <desc id="desc">Klickbare Übersicht der direkten Route, Centralized Mail Transport, Connector- und Zertifikatsprüfung, Mail-Gateway sowie Diagnose mit Message Trace, Tracking und Queues.</desc>
   <style>
@@ -58,6 +58,8 @@
   </a>
   <text class="s" x="700" y="975" text-anchor="middle">Hover zeigt Zielname und Zieladresse · Klick öffnet die Vertiefung</text>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -77,18 +79,20 @@ svg:has(a[data-link-hint="10"]:hover) .link-target-copy-10,svg:has(a[data-link-h
 svg:has(a[data-link-hint="11"]:hover) .link-target-copy-11,svg:has(a[data-link-hint="11"]:focus) .link-target-copy-11{opacity:1}
 svg:has(a[data-link-hint="12"]:hover) .link-target-copy-12,svg:has(a[data-link-hint="12"]:focus) .link-target-copy-12{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1400" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: SMTP – /kb/smtp</text><text class="link-target-address" x="26" y="60">Ziel: /kb/smtp</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: Exchange Online – /kb/exchange-online</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-online</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: Hybrid-Connectoren – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment/hybrid-mail-flow</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Exchange On-Premises – /kb/exchange-on-premises</text><text class="link-target-address" x="26" y="60">Ziel: /kb/exchange-on-premises</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: Centralized Mail Transport – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/transport-routing</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: Drittanbieter-Mail-Gateway – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: Enhanced Filtering – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: SPF, DKIM und DMARC – /kb/mail-auth</text><text class="link-target-address" x="26" y="60">Ziel: /kb/mail-auth</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Message Trace – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Message Tracking – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Exchange-Queues – learn.microsoft.com</text><text class="link-target-address" x="26" y="60">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/queues/queues</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: TLS – /kb/tls</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tls</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: SMTP – /kb/smtp</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/smtp</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: Exchange Online – /kb/exchange-online</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/exchange-online</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: Hybrid-Connectoren – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/hybrid-deployment/hybrid-mail-flow</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: Exchange On-Premises – /kb/exchange-on-premises</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/exchange-on-premises</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: Centralized Mail Transport – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/transport-routing</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: Drittanbieter-Mail-Gateway – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: Enhanced Filtering – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: SPF, DKIM und DMARC – /kb/mail-auth</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/mail-auth</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: Message Trace – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: Message Tracking – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: Exchange-Queues – learn.microsoft.com</text><text class="link-target-address" x="26" y="-20">Ziel: https://learn.microsoft.com/en-us/exchange/mail-flow/queues/queues</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: TLS – /kb/tls</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tls</text></g>
   </g></svg>

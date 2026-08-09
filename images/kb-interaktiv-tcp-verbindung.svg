@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -76 1400 976" role="img" aria-labelledby="title desc">
   <title id="title">TCP-Verbindungslebenszyklus und Diagnosepunkte</title>
   <desc id="desc">Interaktive Darstellung von Handshake, Datenphase, Fenstern, Retransmission, Verbindungsabbau und typischen Fehlersignalen. Alle fachlichen Blöcke führen zu passenden Artikelabschnitten oder Primärquellen.</desc>
   <style>
@@ -151,6 +151,8 @@
   <a data-link-hint="16" href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="[4] Wireshark · Analysesignale">
     <title>Öffnet: [4] Wireshark · Analysesignale — Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</title><rect class="soft source" x="977" y="842" width="381" height="40" rx="20"/><text class="small" x="1011" y="868">[4] Wireshark · Analysesignale</text></a>
   <style>
+    .link-target-gutter{fill:#f8f5ef}
+    .link-target-placeholder{font:650 13px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em;fill:#6f697e}
     .link-target-ui{opacity:0;transition:opacity .12s ease;pointer-events:none}
     svg:has(a[href]:hover) .link-target-ui,svg:has(a[href]:focus) .link-target-ui{opacity:1}
     .link-target-backdrop{fill:#13263a;stroke:#ffffff;stroke-width:2}
@@ -174,22 +176,24 @@ svg:has(a[data-link-hint="14"]:hover) .link-target-copy-14,svg:has(a[data-link-h
 svg:has(a[data-link-hint="15"]:hover) .link-target-copy-15,svg:has(a[data-link-hint="15"]:focus) .link-target-copy-15{opacity:1}
 svg:has(a[data-link-hint="16"]:hover) .link-target-copy-16,svg:has(a[data-link-hint="16"]:focus) .link-target-copy-16{opacity:1}
   </style>
+  <rect class="link-target-gutter" x="0" y="-76" width="1400" height="76"/>
+  <text class="link-target-placeholder" x="18" y="-28">LINKZIEL · Element mit Maus oder Tastatur auswählen</text>
   <g class="link-target-ui" aria-hidden="true" pointer-events="none">
-    <rect class="link-target-backdrop" x="12" y="10" width="1376" height="62" rx="12"/>
-    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="38">Öffnet: Drei-Wege-Handshake im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</text></g>
-    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Opening and Closing Connections</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5</text></g>
-    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: TCP State Machine Overview</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2</text></g>
-    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="38">Öffnet: Sequenznummern und Retransmission im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#sequenznummern-acks-und-retransmission</text></g>
-    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Closing a Connection</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.6</text></g>
-    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Reset Generation</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</text></g>
-    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="38">Öffnet: SYN ohne Antwort: Diagnosematrix öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</text></g>
-    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="38">Öffnet: RFC 9293: Reset Generation</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</text></g>
-    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="38">Öffnet: Handshake ohne Banner: Diagnose öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</text></g>
-    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="38">Öffnet: Wireshark TCP Analysis</text><text class="link-target-address" x="26" y="60">Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</text></g>
-    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="38">Öffnet: Flusskontrolle und Zero Window öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#flusskontrolle-und-staukontrolle</text></g>
-    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="38">Öffnet: CLOSE-WAIT und TIME-WAIT im Artikel öffnen</text><text class="link-target-address" x="26" y="60">Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</text></g>
-    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="38">Öffnet: [1] RFC 9293 · Kern und Zustände</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc9293</text></g>
-    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="38">Öffnet: [2] RFC 6298 · RTO</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc6298</text></g>
-    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="38">Öffnet: [3] RFC 5681 · cwnd</text><text class="link-target-address" x="26" y="60">Ziel: https://datatracker.ietf.org/doc/html/rfc5681</text></g>
-    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="38">Öffnet: [4] Wireshark · Analysesignale</text><text class="link-target-address" x="26" y="60">Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</text></g>
+    <rect class="link-target-backdrop" x="12" y="-70" width="1376" height="62" rx="12"/>
+    <g class="link-target-copy link-target-copy-1"><text class="link-target-label" x="26" y="-42">Öffnet: Drei-Wege-Handshake im Artikel öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</text></g>
+    <g class="link-target-copy link-target-copy-2"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9293: Opening and Closing Connections</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5</text></g>
+    <g class="link-target-copy link-target-copy-3"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9293: TCP State Machine Overview</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2</text></g>
+    <g class="link-target-copy link-target-copy-4"><text class="link-target-label" x="26" y="-42">Öffnet: Sequenznummern und Retransmission im Artikel öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tcp#sequenznummern-acks-und-retransmission</text></g>
+    <g class="link-target-copy link-target-copy-5"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9293: Closing a Connection</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.6</text></g>
+    <g class="link-target-copy link-target-copy-6"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9293: Reset Generation</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</text></g>
+    <g class="link-target-copy link-target-copy-7"><text class="link-target-label" x="26" y="-42">Öffnet: SYN ohne Antwort: Diagnosematrix öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</text></g>
+    <g class="link-target-copy link-target-copy-8"><text class="link-target-label" x="26" y="-42">Öffnet: RFC 9293: Reset Generation</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2</text></g>
+    <g class="link-target-copy link-target-copy-9"><text class="link-target-label" x="26" y="-42">Öffnet: Handshake ohne Banner: Diagnose öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tcp#diagnose-vom-socket-bis-zum-paket</text></g>
+    <g class="link-target-copy link-target-copy-10"><text class="link-target-label" x="26" y="-42">Öffnet: Wireshark TCP Analysis</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</text></g>
+    <g class="link-target-copy link-target-copy-11"><text class="link-target-label" x="26" y="-42">Öffnet: Flusskontrolle und Zero Window öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tcp#flusskontrolle-und-staukontrolle</text></g>
+    <g class="link-target-copy link-target-copy-12"><text class="link-target-label" x="26" y="-42">Öffnet: CLOSE-WAIT und TIME-WAIT im Artikel öffnen</text><text class="link-target-address" x="26" y="-20">Ziel: /kb/tcp#verbindungsaufbau-datentransfer-und-abbau</text></g>
+    <g class="link-target-copy link-target-copy-13"><text class="link-target-label" x="26" y="-42">Öffnet: [1] RFC 9293 · Kern und Zustände</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc9293</text></g>
+    <g class="link-target-copy link-target-copy-14"><text class="link-target-label" x="26" y="-42">Öffnet: [2] RFC 6298 · RTO</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc6298</text></g>
+    <g class="link-target-copy link-target-copy-15"><text class="link-target-label" x="26" y="-42">Öffnet: [3] RFC 5681 · cwnd</text><text class="link-target-address" x="26" y="-20">Ziel: https://datatracker.ietf.org/doc/html/rfc5681</text></g>
+    <g class="link-target-copy link-target-copy-16"><text class="link-target-label" x="26" y="-42">Öffnet: [4] Wireshark · Analysesignale</text><text class="link-target-address" x="26" y="-20">Ziel: https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html</text></g>
   </g></svg>
