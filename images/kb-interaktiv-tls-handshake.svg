@@ -48,7 +48,7 @@
   <line class="lifeline" x1="195" y1="200" x2="195" y2="522"/>
   <line class="lifeline" x1="1205" y1="200" x2="1205" y2="522"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-4.2.1" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-4.2.1" target="_top" tabindex="0" aria-label="1 · ClientHello – Versionen · Cipher · Gruppen · SNI – key_share · signature_algorithms">
     <title>RFC 9846: ClientHello</title>
     <rect class="blue hit" x="70" y="207" width="340" height="92" rx="15"/>
     <text class="label" x="92" y="239">1 · ClientHello</text>
@@ -57,7 +57,7 @@
   </a>
   <path class="arrow-blue" d="M410 253 H1150"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-4.2.3" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-4.2.3" target="_top" tabindex="0" aria-label="2 · ServerHello – Auswahl + ephemerer Key Share – → Handshake Traffic Secrets">
     <title>RFC 9846: ServerHello und Schlüsselauswahl</title>
     <rect class="blue hit" x="990" y="310" width="340" height="92" rx="15"/>
     <text class="label" x="1012" y="342">2 · ServerHello</text>
@@ -66,7 +66,7 @@
   </a>
   <path class="arrow-blue" d="M990 356 H250"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-2" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-2" target="_top" tabindex="0" aria-label="3 · Verschlüsselte Server Flight – EncryptedExtensions · Certificate – CertificateVerify · Finished">
     <title>RFC 9846: Verschlüsselte Serverparameter und Authentisierung</title>
     <rect class="violet hit" x="490" y="310" width="440" height="92" rx="15"/>
     <text class="label" x="512" y="342">3 · Verschlüsselte Server Flight</text>
@@ -74,7 +74,7 @@
     <text class="mono" x="512" y="392">CertificateVerify · Finished</text>
   </a>
 
-  <a href="/kb/tls#zertifikatspfad-und-trust-boundary" target="_top" tabindex="0">
+  <a href="/kb/tls#zertifikatspfad-und-trust-boundary" target="_top" tabindex="0" aria-label="4 · Client validiert lokal – Pfad · SAN · Zeit · EKU · Policy – Trust Anchor kommt nicht vom Server">
     <title>Zertifikatspfad und lokale Trust Boundary im Artikel öffnen</title>
     <rect class="gold hit" x="70" y="413" width="340" height="92" rx="15"/>
     <text class="label" x="92" y="445">4 · Client validiert lokal</text>
@@ -83,7 +83,7 @@
   </a>
   <path class="arrow-gold" d="M490 356 H430 V459 H410"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-4.5.3" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9846#section-4.5.3" target="_top" tabindex="0" aria-label="5 · Client Finished – Transkript + Schlüssel bestätigt">
     <title>RFC 9846: Finished und Key Confirmation</title>
     <rect class="green hit" x="490" y="431" width="340" height="74" rx="15"/>
     <text class="label" x="512" y="461">5 · Client Finished</text>
@@ -91,7 +91,7 @@
   </a>
   <path class="arrow-blue" d="M830 468 H1150"/>
 
-  <a href="/kb/tls#schlüsselplan-und-record-layer" target="_top" tabindex="0">
+  <a href="/kb/tls#schlüsselplan-und-record-layer" target="_top" tabindex="0" aria-label="6 · Geschützte Anwendungsdaten – getrennte Client-/Server-Traffic-Secrets · AEAD">
     <title>Schlüsselplan und geschützte Anwendungsdaten im Artikel öffnen</title>
     <rect class="green hit" x="890" y="431" width="440" height="74" rx="15"/>
     <text class="label" x="912" y="461">6 · Geschützte Anwendungsdaten</text>
@@ -101,7 +101,7 @@
 
   <rect class="panel" x="40" y="588" width="1320" height="189" rx="20"/>
   <text class="kicker" x="70" y="623">ZERTIFIKATSPFAD UND DIENSTIDENTITÄT · SERVER LIEFERT NICHT DAS VERTRAUEN</text>
-  <a href="/kb/tls#x509-zertifikat-und-privater-schlüssel" target="_top" tabindex="0">
+  <a href="/kb/tls#x509-zertifikat-und-privater-schlüssel" target="_top" tabindex="0" aria-label="Leaf – SAN · Public Key – serverAuth">
     <title>X.509-Leaf-Zertifikat im Artikel öffnen</title>
     <rect class="blue hit" x="70" y="644" width="215" height="92" rx="14"/>
     <text class="label" x="92" y="676">Leaf</text>
@@ -109,7 +109,7 @@
     <text class="mono" x="92" y="724">serverAuth</text>
   </a>
   <path class="arrow" d="M285 690 H335"/>
-  <a href="https://datatracker.ietf.org/doc/html/rfc5280#section-6" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc5280#section-6" target="_top" tabindex="0" aria-label="Intermediate – CA=TRUE · Signatur – Path Length">
     <title>RFC 5280: Intermediate-Zertifikate und Pfadvalidierung</title>
     <rect class="soft hit" x="335" y="644" width="215" height="92" rx="14"/>
     <text class="label" x="357" y="676">Intermediate</text>
@@ -117,7 +117,7 @@
     <text class="mono" x="357" y="724">Path Length</text>
   </a>
   <path class="arrow-gold" d="M550 690 H600"/>
-  <a href="/kb/tls#zertifikatspfad-und-trust-boundary" target="_top" tabindex="0">
+  <a href="/kb/tls#zertifikatspfad-und-trust-boundary" target="_top" tabindex="0" aria-label="Trust Anchor – lokaler Truststore – Windows · Java · Bundle">
     <title>Lokaler Trust Anchor und Truststore im Artikel öffnen</title>
     <rect class="gold hit" x="600" y="644" width="215" height="92" rx="14"/>
     <text class="label" x="622" y="676">Trust Anchor</text>
@@ -125,7 +125,7 @@
     <text class="mono" x="622" y="724">Windows · Java · Bundle</text>
   </a>
   <path class="arrow-gold" d="M815 690 H865"/>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9525#section-6" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9525#section-6" target="_top" tabindex="0" aria-label="Service Identity – Referenz-ID ↔ SAN – CN nicht verwenden">
     <title>RFC 9525: Referenzidentität gegen subjectAltName prüfen</title>
     <rect class="violet hit" x="865" y="644" width="215" height="92" rx="14"/>
     <text class="label" x="887" y="676">Service Identity</text>
@@ -133,7 +133,7 @@
     <text class="mono" x="887" y="724">CN nicht verwenden</text>
   </a>
   <path class="arrow-blue" d="M1080 690 H1130"/>
-  <a href="/kb/tls#dienstidentität-san-referenz-id-und-sni" target="_top" tabindex="0">
+  <a href="/kb/tls#dienstidentität-san-referenz-id-und-sni" target="_top" tabindex="0" aria-label="Akzeptieren? – Pfad + Name + Policy – oder TLS Alert">
     <title>SAN, Referenz-ID und SNI im Artikel öffnen</title>
     <rect class="green hit" x="1130" y="644" width="200" height="92" rx="14"/>
     <text class="label" x="1152" y="676">Akzeptieren?</text>
@@ -142,40 +142,40 @@
   </a>
 
   <text class="kicker" x="46" y="816">ADMIN-SIGNALE · KLICK FÜHRT ZUR ERKLÄRUNG ODER PRIMÄRQUELLE</text>
-  <a href="/kb/tls#fehlerbild-einer-systemgrenze-zuordnen" target="_top" tabindex="0">
+  <a href="/kb/tls#fehlerbild-einer-systemgrenze-zuordnen" target="_top" tabindex="0" aria-label="Kein ServerHello – Port · STARTTLS · Filter">
     <title>Kein ServerHello: Fehlergrenze im Artikel öffnen</title>
     <rect class="rose risk" x="40" y="836" width="245" height="82" rx="15"/>
     <text class="label" x="62" y="867">Kein ServerHello</text>
     <text class="body" x="62" y="893">Port · STARTTLS · Filter</text>
   </a>
-  <a href="/kb/tls#dienstidentität-san-referenz-id-und-sni" target="_top" tabindex="0">
+  <a href="/kb/tls#dienstidentität-san-referenz-id-und-sni" target="_top" tabindex="0" aria-label="Falsches Zertifikat – SNI · Listener · Default">
     <title>Falsches Zertifikat und SNI im Artikel öffnen</title>
     <rect class="rose risk" x="305" y="836" width="245" height="82" rx="15"/>
     <text class="label" x="327" y="867">Falsches Zertifikat</text>
     <text class="body" x="327" y="893">SNI · Listener · Default</text>
   </a>
-  <a href="/kb/tls#zertifikatspfad-und-trust-boundary" target="_top" tabindex="0">
+  <a href="/kb/tls#zertifikatspfad-und-trust-boundary" target="_top" tabindex="0" aria-label="Unknown Issuer – Intermediate · Truststore">
     <title>Unbekannter Issuer und Truststore im Artikel öffnen</title>
     <rect class="rose risk" x="570" y="836" width="245" height="82" rx="15"/>
     <text class="label" x="592" y="867">Unknown Issuer</text>
     <text class="body" x="592" y="893">Intermediate · Truststore</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9525" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9525" target="_top" tabindex="0" aria-label="Hostname Mismatch – Referenz-ID passt nicht zum SAN">
     <title>RFC 9525: Hostname- und Identitätsprüfung</title>
     <rect class="rose risk" x="835" y="836" width="245" height="82" rx="15"/>
     <text class="label" x="857" y="867">Hostname Mismatch</text>
     <text class="body" x="857" y="893">Referenz-ID passt nicht zum SAN</text>
   </a>
-  <a href="/kb/tls#tls-policy-bei-smtp" target="_top" tabindex="0">
+  <a href="/kb/tls#tls-policy-bei-smtp" target="_top" tabindex="0" aria-label="SMTP-Fallback – opportunistisch · STS · DANE">
     <title>Opportunistisches TLS, MTA-STS und DANE im Artikel öffnen</title>
     <rect class="blue hit" x="1100" y="836" width="260" height="82" rx="15"/>
     <text class="label" x="1122" y="867">SMTP-Fallback</text>
     <text class="body" x="1122" y="893">opportunistisch · STS · DANE</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9846" target="_top" tabindex="0"><rect class="soft source" x="40" y="937" width="245" height="30" rx="15"/><text class="small" x="71" y="957">[1] RFC 9846 · TLS 1.3</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc5280" target="_top" tabindex="0"><rect class="soft source" x="305" y="937" width="245" height="30" rx="15"/><text class="small" x="336" y="957">[2] RFC 5280 · PKIX</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9525" target="_top" tabindex="0"><rect class="soft source" x="570" y="937" width="245" height="30" rx="15"/><text class="small" x="601" y="957">[3] RFC 9525 · Identity</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc3207" target="_top" tabindex="0"><rect class="soft source" x="835" y="937" width="245" height="30" rx="15"/><text class="small" x="866" y="957">[4] RFC 3207 · STARTTLS</text></a>
-  <a href="https://www.rfc-editor.org/info/bcp195" target="_top" tabindex="0"><rect class="soft source" x="1100" y="937" width="260" height="30" rx="15"/><text class="small" x="1131" y="957">[5] BCP 195 · Betrieb</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9846" target="_top" tabindex="0" aria-label="[1] RFC 9846 · TLS 1.3"><rect class="soft source" x="40" y="937" width="245" height="30" rx="15"/><text class="small" x="71" y="957">[1] RFC 9846 · TLS 1.3</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc5280" target="_top" tabindex="0" aria-label="[2] RFC 5280 · PKIX"><rect class="soft source" x="305" y="937" width="245" height="30" rx="15"/><text class="small" x="336" y="957">[2] RFC 5280 · PKIX</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9525" target="_top" tabindex="0" aria-label="[3] RFC 9525 · Identity"><rect class="soft source" x="570" y="937" width="245" height="30" rx="15"/><text class="small" x="601" y="957">[3] RFC 9525 · Identity</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc3207" target="_top" tabindex="0" aria-label="[4] RFC 3207 · STARTTLS"><rect class="soft source" x="835" y="937" width="245" height="30" rx="15"/><text class="small" x="866" y="957">[4] RFC 3207 · STARTTLS</text></a>
+  <a href="https://www.rfc-editor.org/info/bcp195" target="_top" tabindex="0" aria-label="[5] BCP 195 · Betrieb"><rect class="soft source" x="1100" y="937" width="260" height="30" rx="15"/><text class="small" x="1131" y="957">[5] BCP 195 · Betrieb</text></a>
 </svg>

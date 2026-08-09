@@ -47,7 +47,7 @@
   <line class="lifeline" x1="235" y1="205" x2="235" y2="605"/>
   <line class="lifeline" x1="1165" y1="205" x2="1165" y2="605"/>
 
-  <a href="/kb/tcp#verbindungsaufbau-datentransfer-und-abbau" target="_top" tabindex="0">
+  <a href="/kb/tcp#verbindungsaufbau-datentransfer-und-abbau" target="_top" tabindex="0" aria-label="1 · SYN – SYN seq=x MSS · WS · SACK">
     <title>Drei-Wege-Handshake im Artikel öffnen</title>
     <rect class="blue hit" x="72" y="212" width="326" height="88" rx="15"/>
     <text class="label" x="94" y="245">1 · SYN</text>
@@ -56,7 +56,7 @@
   <path class="arrow-blue" d="M398 256 H1115"/>
   <text class="small" x="608" y="246">Route · Firewall · NAT · Load Balancer</text>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5" target="_top" tabindex="0" aria-label="2 · SYN + ACK – SYN ACK seq=y ack=x+1">
     <title>RFC 9293: Opening and Closing Connections</title>
     <rect class="blue hit" x="1002" y="310" width="326" height="88" rx="15"/>
     <text class="label" x="1024" y="343">2 · SYN + ACK</text>
@@ -64,7 +64,7 @@
   </a>
   <path class="arrow-blue" d="M1002 354 H285"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.3.2" target="_top" tabindex="0" aria-label="3 · ACK → ESTABLISHED – ACK ack=y+1">
     <title>RFC 9293: TCP State Machine Overview</title>
     <rect class="green hit" x="72" y="408" width="326" height="88" rx="15"/>
     <text class="label" x="94" y="441">3 · ACK → ESTABLISHED</text>
@@ -72,7 +72,7 @@
   </a>
   <path class="arrow" d="M398 452 H1115"/>
 
-  <a href="/kb/tcp#sequenznummern-acks-und-retransmission" target="_top" tabindex="0">
+  <a href="/kb/tcp#sequenznummern-acks-und-retransmission" target="_top" tabindex="0" aria-label="Datenphase: Byte-Stream in beide Richtungen – SEQ · kumulative ACKs · SACK · RTO – wirksam: min(rwnd, cwnd) · Verlust löst Wiederholung aus">
     <title>Sequenznummern und Retransmission im Artikel öffnen</title>
     <rect class="soft hit" x="438" y="512" width="524" height="98" rx="15"/>
     <text class="label" x="462" y="544">Datenphase: Byte-Stream in beide Richtungen</text>
@@ -82,7 +82,7 @@
   <path class="arrow-blue" d="M398 558 H438"/>
   <path class="arrow-blue" d="M962 577 H1115"/>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.6" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.6" target="_top" tabindex="0" aria-label="FIN / ACK – jede Richtung schliesst separat – aktiver Abschluss endet in TIME-WAIT">
     <title>RFC 9293: Closing a Connection</title>
     <rect class="soft hit" x="72" y="512" width="326" height="98" rx="15"/>
     <text class="label" x="94" y="545">FIN / ACK</text>
@@ -90,7 +90,7 @@
     <text class="small" x="94" y="599">aktiver Abschluss endet in TIME-WAIT</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0" aria-label="FIN / ACK – RST bricht stattdessen sofort ab – Ursprung und Zeitpunkt des RST prüfen">
     <title>RFC 9293: Reset Generation</title>
     <rect class="soft hit" x="1002" y="512" width="326" height="98" rx="15"/>
     <text class="label" x="1024" y="545">FIN / ACK</text>
@@ -99,42 +99,42 @@
   </a>
 
   <text class="kicker" x="48" y="687">ADMIN-SIGNALE · KLICK FÜHRT ZUR ERKLÄRUNG ODER PRIMÄRQUELLE</text>
-  <a href="/kb/tcp#signalbild-und-wahrscheinlichste-systemgrenze" target="_top" tabindex="0">
+  <a href="/kb/tcp#signalbild-und-wahrscheinlichste-systemgrenze" target="_top" tabindex="0" aria-label="SYN → ∅ – Timeout / Drop – Route · Filter · Rückweg">
     <title>SYN ohne Antwort: Diagnosematrix öffnen</title>
     <rect class="rose risk" x="42" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="62" y="741">SYN → ∅</text>
     <text class="body" x="62" y="770">Timeout / Drop</text>
     <text class="small" x="62" y="797">Route · Filter · Rückweg</text>
   </a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0">
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2" target="_top" tabindex="0" aria-label="SYN → RST – Connection refused – kein akzeptierender Socket">
     <title>RFC 9293: Reset Generation</title>
     <rect class="rose risk" x="263" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="283" y="741">SYN → RST</text>
     <text class="body" x="283" y="770">Connection refused</text>
     <text class="small" x="283" y="797">kein akzeptierender Socket</text>
   </a>
-  <a href="/kb/tcp#diagnose-vom-socket-bis-zum-paket" target="_top" tabindex="0">
+  <a href="/kb/tcp#diagnose-vom-socket-bis-zum-paket" target="_top" tabindex="0" aria-label="ESTABLISHED – aber kein Banner – Anwendung / Backend">
     <title>Handshake ohne Banner: Diagnose öffnen</title>
     <rect class="blue hit" x="484" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="504" y="741">ESTABLISHED</text>
     <text class="body" x="504" y="770">aber kein Banner</text>
     <text class="small" x="504" y="797">Anwendung / Backend</text>
   </a>
-  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0">
+  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="Retransmission – Verlust oder Sichtlücke – Gegenmitschnitt korrelieren">
     <title>Wireshark TCP Analysis</title>
     <rect class="rose risk" x="705" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="725" y="741">Retransmission</text>
     <text class="body" x="725" y="770">Verlust oder Sichtlücke</text>
     <text class="small" x="725" y="797">Gegenmitschnitt korrelieren</text>
   </a>
-  <a href="/kb/tcp#flusskontrolle-und-staukontrolle" target="_top" tabindex="0">
+  <a href="/kb/tcp#flusskontrolle-und-staukontrolle" target="_top" tabindex="0" aria-label="Zero Window – Empfänger liest nicht – App · CPU · Storage">
     <title>Flusskontrolle und Zero Window öffnen</title>
     <rect class="rose risk" x="926" y="708" width="205" height="112" rx="16"/>
     <text class="label" x="946" y="741">Zero Window</text>
     <text class="body" x="946" y="770">Empfänger liest nicht</text>
     <text class="small" x="946" y="797">App · CPU · Storage</text>
   </a>
-  <a href="/kb/tcp#die-zustande-als-betriebsindikatoren" target="_top" tabindex="0">
+  <a href="/kb/tcp#die-zustande-als-betriebsindikatoren" target="_top" tabindex="0" aria-label="CLOSE-WAIT – lokale App schliesst nicht – Alter und Prozess prüfen">
     <title>CLOSE-WAIT und TIME-WAIT im Artikel öffnen</title>
     <rect class="blue hit" x="1147" y="708" width="211" height="112" rx="16"/>
     <text class="label" x="1167" y="741">CLOSE-WAIT</text>
@@ -142,8 +142,8 @@
     <text class="small" x="1167" y="797">Alter und Prozess prüfen</text>
   </a>
 
-  <a href="https://datatracker.ietf.org/doc/html/rfc9293" target="_top" tabindex="0"><rect class="soft source" x="42" y="842" width="310" height="40" rx="20"/><text class="small" x="76" y="868">[1] RFC 9293 · Kern und Zustände</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc6298" target="_top" tabindex="0"><rect class="soft source" x="367" y="842" width="280" height="40" rx="20"/><text class="small" x="403" y="868">[2] RFC 6298 · RTO</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc5681" target="_top" tabindex="0"><rect class="soft source" x="662" y="842" width="300" height="40" rx="20"/><text class="small" x="696" y="868">[3] RFC 5681 · cwnd</text></a>
-  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0"><rect class="soft source" x="977" y="842" width="381" height="40" rx="20"/><text class="small" x="1011" y="868">[4] Wireshark · Analysesignale</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc9293" target="_top" tabindex="0" aria-label="[1] RFC 9293 · Kern und Zustände"><rect class="soft source" x="42" y="842" width="310" height="40" rx="20"/><text class="small" x="76" y="868">[1] RFC 9293 · Kern und Zustände</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc6298" target="_top" tabindex="0" aria-label="[2] RFC 6298 · RTO"><rect class="soft source" x="367" y="842" width="280" height="40" rx="20"/><text class="small" x="403" y="868">[2] RFC 6298 · RTO</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc5681" target="_top" tabindex="0" aria-label="[3] RFC 5681 · cwnd"><rect class="soft source" x="662" y="842" width="300" height="40" rx="20"/><text class="small" x="696" y="868">[3] RFC 5681 · cwnd</text></a>
+  <a href="https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html" target="_top" tabindex="0" aria-label="[4] Wireshark · Analysesignale"><rect class="soft source" x="977" y="842" width="381" height="40" rx="20"/><text class="small" x="1011" y="868">[4] Wireshark · Analysesignale</text></a>
 </svg>

@@ -43,17 +43,17 @@
 
   <text x="242" y="132" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">1 · PROTOKOLLFRONTENDS</text>
   <rect x="236" y="152" width="210" height="268" rx="12" fill="#fff" stroke="#d9d4cc"/>
-  <a href="/kb/smtp" target="_top" class="link" aria-label="KB-Artikel zu SMTP öffnen">
+  <a href="/kb/smtp" target="_top" class="link" aria-label="KB-Artikel zu SMTP öffnen" tabindex="0">
     <rect class="hit" x="254" y="172" width="174" height="54" rx="9" fill="#e9f2f5" stroke="#286983"/>
     <text class="label" x="341" y="195" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1f566b">SMTP · LMTP</text>
     <text x="341" y="214" text-anchor="middle" font-size="10.5" fill="#395f6d">Session, AUTH, Envelope</text>
   </a>
-  <a href="https://james.apache.org/server/feature-protocols.html" target="_top" class="link" aria-label="Apache-Dokumentation zu IMAP und POP3 öffnen">
+  <a href="https://james.apache.org/server/feature-protocols.html" target="_top" class="link" aria-label="Apache-Dokumentation zu IMAP und POP3 öffnen" tabindex="0">
     <rect class="hit" x="254" y="242" width="174" height="54" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text class="label" x="341" y="265" text-anchor="middle" font-size="13.5" font-weight="700" fill="#222">IMAP · POP3</text>
     <text x="341" y="284" text-anchor="middle" font-size="10.5" fill="#757087">Mailbox-Protokolle</text>
   </a>
-  <a href="https://james.apache.org/server/feature-protocols.html" target="_top" class="link" aria-label="Apache-Dokumentation zu JMAP öffnen">
+  <a href="https://james.apache.org/server/feature-protocols.html" target="_top" class="link" aria-label="Apache-Dokumentation zu JMAP öffnen" tabindex="0">
     <rect class="hit" x="254" y="312" width="174" height="54" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text class="label" x="341" y="335" text-anchor="middle" font-size="13.5" font-weight="700" fill="#222">JMAP</text>
     <text x="341" y="354" text-anchor="middle" font-size="10.5" fill="#757087">HTTP Mail API</text>
@@ -65,7 +65,7 @@
   <line x1="178" y1="382" x2="254" y2="339" stroke="#222" stroke-width="1.7" marker-end="url(#aja-arrow)"/>
 
   <text x="484" y="132" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">2 · ANNAHMEGRENZE</text>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#Mail_Queue" target="_top" class="link" aria-label="Apache-Dokumentation zur MailQueue öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#Mail_Queue" target="_top" class="link" aria-label="Apache-Dokumentation zur MailQueue öffnen" tabindex="0">
   <rect class="hit" x="480" y="152" width="190" height="112" rx="12" fill="#fff" stroke="#286983"/>
   <text class="label" x="575" y="181" text-anchor="middle" font-size="15" font-weight="700" fill="#1f566b">MailQueue</text>
   <text x="575" y="204" text-anchor="middle" font-size="11" fill="#757087">Envelope + MIME + Attribute</text>
@@ -76,7 +76,7 @@
   <line x1="446" y1="199" x2="480" y2="199" stroke="#286983" stroke-width="2" marker-end="url(#aja-accent)"/>
   <text x="460" y="187" text-anchor="middle" font-size="9.5" fill="#286983">enqueue</text>
 
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#Mail_Processing" target="_top" class="link" aria-label="Apache-Dokumentation zu Spooler und Mail Processing öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#Mail_Processing" target="_top" class="link" aria-label="Apache-Dokumentation zu Spooler und Mail Processing öffnen" tabindex="0">
   <rect class="hit" x="480" y="286" width="190" height="92" rx="12" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="575" y="316" text-anchor="middle" font-size="15" font-weight="700" fill="#222">Spooler</text>
   <text x="575" y="340" text-anchor="middle" font-size="11" fill="#757087">Worker · Dequeue · Retry</text>
@@ -85,7 +85,7 @@
   <line x1="575" y1="264" x2="575" y2="286" stroke="#222" stroke-width="1.7" marker-end="url(#aja-arrow)"/>
 
   <text x="708" y="132" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">3 · MAILET-CONTAINER</text>
-  <a href="https://james.apache.org/server/feature-mailetcontainer.html" target="_top" class="link" aria-label="Apache-Dokumentation zum Mailet-Container öffnen">
+  <a href="https://james.apache.org/server/feature-mailetcontainer.html" target="_top" class="link" aria-label="Apache-Dokumentation zum Mailet-Container öffnen" tabindex="0">
   <rect class="hit" x="704" y="152" width="334" height="268" rx="12" fill="#fff" stroke="#286983" stroke-width="1.5"/>
   <text x="725" y="180" font-size="12" font-weight="700" fill="#286983">PROCESSOR „ROOT“</text>
   <rect x="725" y="196" width="292" height="52" rx="9" fill="#faf7f2" stroke="#d9d4cc"/>
@@ -108,17 +108,17 @@
   <line x1="670" y1="332" x2="704" y2="332" stroke="#222" stroke-width="1.7" marker-end="url(#aja-arrow)"/>
 
   <text x="1074" y="132" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">4 · ERGEBNISSE</text>
-  <a href="https://james.apache.org/server/feature-persistence.html" target="_top" class="link" aria-label="Apache-Dokumentation zu LocalDelivery und Mailbox öffnen">
+  <a href="https://james.apache.org/server/feature-persistence.html" target="_top" class="link" aria-label="Apache-Dokumentation zu LocalDelivery und Mailbox öffnen" tabindex="0">
   <rect class="hit" x="1070" y="152" width="300" height="76" rx="11" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="1220" y="180" text-anchor="middle" font-size="14" font-weight="700" fill="#222">LocalDelivery</text>
   <text x="1220" y="202" text-anchor="middle" font-size="11" fill="#757087">Mailbox API · Sieve · Quota</text>
   </a>
-  <a href="/kb/smtp" target="_top" class="link" aria-label="KB-Artikel zu SMTP und Remote Delivery öffnen">
+  <a href="/kb/smtp" target="_top" class="link" aria-label="KB-Artikel zu SMTP und Remote Delivery öffnen" tabindex="0">
   <rect class="hit" x="1070" y="246" width="300" height="76" rx="11" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="1220" y="274" text-anchor="middle" font-size="14" font-weight="700" fill="#222">RemoteDelivery</text>
   <text x="1220" y="296" text-anchor="middle" font-size="11" fill="#757087">DNS · SMTP · Retry · Bounce</text>
   </a>
-  <a href="https://james.apache.org/server/feature-persistence.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Mail Repositories öffnen">
+  <a href="https://james.apache.org/server/feature-persistence.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Mail Repositories öffnen" tabindex="0">
   <rect class="hit" x="1070" y="340" width="300" height="80" rx="11" fill="#fff" stroke="#7a2f16"/>
   <text class="label" x="1220" y="368" text-anchor="middle" font-size="14" font-weight="700" fill="#7a2f16">Mail Repository</text>
   <text x="1220" y="390" text-anchor="middle" font-size="11" fill="#757087">error · address-error · relay-denied</text>
@@ -130,25 +130,25 @@
 
   <text x="242" y="478" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">5 · MAILBOX- UND DATENEBENE</text>
   <rect x="236" y="498" width="802" height="142" rx="12" fill="#fff" stroke="#d9d4cc"/>
-  <a href="https://james.apache.org/mailbox/mailbox-api.html" target="_top" class="link" aria-label="Apache-Dokumentation zur Mailbox API öffnen">
+  <a href="https://james.apache.org/mailbox/mailbox-api.html" target="_top" class="link" aria-label="Apache-Dokumentation zur Mailbox API öffnen" tabindex="0">
   <rect class="hit" x="256" y="518" width="184" height="100" rx="10" fill="#e9f2f5" stroke="#286983"/>
   <text class="label" x="348" y="548" text-anchor="middle" font-size="14" font-weight="700" fill="#1f566b">Mailbox API</text>
   <text x="348" y="571" text-anchor="middle" font-size="10.5" fill="#395f6d">Mailbox · Message · ACL</text>
   <text x="348" y="590" text-anchor="middle" font-size="10.5" fill="#395f6d">UID · Flags · Quota</text>
   </a>
-  <a href="https://james.apache.org/download.cgi" target="_top" class="link" aria-label="Apache-Dokumentation zu den Datenbankprofilen öffnen">
+  <a href="https://james.apache.org/download.cgi" target="_top" class="link" aria-label="Apache-Dokumentation zu den Datenbankprofilen öffnen" tabindex="0">
   <rect class="hit" x="462" y="518" width="174" height="100" rx="10" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="549" y="548" text-anchor="middle" font-size="14" font-weight="700" fill="#222">Metadaten</text>
   <text x="549" y="571" text-anchor="middle" font-size="10.5" fill="#757087">PostgreSQL/JPA</text>
   <text x="549" y="590" text-anchor="middle" font-size="10.5" fill="#757087">oder Cassandra</text>
   </a>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Object Storage öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Object Storage öffnen" tabindex="0">
   <rect class="hit" x="658" y="518" width="166" height="100" rx="10" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="741" y="548" text-anchor="middle" font-size="14" font-weight="700" fill="#222">Blob Store</text>
   <text x="741" y="571" text-anchor="middle" font-size="10.5" fill="#757087">MIME-Inhalt</text>
   <text x="741" y="590" text-anchor="middle" font-size="10.5" fill="#757087">DB oder S3 API</text>
   </a>
-  <a href="https://james.apache.org/server/manage-webadmin.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Benutzern und Domains öffnen">
+  <a href="https://james.apache.org/server/manage-webadmin.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Benutzern und Domains öffnen" tabindex="0">
   <rect class="hit" x="846" y="518" width="170" height="100" rx="10" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="931" y="548" text-anchor="middle" font-size="14" font-weight="700" fill="#222">User/Domain</text>
   <text x="931" y="571" text-anchor="middle" font-size="10.5" fill="#757087">Konten · Domains</text>
@@ -161,13 +161,13 @@
 
   <text x="1074" y="478" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">6 · ASYNCHRONE PROJEKTIONEN</text>
   <rect x="1070" y="498" width="300" height="142" rx="12" fill="#fff" stroke="#d9d4cc"/>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#Mailbox_Event_Bus" target="_top" class="link" aria-label="Apache-Dokumentation zum Mailbox Event Bus öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#Mailbox_Event_Bus" target="_top" class="link" aria-label="Apache-Dokumentation zum Mailbox Event Bus öffnen" tabindex="0">
   <rect class="hit" x="1088" y="518" width="120" height="100" rx="10" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="1148" y="548" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Event Bus</text>
   <text x="1148" y="571" text-anchor="middle" font-size="10.5" fill="#757087">RabbitMQ</text>
   <text x="1148" y="590" text-anchor="middle" font-size="10.5" fill="#7a2f16">Dead Letters</text>
   </a>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#OpenSearch_Indexing" target="_top" class="link" aria-label="Apache-Dokumentation zu OpenSearch und Projektionen öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html#OpenSearch_Indexing" target="_top" class="link" aria-label="Apache-Dokumentation zu OpenSearch und Projektionen öffnen" tabindex="0">
   <rect class="hit" x="1228" y="518" width="124" height="100" rx="10" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="1290" y="548" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Projektionen</text>
   <text x="1290" y="571" text-anchor="middle" font-size="10.5" fill="#757087">OpenSearch</text>
@@ -178,27 +178,27 @@
 
   <text x="242" y="690" font-size="11" font-weight="700" letter-spacing="1" fill="#757087">ADMINISTRATIONSEBENE</text>
   <rect x="236" y="710" width="1134" height="116" rx="12" fill="#fff" stroke="#d9d4cc"/>
-  <a href="https://james.apache.org/server/manage-webadmin.html" target="_top" class="link" aria-label="Apache-Dokumentation zu WebAdmin öffnen">
+  <a href="https://james.apache.org/server/manage-webadmin.html" target="_top" class="link" aria-label="Apache-Dokumentation zu WebAdmin öffnen" tabindex="0">
   <rect class="hit" x="256" y="730" width="196" height="76" rx="9" fill="#e9f2f5" stroke="#286983"/>
   <text class="label" x="354" y="757" text-anchor="middle" font-size="14" font-weight="700" fill="#1f566b">WebAdmin REST</text>
   <text x="354" y="780" text-anchor="middle" font-size="10.5" fill="#7a2f16">JWT standardmässig aus</text>
   </a>
-  <a href="https://james.apache.org/server/manage-cli.html" target="_top" class="link" aria-label="Apache-Dokumentation zur James CLI öffnen">
+  <a href="https://james.apache.org/server/manage-cli.html" target="_top" class="link" aria-label="Apache-Dokumentation zur James CLI öffnen" tabindex="0">
   <rect class="hit" x="474" y="730" width="174" height="76" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="561" y="757" text-anchor="middle" font-size="14" font-weight="700" fill="#222">james-cli</text>
   <text x="561" y="780" text-anchor="middle" font-size="10.5" fill="#757087">Domains · User · Quota</text>
   </a>
-  <a href="https://james.apache.org/server/manage-webadmin.html#HealthCheck" target="_top" class="link" aria-label="Apache-Dokumentation zu Health Checks öffnen">
+  <a href="https://james.apache.org/server/manage-webadmin.html#HealthCheck" target="_top" class="link" aria-label="Apache-Dokumentation zu Health Checks öffnen" tabindex="0">
   <rect class="hit" x="670" y="730" width="206" height="76" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="773" y="757" text-anchor="middle" font-size="14" font-weight="700" fill="#222">Health Checks</text>
   <text x="773" y="780" text-anchor="middle" font-size="10.5" fill="#757087">healthy · degraded · unhealthy</text>
   </a>
-  <a href="https://james.apache.org/server/metrics.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Metriken öffnen">
+  <a href="https://james.apache.org/server/metrics.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Metriken öffnen" tabindex="0">
   <rect class="hit" x="898" y="730" width="206" height="76" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="1001" y="757" text-anchor="middle" font-size="14" font-weight="700" fill="#222">Prometheus · JMX</text>
   <text x="1001" y="780" text-anchor="middle" font-size="10.5" fill="#757087">Protokoll-, Queue-, JVM-Metriken</text>
   </a>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Recovery Tasks öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="link" aria-label="Apache-Dokumentation zu Recovery Tasks öffnen" tabindex="0">
   <rect class="hit" x="1126" y="730" width="226" height="76" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text class="label" x="1239" y="757" text-anchor="middle" font-size="14" font-weight="700" fill="#222">Tasks und Recovery</text>
   <text x="1239" y="780" text-anchor="middle" font-size="10.5" fill="#757087">reprocess · reindex · redeliver</text>

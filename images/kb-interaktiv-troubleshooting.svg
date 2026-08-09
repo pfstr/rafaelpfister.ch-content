@@ -44,7 +44,7 @@
   <rect class="frame" x="28" y="136" width="1344" height="196" rx="22"/>
   <text class="section" x="52" y="168">1 · ERST DEN VORGANG UND DIE AUSWIRKUNG FESTLEGEN</text>
 
-  <a href="/kb/troubleshooting#scope-matrix-für-den-ersten-befund" target="_top" tabindex="0">
+  <a href="/kb/troubleshooting#scope-matrix-für-den-ersten-befund" target="_top" tabindex="0" aria-label="Problembericht – erwartet ≠ tatsächlich – wer · was · wann · Richtung">
     <rect class="hit hit-red" x="52" y="190" width="260" height="112" rx="15"/>
     <text class="label" x="182" y="220" text-anchor="middle">Problembericht</text>
     <text class="body" x="182" y="246" text-anchor="middle">erwartet ≠ tatsächlich</text>
@@ -52,7 +52,7 @@
     <text class="small" x="182" y="290" text-anchor="middle">reproduzierbar · Auswirkung</text>
   </a>
   <path class="arrow" d="M320 246 H352"/>
-  <a href="https://sre.google/sre-book/effective-troubleshooting/" target="_top" tabindex="0">
+  <a href="https://sre.google/sre-book/effective-troubleshooting/" target="_top" tabindex="0" aria-label="Triage &amp; Scope – betroffene Population – Severity · Workaround · Risiko">
     <rect class="hit hit-blue" x="360" y="190" width="260" height="112" rx="15"/>
     <text class="label" x="490" y="220" text-anchor="middle">Triage &amp; Scope</text>
     <text class="body" x="490" y="246" text-anchor="middle">betroffene Population</text>
@@ -60,7 +60,7 @@
     <text class="small" x="490" y="290" text-anchor="middle">erst Blutung stoppen</text>
   </a>
   <path class="arrow" d="M628 246 H660"/>
-  <a href="/kb/troubleshooting#signale-metriken-logs-traces-und-paketdaten" target="_top" tabindex="0">
+  <a href="/kb/troubleshooting#signale-metriken-logs-traces-und-paketdaten" target="_top" tabindex="0" aria-label="Evidenz-Timeline – Originalzeit + UTC + Host – Message-/Queue-/Trace-ID">
     <rect class="hit hit-violet" x="668" y="190" width="306" height="112" rx="15"/>
     <text class="label" x="821" y="220" text-anchor="middle">Evidenz-Timeline</text>
     <text class="body" x="821" y="246" text-anchor="middle">Originalzeit + UTC + Host</text>
@@ -68,7 +68,7 @@
     <text class="small" x="821" y="290" text-anchor="middle">Erfolge · Fehler · Changes</text>
   </a>
   <path class="arrow" d="M982 246 H1014"/>
-  <a href="/kb/troubleshooting#triage-behebung-und-ursachenanalyse-trennen" target="_top" tabindex="0">
+  <a href="/kb/troubleshooting#triage-behebung-und-ursachenanalyse-trennen" target="_top" tabindex="0" aria-label="Stabilisieren + sichern – Traffic · Kapazität · Daten – flüchtige Logs und Zustand">
     <rect class="hit hit-green" x="1022" y="190" width="326" height="112" rx="15"/>
     <text class="label" x="1185" y="220" text-anchor="middle">Stabilisieren + sichern</text>
     <text class="body" x="1185" y="246" text-anchor="middle">Traffic · Kapazität · Daten</text>
@@ -79,7 +79,7 @@
   <rect class="frame" x="28" y="350" width="1344" height="252" rx="22"/>
   <text class="section" x="52" y="382">2 · ABHÄNGIGKEITSGRAPH + PROTOKOLLZUSTAND · BEISPIEL MAILFLOW</text>
 
-  <a href="/kb/dns" target="_top" tabindex="0">
+  <a href="/kb/dns" target="_top" tabindex="0" aria-label="DNS – Resolver · MX · A/AAAA – RCODE · TTL · Zielwahl">
     <rect class="hit hit-blue" x="52" y="408" width="180" height="112" rx="14"/>
     <text class="label" x="142" y="438" text-anchor="middle">DNS</text>
     <text class="body" x="142" y="464" text-anchor="middle">Resolver · MX · A/AAAA</text>
@@ -87,7 +87,7 @@
     <text class="tiny" x="142" y="508" text-anchor="middle">letzter Beleg: Antwort</text>
   </a>
   <path class="arrow" d="M240 464 H264"/>
-  <a href="/kb/tcp" target="_top" tabindex="0">
+  <a href="/kb/tcp" target="_top" tabindex="0" aria-label="TCP – Quelle → Ziel:Port – SYN · ACK · RST · Timer">
     <rect class="hit hit-blue" x="272" y="408" width="180" height="112" rx="14"/>
     <text class="label" x="362" y="438" text-anchor="middle">TCP</text>
     <text class="body" x="362" y="464" text-anchor="middle">Quelle → Ziel:Port</text>
@@ -95,7 +95,7 @@
     <text class="tiny" x="362" y="508" text-anchor="middle">letzter Beleg: Zustand</text>
   </a>
   <path class="arrow" d="M460 464 H484"/>
-  <a href="/kb/tls" target="_top" tabindex="0">
+  <a href="/kb/tls" target="_top" tabindex="0" aria-label="TLS – SNI · Chain · Policy – Version · Cipher · Alert">
     <rect class="hit hit-green" x="492" y="408" width="180" height="112" rx="14"/>
     <text class="label" x="582" y="438" text-anchor="middle">TLS</text>
     <text class="body" x="582" y="464" text-anchor="middle">SNI · Chain · Policy</text>
@@ -103,7 +103,7 @@
     <text class="tiny" x="582" y="508" text-anchor="middle">letzter Beleg: Handshake</text>
   </a>
   <path class="arrow" d="M680 464 H704"/>
-  <a href="/kb/smtp" target="_top" tabindex="0">
+  <a href="/kb/smtp" target="_top" tabindex="0" aria-label="SMTP – EHLO · MAIL · RCPT – DATA · 4yz/5yz · 250">
     <rect class="hit hit-red" x="712" y="408" width="180" height="112" rx="14"/>
     <text class="label" x="802" y="438" text-anchor="middle">SMTP</text>
     <text class="body" x="802" y="464" text-anchor="middle">EHLO · MAIL · RCPT</text>
@@ -111,7 +111,7 @@
     <text class="tiny" x="802" y="508" text-anchor="middle">letzter Beleg: Reply</text>
   </a>
   <path class="arrow" d="M900 464 H924"/>
-  <a href="/kb/troubleshooting#messaging-diagnose-als-verantwortungskette" target="_top" tabindex="0">
+  <a href="/kb/troubleshooting#messaging-diagnose-als-verantwortungskette" target="_top" tabindex="0" aria-label="Queue / Policy – ID · Route · Scan – Retry · Quarantäne">
     <rect class="hit hit-violet" x="932" y="408" width="180" height="112" rx="14"/>
     <text class="label" x="1022" y="438" text-anchor="middle">Queue / Policy</text>
     <text class="body" x="1022" y="464" text-anchor="middle">ID · Route · Scan</text>
@@ -119,7 +119,7 @@
     <text class="tiny" x="1022" y="508" text-anchor="middle">letzter Beleg: Übergabe</text>
   </a>
   <path class="arrow" d="M1120 464 H1144"/>
-  <a href="/kb/troubleshooting#messaging-diagnose-als-verantwortungskette" target="_top" tabindex="0">
+  <a href="/kb/troubleshooting#messaging-diagnose-als-verantwortungskette" target="_top" tabindex="0" aria-label="Store / Zugriff – Mailbox · Index · IMAP – Replikat · Client · Suche">
     <rect class="hit hit-green" x="1152" y="408" width="196" height="112" rx="14"/>
     <text class="label" x="1250" y="438" text-anchor="middle">Store / Zugriff</text>
     <text class="body" x="1250" y="464" text-anchor="middle">Mailbox · Index · IMAP</text>
@@ -127,31 +127,31 @@
     <text class="tiny" x="1250" y="508" text-anchor="middle">letzter Beleg: sichtbar</text>
   </a>
 
-  <a href="/kb/troubleshooting#abhängigkeitsgraph-statt-universeller-schichtenleiter" target="_top" tabindex="0"><rect class="chip" x="52" y="542" width="204" height="38" rx="19"/><text class="small" x="154" y="566" text-anchor="middle">Abhängigkeit modellieren</text></a>
-  <a href="https://datatracker.ietf.org/doc/html/rfc5905" target="_top" tabindex="0"><rect class="chip" x="272" y="542" width="182" height="38" rx="19"/><text class="small" x="363" y="566" text-anchor="middle">Zeit · NTP · UTC</text></a>
-  <a href="/kb/ldap" target="_top" tabindex="0"><rect class="chip" x="470" y="542" width="182" height="38" rx="19"/><text class="small" x="561" y="566" text-anchor="middle">Identität · LDAP</text></a>
-  <a href="/kb/verschluesselung" target="_top" tabindex="0"><rect class="chip" x="668" y="542" width="204" height="38" rx="19"/><text class="small" x="770" y="566" text-anchor="middle">Keys · Zertifikate</text></a>
-  <a href="/kb/backup-dr" target="_top" tabindex="0"><rect class="chip" x="888" y="542" width="204" height="38" rx="19"/><text class="small" x="990" y="566" text-anchor="middle">Daten · Replikation</text></a>
-  <a href="/kb/haertung" target="_top" tabindex="0"><rect class="chip" x="1108" y="542" width="240" height="38" rx="19"/><text class="small" x="1228" y="566" text-anchor="middle">Policy · Managementpfad</text></a>
+  <a href="/kb/troubleshooting#abhängigkeitsgraph-statt-universeller-schichtenleiter" target="_top" tabindex="0" aria-label="Abhängigkeit modellieren"><rect class="chip" x="52" y="542" width="204" height="38" rx="19"/><text class="small" x="154" y="566" text-anchor="middle">Abhängigkeit modellieren</text></a>
+  <a href="https://datatracker.ietf.org/doc/html/rfc5905" target="_top" tabindex="0" aria-label="Zeit · NTP · UTC"><rect class="chip" x="272" y="542" width="182" height="38" rx="19"/><text class="small" x="363" y="566" text-anchor="middle">Zeit · NTP · UTC</text></a>
+  <a href="/kb/ldap" target="_top" tabindex="0" aria-label="Identität · LDAP"><rect class="chip" x="470" y="542" width="182" height="38" rx="19"/><text class="small" x="561" y="566" text-anchor="middle">Identität · LDAP</text></a>
+  <a href="/kb/verschluesselung" target="_top" tabindex="0" aria-label="Keys · Zertifikate"><rect class="chip" x="668" y="542" width="204" height="38" rx="19"/><text class="small" x="770" y="566" text-anchor="middle">Keys · Zertifikate</text></a>
+  <a href="/kb/backup-dr" target="_top" tabindex="0" aria-label="Daten · Replikation"><rect class="chip" x="888" y="542" width="204" height="38" rx="19"/><text class="small" x="990" y="566" text-anchor="middle">Daten · Replikation</text></a>
+  <a href="/kb/haertung" target="_top" tabindex="0" aria-label="Policy · Managementpfad"><rect class="chip" x="1108" y="542" width="240" height="38" rx="19"/><text class="small" x="1228" y="566" text-anchor="middle">Policy · Managementpfad</text></a>
 
   <rect class="frame" x="28" y="620" width="1344" height="170" rx="22"/>
   <text class="section" x="52" y="652">3 · SIGNALE KORRELIEREN · KEINES ERKLÄRT ALLEIN DAS GESAMTSYSTEM</text>
 
-  <a href="https://opentelemetry.io/docs/concepts/signals/" target="_top" tabindex="0"><rect class="hit hit-blue" x="52" y="674" width="238" height="88" rx="14"/><text class="label" x="171" y="706" text-anchor="middle">Metriken</text><text class="body" x="171" y="731" text-anchor="middle">Population · Beginn · Ausmass</text><text class="tiny" x="171" y="750" text-anchor="middle">Aggregation ≠ Einzelfall</text></a>
-  <a href="https://csrc.nist.gov/pubs/sp/800/92/final" target="_top" tabindex="0"><rect class="hit hit-green" x="310" y="674" width="238" height="88" rx="14"/><text class="label" x="429" y="706" text-anchor="middle">Logs</text><text class="body" x="429" y="731" text-anchor="middle">Event · Felder · Komponente</text><text class="tiny" x="429" y="750" text-anchor="middle">Erhalt · Rotation · Uhr</text></a>
-  <a href="https://www.w3.org/TR/trace-context/" target="_top" tabindex="0"><rect class="hit hit-violet" x="568" y="674" width="238" height="88" rx="14"/><text class="label" x="687" y="706" text-anchor="middle">Traces</text><text class="body" x="687" y="731" text-anchor="middle">Request · Hops · Laufzeit</text><text class="tiny" x="687" y="750" text-anchor="middle">nur instrumentierte Grenzen</text></a>
-  <a href="/kb/troubleshooting#admin-werkzeuge-entlang-des-realen-pfads" target="_top" tabindex="0"><rect class="hit hit-red" x="826" y="674" width="238" height="88" rx="14"/><text class="label" x="945" y="706" text-anchor="middle">Zustandsabfrage</text><text class="body" x="945" y="731" text-anchor="middle">Listener · Queue · Config</text><text class="tiny" x="945" y="750" text-anchor="middle">jetzt ≠ Fehlerzeitpunkt</text></a>
-  <a href="https://www.tcpdump.org/manpages/tcpdump.1.html" target="_top" tabindex="0"><rect class="hit hit-red" x="1084" y="674" width="264" height="88" rx="14"/><text class="label" x="1216" y="706" text-anchor="middle">Paketmitschnitt</text><text class="body" x="1216" y="731" text-anchor="middle">Wire am Messpunkt</text><text class="tiny" x="1216" y="750" text-anchor="middle">Filter · Pfad · Datenschutz</text></a>
+  <a href="https://opentelemetry.io/docs/concepts/signals/" target="_top" tabindex="0" aria-label="Metriken – Population · Beginn · Ausmass – Aggregation ≠ Einzelfall"><rect class="hit hit-blue" x="52" y="674" width="238" height="88" rx="14"/><text class="label" x="171" y="706" text-anchor="middle">Metriken</text><text class="body" x="171" y="731" text-anchor="middle">Population · Beginn · Ausmass</text><text class="tiny" x="171" y="750" text-anchor="middle">Aggregation ≠ Einzelfall</text></a>
+  <a href="https://csrc.nist.gov/pubs/sp/800/92/final" target="_top" tabindex="0" aria-label="Logs – Event · Felder · Komponente – Erhalt · Rotation · Uhr"><rect class="hit hit-green" x="310" y="674" width="238" height="88" rx="14"/><text class="label" x="429" y="706" text-anchor="middle">Logs</text><text class="body" x="429" y="731" text-anchor="middle">Event · Felder · Komponente</text><text class="tiny" x="429" y="750" text-anchor="middle">Erhalt · Rotation · Uhr</text></a>
+  <a href="https://www.w3.org/TR/trace-context/" target="_top" tabindex="0" aria-label="Traces – Request · Hops · Laufzeit – nur instrumentierte Grenzen"><rect class="hit hit-violet" x="568" y="674" width="238" height="88" rx="14"/><text class="label" x="687" y="706" text-anchor="middle">Traces</text><text class="body" x="687" y="731" text-anchor="middle">Request · Hops · Laufzeit</text><text class="tiny" x="687" y="750" text-anchor="middle">nur instrumentierte Grenzen</text></a>
+  <a href="/kb/troubleshooting#admin-werkzeuge-entlang-des-realen-pfads" target="_top" tabindex="0" aria-label="Zustandsabfrage – Listener · Queue · Config – jetzt ≠ Fehlerzeitpunkt"><rect class="hit hit-red" x="826" y="674" width="238" height="88" rx="14"/><text class="label" x="945" y="706" text-anchor="middle">Zustandsabfrage</text><text class="body" x="945" y="731" text-anchor="middle">Listener · Queue · Config</text><text class="tiny" x="945" y="750" text-anchor="middle">jetzt ≠ Fehlerzeitpunkt</text></a>
+  <a href="https://www.tcpdump.org/manpages/tcpdump.1.html" target="_top" tabindex="0" aria-label="Paketmitschnitt – Wire am Messpunkt – Filter · Pfad · Datenschutz"><rect class="hit hit-red" x="1084" y="674" width="264" height="88" rx="14"/><text class="label" x="1216" y="706" text-anchor="middle">Paketmitschnitt</text><text class="body" x="1216" y="731" text-anchor="middle">Wire am Messpunkt</text><text class="tiny" x="1216" y="750" text-anchor="middle">Filter · Pfad · Datenschutz</text></a>
 
   <rect class="frame" x="28" y="808" width="1344" height="164" rx="22"/>
   <text class="section" x="52" y="840">4 · ITERATION MIT DOKUMENTIERTEM NEGATIVBEFUND</text>
 
-  <a href="/kb/troubleshooting#hypothesen-und-unterscheidende-tests" target="_top" tabindex="0"><rect class="hit hit-violet" x="52" y="860" width="250" height="78" rx="14"/><text class="label" x="177" y="890" text-anchor="middle">Hypothese</text><text class="body" x="177" y="916" text-anchor="middle">konkret · priorisiert · widerlegbar</text></a>
+  <a href="/kb/troubleshooting#hypothesen-und-unterscheidende-tests" target="_top" tabindex="0" aria-label="Hypothese – konkret · priorisiert · widerlegbar"><rect class="hit hit-violet" x="52" y="860" width="250" height="78" rx="14"/><text class="label" x="177" y="890" text-anchor="middle">Hypothese</text><text class="body" x="177" y="916" text-anchor="middle">konkret · priorisiert · widerlegbar</text></a>
   <path class="arrow" d="M310 899 H354"/>
-  <a href="/kb/troubleshooting#hypothesen-und-unterscheidende-tests" target="_top" tabindex="0"><rect class="hit hit-blue" x="362" y="860" width="270" height="78" rx="14"/><text class="label" x="497" y="890" text-anchor="middle">Unterscheidender Test</text><text class="body" x="497" y="916" text-anchor="middle">gleicher Ursprung · eine Variable</text></a>
+  <a href="/kb/troubleshooting#hypothesen-und-unterscheidende-tests" target="_top" tabindex="0" aria-label="Unterscheidender Test – gleicher Ursprung · eine Variable"><rect class="hit hit-blue" x="362" y="860" width="270" height="78" rx="14"/><text class="label" x="497" y="890" text-anchor="middle">Unterscheidender Test</text><text class="body" x="497" y="916" text-anchor="middle">gleicher Ursprung · eine Variable</text></a>
   <path class="arrow" d="M640 899 H684"/>
-  <a href="/kb/troubleshooting#signale-metriken-logs-traces-und-paketdaten" target="_top" tabindex="0"><rect class="hit hit-green" x="692" y="860" width="250" height="78" rx="14"/><text class="label" x="817" y="890" text-anchor="middle">Befund</text><text class="body" x="817" y="916" text-anchor="middle">Rohdaten · Zeit · Messpunkt</text></a>
+  <a href="/kb/troubleshooting#signale-metriken-logs-traces-und-paketdaten" target="_top" tabindex="0" aria-label="Befund – Rohdaten · Zeit · Messpunkt"><rect class="hit hit-green" x="692" y="860" width="250" height="78" rx="14"/><text class="label" x="817" y="890" text-anchor="middle">Befund</text><text class="body" x="817" y="916" text-anchor="middle">Rohdaten · Zeit · Messpunkt</text></a>
   <path class="arrow" d="M950 899 H994"/>
-  <a href="/kb/troubleshooting#verifikation-und-abschlusskriterien" target="_top" tabindex="0"><rect class="hit hit-red" x="1002" y="860" width="346" height="78" rx="14"/><text class="label" x="1175" y="890" text-anchor="middle">Beheben + verifizieren</text><text class="body" x="1175" y="916" text-anchor="middle">Originalvorgang · Monitoring · Prävention</text></a>
+  <a href="/kb/troubleshooting#verifikation-und-abschlusskriterien" target="_top" tabindex="0" aria-label="Beheben + verifizieren – Originalvorgang · Monitoring · Prävention"><rect class="hit hit-red" x="1002" y="860" width="346" height="78" rx="14"/><text class="label" x="1175" y="890" text-anchor="middle">Beheben + verifizieren</text><text class="body" x="1175" y="916" text-anchor="middle">Originalvorgang · Monitoring · Prävention</text></a>
   <path class="loop" d="M817 948 C817 980 177 980 177 946"/>
 </svg>

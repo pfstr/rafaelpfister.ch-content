@@ -23,13 +23,13 @@
   <text x="52" y="149" font-size="20" font-weight="750" fill="#222">JPA / GUICE</text>
   <rect x="294" y="115" width="92" height="24" rx="12" fill="#7a2f16"/>
   <text x="340" y="131" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">LEGACY</text>
-  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Apache-James-Downloads">
+  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Apache-James-Downloads" tabindex="0">
     <rect class="hit" x="354" y="142" width="32" height="18" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text x="370" y="155" text-anchor="middle" font-size="9.5" font-weight="700" fill="#757087">[1]</text>
   </a>
 
   <text x="52" y="198" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">ANWENDUNG</text>
-  <a href="/kb/smtp" target="_top" class="source-link" aria-label="KB-Artikel zu SMTP öffnen">
+  <a href="/kb/smtp" target="_top" class="source-link" aria-label="KB-Artikel zu SMTP öffnen" tabindex="0">
   <rect class="hit" x="52" y="212" width="334" height="54" rx="9" fill="#e9f2f5" stroke="#286983"/>
   <text x="219" y="235" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1f566b">James JVM · Guice</text>
   <text x="219" y="253" text-anchor="middle" font-size="10.5" fill="#395f6d">SMTP · IMAP · Mailets · WebAdmin</text>
@@ -37,13 +37,13 @@
   <line x1="219" y1="266" x2="219" y2="288" stroke="#286983" marker-end="url(#ajb-arrow)"/>
 
   <text x="52" y="310" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">DATEN</text>
-  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Apache-Quelle zum JPA-Profil öffnen">
+  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Apache-Quelle zum JPA-Profil öffnen" tabindex="0">
   <rect class="hit" x="52" y="324" width="160" height="74" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text x="132" y="351" text-anchor="middle" font-size="13" font-weight="700" fill="#222">H2 / SQL</text>
   <text x="132" y="373" text-anchor="middle" font-size="10.5" fill="#757087">JPA-Metadaten</text>
   <text x="132" y="389" text-anchor="middle" font-size="10.5" fill="#757087">und Mailbox</text>
   </a>
-  <a href="https://github.com/apache/james-project" target="_top" class="source-link" aria-label="Apache-James-Quellrepository öffnen">
+  <a href="https://github.com/apache/james-project" target="_top" class="source-link" aria-label="Apache-James-Quellrepository öffnen" tabindex="0">
   <rect class="hit" x="226" y="324" width="160" height="74" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text x="306" y="351" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Lucene</text>
   <text x="306" y="373" text-anchor="middle" font-size="10.5" fill="#757087">lokaler</text>
@@ -66,17 +66,17 @@
   <text x="454" y="149" font-size="20" font-weight="750" fill="#1f566b">POSTGRESQL</text>
   <rect x="702" y="115" width="106" height="24" rx="12" fill="#286983"/>
   <text x="755" y="131" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">3.9-FOKUS</text>
-  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Apache-James-Downloads">
+  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Apache-James-Downloads" tabindex="0">
     <rect class="hit" x="734" y="142" width="32" height="18" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text x="750" y="155" text-anchor="middle" font-size="9.5" font-weight="700" fill="#757087">[1]</text>
   </a>
-  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Quelle 2: Apache James 3.9.0 Release">
+  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Quelle 2: Apache James 3.9.0 Release" tabindex="0">
     <rect class="hit" x="776" y="142" width="32" height="18" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text x="792" y="155" text-anchor="middle" font-size="9.5" font-weight="700" fill="#757087">[2]</text>
   </a>
 
   <text x="454" y="198" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">ANWENDUNG</text>
-  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Apache James 3.9.0 Release öffnen">
+  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Apache James 3.9.0 Release öffnen" tabindex="0">
   <rect class="hit" x="454" y="212" width="354" height="54" rx="9" fill="#e9f2f5" stroke="#286983"/>
   <text x="631" y="235" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1f566b">James JVM · Guice · Java 21</text>
   <text x="631" y="253" text-anchor="middle" font-size="10.5" fill="#395f6d">standalone oder schrittweise verteilt</text>
@@ -84,13 +84,13 @@
   <line x1="631" y1="266" x2="631" y2="288" stroke="#286983" marker-end="url(#ajb-arrow)"/>
 
   <text x="454" y="310" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">DATEN UND OPTIONALE DIENSTE</text>
-  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Apache-Quelle zur PostgreSQL-Implementierung öffnen">
+  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Apache-Quelle zur PostgreSQL-Implementierung öffnen" tabindex="0">
   <rect class="hit" x="454" y="324" width="166" height="74" rx="9" fill="#fff" stroke="#286983"/>
   <text x="537" y="351" text-anchor="middle" font-size="13" font-weight="700" fill="#1f566b">PostgreSQL</text>
   <text x="537" y="373" text-anchor="middle" font-size="10.5" fill="#395f6d">Metadaten</text>
   <text x="537" y="389" text-anchor="middle" font-size="10.5" fill="#395f6d">relationale Persistenz</text>
   </a>
-  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Apache-Quelle zu den skalierbaren PostgreSQL-Komponenten öffnen">
+  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Apache-Quelle zu den skalierbaren PostgreSQL-Komponenten öffnen" tabindex="0">
   <rect class="hit" x="634" y="324" width="174" height="74" rx="9" fill="#fff" stroke="#d9d4cc" stroke-dasharray="6 4"/>
   <text x="721" y="351" text-anchor="middle" font-size="13" font-weight="700" fill="#222">bei Bedarf</text>
   <text x="721" y="373" text-anchor="middle" font-size="10.5" fill="#757087">S3 · OpenSearch</text>
@@ -113,17 +113,17 @@
   <text x="876" y="149" font-size="20" font-weight="750" fill="#222">DISTRIBUTED</text>
   <rect x="1110" y="115" width="118" height="24" rx="12" fill="#f2eee7" stroke="#7a2f16"/>
   <text x="1169" y="131" text-anchor="middle" font-size="10" font-weight="700" fill="#7a2f16">MEHRKNOTEN</text>
-  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Apache-James-Downloads">
+  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Apache-James-Downloads" tabindex="0">
     <rect class="hit" x="1154" y="142" width="32" height="18" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text x="1170" y="155" text-anchor="middle" font-size="9.5" font-weight="700" fill="#757087">[1]</text>
   </a>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Quelle 3: Managing Distributed James">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Quelle 3: Managing Distributed James" tabindex="0">
     <rect class="hit" x="1196" y="142" width="32" height="18" rx="9" fill="#fff" stroke="#d9d4cc"/>
     <text x="1212" y="155" text-anchor="middle" font-size="9.5" font-weight="700" fill="#757087">[3]</text>
   </a>
 
   <text x="876" y="198" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">ANWENDUNG</text>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Apache-Dokumentation zu Distributed James öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Apache-Dokumentation zu Distributed James öffnen" tabindex="0">
   <rect class="hit" x="876" y="212" width="352" height="54" rx="9" fill="#e9f2f5" stroke="#286983"/>
   <text x="1052" y="235" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1f566b">mehrere James-Knoten</text>
   <text x="1052" y="253" text-anchor="middle" font-size="10.5" fill="#395f6d">horizontal skalierbarer Mailserver</text>
@@ -131,13 +131,13 @@
   <line x1="1052" y1="266" x2="1052" y2="288" stroke="#286983" marker-end="url(#ajb-arrow)"/>
 
   <text x="876" y="310" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">VERTEILTE DIENSTE</text>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Apache-Dokumentation zu Cassandra in Distributed James öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Apache-Dokumentation zu Cassandra in Distributed James öffnen" tabindex="0">
   <rect class="hit" x="876" y="324" width="166" height="74" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text x="959" y="351" text-anchor="middle" font-size="13" font-weight="700" fill="#222">Cassandra</text>
   <text x="959" y="373" text-anchor="middle" font-size="10.5" fill="#757087">Metadaten</text>
   <text x="959" y="389" text-anchor="middle" font-size="10.5" fill="#757087">Denormalisierung</text>
   </a>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Apache-Dokumentation zu S3, OpenSearch und RabbitMQ öffnen">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Apache-Dokumentation zu S3, OpenSearch und RabbitMQ öffnen" tabindex="0">
   <rect class="hit" x="1056" y="324" width="172" height="74" rx="9" fill="#fff" stroke="#d9d4cc"/>
   <text x="1142" y="347" text-anchor="middle" font-size="12.5" font-weight="700" fill="#222">S3 · OpenSearch</text>
   <text x="1142" y="368" text-anchor="middle" font-size="10.5" fill="#757087">Blob · Suche</text>
@@ -165,19 +165,19 @@
 
   <rect x="28" y="790" width="1224" height="62" rx="12" fill="#fff" stroke="#d9d4cc"/>
   <text x="48" y="814" font-size="10.5" font-weight="700" letter-spacing="1" fill="#757087">KLICKBARE PRIMÄRQUELLEN</text>
-  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Downloads und Profile">
+  <a href="https://james.apache.org/download.cgi" target="_top" class="source-link" aria-label="Quelle 1: offizielle Downloads und Profile" tabindex="0">
     <rect class="hit" x="48" y="824" width="254" height="20" rx="10" fill="#f2eee7"/>
     <text x="175" y="838" text-anchor="middle" font-size="9.8" font-weight="650" fill="#222">[1] Downloads · Profile und Komponenten</text>
   </a>
-  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Quelle 2: Release 3.9.0">
+  <a href="https://james.apache.org/james/update/2025/09/25/james-3.9.0.html" target="_top" class="source-link" aria-label="Quelle 2: Release 3.9.0" tabindex="0">
     <rect class="hit" x="314" y="824" width="244" height="20" rx="10" fill="#f2eee7"/>
     <text x="436" y="838" text-anchor="middle" font-size="9.8" font-weight="650" fill="#222">[2] 3.9.0 · Java 21 und PostgreSQL</text>
   </a>
-  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Quelle 3: Distributed James Operations">
+  <a href="https://james.apache.org/server/manage-guice-distributed-james.html" target="_top" class="source-link" aria-label="Quelle 3: Distributed James Operations" tabindex="0">
     <rect class="hit" x="570" y="824" width="346" height="20" rx="10" fill="#f2eee7"/>
     <text x="743" y="838" text-anchor="middle" font-size="9.8" font-weight="650" fill="#222">[3] Distributed Ops · Daten, Events und Recovery</text>
   </a>
-  <a href="https://james.apache.org/server/feature-persistence.html" target="_top" class="source-link" aria-label="Quelle 4: Apache James Persistence">
+  <a href="https://james.apache.org/server/feature-persistence.html" target="_top" class="source-link" aria-label="Quelle 4: Apache James Persistence" tabindex="0">
     <rect class="hit" x="928" y="824" width="304" height="20" rx="10" fill="#f2eee7"/>
     <text x="1080" y="838" text-anchor="middle" font-size="9.8" font-weight="650" fill="#222">[4] Persistence · Mailbox und Repository</text>
   </a>
