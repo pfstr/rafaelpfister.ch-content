@@ -12,198 +12,107 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# Verschlüsselungs-Gateways: warum der Standardfall stiller Klartextversand ist
-
-URL: https://rafaelpfister.ch/blog/mailgateway-regelwerk-stiller-klartextversand
-Datum: 2026-08-11
-
-# Verschlüsselungs-Gateways: warum der Standardfall stiller Klartextversand ist
-
-Verschlüsselungs-Gateways werden gekauft, damit vertrauliche Nachrichten geschützt hinausgehen. In der Praxis sind ihre Regelwerke jedoch fast immer **fail-open** gebaut: Lässt sich eine Nachricht nicht verschlüsseln, wird sie trotzdem zugestellt, nur eben im Klartext. Das ist selten eine bewusste Entscheidung, sondern ein Nebeneffekt der Regelreihenfolge, und in den Protokollen sieht es aus wie ein Erfolg.
-
-Dieser Artikel beschreibt, woran Sie das im Regelwerk erkennen und wie Sie die Grundhaltung umdrehen. Die Beispiele orientieren sich am Regelmodell von Apache James, das mehrere Gateway-Produkte verwenden, die Denkweise gilt aber unabhängig vom Hersteller.
-
-## Das Regelmodell in drei Sätzen
-
-Ein Regelwerk besteht aus **Prozessoren**, also benannten Ketten. Jede Kette enthält **Mailets**, die etwas tun, und jedes Mailet hat einen **Matcher**, der entscheidet, ob es auf die aktuelle Nachricht zutrifft. Ein Mailet vom Typ `ToProcessor` gibt die Nachricht an eine andere Kette weiter; trifft es mit `match="All"` zu, ist die aktuelle Kette an dieser Stelle beendet.
-
-Daraus folgt die wichtigste Leseregel: **Ein Regelwerk liest sich wie eine Fallunterscheidung von oben nach unten.** Für jede Nachrichtenart müssen Sie die Frage beantworten, an welcher Stelle sie die Kette verlässt. Alles, was keinen Ausgang findet, landet am Ende, und das Ende ist der eigentlich interessante Ort.
-
-## Missverständnis 1: Fehlendes Schlüsselmaterial löst keine Verschlüsselung aus
-
-Das ist der Punkt, an dem die Intuition am häufigsten danebenliegt. Wenn ein Gateway meldet, für den Empfänger sei kein Schlüsselmaterial vorhanden, klingt das nach einem Auslöser für einen alternativen Schutzmechanismus, etwa ein Webmail-Portal oder einen passwortgeschützten Umschlag.
-
-Tatsächlich ist es umgekehrt. Die Prüfung auf Schlüsselmaterial entscheidet nur, **womit** verschlüsselt wird, nachdem entschieden wurde, **dass** verschlüsselt wird. Der Weg in die Verschlüsselungskette öffnet sich typischerweise nur über eine dieser Bedingungen:
-
-- Der Empfänger besitzt ein S/MIME-Zertifikat oder einen PGP-Schlüssel.
-- Der Absender hat einen Auslöser gesetzt, etwa ein Schlüsselwort im Betreff.
-- Die Nachricht trägt ein Vertraulichkeitslabel.
-- Sie wurde im Webmail des Gateways verfasst.
-
-Trifft nichts davon zu, war Verschlüsselung nie vorgesehen, und die Nachricht geht im Klartext hinaus. Für einen Empfänger ohne Zertifikat ist das der Normalfall, nicht die Ausnahme.
-
-## Missverständnis 2: `passThrough=false` bedeutet, dass die Nachricht die Kette verlässt
-
-Verschlüsselungs-Mailets tragen üblicherweise den Parameter `passThrough=false`. Er bedeutet, dass das Mailet die Nachricht **konsumiert**: Es übernimmt die weitere Behandlung selbst und gibt sie nicht an die nachfolgenden Mailets weiter.
-
-Die Konsequenz wird regelmässig übersehen. Betrachten Sie das typische Ende einer Verschlüsselungskette:
-
-```xml
-<mailet class="ProcessSmimeEncoding" match="HasCertificate?check=recipient_smime"> … </mailet>
-<mailet class="ProcessPgpEncoding"   match="HasCertificate?check=recipient_pgp">   … </mailet>
-<mailet class="ProcessEnvelope"      match="RecipientSecTypeIs?Security Type=TRE"> … </mailet>
-
-<mailet class="SimpleLogger" match="All">
-   <log-message>Nachricht verschlüsselt</log-message>
-</mailet>
-<mailet class="ToProcessor" match="All">
-   <processor>externalDelivery</processor>
-</mailet>
-```
-
-Weil die drei Verschlüsselungs-Mailets konsumieren, erreichen die letzten beiden Zeilen **ausschliesslich Nachrichten, bei denen keine einzige Methode gegriffen hat**. Die Protokollmeldung „Nachricht verschlüsselt" ist damit strukturell falsch: Sie erscheint genau dann, wenn nicht verschlüsselt wurde. Und der `ToProcessor` darunter stellt diese Nachrichten regulär zu.
-
-Das trifft auch Nachrichten, bei denen der Absender Verschlüsselung **ausdrücklich angefordert** hat. Ist der Auslöser gesetzt, aber keine Methode anwendbar, geht die Nachricht im Klartext hinaus, wird als verschlüsselt protokolliert, und niemand erfährt davon.
-
-## Missverständnis 3: Verworfene Nachrichten sind nachvollziehbar
-
-Regelwerke enthalten oft Mailets, die Nachrichten verwerfen, etwa um Journal-Kopien oder Schleifen abzufangen. Ein solches Mailet beendet die Verarbeitung still. Im Nachrichtenverlauf steht dann lediglich, dass die Nachricht gelöscht wurde, ohne jeden Grund.
-
-Verschärfend kommt hinzu, dass viele Gateways zwei verschiedene Protokollmechanismen kennen: einen für das Serverprotokoll und einen für den Nachrichtenverlauf, den auch der Support oder der Anwender sieht. Nur der zweite erscheint im Verlauf. Wer ausschliesslich den ersten setzt, hat zwar geloggt, aber im Trace bleibt es bei „Nachricht gelöscht".
-
-Zwei Massnahmen beheben das dauerhaft. Erstens: Verwerfen Sie nie direkt in der Hauptkette, sondern verzweigen Sie in einen **eigens benannten Prozessor**. Der Name allein erscheint im Verlauf und sagt bereits, was passiert ist. Zweitens: Setzen Sie dort einen Eintrag für den Nachrichtenverlauf, der die Regel und den Grund im Klartext nennt, nicht nur ein Stichwort.
-
-Ein Nachrichtenverlauf, der „durch die Regel für nicht routbare Absenderdomänen bewusst verworfen, kein Zustellfehler" sagt, spart im Betrieb sehr viel Rückfrage.
-
-## Die Umkehrung: von fail-open zu fail-closed
-
-Wenn Sie regulierte Daten transportieren, ist die eingebaute Grundhaltung die falsche. Nicht die zurückgehaltene Nachricht ist das Risiko, sondern die unbemerkt im Klartext versendete. Eine geparkte Nachricht fällt auf und lässt sich nachholen, versendete Daten holen Sie nicht zurück.
-
-Die Umstellung erfolgt an zwei Stellen.
-
-**Erstens der Fallback am Ende der Auslöserprüfung.** Statt Nachrichten ohne Schlüsselmaterial und ohne Auslöser direkt zuzustellen, geben Sie sie in die Verschlüsselungskette, damit sie dort einen geschützten Umschlag erhalten. Systemnachrichten und maschinelle Mail nehmen Sie gezielt aus, dazu unten mehr.
-
-**Zweitens das Ende der Verschlüsselungskette.** Dort ersetzen Sie die reguläre Zustellung durch eine Verzweigung in einen Prozessor, der die Nachricht **nicht** zustellt, sondern in ein Fehler-Repository legt und den Absender benachrichtigt:
-
-```xml
-<mailet class="ToProcessor" match="All">
-   <processor>encryptionFailed</processor>
-</mailet>
-```
-
-Im Prozessor `encryptionFailed` protokollieren Sie den Grund im Klartext und legen die Nachricht ab. Wer bewusst unverschlüsselt senden will, nutzt dafür den vorgesehenen Auslöser, in vielen Produkten ein Schlüsselwort im Betreff.
-
-## Wo Sie aufpassen müssen
-
-Diese Umstellung ist kein reiner Regelwerkseingriff, sie hat drei Voraussetzungen, die Sie vorher klären müssen.
-
-**Die Empfängerverwaltung muss mitspielen.** Hängt der geschützte Umschlag an einem Attribut des Empfängers, das bei der Registrierung gesetzt wird, dann entscheidet die Qualität dieser Registrierung über das Ergebnis. Bleibt ein Empfänger unvollständig angelegt, etwa ohne Sicherheitstyp, greift die Verschlüsselung nicht. Vor der Umstellung war das unsichtbar, weil die Nachricht einfach im Klartext hinausging; danach wird daraus eine zurückgehaltene Nachricht. Das ist die richtige Richtung, aber es muss vorher geprüft sein, sonst steht der Mailverkehr.
-
-Robuster ist es, die Logik umzudrehen: Machen Sie den seltenen Fall zur Ausnahme und den geschützten Umschlag zum Auffangfall. Dann hängt die Zusage nicht mehr an gepflegten Empfängerattributen.
-
-**Systemnachrichten dürfen nicht in den Umschlag.** Eine Benachrichtigung mit der Aufforderung, sich für eine sichere Nachricht anzumelden, ist im geschützten Umschlag unlesbar. Gute Regelwerke zweigen solche Nachrichten sehr früh ab, meist über einen Matcher für Benachrichtigungen sowie über die üblichen Kopfzeilen maschinell erzeugter Mail. Prüfen Sie, dass diese Ausgänge **vor** Ihrer neuen Weiche liegen.
-
-**Applikationsmail braucht eine eigene Betrachtung.** Registrierungsbestätigungen, Passwort-Zurücksetzungen und Benachrichtigungen von Fachanwendungen dürfen Empfänger in aller Regel nicht auf ein Portal zwingen. Grenzen Sie diesen Verkehr sauber ab, entweder über die Quelle der Einlieferung oder über eine Kopfzeile, die die Anwendung setzt. Die Kopfzeile ist die stabilere Variante, weil Quell-IP-Adressen sich mit jeder Netzwerkänderung verschieben können.
-
-## Wie Sie ein bestehendes Regelwerk prüfen
-
-Nehmen Sie sich die Ausgangskette vor und beantworten Sie für jede Nachrichtenart, an welcher Stelle sie die Kette verlässt. Fünf Klassen genügen für einen ersten Überblick: interne Empfänger, Empfänger mit Schlüsselmaterial, Empfänger ohne Schlüsselmaterial, maschinell erzeugte Nachrichten und Nachrichten mit ausdrücklichem Auslöser.
-
-Drei Fragen decken die meisten Überraschungen auf. Welche Mailets konsumieren, welche geben weiter? Was genau erreicht die letzte Zeile jeder Kette? Und behauptet eine Protokollmeldung etwas, das an dieser Stelle strukturell nicht zutreffen kann?
-
-Die letzte Frage lohnt sich besonders. Meldungen wie „Nachricht verschlüsselt" am Ende einer Kette sind ein verlässlicher Hinweis darauf, dass jemand die Kette einmal von oben gelesen hat, ohne die Konsum-Semantik zu berücksichtigen. In der Praxis war das für uns der Einstieg, um den stillen Klartextversand überhaupt zu bemerken.
-
-## Quellen
-
-1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): Aufbau von Prozessoren, Mailets und Matchern sowie die Semantik der Verarbeitungskette.
-
-2.  [Apache James: Provided mailets](https://james.apache.org/server/dev-provided-mailets.html): Referenz der mitgelieferten Mailets inklusive der Parameter für Weitergabe und Konsum.
-
-3.  [Apache James: Provided matchers](https://james.apache.org/server/dev-provided-matchers.html): Referenz der Matcher, unter anderem für Empfängereigenschaften und Kopfzeilen.
-
-4.  [RFC 8551: S/MIME Version 4.0 Message Specification](https://www.rfc-editor.org/rfc/rfc8551): Grundlage für die zertifikatsbasierte Verschlüsselung, auf die sich die Prüfungen im Regelwerk beziehen.
-
-----
-
-# Fehlersuche im Mailfluss: kontrollierte Experimente statt Hypothesen
+# Was wir aus der Naturwissenschaft für die Fehlersuche in der IT lernen können
 
 URL: https://rafaelpfister.ch/blog/mailflow-fehlersuche-kontrollierte-experimente
 Datum: 2026-08-11
 
-# Fehlersuche im Mailfluss: kontrollierte Experimente statt Hypothesen
+# Was wir aus der Naturwissenschaft für die Fehlersuche in der IT lernen können
 
 Eine Nachricht kommt nicht an. Das Protokoll liefert eine Fehlermeldung, die sofort eine Erklärung nahelegt. Sie prüfen diese Erklärung, finden Belege, und nach zwei Stunden stellt sich heraus, dass die Erklärung falsch war und die Belege Zufall.
 
-Das ist kein Anfängerfehler, sondern die Regel. Der Mailfluss ist eine Kette aus Systemen, die jeweils eine eigene Sicht auf dieselbe Nachricht haben: das Gateway, die Filterebene, der lokale Transportserver, der Cloud-Dienst, das Zielpostfach. Jede Meldung ist aus der Perspektive genau einer Schicht geschrieben, und der Text erklärt oft die Wirkung, nicht die Ursache. Dieser Artikel beschreibt das Vorgehen, das in solchen Fällen zuverlässig schneller ist.
+Das ist kein Anfängerfehler, sondern die Regel. Und es ist bemerkenswert, dass unsere Branche für dieses Problem selten eine Methode hat, obwohl eine seit Jahrhunderten existiert und ausgesprochen gut funktioniert. Die Naturwissenschaften haben genau dieselbe Aufgabe: aus Beobachtungen auf Ursachen schliessen, in Systemen, die man nicht vollständig überblickt.
 
-## Warum plausible Meldungen in die Irre führen
+Dieser Artikel überträgt fünf Grundsätze der wissenschaftlichen Methode auf die Fehlersuche im Mailfluss. Die Beispiele stammen aus der Praxis, das Vorgehen ist aber nicht mailspezifisch.
 
-Fehlertexte im Mailfluss sind Sammelbegriffe. Derselbe Wortlaut kann völlig unterschiedliche Situationen beschreiben, weil das ablehnende System nur ein grobes Raster kennt.
+## Warum IT-Fehlersuche systematisch anfällig ist
 
-Ein Beispiel aus der Praxis: Ein Cloud-Dienst lehnte eine Nachricht mit dem Hinweis ab, der Absender sei für ausgehende Zustellung nicht zulässig. Derselbe Wortlaut trat in derselben Umgebung in zwei völlig verschiedenen Konstellationen auf. Einmal versuchte ein System, über den Dienst an einen fremden Empfänger zuzustellen, also ein echter Weiterleitungsversuch nach aussen. Das andere Mal war der Empfänger ein reguläres Postfach des Dienstes, und beanstandet wurde ausschliesslich die Absenderdomäne.
+Der Mailfluss ist eine Kette aus Systemen, die jeweils eine eigene Sicht auf dieselbe Nachricht haben: das Gateway, die Filterebene, der lokale Transportserver, der Cloud-Dienst, das Zielpostfach. Jede Meldung ist aus der Perspektive genau einer Schicht geschrieben.
 
-Wer den Text wörtlich nimmt, sucht in beiden Fällen nach demselben Problem. Und weil das Wort „ausgehend" darin vorkommt, sucht man zuerst am falschen Ende.
+Dazu kommt: Fehlertexte sind Sammelbegriffe. Derselbe Wortlaut beschreibt oft völlig unterschiedliche Situationen, weil das ablehnende System nur ein grobes Raster kennt. Die erweiterten Statuscodes sind genau dafür gemacht, Klassen zu bilden, nicht Einzelfälle zu benennen.
 
-## Der Kern des Vorgehens: eine Variable, sonst alles gleich
+Ein Beispiel: Ein Cloud-Dienst lehnte eine Nachricht mit dem Hinweis ab, der Absender sei für ausgehende Zustellung nicht zulässig. Derselbe Wortlaut trat in derselben Umgebung in zwei grundverschiedenen Konstellationen auf. Einmal versuchte ein System, über den Dienst an einen fremden Empfänger zuzustellen, also ein echter Weiterleitungsversuch nach aussen. Das andere Mal war der Empfänger ein reguläres Postfach des Dienstes, und beanstandet wurde ausschliesslich die Absenderdomäne.
 
-Sobald Sie merken, dass Sie Mechanismen konstruieren, hören Sie auf zu theoretisieren und bauen ein Experiment. Das Ziel ist, den Fall auf genau eine Variable zu reduzieren.
+Wer den Text wörtlich nimmt, sucht in beiden Fällen dasselbe. Und weil das Wort „ausgehend" darin vorkommt, sucht man zuerst am falschen Ende.
 
-Nehmen Sie den Originalfall und erzeugen Sie zwei Nachrichten, die sich in **genau einem** Merkmal unterscheiden. Gleicher Einlieferungspunkt, gleicher Empfänger, gleicher Weg, gleiche Zeit. Wenn Sie den Verdacht auf die Absenderdomäne haben, ändern Sie nur diese. Wenn Sie den Empfänger verdächtigen, ändern Sie nur den Empfänger.
+## Grundsatz 1: Eine Hypothese muss etwas verbieten
 
-Das klingt selbstverständlich, wird aber selten so gemacht, weil man in der Regel zwei Fälle vergleicht, die zufällig vorliegen. Und die unterscheiden sich fast immer in mehreren Merkmalen gleichzeitig. Genau daraus entstehen Scheinkorrelationen.
+Karl Popper hat die Wissenschaftstheorie um eine Einsicht bereichert, die für die Fehlersuche unmittelbar praktisch ist: **Eine Aussage ist nur dann brauchbar, wenn sie widerlegbar ist.** Eine Erklärung, die zu jedem denkbaren Beobachtungsergebnis passt, erklärt nichts.
 
-## Der Kontrollversuch ist nicht optional
+Übertragen heisst das: Formulieren Sie Ihre Vermutung so, dass sie eine **Vorhersage** enthält, die falsch sein kann. Nicht „irgendetwas mit der Absenderdomäne stimmt nicht", sondern „wenn ich dieselbe Nachricht mit einer anderen Absenderdomäne über denselben Weg schicke, kommt sie an".
 
-Der wichtigste Teil ist der, den man am liebsten weglässt: **Ihr Testaufbau muss zuerst den Fehler reproduzieren.**
+Die zweite Formulierung ist etwas wert, weil sie sich in fünf Minuten zerstören lässt. Die erste können Sie stundenlang mit Belegen füttern, ohne je schlauer zu werden.
 
-Wenn Sie den Fehlerfall nicht mit Ihren eigenen Mitteln erzeugen können, sagt ein erfolgreicher Gegenversuch nichts aus. Vielleicht funktioniert Ihre Testnachricht nur deshalb, weil Sie an einer anderen Stelle einliefern als das Originalsystem, oder weil eine Prüfung auf Ihrem Weg gar nicht greift.
+Ein guter Test dafür: Fragen Sie sich vor dem Versuch, welches Ergebnis Ihre Hypothese **widerlegen** würde. Fällt Ihnen keines ein, haben Sie keine Hypothese, sondern eine Stimmung.
 
-Deshalb besteht ein brauchbarer Test immer aus mindestens zwei Nachrichten:
+## Grundsatz 2: Eine Variable, sonst alles gleich
+
+Der Kern des Experiments ist die Kontrolle der Störvariablen. In der Praxis passiert regelmässig das Gegenteil: Man vergleicht zwei Fälle, die zufällig vorliegen. Und die unterscheiden sich fast immer in mehreren Merkmalen gleichzeitig.
+
+Aus einem realen Fall: Nachrichten von `example-test.com` wurden abgelehnt, Nachrichten von `partner.example` kamen an. Die beiden Domänen unterschieden sich in mindestens vier Merkmalen: Zugehörigkeit zur Organisation, wo die Mail gehostet ist, ob eine strenge Authentifizierungsrichtlinie hinterlegt ist, und der Weg der Einlieferung. Aus zwei Datenpunkten mit vier Unterschieden lässt sich exakt nichts folgern. Jede der vier Erklärungen passt.
+
+Bauen Sie deshalb den Vergleich selbst. Gleicher Einlieferungspunkt, gleicher Empfänger, gleicher Weg, gleiche Zeit, und **genau ein** geändertes Merkmal. Wenn Sie die Absenderdomäne verdächtigen, ändern Sie nur diese.
+
+## Grundsatz 3: Ohne Kontrollversuch ist das Ergebnis wertlos
+
+Das ist der Teil, den man am liebsten weglässt, und der wichtigste. In der klinischen Forschung ist die Kontrollgruppe selbstverständlich; in der IT verzichtet man meist darauf und wundert sich über widersprüchliche Resultate.
+
+**Ihr Testaufbau muss zuerst den Fehler reproduzieren.** Wenn Sie den Fehlerfall nicht mit Ihren eigenen Mitteln erzeugen können, sagt ein erfolgreicher Gegenversuch nichts aus. Vielleicht funktioniert Ihre Testnachricht nur deshalb, weil Sie an anderer Stelle einliefern als das Originalsystem, oder weil eine Prüfung auf Ihrem Weg gar nicht greift.
+
+Ein brauchbarer Test besteht deshalb aus mindestens zwei Nachrichten:
 
 | | Zweck | Erwartung |
 |---|---|---|
 | Versuch 1 | Kontrolle, repliziert den Originalfall | **muss scheitern** |
 | Versuch 2 | Hypothese, eine Variable geändert | soll gelingen |
 
-Scheitert Versuch 1 nicht, ist Ihr Aufbau nicht repräsentativ, und Sie müssen näher am Original einliefern. Erst wenn Versuch 1 den Originalfehler exakt zeigt, hat Versuch 2 Aussagekraft.
+Scheitert Versuch 1 nicht, ist Ihr Aufbau nicht repräsentativ. Dann haben Sie nichts über den Originalfall gelernt, sondern nur über Ihren Testaufbau, und müssen näher am Original einliefern.
 
 ## Ein durchgespieltes Beispiel
 
-Aus einem realen Fall, anonymisiert. Nachrichten eines Systems erreichten Empfänger in der Cloud nicht, andere Nachrichten an dieselben Empfänger kamen problemlos an. Drei Versuche über denselben Weg, an denselben Empfänger, im Abstand weniger Minuten:
+Zurück zum Fall oben, anonymisiert. Nachrichten eines Systems erreichten Empfänger in der Cloud nicht, andere Nachrichten an dieselben Empfänger kamen problemlos an. Drei Versuche über denselben Weg, an denselben Empfänger, im Abstand weniger Minuten:
 
-| Versuch | Absenderdomäne | Ergebnis |
-|---|---|---|
-| 1 (Kontrolle) | `example-test.com` | Ablehnung, identisch zum Originalfall |
-| 2 | `example.com` (eigene Domäne des Ziels) | zugestellt |
-| 3 | `other-test.com` | zugestellt |
+| Versuch | Absenderdomäne | Hypothese, die er prüft | Ergebnis |
+|---|---|---|---|
+| 1 (Kontrolle) | `example-test.com` | Aufbau ist repräsentativ | Ablehnung, identisch zum Original |
+| 2 | `example.com`, eigene Domäne des Ziels | es liegt an der Absenderdomäne | zugestellt |
+| 3 | `other-test.com`, fremde Domäne derselben Organisation | es liegt an der Organisationszugehörigkeit | zugestellt |
 
-Versuch 1 reproduzierte den Fehler, der Aufbau war also gültig. Versuch 2 zeigte, dass es an der Absenderdomäne hängt und nicht an Empfänger, Postfach, Routing oder Berechtigungen. Versuch 3 widerlegte zusätzlich die naheliegende Erklärung, es liege an der Zugehörigkeit der Domäne zu einer anderen Organisation, denn `other-test.com` gehörte derselben.
+Versuch 1 reproduzierte den Fehler, der Aufbau war also gültig. Versuch 2 zeigte, dass es an der Absenderdomäne hängt und nicht an Empfänger, Postfach, Routing oder Berechtigungen. Versuch 3 war der eigentlich elegante: Er prüfte gezielt die naheliegendste Alternativerklärung und **widerlegte sie**, denn `other-test.com` gehörte derselben Organisation und kam trotzdem durch.
 
 Drei Nachrichten, zehn Minuten, und die Ursache war belegt statt vermutet. Vorher waren mehrere Stunden in Erklärungsversuche geflossen, von denen sich am Ende keiner hielt.
 
-## Widerlegen ist Fortschritt
+## Grundsatz 4: Widerlegen ist der eigentliche Fortschritt
 
-Eine widerlegte Hypothese fühlt sich nach Rückschritt an, ist aber das Gegenteil. Sie entfernt einen ganzen Ast aus dem Suchraum, und zwar dauerhaft.
+Eine widerlegte Hypothese fühlt sich nach Rückschritt an. Tatsächlich ist sie das Einzige, was Sie sicher wissen. Bestätigungen sind schwach, denn eine Beobachtung kann zu mehreren Erklärungen passen. Eine saubere Widerlegung entfernt einen ganzen Ast aus dem Suchraum, und zwar dauerhaft.
 
-Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie gefallen sind. Das hat zwei Wirkungen. Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon einmal verworfene Idee unter neuem Namen zurückkehrt.
+Genau hier wirkt der Bestätigungsfehler am stärksten. Haben Sie eine Vermutung, finden Sie fast immer etwas, das dazu passt. In der oben beschriebenen Analyse gab es eine Korrelation zwischen der Ablehnung und der Frage, wo die Absenderdomäne ihre Mail hosten lässt. Sie sah überzeugend aus, beruhte aber auf zwei Datenpunkten, die sich in mehreren Merkmalen unterschieden. Der dritte Versuch hat sie zerlegt.
 
-In der Dokumentation gehören die widerlegten Punkte ausdrücklich neben die belegten. Ein Bericht, der nur die richtige Antwort enthält, verschweigt die Hälfte der geleisteten Arbeit und lädt dazu ein, sie zu wiederholen.
+Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie gefallen sind. Das ist nichts anderes als ein Laborbuch. Es hat zwei Wirkungen: Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon verworfene Idee unter neuem Namen zurückkehrt.
 
-## Beweislast an die Umkehrbarkeit koppeln
+In der Dokumentation gehören die widerlegten Punkte ausdrücklich neben die belegten. Ein Bericht, der nur die richtige Antwort enthält, verschweigt die Hälfte der Arbeit und lädt dazu ein, sie zu wiederholen.
 
-Ein häufiger Zeitfresser ist, dass mehr Beweis eingefordert wird, als die geplante Handlung rechtfertigt. Ein brauchbarer Massstab: **Der Aufwand für den Nachweis richtet sich nach der Umkehrbarkeit des Eingriffs.**
+## Grundsatz 5: Kennen Sie Ihre Stichprobe
+
+Die subtilste Fehlerquelle ist die Stichprobenverzerrung, und sie trifft in der IT vor allem Abfragen, die seitenweise liefern.
+
+Sie fragen sieben Tage Nachrichtenverfolgung ab, filtern lokal nach einem Merkmal und bekommen kein Ergebnis. Der Schluss liegt nahe, dass es diesen Verkehr nicht gab. Tatsächlich haben Sie nur die erste Seite gefiltert, und die deckt bei hohem Aufkommen wenige Minuten ab.
+
+Das korrekte Ergebnis lautet: nicht im Ausschnitt gefunden. Es lautet nicht: existiert nicht. Der Unterschied ist derselbe wie zwischen „in unserer Studie kein Effekt nachweisbar" und „es gibt keinen Effekt".
+
+Zwei Auswege funktionieren. Verkleinern Sie das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, erkennbar am Ausbleiben des Hinweises auf weitere Ergebnisse. Oder blättern Sie durch alle Seiten und werten dann aus.
+
+Und ein dritter, der oft übersehen wird: Für die Frage, ob etwas **nie** vorkommt, ist eine Konfigurationsprüfung jeder Beobachtung überlegen. Wenn ein System keine Route auf ein Ziel besitzt, kann es dorthin nicht zustellen, unabhängig von jedem Beobachtungsfenster. Das ist der Unterschied zwischen einem empirischen und einem strukturellen Argument, und wo Sie das strukturelle haben können, nehmen Sie es.
+
+## Der Übertrag: Beweislast an die Umkehrbarkeit koppeln
+
+Hier endet die Analogie zur Wissenschaft, und die Ingenieurperspektive übernimmt. Forschung will Wahrheit, Betrieb will eine funktionierende Anlage. Daraus folgt ein Massstab, den die Wissenschaft nicht kennt: **Der Aufwand für den Nachweis richtet sich nach der Umkehrbarkeit des Eingriffs.**
 
 Einen Connector zu deaktivieren ist ein Befehl, und das Zurücknehmen ebenfalls. Dafür genügen begründete Indizien, denn ein Irrtum ist in einer Minute behoben und fällt sofort auf. Denselben Connector zu löschen ist nicht umkehrbar; dafür lohnt sich der zusätzliche Nachweis über die Konfiguration der Gegenstelle oder einen serverseitigen Nutzungsbericht.
 
-Dasselbe gilt für Regelwerksänderungen. Eine reine Beobachtungsstufe, die nur protokolliert und nichts umleitet, dürfen Sie mit dünner Faktenlage einführen. Sie ist folgenlos und beschafft genau die Daten, die für den scharfen Schritt fehlen. Erst die Umstellung, die Nachrichten zurückhalten kann, verlangt belastbare Belege.
+Dasselbe gilt für Regelwerksänderungen. Eine reine Beobachtungsstufe, die protokolliert und nichts umleitet, dürfen Sie mit dünner Faktenlage einführen. Sie ist folgenlos und beschafft genau die Daten, die für den scharfen Schritt fehlen. Erst die Umstellung, die Nachrichten zurückhalten kann, verlangt belastbare Belege.
 
-## Stichproben sind kein Beweis der Abwesenheit
-
-Der letzte und subtilste Fallstrick betrifft Abfragen, die seitenweise liefern, etwa Nachrichtenverfolgungen in grossen Umgebungen. Sie fragen sieben Tage ab, filtern lokal nach einem Merkmal und bekommen kein Ergebnis. Der Schluss liegt nahe, dass es diesen Verkehr nicht gab.
-
-Tatsächlich haben Sie nur die erste Seite gefiltert. Bei hohem Aufkommen deckt die wenige Minuten ab. Das Ergebnis lautet korrekt: nicht im Ausschnitt gefunden. Es lautet nicht: existiert nicht.
-
-Zwei Auswege funktionieren. Verkleinern Sie das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, und gruppieren Sie dann über den gesamten Inhalt. Oder nutzen Sie eine Auswertung, die serverseitig über den ganzen Zeitraum aggregiert. Für die Frage, ob etwas **nie** vorkommt, ist eine Konfigurationsprüfung ohnehin überlegen: Wenn die Gegenstelle keine Route auf ein Ziel besitzt, kann sie dorthin nicht zustellen, unabhängig von jedem Beobachtungsfenster.
+Wer diesen Massstab nicht anlegt, macht regelmässig beide Fehler gleichzeitig: Er fordert wochenlange Beweise für eine Änderung, die man in Sekunden zurücknehmen könnte, und schaltet ohne Absicherung etwas scharf, das den Mailverkehr anhalten kann.
 
 ## Wann Sie aufhören dürfen
 
@@ -211,34 +120,38 @@ Es gibt einen Punkt, an dem weiteres Graben keinen Wert mehr schafft: wenn die B
 
 Im Beispiel oben war nach drei Versuchen belegt, dass die Absenderdomäne der Auslöser ist, dass alles andere im Mailweg funktioniert und dass kein breiteres Problem vorliegt. Warum der Cloud-Dienst intern genau so entscheidet, blieb offen. Für die Korrektur war das ohne Bedeutung, denn die lag bei der sendenden Anwendung.
 
-Trennen Sie deshalb bewusst zwischen zwei Fragen. Was muss ich ändern, damit es funktioniert? Und warum verhält sich das System so? Die erste Frage müssen Sie beantworten, die zweite dürfen Sie an den Hersteller geben. Ein Support-Fall mit drei kontrollierten Versuchen, Zeitstempeln, Nachrichten-IDs und einem funktionierenden Gegenbeispiel ist ohnehin um Längen wertvoller als eine Beschreibung des Symptoms.
+Trennen Sie deshalb bewusst zwei Fragen. Was muss ich ändern, damit es funktioniert? Und warum verhält sich das System so? Die erste müssen Sie beantworten, die zweite dürfen Sie an den Hersteller geben. Ein Support-Fall mit drei kontrollierten Versuchen, Zeitstempeln, Nachrichtenkennungen und einem funktionierenden Gegenbeispiel ist ohnehin um Längen wertvoller als eine Beschreibung des Symptoms.
+
+Das ist übrigens auch der Punkt, an dem sich Wissenschaft und Betrieb sauber trennen lassen. Die Wissenschaft darf die Frage nach dem Mechanismus nicht aufgeben. Der Betrieb muss sie priorisieren.
 
 ## Die Kurzfassung
 
-Bestimmen Sie zuerst, wie weit die Nachricht gekommen ist, nicht warum sie scheiterte. Lesen Sie die vollständige Fehlermeldung, nicht den Ereignistyp. Klären Sie früh, ob es ein Einzelfall oder ein Muster ist. Bauen Sie ein Experiment mit genau einer Variable, sobald Sie anfangen, Mechanismen zu konstruieren. Reproduzieren Sie den Fehler im Kontrollversuch, bevor Sie dem Gegenversuch glauben. Halten Sie widerlegte Hypothesen fest. Und hören Sie auf, wenn die Behebung belegt ist, auch wenn die Mechanik es nicht ist.
+Formulieren Sie Hypothesen so, dass sie scheitern können, und fragen Sie sich vorher, welches Ergebnis sie widerlegen würde. Vergleichen Sie nie zwei zufällig vorliegende Fälle, sondern bauen Sie den Vergleich mit genau einer geänderten Variable. Reproduzieren Sie den Fehler im Kontrollversuch, bevor Sie dem Gegenversuch glauben. Behandeln Sie Widerlegungen als Fortschritt und halten Sie sie schriftlich fest. Prüfen Sie bei jeder Abfrage, ob Sie die Gesamtheit oder eine Stichprobe sehen. Und richten Sie die geforderte Beweistiefe danach aus, wie leicht sich der geplante Eingriff zurücknehmen lässt.
+
+Die konkreten Abfragen dazu stehen in [Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren). Wer die Befehle lieber zusammenklickt als abtippt, findet sie im [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder).
 
 ## Quellen
 
-1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Ereignistypen und Felder, Grundlage für die Bestimmung des letzten Verarbeitungsschritts.
+1.  [Karl Popper: Logik der Forschung](https://www.mohrsiebeck.com/buch/logik-der-forschung-9783161584350): Ursprung des Falsifikationsprinzips, wonach eine Aussage nur dann wissenschaftlich ist, wenn sie widerlegbar bleibt.
 
-2.  [Exchange Online: Anti-spam message headers](https://learn.microsoft.com/en-us/defender-office-365/message-headers-eop-mdo): Kopfzeilen, mit denen sich die Bewertung einer Nachricht auf der Cloud-Seite nachvollziehen lässt.
+2.  [RFC 3463: Enhanced Mail System Status Codes](https://www.rfc-editor.org/rfc/rfc3463): erklärt, warum erweiterte Statuscodes bewusst grobe Klassen sind und denselben Code für verschiedene Ursachen zulassen.
 
-3.  [RFC 3463: Enhanced Mail System Status Codes](https://www.rfc-editor.org/rfc/rfc3463): erklärt, warum erweiterte Statuscodes bewusst grobe Klassen sind und denselben Code für verschiedene Ursachen zulassen.
+3.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Ereignistypen und Felder, Grundlage für die Bestimmung des letzten Verarbeitungsschritts.
 
-4.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Nachfolger von Get-MessageTrace, inklusive der Seitenlogik, die Stichprobenfehler begünstigt.
+4.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Seitenlogik der Nachrichtenverfolgung, die Stichprobenfehler begünstigt.
 
 ----
 
-# Exchange-Mailfluss analysieren: Message Tracking und Receive-Connectoren
+# Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren
 
 URL: https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren
 Datum: 2026-08-11
 
-# Exchange-Mailfluss analysieren: Message Tracking und Receive-Connectoren
+# Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren
 
-Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen nicht sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, und benennt vier Fallstricke, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
+Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen **nicht** sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, zeigt zu jeder Abfrage die typische Ausgabe, und benennt die Fallstricke, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
 
-Alle Beispiele verwenden generische Namen: `SRV-MAIL01` und `SRV-MAIL02` als Transportserver, `example.com` als Domäne.
+Alle Beispiele verwenden generische Namen: `SRV-MAIL01` und `SRV-MAIL02` als Transportserver, `example.com` als Domäne. Wenn Sie die Befehle für Ihre Umgebung zusammenklicken wollen, statt sie abzutippen: Der [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) enthält die gängigen Message-Tracking- und Mitschnitt-Befehle für PowerShell und Unix-Shell nebeneinander, komplett lokal im Browser.
 
 ## Der Grundsatz: erst lokalisieren, dann erklären
 
@@ -251,13 +164,41 @@ Die Reihenfolge lautet deshalb: Nachricht finden, letztes Ereignis lesen, Fehler
 Beginnen Sie über den Empfänger, denn den kennen Sie fast immer. Wichtig ist, die Abfrage über **alle** Transportserver laufen zu lassen, nicht nur über einen.
 
 ```powershell
-'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-MessageTrackingLog -Server $_ -Start (Get-Date).AddHours(-6) -ResultSize Unlimited -Recipients "empfaenger@example.com" } | Sort-Object Timestamp | Format-Table Timestamp,ServerHostname,EventId,Source,ConnectorId,MessageId -AutoSize -Wrap
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
+    Get-MessageTrackingLog -Server $_ `
+        -Start (Get-Date).AddHours(-6) `
+        -ResultSize Unlimited `
+        -Recipients "empfaenger@example.com"
+} | Sort-Object Timestamp |
+    Format-Table Timestamp, ServerHostname, EventId, Source, ConnectorId, MessageId `
+        -AutoSize -Wrap
+```
+
+Eine typische Ausgabe für eine Nachricht, die sauber durchgelaufen ist:
+
+```text
+Timestamp           ServerHostname EventId      Source  ConnectorId
+---------           -------------- -------      ------  -----------
+11.08.2026 08:27:15 SRV-MAIL02     HARECEIVE    SMTP
+11.08.2026 08:27:15 SRV-MAIL01     RECEIVE      SMTP    SRV-MAIL01\Default SRV-MAIL01
+11.08.2026 08:27:15 SRV-MAIL01     HAREDIRECT   SMTP
+11.08.2026 08:27:15 SRV-MAIL01     RESOLVE      ROUTING
+11.08.2026 08:27:15 SRV-MAIL01     AGENTINFO    AGENT
+11.08.2026 08:27:16 SRV-MAIL01     SENDEXTERNAL SMTP    Outbound-to-O365
+11.08.2026 08:27:53 SRV-MAIL02     HADISCARD    SMTP
 ```
 
 Findet die Abfrage nichts, prüfen Sie, ob der Empfänger über einen Verteiler expandiert wurde. Dann suchen Sie besser über den Absender:
 
 ```powershell
-'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-MessageTrackingLog -Server $_ -Start (Get-Date).AddHours(-6) -ResultSize Unlimited } | Where-Object { $_.Sender -like "*@example.com" } | Sort-Object Timestamp | Format-Table Timestamp,EventId,Sender,@{n='To';e={$_.Recipients -join ','}},MessageSubject -AutoSize -Wrap
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
+    Get-MessageTrackingLog -Server $_ `
+        -Start (Get-Date).AddHours(-6) `
+        -ResultSize Unlimited
+} | Where-Object { $_.Sender -like "*@example.com" } |
+    Sort-Object Timestamp |
+    Format-Table Timestamp, EventId, Sender,
+        @{n='To'; e={$_.Recipients -join ','}}, MessageSubject -AutoSize -Wrap
 ```
 
 ## Schritt 2: Das letzte Ereignis lesen
@@ -272,18 +213,44 @@ Die gesamte Diagnose hängt am **letzten** `EventId` der Nachricht. Er sagt Ihne
 | `DEFER` | Wiederholung läuft | Queue und Zielsystem prüfen |
 | `DROP` oder `POISONMESSAGE` | verworfen | Transportregel oder Agent |
 | `DELIVER` | in ein lokales Postfach zugestellt | Postfachregeln prüfen |
+| `RESOLVE` | Empfänger wurde umgeschrieben | Zieladresse im Eintrag lesen |
+
+`RESOLVE` ist in Hybrid-Umgebungen der aufschlussreichste Zwischenschritt, weil dort die Umschreibung auf die Cloud-Routingadresse sichtbar wird:
+
+```text
+EventId : RESOLVE
+Source  : ROUTING
+Sender  : absender@example.com
+To      : BENUTZER@example.mail.onmicrosoft.com
+```
+
+Steht dort die erwartete `onmicrosoft.com`-Adresse, ist das Empfängerobjekt korrekt konfiguriert, und Sie können das Thema abhaken. Steht dort weiterhin die ursprüngliche Adresse, fehlt am lokalen Objekt die Zieladresse, und Exchange versucht lokal zuzustellen.
 
 Steckt die Nachricht fest, zeigt die Queue den Grund meist im Klartext:
 
 ```powershell
-Get-Queue -Server SRV-MAIL01 | Where-Object { $_.MessageCount -gt 0 } | Format-Table Identity,DeliveryType,Status,MessageCount,NextHopDomain,LastError -AutoSize -Wrap
+Get-Queue -Server SRV-MAIL01 |
+    Where-Object { $_.MessageCount -gt 0 } |
+    Format-Table Identity, DeliveryType, Status, MessageCount, NextHopDomain, LastError `
+        -AutoSize -Wrap
 ```
 
-## Fallstrick 1: Tracking ist serverbezogen, und die Hälfte der Einträge sind Schattenkopien
+## Fallstrick 1: Tracking ist serverbezogen, und viele Einträge sind Schattenkopien
 
 Wenn Sie in der Ausgabe Paare aus `HARECEIVE` und `HADISCARD` sehen, oft mit dem Zusatz `ExplicitlyDiscarded`, dann hat dieser Server die Nachricht **nicht verarbeitet**. Er hielt nur eine Schattenkopie im Rahmen der Shadow Redundancy, während ein anderer Server die eigentliche Zustellung übernahm. Sobald der primäre Server Erfolg meldet, verwirft der Partner seine Kopie.
 
-Praktisch heisst das zweierlei. Erstens sind solche Zeilen kein Hinweis auf ein Problem, sondern Normalbetrieb. Zweitens müssen Sie zwingend alle Transportserver abfragen, sonst sehen Sie zufällig nur die Schattenseite eines Vorgangs und schliessen daraus auf einen Fehler, den es nicht gibt.
+So sieht das aus, wenn Sie nur den falschen Server abgefragt haben:
+
+```text
+Timestamp           EventId    SourceContext
+---------           -------    -------------
+11.08.2026 09:47:13 HARECEIVE  1a2aae6b-f3a3-4e04-9233-7de460b92223
+11.08.2026 09:48:07 HADISCARD  ExplicitlyDiscarded;1a2aae6b-f3a3-4e04-9233-7de460b92223
+```
+
+Zwei Zeilen, kein Fehler, keine Zustellung. Wer daraus schliesst, die Nachricht sei verschwunden, sucht am falschen Ort. Die eigentliche Verarbeitung steht im Tracking des Partnerservers.
+
+Praktisch heisst das zweierlei. Erstens sind solche Zeilen kein Hinweis auf ein Problem, sondern Normalbetrieb. Zweitens müssen Sie zwingend alle Transportserver abfragen.
 
 ## Fallstrick 2: `Format-Table` schneidet genau die entscheidenden Spalten ab
 
@@ -292,52 +259,232 @@ Der Fehlergrund steht in `RecipientStatus`, und dieses Feld ist lang. In einer T
 Sobald Sie einen Fehlerfall gefunden haben, wechseln Sie deshalb auf `Format-List` und lösen die Sammelfelder auf:
 
 ```powershell
-Get-MessageTrackingLog -Server SRV-MAIL01 -Start (Get-Date).AddHours(-6) -ResultSize Unlimited -Recipients "empfaenger@example.com" -EventId FAIL | Format-List Timestamp,Sender,@{n='To';e={$_.Recipients -join ','}},@{n='Status';e={$_.RecipientStatus -join ' | '}},MessageSubject,MessageId,SourceContext
+Get-MessageTrackingLog -Server SRV-MAIL01 `
+    -Start (Get-Date).AddHours(-6) `
+    -ResultSize Unlimited `
+    -Recipients "empfaenger@example.com" `
+    -EventId FAIL |
+  Format-List Timestamp, Sender,
+    @{n='To';     e={$_.Recipients -join ','}},
+    @{n='Status'; e={$_.RecipientStatus -join ' | '}},
+    MessageSubject, MessageId, SourceContext
 ```
 
-`RecipientStatus` enthält die vollständige SMTP-Antwort der Gegenstelle samt deren Hostnamen. In den meisten Fällen ist die Diagnose damit bereits erledigt, weil das Zielsystem im Klartext sagt, warum es abgelehnt hat.
+Und so sieht der Unterschied aus. Erst die Tabellenansicht, die nichts erklärt:
+
+```text
+Timestamp           EventId ConnectorId
+---------           ------- -----------
+11.08.2026 09:47:13 FAIL    Outbound-to-O365
+```
+
+Dann dieselbe Nachricht als Liste:
+
+```text
+Timestamp      : 11.08.2026 09:47:13
+Sender         : dienst@example-test.com
+To             : BENUTZER@example.mail.onmicrosoft.com
+Status         : [{LED=550 5.1.8 Access denied, bad outbound sender AS(42000001)
+                 [XX1PEPF00000000.eurprd02.prod.outlook.com]};{MSG=};
+                 {FQDN=10.0.0.40};{IP=10.0.0.40};{LRT=11.08.2026 09:47:13}]
+MessageSubject : Statusmeldung Nachtlauf
+MessageId      : <1897281176.1319@app01.intern.example.com>
+```
+
+Die Diagnose steht damit fest, ohne dass Sie eine einzige Vermutung gebraucht hätten: Die Gegenstelle beanstandet den Absender. `LED` enthält die vollständige SMTP-Antwort, `FQDN` und `IP` benennen das System, das geantwortet hat, und `LRT` den Zeitpunkt des letzten Versuchs.
 
 ## Schritt 3: Einzelfall oder Muster?
 
 Bevor Sie sich in einen einzelnen Fall vertiefen, klären Sie den Umfang. Diese eine Abfrage entscheidet, ob Sie es mit einer Randnotiz oder mit einem Vorfall zu tun haben:
 
 ```powershell
-'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-MessageTrackingLog -Server $_ -Start (Get-Date).AddHours(-8) -EventId FAIL -ResultSize Unlimited } | Where-Object { ($_.RecipientStatus -join '') -like "*5.1.8*" } | Group-Object { ($_.Sender -split '@')[-1] } | Sort-Object Count -Descending | Format-Table Count,Name -AutoSize
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
+    Get-MessageTrackingLog -Server $_ `
+        -Start (Get-Date).AddHours(-8) `
+        -EventId FAIL -ResultSize Unlimited
+} | Where-Object { ($_.RecipientStatus -join '') -like "*5.1.8*" } |
+    Group-Object { ($_.Sender -split '@')[-1] } |
+    Sort-Object Count -Descending |
+    Format-Table Count, Name -AutoSize
 ```
 
-Ersetzen Sie `5.1.8` durch den Statuscode, den Sie untersuchen. Steht dort eine einzige Absenderdomäne, ist das Problem eng begrenzt. Stehen dort viele, haben Sie einen Vorfall, und alles andere hat Vorrang. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
+Ersetzen Sie `5.1.8` durch den Statuscode, den Sie untersuchen. Die Ausgabe beantwortet die Frage in einer Zeile:
+
+```text
+Count Name
+----- ----
+    9 example-test.com
+```
+
+Eine einzige Absenderdomäne bedeutet: eng begrenztes Problem, kein Vorfall, Sie können in Ruhe weitersuchen. Stünden dort zwanzig verschiedene Domänen, hätten Sie einen laufenden Ausfall, und alles andere müsste warten. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
 
 ## Fallstrick 3: Die `ConnectorId` verrät nicht den echten Receive-Connector
 
 Das ist der teuerste Fallstrick, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
 
-Die Folge: Im Tracking steht als `ConnectorId` praktisch immer `Default <Servername>`, also der interne Connector auf 2525, und als `ClientIp` die Adresse des **proxyenden Servers**, nicht die des ursprünglichen Einlieferers. Welchen der konfigurierten Connectoren auf Port 25 ein System tatsächlich getroffen hat, steht im Tracking schlicht nicht drin.
+Die Folge sehen Sie an dieser Zeile:
+
+```text
+EventId        : RECEIVE
+ConnectorId    : SRV-MAIL01\Default SRV-MAIL01
+ClientIp       : 10.0.1.11
+ClientHostname : srv-mail01.intern.example.com
+```
+
+Die `ConnectorId` nennt den internen Connector auf Port 2525, und die `ClientIp` ist die Adresse des **proxyenden Servers**, nicht die des ursprünglichen Einlieferers. Welchen der konfigurierten Connectoren auf Port 25 ein System tatsächlich getroffen hat, steht im Tracking schlicht nicht drin. Wer dieser Angabe glaubt, sucht den Fehler bei einem Connector, der gar nicht beteiligt war.
 
 Es gibt zwei Wege zur Antwort. Der erste ist die Rekonstruktion über die Konfiguration:
 
 ```powershell
-'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-ReceiveConnector -Server $_ } | Format-List Identity,Enabled,@{n='Bindings';e={$_.Bindings -join ','}},@{n='RemoteIPRanges';e={$_.RemoteIPRanges -join ','}},PermissionGroups,AuthMechanism
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-ReceiveConnector -Server $_ } |
+    Format-List Identity, Enabled,
+        @{n='Bindings';       e={$_.Bindings -join ','}},
+        @{n='RemoteIPRanges'; e={$_.RemoteIPRanges -join ','}},
+        PermissionGroups, AuthMechanism
+```
+
+```text
+Identity         : SRV-MAIL01\Default Frontend SRV-MAIL01
+Bindings         : 10.0.1.11:25
+RemoteIPRanges   : 0.0.0.0-255.255.255.255
+PermissionGroups : AnonymousUsers, ExchangeServers, ExchangeLegacyServers
+AuthMechanism    : Tls, Integrated, BasicAuth, BasicAuthRequireTLS, ExchangeServer
+
+Identity         : SRV-MAIL01\smtp-noauth SRV-MAIL01
+Bindings         : 10.0.1.13:25
+RemoteIPRanges   : 10.0.20.22,10.0.21.11,10.0.21.12
+PermissionGroups : AnonymousUsers, Custom
+AuthMechanism    : Tls
 ```
 
 Bestimmen Sie die Quell-IP des einliefernden Systems und suchen Sie den Connector, dessen `RemoteIPRanges` sie enthält. Fällt sie in keinen der eingeschränkten Connectoren, bleibt der Default-Frontend-Connector, der üblicherweise den gesamten Adressraum annimmt. Nutzen Sie auch hier `Format-List`, denn `RemoteIPRanges` und `PermissionGroups` werden in Tabellen regelmässig abgeschnitten.
 
-Der zweite Weg ist das Protokoll des Front End Transport. Nur dort steht die tatsächliche SMTP-Sitzung samt Connector. Die Dateien liegen unterhalb des Exchange-Installationspfads in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive`. Für gezielte Suchen ist ein Textfilter deutlich schneller als eine Objektauswertung über PowerShell:
+Der zweite Weg ist das SMTP-Protokoll, und das verdient einen eigenen Abschnitt.
+
+## Das SMTP-Protokoll: der einzige Ort mit der ganzen Wahrheit
+
+Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die den Fallstrick oben auflöst.
+
+### Protokollierung einschalten
+
+Standardmässig ist die Protokollierung auf den meisten Connectoren **ausgeschaltet**. Sie schalten sie pro Connector ein:
 
 ```powershell
-Select-String -Path "$env:ExchangeInstallPath\TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive\*.log" -Pattern "absender@example.com" -SimpleMatch | Select-Object -First 20
+Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
+    -ProtocolLoggingLevel Verbose
 ```
 
-Wollen Sie nur wissen, welche Connectoren überhaupt Verkehr sehen, zählen Sie die Sitzungen statt sie einzeln auszuwerten. Das ist bei grossen Protokolldateien um Grössenordnungen schneller.
+Für ausgehende Verbindungen entsprechend über `Set-SendConnector`. Denken Sie daran, den Wert nach der Analyse wieder auf `None` zu setzen, denn ausführliche Protokollierung kostet Plattenplatz und schreibt bei hohem Aufkommen erhebliche Datenmengen.
+
+### Wo die Dateien liegen
+
+Exchange trennt die Protokolle nach Dienst und Richtung. Die Pfade fest zu verdrahten ist unnötig, fragen Sie sie ab:
+
+```powershell
+Get-FrontendTransportService SRV-MAIL01 |
+    Format-List ReceiveProtocolLogPath, SendProtocolLogPath,
+        ReceiveProtocolLogMaxAge, ReceiveProtocolLogMaxDirectorySize
+
+Get-TransportService SRV-MAIL01 |
+    Format-List ReceiveProtocolLogPath, SendProtocolLogPath
+```
+
+Typischerweise liegen sie unterhalb des Installationspfads in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` für den Front End Transport und in `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` für den Transport Service. **Das ist der Kern der Sache:** Client-Verbindungen auf Port 25 finden Sie ausschliesslich im `FrontEnd`-Pfad, im `Hub`-Pfad steht nur der interne Weiterreichungsverkehr auf 2525.
+
+Beachten Sie die Aufbewahrung. `ReceiveProtocolLogMaxAge` steht oft auf 30 Tagen, `ReceiveProtocolLogMaxDirectorySize` begrenzt zusätzlich den Platzverbrauch. Bei hohem Aufkommen greift die Grössenbegrenzung deutlich früher als die Altersgrenze, und dann sind Ihre Protokolle nur noch wenige Tage alt.
+
+### Das Format verstehen
+
+Die Dateien sind CSV mit Kopfzeilen, die mit `#` beginnen. Die wichtigsten Spalten sind `date-time`, `connector-id`, `session-id`, `sequence-number`, `local-endpoint`, `remote-endpoint`, `event` und `data`.
+
+Entscheidend ist die Spalte `event`, ein einzelnes Zeichen:
+
+| Zeichen | Bedeutung |
+|---|---|
+| `+` | Verbindung aufgebaut |
+| `-` | Verbindung beendet |
+| `>` | Server sendet an Client |
+| `<` | Client sendet an Server |
+| `*` | Information des Servers, kein SMTP-Verkehr |
+
+Eine Sitzung erkennen Sie an der gemeinsamen `session-id`; die `sequence-number` gibt die Reihenfolge innerhalb der Sitzung. Ein typischer Ausschnitt sieht so aus:
+
+```text
+2026-08-11T09:47:10.4Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,0,
+  10.0.1.13:25,10.0.20.22:51244,+,,
+2026-08-11T09:47:10.4Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,1,
+  10.0.1.13:25,10.0.20.22:51244,>,"220 srv-mail01.intern.example.com Microsoft ESMTP",
+2026-08-11T09:47:10.5Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,2,
+  10.0.1.13:25,10.0.20.22:51244,<,EHLO app01.intern.example.com,
+2026-08-11T09:47:10.6Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,6,
+  10.0.1.13:25,10.0.20.22:51244,<,MAIL FROM:<dienst@example-test.com>,
+2026-08-11T09:47:10.7Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,8,
+  10.0.1.13:25,10.0.20.22:51244,>,"250 2.1.5 Recipient OK",
+```
+
+Hier steht alles, was im Message Tracking fehlte: der **echte** Connector (`smtp-noauth`), die **echte** Quell-IP (`10.0.20.22`) und der Name, mit dem sich das System im `EHLO` meldet.
+
+### Gezielt suchen
+
+Für Einzelfälle ist ein Textfilter deutlich schneller als eine Objektauswertung. Suchen Sie nach der Absenderadresse oder dem `EHLO`-Namen und lassen Sie sich die Sitzungskennung geben:
+
+```powershell
+$pfad = (Get-FrontendTransportService SRV-MAIL01).ReceiveProtocolLogPath
+Select-String -Path "$pfad\*.log" -Pattern "dienst@example-test.com" -SimpleMatch |
+    Select-Object -First 5 Line
+```
+
+Mit der gefundenen `session-id` holen Sie die vollständige Sitzung:
+
+```powershell
+Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
+    ForEach-Object { $_.Line } | Select-Object -First 40
+```
+
+Wollen Sie nur wissen, welche Connectoren überhaupt Verkehr sehen, zählen Sie die Verbindungsaufbauten. Das ist bei grossen Dateien um Grössenordnungen schneller, als jede Zeile zu parsen:
+
+```powershell
+Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
+    ForEach-Object { ($_.Line -split ',')[1] } |
+    Group-Object | Sort-Object Count -Descending |
+    Format-Table Count, Name -AutoSize
+```
+
+```text
+Count Name
+----- ----
+51479 SRV-MAIL01\Default Frontend SRV-MAIL01
+50756 SRV-MAIL01\smtp-auth SRV-MAIL01
+19405 SRV-MAIL01\smtp-intern SRV-MAIL01
+15789 SRV-MAIL01\smtp-noauth SRV-MAIL01
+```
+
+Diese Verteilung beantwortet eine Frage, die im Message Tracking nicht zu beantworten ist: Welche Wege nutzen Ihre Applikationen tatsächlich? Vor einer Connector-Umstellung ist das die wichtigste Zahl überhaupt.
+
+### Wenn nichts protokolliert wurde
+
+Fehlt zum fraglichen Zeitpunkt jede Zeile, gibt es drei übliche Gründe: Die Protokollierung war auf dem betreffenden Connector aus, die Aufbewahrungsgrenze hat die Datei bereits verdrängt, oder Sie schauen im falschen Pfad, also im `Hub`- statt im `FrontEnd`-Verzeichnis. Prüfen Sie in dieser Reihenfolge.
 
 ## Schritt 4: Berechtigungen prüfen
 
-Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier lauert ein technischer Fallstrick: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit einer irreführenden Meldung, das Objekt sei nicht auffindbar.
+Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier lauert ein technischer Fallstrick: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit der irreführenden Meldung, das Objekt sei nicht auffindbar.
 
 ```powershell
-$dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName; Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" | Where-Object { $_.ExtendedRights -like "*ms-Exch-SMTP*" } | Format-Table User,@{n='Rights';e={$_.ExtendedRights}} -AutoSize
+$dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName
+Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" |
+    Where-Object { $_.ExtendedRights -like "*ms-Exch-SMTP*" } |
+    Format-Table User, @{n='Rights'; e={$_.ExtendedRights}} -AutoSize
 ```
 
-Die Auswertung ist einfacher, als sie aussieht, wenn Sie zwei Rechte auseinanderhalten:
+```text
+User                         Rights
+----                         ------
+NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Submit
+NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Accept-Any-Sender
+NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Accept-Authoritative-Domain-Sender
+```
+
+Die Auswertung ist einfacher, als sie aussieht, wenn Sie vier Rechte auseinanderhalten:
 
 | Recht | Bedeutung |
 |---|---|
@@ -355,7 +502,12 @@ Verwechseln Sie `Accept-Any-Sender` nicht mit `Accept-Any-Recipient`. Das erste 
 Wenn die Auswertung mehrdeutig bleibt, liefern Sie selbst ein. Damit kontrollieren Sie Absender, Empfänger und Einlieferungspunkt vollständig:
 
 ```powershell
-Send-MailMessage -SmtpServer 10.0.0.10 -Port 25 -From 'test@example.com' -To 'empfaenger@example.net' -Subject 'Diagnose, bitte ignorieren' -Body 'Testeinlieferung' -Encoding UTF8
+Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
+    -From 'test@example.com' `
+    -To 'empfaenger@example.net' `
+    -Subject 'Diagnose, bitte ignorieren' `
+    -Body 'Testeinlieferung' `
+    -Encoding UTF8
 ```
 
 `Send-MailMessage` ist offiziell abgekündigt, für Diagnosezwecke aber weiterhin das schnellste Werkzeug und auf jedem Windows-Server vorhanden. Bei Erfolg gibt es keine Ausgabe, was gewöhnungsbedürftig ist.
@@ -368,31 +520,106 @@ Testen Sie eine TLS-Strecke auf Port 587 und die Gegenstelle präsentiert ein Ze
 
 Das gilt nur für die laufende PowerShell-Sitzung. Setzen Sie es bewusst und nie in Skripten, die im Betrieb laufen.
 
-## Fallstrick 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
+Kommt die Testnachricht an und Sie wollen wissen, was unterwegs mit ihr passiert ist, hilft der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/header-analyzer): Er zerlegt die Kopfzeilen, zeichnet den Weg über die Hops und zeigt die Ergebnisse der Authentifizierungsprüfungen, komplett lokal im Browser, ohne dass die Nachricht Ihr Gerät verlässt.
 
-In Exchange Online ist `Get-MessageTrace` abgekündigt und durch `Get-MessageTraceV2` ersetzt. Beide liefern seitenweise. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
+## Exchange Online: dieselbe Frage, ein anderes Werkzeug
 
-Kommt nichts zurück, beweist das **nicht**, dass es diesen Verkehr nicht gab. Es beweist nur, dass er nicht im Ausschnitt lag. Achten Sie auf die Warnung über weitere Ergebnisse: Erscheint sie, ist Ihre Auswertung unvollständig.
+Im Tenant gelten andere Regeln, und das ist der Punkt, an dem gewohnte Vorgehensweisen scheitern. Rechnen Sie mit diesen Unterschieden:
 
-Es gibt zwei saubere Auswege. Entweder Sie verkleinern das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, und gruppieren dann serverseitig vollständig:
+| | Exchange OnPrem | Exchange Online |
+|---|---|---|
+| Abfrage | `Get-MessageTrackingLog` | `Get-MessageTraceV2` |
+| Granularität | jedes Transportereignis | eine Zeile je Nachricht und Empfänger |
+| Connector sichtbar | ja (mit Einschränkung, siehe oben) | **nein** |
+| Serverbezug | ja, pro Server abfragen | entfällt |
+| SMTP-Protokoll | vorhanden | **nicht verfügbar** |
+| Aufbewahrung | Ihre Konfiguration | rund 10 Tage über das Cmdlet |
+| Verzögerung | nahezu sofort | einige Minuten |
+
+Die drei praktisch wichtigsten Konsequenzen: Es gibt **keine Connector-Zuordnung**, Sie behelfen sich mit `FromIP` und `ToIP`. Es gibt **kein SMTP-Protokoll**, die SMTP-Konversation ist nicht rekonstruierbar. Und die Daten erscheinen **verzögert**, eine gerade versendete Nachricht taucht nicht sofort auf.
+
+### Die Basisabfrage
 
 ```powershell
-Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -ResultSize 5000 | Group-Object FromIP | Sort-Object Count -Descending | Format-Table Count,Name -AutoSize
+Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) `
+    -EndDate (Get-Date) `
+    -RecipientAddress "empfaenger@example.com" `
+    -ResultSize 1000 |
+  Sort-Object Received |
+  Format-Table Received, SenderAddress, RecipientAddress, Status, FromIP, Size -AutoSize
 ```
 
-Oder Sie nehmen einen Bericht, der serverseitig aggregiert, etwa den Connector-Bericht im Exchange Admin Center unter Berichte und Mailfluss. Für die Frage, ob ein Connector noch genutzt wird, ist der Bericht dem Message Trace klar überlegen.
+```text
+Received            SenderAddress          RecipientAddress          Status    FromIP
+--------            -------------          ----------------          ------    ------
+11.08.2026 08:27:16 emma@partner.example   empfaenger@example.com    Delivered 10.0.20.23
+11.08.2026 09:05:24 dienst@example-test.com empfaenger@example.com   Failed    10.0.20.23
+```
+
+Die wichtigsten Werte von `Status`: `Delivered`, `Failed`, `Pending`, `Quarantined`, `FilteredAsSpam` und `Expanded` für expandierte Verteiler. `Pending` heisst, dass noch Zustellversuche laufen, nicht dass etwas kaputt ist.
+
+### Die Einzelheiten zu einer Nachricht
+
+Der Status allein sagt nichts über den Grund. Dafür brauchen Sie die Detailansicht, und die verlangt die Nachrichtenkennung aus der Basisabfrage:
+
+```powershell
+$n = Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) -EndDate (Get-Date) `
+        -RecipientAddress "empfaenger@example.com" -ResultSize 100 |
+     Where-Object { $_.Status -eq 'Failed' } | Select-Object -First 1
+
+Get-MessageTraceDetailV2 -MessageTraceId $n.MessageTraceId `
+    -RecipientAddress $n.RecipientAddress |
+  Format-List Date, Event, Action, Detail
+```
+
+Dort stehen die Verarbeitungsschritte im Dienst, etwa Regelanwendungen, Filterentscheide und der Grund einer Ablehnung.
+
+### Über zehn Tage hinaus
+
+Das Cmdlet reicht rund zehn Tage zurück. Für ältere Zeiträume gibt es die historische Suche, die asynchron läuft und das Ergebnis als CSV bereitstellt, mit einem Bereich von bis zu 90 Tagen:
+
+```powershell
+Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
+    -StartDate (Get-Date).AddDays(-45) `
+    -EndDate (Get-Date).AddDays(-30) `
+    -ReportType MessageTrace `
+    -SenderAddress "dienst@example-test.com" `
+    -NotifyAddress "admin@example.com"
+
+Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -AutoSize
+```
+
+Planen Sie Zeit ein, solche Aufträge laufen je nach Umfang Stunden.
+
+### Fallstrick 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
+
+Das ist der subtilste Fallstrick im Tenant. `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen je Aufruf. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
+
+Erkennbar ist das an der Warnung, die auf weitere Ergebnisse hinweist:
+
+```text
+WARNING: There are more results, use the following command to get more.
+Get-MessageTraceV2 -StartDate "2026-08-11T07:25:19Z" -EndDate "2026-08-11T09:05:46Z"
+  -StartingRecipientAddress "naechster@example.com" -ResultSize 5000
+```
+
+Erscheint sie, ist Ihre Auswertung **unvollständig**. Kommt kein Treffer zurück, lautet das korrekte Ergebnis: nicht im Ausschnitt gefunden. Es lautet nicht: existiert nicht.
+
+Es gibt zwei saubere Auswege. Entweder Sie verkleinern das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, erkennbar am Ausbleiben der Warnung. Oder Sie hangeln sich mit den Fortsetzungsangaben aus der Warnung durch alle Seiten. Für die Frage, ob etwas **nie** vorkommt, ist eine Konfigurationsprüfung ohnehin überlegen: Wenn ein System keine Route auf ein Ziel besitzt, kann es dorthin nicht zustellen, unabhängig von jedem Beobachtungsfenster.
+
+Die vollständige Auswertung aller einliefernden Adressen ist ein Thema für sich, mit eigenen Fallstricken bei der Interpretation. Sie steht in [Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
 
 ## Ein Vorgehen, das sich bewährt hat
 
-Zusammengefasst hat sich diese Reihenfolge als schnellste erwiesen. Nachricht über alle Server suchen und das letzte Ereignis bestimmen. Bei einem Fehlschlag sofort auf `Format-List` wechseln und die vollständige SMTP-Antwort lesen, statt aus dem Ereignistyp zu schliessen. Danach den Umfang klären, also gruppieren und zählen. Erst wenn der Fall eng begrenzt ist, den Einlieferungsweg über Connector-Konfiguration und Frontend-Protokoll rekonstruieren. Und zuletzt, wenn nötig, mit einer eigenen Einlieferung gegenprüfen.
+Zusammengefasst hat sich diese Reihenfolge als schnellste erwiesen. Nachricht über alle Server suchen und das letzte Ereignis bestimmen. Bei einem Fehlschlag sofort auf `Format-List` wechseln und die vollständige SMTP-Antwort lesen, statt aus dem Ereignistyp zu schliessen. Danach den Umfang klären, also gruppieren und zählen. Erst wenn der Fall eng begrenzt ist, den Einlieferungsweg über Connector-Konfiguration und SMTP-Protokoll rekonstruieren. Und zuletzt, wenn nötig, mit einer eigenen Einlieferung gegenprüfen.
 
-Die drei häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine abgeschnittene Tabelle statt der vollständigen Fehlermeldung, man hält Schattenkopien für Verarbeitungsschritte, und man glaubt der `ConnectorId` im Tracking. Wer diese drei kennt, kommt in der Regel in wenigen Minuten zur richtigen Ebene.
+Die häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine abgeschnittene Tabelle statt der vollständigen Fehlermeldung, man hält Schattenkopien für Verarbeitungsschritte, man glaubt der `ConnectorId` im Tracking, und man hält eine leere Stichprobe für einen Beweis. Wer diese vier kennt, kommt in der Regel in wenigen Minuten zur richtigen Ebene.
 
 ## Quellen
 
 1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Feldbeschreibung und vollständige Liste der Ereignistypen im Message Tracking.
 
-2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): Speicherorte und Format der SMTP-Protokolle, inklusive Front End Transport.
+2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): Speicherorte, Format und Aufbewahrung der SMTP-Protokolle, inklusive Front End Transport.
 
 3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): erklärt die Ereignisse rund um Schattenkopien und deren Verwerfen.
 
@@ -400,7 +627,529 @@ Die drei häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine ab
 
 5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): Bindungen, Berechtigungsgruppen und Authentifizierungsmechanismen.
 
-6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Nachfolger von Get-MessageTrace inklusive Seitenlogik.
+6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Nachfolger von Get-MessageTrace inklusive Seitenlogik und Feldliste.
+
+7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): asynchrone Nachrichtenverfolgung über bis zu 90 Tage.
+
+----
+
+# Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren
+
+URL: https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren
+Datum: 2026-08-11
+
+# Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren
+
+Kaum eine Mailumgebung weiss noch vollständig, wer bei ihr einliefert. Über die Jahre sammeln sich Connectoren aus Migrationen, Anwendungen, die direkt senden, Dienstleister, deren Vertrag längst ausgelaufen ist, und Testaufbauten, die nie zurückgebaut wurden. Solange Mail fliesst, fällt das niemandem auf.
+
+Eine einzige Auswertung schafft hier Klarheit: die Gruppierung aller eingehenden Nachrichten nach ihrer Quell-IP-Adresse. Sie ist in zwei Minuten gemacht, und die Ergebnisliste ist regelmässig überraschend. Dieser Artikel zeigt die Abfrage, erklärt, wie Sie sie **vollständig** bekommen, und vor allem, wie Sie die Zahlen richtig lesen. Denn die Interpretation ist der schwierigere Teil.
+
+## Warum sich das lohnt
+
+Die Liste beantwortet vier Fragen, die sonst mühsam einzeln zu klären sind. Welche Systeme senden überhaupt in Ihren Tenant? Läuft alles über die Wege, die Sie dokumentiert haben, oder gibt es einen zweiten Eingang? Wird ein Connector, den Sie abbauen wollen, noch genutzt? Und: Sendet eine Anwendung direkt an den Dienst vorbei an Ihrem Gateway, also unter Umgehung Ihrer Filterung?
+
+Gerade die letzte Frage ist sicherheitsrelevant. Wer direkt einliefert, umgeht nicht nur die Filterung, sondern häufig auch die Protokollierung, auf die Sie sich im Ernstfall verlassen wollen.
+
+## Die Abfrage
+
+Im Tenant gruppieren Sie die Nachrichtenverfolgung nach `FromIP`:
+
+```powershell
+Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) `
+    -EndDate (Get-Date) `
+    -ResultSize 5000 |
+  Group-Object FromIP |
+  Sort-Object Count -Descending |
+  Format-Table Count, Name -AutoSize
+```
+
+Eine typische Ausgabe:
+
+```text
+Count Name
+----- ----
+ 1771 255.255.255.255
+ 1649 10.0.20.23
+  260 10.0.20.21
+   49 2603:10a6:150:1f3::17
+   46 165.225.94.87
+   36 136.226.192.164
+   35 147.161.246.105
+   12 198.51.100.77
+    3 203.0.113.9
+```
+
+Bevor Sie daraus Schlüsse ziehen, müssen zwei Dinge stimmen: Die Liste muss vollständig sein, und Sie müssen wissen, was die Einträge bedeuten.
+
+## Fallstrick 1: Die Liste ist fast immer unvollständig
+
+`Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen pro Aufruf. Bei hohem Aufkommen deckt eine Seite nur einen Bruchteil Ihres Zeitfensters ab. Sie gruppieren dann über einen Ausschnitt und halten das Ergebnis für die Gesamtheit.
+
+Erkennbar ist das an dieser Warnung:
+
+```text
+WARNING: There are more results, use the following command to get more.
+Get-MessageTraceV2 -StartDate "2026-08-11T07:25:19Z" -EndDate "2026-08-11T09:05:46Z"
+  -StartingRecipientAddress "naechster@example.com" -ResultSize 5000
+```
+
+**Erscheint diese Warnung, ist Ihre Auswertung wertlos.** Insbesondere darf ein fehlender Eintrag dann nicht als Abwesenheit gedeutet werden. Eine Adresse mit drei Nachrichten pro Tag taucht in einem Ausschnitt sowieso nicht auf.
+
+Es gibt zwei Auswege. Der einfache: Verkleinern Sie das Zeitfenster, bis die Warnung ausbleibt. Bei 5000 Nachrichten pro Stunde sind das eben 55 Minuten und nicht sieben Tage. Für die Frage „welche Systeme senden überhaupt" genügt ein vollständiges kurzes Fenster meist völlig.
+
+Der gründliche Weg blättert durch alle Seiten und sammelt ein:
+
+```powershell
+$start = (Get-Date).AddHours(-24)
+$ende  = Get-Date
+$alle  = @()
+$naechster = $null
+
+do {
+    $seite = if ($naechster) {
+        Get-MessageTraceV2 -StartDate $start -EndDate $ende `
+            -StartingRecipientAddress $naechster -ResultSize 5000
+    } else {
+        Get-MessageTraceV2 -StartDate $start -EndDate $ende -ResultSize 5000
+    }
+
+    $alle += $seite
+    $naechster = if ($seite.Count -eq 5000) { $seite[-1].RecipientAddress } else { $null }
+    Write-Host "Gesammelt: $($alle.Count)"
+} while ($naechster)
+
+$alle | Group-Object FromIP | Sort-Object Count -Descending |
+    Format-Table Count, Name -AutoSize
+```
+
+Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufzeit. Für eine einmalige Bestandsaufnahme ist das gut investiert.
+
+## Fallstrick 2: Die Zahlen bedeuten nicht, was sie zu bedeuten scheinen
+
+Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer sie in einen Topf wirft, zieht falsche Schlüsse.
+
+**`255.255.255.255` steht nicht für ein System.** Dieser Wert erscheint, wenn es zur Nachricht keine eingehende SMTP-Verbindung von aussen gab. Das betrifft im Dienst selbst erzeugte Nachrichten: Journalberichte, Unzustellbarkeitsmeldungen, Abwesenheitsnotizen, Nachrichten zwischen Postfächern desselben Tenants. In fast jeder Umgebung ist das der grösste Posten, und er ist völlig unauffällig. Erschrecken Sie nicht.
+
+**Private Adressen aus RFC 1918** stammen aus Ihrem eigenen Netz. In Hybrid-Umgebungen sehen Sie hier die lokalen Transportserver, denn deren interne Adresse wird bei der Übergabe an den Dienst erhalten. Das sind die grossen Zahlen in der Liste und in aller Regel der erwartete Hauptweg.
+
+**Adressen von Sicherheits- und Filterdiensten** erkennen Sie am Betreiber, nicht am Zahlenwert. Cloud-Proxys, vorgelagerte Mailgateways und Web-Security-Dienste tauchen mit vielen benachbarten Adressen und mittleren Zahlen auf. Sie gehören meist dazu, sollten aber im Betriebshandbuch stehen.
+
+**Öffentliche Einzeladressen mit kleinen Zahlen** sind die interessanten. Genau dort verstecken sich die vergessenen Anwendungen, alte Dienstleister und Systeme, von denen niemand mehr weiss.
+
+## Die Auflösung: aus Adressen werden Namen
+
+Für alles, was Sie nicht sofort zuordnen können, hilft die Rückwärtsauflösung. Sie ist nicht immer gesetzt und nicht immer ehrlich, aber sie liefert in der Mehrzahl der Fälle den entscheidenden Hinweis:
+
+```powershell
+$unbekannt = '198.51.100.77','203.0.113.9'
+
+$unbekannt | ForEach-Object {
+    $name = try { (Resolve-DnsName $_ -Type PTR -ErrorAction Stop).NameHost } catch { '(kein PTR)' }
+    [pscustomobject]@{ IP = $_; Name = $name }
+} | Format-Table -AutoSize
+```
+
+```text
+IP            Name
+--            ----
+198.51.100.77 mail-out-03.newsletter-provider.example
+203.0.113.9   (kein PTR)
+```
+
+Ein fehlender PTR ist kein Beweis für etwas Böses, aber er ist ein guter Grund, genauer hinzusehen. Nehmen Sie sich für solche Adressen die zugehörigen Nachrichten vor:
+
+```powershell
+Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -ResultSize 5000 |
+  Where-Object { $_.FromIP -eq '203.0.113.9' } |
+  Format-Table Received, SenderAddress, RecipientAddress, Subject, Status -AutoSize
+```
+
+Absender und Betreff sagen Ihnen in aller Regel sofort, welche Anwendung dahintersteckt.
+
+## Der Abgleich: welche Adresse gehört zu welchem Connector?
+
+Jetzt kommt der eigentliche Erkenntnisgewinn. Stellen Sie Ihre Ergebnisliste den konfigurierten Connectoren gegenüber:
+
+```powershell
+Get-InboundConnector |
+    Format-List Name, Enabled, ConnectorType, ConnectorSource,
+        @{n='SenderIPAddresses'; e={$_.SenderIPAddresses -join ', '}},
+        @{n='SenderDomains';     e={$_.SenderDomains -join ', '}},
+        RequireTls, TlsSenderCertificateName,
+        RestrictDomainsToCertificate, CloudServicesMailEnabled, TreatMessagesAsInternal
+```
+
+Drei Konstellationen sind aufschlussreich.
+
+**Eine Adresse liefert ein, ist aber in keinem Connector genannt.** Dann kommt die Mail als gewöhnliche Internet-Mail herein. Das ist zulässig, heisst aber: Diese Anwendung geniesst keinerlei Sonderbehandlung, und ihre Nachrichten unterliegen der vollen Filterung. Wenn jemand behauptet, für dieses System sei ein Connector eingerichtet, stimmt das offenkundig nicht mehr.
+
+**Ein Connector nennt Adressen, von denen nichts kommt.** Der Kandidat für den Rückbau. Prüfen Sie, bevor Sie löschen, ob es sich um saisonale oder seltene Systeme handelt, und deaktivieren Sie zuerst, statt gleich zu entfernen.
+
+**Ein Connector setzt `TreatMessagesAsInternal` oder `CloudServicesMailEnabled` auf wahr.** Hier lohnt genaues Hinsehen. Beide Einstellungen führen dazu, dass Nachrichten über diesen Weg als organisationsintern behandelt werden. Kommt darüber Mail aus dem Internet herein, umgeht sie damit Prüfungen, die für externe Nachrichten gedacht sind, unter anderem den Schutz vor gefälschten Absendern aus der eigenen Domäne. Für einen reinen Hybrid-Connector ist das richtig; für einen Connector, über den beliebige Systeme einliefern, ist es ein Befund.
+
+## Was Sie typischerweise finden
+
+Aus der Praxis, ohne Anspruch auf Vollständigkeit: einen Testconnector aus einer Migration, der seit Jahren aktiv ist. Eine Fachanwendung, die direkt an den Dienst sendet, obwohl alle glauben, sie laufe über das Gateway. Einen Newsletter-Dienstleister, dessen Vertrag ausgelaufen ist, der aber weiterhin zustellen darf. Und regelmässig einen Connector mit weit offenen Bedingungen, den einmal jemand angelegt hat, um ein akutes Problem zu lösen.
+
+Keiner dieser Funde ist dramatisch für sich genommen. Zusammen ergeben sie das Bild einer Umgebung, die niemand mehr vollständig überblickt, und genau das ist das eigentliche Risiko.
+
+## Grenzen der Methode
+
+Drei Einschränkungen sollten Sie kennen.
+
+Die Nachrichtenverfolgung reicht über das Cmdlet nur rund zehn Tage zurück. Für längere Zeiträume brauchen Sie die historische Suche, die asynchron läuft und bis zu 90 Tage abdeckt. Seltene Systeme, die monatlich senden, entgehen Ihnen sonst.
+
+`FromIP` bedeutet nicht überall dasselbe. Bei Mail aus dem Internet ist es die Adresse des einliefernden Servers. Bei Hybrid-Mail ist es die Adresse Ihres lokalen Transportservers, nicht die des ursprünglichen Absenders. Die Auswertung zeigt Ihnen also die **letzte Station vor dem Dienst**, nicht die Herkunft.
+
+Und die Zuordnung zu einem Connector ist im Tenant nicht direkt sichtbar. Sie schliessen darauf über Adresse, Zertifikat und Absenderdomäne. Für eine belastbare Aussage über die Nutzung eines einzelnen Connectors ist der Connector-Bericht im Exchange Admin Center unter Berichte und Mailfluss die bessere Quelle, weil er serverseitig über längere Zeiträume aggregiert.
+
+## Als wiederkehrende Prüfung
+
+Diese Auswertung eignet sich gut als Quartalsroutine. Legen Sie das Ergebnis ab und vergleichen Sie beim nächsten Durchgang. Neue Adressen in der Liste sind entweder dokumentierte Änderungen oder etwas, das Sie wissen wollen.
+
+Wenn Sie dabei ohnehin die Mailkonfiguration Ihrer Domänen prüfen: Der [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) zeigt SPF, DKIM, DMARC und die übrigen Mailstandards für beliebige Domänen direkt im Browser, auch für Neben- und Marketingdomänen, die bei solchen Bestandsaufnahmen erfahrungsgemäss vergessen gehen. Und für die Abfragen selbst liefert der [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) fertige Bausteine für PowerShell und Unix-Shell.
+
+Wie Sie einzelne auffällige Nachrichten weiterverfolgen, steht in [Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren).
+
+## Quellen
+
+1.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Feldliste inklusive FromIP und ToIP sowie die Seitenlogik mit StartingRecipientAddress.
+
+2.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): asynchrone Nachrichtenverfolgung über bis zu 90 Tage für ältere Zeiträume.
+
+3.  [Get-InboundConnector](https://learn.microsoft.com/en-us/powershell/module/exchange/get-inboundconnector): Parameter der eingehenden Connectoren, unter anderem SenderIPAddresses und TreatMessagesAsInternal.
+
+4.  [Configure mail flow using connectors in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/use-connectors-to-configure-mail-flow): Zusammenspiel der Connector-Typen und wann welcher greift.
+
+5.  [RFC 1918: Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918): definiert die privaten Adressbereiche, die Sie in der Auswertung von öffentlichen Adressen unterscheiden müssen.
+
+----
+
+# Apache-James-Regelwerke strukturiert neu aufbauen: Werkzeuge und Methode
+
+URL: https://rafaelpfister.ch/blog/apache-james-ruleset-strukturiert-neu-aufbauen
+Datum: 2026-08-11
+
+# Apache-James-Regelwerke strukturiert neu aufbauen: Werkzeuge und Methode
+
+Mailgateways auf Basis von Apache James, darunter Totemomail, steuern ihren gesamten Nachrichtenfluss über ein Regelwerk in XML. Nach einigen Jahren Betrieb hat dieses Regelwerk eine Eigenschaft, die kaum jemand bemerkt: Ein erheblicher Teil davon wird nie ausgeführt. Regeln kamen hinzu, Weichen wurden davorgesetzt, Zweige liefen ins Leere, und weil nichts kaputtging, blieb alles stehen.
+
+Das Problem daran ist nicht der Plattenplatz. Es ist, dass niemand mehr sagen kann, welche Regel tatsächlich greift. Wer eine Änderung plant, liest eine Datei mit Hunderten von Mailets und weiss nicht, welche davon überhaupt relevant sind. Genau das lässt sich mechanisch beantworten.
+
+Dieser Artikel beschreibt die Methode und die Werkzeuge dazu: das Regelwerk als gerichteten Graphen auswerten, unerreichbaren Code zuverlässig finden, und den Umbau so anlegen, dass ein einziges Mailet den Rückweg offen hält.
+
+## Das Modell in vier Sätzen
+
+Ein Regelwerk besteht aus **Prozessoren**, also benannten Ketten. Jede Kette enthält **Mailets**, die etwas tun, und jedes Mailet hat einen **Matcher**, der entscheidet, ob es auf die aktuelle Nachricht zutrifft. Ein Mailet der Klasse `ToProcessor` übergibt die Nachricht an eine andere Kette.
+
+Der Einstiegspunkt heisst üblicherweise `root`. Von dort aus verzweigt alles Weitere.
+
+```xml
+<processor name="root">
+   <mailet class="ToProcessor" match="RecipientIs?Recipient(s)=journal@example.com">
+      <processor>dropJournal</processor>
+   </mailet>
+   <mailet class="ToProcessor" match="HostIsLocal">
+      <processor>incoming</processor>
+   </mailet>
+   <mailet class="ToProcessor" match="All">
+      <processor>outgoing</processor>
+   </mailet>
+</processor>
+```
+
+Damit ist die Struktur ein gerichteter Graph: Prozessoren sind Knoten, `ToProcessor`-Ziele sind Kanten. Und sobald Sie das so sehen, ist die Frage nach totem Code eine Standardaufgabe, nämlich eine Erreichbarkeitsanalyse.
+
+## Zwei Arten von totem Code
+
+Bevor Sie messen, müssen Sie wissen, wonach Sie suchen. Es gibt zwei Formen, und die zweite ist die tückische.
+
+**Unerreichbare Prozessoren.** Ganze Ketten, auf die kein `ToProcessor` mehr zeigt. Sie stehen in der Datei, werden aber nie betreten. Das ist der offensichtliche Fall.
+
+**Toter Rest innerhalb einer Kette.** Ein `ToProcessor` mit `match="All"` trifft auf **jede** Nachricht zu und gibt sie weiter. Alles, was in derselben Kette darunter steht, wird nie erreicht. Dasselbe gilt für Mailets mit `passThrough=false`: Sie konsumieren die Nachricht und übernehmen die weitere Behandlung selbst, die nachfolgenden Mailets sehen sie nicht mehr.
+
+Diese zweite Form findet keine einfache Textsuche, denn die Zeilen sehen völlig normal aus. Sie brauchen dafür die Reihenfolge innerhalb der Kette.
+
+## Werkzeug 1: Den Graphen auslesen
+
+Der Einstieg ist eine Auswertung, die Prozessoren und ihre Ziele extrahiert. Das folgende Skript nutzt nur die Standardbibliothek und läuft auf jeder Python-Installation:
+
+```python
+import re
+import xml.dom.minidom
+
+PFAD = "regelwerk.xml"
+
+daten = open(PFAD, "rb").read().decode("utf-8").replace("\r\n", "\n")
+
+# Prozessoren und ihre Blöcke schneiden
+starts = [(m.start(), m.group(1))
+          for m in re.finditer(r'<processor name="([^"]+)">', daten)]
+
+bloecke = {}
+for i, (pos, name) in enumerate(starts):
+    ende = starts[i + 1][0] if i + 1 < len(starts) else daten.find("</spoolmanager>")
+    bloecke[name] = daten[pos:ende]
+
+def ziele(block):
+    """Alle ToProcessor-Ziele einer Kette."""
+    return re.findall(r"<processor>\s*([^<>]+?)\s*</processor>", block)
+
+for name, block in bloecke.items():
+    print(f"{name} -> {', '.join(ziele(block)) or '(kein Ziel)'}")
+```
+
+Beachten Sie den Unterschied zwischen dem **Definitionstag** `<processor name="...">` und dem **Zieltag** `<processor>name</processor>` innerhalb eines `ToProcessor`-Mailets. Beide heissen gleich, meinen aber Verschiedenes. Wer sie verwechselt, bekommt sinnlose Ergebnisse. Genau darauf beruht auch der Fallstrick weiter unten.
+
+## Werkzeug 2: Erreichbarkeit ab dem Einstiegspunkt
+
+Mit dem Graphen ist die Analyse eine Breitensuche ab `root`. Alles, was dabei nicht besucht wird, ist tot:
+
+```python
+erreichbar = set()
+stapel = ["root"]
+
+while stapel:
+    knoten = stapel.pop()
+    if knoten in erreichbar:
+        continue
+    erreichbar.add(knoten)
+    for ziel in ziele(bloecke.get(knoten, "")):
+        if ziel not in erreichbar:
+            stapel.append(ziel)
+
+def anzahl_mailets(block):
+    return len(re.findall(r"<mailet ", block))
+
+tot = [n for n in bloecke if n not in erreichbar]
+
+print(f"Prozessoren gesamt: {len(bloecke)}")
+print(f"Erreichbar:         {len(erreichbar)}")
+print(f"Tot:                {len(tot)}")
+
+for name in tot:
+    print(f"  - {name} ({anzahl_mailets(bloecke[name])} Mailets)")
+```
+
+Eine typische Ausgabe bei einem gewachsenen Regelwerk:
+
+```text
+Prozessoren gesamt: 38
+Erreichbar:         18
+Tot:                20
+  - addExtSender (7 Mailets)
+  - decrypt (6 Mailets)
+  - externalDelivery (14 Mailets)
+  - outgoingProcessExceptionTriggers (12 Mailets)
+  ...
+```
+
+Zwanzig von 38 Prozessoren mit zusammen über 160 Mailets, die nie ausgeführt werden. Das ist kein Ausreisser, sondern der Normalfall in einer Umgebung, die mehrere Umbauten hinter sich hat.
+
+## Werkzeug 3: Den toten Rest innerhalb der Ketten finden
+
+Jetzt die zweite Form. Gehen Sie jede erreichbare Kette Mailet für Mailet durch und markieren Sie alles nach dem ersten unbedingten Abgang:
+
+```python
+def toter_rest(block):
+    """Index des ersten Mailets, ab dem nichts mehr erreicht wird."""
+    mailets = re.findall(r"<mailet\b.*?(?:/>|</mailet>)", block, re.S)
+    for i, m in enumerate(mailets):
+        ist_all = 'match="All"' in m
+        ist_weiche = 'class="ToProcessor"' in m
+        konsumiert = "<passThrough>false</passThrough>" in m
+        if ist_all and (ist_weiche or konsumiert):
+            return i + 1, len(mailets)
+    return None, len(mailets)
+
+for name in sorted(erreichbar):
+    ab, gesamt = toter_rest(bloecke[name])
+    if ab is not None and ab < gesamt:
+        print(f"{name}: Mailets {ab + 1} bis {gesamt} werden nie erreicht")
+```
+
+Dieser Befund ist wertvoller als die Prozessorliste, weil er mitten in aktiven Ketten sitzt. Wer eine Regel ergänzt und sie unterhalb eines `ToProcessor match="All"` einfügt, hat eine Regel geschrieben, die niemals greift, und wundert sich anschliessend über die Wirkungslosigkeit.
+
+## Werkzeug 4: Strukturprüfung
+
+Wohlgeformtes XML ist nur die halbe Miete. Diese vier Prüfungen fangen die Fehler ab, die ein Parser durchgehen lässt, das Gateway aber nicht:
+
+```python
+dom = xml.dom.minidom.parseString(daten.replace("\n", "\r\n").encode("utf-8"))
+
+namen = [p.getAttribute("name")
+         for p in dom.getElementsByTagName("processor")
+         if p.getAttribute("name")]
+
+# 1. Doppelte Prozessornamen
+doppelt = {n for n in namen if namen.count(n) > 1}
+
+# 2. Jedes Mailet muss direktes Kind eines Prozessors sein und class + match haben
+fehler = []
+for m in dom.getElementsByTagName("mailet"):
+    if m.parentNode.tagName != "processor":
+        fehler.append(("falscher Elternknoten", m.getAttribute("class")))
+    if not m.getAttribute("class") or not m.getAttribute("match"):
+        fehler.append(("class oder match fehlt", m.parentNode.getAttribute("name")))
+
+# 3. Jedes ToProcessor-Ziel muss existieren
+zielnamen = set()
+for m in dom.getElementsByTagName("mailet"):
+    if m.getAttribute("class") == "ToProcessor":
+        for el in m.getElementsByTagName("processor"):
+            text = "".join(c.data for c in el.childNodes if c.nodeType == c.TEXT_NODE)
+            zielnamen.add(text.strip())
+
+print("Doppelte Namen:      ", doppelt or "keine")
+print("Strukturfehler:      ", fehler or "keine")
+print("Ziele ohne Definition:", sorted(zielnamen - set(namen)) or "keine")
+```
+
+Ein `ToProcessor` auf einen Prozessor, den es nicht gibt, ist der klassische Fehler nach einer Umbenennung. Das XML bleibt wohlgeformt, das Gateway stolpert erst zur Laufzeit darüber, und dann meist mit einer wenig hilfreichen Meldung.
+
+## Ein Zwischenruf: das ist Compilerbau, nicht Bastelei
+
+Was Sie hier tun, hat einen Namen und eine Theorie dahinter. Ein Regelwerk ist ein **Kontrollflussgraph**, also dasselbe Modell, mit dem Compiler seit Jahrzehnten Programme analysieren. Das lohnt sich zu wissen, weil damit fertige Algorithmen und, wichtiger, klare Aussagen über deren Grenzen zur Verfügung stehen.
+
+| Frage im Regelwerk | Modell | Verfahren |
+|---|---|---|
+| Welche Prozessoren sind tot? | Erreichbarkeit ab dem Einstiegsknoten | Breiten- oder Tiefensuche, Aufwand `O(V+E)` |
+| Welche Regeln in einer Kette sind tot? | Knoten nach einem unbedingten Sprung | dieselbe Suche auf feinerem Graphen |
+| Wo kann ein Mail-Loop entstehen? | **Zyklus im Graphen** | starke Zusammenhangskomponenten |
+| Wo muss eine Regel stehen, damit sie garantiert greift? | **Dominator** des Einstiegsknotens | Dominatorbaum |
+
+Die letzten beiden Zeilen sind die praktisch wertvollsten. Ein Mail-Loop ist kein mysteriöses Betriebsphänomen, sondern ein Zyklus im Routing-Graphen; der Hop-Zähler zur Laufzeit ist nur die Notbremse, strukturell finden Sie die Schleife vorher. Und wenn Sie eine Regel platzieren wollen, die **jede** Nachricht passieren muss, etwa einen Filter für nicht routbare Absenderdomänen, dann fragen Sie nach einem Dominator. Das ist keine Geschmacksfrage, sondern berechenbar.
+
+### Zyklen finden, bevor sie zu Mail-Loops werden
+
+Die Breitensuche beantwortet die Frage nach totem Code. Für Schleifen brauchen Sie die Tiefensuche, denn dort verrät eine **Rückwärtskante** den Zyklus. Das Verfahren ist die klassische Dreifarbenmarkierung:
+
+```python
+def zyklen_finden(bloecke, ziele):
+    WEISS, GRAU, SCHWARZ = 0, 1, 2
+    farbe = {n: WEISS for n in bloecke}
+    pfad, gefunden = [], []
+
+    def besuche(knoten):
+        farbe[knoten] = GRAU
+        pfad.append(knoten)
+        for ziel in ziele(bloecke.get(knoten, "")):
+            if ziel not in farbe:
+                continue
+            if farbe[ziel] == GRAU:                 # Rueckwaertskante = Zyklus
+                gefunden.append(pfad[pfad.index(ziel):] + [ziel])
+            elif farbe[ziel] == WEISS:
+                besuche(ziel)
+        farbe[knoten] = SCHWARZ
+        pfad.pop()
+
+    for knoten in bloecke:
+        if farbe[knoten] == WEISS:
+            besuche(knoten)
+    return gefunden
+
+for zyklus in zyklen_finden(bloecke, ziele):
+    print(" -> ".join(zyklus))
+```
+
+```text
+outgoing -> processOutgoing -> outgoing
+```
+
+Ein solcher Fund ist kein Beweis für einen Loop, denn die Kanten sind bewacht und werden vielleicht nie gemeinsam genommen. Er ist aber die vollständige Liste der Stellen, an denen einer entstehen **kann**, und genau die wollen Sie vor einem Umbau kennen. Der Hop-Zähler zur Laufzeit ist nur die Notbremse; hier sehen Sie die Konstruktion.
+
+Ebenso wichtig ist die **Grenze** des Verfahrens. Die Kanten sind durch Matcher bewacht, und die hängen vom Nachrichteninhalt ab. Exakte Erreichbarkeit ist damit im Allgemeinen unentscheidbar, die Analyse liefert eine Über-Approximation. Daraus folgt eine asymmetrische Aussagekraft, die Sie kennen müssen:
+
+- **„Unerreichbar" ist verlässlich.** Wenn kein Pfad hinführt, kann dort keine Nachricht ankommen. Diesen Code dürfen Sie löschen.
+- **„Erreichbar" heisst nur „strukturell nicht ausgeschlossen".** Ob je eine reale Nachricht die Bedingungen erfüllt, sagt der Graph nicht.
+
+Die Analyse ersetzt den Test also nicht, sie verkleinert den Testraum. Für die Praxis ist das trotzdem ein enormer Gewinn: Aus 38 Prozessoren werden 18, die Sie überhaupt prüfen müssen.
+
+Verfahren aus dem maschinellen Lernen, etwa Graph Neural Networks oder Knoteneinbettungen, brauchen Sie hier ausdrücklich nicht. Die lohnen sich bei grossen Graphen mit unbekannter Struktur und statistischen Mustern. Ein Regelwerk hat einige Dutzend Knoten, vollständig bekannte Struktur und deterministische Semantik. Exakte Algorithmen sind hier nicht nur billiger, sie liefern Beweise statt Wahrscheinlichkeiten.
+
+## Fallstricke beim maschinellen Bearbeiten
+
+Wenn Sie ein Regelwerk per Skript ändern, gibt es drei Fehler, die zuverlässig auftreten. Alle drei habe ich selbst gemacht.
+
+**Der Klassiker: das gierige Muster über Prozessorgrenzen hinweg.** Wer einen Prozessor per regulärem Ausdruck entfernen will, greift naheliegend zu:
+
+```python
+muster = re.compile(r'   <processor name="%s">.*?</processor>\n' % name, re.S)
+```
+
+Das ist falsch. Innerhalb der Kette steht in jedem `ToProcessor`-Mailet ein `<processor>ziel</processor>`, und das nicht-gierige `.*?` stoppt genau dort. Das Ergebnis: Der halbe Prozessor wird entfernt, ein Rumpf aus `</mailet>` und `</processor>` bleibt stehen, und das XML ist zerstört. Verankern Sie stattdessen auf der Einrückung des schliessenden Tags und prüfen Sie die Tag-Bilanz gegen:
+
+```python
+muster = re.compile(r'   <processor name="%s">.*?\n   </processor>\n' % name, re.S)
+
+treffer = muster.search(daten)
+assert treffer, "Prozessor nicht gefunden"
+block = treffer.group(0)
+assert block.count("<mailet ") == block.count("</mailet>"), "Tag-Bilanz stimmt nicht"
+```
+
+**Zeilenenden.** Die Konfiguration verwendet üblicherweise CRLF. Lesen Sie in Python mit `rb`, normalisieren Sie auf `\n` für die Bearbeitung und schreiben Sie am Ende wieder CRLF zurück. Wer das vergisst, produziert eine Datei mit gemischten Zeilenenden, die je nach Produkt kommentarlos abgelehnt wird.
+
+**Sonderzeichen.** Halten Sie die Datei in reinem ASCII und schreiben Sie Umlaute als Zeichenreferenzen (`&#228;` für ä). Das erspart Ihnen jede Diskussion über Kodierungen zwischen Editor, Skript und Weboberfläche des Gateways.
+
+Prüfen Sie nach jeder Änderung mindestens auf Wohlgeformtheit, unveränderte Zeilenenden und unveränderte Prozessorzahl. Drei Zeilen Kontrolle sparen einen Rückbau.
+
+## Die Methode für den Umbau: Parallelbaum mit einer Weiche
+
+Nun zum eigentlichen Neuaufbau. Der naheliegende Weg, das bestehende Regelwerk Schritt für Schritt umzubauen, ist der schlechteste: Sie können nicht sauber zurück, und Sie können den alten Zustand nicht mehr lesen.
+
+Bewährt hat sich stattdessen der Parallelbaum:
+
+**Schritt 1: Neuen Baum daneben aufbauen.** Legen Sie die neuen Prozessoren mit einem Namenssuffix an, etwa `rootV2`, `incomingV2`, `outgoingV2`. Der alte Baum bleibt vollständig und unverändert bestehen.
+
+**Schritt 2: Eine einzige Weiche.** Am Anfang des bisherigen Einstiegspunkts steht genau ein Mailet:
+
+```xml
+<processor name="root">
+   <mailet class="ToProcessor" match="All">
+      <processor>rootV2</processor>
+   </mailet>
+   <!-- alles Bisherige bleibt hier stehen, ist aber nun unerreichbar -->
+</processor>
+```
+
+Damit läuft aller Verkehr durch den neuen Baum. Der alte ist unerreichbar, aber vollständig vorhanden. **Der Rückweg besteht aus dem Entfernen dieser drei Zeilen**, und das ist in jeder Situation nachvollziehbar, auch für eine Person, die den Umbau nicht gemacht hat.
+
+**Schritt 3: Erreichbarkeit als Abnahme.** Lassen Sie die Analyse aus Werkzeug 2 laufen und prüfen Sie drei Punkte: Der neue Einstiegspunkt wird genau einmal referenziert, alle neuen Prozessoren sind erreichbar, und der alte Baum ist vollständig unerreichbar. Das ist ein objektives Abnahmekriterium statt einer Sichtprüfung.
+
+**Schritt 4: Erst nach der Bewährung aufräumen.** Wenn der neue Baum im Betrieb bestätigt ist, entfernen Sie den alten und streichen die Suffixe. Erst dann verlieren Sie den Rückweg in der Datei, und bis dahin haben Sie ihn nicht gebraucht.
+
+Für Zwischenschritte, die Sie beobachten, aber noch nicht scharf schalten wollen, eignen sich reine Beobachtungsmailets: Sie protokollieren, ändern aber das Routing nicht. Damit sammeln Sie die Daten, die für die Entscheidung fehlen, ohne Risiko.
+
+## Sichtbarkeit gleich mitbauen
+
+Beim Neuaufbau lohnt es sich, zwei Dinge zu berücksichtigen, die im Betrieb später den Unterschied machen.
+
+**Verwerfen Sie nie direkt in der Hauptkette.** Ein Mailet, das eine Nachricht verwirft, hinterlässt im Nachrichtenverlauf nur den Hinweis, dass gelöscht wurde, ohne Grund. Verzweigen Sie stattdessen in einen eigens benannten Prozessor, etwa `dropNonRoutable`. Der Name allein erscheint im Verlauf und sagt bereits, was passiert ist.
+
+**Nicht jede Protokollierung landet im Nachrichtenverlauf.** Viele Produkte kennen zwei Mechanismen: einen für das Serverprotokoll und einen für den Verlauf, den auch der Support sieht. Nur der zweite ist im Verlauf sichtbar. Wer ausschliesslich den ersten setzt, hat zwar geloggt, aber im Trace steht weiterhin nur „Nachricht gelöscht". Formulieren Sie die Verlaufseinträge im Klartext und nennen Sie die Regel: „durch die Regel für nicht routbare Absenderdomänen bewusst verworfen, kein Zustellfehler" spart im Betrieb sehr viel Rückfrage.
+
+## Der Cluster ist Teil der Aufgabe
+
+Ein Punkt, der regelmässig unterschätzt wird: Läuft das Gateway auf mehreren Knoten, muss die Konfiguration **auf allen Knoten identisch und neustartfest** hinterlegt sein. Ist sie nur auf einem Knoten aktiv, hängt das Verhalten davon ab, welcher Knoten die Nachricht bearbeitet, und Ihre Tests messen Zufall.
+
+Besonders unangenehm ist der Fall, dass eine Änderung zwar läuft, aber nicht persistiert wurde. Dann arbeitet der Knoten korrekt, bis er neu startet, und fällt danach auf den alten Stand zurück. Prüfen Sie deshalb nach jedem Deployment beide Dinge: gleicher Stand auf allen Knoten, und der Stand überlebt einen Neustart.
+
+## Zusammengefasst
+
+Behandeln Sie das Regelwerk als Graphen, nicht als Textdatei. Eine Breitensuche ab dem Einstiegspunkt trennt in wenigen Zeilen Code Lebendes von Totem, und die Analyse innerhalb der Ketten findet zusätzlich die Regeln, die zwar dastehen, aber nach einem unbedingten Abgang nie erreicht werden.
+
+Für den Umbau selbst ist der Parallelbaum mit einer einzigen Weiche die Methode mit dem besten Verhältnis von Aufwand zu Sicherheit. Und die Erreichbarkeitsanalyse liefert Ihnen gleich das Abnahmekriterium dazu.
+
+## Quellen
+
+1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): Aufbau des Spoolmanagers, Prozessoren, Mailets und Matcher sowie die Verarbeitungsreihenfolge.
+
+2.  [Apache James: Provided mailets](https://james.apache.org/server/dev-provided-mailets.html): Referenz der mitgelieferten Mailets inklusive ToProcessor und der Parameter für Weitergabe und Konsum.
+
+3.  [Apache James: Provided matchers](https://james.apache.org/server/dev-provided-matchers.html): Referenz der Matcher, unter anderem All, HostIsLocal und die empfängerbezogenen Varianten.
+
+4.  [Apache James: Mailet API](https://james.apache.org/server/dev-mailet-api.html): Vertrag zwischen Mailet und Container, Grundlage für das Verständnis von Konsum und Weitergabe.
 
 ----
 
