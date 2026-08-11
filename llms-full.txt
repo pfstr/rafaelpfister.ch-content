@@ -12,6 +12,398 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Verschlüsselungs-Gateways: warum der Standardfall stiller Klartextversand ist
+
+URL: https://rafaelpfister.ch/blog/mailgateway-regelwerk-stiller-klartextversand
+Datum: 2026-08-11
+
+# Verschlüsselungs-Gateways: warum der Standardfall stiller Klartextversand ist
+
+Verschlüsselungs-Gateways werden gekauft, damit vertrauliche Nachrichten geschützt hinausgehen. In der Praxis sind ihre Regelwerke jedoch fast immer **fail-open** gebaut: Lässt sich eine Nachricht nicht verschlüsseln, wird sie trotzdem zugestellt, nur eben im Klartext. Das ist selten eine bewusste Entscheidung, sondern ein Nebeneffekt der Regelreihenfolge, und in den Protokollen sieht es aus wie ein Erfolg.
+
+Dieser Artikel beschreibt, woran Sie das im Regelwerk erkennen und wie Sie die Grundhaltung umdrehen. Die Beispiele orientieren sich am Regelmodell von Apache James, das mehrere Gateway-Produkte verwenden, die Denkweise gilt aber unabhängig vom Hersteller.
+
+## Das Regelmodell in drei Sätzen
+
+Ein Regelwerk besteht aus **Prozessoren**, also benannten Ketten. Jede Kette enthält **Mailets**, die etwas tun, und jedes Mailet hat einen **Matcher**, der entscheidet, ob es auf die aktuelle Nachricht zutrifft. Ein Mailet vom Typ `ToProcessor` gibt die Nachricht an eine andere Kette weiter; trifft es mit `match="All"` zu, ist die aktuelle Kette an dieser Stelle beendet.
+
+Daraus folgt die wichtigste Leseregel: **Ein Regelwerk liest sich wie eine Fallunterscheidung von oben nach unten.** Für jede Nachrichtenart müssen Sie die Frage beantworten, an welcher Stelle sie die Kette verlässt. Alles, was keinen Ausgang findet, landet am Ende, und das Ende ist der eigentlich interessante Ort.
+
+## Missverständnis 1: Fehlendes Schlüsselmaterial löst keine Verschlüsselung aus
+
+Das ist der Punkt, an dem die Intuition am häufigsten danebenliegt. Wenn ein Gateway meldet, für den Empfänger sei kein Schlüsselmaterial vorhanden, klingt das nach einem Auslöser für einen alternativen Schutzmechanismus, etwa ein Webmail-Portal oder einen passwortgeschützten Umschlag.
+
+Tatsächlich ist es umgekehrt. Die Prüfung auf Schlüsselmaterial entscheidet nur, **womit** verschlüsselt wird, nachdem entschieden wurde, **dass** verschlüsselt wird. Der Weg in die Verschlüsselungskette öffnet sich typischerweise nur über eine dieser Bedingungen:
+
+- Der Empfänger besitzt ein S/MIME-Zertifikat oder einen PGP-Schlüssel.
+- Der Absender hat einen Auslöser gesetzt, etwa ein Schlüsselwort im Betreff.
+- Die Nachricht trägt ein Vertraulichkeitslabel.
+- Sie wurde im Webmail des Gateways verfasst.
+
+Trifft nichts davon zu, war Verschlüsselung nie vorgesehen, und die Nachricht geht im Klartext hinaus. Für einen Empfänger ohne Zertifikat ist das der Normalfall, nicht die Ausnahme.
+
+## Missverständnis 2: `passThrough=false` bedeutet, dass die Nachricht die Kette verlässt
+
+Verschlüsselungs-Mailets tragen üblicherweise den Parameter `passThrough=false`. Er bedeutet, dass das Mailet die Nachricht **konsumiert**: Es übernimmt die weitere Behandlung selbst und gibt sie nicht an die nachfolgenden Mailets weiter.
+
+Die Konsequenz wird regelmässig übersehen. Betrachten Sie das typische Ende einer Verschlüsselungskette:
+
+```xml
+<mailet class="ProcessSmimeEncoding" match="HasCertificate?check=recipient_smime"> … </mailet>
+<mailet class="ProcessPgpEncoding"   match="HasCertificate?check=recipient_pgp">   … </mailet>
+<mailet class="ProcessEnvelope"      match="RecipientSecTypeIs?Security Type=TRE"> … </mailet>
+
+<mailet class="SimpleLogger" match="All">
+   <log-message>Nachricht verschlüsselt</log-message>
+</mailet>
+<mailet class="ToProcessor" match="All">
+   <processor>externalDelivery</processor>
+</mailet>
+```
+
+Weil die drei Verschlüsselungs-Mailets konsumieren, erreichen die letzten beiden Zeilen **ausschliesslich Nachrichten, bei denen keine einzige Methode gegriffen hat**. Die Protokollmeldung „Nachricht verschlüsselt" ist damit strukturell falsch: Sie erscheint genau dann, wenn nicht verschlüsselt wurde. Und der `ToProcessor` darunter stellt diese Nachrichten regulär zu.
+
+Das trifft auch Nachrichten, bei denen der Absender Verschlüsselung **ausdrücklich angefordert** hat. Ist der Auslöser gesetzt, aber keine Methode anwendbar, geht die Nachricht im Klartext hinaus, wird als verschlüsselt protokolliert, und niemand erfährt davon.
+
+## Missverständnis 3: Verworfene Nachrichten sind nachvollziehbar
+
+Regelwerke enthalten oft Mailets, die Nachrichten verwerfen, etwa um Journal-Kopien oder Schleifen abzufangen. Ein solches Mailet beendet die Verarbeitung still. Im Nachrichtenverlauf steht dann lediglich, dass die Nachricht gelöscht wurde, ohne jeden Grund.
+
+Verschärfend kommt hinzu, dass viele Gateways zwei verschiedene Protokollmechanismen kennen: einen für das Serverprotokoll und einen für den Nachrichtenverlauf, den auch der Support oder der Anwender sieht. Nur der zweite erscheint im Verlauf. Wer ausschliesslich den ersten setzt, hat zwar geloggt, aber im Trace bleibt es bei „Nachricht gelöscht".
+
+Zwei Massnahmen beheben das dauerhaft. Erstens: Verwerfen Sie nie direkt in der Hauptkette, sondern verzweigen Sie in einen **eigens benannten Prozessor**. Der Name allein erscheint im Verlauf und sagt bereits, was passiert ist. Zweitens: Setzen Sie dort einen Eintrag für den Nachrichtenverlauf, der die Regel und den Grund im Klartext nennt, nicht nur ein Stichwort.
+
+Ein Nachrichtenverlauf, der „durch die Regel für nicht routbare Absenderdomänen bewusst verworfen, kein Zustellfehler" sagt, spart im Betrieb sehr viel Rückfrage.
+
+## Die Umkehrung: von fail-open zu fail-closed
+
+Wenn Sie regulierte Daten transportieren, ist die eingebaute Grundhaltung die falsche. Nicht die zurückgehaltene Nachricht ist das Risiko, sondern die unbemerkt im Klartext versendete. Eine geparkte Nachricht fällt auf und lässt sich nachholen, versendete Daten holen Sie nicht zurück.
+
+Die Umstellung erfolgt an zwei Stellen.
+
+**Erstens der Fallback am Ende der Auslöserprüfung.** Statt Nachrichten ohne Schlüsselmaterial und ohne Auslöser direkt zuzustellen, geben Sie sie in die Verschlüsselungskette, damit sie dort einen geschützten Umschlag erhalten. Systemnachrichten und maschinelle Mail nehmen Sie gezielt aus, dazu unten mehr.
+
+**Zweitens das Ende der Verschlüsselungskette.** Dort ersetzen Sie die reguläre Zustellung durch eine Verzweigung in einen Prozessor, der die Nachricht **nicht** zustellt, sondern in ein Fehler-Repository legt und den Absender benachrichtigt:
+
+```xml
+<mailet class="ToProcessor" match="All">
+   <processor>encryptionFailed</processor>
+</mailet>
+```
+
+Im Prozessor `encryptionFailed` protokollieren Sie den Grund im Klartext und legen die Nachricht ab. Wer bewusst unverschlüsselt senden will, nutzt dafür den vorgesehenen Auslöser, in vielen Produkten ein Schlüsselwort im Betreff.
+
+## Wo Sie aufpassen müssen
+
+Diese Umstellung ist kein reiner Regelwerkseingriff, sie hat drei Voraussetzungen, die Sie vorher klären müssen.
+
+**Die Empfängerverwaltung muss mitspielen.** Hängt der geschützte Umschlag an einem Attribut des Empfängers, das bei der Registrierung gesetzt wird, dann entscheidet die Qualität dieser Registrierung über das Ergebnis. Bleibt ein Empfänger unvollständig angelegt, etwa ohne Sicherheitstyp, greift die Verschlüsselung nicht. Vor der Umstellung war das unsichtbar, weil die Nachricht einfach im Klartext hinausging; danach wird daraus eine zurückgehaltene Nachricht. Das ist die richtige Richtung, aber es muss vorher geprüft sein, sonst steht der Mailverkehr.
+
+Robuster ist es, die Logik umzudrehen: Machen Sie den seltenen Fall zur Ausnahme und den geschützten Umschlag zum Auffangfall. Dann hängt die Zusage nicht mehr an gepflegten Empfängerattributen.
+
+**Systemnachrichten dürfen nicht in den Umschlag.** Eine Benachrichtigung mit der Aufforderung, sich für eine sichere Nachricht anzumelden, ist im geschützten Umschlag unlesbar. Gute Regelwerke zweigen solche Nachrichten sehr früh ab, meist über einen Matcher für Benachrichtigungen sowie über die üblichen Kopfzeilen maschinell erzeugter Mail. Prüfen Sie, dass diese Ausgänge **vor** Ihrer neuen Weiche liegen.
+
+**Applikationsmail braucht eine eigene Betrachtung.** Registrierungsbestätigungen, Passwort-Zurücksetzungen und Benachrichtigungen von Fachanwendungen dürfen Empfänger in aller Regel nicht auf ein Portal zwingen. Grenzen Sie diesen Verkehr sauber ab, entweder über die Quelle der Einlieferung oder über eine Kopfzeile, die die Anwendung setzt. Die Kopfzeile ist die stabilere Variante, weil Quell-IP-Adressen sich mit jeder Netzwerkänderung verschieben können.
+
+## Wie Sie ein bestehendes Regelwerk prüfen
+
+Nehmen Sie sich die Ausgangskette vor und beantworten Sie für jede Nachrichtenart, an welcher Stelle sie die Kette verlässt. Fünf Klassen genügen für einen ersten Überblick: interne Empfänger, Empfänger mit Schlüsselmaterial, Empfänger ohne Schlüsselmaterial, maschinell erzeugte Nachrichten und Nachrichten mit ausdrücklichem Auslöser.
+
+Drei Fragen decken die meisten Überraschungen auf. Welche Mailets konsumieren, welche geben weiter? Was genau erreicht die letzte Zeile jeder Kette? Und behauptet eine Protokollmeldung etwas, das an dieser Stelle strukturell nicht zutreffen kann?
+
+Die letzte Frage lohnt sich besonders. Meldungen wie „Nachricht verschlüsselt" am Ende einer Kette sind ein verlässlicher Hinweis darauf, dass jemand die Kette einmal von oben gelesen hat, ohne die Konsum-Semantik zu berücksichtigen. In der Praxis war das für uns der Einstieg, um den stillen Klartextversand überhaupt zu bemerken.
+
+## Quellen
+
+1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): Aufbau von Prozessoren, Mailets und Matchern sowie die Semantik der Verarbeitungskette.
+
+2.  [Apache James: Provided mailets](https://james.apache.org/server/dev-provided-mailets.html): Referenz der mitgelieferten Mailets inklusive der Parameter für Weitergabe und Konsum.
+
+3.  [Apache James: Provided matchers](https://james.apache.org/server/dev-provided-matchers.html): Referenz der Matcher, unter anderem für Empfängereigenschaften und Kopfzeilen.
+
+4.  [RFC 8551: S/MIME Version 4.0 Message Specification](https://www.rfc-editor.org/rfc/rfc8551): Grundlage für die zertifikatsbasierte Verschlüsselung, auf die sich die Prüfungen im Regelwerk beziehen.
+
+----
+
+# Fehlersuche im Mailfluss: kontrollierte Experimente statt Hypothesen
+
+URL: https://rafaelpfister.ch/blog/mailflow-fehlersuche-kontrollierte-experimente
+Datum: 2026-08-11
+
+# Fehlersuche im Mailfluss: kontrollierte Experimente statt Hypothesen
+
+Eine Nachricht kommt nicht an. Das Protokoll liefert eine Fehlermeldung, die sofort eine Erklärung nahelegt. Sie prüfen diese Erklärung, finden Belege, und nach zwei Stunden stellt sich heraus, dass die Erklärung falsch war und die Belege Zufall.
+
+Das ist kein Anfängerfehler, sondern die Regel. Der Mailfluss ist eine Kette aus Systemen, die jeweils eine eigene Sicht auf dieselbe Nachricht haben: das Gateway, die Filterebene, der lokale Transportserver, der Cloud-Dienst, das Zielpostfach. Jede Meldung ist aus der Perspektive genau einer Schicht geschrieben, und der Text erklärt oft die Wirkung, nicht die Ursache. Dieser Artikel beschreibt das Vorgehen, das in solchen Fällen zuverlässig schneller ist.
+
+## Warum plausible Meldungen in die Irre führen
+
+Fehlertexte im Mailfluss sind Sammelbegriffe. Derselbe Wortlaut kann völlig unterschiedliche Situationen beschreiben, weil das ablehnende System nur ein grobes Raster kennt.
+
+Ein Beispiel aus der Praxis: Ein Cloud-Dienst lehnte eine Nachricht mit dem Hinweis ab, der Absender sei für ausgehende Zustellung nicht zulässig. Derselbe Wortlaut trat in derselben Umgebung in zwei völlig verschiedenen Konstellationen auf. Einmal versuchte ein System, über den Dienst an einen fremden Empfänger zuzustellen, also ein echter Weiterleitungsversuch nach aussen. Das andere Mal war der Empfänger ein reguläres Postfach des Dienstes, und beanstandet wurde ausschliesslich die Absenderdomäne.
+
+Wer den Text wörtlich nimmt, sucht in beiden Fällen nach demselben Problem. Und weil das Wort „ausgehend" darin vorkommt, sucht man zuerst am falschen Ende.
+
+## Der Kern des Vorgehens: eine Variable, sonst alles gleich
+
+Sobald Sie merken, dass Sie Mechanismen konstruieren, hören Sie auf zu theoretisieren und bauen ein Experiment. Das Ziel ist, den Fall auf genau eine Variable zu reduzieren.
+
+Nehmen Sie den Originalfall und erzeugen Sie zwei Nachrichten, die sich in **genau einem** Merkmal unterscheiden. Gleicher Einlieferungspunkt, gleicher Empfänger, gleicher Weg, gleiche Zeit. Wenn Sie den Verdacht auf die Absenderdomäne haben, ändern Sie nur diese. Wenn Sie den Empfänger verdächtigen, ändern Sie nur den Empfänger.
+
+Das klingt selbstverständlich, wird aber selten so gemacht, weil man in der Regel zwei Fälle vergleicht, die zufällig vorliegen. Und die unterscheiden sich fast immer in mehreren Merkmalen gleichzeitig. Genau daraus entstehen Scheinkorrelationen.
+
+## Der Kontrollversuch ist nicht optional
+
+Der wichtigste Teil ist der, den man am liebsten weglässt: **Ihr Testaufbau muss zuerst den Fehler reproduzieren.**
+
+Wenn Sie den Fehlerfall nicht mit Ihren eigenen Mitteln erzeugen können, sagt ein erfolgreicher Gegenversuch nichts aus. Vielleicht funktioniert Ihre Testnachricht nur deshalb, weil Sie an einer anderen Stelle einliefern als das Originalsystem, oder weil eine Prüfung auf Ihrem Weg gar nicht greift.
+
+Deshalb besteht ein brauchbarer Test immer aus mindestens zwei Nachrichten:
+
+| | Zweck | Erwartung |
+|---|---|---|
+| Versuch 1 | Kontrolle, repliziert den Originalfall | **muss scheitern** |
+| Versuch 2 | Hypothese, eine Variable geändert | soll gelingen |
+
+Scheitert Versuch 1 nicht, ist Ihr Aufbau nicht repräsentativ, und Sie müssen näher am Original einliefern. Erst wenn Versuch 1 den Originalfehler exakt zeigt, hat Versuch 2 Aussagekraft.
+
+## Ein durchgespieltes Beispiel
+
+Aus einem realen Fall, anonymisiert. Nachrichten eines Systems erreichten Empfänger in der Cloud nicht, andere Nachrichten an dieselben Empfänger kamen problemlos an. Drei Versuche über denselben Weg, an denselben Empfänger, im Abstand weniger Minuten:
+
+| Versuch | Absenderdomäne | Ergebnis |
+|---|---|---|
+| 1 (Kontrolle) | `example-test.com` | Ablehnung, identisch zum Originalfall |
+| 2 | `example.com` (eigene Domäne des Ziels) | zugestellt |
+| 3 | `other-test.com` | zugestellt |
+
+Versuch 1 reproduzierte den Fehler, der Aufbau war also gültig. Versuch 2 zeigte, dass es an der Absenderdomäne hängt und nicht an Empfänger, Postfach, Routing oder Berechtigungen. Versuch 3 widerlegte zusätzlich die naheliegende Erklärung, es liege an der Zugehörigkeit der Domäne zu einer anderen Organisation, denn `other-test.com` gehörte derselben.
+
+Drei Nachrichten, zehn Minuten, und die Ursache war belegt statt vermutet. Vorher waren mehrere Stunden in Erklärungsversuche geflossen, von denen sich am Ende keiner hielt.
+
+## Widerlegen ist Fortschritt
+
+Eine widerlegte Hypothese fühlt sich nach Rückschritt an, ist aber das Gegenteil. Sie entfernt einen ganzen Ast aus dem Suchraum, und zwar dauerhaft.
+
+Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie gefallen sind. Das hat zwei Wirkungen. Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon einmal verworfene Idee unter neuem Namen zurückkehrt.
+
+In der Dokumentation gehören die widerlegten Punkte ausdrücklich neben die belegten. Ein Bericht, der nur die richtige Antwort enthält, verschweigt die Hälfte der geleisteten Arbeit und lädt dazu ein, sie zu wiederholen.
+
+## Beweislast an die Umkehrbarkeit koppeln
+
+Ein häufiger Zeitfresser ist, dass mehr Beweis eingefordert wird, als die geplante Handlung rechtfertigt. Ein brauchbarer Massstab: **Der Aufwand für den Nachweis richtet sich nach der Umkehrbarkeit des Eingriffs.**
+
+Einen Connector zu deaktivieren ist ein Befehl, und das Zurücknehmen ebenfalls. Dafür genügen begründete Indizien, denn ein Irrtum ist in einer Minute behoben und fällt sofort auf. Denselben Connector zu löschen ist nicht umkehrbar; dafür lohnt sich der zusätzliche Nachweis über die Konfiguration der Gegenstelle oder einen serverseitigen Nutzungsbericht.
+
+Dasselbe gilt für Regelwerksänderungen. Eine reine Beobachtungsstufe, die nur protokolliert und nichts umleitet, dürfen Sie mit dünner Faktenlage einführen. Sie ist folgenlos und beschafft genau die Daten, die für den scharfen Schritt fehlen. Erst die Umstellung, die Nachrichten zurückhalten kann, verlangt belastbare Belege.
+
+## Stichproben sind kein Beweis der Abwesenheit
+
+Der letzte und subtilste Fallstrick betrifft Abfragen, die seitenweise liefern, etwa Nachrichtenverfolgungen in grossen Umgebungen. Sie fragen sieben Tage ab, filtern lokal nach einem Merkmal und bekommen kein Ergebnis. Der Schluss liegt nahe, dass es diesen Verkehr nicht gab.
+
+Tatsächlich haben Sie nur die erste Seite gefiltert. Bei hohem Aufkommen deckt die wenige Minuten ab. Das Ergebnis lautet korrekt: nicht im Ausschnitt gefunden. Es lautet nicht: existiert nicht.
+
+Zwei Auswege funktionieren. Verkleinern Sie das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, und gruppieren Sie dann über den gesamten Inhalt. Oder nutzen Sie eine Auswertung, die serverseitig über den ganzen Zeitraum aggregiert. Für die Frage, ob etwas **nie** vorkommt, ist eine Konfigurationsprüfung ohnehin überlegen: Wenn die Gegenstelle keine Route auf ein Ziel besitzt, kann sie dorthin nicht zustellen, unabhängig von jedem Beobachtungsfenster.
+
+## Wann Sie aufhören dürfen
+
+Es gibt einen Punkt, an dem weiteres Graben keinen Wert mehr schafft: wenn die Behebung feststeht, aber der Mechanismus unklar bleibt.
+
+Im Beispiel oben war nach drei Versuchen belegt, dass die Absenderdomäne der Auslöser ist, dass alles andere im Mailweg funktioniert und dass kein breiteres Problem vorliegt. Warum der Cloud-Dienst intern genau so entscheidet, blieb offen. Für die Korrektur war das ohne Bedeutung, denn die lag bei der sendenden Anwendung.
+
+Trennen Sie deshalb bewusst zwischen zwei Fragen. Was muss ich ändern, damit es funktioniert? Und warum verhält sich das System so? Die erste Frage müssen Sie beantworten, die zweite dürfen Sie an den Hersteller geben. Ein Support-Fall mit drei kontrollierten Versuchen, Zeitstempeln, Nachrichten-IDs und einem funktionierenden Gegenbeispiel ist ohnehin um Längen wertvoller als eine Beschreibung des Symptoms.
+
+## Die Kurzfassung
+
+Bestimmen Sie zuerst, wie weit die Nachricht gekommen ist, nicht warum sie scheiterte. Lesen Sie die vollständige Fehlermeldung, nicht den Ereignistyp. Klären Sie früh, ob es ein Einzelfall oder ein Muster ist. Bauen Sie ein Experiment mit genau einer Variable, sobald Sie anfangen, Mechanismen zu konstruieren. Reproduzieren Sie den Fehler im Kontrollversuch, bevor Sie dem Gegenversuch glauben. Halten Sie widerlegte Hypothesen fest. Und hören Sie auf, wenn die Behebung belegt ist, auch wenn die Mechanik es nicht ist.
+
+## Quellen
+
+1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Ereignistypen und Felder, Grundlage für die Bestimmung des letzten Verarbeitungsschritts.
+
+2.  [Exchange Online: Anti-spam message headers](https://learn.microsoft.com/en-us/defender-office-365/message-headers-eop-mdo): Kopfzeilen, mit denen sich die Bewertung einer Nachricht auf der Cloud-Seite nachvollziehen lässt.
+
+3.  [RFC 3463: Enhanced Mail System Status Codes](https://www.rfc-editor.org/rfc/rfc3463): erklärt, warum erweiterte Statuscodes bewusst grobe Klassen sind und denselben Code für verschiedene Ursachen zulassen.
+
+4.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Nachfolger von Get-MessageTrace, inklusive der Seitenlogik, die Stichprobenfehler begünstigt.
+
+----
+
+# Exchange-Mailfluss analysieren: Message Tracking und Receive-Connectoren
+
+URL: https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren
+Datum: 2026-08-11
+
+# Exchange-Mailfluss analysieren: Message Tracking und Receive-Connectoren
+
+Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen nicht sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, und benennt vier Fallstricke, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
+
+Alle Beispiele verwenden generische Namen: `SRV-MAIL01` und `SRV-MAIL02` als Transportserver, `example.com` als Domäne.
+
+## Der Grundsatz: erst lokalisieren, dann erklären
+
+Der Reflex ist, sofort nach der Ursache zu suchen. Effizienter ist es, zuerst zu bestimmen, wie weit die Nachricht überhaupt gekommen ist. Das grenzt den Suchraum in einem Schritt drastisch ein, denn danach wissen Sie, ob Sie im eigenen System, beim vorgelagerten Gateway oder beim Ziel suchen müssen.
+
+Die Reihenfolge lautet deshalb: Nachricht finden, letztes Ereignis lesen, Fehlergrund lesen, Einzelfall oder Muster bestimmen, und erst dann den Einlieferungsweg rekonstruieren.
+
+## Schritt 1: Die Nachricht finden
+
+Beginnen Sie über den Empfänger, denn den kennen Sie fast immer. Wichtig ist, die Abfrage über **alle** Transportserver laufen zu lassen, nicht nur über einen.
+
+```powershell
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-MessageTrackingLog -Server $_ -Start (Get-Date).AddHours(-6) -ResultSize Unlimited -Recipients "empfaenger@example.com" } | Sort-Object Timestamp | Format-Table Timestamp,ServerHostname,EventId,Source,ConnectorId,MessageId -AutoSize -Wrap
+```
+
+Findet die Abfrage nichts, prüfen Sie, ob der Empfänger über einen Verteiler expandiert wurde. Dann suchen Sie besser über den Absender:
+
+```powershell
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-MessageTrackingLog -Server $_ -Start (Get-Date).AddHours(-6) -ResultSize Unlimited } | Where-Object { $_.Sender -like "*@example.com" } | Sort-Object Timestamp | Format-Table Timestamp,EventId,Sender,@{n='To';e={$_.Recipients -join ','}},MessageSubject -AutoSize -Wrap
+```
+
+## Schritt 2: Das letzte Ereignis lesen
+
+Die gesamte Diagnose hängt am **letzten** `EventId` der Nachricht. Er sagt Ihnen, welcher Suchraum als Nächstes dran ist.
+
+| Letzter EventId | Bedeutung | Nächster Schritt |
+|---|---|---|
+| `RECEIVE`, danach nichts | Nachricht steckt fest | Queues prüfen |
+| `SEND` oder `SENDEXTERNAL` | erfolgreich übergeben | beim nächsten Hop weitersuchen |
+| `FAIL` | endgültig gescheitert | Grund in `RecipientStatus` lesen |
+| `DEFER` | Wiederholung läuft | Queue und Zielsystem prüfen |
+| `DROP` oder `POISONMESSAGE` | verworfen | Transportregel oder Agent |
+| `DELIVER` | in ein lokales Postfach zugestellt | Postfachregeln prüfen |
+
+Steckt die Nachricht fest, zeigt die Queue den Grund meist im Klartext:
+
+```powershell
+Get-Queue -Server SRV-MAIL01 | Where-Object { $_.MessageCount -gt 0 } | Format-Table Identity,DeliveryType,Status,MessageCount,NextHopDomain,LastError -AutoSize -Wrap
+```
+
+## Fallstrick 1: Tracking ist serverbezogen, und die Hälfte der Einträge sind Schattenkopien
+
+Wenn Sie in der Ausgabe Paare aus `HARECEIVE` und `HADISCARD` sehen, oft mit dem Zusatz `ExplicitlyDiscarded`, dann hat dieser Server die Nachricht **nicht verarbeitet**. Er hielt nur eine Schattenkopie im Rahmen der Shadow Redundancy, während ein anderer Server die eigentliche Zustellung übernahm. Sobald der primäre Server Erfolg meldet, verwirft der Partner seine Kopie.
+
+Praktisch heisst das zweierlei. Erstens sind solche Zeilen kein Hinweis auf ein Problem, sondern Normalbetrieb. Zweitens müssen Sie zwingend alle Transportserver abfragen, sonst sehen Sie zufällig nur die Schattenseite eines Vorgangs und schliessen daraus auf einen Fehler, den es nicht gibt.
+
+## Fallstrick 2: `Format-Table` schneidet genau die entscheidenden Spalten ab
+
+Der Fehlergrund steht in `RecipientStatus`, und dieses Feld ist lang. In einer Tabelle fällt es entweder ganz weg oder wird abgeschnitten. Genau das führt dazu, dass man den `FAIL` sieht, aber nicht den Grund, und stattdessen zu raten beginnt.
+
+Sobald Sie einen Fehlerfall gefunden haben, wechseln Sie deshalb auf `Format-List` und lösen die Sammelfelder auf:
+
+```powershell
+Get-MessageTrackingLog -Server SRV-MAIL01 -Start (Get-Date).AddHours(-6) -ResultSize Unlimited -Recipients "empfaenger@example.com" -EventId FAIL | Format-List Timestamp,Sender,@{n='To';e={$_.Recipients -join ','}},@{n='Status';e={$_.RecipientStatus -join ' | '}},MessageSubject,MessageId,SourceContext
+```
+
+`RecipientStatus` enthält die vollständige SMTP-Antwort der Gegenstelle samt deren Hostnamen. In den meisten Fällen ist die Diagnose damit bereits erledigt, weil das Zielsystem im Klartext sagt, warum es abgelehnt hat.
+
+## Schritt 3: Einzelfall oder Muster?
+
+Bevor Sie sich in einen einzelnen Fall vertiefen, klären Sie den Umfang. Diese eine Abfrage entscheidet, ob Sie es mit einer Randnotiz oder mit einem Vorfall zu tun haben:
+
+```powershell
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-MessageTrackingLog -Server $_ -Start (Get-Date).AddHours(-8) -EventId FAIL -ResultSize Unlimited } | Where-Object { ($_.RecipientStatus -join '') -like "*5.1.8*" } | Group-Object { ($_.Sender -split '@')[-1] } | Sort-Object Count -Descending | Format-Table Count,Name -AutoSize
+```
+
+Ersetzen Sie `5.1.8` durch den Statuscode, den Sie untersuchen. Steht dort eine einzige Absenderdomäne, ist das Problem eng begrenzt. Stehen dort viele, haben Sie einen Vorfall, und alles andere hat Vorrang. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
+
+## Fallstrick 3: Die `ConnectorId` verrät nicht den echten Receive-Connector
+
+Das ist der teuerste Fallstrick, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
+
+Die Folge: Im Tracking steht als `ConnectorId` praktisch immer `Default <Servername>`, also der interne Connector auf 2525, und als `ClientIp` die Adresse des **proxyenden Servers**, nicht die des ursprünglichen Einlieferers. Welchen der konfigurierten Connectoren auf Port 25 ein System tatsächlich getroffen hat, steht im Tracking schlicht nicht drin.
+
+Es gibt zwei Wege zur Antwort. Der erste ist die Rekonstruktion über die Konfiguration:
+
+```powershell
+'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-ReceiveConnector -Server $_ } | Format-List Identity,Enabled,@{n='Bindings';e={$_.Bindings -join ','}},@{n='RemoteIPRanges';e={$_.RemoteIPRanges -join ','}},PermissionGroups,AuthMechanism
+```
+
+Bestimmen Sie die Quell-IP des einliefernden Systems und suchen Sie den Connector, dessen `RemoteIPRanges` sie enthält. Fällt sie in keinen der eingeschränkten Connectoren, bleibt der Default-Frontend-Connector, der üblicherweise den gesamten Adressraum annimmt. Nutzen Sie auch hier `Format-List`, denn `RemoteIPRanges` und `PermissionGroups` werden in Tabellen regelmässig abgeschnitten.
+
+Der zweite Weg ist das Protokoll des Front End Transport. Nur dort steht die tatsächliche SMTP-Sitzung samt Connector. Die Dateien liegen unterhalb des Exchange-Installationspfads in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive`. Für gezielte Suchen ist ein Textfilter deutlich schneller als eine Objektauswertung über PowerShell:
+
+```powershell
+Select-String -Path "$env:ExchangeInstallPath\TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive\*.log" -Pattern "absender@example.com" -SimpleMatch | Select-Object -First 20
+```
+
+Wollen Sie nur wissen, welche Connectoren überhaupt Verkehr sehen, zählen Sie die Sitzungen statt sie einzeln auszuwerten. Das ist bei grossen Protokolldateien um Grössenordnungen schneller.
+
+## Schritt 4: Berechtigungen prüfen
+
+Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier lauert ein technischer Fallstrick: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit einer irreführenden Meldung, das Objekt sei nicht auffindbar.
+
+```powershell
+$dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName; Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" | Where-Object { $_.ExtendedRights -like "*ms-Exch-SMTP*" } | Format-Table User,@{n='Rights';e={$_.ExtendedRights}} -AutoSize
+```
+
+Die Auswertung ist einfacher, als sie aussieht, wenn Sie zwei Rechte auseinanderhalten:
+
+| Recht | Bedeutung |
+|---|---|
+| `ms-Exch-SMTP-Submit` | darf überhaupt einliefern |
+| `ms-Exch-SMTP-Accept-Any-Sender` | darf beliebige Absenderadressen verwenden |
+| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | darf als eigene Domäne auftreten |
+| `ms-Exch-SMTP-Accept-Any-Recipient` | **darf an fremde Domänen weiterleiten** |
+
+Die ersten drei sind der Standardsatz für anonyme Einlieferung und für den Empfang von Internet-Mail nötig. Erst das vierte Recht macht aus einem Eingangs-Connector ein Relay. Auf einem Connector, der aus dem gesamten Adressraum annimmt, ist es ein offenes Relay. Auf einem Connector mit enger IP-Beschränkung ist es dagegen der übliche und beabsichtigte Weg, damit Applikationsserver extern versenden können.
+
+Verwechseln Sie `Accept-Any-Sender` nicht mit `Accept-Any-Recipient`. Das erste ist harmlos und notwendig, das zweite ist die sicherheitsrelevante Einstellung.
+
+## Schritt 5: Gegenprobe durch eigene Einlieferung
+
+Wenn die Auswertung mehrdeutig bleibt, liefern Sie selbst ein. Damit kontrollieren Sie Absender, Empfänger und Einlieferungspunkt vollständig:
+
+```powershell
+Send-MailMessage -SmtpServer 10.0.0.10 -Port 25 -From 'test@example.com' -To 'empfaenger@example.net' -Subject 'Diagnose, bitte ignorieren' -Body 'Testeinlieferung' -Encoding UTF8
+```
+
+`Send-MailMessage` ist offiziell abgekündigt, für Diagnosezwecke aber weiterhin das schnellste Werkzeug und auf jedem Windows-Server vorhanden. Bei Erfolg gibt es keine Ausgabe, was gewöhnungsbedürftig ist.
+
+Testen Sie eine TLS-Strecke auf Port 587 und die Gegenstelle präsentiert ein Zertifikat, das nicht zum verwendeten Namen passt, etwa weil Sie die IP-Adresse ansprechen, bricht der Aufruf mit einem Zertifikatsfehler ab. Für den Test können Sie die Prüfung in der Sitzung aussetzen:
+
+```powershell
+[Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+```
+
+Das gilt nur für die laufende PowerShell-Sitzung. Setzen Sie es bewusst und nie in Skripten, die im Betrieb laufen.
+
+## Fallstrick 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
+
+In Exchange Online ist `Get-MessageTrace` abgekündigt und durch `Get-MessageTraceV2` ersetzt. Beide liefern seitenweise. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
+
+Kommt nichts zurück, beweist das **nicht**, dass es diesen Verkehr nicht gab. Es beweist nur, dass er nicht im Ausschnitt lag. Achten Sie auf die Warnung über weitere Ergebnisse: Erscheint sie, ist Ihre Auswertung unvollständig.
+
+Es gibt zwei saubere Auswege. Entweder Sie verkleinern das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, und gruppieren dann serverseitig vollständig:
+
+```powershell
+Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -ResultSize 5000 | Group-Object FromIP | Sort-Object Count -Descending | Format-Table Count,Name -AutoSize
+```
+
+Oder Sie nehmen einen Bericht, der serverseitig aggregiert, etwa den Connector-Bericht im Exchange Admin Center unter Berichte und Mailfluss. Für die Frage, ob ein Connector noch genutzt wird, ist der Bericht dem Message Trace klar überlegen.
+
+## Ein Vorgehen, das sich bewährt hat
+
+Zusammengefasst hat sich diese Reihenfolge als schnellste erwiesen. Nachricht über alle Server suchen und das letzte Ereignis bestimmen. Bei einem Fehlschlag sofort auf `Format-List` wechseln und die vollständige SMTP-Antwort lesen, statt aus dem Ereignistyp zu schliessen. Danach den Umfang klären, also gruppieren und zählen. Erst wenn der Fall eng begrenzt ist, den Einlieferungsweg über Connector-Konfiguration und Frontend-Protokoll rekonstruieren. Und zuletzt, wenn nötig, mit einer eigenen Einlieferung gegenprüfen.
+
+Die drei häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine abgeschnittene Tabelle statt der vollständigen Fehlermeldung, man hält Schattenkopien für Verarbeitungsschritte, und man glaubt der `ConnectorId` im Tracking. Wer diese drei kennt, kommt in der Regel in wenigen Minuten zur richtigen Ebene.
+
+## Quellen
+
+1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Feldbeschreibung und vollständige Liste der Ereignistypen im Message Tracking.
+
+2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): Speicherorte und Format der SMTP-Protokolle, inklusive Front End Transport.
+
+3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): erklärt die Ereignisse rund um Schattenkopien und deren Verwerfen.
+
+4.  [Mail routing in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-routing/mail-routing): Zusammenspiel von Front End Transport und Transport Service, Grundlage des Proxy-Verhaltens.
+
+5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): Bindungen, Berechtigungsgruppen und Authentifizierungsmechanismen.
+
+6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Nachfolger von Get-MessageTrace inklusive Seitenlogik.
+
+----
+
 # Typische Ursachen für Mail-Loops und deren Behebung
 
 URL: https://rafaelpfister.ch/blog/typische-ursachen-fuer-mail-loops-und-deren-behebung
@@ -15791,6 +16183,203 @@ Un mail loop risolto è concluso solo quando non arriva soltanto il messaggio di
 9. [Microsoft Learn – Search message tracking logs](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/search-message-tracking-logs): tracciamento locale dei messaggi su tutti i server Exchange.
 
 10. [Microsoft Learn – Hop count exceeded for an on-premises application subdomain](https://learn.microsoft.com/en-us/troubleshoot/exchange/mailflow/hop-count-exceeded-possible-mail-loop): scenario documentato di sottodomain/EdgeSync con dominio Internal Relay esplicito.
+
+----
+
+# Rinnovare il certificato sulla Cisco SMA
+
+URL: https://rafaelpfister.ch/it/blog/rinnovare-il-certificato-sulla-cisco-sma
+Datum: 2026-08-04
+
+# Rinnovare il certificato sulla Cisco SMA
+
+La Cisco SMA (Security Management Appliance, ora commercializzata con il nome Cisco Secure Email and Web Manager) gestisce in molti ambienti di posta elettronica la quarantena spam centralizzata e il reporting per i Secure Email Gateway. Il suo certificato HTTPS copre la GUI di amministrazione e la pagina di quarantena, nella quale gli utenti finali visualizzano e rilasciano le email trattenute. Alla sua scadenza il flusso di posta non si interrompe. Tuttavia, la scadenza diventa subito visibile: ogni accesso alla pagina di quarantena termina con un avviso relativo al certificato nel browser e proprio gli utenti ai quali i corsi di awareness insegnano a non proseguire in presenza di tali avvisi dovrebbero ignorarli.
+
+Durante un rinnovo in un progetto cliente sono emersi subito due ostacoli: dapprima OpenSSL 3 ha risposto al file PFX della CA interna con un errore criptico relativo a `RC2-40-CBC`, poi l’appliance ha rifiutato l’importazione del certificato finale perché non conosceva la Root CA emittente. Entrambi gli ostacoli e le relative soluzioni sono illustrati più avanti.
+
+## Cosa rende la SMA diversa dalla ESA
+
+Sulla ESA l’intero ciclo di vita del certificato può essere gestito tramite GUI (`Network > Certificates`). La SMA non può farlo: il certificato server viene installato esclusivamente tramite CLI, con il comando `certconfig` in una sessione SSH. La GUI della SMA mostra soltanto i certificati; è possibile gestire unicamente gli elenchi delle autorità di certificazione attendibili, come vedremo più avanti.
+
+Vi sono inoltre altre due peculiarità:
+
+- La finestra di inserimento accetta solo il formato PEM. Un file PFX (PKCS#12) deve essere convertito prima dell’installazione; le versioni AsyncOS attuali offrono anche un’importazione diretta PKCS#12, ma il file deve prima essere trasferito sull’appliance.
+- Le versioni AsyncOS meno recenti (quelle documentate nella technote Cisco) non generano autonomamente né chiavi né CSR: la coppia di chiavi deve essere creata esternamente; i tre metodi possibili sono descritti più avanti. Le versioni attuali possono generare direttamente sull’appliance un certificato self-signed con CSR tramite `certconfig > CERTIFICATE > NEW`. Ciò non è però utile per un certificato condiviso tra più appliance, perché in questo caso la chiave privata non lascia mai l’appliance.
+
+Un singolo certificato può servire tutti i servizi (TLS in entrata e in uscita, accesso HTTPS di amministrazione, LDAPS) oppure essere assegnato separatamente a ciascun servizio. Questo viene gestito nella finestra di dialogo `certconfig`; l’intestazione del comando mostra in ogni momento l’assegnazione attiva (`Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.`). Non esiste una schermata di assegnazione separata come sulla ESA e non è possibile modificare questa configurazione tramite GUI. Nella maggior parte degli ambienti, un certificato per tutto è la scelta pragmatica: l’elenco dei nomi copre comunque gli FQDN delle appliance e coppie di chiavi separate moltiplicano il lavoro a ogni rinnovo.
+
+Il fatto che la finestra di dialogo di un’appliance di quarantena chieda informazioni sul TLS inbound e outbound può inizialmente sorprendere, perché la SMA non è collocata in un percorso MX. Tuttavia, comunica via SMTP in entrambe le direzioni. Inbound (Receiving) è il lato di ricezione: le ESA consegnano alla SMA i messaggi messi in quarantena tramite SMTP, nella quarantena spam centrale sulla porta 6025 e nelle quarantene centrali per policy, virus e outbreak sulla porta 7025; queste ultime connessioni sono cifrate con TLS per impostazione predefinita e la SMA presenta proprio questo certificato. Outbound (Delivery) è il lato di invio: quando un utente rilascia un messaggio dalla quarantena, la SMA lo riconsegna autonomamente al flusso di posta tramite le proprie route SMTP; inoltre, l’appliance invia come messaggi propri anche le notifiche di quarantena, i report pianificati e gli avvisi. Per il rinnovo questo significa che in pratica HTTPS è l’aspetto critico; i due servizi SMTP vengono coperti automaticamente dal certificato per tutti i servizi.
+
+## Definire i nomi: CN e SAN
+
+Indipendentemente dal metodo scelto per la coppia di chiavi, occorre prima definire l’elenco dei nomi. Il Common Name deve corrispondere al nome host con cui gli utenti accedono alla pagina di quarantena. Nell’elenco SAN vanno aggiunti gli FQDN delle appliance, affinché anche l’accesso diretto alla GUI di amministrazione funzioni senza avvisi. Per un ambiente con due appliance, l’elenco dei nomi è il seguente:
+
+| Campo | Valore |
+|---|---|
+| CN | `spam-quarantine.example.ch` |
+| SAN | `spam-quarantine.example.ch` |
+| SAN | `sma01.example.ch` |
+| SAN | `sma02.example.ch` |
+
+Due osservazioni: da tempo i browser valutano soltanto le voci SAN; il solo CN non è sufficiente. Il nome host della quarantena deve quindi comparire anche come SAN. Inoltre, nomi host brevi senza componente di dominio (ad esempio `SMA01`) vengono emessi solo da una CA interna; le CA pubbliche non firmano nomi interni.
+
+## Tre metodi per la nuova coppia di chiavi
+
+Per un certificato che copra più appliance e il nome host della quarantena, la coppia di chiavi deve essere generata al di fuori dell’appliance. Si sono affermati tre metodi:
+
+1. Generare chiave e CSR con OpenSSL all’interno del proprio ambiente. La chiave privata viene creata dove serve e non lascia mai l’ambiente. È il metodo consigliato; i dettagli sono nella sezione successiva.
+2. La CA genera la coppia di chiavi e fornisce un file PFX. Funziona, ma presenta due svantaggi: la chiave passa attraverso mani esterne (per questo la password va trasmessa tramite un canale separato e non nella stessa email del file) e, a seconda dello strumento della CA, può essere restituito un PFX cifrato con RC2, che OpenSSL 3 apre solo con un intervento aggiuntivo; maggiori dettagli più avanti.
+3. Il passaggio tramite una ESA, documentato nella technote Cisco: creare un certificato con il CN della SMA in `Network > Certificates`, scaricare la CSR e farla firmare dalla CA, caricare nuovamente il certificato firmato sulla ESA ed esportare il tutto come PFX. Anche in questo caso, alla fine è necessaria la conversione in PEM.
+
+## Avviare OpenSSL in Windows
+
+Tutti i passaggi seguenti utilizzano OpenSSL, su un sistema interno all’ambiente, ad esempio un server di amministrazione. È sufficiente l’edizione Light delle build Windows di Shining Light Productions; l’installer ha una dimensione di circa 6 MB e può essere verificato rispetto all’elenco di checksum pubblicato da slproweb.
+
+L’installer colloca tutto in `C:\Program Files\OpenSSL-Win64`, mentre l’eseguibile si trova in `bin\openssl.exe`. Non viene aggiunto al percorso di ricerca: chi digita `openssl` in un prompt dei comandi appena aperto riceve un messaggio di errore. Ci sono tre modi per risolvere:
+
+- Dal menu Start, aprire la voce `Win64 OpenSSL Command Prompt`. Questa avvia `start.bat` dalla directory di installazione, imposta l’ambiente e visualizza l’output di `openssl version -a`. In questa finestra `openssl` funziona direttamente.
+- Specificare il percorso completo: `"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version`.
+- Aggiungere in modo permanente `C:\Program Files\OpenSSL-Win64\bin` alla variabile d’ambiente `Path`; successivamente `openssl` sarà disponibile in ogni shell.
+
+Chi utilizza già Git per Windows non necessita di installazioni aggiuntive: include la propria versione di OpenSSL (`C:\Program Files\Git\mingw64\bin\openssl.exe`) e nella Git Bash è subito presente nel percorso di ricerca. Le versioni attuali di Git includono OpenSSL 3.5 con Legacy Provider attivo, quindi anche `-legacy` della sezione sulla conversione PFX funziona. È possibile verificarlo così:
+
+```bash
+openssl list -providers -provider legacy
+```
+
+La Git Bash presenta tuttavia un’insidia: considera percorsi gli argomenti che iniziano con `/` e li riscrive. Da `-subj "/C=CH/O=Example AG/CN=..."` diventa `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, e OpenSSL si interrompe:
+
+```text
+req: subject name is expected to be in the format /type0=value0/type1=value1/type2=...
+where characters may be escaped by \. This name is not in that format:
+'C:/Program Files/Git/C=CH/O=Example AG/CN=spam-quarantine.example.ch'
+```
+
+Un `MSYS_NO_PATHCONV=1` anteposto disattiva la riscrittura per quella singola chiamata. Il problema non si presenta nel prompt dei comandi, in PowerShell e nell’OpenSSL Command Prompt.
+
+## Generare chiave e CSR con OpenSSL
+
+Un unico comando genera chiave e CSR con l’intero elenco SAN:
+
+```bash
+openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+```
+
+Il file CSR viene inviato alla CA, mentre la chiave rimane sul server. Si riceve indietro il certificato firmato insieme all’intermediate, in genere direttamente in formato PEM. In questo modo è già disponibile tutto il necessario per l’installazione e la conversione PFX non serve affatto.
+
+Il file della chiave non è cifrato (`-noenc`), perché `certconfig` lo richiede esattamente in questo formato. Fino all’installazione deve restare sul server con autorizzazioni restrittive; successivamente va eliminato o spostato nel gestore di password.
+
+## Convertire PFX in PEM
+
+Questa e la sezione successiva riguardano i metodi 2 e 3, che terminano con un file PFX. `certconfig` richiede certificato e chiave privata in formato PEM, con la chiave non cifrata. Un singolo comando OpenSSL esegue entrambe le operazioni:
+
+```bash
+openssl pkcs12 -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
+```
+
+`-noenc` (fino a OpenSSL 3.0 l’opzione era denominata `-nodes`) scrive la chiave privata senza passphrase nel file di output. La password di importazione viene richiesta senza eco e non vengono visualizzati asterischi. Il file PEM risultante contiene in un unico file certificato, chiave e certificati di catena forniti, quindi va protetto adeguatamente: dopo l’installazione, eliminarlo o spostarlo nel gestore di password.
+
+## Quando OpenSSL 3 rifiuta il file PFX
+
+Con i file PFX meno recenti, la conversione in OpenSSL 3.x si interrompe con il seguente messaggio:
+
+```text
+Error outputting keys and certificates
+error:0308010C:digital envelope routines:inner_evp_generic_fetch:unsupported:
+crypto/evp/evp_fetch.c: Global default library context, Algorithm (RC2-40-CBC : 0)
+```
+
+La causa non è un file danneggiato, bensì una scelta progettuale: OpenSSL 3 ha spostato gli algoritmi legacy come RC2, RC4 e DES in un Legacy Provider separato, che per impostazione predefinita non viene caricato. Tuttavia, molte esportazioni PFX di sistemi Windows e strumenti CA meno recenti cifrano proprio la parte del certificato del contenitore con RC2-40-CBC. OpenSSL 1.1 apriva questi file senza problemi, mentre OpenSSL 3 li rifiuta.
+
+La soluzione consiste in un’unica opzione aggiuntiva:
+
+```bash
+openssl pkcs12 -legacy -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
+```
+
+`-legacy` carica il Legacy Provider per questa chiamata e la conversione viene completata. È necessario disporre di un’installazione OpenSSL che includa il Legacy Provider; le comuni build Windows lo includono.
+
+Per eliminare definitivamente l’errore, occorre intervenire alla fonte ed esportare il file PFX con una cifratura moderna: le finestre di esportazione e gli strumenti CA attuali offrono AES-256, eliminando completamente il ricorso al Legacy Provider.
+
+Come alternativa grafica, funziona XCA (X Certificate and Key Management): importare il file PFX tramite `Importieren > PKCS#12`, quindi esportare il certificato in PEM dalla scheda `Zertifikate` e la chiave separatamente come PEM non cifrato dalla scheda `Private Schlüssel`. Sono necessarie entrambe le esportazioni; `certconfig` richiede certificato e chiave separatamente. XCA include una propria libreria crittografica e apre anche contenitori con algoritmi legacy.
+
+Un’ultima nota sulla fonte di download: il progetto OpenSSL non pubblica direttamente binari per Windows, ma rimanda a build di terzi come Win64 OpenSSL di Shining Light Productions. I portali di download con installer propri non sono la fonte adatta per uno strumento crittografico.
+
+## Importare prima la Root CA interna nel truststore dell’appliance
+
+Le versioni AsyncOS attuali convalidano l’intera catena durante la creazione di un profilo certificato. Se il certificato proviene da una CA interna la cui root non è nota all’appliance, l’importazione si interrompe con il seguente messaggio:
+
+```text
+Cannot import certificate: The certificate authority validation could not be
+trusted for certificate because unable to get local issuer certificate
+```
+
+L’appliance mantiene due elenchi di autorità di certificazione attendibili: l’elenco di sistema incluso e un elenco Custom per CA proprie. La Root CA interna deve essere aggiunta all’elenco Custom prima di installare il certificato server. È necessario solo il certificato CA pubblico in formato PEM (`-----BEGIN CERTIFICATE-----` fino a `-----END CERTIFICATE-----`), non una chiave privata.
+
+Ecco come caricare la Root CA sull’appliance tramite l’interfaccia Web:
+
+1. Aprire `Network > Certificates`.
+2. Nella sezione `Certificate Authorities`, fare clic su `Edit Settings`.
+3. In `Custom List`, selezionare l’opzione `Enable`.
+4. Caricare il file PEM tramite `Choose File`.
+5. Eseguire `Submit` e quindi `Commit Changes`.
+6. In `Network > Certificates > Manage Trusted Root Certificates`, verificare che la CA compaia nell’elenco dei certificati personalizzati.
+
+Se esiste già un elenco Custom, esportarlo prima e aggiungere la nuova CA al bundle PEM esistente: l’importazione sostituisce l’elenco, altrimenti le CA memorizzate in precedenza scompariranno. In caso di catena con livello intermedio, importare prima la Root CA e poi la CA Intermediate. Durante l’importazione, AsyncOS verifica tra l’altro data di scadenza, duplicati e il flag `CA:TRUE` impostato, e rifiuta una Intermediate finché manca la Root corrispondente. La stessa importazione è possibile anche tramite CLI: `certconfig > CERTAUTHORITY > CUSTOM > IMPORT`, quindi `commit`.
+
+Due distinzioni importanti: per gli aggiornamenti tramite proxy con ispezione TLS, la SMA utilizza un truststore separato (`updateconfig > TRUSTED_CERTIFICATES > ADD`), al quale l’elenco Custom CA non si applica. Inoltre, la Root CA sulla SMA non elimina gli avvisi del browser: i client devono continuare a ricevere la root tramite la propria distribuzione di certificati, in genere tramite GPO, e l’appliance deve fornire il certificato server insieme all’intermediate.
+
+## Installazione con certconfig
+
+Accedere alla SMA tramite SSH e avviare `certconfig`. Nelle versioni AsyncOS attuali, la finestra di dialogo utilizza profili certificato:
+
+```text
+sma01.example.ch> certconfig
+
+Currently using one certificate/key for receiving, delivery, HTTPS management access, and LDAPS.
+
+Choose the operation you want to perform:
+- CERTIFICATE - Import, Create a request, Edit or Remove Certificate Profiles
+- CERTAUTHORITY - Manage System and Customized Authorities
+- CRL - Manage Certificate Revocation Lists
+[]> certificate
+```
+
+Dietro `CERTIFICATE` si trovano le operazioni `IMPORT` (file PKCS#12 precedentemente caricato sull’appliance), `PASTE` (incollare il certificato nella CLI), `NEW` (generare un certificato self-signed con CSR), `EDIT`, `EXPORT`, `DELETE` e `PRINT` (mostra l’assegnazione ai servizi). Il metodo consueto tramite SSH è `PASTE`: la finestra richiede un nome per il profilo, quindi il certificato, la chiave privata e, facoltativamente, il certificato Intermediate della CA, ciascuno come blocco PEM e terminato da un singolo `.` su una riga separata. Alla domanda conclusiva relativa alla verifica FQDN del Common Name si può rispondere con il valore predefinito. L’Intermediate deve essere incluso nel profilo, altrimenti ai client manca la catena e, a seconda del browser, l’avviso può rimanere nonostante il certificato valido.
+
+Le versioni AsyncOS meno recenti (quelle documentate nella technote Cisco) mostrano invece una finestra `SETUP`. Inizia con la domanda `Do you want to use one certificate/key for receiving, delivery, HTTPS management access, and LDAPS?`: un `y` assegna la stessa coppia a tutti e quattro i servizi, mentre un `n` ripete la richiesta di certificato, chiave e Intermediate una volta per ciascun servizio. Il principio di inserimento è identico.
+
+Due aspetti determinano il successo o il fallimento: non terminare la sessione con Ctrl+C, poiché questo annulla immediatamente tutte le modifiche. Infine, eseguire `commit`; solo allora il certificato è attivo. Con due appliance, la procedura va ripetuta su entrambe: la configurazione dei certificati non viene sincronizzata tra le SMA.
+
+## Verifica
+
+Il test più rapido viene eseguito dall’esterno contro la pagina di quarantena. L’accesso degli utenti finali alla quarantena spam utilizza per impostazione predefinita la porta HTTPS 83, se non è stata configurata diversamente durante l’attivazione:
+
+```bash
+openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+```
+
+L’output deve mostrare il nuovo Subject e la nuova data di scadenza. Sull’appliance, `certconfig` con l’operazione `PRINT` elenca i certificati attivi; il controllo nel browser della GUI di amministrazione e della pagina di quarantena conferma invece che la catena è configurata correttamente.
+
+## Fonti
+
+1.  [How to Generate and Install a Certificate on an SMA](https://www.cisco.com/c/en/us/support/docs/security/content-security-management-appliance/118460-technote-sma-00.html): technote Cisco con la procedura certconfig delle versioni AsyncOS meno recenti, il requisito PEM e i metodi per la generazione del certificato tramite ESA o OpenSSL.
+
+2.  [Common Administrative Tasks, AsyncOS 16.0 per Cisco Secure Email and Web Manager](https://www.cisco.com/c/en/us/td/docs/security/security_management/sma/sma16-0/user_guide/b_sma_admin_guide_16_0/b_NGSMA_Admin_Guide_chapter_01011.html): capitolo dell’Admin Guide sulla gestione degli elenchi Certificate Authority (elenco System e Custom), incluse le verifiche durante l’importazione della CA.
+
+3.  [Comprehensive Spam Quarantine Setup Guide on ESA and SMA](https://www.cisco.com/c/en/us/support/docs/security/email-security-appliance/118692-configure-esa-00.html): guida Cisco alla quarantena spam, incluso l’accesso degli utenti finali tramite HTTPS sulla porta 83.
+
+4.  [openssl-req](https://docs.openssl.org/master/man1/openssl-req/): riferimento per la generazione di chiave e CSR, incluso `-addext` per l’elenco SAN.
+
+5.  [openssl-pkcs12](https://docs.openssl.org/master/man1/openssl-pkcs12/): riferimento sulle opzioni di conversione, tra cui `-noenc` (in precedenza `-nodes`) e `-legacy`.
+
+6.  [OpenSSL 3.0 Migration Guide](https://docs.openssl.org/3.0/man7/migration_guide/): approfondimento sullo spostamento degli algoritmi legacy nel Legacy Provider.
+
+7.  [XCA: X Certificate and Key Management](https://hohnstaedt.de/xca/): strumento open source per l’importazione e l’esportazione di strutture PKCS#12 e PEM.
+
+8.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): build Windows di Shining Light Productions alle quali rimanda il progetto OpenSSL, incluso l’elenco di checksum pubblicato.
+
+9.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): descrizione della riscrittura automatica dei percorsi che nella Git Bash modifica l’argomento `-subj`, incluso `MSYS_NO_PATHCONV`.
 
 ----
 
