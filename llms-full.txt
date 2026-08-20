@@ -12,6 +12,360 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Stromrechnung lesen und verstehen: Position für Position durch eine EKZ-Rechnung
+
+URL: https://rafaelpfister.ch/blog/stromrechnung-verstehen-ekz
+Datum: 2026-08-20
+
+# Stromrechnung lesen und verstehen: Position für Position durch eine EKZ-Rechnung
+
+Die Stromrechnung gehört zu den Dokumenten, die man bezahlt, ohne sie zu lesen. Dabei ist sie erstaunlich ehrlich aufgebaut: Jede Position hat einen klaren Zweck, einen klaren Absender und eine klare Antwort auf die Frage, ob man daran etwas ändern kann. Wer die vier Blöcke einmal verstanden hat, liest jede Schweizer Stromrechnung, denn der Aufbau ist gesetzlich vorgegeben und bei allen Netzbetreibern gleich.
+
+Dieser Beitrag geht Position für Position durch eine Rechnung der EKZ (Elektrizitätswerke des Kantons Zürich), unserem Netzbetreiber. Die interaktive Beispielrechnung unten folgt dem Aufbau unserer eigenen Quartalsrechnung; die Zahlen sind ein Musterhaushalt mit 1'800 kWh Verbrauch im Quartal, gerechnet mit den echten EKZ-Tarifen 2026.
+
+## Wer überhaupt an der Rechnung mitschreibt
+
+Auf einer Stromrechnung stehen drei Absender, auch wenn nur einer sie verschickt:
+
+1. **Der Energielieferant** verkauft die Kilowattstunden. In der Grundversorgung ist das der lokale Versorger, die Preise prüft der Preisüberwacher respektive die ElCom. Das ist der einzige Block mit Produktwahl.
+2. **Der Netzbetreiber** transportiert den Strom. Das Netz ist ein reguliertes Monopol: Man kann es nicht wechseln, die ElCom prüft die Tarife. Dafür gibt es hier Wahltarife und seit 2026 den LEG-Abschlag.
+3. **Bund, Kanton und Gemeinde** hängen Abgaben an: Netzzuschlag, Stromreserve, kommunale Gebühren. Daran ändert weder Lieferant noch Netzbetreiber etwas.
+
+Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus über die Zeilen der Beispielrechnung (oder tippe sie an), um die Erklärung einzublenden:
+
+<div class="sr-embed">
+<div class="sr-grid">
+<div class="sr-paper" role="group" aria-label="Interaktive Beispielrechnung">
+<div class="sr-head">
+<div class="sr-brand">Musterwerk AG</div>
+<div class="sr-meta">Ihre Rechnung vom 01.03.2026 bis 31.05.2026<br>Musterhaushalt, Einfamilienhaus, Netztarif EKZ Netz 400F, 1'800 kWh</div>
+</div>
+<div class="sr-block">
+<div class="sr-blocktitle">Energielieferung</div>
+<div class="sr-row" tabindex="0" data-sr="energie-winter"><span class="sr-label">Energietarif Jan.–März</span><span class="sr-calc">600 kWh × 13.30 Rp.</span><span class="sr-amount">79.80</span></div>
+<div class="sr-row" tabindex="0" data-sr="energie-sommer"><span class="sr-label">Energietarif Apr.–Juni</span><span class="sr-calc">1'200 kWh × 9.00 Rp.</span><span class="sr-amount">108.00</span></div>
+<div class="sr-row" tabindex="0" data-sr="grundtarif"><span class="sr-label">Grundtarif</span><span class="sr-calc">3 Monate × CHF 3.00</span><span class="sr-amount">9.00</span></div>
+</div>
+<div class="sr-block">
+<div class="sr-blocktitle">Netznutzung</div>
+<div class="sr-row" tabindex="0" data-sr="netz"><span class="sr-label">Netz 400F</span><span class="sr-calc">1'800 kWh × 7.50 Rp.</span><span class="sr-amount">135.00</span></div>
+<div class="sr-row" tabindex="0" data-sr="sdl"><span class="sr-label">Systemdienstleistungen (SDL)</span><span class="sr-calc">1'800 kWh × 0.27 Rp.</span><span class="sr-amount">4.86</span></div>
+</div>
+<div class="sr-block">
+<div class="sr-blocktitle">Messung</div>
+<div class="sr-row" tabindex="0" data-sr="messung"><span class="sr-label">Messtarif</span><span class="sr-calc">3 Monate × CHF 5.00</span><span class="sr-amount">15.00</span></div>
+</div>
+<div class="sr-block">
+<div class="sr-blocktitle">Zuschläge und Abgaben</div>
+<div class="sr-row" tabindex="0" data-sr="bundesabgaben"><span class="sr-label">Bundesabgaben</span><span class="sr-calc">1'800 kWh × 2.30 Rp.</span><span class="sr-amount">41.40</span></div>
+<div class="sr-row" tabindex="0" data-sr="stromreserve"><span class="sr-label">Stromreserve</span><span class="sr-calc">1'800 kWh × 0.41 Rp.</span><span class="sr-amount">7.38</span></div>
+<div class="sr-row" tabindex="0" data-sr="solidarisiert"><span class="sr-label">Solidarisierte Kosten</span><span class="sr-calc">1'800 kWh × 0.05 Rp.</span><span class="sr-amount">0.90</span></div>
+<div class="sr-row" tabindex="0" data-sr="effizienz"><span class="sr-label">Förderung Energieeffizienz</span><span class="sr-calc">1'800 kWh × 0.16 Rp.</span><span class="sr-amount">2.88</span></div>
+</div>
+<div class="sr-block sr-sums">
+<div class="sr-row sr-net" tabindex="0" data-sr="netto"><span class="sr-label">Nettobetrag (exkl. MWST)</span><span class="sr-calc"></span><span class="sr-amount">404.22</span></div>
+<div class="sr-row" tabindex="0" data-sr="mwst"><span class="sr-label">8.1 % Mehrwertsteuer</span><span class="sr-calc"></span><span class="sr-amount">32.74</span></div>
+<div class="sr-row sr-total" tabindex="0" data-sr="total"><span class="sr-label">Rechnungsbetrag</span><span class="sr-calc"></span><span class="sr-amount">CHF 436.95</span></div>
+</div>
+</div>
+<aside class="sr-panel" aria-live="polite">
+<div class="sr-panel-inner" id="sr-panel-target">
+<p class="sr-panel-hint">Fahre über eine Position oder tippe sie an, um zu sehen, was dahintersteckt.</p>
+</div>
+</aside>
+</div>
+<div hidden id="sr-explanations">
+<div data-exp="energie-winter"><strong>Energie, Winterquartal</strong><p>Der eigentliche Strom. Seit 2026 verrechnet die EKZ statt Hoch- und Niedertarif einen Einheitstarif pro Quartal: 13.30 Rp./kWh im Winterhalbjahr (Januar bis März, Oktober bis Dezember). Absender: Energielieferant. Das ist der einzige Block, in dem ein anderes Produkt gewählt werden kann.</p></div>
+<div data-exp="energie-sommer"><strong>Energie, Sommerquartal</strong><p>Dieselbe Energie, anderer Preis: 9.00 Rp./kWh von April bis September. Der Sommer ist günstiger, weil Wasserkraft und Solarstrom dann reichlich vorhanden sind. Die Saisonpreise machen sichtbar, was am Strommarkt schon lange gilt: Strom hat je nach Jahreszeit einen anderen Wert.</p></div>
+<div data-exp="grundtarif"><strong>Grundtarif Energie</strong><p>Fixer Monatsbetrag der Energielieferung (CHF 3.00 pro Monat), unabhängig vom Verbrauch. Deckt Abrechnung und Vertrieb.</p></div>
+<div data-exp="netz"><strong>Netznutzung, Arbeitspreis</strong><p>Der Transport: Bau, Betrieb und Unterhalt des Stromnetzes. Ein reguliertes Monopol, wechseln kann man den Netzbetreiber nicht. Der Preis hängt vom gewählten Netzprodukt ab: Standardtarif 400ST 7.95 Rp./kWh, 400F mit netzdienlicher Steuerung 7.50 Rp./kWh, Wärmepumpentarif 400WP 6.45 Rp./kWh (alle exkl. MWST). Genau an dieser Position setzt der LEG-Abschlag von 20 oder 40 Prozent an.</p></div>
+<div data-exp="sdl"><strong>Systemdienstleistungen</strong><p>Der Beitrag an Swissgrid für die Stabilität des Übertragungsnetzes: Frequenzhaltung, Regelleistung, Blindenergie. 0.27 Rp./kWh, bei allen Netzbetreibern ähnlich.</p></div>
+<div data-exp="messung"><strong>Messung</strong><p>Betrieb des Zählers und Bereitstellung der Messdaten, seit 2026 als eigene Position ausgewiesen (vorher in der Netznutzung enthalten). CHF 5.00 pro Monat. Der Smart Meter, der hier bezahlt wird, ist übrigens die technische Voraussetzung für eine LEG-Teilnahme.</p></div>
+<div data-exp="bundesabgaben"><strong>Bundesabgaben (Netzzuschlag)</strong><p>Der gesetzliche Netzzuschlag nach Art. 35 Energiegesetz: 2.30 Rp./kWh für die Förderung erneuerbarer Energien und die ökologische Sanierung der Wasserkraft. Vom Bund festgelegt, bei jedem Endverbraucher gleich.</p></div>
+<div data-exp="stromreserve"><strong>Stromreserve</strong><p>Swissgrid-Tarif zur Finanzierung der Winterreserve: Wasserkraftreserve, Reservekraftwerke, Notstromgruppen. Eine Folge der Energiekrise 2022. 0.41 Rp./kWh.</p></div>
+<div data-exp="solidarisiert"><strong>Solidarisierte Kosten</strong><p>Schweizweit umgelegte Kosten für Netzverstärkungen (etwa für den Anschluss von Solaranlagen) und Unterstützungsmassnahmen. Die kleinste Position: 0.05 Rp./kWh.</p></div>
+<div data-exp="effizienz"><strong>Förderung Energieeffizienz</strong><p>Kantonale respektive kommunale Abgabe für Energieberatung und Förderprogramme, 0.16 Rp./kWh. Je nach Gemeinde können hier zusätzlich Konzessionsabgaben stehen.</p></div>
+<div data-exp="netto"><strong>Nettobetrag</strong><p>Summe aller Positionen vor Mehrwertsteuer. Bei diesem Musterhaushalt: rund 22.5 Rp. pro verbrauchte kWh, wovon nur etwa 10.4 Rp. tatsächlich Energie sind.</p></div>
+<div data-exp="mwst"><strong>Mehrwertsteuer</strong><p>8.1 Prozent auf den Nettobetrag, auf alle Positionen inklusive der staatlichen Abgaben. Ja: auf Abgaben wird Mehrwertsteuer erhoben.</p></div>
+<div data-exp="total"><strong>Rechnungsbetrag</strong><p>Der Endbetrag wird auf 5 Rappen gerundet, deshalb weicht er um wenige Rappen von der exakten Summe ab. Die Rundungsdifferenz weist die EKZ separat aus.</p></div>
+</div>
+</div>
+
+<style>
+.sr-embed { margin: 28px 0; }
+.sr-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.sr-paper { background: var(--card, #fffaf3); border: 1px solid var(--hairline, #dfdad9); border-radius: 12px; padding: 20px 22px; font-size: 14.5px; }
+.sr-head { border-bottom: 1px solid var(--hairline, #dfdad9); padding-bottom: 12px; margin-bottom: 12px; }
+.sr-brand { font-weight: 700; letter-spacing: 0.02em; }
+.sr-meta { color: var(--muted, #52525b); font-size: 13px; margin-top: 4px; line-height: 1.45; }
+.sr-blocktitle { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted, #52525b); margin: 14px 0 4px; }
+.sr-row { display: flex; gap: 10px; align-items: baseline; padding: 6px 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; outline-offset: 2px; }
+.sr-row:hover, .sr-row:focus-visible, .sr-row.sr-active { background: var(--surface, #f2e9e1); }
+.sr-row.sr-active .sr-label { color: var(--accent, #286983); }
+.sr-label { flex: 1 1 auto; min-width: 0; }
+.sr-calc { color: var(--faint, #a1a1aa); font-size: 12.5px; white-space: nowrap; }
+.sr-amount { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 64px; text-align: right; }
+.sr-sums { border-top: 1px solid var(--hairline, #dfdad9); margin-top: 14px; padding-top: 6px; }
+.sr-total .sr-label, .sr-total .sr-amount { font-weight: 700; font-size: 15.5px; }
+.sr-panel { position: sticky; top: 96px; }
+.sr-panel-inner { background: var(--surface, #f2e9e1); border: 1px solid var(--hairline, #dfdad9); border-radius: 12px; padding: 16px 18px; font-size: 14.5px; line-height: 1.55; min-height: 120px; }
+.sr-panel-inner p { margin: 6px 0 0; }
+.sr-panel-hint { color: var(--muted, #52525b); font-style: italic; }
+@media (max-width: 760px) {
+  .sr-grid { grid-template-columns: 1fr; }
+  .sr-panel { position: static; }
+  .sr-calc { display: none; }
+}
+</style>
+
+<script>
+(function () {
+  var embed = document.querySelector(".sr-embed");
+  if (!embed) return;
+  var panel = embed.querySelector("#sr-panel-target");
+  var expl = embed.querySelector("#sr-explanations");
+  var active = null;
+  function show(row) {
+    if (!row || !panel || !expl) return;
+    var key = row.getAttribute("data-sr");
+    var content = expl.querySelector('[data-exp="' + key + '"]');
+    if (!content) return;
+    if (active) active.classList.remove("sr-active");
+    active = row;
+    row.classList.add("sr-active");
+    panel.innerHTML = content.innerHTML;
+  }
+  embed.addEventListener("mouseover", function (e) {
+    var row = e.target.closest(".sr-row");
+    if (row) show(row);
+  });
+  embed.addEventListener("click", function (e) {
+    var row = e.target.closest(".sr-row");
+    if (row) show(row);
+  });
+  embed.addEventListener("focusin", function (e) {
+    var row = e.target.closest(".sr-row");
+    if (row) show(row);
+  });
+})();
+</script>
+
+## Die vier Blöcke im Einzelnen
+
+Für alle, die lieber im Fliesstext lesen (und für Suchmaschinen), hier dieselben Positionen ausführlich.
+
+### Energielieferung: der einzige Block mit Produktwahl
+
+Die Energielieferung ist der Strom selbst. In der Grundversorgung, in der die allermeisten Haushalte sind, legt der lokale Versorger den Tarif jährlich fest und die ElCom prüft ihn. Bei der EKZ heisst das Standardprodukt «EKZ Energie Erneuerbar» und kostet 2026 im Winterhalbjahr 13.30 Rp./kWh, im Sommerhalbjahr 9.00 Rp./kWh (exkl. MWST).
+
+Bemerkenswert ist, was 2026 verschwunden ist: der Hoch- und Niedertarif. Statt «tagsüber teuer, nachts günstig» gilt neu ein Einheitstarif, der sich pro Quartal ändert. Der klassische Ratschlag, die Waschmaschine nachts laufen zu lassen, ist damit tariflich überholt; die Saison zählt, nicht die Uhrzeit. Wer es genauer will, kann in den dynamischen Wahltarif wechseln, bei dem der Preis stündlich dem Börsenpreis folgt.
+
+Dazu kommt ein fixer Grundtarif von CHF 3.00 pro Monat.
+
+### Netznutzung: das regulierte Monopol
+
+Die Netznutzung bezahlt Bau, Betrieb und Unterhalt der Leitungen, Trafostationen und Unterwerke. Netzbetreiber lassen sich nicht wechseln; als Ausgleich sind die Tarife reguliert und von der ElCom überprüfbar.
+
+Innerhalb des Monopols gibt es aber Wahlmöglichkeiten, die sich lohnen können. Die EKZ führt 2026 drei Netzprodukte für Haushalte:
+
+| Netzprodukt | Arbeitspreis (exkl. MWST) | Bedingung |
+| --- | --- | --- |
+| EKZ Netz 400ST (Standard) | 7.95 Rp./kWh | keine |
+| EKZ Netz 400F | 7.50 Rp./kWh | EKZ darf flexible Lasten (Boiler, Wärmepumpe) netzdienlich steuern |
+| EKZ Netz 400WP | 6.45 Rp./kWh | Wärmeanwendungen mit Steuerung |
+
+Wer die Steuerung seines Boilers zulässt, spart also knapp einen halben Rappen pro Kilowattstunde gegenüber dem Standard. Und seit 2026 gibt es einen zweiten Hebel an dieser Position: Wer einer lokalen Elektrizitätsgemeinschaft (LEG) beitritt, erhält auf dem Arbeitspreis der Netznutzung einen gesetzlichen Abschlag von 20 oder 40 Prozent für den lokal gehandelten Strom. Was eine LEG ist, steht im [eigenen Beitrag](/blog/lokale-elektrizitaetsgemeinschaft-leg-erklaert); ob sich das rechnet, [im nächsten](/blog/lohnt-sich-leg-beitritt).
+
+Die Position «Systemdienstleistungen» (0.27 Rp./kWh) geht an Swissgrid für die Stabilität des Gesamtsystems: Frequenzhaltung, Regelenergie, Schwarzstartfähigkeit.
+
+### Messung: neu sichtbar
+
+Seit 2026 weist die EKZ die Messkosten separat aus: CHF 5.00 pro Monat für Zähler, Datenübertragung und Bereitstellung der Messwerte. Vorher steckte das unsichtbar in der Netznutzung. Der Smart Meter, der hier bezahlt wird, misst viertelstundengenau und ist die technische Grundlage für alles, was der Strommarkt gerade Neues lernt: dynamische Tarife, LEG-Abrechnung, Lastverschiebung.
+
+### Zuschläge und Abgaben: der staatliche Block
+
+Vier Positionen, auf die weder Lieferant noch Netzbetreiber Einfluss haben:
+
+- **Bundesabgaben** (2.30 Rp./kWh): der Netzzuschlag nach Energiegesetz, finanziert die Förderung erneuerbarer Energien und die Sanierung der Wasserkraft.
+- **Stromreserve** (0.41 Rp./kWh): die Versicherungsprämie des Landes gegen Strommangellagen, eingeführt nach dem Winter 2022/23. Bezahlt Wasserkraftreserve und Reservekraftwerke.
+- **Solidarisierte Kosten** (0.05 Rp./kWh): schweizweit umgelegte Netzverstärkungen, etwa für Solaranlagen-Anschlüsse.
+- **Förderung Energieeffizienz** (0.16 Rp./kWh): kantonale und kommunale Förderprogramme und Energieberatung. Je nach Wohnort kommen kommunale Konzessionsabgaben dazu.
+
+Ganz unten schliesslich die Mehrwertsteuer: 8.1 Prozent auf alles, auch auf die Abgaben.
+
+## Was pro Kilowattstunde übrig bleibt
+
+Rechnet man die Musterrechnung auf eine einzelne Kilowattstunde um (Sommerquartal, Tarif 400F), ergibt sich ungefähr dieses Bild: 9.0 Rp. Energie, 7.8 Rp. Netz und Systemdienstleistungen, 2.9 Rp. Abgaben, dazu anteilig Grund- und Messtarif sowie MWST. Ergebnis: Von rund 21 bis 22 Rappen pro kWh ist nicht einmal die Hälfte der eigentliche Strom. Wer über Strompreise diskutiert, diskutiert zur Hälfte über Netz und Staat.
+
+Genau deshalb lohnt der Blick auf die Positionen: Der grösste einzelne Hebel eines Haushalts liegt beim Verbrauch selbst, danach kommen Netzprodukt-Wahl, Energieprodukt und neu die LEG. Für Letztere haben wir einen [Preisrechner](/tools/leg-rechner) gebaut, der die Rechnung dieses Artikels fortführt.
+
+*Alle Tarife: EKZ 2026, exkl. MWST, Quelle: EKZ-Tarifsammlung 2026. Andere Netzgebiete haben andere Preise, aber denselben Rechnungsaufbau.*
+
+----
+
+# Was sind eigentlich diese LEGs? Lokale Elektrizitätsgemeinschaften erklärt
+
+URL: https://rafaelpfister.ch/blog/lokale-elektrizitaetsgemeinschaft-leg-erklaert
+Datum: 2026-08-20
+
+# Was sind eigentlich diese LEGs? Lokale Elektrizitätsgemeinschaften erklärt
+
+Seit dem 1. Januar 2026 steht im Schweizer Strommarkt etwas grundlegend Neues: Privatpersonen dürfen selbst produzierten Strom übers öffentliche Netz an ihre Nachbarschaft verkaufen. Das Gefäss dafür heisst lokale Elektrizitätsgemeinschaft, kurz LEG, und stammt aus dem Stromversorgungsgesetz, das mit dem Energie-Mantelerlass revidiert wurde (die Vorlage, die das Stimmvolk im Juni 2024 mit 68.7 Prozent angenommen hat). Dieses Jahr sind die ersten LEGs gestartet, auch in unserer Region, und mit den ersten Aufnahmebestätigungen kommen die Fragen: Was ist das genau? Und was bedeutet dieser «Abschlag von 20 Prozent auf die Netznutzung»?
+
+## Das Prinzip: lokaler Stromhandel übers öffentliche Netz
+
+Bisher galt: Wer Solarstrom übrig hat, speist ihn ein und erhält vom Netzbetreiber eine Rückliefervergütung. Wer keinen produziert, kauft beim Versorger. Ein direkter Verkauf an die Nachbarin war nur möglich, wenn man sich physisch hinter demselben Netzanschluss zusammenschloss (dazu gleich mehr).
+
+Eine LEG hebt diese Grenze auf: Produzenten, Speicherbetreiber und Verbraucher im gleichen Gebiet schliessen sich vertraglich zusammen und handeln Strom untereinander, zu selbst festgelegten Preisen, über das ganz normale öffentliche Netz. Physisch fliesst der Strom wie immer den kürzesten Weg; die LEG ist eine bilanzielle Konstruktion. Der Smart Meter macht es möglich: Er misst jede Viertelstunde, wer wie viel produziert und verbraucht. Produziert ein Mitglied in einer Viertelstunde 2 kWh Überschuss und verbrauchen andere Mitglieder gleichzeitig mindestens 2 kWh, gelten diese 2 kWh als innerhalb der Gemeinschaft geliefert.
+
+Was in einer Viertelstunde nicht lokal gedeckt ist, kommt wie bisher aus der Grundversorgung. Niemand hängt wegen einer LEG plötzlich «nur noch an der Sonne».
+
+## Der Rabatt: 20 oder 40 Prozent auf den Netz-Arbeitspreis
+
+Der Anreiz des Gesetzgebers: Für Strom, der innerhalb der LEG gehandelt wird, gilt ein reduziertes Netznutzungsentgelt. Die Logik dahinter ist physikalisch begründet: Lokaler Strom beansprucht die höheren Netzebenen (Hochspannung, Übertragungsnetz) nicht oder kaum, also soll er auch nicht den vollen Netztarif bezahlen.
+
+Die Reduktion ist gestaffelt:
+
+- **40 Prozent Abschlag**, wenn alle Teilnehmer an derselben Netzebene ohne Transformation angeschlossen sind, praktisch: am selben Quartiernetz hinter derselben Trafostation.
+- **20 Prozent Abschlag**, sobald der Austausch über mehrere Netzebenen läuft, was bei jeder gemeindeweiten LEG der Fall ist, weil zwischen den Ortsteilen Trafostationen liegen.
+
+Wichtig, und das wird in jeder Diskussion falsch verstanden: Der Abschlag gilt **nur auf dem Arbeitspreis der Netznutzung** und **nur für die LEG-intern gehandelten Kilowattstunden**. Energiepreis, Systemdienstleistungen, Bundesabgaben, Stromreserve, Mess- und Grundtarife laufen unverändert weiter. Wer wissen will, welcher Anteil der Stromrechnung das überhaupt ist: [Die Rechnung haben wir hier Position für Position zerlegt](/blog/stromrechnung-verstehen-ekz). Ob unter dem Strich etwas übrig bleibt, rechnet [der nächste Beitrag](/blog/lohnt-sich-leg-beitritt) durch.
+
+## LEG, ZEV, vZEV: die Abgrenzung
+
+Die LEG ist das dritte Modell einer Familie, und die Begriffe werden munter durcheinandergeworfen:
+
+| Modell | Seit | Raum | Netznutzung auf internem Strom |
+| --- | --- | --- | --- |
+| ZEV (Zusammenschluss zum Eigenverbrauch) | 2018 | Hinter demselben Netzanschluss (Haus, Areal), eigene Messung | keine |
+| vZEV (virtueller ZEV) | 2025 | Benachbarte Grundstücke am selben Anschlusspunkt, Abrechnung über Smart Meter | keine |
+| LEG | 2026 | Gleiches Gemeindegebiet und Netzgebiet, übers öffentliche Netz | reduziert (minus 20 respektive 40 Prozent) |
+
+Kurzform: Im ZEV und vZEV gehört einem die Leitung (oder man tut bilanziell so), deshalb entfällt die Netznutzung ganz. Die LEG nutzt das öffentliche Netz und bezahlt dafür, einfach weniger. Dafür skaliert sie über ganze Dörfer und Städte.
+
+## Voraussetzungen für eine LEG
+
+Damit eine LEG bewilligt wird, gelten ein paar Grundregeln:
+
+- **Gleiche Gemeinde, gleicher Netzbetreiber:** Alle Teilnehmer liegen im selben Gemeindegebiet und im Netzgebiet desselben Verteilnetzbetreibers.
+- **Produktionsleistung:** Die Produktionsanlagen der LEG müssen zusammen mindestens 5 Prozent der gesamten Anschlussleistung aller teilnehmenden Endverbraucher erreichen. Eine LEG ohne nennenswerte Produktion ist nicht vorgesehen.
+- **Smart Meter für alle:** Ohne viertelstundengenaue Messung keine Zuordnung. Die flächendeckenden Rollouts der letzten Jahre zahlen sich hier aus.
+- **Vertrag und Organisation:** Preise, Verteilschlüssel und Verwaltung regelt die Gemeinschaft selbst; der Netzbetreiber liefert Messdaten und verrechnet das reduzierte Netzentgelt.
+
+## Selbst organisieren oder das Netzbetreiber-Angebot nehmen
+
+In der Praxis gibt es zwei Wege. Der puristische: Man gründet die LEG selbst, handelt Preise unter den Mitgliedern aus und organisiert die Abrechnung (es entsteht gerade ein kleiner Markt an Abrechnungsdienstleistern dafür). Das maximiert die Gestaltungsfreiheit und den möglichen Vorteil, kostet aber Organisationsarbeit.
+
+Der bequeme: Viele Netzbetreiber bieten LEGs inzwischen als fertiges Produkt an, im EKZ-Gebiet zum Beispiel unter dem Namen «Gemeinsamstrom». Dort übernimmt die EKZ Gründung, Teilnehmerverwaltung und Abrechnung, die Energiepreise für Bezüger entsprechen der Grundversorgung, und lokale Produzenten erhalten eine fixe, saisonale Vergütung. Für diese Dienstleistung verrechnet die EKZ eine Servicegebühr pro LEG-Kilowattstunde. Die ersten gemeindeweiten LEGs dieser Art sind im Sommer 2026 gestartet, und die Aufnahme läuft für Bezüger formlos: Anmelden, Bestätigung abwarten, fertig. Am Zähler, am Anschluss und am Vertrag mit dem Netzbetreiber ändert sich nichts.
+
+Bequemlichkeit hat einen Preis, und beim Netzbetreiber-Modell steckt er in der Servicegebühr. Wie stark sie den gesetzlichen Rabatt auffrisst, hängt vom eigenen Netztarif ab; die Details samt Beispielrechnung stehen im [Folgebeitrag](/blog/lohnt-sich-leg-beitritt), und wer die eigenen Zahlen einsetzen will, nimmt den [LEG-Preisrechner](/tools/leg-rechner).
+
+## Einordnung: Was die LEG will
+
+Man kann die LEG als Renditevehikel missverstehen und wird dann enttäuscht (Spoiler: Beim Standardangebot des Netzbetreibers ist der finanzielle Effekt für reine Bezüger etwa null). Gedacht ist sie als Marktinstrument: Lokale Produktion soll lokal einen Abnehmer und einen fairen Preis finden, Produzenten sollen mehr erlösen als die magere Rückliefervergütung, und das Netz soll profitieren, wenn Strom dort verbraucht wird, wo er entsteht. Ob das aufgeht, entscheidet sich an der Beteiligung, und die beginnt damit, dass man versteht, was man da unterschreibt.
+
+----
+
+# Lohnt sich der Beitritt zu einer LEG? Eine ehrliche Beispielrechnung
+
+URL: https://rafaelpfister.ch/blog/lohnt-sich-leg-beitritt
+Datum: 2026-08-20
+
+# Lohnt sich der Beitritt zu einer LEG? Eine ehrliche Beispielrechnung
+
+Die Aufnahmebestätigung einer lokalen Elektrizitätsgemeinschaft liest sich verheissungsvoll: «Abschlag auf die Netznutzungskosten: 20 %». Wir sind seit diesem Sommer selbst Mitglied einer gemeindeweiten LEG im EKZ-Gebiet, und bevor die erste Rechnung kommt, wollte ich wissen, was dieser Rabatt in Franken bedeutet. Die kurze Antwort hat mich selbst überrascht: Auf unserer Stromrechnung wird sich der Betrag um ziemlich genau null Franken ändern. Und das ist kein Versehen, sondern Absicht. Die lange Antwort lohnt sich trotzdem, denn sie zeigt, wann eine LEG eben doch Geld bringt.
+
+Falls LEGs neu sind: [Hier steht, wie sie funktionieren.](/blog/lokale-elektrizitaetsgemeinschaft-leg-erklaert) Falls die Stromrechnung neu ist: [Hier ist sie Position für Position erklärt.](/blog/stromrechnung-verstehen-ekz)
+
+## Drei Einschränkungen, die im Begrüssungsschreiben nicht stehen
+
+Der 20-Prozent-Abschlag klingt nach 20 Prozent weniger Stromkosten. Tatsächlich gilt er:
+
+1. **Nur auf dem Arbeitspreis der Netznutzung.** Nicht auf der Energie, nicht auf den Abgaben, nicht auf Mess- und Grundtarif. Beim EKZ-Netztarif 400F sind das 7.50 Rp./kWh von insgesamt rund 22 Rp./kWh Vollkosten.
+2. **Nur auf dem LEG-Anteil des Verbrauchs.** Also auf den Kilowattstunden, die viertelstundengenau durch gleichzeitige lokale Produktion gedeckt sind. Bei einem Haushalt ohne besondere Laststeuerung sind das grob 20 bis 40 Prozent des Jahresverbrauchs, nachts und im Winter naturgemäss wenig.
+3. **Abzüglich der Kosten des Anbieters.** Wer die LEG nicht selbst organisiert, sondern das Komfort-Angebot des Netzbetreibers nutzt, bezahlt dafür eine Servicegebühr pro LEG-Kilowattstunde.
+
+Und an Punkt 3 entscheidet sich alles.
+
+## Die Rechnung am EKZ-Angebot «Gemeinsamstrom»
+
+Die EKZ verrechnet für ihr LEG-Produkt eine Servicegebühr von 1.50 Rp./kWh (exkl. MWST) auf jeder LEG-Kilowattstunde. Der 20-Prozent-Abschlag auf dem Netztarif 400F beträgt: 7.50 × 0.20 = **1.50 Rp./kWh**.
+
+Das ist kein Zufall, das ist Produktdesign. Pro LEG-Kilowattstunde sieht die Rechnung so aus (alle Werte exkl. MWST, EKZ-Tarife 2026, Sommer- respektive Winterquartal):
+
+| pro kWh | Grundversorgung | als LEG-Bezug |
+| --- | --- | --- |
+| Energie | 9.00 / 13.30 | 9.00 / 13.30 (Preis der Grundversorgung) |
+| Netznutzung 400F | 7.50 | 6.00 (minus 20 %) |
+| LEG-Servicegebühr | keine | 1.50 |
+| SDL und Abgaben | 3.19 | 3.19 |
+| **Total** | **19.69 / 23.99** | **19.69 / 23.99** |
+
+Der Rabatt und die Gebühr heben sich exakt auf. Die EKZ schreibt selbst, das Angebot sei ein «Upgrade auf lokalen Sonnenstrom ohne Mehrkosten gegenüber der Grundversorgung», und genau so ist es gemeint: kostenneutral, nicht kostensenkend. Wer den Standardtarif 400ST hat (7.95 Rp./kWh), gewinnt rechnerisch 0.09 Rp. pro LEG-kWh; beim Wärmepumpentarif 400WP (6.45 Rp./kWh) verliert er 0.21 Rp. In Franken: Bei 10'000 kWh Jahresverbrauch und optimistischen 30 Prozent LEG-Anteil reden wir über plus/minus wenige Franken **pro Jahr**. Das ist Rundungsrauschen, keine Rendite.
+
+So sieht es auch bei uns aus: gleicher Rechnungsbetrag wie vorher, einzig die Rechnung bekommt neue Positionen (reduzierte Netznutzung plus Servicegebühr auf dem LEG-Anteil), und bilanziell stammt ein Teil des Bezugs neu von Dächern aus der Gemeinde statt aus dem allgemeinen Liefermix.
+
+## Wann eine LEG finanziell doch etwas bringt
+
+Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Wege heraus:
+
+**1. Die 40-Prozent-Stufe.** Hängen alle Teilnehmer an derselben Trafostation, gilt der doppelte Abschlag: 40 Prozent von 7.50 Rp. sind 3.00 Rp., minus 1.50 Rp. Servicegebühr bleiben **1.50 Rp. pro LEG-kWh**. Bei 3'000 LEG-kWh im Jahr rund 49 Franken (inkl. MWST). Immer noch kein Vermögen, aber ein echter Rabatt. Quartier-LEGs sind darum finanziell interessanter als Gemeinde-LEGs.
+
+**2. Selbst organisieren.** Die Servicegebühr ist der Preis fürs Nichtstun. Eine selbst verwaltete LEG behält den vollen Abschlag und legt die Energiepreise intern fest; dafür braucht sie jemanden, der Verträge, Verteilschlüssel und Abrechnung stemmt. Ab einer gewissen Grösse und mit günstigem Abrechnungsdienstleister kann das aufgehen, für einzelne Haushalte kaum.
+
+**3. Eigene Produktion.** Der eigentliche Gewinner der LEG ist die Solaranlage. Die EKZ vergütet LEG-Produzenten bis 30 kWp saisonal 11.97 Rp./kWh (Winterquartale) und 9.00 Rp./kWh (Sommerquartale, beide exkl. MWST). Die normale Rückliefervergütung richtet sich dagegen nach dem vierteljährlichen Referenz-Marktpreis; gesetzlich garantiert sind für Anlagen unter 30 kW nur 6.00 Rp./kWh, plus bis zu 3.00 Rp. für Herkunftsnachweise. Der Vergleich für 2026:
+
+| Überschuss-Vergütung, exkl. MWST | Winterquartal | Sommerquartal |
+| --- | --- | --- |
+| Rücklieferung an EKZ (Referenz-Marktpreis, mit HKN-Verkauf, gedeckelt) | ca. 11.0 Rp./kWh | ca. 9.0 Rp./kWh |
+| Verkauf in die LEG (Anlage bis 30 kWp) | 11.97 Rp./kWh | 9.00 Rp./kWh |
+
+Im Sommer, wenn der meiste Überschuss anfällt, nehmen sich beide Wege 2026 fast nichts; im Winter liegt die LEG etwa einen Rappen vorn. Der grössere Effekt ist strategisch: Die LEG-Vergütung ist an die Energiekomponente der Grundversorgung gekoppelt und damit planbarer als der Referenz-Marktpreis, der mit jedem Solarzubau weiter unter Druck gerät. Wer die Anlage erst plant, hat mit einer LEG einen verlässlicheren Absatzkanal als mit dem Spotmarkt.
+
+## Gibt es Gründe, wieder auszutreten?
+
+Finanziell beim Netzbetreiber-Modell: nein, es gibt schlicht nichts zu holen und nichts zu verlieren. Beim EKZ-Angebot gilt ein monatliches Rückkehrrecht ohne Wechselgebühren, und für den Reststrom bleibt man ohnehin Grundversorgungskunde. Zwei Dinge würde ich mir als Mitglied trotzdem jährlich ansehen:
+
+- **Das Verhältnis von Abschlag zu Servicegebühr.** 2026 ist es auf exakt null austariert. Ändert der Netzbetreiber Netztarif oder Gebühr fürs Folgejahr asymmetrisch, kann aus der Nullnummer ein kleines Plus oder Minus werden. Die Tarifblätter fürs Folgejahr erscheinen jeweils Ende August.
+- **Kompatibilität mit Tarifwechseln.** Wer auf einen dynamischen Tarif oder ein anderes Energieprodukt wechseln will, sollte klären, ob sich das mit dem LEG-Bezug kombinieren lässt.
+
+## Fazit
+
+Der 20-Prozent-Abschlag ist echtes Geld, es landet beim Standard-Angebot nur nicht beim Bezüger, sondern beim Anbieter, der dafür die gesamte Organisation übernimmt. Für reine Bezüger ist der LEG-Beitritt damit eine ideelle Entscheidung zum Nulltarif: lokaler Solarstrom in der Bilanz, bessere Vergütung für die Produzenten im Dorf, kein eigenes Risiko. Für Produzenten und für Quartier-Konstellationen mit 40 Prozent Abschlag wird es auch finanziell interessant.
+
+Wer die eigenen Zahlen durchspielen will (anderer Netztarif, anderer LEG-Anteil, eigene PV, andere Servicegebühr): Dafür gibt es jetzt den [LEG-Preisrechner](/tools/leg-rechner), der genau diese Rechnung interaktiv macht.
+
+*Zahlen: EKZ-Tarifsammlung 2026 und EKZ-Produkt «Gemeinsamstrom», Stand August 2026, exkl. MWST. Andere Netzbetreiber, andere Konditionen; die Mechanik bleibt dieselbe.*
+
+----
+
+# Neues Tool: LEG-Preisrechner
+
+URL: https://rafaelpfister.ch/blog/leg-preisrechner
+Datum: 2026-08-20
+
+# Neues Tool: LEG-Preisrechner
+
+Die Rechnung, ob sich eine lokale Elektrizitätsgemeinschaft lohnt, ist keine hohe Mathematik: Netznutzungsabschlag minus Servicegebühr, mal LEG-Anteil, mal Jahresverbrauch. Trotzdem macht sie kaum jemand, bevor er die Beitrittserklärung unterschreibt, vermutlich weil die Zahlen dazu in drei verschiedenen Tarifblättern stehen. Der neue **[LEG-Preisrechner](/tools/leg-rechner)** macht sie in Sekunden.
+
+## Was der Rechner kann
+
+**Für Bezüger:** Jahresverbrauch, Netztarif, Abschlagsstufe (20 oder 40 Prozent), erwarteter LEG-Anteil und die Servicegebühr des Anbieters eingeben; der Rechner zeigt den Effekt pro Kilowattstunde und pro Jahr, in Franken und inklusive Mehrwertsteuer. Die [im Blog hergeleitete Erkenntnis](/blog/lohnt-sich-leg-beitritt), dass sich beim EKZ-Standardangebot Rabatt und Gebühr exakt aufheben, lässt sich damit nicht nur nachvollziehen, sondern auf die eigene Situation übertragen: Anderer Netztarif, andere Gebühr, anderer Abschlag, und schon kippt die Rechnung in die eine oder andere Richtung.
+
+**Für Produzenten:** Wer eine Solaranlage hat oder plant, vergleicht den Verkauf in die LEG mit der normalen Rückliefervergütung (Referenz-Marktpreis mit Minimalvergütung und Herkunftsnachweis-Erlös), getrennt nach Sommer- und Winterhalbjahr, inklusive der Deckelung durch die Anrechenbarkeitsgrenze.
+
+Alle Tarife sind mit den öffentlichen EKZ-Werten für 2026 vorbelegt und lassen sich frei überschreiben; der Rechner funktioniert damit für jedes Netzgebiet, dessen Tarifblatt man zur Hand hat.
+
+## Was der Rechner bewusst nicht tut
+
+Er prognostiziert keinen LEG-Anteil. Wie viele der eigenen Kilowattstunden tatsächlich viertelstundengenau lokal gedeckt werden, hängt von der Produktion und dem Verbrauchsverhalten der ganzen Gemeinschaft ab; seriös ist da nur eine Bandbreite, keine Scheinpräzision. Der Schieberegler deckt den plausiblen Bereich ab, und das Ergebnis zeigt bei Bedarf die Spanne gleich mit.
+
+Wie alle [Tools hier](/tools) läuft der Rechner vollständig im Browser: keine Anmeldung, kein Server, die Eingaben verlassen das Gerät nicht.
+
+**[→ Zum LEG-Preisrechner](/tools/leg-rechner)**
+
+----
+
 # Exchange-Sicherheitsupdates vom August 2026: Pwn2Own-Lücke geschlossen, OWA Light abgeschaltet
 
 URL: https://rafaelpfister.ch/blog/exchange-security-updates-august-2026
@@ -6310,6 +6664,115 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Exchange Security Updates for August 2026: Pwn2Own Vulnerability Closed, OWA Light Disabled
+
+URL: https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled
+Datum: 2026-08-19
+
+# Exchange Security Updates for August 2026: Pwn2Own Vulnerability Closed, OWA Light Disabled
+
+On August 11, 2026, Microsoft released security updates (SUs) for Exchange Server — for the fourth consecutive month. The updates close seven vulnerabilities. None of them was publicly known in advance, none is currently known to be actively exploited, and Microsoft rates exploitation of all seven as “Exploitation Less Likely.” Still, this is not a routine Patch Tuesday, for three reasons: The update closes the Exchange vulnerability demonstrated at the Pwn2Own hacking competition, it **permanently disables OWA Light after nearly twenty years**, and the Exchange team has since explained why the monthly cadence will remain the norm for the time being.
+
+## Which Exchange versions the update is available for
+
+The SUs are available for the following versions:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, Build 15.2.2562.46 — as a regularly available public update.
+- **Exchange Server 2019 CU15**: KB5121574, Build 15.2.1748.49 — only through the **Period 2 ESU program**.
+- **Exchange Server 2019 CU14**: KB5121575, Build 15.2.1544.44 — only through Period 2 ESU.
+- **Exchange Server 2016 CU23**: KB5121576, Build 15.1.2507.72 — only through Period 2 ESU.
+
+The situation is the same as in July: Exchange 2016 and 2019 are out of support. The SUs from May through October 2026 are available only to those enrolled in the Period 2 ESU program. Everyone else remains unpatched, with fourteen now-known open vulnerabilities, some with high severity ratings — migration to Exchange SE can no longer be delayed. Exchange Online is already protected; however, in hybrid environments, the SU must still be installed on all Exchange servers, including dedicated management servers and machines that have only the Exchange Management Tools installed.
+
+The known issue involving *wrapper messages* in shared mailboxes in hybrid environments also remains with the August SU; according to Microsoft, a fix is planned for an upcoming update. At least there is good news from the comments on the release announcement: Anyone who configured the documented SettingOverride as a workaround does **not** need to recreate it after installing the August SU — the update leaves the override untouched, as the Exchange team confirmed there.
+
+## The seven vulnerabilities at a glance
+
+| CVE | Type | CVSS |
+| --- | --- | --- |
+| CVE-2026-62913 | Remote Code Execution | 8.8 |
+| CVE-2026-62911 | Elevation of Privilege | 8.0 |
+| CVE-2026-62914 | Spoofing | 7.3 |
+| CVE-2026-62910 | Elevation of Privilege | 7.2 |
+| CVE-2026-62912 | Denial of Service | 6.5 |
+| CVE-2026-62915 | Security Feature Bypass | 6.5 |
+| CVE-2026-65813 | Elevation of Privilege | 6.5 |
+
+Three of these deserve a closer look.
+
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** has the month’s highest score at CVSS 8.8: a remote code execution vulnerability that an authenticated attacker with low privileges can trigger without any user interaction. Any compromised mailbox account is sufficient as a starting point — in an era of phishing and credential stuffing, “authenticated” is not a high bar.
+
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** is the month’s only vulnerability that Microsoft rates as *Critical* (Elevation of Privilege, CVSS 8.0). There is more history behind it than the sober number suggests: When asked whether the Exchange exploit demonstrated by Orange Tsai at **Pwn2Own 2026** had been fixed, the Exchange team pointed specifically to this CVE in the comments on the release announcement. The competition finding is therefore closed — another reason not to leave the August SU sitting idle, because Pwn2Own techniques are usually published in detail once embargo periods expire.
+
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) is the direct reason for disabling OWA Light — more on that shortly.
+
+The remaining vulnerabilities: CVE-2026-62910 (EoP, 7.2) already requires high privileges; CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass), and CVE-2026-65813 (EoP) are rated CVSS 6.5. As usual, the details are available in the Security Update Guide (filter for “Server Software” for Exchange SE or “ESU” for 2016/2019).
+
+## OWA Light: after nearly twenty years, it is over
+
+### What the update changes
+
+Installing the August SU **permanently disables OWA Light** — on every server that receives this update or a later one. Anyone opening the Light interface will now be taken to regular Outlook on the web. The shutdown is part of the update itself and cannot be reversed with a switch; Microsoft announced it a few weeks earlier in a separate blog post.
+
+OWA Light dates back to the Exchange 2007 era: a deliberately simple web interface as a fallback for old browsers and slow connections, officially deprecated since August 2024. The reason for ending it is driven by security: A separate legacy rendering path alongside modern OWA increases complexity and thus the attack surface — CVE-2026-62914 provides concrete evidence of that. Those who read the [July article](/blog/exchange-security-updates-juli-2026) may also recall that the CVE-2026-42897 mitigation from May had already rendered OWA Light nonfunctional as a side effect. The interface was therefore already on borrowed time.
+
+### If you cannot patch: disable OWA Light manually
+
+Important for everyone who cannot install the August SU (yet) — for example, because ESU activation is missing: Microsoft explicitly recommends **manually disabling** OWA Light in this case to mitigate CVE-2026-62914. This can be done through the OWA mailbox policy and the sign-in page:
+
+```powershell
+Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
+Get-OwaVirtualDirectory | Set-OwaVirtualDirectory -LogonPageLightSelectionEnabled $false
+```
+
+The first command disables the Light version for all mailboxes assigned to the respective policy; the second removes the “Use the light version” option from the OWA sign-in page. Changes to the virtual OWA directory only take effect reliably after recycling the OWA app pool or performing a `iisreset`.
+
+### What admins should check now
+
+The shutdown is technically trivial, but not always organizationally: OWA Light was the quiet fallback for niche scenarios. Things worth checking now include bookmarks and help desk instructions that have `?layout=light` hard-coded, kiosk and terminal devices with old browsers, and internal guidance for users who used the Light version for accessibility reasons. Modern Outlook on the web runs in all current browsers and includes its own accessibility features — but failing to notify affected users in advance will generate tickets.
+
+## Why there is now an SU every month — and where Exchange SE CU1 stands
+
+Two days after the release, the Exchange team answered the question many admins have been asking in a remarkably candid blog post (“Where is Exchange SE CU1 anyway?”). The short version: Microsoft is using AI tools across the company to find vulnerabilities in its own products. The teams — including Exchange — are currently working through the reported findings: validating, reproducing, fixing, testing for regressions, and delivering them monthly. Since May 2026, an Exchange SU has been released every month, and Microsoft explicitly says that this increased pace will continue.
+
+The long-awaited **CU1 for Exchange SE** is delayed for exactly this reason. Originally announced for the first half of 2026, then moved to the second half, it now has no target date at all. Microsoft intends to release CU1 only when there is a month without an urgent security delivery in between — a CU immediately superseded by an SU would create duplicate update work for many organizations. Until then, the monthly security payload is continuously incorporated into the internal CU1 build.
+
+For practical purposes, this means two things. First: Waiting for CU1 is not a strategy — neither for migrating to SE nor for installing SUs. Second: A **monthly maintenance window** for Exchange must now become a fixed part of the operations calendar, just as it has long been standard for Windows servers.
+
+## Installation and follow-up
+
+The process remains the tried and tested one: First, use the [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) to inventory which CU/SU level each server is on and whether any manual steps remain. Then install the SU (if the CU level is outdated, the [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) shows the path), restart the server, and verify that all Exchange services started cleanly. If services are set to *disabled*, the installation was interrupted — in that case, the documented workaround in the Microsoft support article on the file-version error or the [SetupAssist script](https://aka.ms/ExSetupAssist) will help. Finally, run the Health Checker again.
+
+SUs are cumulative: Anyone who skipped the July SU can install the August SU directly. And hybrid environments have the familiar additional requirement: If the auth certificate is changed after the SU installation, the Hybrid Configuration Wizard should be run again.
+
+One follow-up task from July remains relevant: Anyone who still has the CVE-2026-42897 mitigation (M2.1.0) active should remove it now — instructions for doing so properly are in the [article on the July SU](/blog/exchange-security-updates-juli-2026).
+
+## Recommended approach
+
+In short: Install the August SU promptly on all Exchange servers and Exchange Management Tools machines — the Pwn2Own vulnerability and the 8.8 RCE are reason enough not to wait for the next Patch Tuesday. Anyone unable to patch immediately should manually disable OWA Light as an immediate measure against CVE-2026-62914. Before OWA Light is disabled, identify and notify affected user groups (old bookmarks, kiosk browsers, accessibility workflows). Then run the Health Checker, complete outstanding follow-up tasks from July — and schedule a monthly Exchange maintenance window, because this cadence is here to stay.
+
+## Sources
+
+1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Official release announcement with supported versions, the OWA Light notice, known issues, and FAQ; the comments include confirmation of the Pwn2Own fix (CVE-2026-62911) and the continuing wrapper SettingOverride.
+
+2.  [Upcoming retirement of OWA Light in Exchange Server – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/upcoming-retirement-of-owa-light-in-exchange-server/4534943): The advance announcement of the shutdown, including Microsoft’s recommendation to manually disable OWA Light if patching is not possible.
+
+3.  [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): The Exchange team on AI-assisted vulnerability discovery, the continuing monthly SU cadence, and the CU1 delay.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Reference for the build numbers of the August SUs.
+
+5.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Terms and duration (May through October 2026) of the ESU program.
+
+6.  [Wrapper messages appear in shared mailbox inbox in hybrid environments – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): The hybrid issue known since June, including the SettingOverride workaround.
+
+7.  [New security updates for Exchange Server (August 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-august-2026/): German-language breakdown of the seven CVEs, including CVSS scores and builds.
+
+8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): The `OWALightEnabled` parameter for manually disabling the Light version.
+
+9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventorying CU/SU levels and outstanding manual steps before and after installation.
+
+----
+
 # Who Is Actually Delivering Mail to Your Tenant? Aggregating Sending IP Addresses
 
 URL: https://rafaelpfister.ch/en/blog/who-is-actually-delivering-mail-to-your-tenant-aggregating-sending-ip-addresses
@@ -12496,6 +12959,115 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Mises à jour de sécurité Exchange d’août 2026 : faille Pwn2Own corrigée, OWA Light désactivé
+
+URL: https://rafaelpfister.ch/fr/blog/mises-a-jour-de-securite-exchange-d-aout-2026-faille-pwn2own-corrigee-owa-light-desactive
+Datum: 2026-08-19
+
+# Mises à jour de sécurité Exchange d’août 2026 : faille Pwn2Own corrigée, OWA Light désactivé
+
+Le 11 août 2026, Microsoft a publié des mises à jour de sécurité (SU) pour Exchange Server — pour le quatrième mois consécutif. Ces mises à jour corrigent sept vulnérabilités. Aucune n’était connue publiquement à l’avance, aucune n’est activement exploitée à ce jour, et Microsoft classe l’exploitation des sept vulnérabilités comme « Exploitation Less Likely ». Il ne s’agit pourtant pas d’un Patch Tuesday de routine, pour trois raisons : la mise à jour corrige la faille Exchange démontrée lors du concours de hacking Pwn2Own, elle **désactive définitivement OWA Light après près de vingt ans**, et l’équipe Exchange a ensuite expliqué pourquoi le rythme mensuel restera pour l’instant la norme.
+
+## Pour quelles versions d’Exchange la mise à jour est disponible
+
+Les SU sont disponibles pour les versions suivantes :
+
+- **Exchange Server Subscription Edition (SE) RTM** : KB5121573, build 15.2.2562.46 — en tant que mise à jour publique disponible normalement.
+- **Exchange Server 2019 CU15** : KB5121574, build 15.2.1748.49 — uniquement via le **programme ESU Period 2**.
+- **Exchange Server 2019 CU14** : KB5121575, build 15.2.1544.44 — uniquement via ESU Period 2.
+- **Exchange Server 2016 CU23** : KB5121576, build 15.1.2507.72 — uniquement via ESU Period 2.
+
+La situation est la même qu’en juillet : Exchange 2016 et 2019 ne sont plus pris en charge. Seuls les clients inscrits au programme ESU Period 2 reçoivent les SU de mai à octobre 2026. Tous les autres restent non corrigés, avec désormais quatorze vulnérabilités ouvertes, dont certaines à gravité élevée — la migration vers Exchange SE ne souffre donc plus aucun report. Exchange Online est déjà protégé ; dans les environnements hybrides, la SU doit néanmoins être installée sur tous les serveurs Exchange, y compris les serveurs de gestion dédiés et les machines sur lesquelles seuls les Exchange Management Tools sont installés.
+
+Le problème connu des *messages wrapper* dans les boîtes aux lettres partagées des environnements hybrides persiste avec la SU d’août ; selon Microsoft, le correctif est prévu dans une prochaine mise à jour. Une bonne nouvelle ressort toutefois des commentaires de l’annonce de publication : ceux qui ont appliqué le SettingOverride documenté comme solution de contournement ne doivent **pas** le recréer après l’installation de la SU d’août — la mise à jour laisse l’override intact, comme l’a confirmé l’équipe Exchange.
+
+## Vue d’ensemble des sept vulnérabilités
+
+| CVE | Type | CVSS |
+| --- | --- | --- |
+| CVE-2026-62913 | Exécution de code à distance | 8.8 |
+| CVE-2026-62911 | Élévation de privilèges | 8.0 |
+| CVE-2026-62914 | Usurpation | 7.3 |
+| CVE-2026-62910 | Élévation de privilèges | 7.2 |
+| CVE-2026-62912 | Déni de service | 6.5 |
+| CVE-2026-62915 | Contournement de fonctionnalité de sécurité | 6.5 |
+| CVE-2026-65813 | Élévation de privilèges | 6.5 |
+
+Trois d’entre elles méritent un examen plus attentif.
+
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** affiche le score le plus élevé du mois avec un CVSS de 8.8 : il s’agit d’une exécution de code à distance qu’un attaquant authentifié disposant de droits simples peut déclencher sans aucune interaction utilisateur. N’importe quel compte de boîte aux lettres compromis suffit comme point de départ — à l’ère du phishing et du credential stuffing, « authentifié » ne représente pas un obstacle élevé.
+
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** est la seule vulnérabilité du mois que Microsoft classe comme *Critical* (élévation de privilèges, CVSS 8.0). Son histoire est plus riche que ne le laisse supposer ce numéro sobre : à la question de savoir si l’exploit Exchange démontré par Orange Tsai lors de la **Pwn2Own 2026** avait entre-temps été corrigé, l’équipe Exchange renvoie précisément à cette CVE dans les commentaires de l’annonce de publication. La découverte du concours est donc corrigée — une raison supplémentaire de ne pas laisser la SU d’août de côté, car les techniques Pwn2Own sont généralement publiées en détail à l’expiration des délais d’embargo.
+
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (usurpation, CVSS 7.3) est la raison directe de la désactivation d’OWA Light — nous y revenons juste après.
+
+Les autres failles : CVE-2026-62910 (EoP, 7.2) exige déjà des privilèges élevés, tandis que CVE-2026-62912 (DoS), CVE-2026-62915 (contournement de fonctionnalité de sécurité) et CVE-2026-65813 (EoP) affichent un CVSS de 6.5. Les détails figurent comme d’habitude dans le Security Update Guide (filtre « Server Software » pour Exchange SE ou « ESU » pour 2016/2019).
+
+## OWA Light : c’est la fin après près de vingt ans
+
+### Ce que change la mise à jour
+
+Avec l’installation de la SU d’août, **OWA Light est désactivé de manière permanente** — sur chaque serveur recevant cette mise à jour ou une version ultérieure. Les utilisateurs qui accèdent à l’interface Light seront désormais redirigés vers Outlook on the web standard. La désactivation fait partie intégrante de la mise à jour et ne peut pas être annulée par un paramètre ; Microsoft l’avait annoncée quelques semaines auparavant dans un article de blog dédié.
+
+OWA Light remonte à l’époque d’Exchange 2007 : une interface web volontairement simple, conçue comme solution de repli pour les anciens navigateurs et les connexions lentes, officiellement dépréciée depuis août 2024. La motivation de cette suppression est liée à la sécurité : un chemin de rendu Legacy distinct, en parallèle d’OWA moderne, accroît la complexité et donc la surface d’attaque — CVE-2026-62914 en apporte la preuve concrète. Les personnes ayant lu l’[article de juillet](/blog/exchange-security-updates-juli-2026) s’en souviennent également : la mitigation de mai pour CVE-2026-42897 avait déjà rendu OWA Light inutilisable de manière indirecte. L’interface était donc déjà sur la sellette.
+
+### Pour ceux qui ne peuvent pas appliquer le correctif : désactiver OWA Light manuellement
+
+Important pour tous ceux qui ne peuvent pas (encore) installer la SU d’août — par exemple parce que l’activation ESU manque : Microsoft recommande explicitement dans ce cas de **désactiver manuellement** OWA Light afin d’atténuer CVE-2026-62914. Cela se fait via la stratégie de boîte aux lettres OWA et la page de connexion :
+
+```powershell
+Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
+Get-OwaVirtualDirectory | Set-OwaVirtualDirectory -LogonPageLightSelectionEnabled $false
+```
+
+La première commande désactive la version Light pour toutes les boîtes aux lettres concernées par la stratégie, la seconde retire l’option « Utiliser la version Light » de la page de connexion OWA. Les modifications apportées au répertoire virtuel OWA ne prennent effet de manière fiable qu’après le recyclage du pool d’applications OWA ou un `iisreset`.
+
+### Ce que les administrateurs devraient vérifier maintenant
+
+La désactivation est techniquement triviale, mais pas toujours sur le plan organisationnel : OWA Light était le discret filet de sécurité pour des scénarios de niche. Il convient désormais de vérifier les favoris et les instructions du helpdesk qui ont `?layout=light` codé en dur, les appareils kiosque et terminaux équipés d’anciens navigateurs, ainsi que les consignes internes destinées aux utilisatrices et utilisateurs qui employaient la version Light pour des raisons d’accessibilité. Outlook on the web moderne fonctionne dans tous les navigateurs actuels et offre ses propres fonctionnalités d’accessibilité — mais sans information préalable des utilisateurs concernés, les tickets seront inévitables.
+
+## Pourquoi une SU paraît désormais chaque mois — et où en est Exchange SE CU1
+
+Deux jours après la publication, l’équipe Exchange a répondu dans un article de blog remarquablement transparent (« Where is Exchange SE CU1 anyway? ») à la question que se posent de nombreux administrateurs. En bref : Microsoft utilise à l’échelle du groupe des outils d’IA pour découvrir des vulnérabilités dans ses propres produits. Les équipes — y compris Exchange — traitent actuellement les découvertes signalées : validation, reproduction, correction, tests de régression, publication mensuelle. Depuis mai 2026, une SU Exchange est ainsi parue chaque mois, et Microsoft indique explicitement que ce rythme soutenu perdurera.
+
+Le très attendu **CU1 pour Exchange SE** est retardé précisément pour cette raison. Initialement annoncé pour le premier semestre 2026, puis reporté au second, il n’a désormais plus de date cible. Microsoft ne souhaite publier CU1 que lorsqu’un mois sans livraison urgente de sécurité s’intercalera — un CU immédiatement supplanté par une SU imposerait un double travail de mise à jour à de nombreuses organisations. Entre-temps, la charge de sécurité mensuelle est intégrée en continu dans la build interne de CU1.
+
+En pratique, cela implique deux choses. Premièrement : attendre CU1 n’est pas une stratégie — ni pour la migration vers SE ni pour l’installation des SU. Deuxièmement : une **fenêtre de maintenance mensuelle** pour Exchange doit désormais faire partie intégrante du calendrier d’exploitation, comme c’est depuis longtemps une évidence pour les serveurs Windows.
+
+## Installation et suivi
+
+La procédure reste éprouvée : commencez par inventorier avec le [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) quels serveurs se trouvent à quel niveau CU/SU et si des étapes manuelles sont encore en attente. Installez ensuite la SU (si le niveau CU est obsolète, le [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) indique le chemin), redémarrez le serveur et vérifiez que tous les services Exchange ont démarré correctement. Si des services sont *désactivés*, l’installation a été interrompue — la solution de contournement documentée dans l’article de support Microsoft relatif à l’erreur de version de fichier, ou le [script SetupAssist](https://aka.ms/ExSetupAssist), peut alors aider. Enfin, exécutez à nouveau le Health Checker.
+
+Les SU sont cumulatives : ceux qui ont ignoré la SU de juillet installent directement celle d’août. Pour les environnements hybrides, la règle connue s’applique également : si le certificat d’authentification est modifié après l’installation de la SU, le Hybrid Configuration Wizard doit être exécuté à nouveau.
+
+Une action de suivi datant de juillet reste pertinente : ceux qui ont toujours la mitigation CVE-2026-42897 (M2.1.0) active devraient maintenant la supprimer — la procédure correcte est décrite dans l’[article sur la SU de juillet](/blog/exchange-security-updates-juli-2026).
+
+## Procédure recommandée
+
+En résumé : installez rapidement la SU d’août sur tous les serveurs Exchange et les machines dotées des Management Tools — la faille Pwn2Own et la RCE à 8.8 constituent des raisons suffisantes pour ne pas attendre le prochain Patch Tuesday. Ceux qui ne peuvent pas appliquer immédiatement le correctif désactivent manuellement OWA Light comme mesure immédiate contre CVE-2026-62914. Avant la désactivation d’OWA Light, identifiez et informez les groupes d’utilisateurs concernés (anciens favoris, navigateurs de kiosque, workflows d’accessibilité). Exécutez ensuite le Health Checker, réalisez les actions de suivi encore ouvertes depuis juillet — et planifiez une fenêtre de maintenance Exchange mensuelle, car ce rythme perdure.
+
+## Sources
+
+1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Annonce officielle de publication avec les versions prises en charge, la note relative à OWA Light, les problèmes connus et la FAQ ; les commentaires confirment le correctif Pwn2Own (CVE-2026-62911) ainsi que la persistance du SettingOverride pour les messages wrapper.
+
+2.  [Upcoming retirement of OWA Light in Exchange Server – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/upcoming-retirement-of-owa-light-in-exchange-server/4534943): Annonce préalable de la désactivation, y compris la recommandation de Microsoft de désactiver manuellement OWA Light en l’absence de correctif.
+
+3.  [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): L’équipe Exchange sur la recherche de vulnérabilités assistée par IA, le rythme mensuel durable des SU et le retard de CU1.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Référence pour les numéros de build des SU d’août.
+
+5.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Conditions et durée (de mai à octobre 2026) du programme ESU.
+
+6.  [Wrapper messages appear in shared mailbox inbox in hybrid environments – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Le problème hybride connu depuis juin et la solution de contournement SettingOverride.
+
+7.  [Neue Sicherheitsupdates für Exchange Server (August 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-august-2026/): Présentation en allemand des sept CVE avec les valeurs CVSS et les builds.
+
+8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): Le paramètre `OWALightEnabled` pour désactiver manuellement la version Light.
+
+9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventaire des niveaux CU/SU et des étapes manuelles en attente avant et après l’installation.
 
 ----
 
@@ -18688,6 +19260,115 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# Aggiornamenti di sicurezza di Exchange di agosto 2026: chiusa la falla di Pwn2Own, disattivato OWA Light
+
+URL: https://rafaelpfister.ch/it/blog/aggiornamenti-di-sicurezza-di-exchange-di-agosto-2026-chiusa-la-falla-di-pwn2own-disattivato
+Datum: 2026-08-19
+
+# Aggiornamenti di sicurezza di Exchange di agosto 2026: chiusa la falla di Pwn2Own, disattivato OWA Light
+
+L'11 agosto 2026 Microsoft ha pubblicato aggiornamenti di sicurezza (SU) per Exchange Server, per il quarto mese consecutivo. Gli aggiornamenti risolvono sette vulnerabilità. Nessuna era stata resa pubblica in anticipo, nessuna risulta attivamente sfruttata allo stato attuale e Microsoft classifica lo sfruttamento di tutte e sette come «Exploitation Less Likely». Non si tratta comunque di un normale Patch Tuesday, per tre motivi: l'aggiornamento chiude la falla di Exchange dimostrata nella competizione di hacking Pwn2Own, **disattiva definitivamente OWA Light dopo quasi vent'anni** e il team di Exchange ha poi spiegato perché il ritmo mensile rimarrà per il momento la norma.
+
+## Per quali versioni di Exchange è disponibile l'aggiornamento
+
+Gli SU sono disponibili per le seguenti versioni:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, build 15.2.2562.46 — come aggiornamento pubblico regolarmente disponibile.
+- **Exchange Server 2019 CU15**: KB5121574, build 15.2.1748.49 — solo tramite il **programma ESU Period 2**.
+- **Exchange Server 2019 CU14**: KB5121575, build 15.2.1544.44 — solo tramite ESU Period 2.
+- **Exchange Server 2016 CU23**: KB5121576, build 15.1.2507.72 — solo tramite ESU Period 2.
+
+La situazione è la stessa di luglio: Exchange 2016 e 2019 sono fuori supporto. Gli SU da maggio a ottobre 2026 sono disponibili solo per chi è iscritto al programma ESU Period 2. Tutti gli altri restano senza patch, con ormai quattordici vulnerabilità aperte, alcune con valutazioni elevate: per loro la migrazione a Exchange SE non può più attendere. Exchange Online è già protetto; negli ambienti ibridi, tuttavia, l'SU deve essere installato su tutti i server Exchange, inclusi i server di sola gestione e le macchine su cui sono installati soltanto gli Exchange Management Tools.
+
+Il noto problema dei *messaggi wrapper* nelle cassette postali condivise degli ambienti ibridi persiste anche con l'SU di agosto; secondo Microsoft, la correzione è prevista in un prossimo aggiornamento. C'è però una buona notizia nei commenti all'annuncio della release: chi ha impostato il SettingOverride documentato come workaround **non** deve ricrearlo dopo l'installazione dell'SU di agosto: l'aggiornamento lascia intatto l'override, come confermato dal team di Exchange.
+
+## Panoramica delle sette vulnerabilità
+
+| CVE | Tipo | CVSS |
+| --- | --- | --- |
+| CVE-2026-62913 | Remote Code Execution | 8.8 |
+| CVE-2026-62911 | Elevation of Privilege | 8.0 |
+| CVE-2026-62914 | Spoofing | 7.3 |
+| CVE-2026-62910 | Elevation of Privilege | 7.2 |
+| CVE-2026-62912 | Denial of Service | 6.5 |
+| CVE-2026-62915 | Security Feature Bypass | 6.5 |
+| CVE-2026-65813 | Elevation of Privilege | 6.5 |
+
+Tre di queste meritano uno sguardo più approfondito.
+
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** ha il punteggio più alto del mese, CVSS 8.8: una Remote Code Execution che un aggressore autenticato con privilegi ridotti può attivare senza alcuna interazione dell'utente. Come punto di partenza è sufficiente un qualsiasi account di cassetta postale compromesso: nell'epoca del phishing e del credential stuffing, «autenticato» non è una soglia elevata.
+
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** è l'unica vulnerabilità del mese che Microsoft classifica come *Critical* (Elevation of Privilege, CVSS 8.0). Dietro il freddo numero c'è più storia di quanto sembri: alla domanda se l'exploit di Exchange dimostrato da Orange Tsai al **Pwn2Own 2026** fosse ormai risolto, il team di Exchange rimanda nei commenti all'annuncio della release proprio a questa CVE. La scoperta della competizione è quindi chiusa: un motivo in più per non rimandare l'SU di agosto, poiché le tecniche di Pwn2Own vengono solitamente pubblicate nel dettaglio dopo la scadenza degli embarghi.
+
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) è il motivo diretto della disattivazione di OWA Light, di cui parleremo tra poco.
+
+Le restanti falle: CVE-2026-62910 (EoP, 7.2) richiede già privilegi elevati, mentre CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass) e CVE-2026-65813 (EoP) hanno un CVSS di 6.5. Come di consueto, i dettagli sono disponibili nella Security Update Guide (filtro «Server Software» per Exchange SE oppure «ESU» per 2016/2019).
+
+## OWA Light: dopo quasi vent'anni è finita
+
+### Cosa cambia con l'aggiornamento
+
+Con l'installazione dell'SU di agosto, **OWA Light viene disattivato definitivamente** su ogni server che riceve l'aggiornamento, o uno successivo. Chi apre l'interfaccia Light verrà ora reindirizzato al normale Outlook on the web. La disattivazione fa parte dell'aggiornamento stesso e non può essere annullata tramite un'opzione; Microsoft l'aveva annunciata alcune settimane prima in un apposito post del blog.
+
+OWA Light risale all'epoca di Exchange 2007: un'interfaccia web volutamente essenziale, pensata come fallback per browser datati e connessioni lente, ufficialmente deprecata dall'agosto 2024. La motivazione della fine è dettata dalla sicurezza: un percorso di rendering legacy separato accanto al moderno OWA aumenta la complessità e quindi la superficie di attacco; CVE-2026-62914 ne fornisce la prova concreta. Chi ha letto l'[articolo di luglio](/blog/exchange-security-updates-juli-2026) ricorderà inoltre che la mitigazione di CVE-2026-42897 di maggio aveva già reso OWA Light inutilizzabile come effetto collaterale. L'interfaccia era quindi già a un passo dalla fine.
+
+### Per chi non può applicare la patch: disattivare manualmente OWA Light
+
+Importante per tutti coloro che non possono (ancora) installare l'SU di agosto, ad esempio perché manca l'abilitazione ESU: Microsoft raccomanda espressamente di **disattivare manualmente** OWA Light in questo caso, per mitigare CVE-2026-62914. È possibile farlo tramite la mailbox policy OWA e la pagina di accesso:
+
+```powershell
+Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
+Get-OwaVirtualDirectory | Set-OwaVirtualDirectory -LogonPageLightSelectionEnabled $false
+```
+
+Il primo comando disattiva la versione Light per tutte le cassette postali della rispettiva policy, il secondo rimuove l'opzione «Usa la versione Light» dalla pagina di accesso OWA. Le modifiche alla directory virtuale OWA diventano affidabili solo dopo il riciclo dell'application pool OWA o un `iisreset`.
+
+### Cosa dovrebbero verificare ora gli amministratori
+
+La disattivazione è tecnicamente banale, ma non sempre dal punto di vista organizzativo: OWA Light era un silenzioso salvagente per scenari di nicchia. Vale ora la pena verificare segnalibri e istruzioni dell'help desk che hanno `?layout=light` codificato in modo fisso, dispositivi kiosk e terminali con browser datati, nonché istruzioni interne per utenti che usavano la versione Light per motivi di accessibilità. Il moderno Outlook on the web funziona in tutti i browser attuali e offre proprie funzioni di accessibilità, ma chi non informa in anticipo gli utenti interessati genererà ticket.
+
+## Perché ora arriva un SU ogni mese e dove resta Exchange SE CU1
+
+Due giorni dopo la release, il team di Exchange ha risposto in un post del blog notevolmente aperto («Where is Exchange SE CU1 anyway?») alla domanda che molti amministratori si pongono. In breve: Microsoft utilizza strumenti di IA a livello aziendale per individuare vulnerabilità nei propri prodotti. I team, incluso quello di Exchange, stanno attualmente gestendo le segnalazioni: validandole, riproducendole, correggendole, testandole per regressioni e distribuendole ogni mese. Da maggio 2026 è così uscito un SU di Exchange ogni mese e Microsoft afferma esplicitamente che questo ritmo elevato continuerà.
+
+Il tanto atteso **CU1 per Exchange SE** è ritardato proprio per questo motivo. Annunciato inizialmente per la prima metà del 2026, poi rinviato alla seconda, non ha ormai più una data obiettivo. Microsoft intende pubblicare CU1 solo quando ci sarà un mese senza un rilascio di sicurezza urgente nel mezzo: un CU che viene subito superato da un SU comporterebbe per molte organizzazioni un doppio lavoro di aggiornamento. Nel frattempo, il payload di sicurezza mensile confluisce continuamente nella build interna di CU1.
+
+Per la pratica, questo significa due cose. Primo: attendere CU1 non è una strategia, né per la migrazione a SE né per l'installazione degli SU. Secondo: una **finestra di manutenzione mensile** per Exchange deve entrare stabilmente nel calendario operativo, come avviene da tempo per i server Windows.
+
+## Installazione e attività successive
+
+La procedura rimane quella collaudata: prima inventariare con l'[Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) quali server si trovano a quale livello CU/SU e se sono ancora necessari passaggi manuali. Quindi installare l'SU (se il livello CU è obsoleto, l'[Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) mostra il percorso), riavviare il server e verificare che tutti i servizi Exchange siano stati avviati correttamente. Se dei servizi risultano *disabilitati*, l'installazione è stata interrotta: in questo caso aiuta il workaround documentato nell'articolo di supporto Microsoft sull'errore di versione del file, oppure lo [script SetupAssist](https://aka.ms/ExSetupAssist). Infine, eseguire nuovamente l'Health Checker.
+
+Gli SU sono cumulativi: chi ha saltato l'SU di luglio installa direttamente quello di agosto. E per gli ambienti ibridi vale l'aggiunta nota: se il certificato di autenticazione viene cambiato dopo l'installazione dell'SU, è opportuno eseguire nuovamente Hybrid Configuration Wizard.
+
+Rimane attuale un'attività successiva di luglio: chi ha ancora attiva la mitigazione CVE-2026-42897 (M2.1.0) dovrebbe ora rimuoverla. La procedura corretta è descritta nell'[articolo sull'SU di luglio](/blog/exchange-security-updates-juli-2026).
+
+## Procedura consigliata
+
+In breve: installare tempestivamente l'SU di agosto su tutti i server Exchange e sulle macchine con gli strumenti di gestione: la falla di Pwn2Own e la RCE da 8.8 sono motivi sufficienti per non aspettare il prossimo Patch Tuesday. Chi non può applicare subito la patch disattiva manualmente OWA Light come misura immediata contro CVE-2026-62914. Prima della disattivazione di OWA Light, identificare e informare i gruppi di utenti interessati (vecchi segnalibri, browser kiosk, flussi di lavoro di accessibilità). Successivamente, eseguire l'Health Checker, completare le attività aperte di luglio e pianificare una finestra di manutenzione mensile per Exchange, poiché il ritmo rimarrà tale.
+
+## Fonti
+
+1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Annuncio ufficiale della release con versioni supportate, nota su OWA Light, problemi noti e FAQ; nei commenti, le conferme sulla correzione Pwn2Own (CVE-2026-62911) e sul persistente SettingOverride dei messaggi wrapper.
+
+2.  [Upcoming retirement of OWA Light in Exchange Server – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/upcoming-retirement-of-owa-light-in-exchange-server/4534943): L'annuncio anticipato della disattivazione, incluso il consiglio di Microsoft di disattivare manualmente OWA Light in assenza della patch.
+
+3.  [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): Il team di Exchange sulla ricerca delle vulnerabilità basata sull'IA, sul persistente ritmo mensile degli SU e sul ritardo di CU1.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Riferimento per i numeri di build degli SU di agosto.
+
+5.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Condizioni e durata, da maggio a ottobre 2026, del programma ESU.
+
+6.  [Wrapper messages appear in shared mailbox inbox in hybrid environments – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Il problema ibrido noto da giugno, incluso il workaround SettingOverride.
+
+7.  [Neue Sicherheitsupdates für Exchange Server (August 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-august-2026/): Analisi in lingua tedesca delle sette CVE con valori CVSS e build.
+
+8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): Il parametro `OWALightEnabled` per disattivare manualmente la versione Light.
+
+9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventario dei livelli CU/SU e dei passaggi manuali aperti prima e dopo l'installazione.
+
+----
+
 # Ricostruire in modo strutturato i set di regole Apache James: strumenti e metodo
 
 URL: https://rafaelpfister.ch/it/blog/ricostruire-in-modo-strutturato-i-set-di-regole-apache-james-strumenti-e-metodo
@@ -24873,6 +25554,115 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Actualizaciones de seguridad de Exchange de agosto de 2026: cerrada la vulnerabilidad de Pwn2Own, desactivado OWA Light
+
+URL: https://rafaelpfister.ch/es/blog/actualizaciones-de-seguridad-de-exchange-de-agosto-de-2026-cerrada-la-vulnerabilidad-de-pwn2own
+Datum: 2026-08-19
+
+# Actualizaciones de seguridad de Exchange de agosto de 2026: cerrada la vulnerabilidad de Pwn2Own, desactivado OWA Light
+
+Microsoft publicó el 11 de agosto de 2026 actualizaciones de seguridad (SU) para Exchange Server, por cuarto mes consecutivo. Las actualizaciones corrigen siete vulnerabilidades. Ninguna se conocía públicamente de antemano, ninguna está siendo explotada activamente según el estado actual y Microsoft clasifica la explotación de las siete como «Exploitation Less Likely». Sin embargo, no es un Patch Tuesday rutinario, por tres motivos: la actualización corrige la vulnerabilidad de Exchange demostrada en el concurso de hacking Pwn2Own, **desactiva OWA Light definitivamente después de casi veinte años**, y el equipo de Exchange ha explicado posteriormente por qué el ritmo mensual seguirá siendo la norma por ahora.
+
+## Para qué versiones de Exchange está disponible la actualización
+
+Las SU están disponibles para las siguientes versiones:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, compilación 15.2.2562.46, como actualización pública disponible de forma regular.
+- **Exchange Server 2019 CU15**: KB5121574, compilación 15.2.1748.49, solo mediante el **programa Period 2 ESU**.
+- **Exchange Server 2019 CU14**: KB5121575, compilación 15.2.1544.44, solo mediante Period 2 ESU.
+- **Exchange Server 2016 CU23**: KB5121576, compilación 15.1.2507.72, solo mediante Period 2 ESU.
+
+La situación es la misma que en julio: Exchange 2016 y 2019 están fuera de soporte. Las SU de mayo a octubre de 2026 solo las reciben quienes estén inscritos en el programa Period 2 ESU. Todos los demás permanecen sin parches, con catorce vulnerabilidades abiertas, algunas de alta gravedad, por lo que la migración a Exchange SE ya no admite demora. Exchange Online ya está protegido; en entornos híbridos, la SU debe instalarse igualmente en todos los servidores Exchange, incluidos los servidores dedicados exclusivamente a la administración y las máquinas donde solo estén instaladas las Exchange Management Tools.
+
+El problema conocido de los *mensajes wrapper* en buzones compartidos de entornos híbridos continúa incluso con la SU de agosto; según Microsoft, la corrección está prevista para una próxima actualización. Al menos hay una buena noticia en los comentarios del anuncio de lanzamiento: quienes hayan configurado el SettingOverride documentado como solución temporal **no** tienen que crearlo de nuevo después de instalar la SU de agosto; la actualización deja el override intacto, tal como confirma allí el equipo de Exchange.
+
+## Las siete vulnerabilidades de un vistazo
+
+| CVE | Tipo | CVSS |
+| --- | --- | --- |
+| CVE-2026-62913 | Remote Code Execution | 8.8 |
+| CVE-2026-62911 | Elevation of Privilege | 8.0 |
+| CVE-2026-62914 | Spoofing | 7.3 |
+| CVE-2026-62910 | Elevation of Privilege | 7.2 |
+| CVE-2026-62912 | Denial of Service | 6.5 |
+| CVE-2026-62915 | Security Feature Bypass | 6.5 |
+| CVE-2026-65813 | Elevation of Privilege | 6.5 |
+
+Tres de ellas merecen una mirada más detallada.
+
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** tiene, con CVSS 8.8, la puntuación más alta del mes: una ejecución remota de código que un atacante autenticado con permisos básicos puede desencadenar sin ninguna interacción del usuario. Basta cualquier cuenta de buzón comprometida como punto de partida; en tiempos de phishing y credential stuffing, «autenticado» no supone un gran obstáculo.
+
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** es la única vulnerabilidad del mes que Microsoft clasifica como *Critical* (Elevation of Privilege, CVSS 8.0). Hay más historia detrás de ella de lo que revela el sobrio número: a la pregunta de si ya se había corregido el exploit de Exchange demostrado por Orange Tsai en **Pwn2Own 2026**, el equipo de Exchange remite precisamente a esta CVE en los comentarios del anuncio de lanzamiento. Con ello queda cerrada la vulnerabilidad del concurso, otro motivo para no dejar pendiente la SU de agosto, ya que las técnicas de Pwn2Own suelen publicarse en detalle tras expirar los plazos de embargo.
+
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) es el motivo directo de la desactivación de OWA Light; más sobre ello a continuación.
+
+Las demás vulnerabilidades: CVE-2026-62910 (EoP, 7.2) ya requiere privilegios elevados, mientras que CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass) y CVE-2026-65813 (EoP) tienen una puntuación CVSS de 6.5. Como de costumbre, los detalles se encuentran en la Security Update Guide (filtre por «Server Software» para Exchange SE o por «ESU» para 2016/2019).
+
+## OWA Light: se acabó después de casi veinte años
+
+### Qué cambia la actualización
+
+Al instalar la SU de agosto, **OWA Light se desactiva permanentemente**, en todos los servidores donde se instale esta actualización o una posterior. Quienes accedan a la interfaz Light serán redirigidos en adelante al Outlook on the web normal. La desactivación forma parte de la propia actualización y no puede revertirse mediante ningún interruptor; Microsoft la había anunciado unas semanas antes en una publicación independiente de blog.
+
+OWA Light procede de la época de Exchange 2007: una interfaz web deliberadamente sencilla como alternativa para navegadores antiguos y conexiones lentas, oficialmente deprecated desde agosto de 2024. El motivo de su retirada está impulsado por la seguridad: una ruta de renderizado heredada separada junto al OWA moderno aumenta la complejidad y, con ella, la superficie de ataque; CVE-2026-62914 aporta la prueba concreta. Quienes hayan leído el [artículo de julio](/blog/exchange-security-updates-juli-2026) también recordarán que la mitigación CVE-2026-42897 de mayo ya había dejado inoperativo OWA Light de forma incidental. Por tanto, la interfaz ya estaba a punto de desaparecer.
+
+### Quienes no puedan aplicar el parche: desactivar OWA Light manualmente
+
+Importante para todos aquellos que todavía no puedan instalar la SU de agosto, por ejemplo, porque no disponen de la habilitación ESU: Microsoft recomienda expresamente **desactivar OWA Light manualmente** en ese caso para mitigar CVE-2026-62914. Esto se realiza mediante la directiva de buzones de OWA y la página de inicio de sesión:
+
+```powershell
+Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
+Get-OwaVirtualDirectory | Set-OwaVirtualDirectory -LogonPageLightSelectionEnabled $false
+```
+
+El primer comando desactiva la versión Light para todos los buzones de la directiva correspondiente; el segundo elimina de la página de inicio de sesión de OWA la opción «Usar la versión Light». Los cambios en el directorio virtual de OWA solo se aplican de forma fiable tras reciclar el grupo de aplicaciones de OWA o realizar un `iisreset`.
+
+### Qué deberían comprobar ahora los administradores
+
+La desactivación es técnicamente trivial, pero no siempre lo es desde el punto de vista organizativo: OWA Light era el discreto salvavidas para escenarios de nicho. Ahora conviene revisar los marcadores y las instrucciones del helpdesk que tengan `?layout=light` codificado de forma fija, dispositivos de quiosco y terminales con navegadores antiguos, así como las guías internas para usuarios que utilizaban la versión Light por motivos de accesibilidad. El Outlook on the web moderno funciona en todos los navegadores actuales e incluye sus propias funciones de accesibilidad; pero si no se informa previamente a los usuarios afectados, se generarán tickets.
+
+## Por qué ahora se publica una SU cada mes y qué ocurre con Exchange SE CU1
+
+Dos días después del lanzamiento, el equipo de Exchange respondió en una publicación de blog notablemente abierta («Where is Exchange SE CU1 anyway?») a la pregunta que muchos administradores se plantean. La versión corta: Microsoft está utilizando herramientas de IA en toda la empresa para encontrar vulnerabilidades en sus propios productos. Los equipos, incluido Exchange, están procesando actualmente los hallazgos notificados: validarlos, reproducirlos, corregirlos, probar regresiones y distribuirlos mensualmente. Desde mayo de 2026 se ha publicado así una SU de Exchange cada mes, y Microsoft afirma expresamente que este ritmo acelerado continuará.
+
+El esperado **CU1 para Exchange SE** se retrasa precisamente por este motivo. Anunciado originalmente para la primera mitad de 2026 y aplazado después a la segunda, ya no tiene fecha objetivo. Microsoft solo quiere publicar CU1 cuando haya un mes sin una entrega urgente de seguridad entre medias; un CU superado inmediatamente por una SU supondría trabajo de actualización duplicado para muchas organizaciones. Hasta entonces, la carga de seguridad mensual se incorpora continuamente a la compilación interna de CU1.
+
+Para la práctica, esto significa dos cosas. En primer lugar: esperar a CU1 no es una estrategia, ni para la migración a SE ni para instalar las SU. En segundo lugar: una **ventana de mantenimiento mensual** para Exchange pasa a formar parte fija del calendario operativo, tal y como hace tiempo que es habitual con los servidores Windows.
+
+## Instalación y tareas posteriores
+
+El procedimiento sigue siendo el habitual: primero, inventariar con el [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) qué servidores están en qué nivel de CU/SU y si quedan pasos manuales pendientes. Después, instalar la SU (si el nivel de CU está desactualizado, el [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) muestra la ruta), reiniciar el servidor y comprobar que todos los servicios de Exchange se hayan iniciado correctamente. Si hay servicios en estado *desactivado*, la instalación se interrumpió; entonces ayuda la solución documentada en el artículo de soporte de Microsoft sobre el error de versión de archivo o el [script SetupAssist](https://aka.ms/ExSetupAssist). Para terminar, vuelva a ejecutar el Health Checker.
+
+Las SU son acumulativas: quien se haya saltado la SU de julio instala directamente la de agosto. Y para los entornos híbridos se aplica el conocido añadido: si se cambia el certificado de autenticación después de instalar la SU, debería ejecutarse de nuevo el Hybrid Configuration Wizard.
+
+Una tarea posterior de julio sigue vigente: quienes todavía tengan activa la mitigación CVE-2026-42897 (M2.1.0) deberían eliminarla ahora; cómo hacerlo correctamente se explica en el [artículo sobre la SU de julio](/blog/exchange-security-updates-juli-2026).
+
+## Procedimiento recomendado
+
+En resumen: instale cuanto antes la SU de agosto en todos los servidores Exchange y las máquinas con Management Tools; la vulnerabilidad de Pwn2Own y la RCE con 8.8 son motivo suficiente para no esperar al próximo Patch Tuesday. Quienes no puedan aplicar el parche de inmediato deben desactivar manualmente OWA Light como medida inmediata contra CVE-2026-62914. Antes de desactivar OWA Light, identifique e informe a los grupos de usuarios afectados (marcadores antiguos, navegadores de quiosco, flujos de trabajo de accesibilidad). Después, ejecute el Health Checker, complete las tareas pendientes de julio y planifique una ventana mensual de mantenimiento de Exchange, porque el ritmo continuará.
+
+## Fuentes
+
+1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Anuncio oficial de lanzamiento con las versiones compatibles, aviso sobre OWA Light, problemas conocidos y preguntas frecuentes; los comentarios incluyen las confirmaciones de la corrección de Pwn2Own (CVE-2026-62911) y de que el SettingOverride para los mensajes wrapper sigue vigente.
+
+2.  [Upcoming retirement of OWA Light in Exchange Server – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/upcoming-retirement-of-owa-light-in-exchange-server/4534943): El anuncio previo de la desactivación, incluida la recomendación de Microsoft de desactivar OWA Light manualmente si no se aplica el parche.
+
+3.  [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): El equipo de Exchange sobre la búsqueda de vulnerabilidades asistida por IA, el ritmo mensual continuado de las SU y el retraso de CU1.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Referencia para los números de compilación de las SU de agosto.
+
+5.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Condiciones y duración, de mayo a octubre de 2026, del programa ESU.
+
+6.  [Wrapper messages appear in shared mailbox inbox in hybrid environments – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): El problema híbrido conocido desde junio, incluida la solución temporal mediante SettingOverride.
+
+7.  [Neue Sicherheitsupdates für Exchange Server (August 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-august-2026/): Desglose en alemán de las siete CVE con valores CVSS y compilaciones.
+
+8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): El parámetro `OWALightEnabled` para desactivar manualmente la versión Light.
+
+9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventario de niveles de CU/SU y pasos manuales pendientes antes y después de la instalación.
 
 ----
 
@@ -31065,6 +31855,115 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Exchange-säkerhetsuppdateringar från augusti 2026: Pwn2Own-sårbarhet stängd, OWA Light avstängt
+
+URL: https://rafaelpfister.ch/sv/blog/exchange-sakerhetsuppdateringar-fran-augusti-2026-pwn2own-sarbarhet-stangd-owa-light-avstangt
+Datum: 2026-08-19
+
+# Exchange-säkerhetsuppdateringar från augusti 2026: Pwn2Own-sårbarhet stängd, OWA Light avstängt
+
+Microsoft släppte säkerhetsuppdateringar (SU:er) för Exchange Server den 11 augusti 2026 — för fjärde månaden i rad. Uppdateringarna åtgärdar sju sårbarheter. Ingen av dem var offentligt känd i förväg, ingen utnyttjas aktivt enligt nuvarande uppgifter, och Microsoft bedömer exploatering av samtliga sju som «Exploitation Less Likely». Det är ändå ingen rutinmässig patchdag, av tre skäl: Uppdateringen stänger Exchange-sårbarheten som demonstrerades vid hackingtävlingen Pwn2Own, den **stänger av OWA Light permanent efter nästan tjugo år**, och Exchange-teamet har efteråt förklarat varför månadsrytmen tills vidare blir det normala.
+
+## Vilka Exchange-versioner uppdateringen är tillgänglig för
+
+SU:erna finns tillgängliga för följande versioner:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, build 15.2.2562.46 — som en vanligt tillgänglig, offentlig uppdatering.
+- **Exchange Server 2019 CU15**: KB5121574, build 15.2.1748.49 — endast via **Period 2 ESU-programmet**.
+- **Exchange Server 2019 CU14**: KB5121575, build 15.2.1544.44 — endast via Period 2 ESU.
+- **Exchange Server 2016 CU23**: KB5121576, build 15.1.2507.72 — endast via Period 2 ESU.
+
+Situationen är densamma som i juli: Exchange 2016 och 2019 är out of support. SU:erna från maj till oktober 2026 får endast den som är registrerad i Period 2 ESU-programmet. Alla andra förblir opatchade på en nivå med nu fjorton öppna, delvis högt bedömda sårbarheter — migrering till Exchange SE tål inte längre någon uppskjutning där. Exchange Online är redan skyddat; i hybridmiljöer måste SU:t ändå installeras på alla Exchange-servrar, även rena hanteringsservrar och maskiner där endast Exchange Management Tools är installerade.
+
+Det kända problemet med *wrapper-meddelanden* i delade postlådor i hybridmiljöer kvarstår även med augusti-SU:t; enligt Microsoft är korrigeringen planerad för en kommande uppdatering. Det finns åtminstone goda nyheter i kommentarsfältet till release-meddelandet: Den som har satt den dokumenterade SettingOverride-lösningen behöver **inte** skapa den på nytt efter installationen av augusti-SU:t — uppdateringen lämnar override-inställningen orörd, vilket Exchange-teamet bekräftar där.
+
+## De sju sårbarheterna i korthet
+
+| CVE | Typ | CVSS |
+| --- | --- | --- |
+| CVE-2026-62913 | Remote Code Execution | 8.8 |
+| CVE-2026-62911 | Elevation of Privilege | 8.0 |
+| CVE-2026-62914 | Spoofing | 7.3 |
+| CVE-2026-62910 | Elevation of Privilege | 7.2 |
+| CVE-2026-62912 | Denial of Service | 6.5 |
+| CVE-2026-62915 | Security Feature Bypass | 6.5 |
+| CVE-2026-65813 | Elevation of Privilege | 6.5 |
+
+Tre av dem förtjänar en närmare titt.
+
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** har med CVSS 8.8 månadens högsta värde: en Remote Code Execution som en autentiserad angripare med enkla behörigheter kan utlösa utan någon användarinteraktion. Ett valfritt komprometterat postlådekonto räcker som utgångspunkt — i tider av phishing och credential stuffing är «autentiserad» ingen hög tröskel.
+
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** är månadens enda sårbarhet som Microsoft klassar som *Critical* (Elevation of Privilege, CVSS 8.0). Bakom det sakliga numret finns mer historia än man kan tro: På frågan om Exchange-exploiten som Orange Tsai demonstrerade vid **Pwn2Own 2026** nu hade åtgärdats hänvisar Exchange-teamet i kommentarsfältet till release-meddelandet just till denna CVE. Tävlingsfyndet är därmed stängt — ytterligare ett skäl att inte låta augusti-SU:t vänta, eftersom Pwn2Own-tekniker normalt publiceras i detalj efter att spärrfristerna löpt ut.
+
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) är den direkta anledningen till att OWA Light stängs av — mer om det strax.
+
+De övriga sårbarheterna: CVE-2026-62910 (EoP, 7.2) kräver redan höga behörigheter, CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass) och CVE-2026-65813 (EoP) har CVSS 6.5. Detaljerna finns som vanligt i Security Update Guide (filtrera på «Server Software» för Exchange SE respektive «ESU» för 2016/2019).
+
+## OWA Light: slut efter nästan tjugo år
+
+### Vad uppdateringen ändrar
+
+När augusti-SU:t installeras blir **OWA Light permanent inaktiverat** — på varje server som får uppdateringen (eller en senare). Den som öppnar Light-gränssnittet hamnar framöver i vanliga Outlook on the web. Avstängningen är en del av själva uppdateringen och kan inte återställas med en inställning; Microsoft hade annonserat den några veckor tidigare i ett separat blogginlägg.
+
+OWA Light kommer från Exchange 2007-eran: ett medvetet enkelt webbgränssnitt som reserv för gamla webbläsare och långsamma anslutningar, officiellt deprecated sedan augusti 2024. Motiveringen till slutet är säkerhetsdriven: En separat äldre renderingsväg vid sidan av moderna OWA ökar komplexiteten och därmed attackytan — CVE-2026-62914 är det konkreta beviset. Den som läst [juliartikeln](/blog/exchange-security-updates-juli-2026) minns dessutom: Redan CVE-2026-42897-mitigeringen från maj hade gjort OWA Light obrukbart som bieffekt. Gränssnittet var alltså redan på väg bort.
+
+### Om du inte kan patcha: stäng av OWA Light manuellt
+
+Viktigt för alla som (ännu) inte kan installera augusti-SU:t — exempelvis eftersom ESU-aktiveringen saknas: Microsoft rekommenderar uttryckligen att i detta fall **inaktivera OWA Light manuellt** för att minska CVE-2026-62914. Det görs via OWA-postlådepolicyn och inloggningssidan:
+
+```powershell
+Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
+Get-OwaVirtualDirectory | Set-OwaVirtualDirectory -LogonPageLightSelectionEnabled $false
+```
+
+Det första kommandot stänger av Light-versionen för alla postlådor i respektive policy, det andra tar bort alternativet «Använd Light-versionen» från OWA-inloggningssidan. Ändringar i den virtuella OWA-katalogen träder tillförlitligt i kraft först efter en återvinning av OWA-app-poolen respektive en `iisreset`.
+
+### Vad administratörer bör kontrollera nu
+
+Avstängningen är tekniskt trivial, men inte alltid organisatoriskt: OWA Light var en tyst livlina för nischscenarier. Kontrollera nu bokmärken och helpdesk-anvisningar som har `?layout=light` hårdkodat, kiosk- och terminalenheter med gamla webbläsare samt interna instruktioner för användare som använt Light-versionen av tillgänglighetsskäl. Moderna Outlook on the web fungerar i alla aktuella webbläsare och har egna tillgänglighetsfunktioner — men den som inte informerar berörda användare i förväg skapar supportärenden.
+
+## Varför ett SU nu kommer varje månad — och var Exchange SE CU1 är
+
+Två dagar efter releasen besvarade Exchange-teamet frågan som många administratörer ställer i ett anmärkningsvärt öppet blogginlägg («Where is Exchange SE CU1 anyway?»). Kortversionen: Microsoft använder AI-verktyg i hela koncernen för att hitta sårbarheter i sina egna produkter. Teamen — inklusive Exchange — arbetar för närvarande igenom de rapporterade fynden: validerar, reproducerar, åtgärdar, testar för regressioner och levererar månadsvis. Sedan maj 2026 har därför ett Exchange-SU släppts varje månad, och Microsoft säger uttryckligen: Detta högre tempo kommer att fortsätta.
+
+Det länge efterlängtade **CU1 för Exchange SE** försenas just därför. Ursprungligen aviserat för första halvåret 2026 och sedan flyttat till det andra, finns det nu inte längre något måldatum. Microsoft vill släppa CU1 först när det finns en månad utan en akut säkerhetsleverans emellan — ett CU som omedelbart överträffas av ett SU skulle innebära dubbelt uppdateringsarbete för många organisationer. Fram till dess förs den månatliga säkerhetspayloaden löpande in i den interna CU1-bygget.
+
+I praktiken innebär det två saker. För det första: Att vänta på CU1 är ingen strategi — varken för migreringen till SE eller för installationen av SU:erna. För det andra: Ett **månatligt underhållsfönster** för Exchange ska från och med nu vara en fast del av driftkalendern, precis som det sedan länge är självklart för Windows-servrar.
+
+## Installation och efterarbete
+
+Förfarandet är det beprövade: Inventera först med [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) vilka servrar som har vilken CU/SU-nivå och om manuella steg återstår. Installera sedan SU:t (om CU-nivån är föråldrad visar [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) vägen), starta om servern och kontrollera att alla Exchange-tjänster har startat korrekt. Om tjänster är *inaktiverade* avbröts installationen — då hjälper den dokumenterade lösningen i Microsoft-supportartikeln om File-Version-felet respektive [SetupAssist-skriptet](https://aka.ms/ExSetupAssist). Avsluta med att köra Health Checker igen.
+
+SU:er är kumulativa: Den som hoppade över juli-SU:t installerar augusti-SU:t direkt. Och för hybridmiljöer gäller det välkända tillägget: Om Auth-certifikatet byts efter SU-installationen bör Hybrid Configuration Wizard köras igen.
+
+Ett efterarbete från juli är fortfarande aktuellt: Den som fortfarande har CVE-2026-42897-mitigeringen (M2.1.0) aktiv bör ta bort den nu — hur detta görs korrekt finns i [artikeln om juli-SU:t](/blog/exchange-security-updates-juli-2026).
+
+## Rekommenderat tillvägagångssätt
+
+Kort sammanfattat: Installera augusti-SU:t snarast på alla Exchange-servrar och maskiner med Management Tools — Pwn2Own-sårbarheten och RCE:n med 8.8 är tillräckliga skäl att inte vänta på nästa patchdag. Den som inte kan patcha omedelbart inaktiverar OWA Light manuellt som en omedelbar åtgärd mot CVE-2026-62914. Identifiera och informera berörda användargrupper före avstängningen av OWA Light (gamla bokmärken, kioskwebbläsare, tillgänglighetsarbetsflöden). Kör sedan Health Checker, slutför kvarvarande efterarbete från juli — och planera in ett månatligt Exchange-underhållsfönster, eftersom rytmen består.
+
+## Källor
+
+1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Officiellt release-meddelande med versioner som stöds, information om OWA Light, Known Issues och FAQ; i kommentarerna finns bekräftelserna om Pwn2Own-korrigeringen (CVE-2026-62911) och den kvarstående Wrapper-SettingOverride-inställningen.
+
+2.  [Upcoming retirement of OWA Light in Exchange Server – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/upcoming-retirement-of-owa-light-in-exchange-server/4534943): Förhandsmeddelandet om avstängningen samt Microsofts rekommendation att inaktivera OWA Light manuellt om patchen uteblir.
+
+3.  [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): Exchange-teamet om AI-stödd sårbarhetssökning, den fortsatta månatliga rytmen för SU:er och CU1-förseningen.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Referens för build-numren för augusti-SU:erna.
+
+5.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Villkor och löptid (maj till oktober 2026) för ESU-programmet.
+
+6.  [Wrapper messages appear in shared mailbox inbox in hybrid environments – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Det sedan juni kända hybridproblemet och SettingOverride-lösningen.
+
+7.  [Neue Sicherheitsupdates für Exchange Server (August 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-august-2026/): Tyskspråkig genomgång av de sju CVE:erna med CVSS-värden och builds.
+
+8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): Parametern `OWALightEnabled` för manuell inaktivering av Light-versionen.
+
+9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventering av CU/SU-nivåer och återstående manuella steg före och efter installationen.
+
+----
+
 # Vem levererar egentligen till din tenant? Aggregera avsändande IP-adresser
 
 URL: https://rafaelpfister.ch/sv/blog/vem-levererar-egentligen-till-din-tenant-aggregera-avsandande-ip-adresser
@@ -37251,6 +38150,115 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Exchange-sikkerhetsoppdateringer fra august 2026: Pwn2Own-sårbarhet lukket, OWA Light slått av
+
+URL: https://rafaelpfister.ch/no/blog/exchange-sikkerhetsoppdateringer-fra-august-2026-pwn2own-sarbarhet-lukket-owa-light-slatt-av
+Datum: 2026-08-19
+
+# Exchange-sikkerhetsoppdateringer fra august 2026: Pwn2Own-sårbarhet lukket, OWA Light slått av
+
+Microsoft publiserte sikkerhetsoppdateringer (SU-er) for Exchange Server 11. august 2026 — for fjerde måned på rad. Oppdateringene lukker sju sårbarheter. Ingen av dem var offentlig kjent på forhånd, ingen utnyttes aktivt etter dagens kjennskap, og Microsoft vurderer utnyttelse av alle sju som «Exploitation Less Likely». Likevel er dette ikke en rutinemessig patchdag, av tre grunner: Oppdateringen lukker Exchange-sårbarheten som ble demonstrert i hackingkonkurransen Pwn2Own, den **slår av OWA Light permanent etter nesten tjue år**, og Exchange-teamet har i etterkant forklart hvorfor den månedlige rytmen foreløpig blir normalen.
+
+## Hvilke Exchange-versjoner oppdateringen er tilgjengelig for
+
+SU-ene er tilgjengelige for følgende versjoner:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, build 15.2.2562.46 — som en ordinært tilgjengelig, offentlig oppdatering.
+- **Exchange Server 2019 CU15**: KB5121574, build 15.2.1748.49 — kun via **Period 2 ESU-programmet**.
+- **Exchange Server 2019 CU14**: KB5121575, build 15.2.1544.44 — kun via Period 2 ESU.
+- **Exchange Server 2016 CU23**: KB5121576, build 15.1.2507.72 — kun via Period 2 ESU.
+
+Situasjonen er den samme som i juli: Exchange 2016 og 2019 har ikke lenger støtte. SU-ene fra mai til oktober 2026 får bare de som er registrert i Period 2 ESU-programmet. Alle andre forblir upatchet på et nivå med nå fjorten åpne, delvis høyt vurderte sårbarheter — overgangen til Exchange SE kan ikke lenger utsettes. Exchange Online er allerede beskyttet; i hybridmiljøer må SU-en likevel installeres på alle Exchange-servere, også rene administrasjonsservere og maskiner der bare Exchange Management Tools er installert.
+
+Det kjente problemet med *wrapper-meldinger* i delte postbokser i hybridmiljøer består også med august-SU-en; ifølge Microsoft er løsningen planlagt for en kommende oppdatering. Det finnes i det minste en god nyhet i kommentarfeltet til utgivelseskunngjøringen: De som har angitt den dokumenterte SettingOverride-en som en midlertidig løsning, trenger **ikke** å opprette den på nytt etter installasjon av august-SU-en — oppdateringen lar overstyringen være urørt, slik Exchange-teamet bekrefter der.
+
+## Oversikt over de sju sårbarhetene
+
+| CVE | Type | CVSS |
+| --- | --- | --- |
+| CVE-2026-62913 | Remote Code Execution | 8.8 |
+| CVE-2026-62911 | Elevation of Privilege | 8.0 |
+| CVE-2026-62914 | Spoofing | 7.3 |
+| CVE-2026-62910 | Elevation of Privilege | 7.2 |
+| CVE-2026-62912 | Denial of Service | 6.5 |
+| CVE-2026-62915 | Security Feature Bypass | 6.5 |
+| CVE-2026-65813 | Elevation of Privilege | 6.5 |
+
+Tre av dem fortjener en nærmere titt.
+
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** har månedens høyeste verdi med CVSS 8.8: en Remote Code Execution som en autentisert angriper med enkle rettigheter kan utløse uten noen brukerinteraksjon. En hvilken som helst kompromittert postbokkonto er tilstrekkelig som utgangspunkt — i en tid med phishing og credential stuffing er «autentisert» ingen høy terskel.
+
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** er månedens eneste sårbarhet som Microsoft vurderer som *Critical* (Elevation of Privilege, CVSS 8.0). Bak dette ligger det mer historie enn det nøkterne nummeret avslører: På spørsmålet om Exchange-utnyttelsen som Orange Tsai demonstrerte på **Pwn2Own 2026**, nå var rettet, viser Exchange-teamet i kommentarfeltet til utgivelseskunngjøringen nettopp til denne CVE-en. Konkurransefunnet er dermed lukket — enda en grunn til ikke å la august-SU-en ligge, ettersom Pwn2Own-teknikker vanligvis publiseres i detalj etter at sperrefristene har utløpt.
+
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) er den direkte årsaken til at OWA Light slås av — mer om dette straks.
+
+De øvrige sårbarhetene: CVE-2026-62910 (EoP, 7.2) krever allerede høye rettigheter, CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass) og CVE-2026-65813 (EoP) har CVSS 6.5. Detaljene finnes som vanlig i Security Update Guide (filtrer på «Server Software» for Exchange SE eller «ESU» for 2016/2019).
+
+## OWA Light: etter nesten tjue år er det slutt
+
+### Hva oppdateringen endrer
+
+Ved installasjon av august-SU-en blir **OWA Light deaktivert permanent** — på alle servere der oppdateringen (eller en senere oppdatering) installeres. De som åpner Light-grensesnittet, kommer fremover til vanlig Outlook on the web. Deaktiveringen er en del av selve oppdateringen og kan ikke angres med en bryter; Microsoft varslet den noen uker tidligere i et eget blogginnlegg.
+
+OWA Light stammer fra Exchange 2007-æraen: et bevisst enkelt webgrensesnitt som reserve for gamle nettlesere og langsomme forbindelser, og offisielt deprecated siden august 2024. Begrunnelsen for slutten er drevet av sikkerhet: En separat eldre renderingsbane ved siden av moderne OWA øker kompleksiteten og dermed angrepsflaten — CVE-2026-62914 gir et konkret bevis på dette. De som har lest [juli-artikkelen](/blog/exchange-security-updates-juli-2026), husker dessuten: Allerede CVE-2026-42897-mitigeringen fra mai hadde samtidig gjort OWA Light ubrukelig. Grensesnittet var altså allerede på overtid.
+
+### De som ikke kan patche: Slå av OWA Light manuelt
+
+Viktig for alle som (ennå) ikke kan installere august-SU-en — for eksempel fordi ESU-aktiveringen mangler: Microsoft anbefaler uttrykkelig å **deaktivere OWA Light manuelt** i dette tilfellet, for å redusere CVE-2026-62914. Dette gjøres via OWA-postboksregelen og påloggingssiden:
+
+```powershell
+Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
+Get-OwaVirtualDirectory | Set-OwaVirtualDirectory -LogonPageLightSelectionEnabled $false
+```
+
+Den første kommandoen slår av Light-versjonen for alle postbokser i den aktuelle policyen, den andre fjerner valget «Bruk Light-versjonen» fra OWA-påloggingssiden. Endringer i den virtuelle OWA-katalogen trer først pålitelig i kraft etter en resirkulering av OWA-appbassenget eller en `iisreset`.
+
+### Hva administratorer bør kontrollere nå
+
+Deaktiveringen er teknisk triviell, men ikke alltid organisatorisk: OWA Light var den stille redningslinen for nisjescenarier. Nå bør man kontrollere bokmerker og helpdesk-veiledninger som har `?layout=light` hardkodet, kiosk- og terminalenheter med gamle nettlesere samt interne veiledninger for brukere som har brukt Light-versjonen av tilgjengelighetshensyn. Moderne Outlook on the web kjører i alle aktuelle nettlesere og har egne tilgjengelighetsfunksjoner — men de som ikke informerer berørte brukere på forhånd, skaper supporthenvendelser.
+
+## Hvorfor det nå kommer en SU hver måned — og hvor Exchange SE CU1 blir av
+
+To dager etter utgivelsen besvarte Exchange-teamet spørsmålet mange administratorer stiller, i et bemerkelsesverdig åpent blogginnlegg («Where is Exchange SE CU1 anyway?»). Kortversjonen: Microsoft bruker KI-verktøy på tvers av konsernet for å finne sårbarheter i egne produkter. Teamene — inkludert Exchange — behandler nå funnene som rapporteres: validerer, reproduserer, retter, tester for regresjoner og leverer månedlig. Siden mai 2026 har det dermed kommet en Exchange-SU hver måned, og Microsoft sier uttrykkelig at dette økte tempoet vil fortsette.
+
+Det lenge ventede **CU1 for Exchange SE** forsinkes nettopp av denne grunn. Opprinnelig annonsert for første halvår 2026, deretter flyttet til andre halvår, finnes det nå ikke lenger noen måldato. Microsoft vil først publisere CU1 når det er en måned uten et presserende sikkerhetsbidrag imellom — en CU som umiddelbart blir innhentet av en SU, ville påføre mange organisasjoner dobbelt oppdateringsarbeid. Frem til da integreres den månedlige sikkerhetslasten fortløpende i den interne CU1-byggingen.
+
+I praksis betyr dette to ting. For det første: Å vente på CU1 er ingen strategi — verken for migreringen til SE eller for installasjon av SU-er. For det andre: Et **månedlig vedlikeholdsvindu** for Exchange hører fra nå av fast hjemme i driftskalenderen, slik det lenge har vært en selvfølge for Windows-servere.
+
+## Installasjon og oppfølging
+
+Fremgangsmåten er fortsatt den velprøvde: Først inventariseres det med [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) hvilke servere som har hvilken CU/SU-versjon, og om manuelle trinn gjenstår. Installer deretter SU-en (ved utdatert CU-versjon viser [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) veien), start serveren på nytt og kontroller at alle Exchange-tjenester har startet korrekt. Hvis tjenester står som *deaktivert*, ble installasjonen avbrutt — da hjelper den dokumenterte midlertidige løsningen i Microsofts støtteartikkel om File-Version-feilen, eller [SetupAssist-skriptet](https://aka.ms/ExSetupAssist). Avslutt med å kjøre Health Checker på nytt.
+
+SU-er er kumulative: De som hoppet over juli-SU-en, installerer august-SU-en direkte. Og for hybridmiljøer gjelder det kjente tillegget: Hvis Auth-sertifikatet byttes etter SU-installasjonen, bør Hybrid Configuration Wizard kjøres på nytt.
+
+Et etterarbeid fra juli er fortsatt aktuelt: De som fortsatt har CVE-2026-42897-mitigeringen (M2.1.0) aktiv, bør fjerne den nå — hvordan dette gjøres riktig, står i [artikkelen om juli-SU-en](/blog/exchange-security-updates-juli-2026).
+
+## Anbefalt fremgangsmåte
+
+Kort oppsummert: Installer august-SU-en raskt på alle Exchange-servere og maskiner med Management Tools — Pwn2Own-sårbarheten og RCE-en med 8.8 er grunn nok til ikke å vente på neste patchdag. De som ikke kan patche umiddelbart, deaktiverer OWA Light manuelt som et umiddelbart tiltak mot CVE-2026-62914. Identifiser og informer berørte brukergrupper før OWA Light slås av (gamle bokmerker, kiosknettlesere, tilgjengelighetsarbeidsflyter). Kjør deretter Health Checker, utfør gjenstående etterarbeid fra juli — og planlegg et månedlig Exchange-vedlikeholdsvindu, for rytmen fortsetter.
+
+## Kilder
+
+1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Offisiell utgivelseskunngjøring med støttede versjoner, merknad om OWA Light, kjente problemer og FAQ; i kommentarene finnes bekreftelsene på Pwn2Own-fiksen (CVE-2026-62911) og den fortsatt gjeldende Wrapper-SettingOverride-en.
+
+2.  [Upcoming retirement of OWA Light in Exchange Server – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/upcoming-retirement-of-owa-light-in-exchange-server/4534943): Forhåndsvarselet om deaktiveringen, inkludert Microsofts anbefaling om å deaktivere OWA Light manuelt dersom oppdateringen uteblir.
+
+3.  [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): Exchange-teamet om KI-støttet søk etter sårbarheter, den vedvarende månedlige rytmen for SU-er og CU1-forsinkelsen.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Referanse for build-numrene til august-SU-ene.
+
+5.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Vilkår og varighet (mai til oktober 2026) for ESU-programmet.
+
+6.  [Wrapper messages appear in shared mailbox inbox in hybrid environments – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Det kjente hybridproblemet siden juni, inkludert SettingOverride-midlertidig løsning.
+
+7.  [Neue Sicherheitsupdates für Exchange Server (August 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-august-2026/): Tyskspråklig oversikt over de sju CVE-ene med CVSS-verdier og builds.
+
+8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): Parameteren `OWALightEnabled` for manuell deaktivering av Light-versjonen.
+
+9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventarisering av CU/SU-versjoner og åpne manuelle trinn før og etter installasjonen.
 
 ----
 
