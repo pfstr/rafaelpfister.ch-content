@@ -7,6 +7,7 @@ kategorie: "SMTP / Flusso di posta"
 timeToRead: "15 min di lettura"
 themen:
   - smtp-mailflow
+  - testing
   - exchange-onprem-hybrid
 hauptthema: "smtp-mailflow"
 produkte:

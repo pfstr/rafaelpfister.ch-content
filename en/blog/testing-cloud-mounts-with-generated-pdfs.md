@@ -7,6 +7,7 @@ kategorie: "Rclone"
 timeToRead: "11 mins reading time"
 themen:
   - rclone
+  - testing
 related:
   - rclone-mount-in-docker-container
   - paperless-dokumente-clouddienst-auslagern

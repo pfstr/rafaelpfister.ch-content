@@ -294,6 +294,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Home Assistant und IoT](https://rafaelpfister.ch/blog/thema/smart-home-iot)
 - [SMTP und Mailflow](https://rafaelpfister.ch/blog/thema/smtp-mailflow)
 - [Stromtarife und LEG](https://rafaelpfister.ch/blog/thema/stromtarife-leg)
+- [Testing und Lasttests](https://rafaelpfister.ch/blog/thema/testing)
 - [Totemomail](https://rafaelpfister.ch/blog/thema/totemomail)
 
 ## Optional

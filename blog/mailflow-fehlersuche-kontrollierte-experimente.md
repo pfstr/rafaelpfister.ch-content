@@ -7,12 +7,14 @@ kategorie: "SMTP / Mailfluss"
 timeToRead: "15 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
+  - "testing"
   - "exchange-onprem-hybrid"
 hauptthema: "smtp-mailflow"
 produkte:
   - "uebergreifend"
   - "exchange"
 protokolle:
+  - "testing"
   - "smtp"
   - "troubleshooting"
 related:

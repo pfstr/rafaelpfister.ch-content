@@ -7,6 +7,7 @@ kategorie: "SMTP och e-postflöde"
 timeToRead: "10 min. läsning"
 themen:
   - smtp-mailflow
+  - testing
   - e-mail-verschluesselung
 slug: "testa-smtp-under-linux-fran-tcp-anslutning-till-levererat-e-postmeddelande"
 translationId: "article-cb44a92c03a47bc0"

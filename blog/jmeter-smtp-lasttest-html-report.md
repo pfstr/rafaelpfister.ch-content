@@ -7,12 +7,14 @@ kategorie: "SMTP und Mailflow"
 timeToRead: "11 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
+  - "testing"
   - "totemomail"
 produkte:
   - "uebergreifend"
   - "totemomail"
   - "apache-james"
 protokolle:
+  - "testing"
   - "smtp"
   - "troubleshooting"
 related:

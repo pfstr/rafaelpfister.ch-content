@@ -7,6 +7,7 @@ kategorie: "SMTP e flusso di posta"
 timeToRead: "10 min di lettura"
 themen:
   - smtp-mailflow
+  - testing
   - e-mail-verschluesselung
 slug: "testare-smtp-su-linux-dalla-connessione-tcp-all-email-consegnata"
 translationId: "article-cb44a92c03a47bc0"

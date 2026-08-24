@@ -7,6 +7,7 @@ kategorie: "SMTP y flujo de correo"
 timeToRead: "10 min de lectura"
 themen:
   - smtp-mailflow
+  - testing
   - e-mail-verschluesselung
 slug: "probar-smtp-en-linux-desde-la-conexion-tcp-hasta-el-correo-entregado"
 translationId: "article-cb44a92c03a47bc0"

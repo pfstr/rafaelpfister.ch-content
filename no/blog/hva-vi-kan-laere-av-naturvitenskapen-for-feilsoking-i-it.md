@@ -7,6 +7,7 @@ kategorie: "SMTP / e-postflyt"
 timeToRead: "15 min lesetid"
 themen:
   - smtp-mailflow
+  - testing
   - exchange-onprem-hybrid
 hauptthema: "smtp-mailflow"
 produkte:

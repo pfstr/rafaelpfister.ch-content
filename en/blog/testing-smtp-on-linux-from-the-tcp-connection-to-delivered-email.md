@@ -7,6 +7,7 @@ kategorie: "SMTP and Mail Flow"
 timeToRead: "10 min read"
 themen:
   - smtp-mailflow
+  - testing
   - e-mail-verschluesselung
 slug: "testing-smtp-on-linux-from-the-tcp-connection-to-delivered-email"
 translationId: "article-cb44a92c03a47bc0"

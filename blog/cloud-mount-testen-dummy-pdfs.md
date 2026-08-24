@@ -7,9 +7,11 @@ kategorie: "Rclone"
 timeToRead: "11 Min. Lesezeit"
 themen:
   - "rclone"
+  - "testing"
 produkte:
   - "rclone"
 protokolle:
+  - "testing"
   - "backup-dr"
   - "storage"
   - "troubleshooting"
