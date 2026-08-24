@@ -488,6 +488,18 @@ start "" "%PKG%\app\Claude.exe" --disable-features=WebGPU
 
 Seit der Umstellung: kein einziger Absturz mehr. Die vollständige Analyse ist gemeldet: die Labor-Experimente und die Duplikat-Verweise im ersten Issue, die Minidump-Auswertung mit der Ursachenkette im zweiten. Die drei sinnvollen Fixes ergeben sich direkt aus dem Befund: die Absturzursache im Software-GPU-Prozess klären (die Dumps dafür liegen in der Hersteller-Telemetrie), bei wiederholten GPU-Abstürzen WebGPU gezielt abschalten statt die Fallback-Kette auslaufen zu lassen, und das automatische Deaktivieren der Hardware-Beschleunigung überdenken, weil es die Kette verkürzt.
 
+## Nachtrag: der Workaround greift zu kurz, die Lösung liegt tiefer
+
+Noch am selben Abend der nächste Absturz, identische Signatur. Der Grund ist einfach: Der Launcher mit `--disable-features=WebGPU` wirkt nur, wenn die App auch über ihn gestartet wird. Beim gewohnten Start über das Startmenü läuft die App ohne den Flag, und bei einer Store-App gibt es keinen sauberen Weg, einem normalen Start dauerhaft Kommandozeilen-Flags mitzugeben.
+
+Die dauerhafte Lösung steht aber längst in der Ursachenkette dieses Artikels: Der fatale Selbstabbruch setzt voraus, dass die Fallback-Kette leer ist, und sie ist nur deshalb sofort leer, weil die App mit deaktivierter Hardware-Beschleunigung startet. Also gehört die Hardware-Beschleunigung wieder eingeschaltet, in der `config.json` der App:
+
+```json
+"isHardwareAccelerationDisabled": false
+```
+
+Das wirkt ab dem nächsten App-Start und behebt beide Seiten des Problems auf einmal. Erstens läuft `requestAdapter()` dann über den Hardware-Pfad, der auf dieser Maschine nachweislich stabil ist (Experiment 2: Adapter und Device ohne Fehler). Zweitens hat Chromium wieder Fallback-Stufen in Reserve: Sollte der GPU-Prozess doch einmal abstürzen, schaltet der Browser auf Software-Rendering zurück und läuft weiter, statt sich zu beenden. Das ursprüngliche Deaktivieren der Hardware-Beschleunigung, vermutlich irgendwann als Stabilitätsmassnahme gesetzt, war in Wahrheit die Vorbedingung des Absturzes.
+
 Das Fazit der Fehlersuche: Die naheliegendste Erklärung ("der Treiber war es") hätte in eine ergebnislose Treiber-Odyssee geführt. Widerlegt haben sie zwei Stunden Labor mit der echten Engine-Version, und die Ursache fand sich erst im Minidump, den die App routinemässig wegräumt. Wenn ein GPU-Prozess abstürzt, gehören deshalb vier Prüfungen an den Anfang, bevor man einem Hersteller die Schuld gibt: die Gegenprobe im aktuellen Browser, die Gegenprobe in der reinen Engine-Version, der Blick, ob andere Hardware dieselbe Signatur zeigt, und der Dump des Prozesses, der tatsächlich den Abbruch beschliesst.
 
 ## Quellen
