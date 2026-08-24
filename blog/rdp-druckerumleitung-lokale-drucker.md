@@ -31,7 +31,11 @@ Der schnellste Weg führt über die grafische Oberfläche: `mstsc` starten, **Op
 redirectprinters:i:1
 ```
 
-Ein Stolperstein bei Verknüpfungen ohne .rdp-Datei: Wird die Verbindung mit `mstsc /v:hostname` gestartet, gelten die Einstellungen aus der versteckten Datei `Default.rdp` im Dokumente-Ordner des Anwenders. Fehlt dort die Zeile `redirectprinters:i:1`, bleibt der Drucker weg, obwohl scheinbar alles richtig konfiguriert ist. Die Zeile lässt sich per Editor oder Skript nachtragen.
+Ein Stolperstein bei Verknüpfungen ohne .rdp-Datei: Wird die Verbindung mit `mstsc /v:hostname` gestartet, gelten die Einstellungen aus der versteckten Datei `Default.rdp` im Dokumente-Ordner des Anwenders. Fehlt dort die Zeile `redirectprinters:i:1`, bleibt der Drucker weg, obwohl scheinbar alles richtig konfiguriert ist. Dieser Einzeiler trägt die Zeile idempotent nach (vorhandene `0` wird zu `1`, fehlende Zeile wird ergänzt) und zeigt zur Kontrolle das Ergebnis an:
+
+```powershell
+$f="$env:USERPROFILE\Documents\Default.rdp"; if (Test-Path $f) { $c = Get-Content $f; if ($c -match 'redirectprinters') { $c -replace 'redirectprinters:i:0','redirectprinters:i:1' | Set-Content $f } else { Add-Content $f 'redirectprinters:i:1' } } else { Set-Content $f 'redirectprinters:i:1' }; Select-String -Path $f -Pattern 'redirectprinters'
+```
 
 Zwei weitere Fallen auf der Client-Seite: Erstens merkt sich Windows pro Zielrechner unter `HKCU\Software\Microsoft\Terminal Server Client\LocalDevices`, welche Umleitungen der Anwender im Sicherheitsdialog zuletzt erlaubt hat; diese gespeicherte Auswahl überschreibt die Vorgabe aus der .rdp-Datei. Das Löschen des Schlüssels setzt den Zustand zurück. Zweitens deaktiviert der Registry-Wert `DisablePrinterRedirection` (DWORD, Wert 1) unter `HKLM\Software\Microsoft\Terminal Server Client` die Druckerumleitung auf dem Client komplett; auf verwalteten Geräten lohnt ein Blick darauf, bevor die Fehlersuche in der Sitzung beginnt.
 
