@@ -93,7 +93,11 @@ Ein vorangestelltes `MSYS_NO_PATHCONV=1` schaltet die Umschreibung für den einz
 Ein einzelner Aufruf erzeugt Schlüssel und CSR mit der kompletten SAN-Liste:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 Die CSR-Datei geht an die CA, der Schlüssel bleibt auf dem Server. Zurück kommt das signierte Zertifikat samt Intermediate, üblicherweise direkt als PEM. Damit liegt alles für die Installation bereit, die PFX-Konvertierung entfällt auf diesem Weg komplett.
@@ -187,7 +191,9 @@ Zwei Punkte entscheiden über Erfolg und Misserfolg: Die Session nicht mit Ctrl+
 Der schnellste Test läuft von aussen gegen die Quarantäneseite. Der Endbenutzerzugriff der Spam-Quarantäne liegt standardmässig auf HTTPS-Port 83, sofern beim Aktivieren nichts anderes konfiguriert wurde:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 Die Ausgabe muss den neuen Subject und das neue Ablaufdatum zeigen. Auf der Appliance listet `certconfig` mit der Operation `PRINT` die aktiven Zertifikate, und der Browser-Check gegen Admin-GUI und Quarantäneseite bestätigt, dass die Kette sauber aufgebaut ist.

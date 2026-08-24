@@ -15,7 +15,7 @@ aiPrompt: |
   Du bist mein Assistent für die Zertifikatserneuerung auf einer Cisco SMA (Secure Email and Web Manager). Führe mich Schritt für Schritt durch den Ablauf aus diesem Artikel: 1. Wahl des Wegs zum Schlüsselpaar (OpenSSL-CSR in der eigenen Umgebung, PFX von der CA oder Umweg über eine ESA), 2. CN- und SAN-Liste für meine Hostnamen, 3. je nach Weg CSR-Erzeugung mit OpenSSL oder Konvertierung der PFX-Datei nach PEM inklusive Umgang mit dem Fehler RC2-40-CBC, 4. bei interner CA Import der Root-CA in die Custom-Liste der Appliance, 5. Installation über certconfig in der CLI, 6. Kontrolle. Frage mich zuerst nach den Hostnamen meiner Appliances und der Quarantäneseite, ob die ausstellende CA intern oder öffentlich ist und welche OpenSSL-Version ich installiert habe. Passe alle Befehle an meine Dateinamen an und erinnere mich vor dem Abschluss daran, die certconfig-Session nicht mit Ctrl+C zu beenden und die Änderung mit commit zu aktivieren.
 translationOf: cisco-sma-zertifikat-erneuern
 url: https://rafaelpfister.ch/en/blog/renewing-a-certificate-on-the-cisco-sma
-translationSourceHash: 6dc8240e5839f04d73103bb79e45ad14bdc9a7a16e02e2c57f9a4f33be24b53c
+translationSourceHash: 0c12510db6a327680d08d3f4eb6924738cef4987860e42c41043ce66467d4249
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-05T06:05:02.169Z
 translationReview: automatic
@@ -92,7 +92,11 @@ A preceding `MSYS_NO_PATHCONV=1` disables rewriting for that individual invocati
 A single command generates the key and CSR with the complete SAN list:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 Send the CSR file to the CA; the key remains on the server. The CA returns the signed certificate along with the intermediate, usually directly as PEM. This leaves everything ready for installation, and PFX conversion is completely unnecessary with this approach.
@@ -186,7 +190,9 @@ Two points determine success or failure: do not end the session with Ctrl+C, as 
 The quickest test runs externally against the quarantine page. By default, end-user access to spam quarantine is on HTTPS port 83, unless a different setting was configured when it was enabled:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 The output must show the new subject and expiration date. On the appliance, `certconfig` with the `PRINT` operation lists the active certificates, and browser checks against the admin GUI and quarantine page confirm that the chain is built correctly.

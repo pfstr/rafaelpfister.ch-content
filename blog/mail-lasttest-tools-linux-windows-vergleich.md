@@ -107,13 +107,22 @@ Die Messwerte des Lastgenerators sind nur die halbe Wahrheit, denn sie zeigen di
 Unter Postfix liefert das Maillog pro Nachricht die Felder `delay` und `delays`, letzteres aufgeschlüsselt nach Zeit in der Queue, Verbindungsaufbau und Übertragung. Eine Auswertung über einen Testlauf ist mit Bordmitteln erledigt:
 
 ```bash
-grep "status=sent" /var/log/mail.log | grep -o "delay=[0-9.]*" | cut -d= -f2 | sort -n | awk '{a[NR]=$1} END {print "n="NR, "p50="a[int(NR*0.5)], "p95="a[int(NR*0.95)], "p99="a[int(NR*0.99)], "max="a[NR]}'
+grep "status=sent" /var/log/mail.log |
+  grep -o "delay=[0-9.]*" | cut -d= -f2 | sort -n |
+  awk '{a[NR]=$1} END {print "n="NR, "p50="a[int(NR*0.5)], "p95="a[int(NR*0.95)], "p99="a[int(NR*0.99)], "max="a[NR]}'
 ```
 
 Auf Exchange-Seite ist das Message Tracking Log die zentrale Quelle. Für einen Testlauf mit Betreffkonvention:
 
 ```powershell
-Get-MessageTrackingLog -Start "24.08.2026 14:00" -End "24.08.2026 15:00" -MessageSubject "LOADTEST" -ResultSize Unlimited | Group-Object EventId | Sort-Object Count -Descending | Format-Table Name, Count
+$p = @{
+    Start          = "24.08.2026 14:00"
+    End            = "24.08.2026 15:00"
+    MessageSubject = "LOADTEST"
+    ResultSize     = "Unlimited"
+}
+Get-MessageTrackingLog @p | Group-Object EventId |
+    Sort-Object Count -Descending | Format-Table Name, Count
 ```
 
 Die Differenz der Zeitstempel zwischen RECEIVE- und DELIVER-Ereignis derselben MessageId ergibt die Ende-zu-Ende-Latenz pro Nachricht; exportiert als CSV lässt sich daraus die Perzentilverteilung rechnen.

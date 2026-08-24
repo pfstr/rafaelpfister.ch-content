@@ -13,7 +13,7 @@ slug: "probar-smtp-en-linux-desde-la-conexion-tcp-hasta-el-correo-entregado"
 translationId: "article-cb44a92c03a47bc0"
 translationOf: smtp-verbindung-testen-linux
 url: https://rafaelpfister.ch/es/blog/probar-smtp-en-linux-desde-la-conexion-tcp-hasta-el-correo-entregado
-translationSourceHash: 650b4717ca00ffd3d02cebae8f1484027cf0f9b47de1b607caa951cd7264454a
+translationSourceHash: 5c8e1b19b8002fc6dc109c5471afbe91dba9302274cef0b63eebd40e01a98fe2
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-01T06:13:36.133Z
 translationReview: automatic
@@ -72,7 +72,11 @@ En la práctica, la diferencia entre 124 y 1 es la pista más importante. Un tie
 Compruebe de inmediato ambos puertos relevantes y, además, cualquier otro destino para ver si el host tiene permitido establecer conexiones salientes:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Si tampoco funciona la comprobación adicional, el sistema no tiene salida directa en general y el tráfico debe pasar por un relay interno o un proxy. Más adelante explicamos por qué este caso es especialmente engañoso.
@@ -111,7 +115,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -134,7 +139,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Si se conecta mediante la dirección IP porque falta DNS, la comprobación del nombre de host no sirve. El nombre del certificado no coincide entonces con la dirección numérica. SNI y el nombre de comprobación pueden establecerse explícitamente, sin ninguna consulta DNS:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Aquí aparecen regularmente dos patrones de error que suelen interpretarse mal.

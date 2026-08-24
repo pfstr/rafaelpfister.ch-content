@@ -13,7 +13,7 @@ slug: "teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post"
 translationId: "article-cb44a92c03a47bc0"
 translationOf: smtp-verbindung-testen-linux
 url: https://rafaelpfister.ch/no/blog/teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post
-translationSourceHash: 650b4717ca00ffd3d02cebae8f1484027cf0f9b47de1b607caa951cd7264454a
+translationSourceHash: 5c8e1b19b8002fc6dc109c5471afbe91dba9302274cef0b63eebd40e01a98fe2
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-01T06:14:53.224Z
 translationReview: automatic
@@ -72,7 +72,11 @@ Forskjellen mellom 124 og 1 er i praksis det viktigste sporet av alle. Et tidsav
 Kontroller begge relevante porter med én gang, og i tillegg et valgfritt annet mål for å se om verten i det hele tatt har lov til å opprette utgående forbindelser:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Hvis også motprøven ikke gir noe resultat, har systemet generelt ingen direkte utgående tilgang, og trafikken må gå via et internt relay eller en proxy. Lenger nede forklares hvorfor dette tilfellet er særlig vanskelig.
@@ -111,7 +115,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -134,7 +139,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Hvis du kobler til via IP-adressen fordi DNS mangler, blir vertsnavnkontrollen meningsløs. Sertifikatnavnet passer da ikke til den numeriske adressen. SNI og kontrollnavn kan settes eksplisitt, helt uten DNS-oppslag:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 To feilmønstre dukker jevnlig opp her og blir ofte feiltolket.

@@ -13,7 +13,7 @@ slug: "tester-smtp-sous-linux-de-la-connexion-tcp-a-l-e-mail-delivre"
 translationId: "article-cb44a92c03a47bc0"
 translationOf: smtp-verbindung-testen-linux
 url: https://rafaelpfister.ch/fr/blog/tester-smtp-sous-linux-de-la-connexion-tcp-a-l-e-mail-delivre
-translationSourceHash: 650b4717ca00ffd3d02cebae8f1484027cf0f9b47de1b607caa951cd7264454a
+translationSourceHash: 5c8e1b19b8002fc6dc109c5471afbe91dba9302274cef0b63eebd40e01a98fe2
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-01T06:12:30.135Z
 translationReview: automatic
@@ -72,7 +72,11 @@ En pratique, la différence entre 124 et 1 est l’indication la plus importante
 Vérifiez immédiatement les deux ports pertinents ainsi qu’une autre destination quelconque afin de déterminer si l’hôte est autorisé à établir des connexions sortantes :
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Si le contre-test échoue également, le système ne dispose généralement pas d’accès sortant direct et le trafic doit passer par un relais interne ou un proxy. Nous verrons plus bas pourquoi ce cas est particulièrement délicat.
@@ -111,7 +115,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -134,7 +139,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Si vous vous connectez via l’adresse IP parce que DNS est indisponible, la vérification du nom d’hôte devient inopérante. Le nom du certificat ne correspond alors pas à l’adresse numérique. SNI et le nom à vérifier peuvent être définis explicitement, sans aucune requête DNS :
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Deux scénarios d’erreur apparaissent régulièrement ici et sont souvent mal interprétés.

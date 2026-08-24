@@ -13,7 +13,7 @@ slug: "testing-smtp-on-linux-from-the-tcp-connection-to-delivered-email"
 translationId: "article-cb44a92c03a47bc0"
 translationOf: smtp-verbindung-testen-linux
 url: https://rafaelpfister.ch/en/blog/testing-smtp-on-linux-from-the-tcp-connection-to-delivered-email
-translationSourceHash: 650b4717ca00ffd3d02cebae8f1484027cf0f9b47de1b607caa951cd7264454a
+translationSourceHash: 5c8e1b19b8002fc6dc109c5471afbe91dba9302274cef0b63eebd40e01a98fe2
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-01T06:11:53.422Z
 translationReview: automatic
@@ -72,7 +72,11 @@ In practice, the difference between 124 and 1 is the most important clue of all.
 Check both relevant ports right away, plus any other target to determine whether the host is permitted to establish outbound connections at all:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 If the comparison test also goes nowhere, the system generally has no direct outbound access and traffic must go through an internal relay or proxy. More on why this case is especially tricky below.
@@ -111,7 +115,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -134,7 +139,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 If you connect via the IP address because DNS is unavailable, hostname validation cannot work. The certificate name then does not match the numeric address. SNI and the verification name can be specified explicitly, without any DNS lookup:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Two error patterns occur regularly here and are often misinterpreted.

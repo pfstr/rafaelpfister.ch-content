@@ -77,7 +77,11 @@ Der Unterschied zwischen 124 und 1 ist in der Praxis der wichtigste Hinweis übe
 Prüfen Sie gleich beide relevanten Ports und zusätzlich ein beliebiges anderes Ziel, um zu sehen, ob der Host überhaupt ausgehende Verbindungen aufbauen darf:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Läuft auch die Gegenprobe ins Leere, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
@@ -116,7 +120,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -139,7 +144,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Verbinden Sie sich über die IP-Adresse, weil DNS fehlt, greift die Hostnamensprüfung ins Leere. Der Zertifikatsname passt dann nicht zur numerischen Adresse. SNI und Prüfnamen lassen sich explizit setzen, ganz ohne DNS-Abfrage:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Zwei Fehlerbilder tauchen hier regelmässig auf und werden gerne falsch gedeutet.

@@ -31,10 +31,21 @@ Der schnellste Weg führt über die grafische Oberfläche: `mstsc` starten, **Op
 redirectprinters:i:1
 ```
 
-Ein Stolperstein bei Verknüpfungen ohne .rdp-Datei: Wird die Verbindung mit `mstsc /v:hostname` gestartet, gelten die Einstellungen aus der versteckten Datei `Default.rdp` im Dokumente-Ordner des Anwenders. Fehlt dort die Zeile `redirectprinters:i:1`, bleibt der Drucker weg, obwohl scheinbar alles richtig konfiguriert ist. Dieser Einzeiler trägt die Zeile idempotent nach (vorhandene `0` wird zu `1`, fehlende Zeile wird ergänzt) und zeigt zur Kontrolle das Ergebnis an:
+Ein Stolperstein bei Verknüpfungen ohne .rdp-Datei: Wird die Verbindung mit `mstsc /v:hostname` gestartet, gelten die Einstellungen aus der versteckten Datei `Default.rdp` im Dokumente-Ordner des Anwenders. Fehlt dort die Zeile `redirectprinters:i:1`, bleibt der Drucker weg, obwohl scheinbar alles richtig konfiguriert ist. Dieses Snippet trägt die Zeile idempotent nach (vorhandene `0` wird zu `1`, fehlende Zeile wird ergänzt) und zeigt zur Kontrolle das Ergebnis an:
 
 ```powershell
-$f="$env:USERPROFILE\Documents\Default.rdp"; if (Test-Path $f) { $c = Get-Content $f; if ($c -match 'redirectprinters') { $c -replace 'redirectprinters:i:0','redirectprinters:i:1' | Set-Content $f } else { Add-Content $f 'redirectprinters:i:1' } } else { Set-Content $f 'redirectprinters:i:1' }; Select-String -Path $f -Pattern 'redirectprinters'
+$f = "$env:USERPROFILE\Documents\Default.rdp"
+if (Test-Path $f) {
+    $c = Get-Content $f
+    if ($c -match 'redirectprinters') {
+        $c -replace 'redirectprinters:i:0', 'redirectprinters:i:1' | Set-Content $f
+    } else {
+        Add-Content $f 'redirectprinters:i:1'
+    }
+} else {
+    Set-Content $f 'redirectprinters:i:1'
+}
+Select-String -Path $f -Pattern 'redirectprinters'
 ```
 
 Zwei weitere Fallen auf der Client-Seite: Erstens merkt sich Windows pro Zielrechner unter `HKCU\Software\Microsoft\Terminal Server Client\LocalDevices`, welche Umleitungen der Anwender im Sicherheitsdialog zuletzt erlaubt hat; diese gespeicherte Auswahl überschreibt die Vorgabe aus der .rdp-Datei. Das Löschen des Schlüssels setzt den Zustand zurück. Zweitens deaktiviert der Registry-Wert `DisablePrinterRedirection` (DWORD, Wert 1) unter `HKLM\Software\Microsoft\Terminal Server Client` die Druckerumleitung auf dem Client komplett; auf verwalteten Geräten lohnt ein Blick darauf, bevor die Fehlersuche in der Sitzung beginnt.
@@ -54,8 +65,9 @@ Beim Öffnen einer unsignierten .rdp-Datei, die Geräteumleitungen anfordert, ze
 Für den Umgang mit der Warnung gibt es drei Wege, in aufsteigendem Aufwand. Erstens: die Verbindung per `mstsc /v:hostname` statt über die .rdp-Datei starten; ohne Datei gibt es keine Herausgeber-Prüfung, die Einstellungen kommen aus der `Default.rdp`. Zweitens: die Umleitungen für den Zielrechner per Registry vorab genehmigen, dann entfällt der Ressourcen-Teil des Dialogs:
 
 ```powershell
-New-Item -Path "HKCU:\Software\Microsoft\Terminal Server Client\LocalDevices" -Force | Out-Null
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Terminal Server Client\LocalDevices" -Name "hostname-oder-ip" -Value 0xFFFFFFFF -Type DWord
+$key = "HKCU:\Software\Microsoft\Terminal Server Client\LocalDevices"
+New-Item -Path $key -Force | Out-Null
+Set-ItemProperty -Path $key -Name "hostname-oder-ip" -Value 0xFFFFFFFF -Type DWord
 ```
 
 Drittens, der saubere Weg für verteilte .rdp-Dateien im Unternehmen: die Datei mit `rdpsign.exe` und einem Zertifikat signieren und den Zertifikats-Fingerabdruck per GPO als vertrauenswürdigen Herausgeber hinterlegen. Für einzelne Arbeitsplätze lohnt sich der Aufwand selten, für zentral verteilte Verbindungsdateien ist er die richtige Lösung.
@@ -172,13 +184,22 @@ Die Messwerte des Lastgenerators sind nur die halbe Wahrheit, denn sie zeigen di
 Unter Postfix liefert das Maillog pro Nachricht die Felder `delay` und `delays`, letzteres aufgeschlüsselt nach Zeit in der Queue, Verbindungsaufbau und Übertragung. Eine Auswertung über einen Testlauf ist mit Bordmitteln erledigt:
 
 ```bash
-grep "status=sent" /var/log/mail.log | grep -o "delay=[0-9.]*" | cut -d= -f2 | sort -n | awk '{a[NR]=$1} END {print "n="NR, "p50="a[int(NR*0.5)], "p95="a[int(NR*0.95)], "p99="a[int(NR*0.99)], "max="a[NR]}'
+grep "status=sent" /var/log/mail.log |
+  grep -o "delay=[0-9.]*" | cut -d= -f2 | sort -n |
+  awk '{a[NR]=$1} END {print "n="NR, "p50="a[int(NR*0.5)], "p95="a[int(NR*0.95)], "p99="a[int(NR*0.99)], "max="a[NR]}'
 ```
 
 Auf Exchange-Seite ist das Message Tracking Log die zentrale Quelle. Für einen Testlauf mit Betreffkonvention:
 
 ```powershell
-Get-MessageTrackingLog -Start "24.08.2026 14:00" -End "24.08.2026 15:00" -MessageSubject "LOADTEST" -ResultSize Unlimited | Group-Object EventId | Sort-Object Count -Descending | Format-Table Name, Count
+$p = @{
+    Start          = "24.08.2026 14:00"
+    End            = "24.08.2026 15:00"
+    MessageSubject = "LOADTEST"
+    ResultSize     = "Unlimited"
+}
+Get-MessageTrackingLog @p | Group-Object EventId |
+    Sort-Object Count -Descending | Format-Table Name, Count
 ```
 
 Die Differenz der Zeitstempel zwischen RECEIVE- und DELIVER-Ereignis derselben MessageId ergibt die Ende-zu-Ende-Latenz pro Nachricht; exportiert als CSV lässt sich daraus die Perzentilverteilung rechnen.
@@ -3019,7 +3040,11 @@ Ein vorangestelltes `MSYS_NO_PATHCONV=1` schaltet die Umschreibung für den einz
 Ein einzelner Aufruf erzeugt Schlüssel und CSR mit der kompletten SAN-Liste:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 Die CSR-Datei geht an die CA, der Schlüssel bleibt auf dem Server. Zurück kommt das signierte Zertifikat samt Intermediate, üblicherweise direkt als PEM. Damit liegt alles für die Installation bereit, die PFX-Konvertierung entfällt auf diesem Weg komplett.
@@ -3113,7 +3138,9 @@ Zwei Punkte entscheiden über Erfolg und Misserfolg: Die Session nicht mit Ctrl+
 Der schnellste Test läuft von aussen gegen die Quarantäneseite. Der Endbenutzerzugriff der Spam-Quarantäne liegt standardmässig auf HTTPS-Port 83, sofern beim Aktivieren nichts anderes konfiguriert wurde:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 Die Ausgabe muss den neuen Subject und das neue Ablaufdatum zeigen. Auf der Appliance listet `certconfig` mit der Operation `PRINT` die aktiven Zertifikate, und der Browser-Check gegen Admin-GUI und Quarantäneseite bestätigt, dass die Kette sauber aufgebaut ist.
@@ -3310,7 +3337,11 @@ Der Unterschied zwischen 124 und 1 ist in der Praxis der wichtigste Hinweis übe
 Prüfen Sie gleich beide relevanten Ports und zusätzlich ein beliebiges anderes Ziel, um zu sehen, ob der Host überhaupt ausgehende Verbindungen aufbauen darf:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Läuft auch die Gegenprobe ins Leere, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
@@ -3349,7 +3380,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -3372,7 +3404,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Verbinden Sie sich über die IP-Adresse, weil DNS fehlt, greift die Hostnamensprüfung ins Leere. Der Zertifikatsname passt dann nicht zur numerischen Adresse. SNI und Prüfnamen lassen sich explizit setzen, ganz ohne DNS-Abfrage:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Zwei Fehlerbilder tauchen hier regelmässig auf und werden gerne falsch gedeutet.
@@ -9248,7 +9282,11 @@ A preceding `MSYS_NO_PATHCONV=1` disables rewriting for that individual invocati
 A single command generates the key and CSR with the complete SAN list:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 Send the CSR file to the CA; the key remains on the server. The CA returns the signed certificate along with the intermediate, usually directly as PEM. This leaves everything ready for installation, and PFX conversion is completely unnecessary with this approach.
@@ -9342,7 +9380,9 @@ Two points determine success or failure: do not end the session with Ctrl+C, as 
 The quickest test runs externally against the quarantine page. By default, end-user access to spam quarantine is on HTTPS port 83, unless a different setting was configured when it was enabled:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 The output must show the new subject and expiration date. On the appliance, `certconfig` with the `PRINT` operation lists the active certificates, and browser checks against the admin GUI and quarantine page confirm that the chain is built correctly.
@@ -9909,7 +9949,11 @@ In practice, the difference between 124 and 1 is the most important clue of all.
 Check both relevant ports right away, plus any other target to determine whether the host is permitted to establish outbound connections at all:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 If the comparison test also goes nowhere, the system generally has no direct outbound access and traffic must go through an internal relay or proxy. More on why this case is especially tricky below.
@@ -9948,7 +9992,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -9971,7 +10016,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 If you connect via the IP address because DNS is unavailable, hostname validation cannot work. The certificate name then does not match the numeric address. SNI and the verification name can be specified explicitly, without any DNS lookup:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Two error patterns occur regularly here and are often misinterpreted.
@@ -15847,7 +15894,11 @@ Un `MSYS_NO_PATHCONV=1` placé devant désactive la réécriture pour cet appel 
 Une seule commande génère la clé et le CSR avec la liste SAN complète :
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 Le fichier CSR est envoyé à l’AC, la clé reste sur le serveur. En retour, vous recevez le certificat signé et l’intermédiaire, généralement directement au format PEM. Tout est alors prêt pour l’installation ; la conversion PFX est entièrement évitée avec cette méthode.
@@ -15941,7 +15992,9 @@ Deux points déterminent la réussite ou l’échec : ne terminez pas la session
 Le test le plus rapide se fait de l’extérieur contre la page de quarantaine. L’accès utilisateur final à la quarantaine de spams utilise par défaut le port HTTPS 83, sauf si une autre configuration a été définie lors de l’activation :
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 La sortie doit afficher le nouveau sujet et la nouvelle date d’expiration. Sur l’appliance, `certconfig` avec l’opération `PRINT` liste les certificats actifs, et la vérification dans le navigateur contre l’interface d’administration et la page de quarantaine confirme que la chaîne est correctement établie.
@@ -16508,7 +16561,11 @@ En pratique, la différence entre 124 et 1 est l’indication la plus importante
 Vérifiez immédiatement les deux ports pertinents ainsi qu’une autre destination quelconque afin de déterminer si l’hôte est autorisé à établir des connexions sortantes :
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Si le contre-test échoue également, le système ne dispose généralement pas d’accès sortant direct et le trafic doit passer par un relais interne ou un proxy. Nous verrons plus bas pourquoi ce cas est particulièrement délicat.
@@ -16547,7 +16604,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -16570,7 +16628,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Si vous vous connectez via l’adresse IP parce que DNS est indisponible, la vérification du nom d’hôte devient inopérante. Le nom du certificat ne correspond alors pas à l’adresse numérique. SNI et le nom à vérifier peuvent être définis explicitement, sans aucune requête DNS :
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Deux scénarios d’erreur apparaissent régulièrement ici et sont souvent mal interprétés.
@@ -22446,7 +22506,11 @@ Un `MSYS_NO_PATHCONV=1` anteposto disattiva la riscrittura per quella singola ch
 Un unico comando genera chiave e CSR con l’intero elenco SAN:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 Il file CSR viene inviato alla CA, mentre la chiave rimane sul server. Si riceve indietro il certificato firmato insieme all’intermediate, in genere direttamente in formato PEM. In questo modo è già disponibile tutto il necessario per l’installazione e la conversione PFX non serve affatto.
@@ -22540,7 +22604,9 @@ Due aspetti determinano il successo o il fallimento: non terminare la sessione c
 Il test più rapido viene eseguito dall’esterno contro la pagina di quarantena. L’accesso degli utenti finali alla quarantena spam utilizza per impostazione predefinita la porta HTTPS 83, se non è stata configurata diversamente durante l’attivazione:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 L’output deve mostrare il nuovo Subject e la nuova data di scadenza. Sull’appliance, `certconfig` con l’operazione `PRINT` elenca i certificati attivi; il controllo nel browser della GUI di amministrazione e della pagina di quarantena conferma invece che la catena è configurata correttamente.
@@ -23107,7 +23173,11 @@ Nella pratica, la differenza tra 124 e 1 è l'indizio più importante in assolut
 Verificate subito entrambe le porte rilevanti e anche un'altra destinazione qualsiasi, per capire se l'host può stabilire connessioni in uscita:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Se anche la controprova non produce risultati, il sistema non dispone in generale di accesso diretto in uscita e il traffico deve passare attraverso un relay interno o un proxy. Più avanti vedremo perché questo caso è particolarmente insidioso.
@@ -23146,7 +23216,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -23169,7 +23240,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Se vi connettete tramite indirizzo IP perché manca il DNS, la verifica del nome host non può funzionare. Il nome nel certificato non corrisponde all'indirizzo numerico. SNI e nome da verificare possono essere impostati esplicitamente, senza alcuna interrogazione DNS:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Qui si presentano regolarmente due scenari di errore che vengono spesso interpretati in modo errato.
@@ -29044,7 +29117,11 @@ Anteponer `MSYS_NO_PATHCONV=1` desactiva la reescritura para esa llamada concret
 Una sola llamada genera la clave y el CSR con la lista SAN completa:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 El archivo CSR se envía a la CA; la clave permanece en el servidor. De vuelta se recibe el certificado firmado junto con el intermedio, normalmente directamente como PEM. Con ello está todo listo para la instalación; por esta vía se omite por completo la conversión de PFX.
@@ -29138,7 +29215,9 @@ Dos puntos determinan el éxito o el fracaso: no termine la sesión con Ctrl+C, 
 La prueba más rápida se realiza desde fuera contra la página de cuarentena. El acceso de los usuarios finales a la cuarentena de spam utiliza de forma predeterminada el puerto HTTPS 83, siempre que no se haya configurado otro al activarlo:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 La salida debe mostrar el nuevo Subject y la nueva fecha de caducidad. En la appliance, `certconfig` con la operación `PRINT` muestra los certificados activos, y la comprobación en el navegador contra la GUI de administración y la página de cuarentena confirma que la cadena se ha construido correctamente.
@@ -29705,7 +29784,11 @@ En la práctica, la diferencia entre 124 y 1 es la pista más importante. Un tie
 Compruebe de inmediato ambos puertos relevantes y, además, cualquier otro destino para ver si el host tiene permitido establecer conexiones salientes:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Si tampoco funciona la comprobación adicional, el sistema no tiene salida directa en general y el tráfico debe pasar por un relay interno o un proxy. Más adelante explicamos por qué este caso es especialmente engañoso.
@@ -29744,7 +29827,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -29767,7 +29851,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Si se conecta mediante la dirección IP porque falta DNS, la comprobación del nombre de host no sirve. El nombre del certificado no coincide entonces con la dirección numérica. SNI y el nombre de comprobación pueden establecerse explícitamente, sin ninguna consulta DNS:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Aquí aparecen regularmente dos patrones de error que suelen interpretarse mal.
@@ -36014,7 +36100,11 @@ Ett inledande `MSYS_NO_PATHCONV=1` stänger av omskrivningen för det enskilda a
 Ett enda anrop skapar nyckel och CSR med hela SAN-listan:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 CSR-filen skickas till CA:n och nyckeln stannar på servern. Det signerade certifikatet återkommer med Intermediate-certifikatet, vanligen direkt som PEM. Därmed finns allt redo för installationen och PFX-konvertering bortfaller helt med denna metod.
@@ -36108,7 +36198,9 @@ Två punkter avgör om det lyckas: avsluta inte sessionen med Ctrl+C, eftersom d
 Det snabbaste testet körs utifrån mot karantänsidan. Slutanvändaråtkomsten till skräppostkarantänen ligger som standard på HTTPS-port 83, om inget annat konfigurerades vid aktiveringen:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 Utdata måste visa det nya Subject och det nya utgångsdatumet. På enheten listar `certconfig` med åtgärden `PRINT` de aktiva certifikaten, och webbläsarkontrollen mot admin-GUI:t och karantänsidan bekräftar att kedjan är korrekt uppbyggd.
@@ -36305,7 +36397,11 @@ Skillnaden mellan 124 och 1 är i praktiken den allra viktigaste ledtråden. En 
 Kontrollera genast båda relevanta portarna och dessutom ett valfritt annat mål för att se om hosten över huvud taget får upprätta utgående anslutningar:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Om även motkontrollen inte ger något resultat saknar systemet generellt direkt utgående trafik och trafiken ska gå via ett internt relay eller en proxy. Mer om varför detta fall är särskilt knepigt längre ned.
@@ -36344,7 +36440,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -36367,7 +36464,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Om du ansluter via IP-adressen eftersom DNS saknas blir värdnamnskontrollen verkningslös. Certifikatnamnet matchar då inte den numeriska adressen. SNI och kontrollnamn kan anges uttryckligen, helt utan DNS-uppslagning:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 Två felbilder uppstår regelbundet här och tolkas ofta fel.
@@ -42613,7 +42712,11 @@ En innledende `MSYS_NO_PATHCONV=1` deaktiverer omskrivingen for det enkelte kall
 Ett enkelt kall oppretter nøkkel og CSR med hele SAN-listen:
 
 ```bash
-openssl req -new -newkey rsa:2048 -noenc -keyout spam-quarantine.example.ch.key -out spam-quarantine.example.ch.csr -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
+openssl req -new -newkey rsa:2048 -noenc \
+  -keyout spam-quarantine.example.ch.key \
+  -out spam-quarantine.example.ch.csr \
+  -subj "/C=CH/O=Example AG/CN=spam-quarantine.example.ch" \
+  -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
 CSR-filen sendes til CA-en, mens nøkkelen blir liggende på serveren. Du får tilbake det signerte sertifikatet med intermediate-sertifikatet, vanligvis direkte som PEM. Da er alt klart for installasjonen, og PFX-konvertering faller helt bort med denne metoden.
@@ -42707,7 +42810,9 @@ To punkter avgjør om det lykkes eller ikke: Ikke avslutt økten med Ctrl+C, da 
 Den raskeste testen utføres utenfra mot karantenesiden. Sluttbrukertilgangen til spam-karantenen ligger som standard på HTTPS-port 83, dersom ikke noe annet ble konfigurert ved aktivering:
 
 ```bash
-openssl s_client -connect spam-quarantine.example.ch:83 -servername spam-quarantine.example.ch </dev/null 2>/dev/null | openssl x509 -noout -subject -enddate
+openssl s_client -connect spam-quarantine.example.ch:83 \
+  -servername spam-quarantine.example.ch </dev/null 2>/dev/null |
+  openssl x509 -noout -subject -enddate
 ```
 
 Utdataene må vise det nye Subject og den nye utløpsdatoen. På appliance-en viser `certconfig` med operasjonen `PRINT` de aktive sertifikatene, og nettleserkontrollen mot admin-GUI-en og karantenesiden bekrefter at kjeden er korrekt bygget opp.
@@ -42904,7 +43009,11 @@ Forskjellen mellom 124 og 1 er i praksis det viktigste sporet av alle. Et tidsav
 Kontroller begge relevante porter med én gang, og i tillegg et valgfritt annet mål for å se om verten i det hele tatt har lov til å opprette utgående forbindelser:
 
 ```bash
-for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do set -- $t; timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null; echo "$1:$2 -> exit=$?"; done
+for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
+  set -- $t
+  timeout 8 bash -c "exec 3<>/dev/tcp/$1/$2" 2>/dev/null
+  echo "$1:$2 -> exit=$?"
+done
 ```
 
 Hvis også motprøven ikke gir noe resultat, har systemet generelt ingen direkte utgående tilgang, og trafikken må gå via et internt relay eller en proxy. Lenger nede forklares hvorfor dette tilfellet er særlig vanskelig.
@@ -42943,7 +43052,8 @@ sleep 1; printf 'EHLO host.example.com\r\n' >&3
 sleep 2; printf 'MAIL FROM:<absender@example.com>\r\n' >&3
 sleep 2; printf 'RCPT TO:<empfaenger@example.net>\r\n' >&3
 sleep 2; printf 'DATA\r\n' >&3
-sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\nDate: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$$" >&3
+sleep 2; printf 'From: absender@example.com\r\nTo: empfaenger@example.net\r\nSubject: Relay-Test\r\n' >&3
+printf 'Date: %s\r\nMessage-ID: <%s@example.com>\r\n\r\nTestnachricht\r\n.\r\n' "$(date -R)" "$(date +%s).$" >&3
 sleep 3; printf 'QUIT\r\n' >&3
 sleep 2; kill $R 2>/dev/null
 }
@@ -42966,7 +43076,9 @@ openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 Hvis du kobler til via IP-adressen fordi DNS mangler, blir vertsnavnkontrollen meningsløs. Sertifikatnavnet passer da ikke til den numeriske adressen. SNI og kontrollnavn kan settes eksplisitt, helt uten DNS-oppslag:
 
 ```bash
-openssl s_client -connect 192.0.2.25:25 -servername mail.example.com -verify_hostname mail.example.com -starttls smtp -tls1_2 -brief </dev/null
+openssl s_client -connect 192.0.2.25:25 \
+  -servername mail.example.com -verify_hostname mail.example.com \
+  -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 To feilmønstre dukker jevnlig opp her og blir ofte feiltolket.
