@@ -7,7 +7,6 @@ kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min di lettura"
 themen:
   - exchange-updates
-  - exchange-onprem-hybrid
   - active-directory-entra
 slug: "gestire-correttamente-le-operazioni-successive-agli-aggiornamenti-di-sicurezza-di-exchange-di"
 translationOf: "exchange-security-updates-juli-2026"

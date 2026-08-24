@@ -7,7 +7,6 @@ kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min read"
 themen:
   - exchange-updates
-  - exchange-onprem-hybrid
   - active-directory-entra
 slug: "exchange-server-security-updates-july-2026"
 translationOf: "exchange-security-updates-juli-2026"

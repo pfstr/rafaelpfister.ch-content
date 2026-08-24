@@ -7,7 +7,6 @@ kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min de lecture"
 themen:
   - exchange-updates
-  - exchange-onprem-hybrid
 produkte:
   - "exchange"
 protokolle:

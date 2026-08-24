@@ -7,7 +7,6 @@ kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min. lesetid"
 themen:
   - exchange-updates
-  - exchange-onprem-hybrid
   - active-directory-entra
 slug: "riktig-etterarbeid-etter-exchange-sikkerhetsoppdateringene-fra-juli-2026"
 translationOf: "exchange-security-updates-juli-2026"
