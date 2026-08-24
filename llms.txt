@@ -285,6 +285,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Cloudflare Workers](https://rafaelpfister.ch/blog/thema/cloudflare-workers)
 - [E-Mail-Verschlüsselung](https://rafaelpfister.ch/blog/thema/e-mail-verschluesselung)
 - [Exchange OnPrem / Hybrid](https://rafaelpfister.ch/blog/thema/exchange-onprem-hybrid)
+- [Exchange-Updates (SU & CU)](https://rafaelpfister.ch/blog/thema/exchange-updates)
 - [HIN-Gateway](https://rafaelpfister.ch/blog/thema/hin-gateway)
 - [Microsoft 365 / Exchange](https://rafaelpfister.ch/blog/thema/microsoft-365-exchange)
 - [Microsoft Entra](https://rafaelpfister.ch/blog/thema/microsoft-entra)

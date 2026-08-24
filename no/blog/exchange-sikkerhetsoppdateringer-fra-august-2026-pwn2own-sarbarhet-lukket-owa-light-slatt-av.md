@@ -6,6 +6,7 @@ date: "2026-08-19"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min. lesetid"
 themen:
+  - exchange-updates
   - exchange-onprem-hybrid
 produkte:
   - "exchange"

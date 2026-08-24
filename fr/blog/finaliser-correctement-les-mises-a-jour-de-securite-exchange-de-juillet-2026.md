@@ -6,6 +6,7 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybride"
 timeToRead: "6 min de lecture"
 themen:
+  - exchange-updates
   - exchange-onprem-hybrid
   - active-directory-entra
 slug: "finaliser-correctement-les-mises-a-jour-de-securite-exchange-de-juillet-2026"

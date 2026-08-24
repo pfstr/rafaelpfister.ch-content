@@ -6,10 +6,12 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 Min. Lesezeit"
 themen:
+  - "exchange-updates"
   - "exchange-onprem-hybrid"
   - "active-directory-entra"
 produkte:
   - "exchange"
+  - "exchange-updates"
 protokolle:
   - "releases"
   - "powershell"

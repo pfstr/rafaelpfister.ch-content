@@ -6,6 +6,7 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min. lesetid"
 themen:
+  - exchange-updates
   - exchange-onprem-hybrid
   - active-directory-entra
 slug: "riktig-etterarbeid-etter-exchange-sikkerhetsoppdateringene-fra-juli-2026"

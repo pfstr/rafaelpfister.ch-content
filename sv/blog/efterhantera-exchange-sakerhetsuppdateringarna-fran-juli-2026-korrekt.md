@@ -6,6 +6,7 @@ date: "2026-07-14"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 min lästid"
 themen:
+  - exchange-updates
   - exchange-onprem-hybrid
   - active-directory-entra
 slug: "efterhantera-exchange-sakerhetsuppdateringarna-fran-juli-2026-korrekt"
