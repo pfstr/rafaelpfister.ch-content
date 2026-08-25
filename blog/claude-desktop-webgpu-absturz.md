@@ -4,7 +4,7 @@ navTitle: "Claude-Desktop-Absturz"
 description: "Die Claude-Desktop-App unter Windows beendet sich komplett mit „GPU process gone: exitCode 101457950“ (0x060C201E), oft gefolgt vom Reparatur-Dialog der Store-App. Die vollständige Ursachenkette: Code Integrity blockiert vk_swiftshader.dll, Chromiums Fallback-Kette läuft leer, der eingebaute Selbstabbruch beendet die App. Mit Sofortlösung, Selbstdiagnose per Event-Log und der Analyse bis zum Minidump."
 date: "2026-08-25"
 kategorie: "Claude"
-timeToRead: "11 min to read"
+timeToRead: "9 min to read"
 themen:
   - "claude"
 slug: "claude-desktop-webgpu-absturz"
@@ -124,12 +124,6 @@ Besonders unglücklich: Die App kennt ein automatisches Abschalten der Hardware-
 
 Der Code-Integrity-Fehlschlag hat eine Nebenwirkung, die viele Betroffene für ein eigenes Problem halten: Windows stuft das App-Paket nach dem Vorfall teils als „Modified, NeedsRemediation" ein. Die App startet dann gar nicht mehr, bis man sie über Einstellungen → Apps → Claude → Erweiterte Optionen → „Reparieren" zurücksetzt. Wer die App also „ständig reparieren muss", sieht dasselbe Grundproblem, nur ein Glied weiter: Die Reparatur behebt den Paketstatus, nicht die Ursache; der nächste Absturz folgt beim nächsten blockierten DLL-Ladeversuch.
 
-## Wie die Fehlersuche verlief, und was sich daraus mitnehmen lässt
-
-Der Weg zur Kette war lehrreicher als die Kette selbst, deshalb in Kürze. Verdächtiger Nr. 1 war der Grafiktreiber (AMD RX 7900 XT, RDNA3), und die These fiel durch vier Gegenproben: Aktuelles Chromium 151 rendert WebGPU auf demselben Treiber fehlerfrei. Stock Electron 42.9.2, dieselbe Version wie in der App, als 20-Zeilen-Testprojekt: Hardware-Pfad fehlerfrei, Software-Pfad lehnt sauber mit „No available adapters" ab, kein Absturz, egal wie exakt man den Ablauf der App nachbaut. Und im Issue-Tracker fand sich dieselbe Absturz-Signatur auf NVIDIA- und Intel-Systemen ohne jedes Treiber-Event im Windows-Log, sogar auf einem Rechner mit frisch getauschter Grafikkarte. Ein Fehler, der in der reinen Engine nicht reproduzierbar ist und jede Hardware gleich trifft, wohnt in der Verpackung, und genau dort wurde er gefunden: Der entscheidende Unterschied zwischen dem Testprojekt und der echten App ist die MSIX-Paketierung mit ihrer Code-Integrity-Härtung.
-
-Daraus ergibt sich eine brauchbare Checkliste für GPU-Prozess-Abstürze in Electron-Apps: die Gegenprobe im aktuellen Browser, die Gegenprobe in der reinen Engine-Version, der Blick, ob andere Hardware dieselbe Signatur zeigt, das CodeIntegrity-Log bei Store-Apps, und der Dump des Prozesses, der den Abbruch tatsächlich beschliesst.
-
 ## Stand der Meldungen
 
 Die Paketierungs-Ursache ist als [#81341](https://github.com/anthropics/claude-code/issues/81341) gemeldet, der Sammel-Thread mit den Community-Belegen ist [#81698](https://github.com/anthropics/claude-code/issues/81698), die Minidump-Analyse mit der Fallback-Ketten-Erklärung ist [#89250](https://github.com/anthropics/claude-code/issues/89250). Der eigentliche Fix, ein vollständiger Signatur-Katalog im MSIX-Paket, liegt bei Anthropic. Bis dahin gilt: Hardware-Beschleunigung an, Browser-Bereich diszipliniert schliessen, und bei Bedarf WebGPU per Flag aus. Auf dem hier untersuchten System ist die App seit Umsetzung von Massnahme 1 absturzfrei.
@@ -148,4 +142,4 @@ Die Paketierungs-Ursache ist als [#81341](https://github.com/anthropics/claude-c
 
 6.  [Python-Paket minidump](https://pypi.org/project/minidump/): Werkzeug der Dump-Analyse (Exception-Record, Modulliste, Speicher-Strings).
 
-7.  [webgpureport.org](https://webgpureport.org/): WebGPU-Diagnoseseite; diente als minimaler Auslöser für den Kontroll-Absturz und als Gegenprobe im aktuellen Chromium.
+7.  [webgpureport.org](https://webgpureport.org/): WebGPU-Diagnoseseite; diente als minimaler Auslöser für den Kontroll-Absturz und für den Vergleichstest im aktuellen Chromium.
