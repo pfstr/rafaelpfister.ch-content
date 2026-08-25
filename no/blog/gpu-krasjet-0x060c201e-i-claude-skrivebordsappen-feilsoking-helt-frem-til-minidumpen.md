@@ -2,7 +2,7 @@
 title: "GPU-krasjet 0x060C201E i Claude-skrivebordsappen: feilsøking helt frem til minidumpen"
 navTitle: "GPU-krasj 0x060C201E"
 description: "Claude-skrivebordsappen avsluttes reproduserbart med «GPU process gone». Først ser alt ut som en AMD-driverfeil, så motbeviser egne eksperimenter teorien, og til slutt gir en oppfanget minidump den faktiske årsaken: Chromiums innebygde selvavbrudd «GPU process isn't usable. Goodbye.»"
-date: "2026-08-24"
+date: "2026-08-25"
 kategorie: "Claude"
 timeToRead: "12 min å lese"
 themen:

@@ -2,7 +2,7 @@
 title: "Il crash GPU 0x060C201E nell'app desktop Claude: un'indagine fino al minidump"
 navTitle: "Crash GPU 0x060C201E"
 description: "L'app desktop Claude si chiude ripetutamente con 'GPU process gone'. All'inizio tutto fa pensare a un bug del driver AMD, poi gli esperimenti smentiscono l'ipotesi e infine un minidump intercettato rivela la causa reale: l'interruzione automatica integrata in Chromium, 'GPU process isn't usable. Goodbye.'"
-date: "2026-08-24"
+date: "2026-08-25"
 kategorie: "Claude"
 timeToRead: "12 min di lettura"
 themen:

@@ -2,7 +2,7 @@
 title: "El fallo de GPU 0x060C201E en la aplicación de escritorio Claude: una investigación hasta el minidump"
 navTitle: "Fallo de GPU 0x060C201E"
 description: "La aplicación de escritorio Claude se cierra de forma reproducible con «GPU process gone». Al principio todo apunta a un error del controlador AMD; después, los propios experimentos refutan la hipótesis y, al final, un minidump capturado revela la causa real: el aborto integrado de Chromium «GPU process isn't usable. Goodbye.»"
-date: "2026-08-24"
+date: "2026-08-25"
 kategorie: "Claude"
 timeToRead: "12 min de lectura"
 themen:
