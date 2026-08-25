@@ -7,6 +7,11 @@ kategorie: "Claude"
 timeToRead: "9 min to read"
 themen:
   - "claude"
+produkte:
+  - "claude"
+  - "windows-client"
+protokolle:
+  - "troubleshooting"
 slug: "claude-desktop-webgpu-absturz"
 url: "https://rafaelpfister.ch/blog/claude-desktop-webgpu-absturz"
 translationId: "article-0932cd50b8160b45"
