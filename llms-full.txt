@@ -12,185 +12,193 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# Massenversand-Gateway evaluieren: Lastprofil aus dem Message Tracking, Burst-Test mit JMeter, Live-Blick in die Exchange-Queues
+# Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking
 
-URL: https://rafaelpfister.ch/blog/massenversand-lastprofil-burst-test-jmeter
+URL: https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln
 Datum: 2026-08-25
 
-# Massenversand-Gateway evaluieren: Lastprofil aus dem Message Tracking, Burst-Test mit JMeter, Live-Blick in die Exchange-Queues
+# Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking
 
-Ein Kundenportal versendet Benachrichtigungen: neue Rechnungen, neue Dokumente, neue Nachrichten. Das bestehende Mail-Gateway soll abgelöst werden, und bei jeder Gateway-Evaluation stellt sich früh die Frage: Welche Last muss das neue System eigentlich tragen? Die Antwort steht nicht im Datenblatt des Herstellers, sondern in den eigenen Logs. Der Weg dorthin, hier an einem anonymisierten realen Fall: das Lastprofil aus dem Message-Tracking-Export lesen (inklusive der zwei Fallen, die in solchen Exporten stecken), daraus einen Burst-Test mit JMeter konstruieren, und während des Tests oder jederzeit im Betrieb live in die Exchange-Queues schauen.
+Ob ein Gateway abgelöst, ein Server dimensioniert oder ein Wartungsfenster geplant werden soll: Früher oder später braucht jeder Mail-Admin die Antwort auf die Frage, wie viel sein System eigentlich verarbeitet. Das Bauchgefühl liegt dabei regelmässig daneben, denn Mailverkehr ist selten gleichmässig. Ein System, das im Tagesmittel 20 Mails pro Minute sieht, kann während eines Rechnungslaufs eine Stunde lang 400 pro Minute verarbeiten müssen. Wer nur den Durchschnitt kennt, dimensioniert am eigentlichen Problem vorbei.
 
-## Schritt 1: Das Lastprofil aus dem Message Tracking lesen
+Ein brauchbares Lastprofil besteht aus vier Kennzahlen: der Durchschnittsrate (pro Minute, Stunde, Tag), den Bursts (wie hoch ist der Peak, wie lange hält er an, wann tritt er auf), der Empfängerstruktur (wie viele verschiedene Empfänger, welche Ziel-Domains) und den Nachrichtengrössen. Alle vier stehen im Message Tracking, und auf Exchange lassen sie sich mit wenigen Zeilen PowerShell herausrechnen.
 
-Ausgangsmaterial war ein CSV-Export aus dem Message Tracking des bestehenden Gateways: Zeitstempel, Message-ID, Host, Absender, Empfänger, Betreff, letzter Zustellstatus. Bevor Sie daraus Zahlen ableiten, lohnt sich ein kritischer Blick auf den Export selbst. In diesem Fall steckten gleich zwei Fallen darin.
+## Die Datenquelle: Message Tracking
 
-**Falle 1: Der Export ist gekappt.** Die Datei hatte exakt 50'000 Zeilen, ein klassisches Export-Limit. Der Zeitraum umfasste dadurch nur rund 21 Stunden, und der Schnitt lag ausgerechnet mitten im grössten Versand-Burst. Wer daraus naiv ein Monatsvolumen hochrechnet, liegt beliebig falsch. Für belastbare Monatszahlen braucht es einen Export ohne Limit über mindestens einen vollen Batch-Zyklus.
+Exchange protokolliert jede Nachricht im Message Tracking Log. Bevor Sie auswerten, prüfen Sie, wie weit die Daten zurückreichen; der Standard sind 30 Tage, aber ein knappes Grössenlimit kann die reale Aufbewahrung deutlich verkürzen:
 
-**Falle 2: Eine Mail ist nicht eine Logzeile.** Jede Nachricht erzeugte zwei Einträge: einen bei der Annahme durch ein zwischengeschaltetes Gateway und einen bei der Zustellung an den Ziel-MTA. Die Mails liefen also eine Schlaufe über eine zweite Instanz, und wer die Logzeilen zählt statt der Nachrichten, überschätzt das Volumen um Faktor zwei. Erst nach Deduplizierung (nur Zeilen mit der finalen Remote-Antwort zählen) stimmen die Raten.
-
-Die Auswertung selbst ist mit wenigen Zeilen Python erledigt. Das Muster ist immer gleich: einlesen, deduplizieren, nach Zeitfenstern aggregieren.
-
-```python
-import csv, collections, datetime
-
-per_min = collections.Counter()
-per_hour = collections.Counter()
-with open("tracking-export.csv", encoding="utf-8") as f:
-    reader = csv.reader(f)
-    next(reader)
-    for row in reader:
-        # nur finale Zustellungen zaehlen, nicht die Annahme-Zeile
-        if "remote SMTP response '2" not in row[6]:
-            continue
-        d = datetime.datetime.strptime(row[0][:16], "%Y-%m-%d %H:%M")
-        per_min[d.strftime("%Y-%m-%d %H:%M")] += 1
-        per_hour[d.strftime("%Y-%m-%d %H")] += 1
-
-print("Top-Minuten:", per_min.most_common(10))
-print("Top-Stunden:", per_hour.most_common(10))
+```powershell
+Get-TransportService |
+    Select-Object Name, MessageTrackingLogMaxAge,
+        MessageTrackingLogMaxDirectorySize, MessageTrackingLogPath
 ```
 
-Das Ergebnis in diesem Fall, dedupliziert auf rund 25'000 echte Nachrichten in 21 Stunden:
+Für ein Lastprofil sollte der Zeitraum mindestens einen vollen Batch-Zyklus des Unternehmens abdecken: Monatsrechnungsläufe, Lohnabrechnungen, Newsletter. Eine Woche ist das Minimum, ein Monat ist besser.
 
-| Kennzahl | Wert |
-|---|---|
-| Durchschnitt über das Fenster | ~20 Mails/min |
-| Burst-Peak | ~420 Mails/min, über eine Stunde gehalten |
-| Zweiter Batch am Abend | ~180 Mails/min |
-| Grundlast tagsüber | 100 bis 500 Mails/h, nachts nahe null |
-| Eindeutige Empfänger | ~16'000 in einem einzigen Batch-Lauf, fast exakt eine Mail pro Person |
-| Empfänger-Domains | ~42 % Gmail, ~20 % Hotmail/Outlook, ~10 % grösster Schweizer Provider |
+## Rohdaten einsammeln: ein Event pro Nachricht
 
-Drei Erkenntnisse daraus prägen die ganze Evaluation. Erstens: Nicht das Monatsvolumen dimensioniert das Gateway, sondern der Burst. Sieben Mails pro Sekunde über eine Stunde gehalten ist eine andere Anforderung als dieselbe Menge über den Tag verteilt. Zweitens: Über 60 Prozent des Verkehrs geht an Gmail und Microsoft. Bei solchen Raten entscheiden IP-Reputation und die Rate-Limits der grossen Provider über den Durchsatz, nicht die eigene Hardware. Drittens: Der Batch trifft 16'000 verschiedene Empfänger. Pro-Empfänger-Lookups (Routing, Policy, Verschlüsselungsregeln) sind bei Gateways häufig der eigentliche Engpass, nicht der SMTP-Durchsatz.
+Die wichtigste Vorentscheidung: Welches Event zählt als "eine Mail"? Das Message Tracking schreibt pro Nachricht mehrere Einträge (RECEIVE bei der Annahme, SEND bei der Weitergabe an den nächsten Hop, DELIVER bei Postfach-Zustellung, dazu AGENTINFO, HAREDIRECT und weitere). Wer einfach alle Zeilen zählt, überschätzt das Volumen um ein Mehrfaches. Für die Einlieferungslast zählen Sie RECEIVE, für die Ausgangslast Richtung Smarthost oder Internet SEND.
 
-## Schritt 2: Den Burst-Test mit JMeter konstruieren
-
-Aus dem Lastprofil folgt das Testdesign direkt. Der Test bildet die drei beobachteten Phasen nach, mit einem 90-Minuten-Gesamtlauf:
-
-| Phase | Zeitfenster | Rate | Bildet ab |
-|---|---|---|---|
-| Grundlast | 0 bis 90 min durchgehend | 20/min | Transaktionale Einzelmails |
-| Burst | Minute 15 bis 75 | 420/min | Rechnungslauf |
-| Auslauf | Minute 75 bis 85 | 180/min | Abend-Batch |
-
-Die Grundmechanik eines JMeter-SMTP-Testplans (Sampler, CSV-Testdaten, HTML-Report) ist im Artikel [SMTP-Lasttest mit Apache JMeter in der Praxis](/blog/jmeter-smtp-lasttest-html-report) beschrieben, ein Tool-Vergleich für solche Tests im Artikel [Mail-Lasttests planen](/blog/mail-lasttest-tools-linux-windows-vergleich). Hier geht es um die Konstruktion des Lastprofils. In JMeter entspricht das obige Profil drei Thread Groups mit Scheduler (Startverzögerung und Dauer) und je einem **Precise Throughput Timer**, der die Zielrate unabhängig von der Thread-Zahl exakt hält. Für 420 Mails/min reichen 20 Threads komfortabel; der Timer taktet die Samples, die Threads sind nur Arbeitskapazität.
-
-Die wichtigsten Designentscheidungen liegen aber nicht im Timing, sondern in den Testdaten und den Leitplanken:
-
-**Synthetische Empfänger, niemals echte.** Ein Lasttest darf unter keinen Umständen Kunden anschreiben oder auch nur echte Provider-Domains berühren. Die Lösung: Ein Generator erzeugt 16'000 eindeutige Adressen unter einer Test-Domain und bildet dabei die echte Domain-Verteilung als Subdomains nach (`lt-004711@gmail.sink.example.test`, `lt-000815@hotmail.sink.example.test`). Das Gateway sieht so realistisch viele verschiedene Ziel-Routen, aber jede Mail endet am eigenen Sink. Die eindeutigen Adressen sind kein Selbstzweck: Sie zwingen das Gateway zu 16'000 einzelnen Empfänger-Lookups, genau wie im echten Batch.
-
-**Ein Mail-Sink mit Catch-All als einziges Ziel.** Ein smtp-sink oder Mailpit nimmt alles entgegen und macht die Ankunftszeiten auswertbar. Wenn jede Testmail einen Header wie `X-Loadtest-Sent` mit dem Sende-Zeitstempel trägt, liefert der Sink die End-to-End-Latenz ohne zusätzliches Messverfahren.
-
-**Technische Leitplanken statt Konvention.** Damit ein Konfigurationsfehler nicht doch eine Mail nach draussen bringt: ausgehend Port 25, 465 und 587 auf der Firewall der Testumgebung sperren (einzige Ausnahme: der Sink), auf dem Gateway eine Transport-Regel, die sämtlichen Verkehr zum Sink zwingt, und ein dedizierter Test-Absender statt der produktiven Adresse.
-
-**Gemessen wird auf beiden Seiten.** Auf der JMeter-Seite die Annahme-Latenz (p95 muss über die volle Burst-Stunde stabil bleiben, steigende Latenz heisst: das Gateway staut) und die Fehlerquote (jede 4xx- oder 5xx-Antwort während des Bursts ist ein Finding). Am Sink die Drain-Rate: Kommen hinten auch 420/min an, oder nimmt das Gateway schnell an und staut intern?
-
-Als Abnahmekriterium hat sich das Doppelte des beobachteten Peaks bewährt: 840 Mails/min fehlerfrei, als Reserve für Wachstum und für Batch-Läufe, die im Analysefenster nicht sichtbar waren.
-
-## Die Grenze des SMTP-Samplers: keine stehenden Sessions
-
-Der eingebaute SMTP-Sampler von JMeter hat eine Eigenheit, die man kennen muss: Er baut über JavaMail **pro Mail eine neue Verbindung** samt TLS-Handshake auf und schliesst sie wieder. Eine Keep-Alive-Option gibt es nicht. Ein echter MTA hält Verbindungen dagegen offen und schickt mehrere Mails pro Session.
-
-Für das Gateway-Sizing ist das nicht unbedingt ein Nachteil: Der Test ist härter als die Realität, weil er zusätzlich sieben TLS-Handshakes pro Sekunde erzwingt und damit auch Connection-Rate-Limits des Gateways prüft. Wer zusätzlich das realistische Verhalten messen will, ersetzt den Sampler durch einen JSR223-Sampler, der pro Thread ein Jakarta-Mail-Transport-Objekt offen hält:
-
-```groovy
-import jakarta.mail.*
-import jakarta.mail.internet.*
-
-def transport = vars.getObject("smtpTransport")
-if (transport == null || !transport.isConnected()) {
-    def props = new Properties()
-    props.put("mail.smtp.host", "gateway-test.example.test")
-    props.put("mail.smtp.port", "587")
-    props.put("mail.smtp.starttls.enable", "true")
-    def session = Session.getInstance(props)
-    transport = session.getTransport("smtp")
-    transport.connect()
-    vars.putObject("smtpTransport", transport)
-    vars.putObject("smtpSession", session)
+```powershell
+$start = (Get-Date).AddDays(-7)
+$events = Get-TransportService | ForEach-Object {
+    Get-MessageTrackingLog -Server $_.Name -ResultSize Unlimited `
+        -Start $start -EventId RECEIVE
 }
-
-def session = vars.getObject("smtpSession")
-def msg = new MimeMessage(session)
-msg.setFrom(new InternetAddress("loadtest@example.test"))
-msg.setRecipient(Message.RecipientType.TO,
-    new InternetAddress(vars.get("rcpt")))
-msg.setSubject("[LOADTEST] Burst-Phase")
-msg.setHeader("X-Loadtest-Sent", String.valueOf(System.currentTimeMillis()))
-msg.setContent(vars.get("htmlBody"), "text/html; charset=utf-8")
-transport.sendMessage(msg, msg.getAllRecipients())
+"{0} Nachrichten seit {1:yyyy-MM-dd}" -f $events.Count, $start
 ```
 
-Empfehlung: beide Varianten fahren. Die Differenz der beiden Läufe zeigt, wie teuer der Verbindungsaufbau für das Gateway ist, ohne dass Sie dafür ein separates Messverfahren brauchen.
+Die Abfrage läuft bewusst über alle Transport-Server, denn jeder Server protokolliert nur seinen eigenen Anteil. Wer nur einen Server abfragt, sieht bei einem Cluster nur einen Bruchteil der Last.
 
-## Wenn Exchange in der Kette steht: der Puffer und die neue Frage
+## Raten pro Minute und Stunde: hier zeigen sich die Bursts
 
-Im Zielbild dieses Falls liefert die Applikation künftig über Microsoft Exchange ein, und Exchange reicht an das Massenmail-Gateway weiter. Das verändert die Risikolage grundlegend. Ein Gateway ohne eigene Queue ist plötzlich ein kleineres Problem, denn Exchange bringt vollwertige Queues mit: Ein 4xx vom Gateway führt zu Queue-Aufbau und Retry in Exchange, nicht zu Mailverlust in der Applikation. Auch das Session-Thema erledigt sich, Exchange hält Verbindungen offen und bündelt Mails pro Session (SmtpMaxMessagesPerConnection, Standardwert 20).
+Die Aggregation ist ein Group-Object auf den gerundeten Zeitstempel. Die Top-Minuten sind direkt Ihre Burst-Kandidaten:
 
-Die kritische Frage lautet dann nicht mehr "nimmt das Gateway 420/min an?", sondern: **Wie schnell drainiert Exchange Richtung Gateway, und wie lange dauert der Batch-Lauf Ende-zu-Ende?** Exchange glättet den Burst. Wenn das Gateway drosselt, kommt trotzdem jede Mail an, nur später. Ob der Lauf eine Stunde oder drei dauert, ist dann eine Frage des Zustell-SLA, keine Verlustfrage. Das Abnahmekriterium formuliert man entsprechend zeitbasiert: Ein Lauf mit 20'000 Mails ist in maximal 90 Minuten vollständig am Sink, und die Exchange-Queue wächst am Ende des Bursts nicht mehr.
+```powershell
+$proMinute = $events |
+    Group-Object { $_.Timestamp.ToString("yyyy-MM-dd HH:mm") } |
+    Sort-Object Count -Descending
 
-Daraus ergibt sich ein zweistufiges Testdesign: Stufe 1 testet das Gateway isoliert (JMeter direkt, rohe Leistungsgrenze), Stufe 2 den ganzen Pfad über Exchange. Ohne Stufe 1 können Sie bei Problemen in Stufe 2 nicht sagen, ob Exchange oder das Gateway bremst.
+$proMinute | Select-Object -First 10 Name, Count
+```
 
-## Live in Exchange schauen: drosselt gerade etwas?
+Dasselbe pro Stunde und als Tagesgang (welche Uhrzeit ist typischerweise wie stark belastet):
 
-Ob Exchange gedrosselt wird, ob es staut und wie schnell die Queues drainieren, zeigt Exchange im laufenden Betrieb, ganz ohne Testaufbau. Der erste Blick gilt den Queues aller Transport-Server:
+```powershell
+$events |
+    Group-Object { $_.Timestamp.ToString("yyyy-MM-dd HH") } |
+    Sort-Object Count -Descending |
+    Select-Object -First 10 Name, Count
+
+$events |
+    Group-Object { $_.Timestamp.ToString("HH") } |
+    Sort-Object Name |
+    Format-Table Name, Count
+```
+
+Ein Burst ist erst charakterisiert, wenn Sie neben dem Peak auch seine Dauer kennen. Ein Peak von 400/min, der zwei Minuten anhält, ist eine andere Anforderung als derselbe Peak über eine Stunde. Zählen Sie die Minuten über einem Schwellwert:
+
+```powershell
+$schwelle = 100
+$burstMinuten = $proMinute | Where-Object Count -ge $schwelle
+"{0} Minuten mit >= {1}/min, Peak: {2}/min" -f $burstMinuten.Count,
+    $schwelle, ($proMinute | Select-Object -First 1).Count
+```
+
+Liegen die Burst-Minuten zusammenhängend (im Output von `$burstMinuten | Sort-Object Name` direkt sichtbar), handelt es sich um einen Batch-Lauf. Notieren Sie Startzeit, Dauer und Wiederholmuster, denn genau dieses Fenster muss die Infrastruktur tragen.
+
+## Empfängerstruktur: wie viele Ziele, welche Domains
+
+Für Gateways ist die Empfänger-Vielfalt oft wichtiger als die reine Rate, denn pro Empfänger fallen Lookups an (Routing, Policies, Verschlüsselungsregeln). Eine Mail an einen Verteiler mit 5'000 Mitgliedern belastet anders als 5'000 Einzelmails. Das Feld `RecipientCount` und die Empfängerliste liefern beide Sichten:
+
+```powershell
+"Nachrichten: {0}, Empfänger-Zustellungen: {1}" -f $events.Count,
+    ($events | Measure-Object RecipientCount -Sum).Sum
+
+$alleEmpfaenger = $events | ForEach-Object { $_.Recipients } |
+    ForEach-Object { $_.ToLower() }
+"Eindeutige Empfänger: {0}" -f ($alleEmpfaenger | Sort-Object -Unique).Count
+```
+
+Die Domain-Verteilung zeigt, wohin der Verkehr fliesst. Dominieren Gmail und Microsoft, entscheiden deren Rate-Limits und die eigene IP-Reputation über den erreichbaren Durchsatz, nicht die eigene Hardware:
+
+```powershell
+$alleEmpfaenger |
+    ForEach-Object { ($_ -split "@")[1] } |
+    Group-Object |
+    Sort-Object Count -Descending |
+    Select-Object -First 10 Name, Count
+```
+
+Und die Gegenrichtung: Welche Absender (Applikationen, Funktionspostfächer) erzeugen die Last überhaupt? Das beantwortet nebenbei die Frage, welche Systeme bei einer Migration mitgedacht werden müssen:
+
+```powershell
+$events |
+    Group-Object Sender |
+    Sort-Object Count -Descending |
+    Select-Object -First 10 Name, Count
+```
+
+## Nachrichtengrössen: Bytes pro Sekunde statt Mails pro Sekunde
+
+Durchsatzangaben von Gateways beziehen sich oft auf Datenvolumen, nicht auf Nachrichtenzahl. Zwei Systeme mit identischer Mail-Rate unterscheiden sich um Faktor 100, wenn das eine Benachrichtigungen mit 50 KB und das andere Rechnungs-PDFs mit 5 MB versendet. Das Feld `TotalBytes` liefert die Verteilung:
+
+```powershell
+$events | Measure-Object TotalBytes -Average -Maximum -Sum |
+    Select-Object @{n = "MittelKB"; e = { [math]::Round($_.Average / 1KB) } },
+        @{n = "MaxMB"; e = { [math]::Round($_.Maximum / 1MB, 1) } },
+        @{n = "TotalGB"; e = { [math]::Round($_.Sum / 1GB, 1) } }
+```
+
+Multiplizieren Sie die Burst-Rate mit der Durchschnittsgrösse im Burst-Fenster, und Sie haben die Bandbreiten-Anforderung, die ein neues Gateway oder eine WAN-Strecke tragen muss.
+
+## Live-Raten ohne Tracking: der Blick in die Queues
+
+Für den Moment-Blick (verarbeitet der Server gerade viel, staut etwas?) brauchen Sie kein Tracking, die Queues zeigen es direkt. `IncomingRate` und `OutgoingRate` sind Mails pro Minute, geglättet über die letzten Minuten:
 
 ```powershell
 Get-TransportService |
     ForEach-Object { Get-Queue -Server $_.Name } |
     Sort-Object MessageCount -Descending |
     Select-Object Identity, Status, MessageCount, IncomingRate,
-        OutgoingRate, Velocity, NextHopDomain, LastError |
+        OutgoingRate, NextHopDomain, LastError |
     Format-Table -AutoSize
 ```
 
-Die Lesart der wichtigsten Spalten:
+Die Lesart: Eine `Submission`-Queue mit hoher Rate bei Tiefe 0 heisst, der Server verarbeitet die Last ohne anzustauen. `MessageCount` hoch bei `OutgoingRate` nahe null heisst Rückstau. `Status Retry` mit einer 4xx-Meldung in `LastError` heisst, die Gegenstelle drosselt. `Shadow`-Queues mit Bestand sind dagegen normal, das sind Redundanzkopien für den Partner-Server, kein Rückstau.
 
-| Signal | Bedeutung |
-|---|---|
-| `Status Retry` plus 421/451/452 in `LastError` | Die Gegenstelle drosselt Exchange |
-| `MessageCount` hoch, `Velocity` nahe null | Es staut, die Queue drainiert nicht |
-| `Submission` mit hoher Rate bei Tiefe 0 | Exchange verarbeitet die Last, ohne anzustauen |
-| `Shadow`-Queues mit Bestand | Kein Rückstau, das sind Redundanzkopien (Shadow Redundancy) für den Partner-Server |
-
-Im konkreten Fall zeigten die beiden Transport-Server im Normalbetrieb rund 190 Mails/min über die Submission-Queues bei durchgehend leeren Ausgangs-Queues, ohne Retry und ohne Fehler. Das ist die dokumentierte Baseline für den späteren Test, und nebenbei die Antwort auf eine Frage, die der Tracking-Export offen liess: Richtung Smarthost floss weniger als eine Mail pro Minute, der Massenversand lief also am Exchange-Cluster vorbei direkt zum Gateway. Der künftige Pfad über Exchange ist für diese Server Neuland, Faktor 400 auf der Smarthost-Route, und genau deshalb Teil des Testplans.
-
-Ob es in einem vergangenen Batch-Lauf gestaut hat, lässt sich rückwirkend aus dem Message Tracking ablesen. DEFER-Events in nennenswerter Zahl bedeuten Drosselung mit Retry-Zyklen:
+Für eine kontinuierliche Kurve während eines Lastfensters eignet sich der Performance Counter der Transport-Queues, hier eine Minute lang alle fünf Sekunden:
 
 ```powershell
-$s = Get-Date "2026-08-24 15:00"
-$e = Get-Date "2026-08-24 16:30"
-Get-TransportService |
-    ForEach-Object {
-        Get-MessageTrackingLog -Server $_.Name -ResultSize Unlimited `
-            -Start $s -End $e -Sender "portal@example.test"
-    } |
-    Group-Object EventId |
-    Select-Object Name, Count
+Get-Counter "\MSExchangeTransport Queues(_total)\Messages Completed Delivery Per Second" `
+    -SampleInterval 5 -MaxSamples 12
 ```
 
-Die Verweildauer in der Queue pro Mail liefert der Abstand zwischen RECEIVE- und SEND-Event derselben Message-ID. Durchschnittswerte unter etwa 30 Sekunden bedeuten: Exchange hat die Last direkt verarbeitet. Minutenwerte bedeuten: Es hat sich gestaut.
+## Andere Systeme: dasselbe Prinzip mit CSV
 
-Für die Dauerbeobachtung während eines Testlaufs genügt eine Schleife, die alle fünf Sekunden Queue-Tiefe, Raten und `LastError` als CSV wegschreibt. Zwei Ergänzungen vervollständigen das Bild: Erstens die Back-Pressure-Events 15004 bis 15007 der Quelle MSExchangeTransport im Application-Log, sie zeigen an, wenn Exchange sich wegen eigener Ressourcenknappheit selbst drosselt. Zweitens das Protokoll-Logging am Send Connector (`Set-SendConnector -ProtocolLoggingLevel Verbose`), denn im SmtpSend-Log stehen die konkreten 4xx-Antworten der Gegenstelle im Wortlaut, inklusive Tarpitting-Verzögerungen, die in keiner Queue-Statistik auftauchen.
+Gateways und Appliances liefern statt PowerShell-Objekten meist einen CSV-Export des Trackings. Das Vorgehen bleibt identisch (ein Event pro Mail wählen, nach Zeitfenstern gruppieren), nur das Werkzeug wechselt, zum Beispiel zu Python:
 
-## Fazit
+```python
+import csv, collections, datetime
 
-Eine Gateway-Evaluation ohne eigenes Lastprofil stützt sich allein auf Herstellerangaben. Der Weg über die eigenen Logs kostet einen halben Tag und liefert dafür die drei Zahlen, auf die es ankommt: den Burst-Peak (hier 420 Mails/min über eine Stunde), die Empfänger-Vielfalt pro Lauf (hier 16'000 eindeutige Adressen) und den Domain-Mix (hier über 60 Prozent Richtung Gmail und Microsoft). Daraus wird ein reproduzierbarer JMeter-Test mit klarem Abnahmekriterium, und mit ein paar Zeilen PowerShell sehen Sie jederzeit, ob Exchange auf dem Weg zum Gateway staut oder gedrosselt wird. Achten Sie beim Auswerten der Rohdaten auf die beiden klassischen Fallen: Export-Limits, die mitten im Burst schneiden, und Mehrfach-Logzeilen pro Mail, die das Volumen verdoppeln.
+per_min = collections.Counter()
+with open("tracking-export.csv", encoding="utf-8") as f:
+    reader = csv.reader(f)
+    next(reader)
+    for row in reader:
+        if "response '2" not in row[6]:   # nur finale Zustellungen
+            continue
+        d = datetime.datetime.strptime(row[0][:16], "%Y-%m-%d %H:%M")
+        per_min[d.strftime("%Y-%m-%d %H:%M")] += 1
+
+print(per_min.most_common(10))
+```
+
+## Die fünf klassischen Auswertungsfallen
+
+**Mehrfach-Events pro Mail.** Die häufigste Fehlerquelle: Zeilen zählen statt Nachrichten. Prüfen Sie mit `$events | Group-Object EventId`, was wirklich in Ihrer Datenmenge steckt, und filtern Sie auf genau ein Event pro Nachricht.
+
+**Gekappte Exporte.** Viele Export-Funktionen liefern maximal 10'000 oder 50'000 Zeilen und schneiden dann kommentarlos ab, gern mitten im grössten Burst. Eine verdächtig runde Zeilenzahl ist ein Alarmsignal. Prüfen Sie immer, ob der Zeitraum der Daten dem angeforderten Zeitraum entspricht.
+
+**Gateway-Schlaufen.** Läuft der Mailfluss über eine Zwischenstation (Verschlüsselungs-Gateway, Hygiene-Appliance) und wieder zurück, taucht dieselbe Mail mehrfach im Tracking auf. Deduplizieren Sie über die Message-ID oder filtern Sie auf einen eindeutigen Punkt in der Kette.
+
+**Zeitzonen.** `Get-MessageTrackingLog` liefert Zeitstempel in lokaler Serverzeit, CSV-Exporte von Appliances dagegen oft in UTC. Ein Burst, der scheinbar um 13 Uhr läuft, kann in Wirklichkeit der 15-Uhr-Batch sein. Vor dem Interpretieren die Zeitbasis klären.
+
+**Zu kurze Fenster.** Ein Lastprofil aus zwei ruhigen Tagen ist wertlos, wenn der Monatsrechnungslauf fehlt. Das Auswertefenster muss die bekannten Batch-Zyklen enthalten; fragen Sie die Applikationsverantwortlichen nach ihren Versandplänen, bevor Sie das Fenster festlegen.
+
+## Was Sie mit dem Profil anfangen
+
+Am Ende stehen vier Zahlen auf einer Seite: Durchschnittsrate, Burst (Peak, Dauer, Zeitpunkt, Wiederholmuster), Empfängerstruktur (eindeutige Empfänger pro Lauf, Top-Domains) und Grössenverteilung. Damit lassen sich Gateways dimensionieren, Wartungsfenster in die Nachtstunden mit realer Nulllast legen und Abnahmekriterien formulieren, etwa: Das neue System muss das Doppelte des gemessenen Peaks fehlerfrei verarbeiten. Wie aus einem solchen Profil ein reproduzierbarer Lasttest wird, zeigt der Artikel [SMTP-Lasttest mit Apache JMeter in der Praxis](/blog/jmeter-smtp-lasttest-html-report).
 
 ## Quellen
 
-1.  [Apache JMeter: SMTP Sampler](https://jmeter.apache.org/usermanual/component_reference.html#SMTP_Sampler): Referenz des eingebauten SMTP-Samplers; eine Option für stehende Verbindungen existiert nicht.
+1.  [Microsoft Learn: Get-MessageTrackingLog](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetrackinglog): Referenz der Tracking-Abfrage inklusive aller Felder wie EventId, RecipientCount und TotalBytes.
 
-2.  [Apache JMeter: Precise Throughput Timer](https://jmeter.apache.org/usermanual/component_reference.html#Precise_Throughput_Timer): Timer für exakte Zielraten unabhängig von der Thread-Zahl.
+2.  [Microsoft Learn: Message tracking](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Aufbau der Tracking-Logs, Event-Typen und Konfiguration von Aufbewahrung und Verzeichnisgrösse.
 
 3.  [Microsoft Learn: Get-Queue](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-queue): Referenz der Queue-Abfrage inklusive der Felder IncomingRate, OutgoingRate und Velocity.
 
-4.  [Microsoft Learn: Back Pressure](https://learn.microsoft.com/en-us/exchange/mail-flow/back-pressure): Ressourcen-Selbstschutz des Transport-Diensts, Event-IDs 15004 bis 15007.
-
-5.  [Microsoft Learn: Get-MessageTrackingLog](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetrackinglog): Referenz des Message Trackings inklusive der Event-Typen RECEIVE, SEND, DELIVER und DEFER.
-
-6.  [Mailpit](https://mailpit.axllent.org/): leichtgewichtiger Mail-Sink mit Catch-All, Web-UI und API für die Auswertung von Ankunftszeiten.
+4.  [Microsoft Learn: Queues and messages in queues](https://learn.microsoft.com/en-us/exchange/mail-flow/queues/queues): Queue-Typen, Shadow Redundancy und die Bedeutung der Statuswerte.
 
 ----
 
