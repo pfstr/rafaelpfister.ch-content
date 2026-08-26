@@ -17,11 +17,11 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 URL: https://rafaelpfister.ch/blog/bios-update-asrock-am5-sicher-durchfuehren
 Datum: 2026-08-26
 
-Ein Desktop-PC startet spontan neu, ohne Bluescreen, ohne Absturzabbild, im Ereignisprotokoll steht nur Kernel-Power 41 mit `BugcheckCode=0`. Wer dieses Muster recherchiert, landet bei AM5-Systemen fast immer bei derselben Empfehlung: zuerst das BIOS aktualisieren, denn die AGESA-Firmware von AMD bekommt laufend Korrekturen für Speicher- und Spannungsprobleme, die genau solche Abstürze verursachen. Diese Anleitung dokumentiert den kompletten Ablauf an einem konkreten Beispiel: ein ASRock A620I Lightning WiFi wird von BIOS 3.30 auf 4.43 gebracht. Die Schritte übertragen sich auf jedes moderne Mainboard, die Fallstricke (BitLocker, Fast Boot, Einstellungs-Reset) sind herstellerunabhängig.
+Ein BIOS-Update gehört zu den Wartungsarbeiten, die selten anstehen und deshalb bei jedem Mal wieder Fragen aufwerfen: Welche Version ist die richtige, wie kommt sie sicher auf das Board, und was ist vorher und nachher zu beachten? Diese Anleitung dokumentiert den kompletten Ablauf am Beispiel eines ASRock A620I Lightning WiFi (Sockel AM5) mit der herstellereigenen Methode Instant Flash. Die Schritte übertragen sich auf jedes moderne Mainboard, die Fallstricke (BitLocker, Fast Boot, Einstellungs-Reset) sind herstellerunabhängig.
 
-## Warum das BIOS bei Stabilitätsproblemen zuerst dran ist
+## Wann ein BIOS-Update angezeigt ist
 
-Ein Neustart ohne Bugcheck bedeutet: Windows hat den Absturz weder verursacht noch protokolliert. Das System ist auf Hardware- oder Firmware-Ebene ausgefallen, typischerweise durch instabile Spannungen, Speichertraining oder Firmware-Fehler. Genau diese Ebene pflegt AMD über AGESA-Releases, die die Board-Hersteller in ihre BIOS-Versionen einbetten. Im Beispiel liegen zwischen der installierten Version 3.30 und der aktuellen 4.43 mehrere Versionen, deren Changelogs auffällig gut zum Fehlerbild passen: "Improve memory compatibility and system stability" (3.40), "Optimized Memory Compatibility" (4.10) und ein überarbeitetes EXPO-Handling (4.41). Ein BIOS-Update ist damit die Massnahme mit dem besten Verhältnis von Aufwand zu Erfolgsaussicht.
+Drei Anlässe rechtfertigen den Eingriff. Erstens Sicherheitskorrekturen: Firmware-Lücken lassen sich nur über ein BIOS-Update schliessen, und die Changelogs der Hersteller benennen sie meist nur knapp. Zweitens Kompatibilität: Unterstützung für neue CPU-Generationen und verbesserte Speicherkompatibilität kommen ausschliesslich über neue Firmware-Stände, bei AM5 über die AGESA-Referenzfirmware von AMD, die die Board-Hersteller in ihre BIOS-Versionen einbetten. Drittens Stabilität: Startet ein System spontan neu und protokolliert das Ereignisprotokoll dazu nur Kernel-Power 41 mit `BugcheckCode=0`, ist der Absturz auf Hardware- oder Firmware-Ebene passiert, ohne Beteiligung von Windows; typische Ursachen sind instabile Spannungen und Speichertraining, und genau diese Ebene pflegen die AGESA-Releases. Einträge wie "Improve memory compatibility and system stability" oder ein überarbeitetes EXPO-Handling in den Changelogs sind der Hinweis, dass ein Update solche Probleme adressiert. Läuft ein System dagegen stabil und ist von den behobenen Lücken nicht betroffen, ist Abwarten legitim; ein BIOS-Update ohne Anlass ist ein Risiko ohne Gegenwert.
 
 ## Schritt 1: Ist-Zustand ermitteln
 
@@ -61,7 +61,7 @@ Ein Hinweis zur Methodenwahl: Viele Boards bieten zusätzlich einen BIOS-Flashba
 
 Das ist der Fallstrick, der in vielen Anleitungen fehlt. Ist die Systemplatte mit BitLocker verschlüsselt (bei Windows 11 mit Microsoft-Konto häufig automatisch aktiv), bindet BitLocker den Schlüssel an die Messwerte des TPM. Ein BIOS-Update verändert diese Messwerte, und beim nächsten Start verlangt Windows den 48-stelligen Wiederherstellungsschlüssel. Wer den nicht griffbereit hat, steht vor einem unzugänglichen System.
 
-Die Lösung ist eingebaut und dauert eine Sekunde. In einer PowerShell mit Administratorrechten:
+BitLocker bringt für dieses Szenario einen eigenen Mechanismus mit. In einer PowerShell mit Administratorrechten:
 
 ```powershell
 Suspend-BitLocker -MountPoint C: -RebootCount 2
@@ -98,7 +98,7 @@ Get-CimInstance Win32_PhysicalMemory |
 manage-bde -status C:
 ```
 
-Die erste Zeile muss die neue Version zeigen, die zweite den erwarteten Speichertakt, und BitLocker muss wieder "Schutz aktiviert" melden. Damit ist das Update abgeschlossen und dokumentiert; ob es die Neustarts tatsächlich behoben hat, zeigt erst die Beobachtung über die folgenden Wochen, am einfachsten mit einem Blick auf neue Kernel-Power-41-Einträge im System-Ereignisprotokoll.
+Die erste Zeile muss die neue Version zeigen, die zweite den erwarteten Speichertakt, und BitLocker muss wieder "Schutz aktiviert" melden. Damit ist das Update abgeschlossen und dokumentiert. Wurde wegen Stabilitätsproblemen geflasht, zeigt erst die Beobachtung über die folgenden Wochen, ob sie behoben sind, am einfachsten mit einem Blick auf neue Kernel-Power-41-Einträge im System-Ereignisprotokoll.
 
 ## Quellen
 
