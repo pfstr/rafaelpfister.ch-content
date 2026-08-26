@@ -12,6 +12,213 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# VPN-Split-Tunneling für Microsoft Teams: Medienverkehr am Tunnel vorbeiführen
+
+URL: https://rafaelpfister.ch/blog/vpn-split-tunneling-microsoft-teams
+Datum: 2026-08-26
+
+Ein Teams-Anruf über eine VPN-Verbindung klingt oft schlechter als ohne: Die Stimme setzt aus, Video ruckelt, Bildschirmübertragungen bauen sich verzögert auf. Die Ursache liegt meist am Umweg, den der Echtzeitverkehr durch den VPN-Tunnel nimmt, nicht bei Teams selbst. Microsoft empfiehlt darum seit Jahren, den Teams-Medienverkehr per Split Tunneling am VPN vorbei direkt ins Internet zu führen. Dieser Ansatz funktioniert mit praktisch jedem VPN-Produkt, vom Consumer-Client bis zum Enterprise-Gateway; die Konfiguration unterscheidet sich nur im Detail.
+
+## Warum Echtzeitverkehr im Tunnel leidet
+
+Teams-Audio und -Video laufen über SRTP, ein UDP-basiertes Protokoll, das auf niedrige Latenz und geringen Jitter angewiesen ist. Microsoft nennt als Zielwerte unter 100 ms Round-Trip-Zeit zum nächsten Microsoft-Netzwerkeingang und unter 30 ms Jitter. Ein VPN-Tunnel verschlechtert beide Werte gleich mehrfach.
+
+Erstens verlängert der Tunnel den Weg: Statt direkt zum geografisch nächsten Microsoft-Einstiegspunkt läuft der Verkehr zuerst zum VPN-Gateway, das im Rechenzentrum des Anbieters oder der Firma stehen kann, und erst von dort zu Microsoft. Zweitens kostet die zusätzliche Verschlüsselungsschicht Rechenzeit und erhöht den Overhead pro Paket; der Medienstrom ist mit SRTP bereits verschlüsselt, die VPN-Verschlüsselung kommt als zweite Schicht hinzu. Drittens ist das VPN-Gateway ein gemeinsam genutzter Engpass: In Stosszeiten teilen sich alle Benutzer dessen Bandbreite und Paketpuffer, was genau den Jitter erzeugt, auf den Echtzeitverkehr am empfindlichsten reagiert. Viertens blockieren manche VPN-Konfigurationen UDP ganz oder erzwingen TCP; Teams weicht dann auf TCP 443 aus, was die Qualität nochmals verschlechtert, weil TCP-Neuübertragungen für Echtzeitmedien ungeeignet sind.
+
+Für den übrigen Teams-Verkehr (Anmeldung, Chat, Dateizugriff) spielt das alles kaum eine Rolle, weil er nicht echtzeit-sensitiv ist. Es genügt darum, gezielt den Medienverkehr auszunehmen.
+
+## Die relevanten Netze und Ports
+
+Microsoft publiziert alle Microsoft-365-Endpunkte maschinenlesbar und teilt sie in die Kategorien Optimize, Allow und Default ein. Für Split Tunneling relevant ist die Kategorie Optimize: Sie umfasst die wenigen, latenzkritischen Endpunkte mit festen IP-Netzen, die zusammen den grössten Teil des Volumens ausmachen. Für Teams-Medien sind das die Endpunkt-IDs 11 und 12 der offiziellen Liste:
+
+| Netz | Protokoll und Ports | Zweck |
+|---|---|---|
+| `13.107.64.0/18` | UDP 3478 bis 3481, TCP 443 | Teams-Medien (Audio, Video, Bildschirmübertragung) |
+| `52.112.0.0/14` | UDP 3478 bis 3481, TCP 443 | Teams-Medien und Transport-Relays |
+| `52.122.0.0/15` | UDP 3478 bis 3481, TCP 443 | Teams-Medien und Transport-Relays |
+| `2603:1063::/38` | UDP 3478 bis 3481, TCP 443 | dieselben Dienste über IPv6 |
+
+Die vier UDP-Ports stehen für die Medienklassen Audio (3478), Video (3479 und 3480) und Bildschirmübertragung (3481); TCP 443 ist der Rückfallweg. Wer IPv6 im Einsatz hat, sollte das IPv6-Netz mit ausnehmen, sonst läuft ein Teil der Verbindungen doch wieder durch den Tunnel.
+
+Diese Netze sind bewusst stabil: Microsoft kündigt Änderungen an den Optimize-Endpunkten über den Endpoint-Webservice an und hält die Liste klein, gerade damit Firmen sie in Routing- und Firewall-Regeln giessen können. Trotzdem gehört ein gelegentlicher Abgleich mit der offiziellen Liste in die Betriebsroutine.
+
+## App-basiert oder IP-basiert: zwei Ansätze mit ungleichen Stärken
+
+Viele VPN-Clients bieten zwei Arten von Split Tunneling an: Ausnahmen pro Anwendung oder Ausnahmen pro Ziel-IP.
+
+Der App-Ausschluss klingt naheliegend, hat bei Teams aber zwei Schwächen. Das neue Teams ist eine WebView2-Anwendung: Der Hauptprozess heisst `ms-teams.exe`, ein Teil des Verkehrs läuft aber über `msedgewebview2.exe`. Wer nur den Hauptprozess ausnimmt, erwischt nicht den ganzen Verkehr; wer WebView2 mit ausnimmt, leitet auch den Verkehr anderer WebView2-Anwendungen (etwa das neue Outlook) am Tunnel vorbei. Und für Teams im Browser hilft der App-Ausschluss gar nicht, ausser man nimmt den ganzen Browser aus, womit sämtlicher Web-Verkehr das VPN umgeht.
+
+Der IP-basierte Ausschluss greift dagegen auf Netzwerkebene und ist damit unabhängig davon, ob der Verkehr aus der Teams-App, aus WebView2 oder aus einem Browser-Tab stammt. Er nimmt genau das aus, was latenzkritisch ist, und lässt Anmeldung, Chat und den restlichen Web-Verkehr im Tunnel. Für Teams ist der IP-basierte Ansatz darum die bessere Wahl; der App-Ausschluss taugt als Ergänzung, wenn wirklich der gesamte Teams-Verkehr das VPN umgehen soll.
+
+## Umsetzung in gängigen VPN-Produkten
+
+Das Prinzip ist überall gleich: Die drei IPv4-Netze (und bei Bedarf das IPv6-Netz) werden vom Tunnel ausgenommen, sodass die Betriebssystem-Routen für diese Ziele auf das physische Interface zeigen.
+
+**Consumer-VPNs (Proton VPN, NordVPN, Surfshark und ähnliche):** Die Windows- und Android-Clients bieten meist einen Menüpunkt wie „Split Tunneling" mit einer Ausschlussliste für IP-Adressen oder Subnetze. Dort die drei Netze in CIDR-Notation eintragen und die VPN-Verbindung neu aufbauen, damit die Routen greifen. Auf macOS und iOS fehlt die Funktion bei den meisten Anbietern, weil die System-APIs dort kein anwendungsgesteuertes Split Tunneling in dieser Form zulassen.
+
+**WireGuard:** WireGuard kennt keine Ausschlussliste, sondern nur die `AllowedIPs`-Angabe, die festlegt, was in den Tunnel geht. Ausnahmen entstehen, indem `0.0.0.0/0` durch die Liste aller Netze ersetzt wird, die den Ausschluss-Bereich nicht enthalten. Diese Komplementärliste rechnet niemand von Hand; Online-Rechner wie der WireGuard AllowedIPs Calculator nehmen `0.0.0.0/0` als Basis, die drei Microsoft-Netze als „Disallowed IPs" und liefern die fertige Zeile für die Konfigurationsdatei.
+
+**OpenVPN:** Bei aktivem `redirect-gateway` gewinnen spezifischere Routen. Drei zusätzliche Zeilen in der Client-Konfiguration leiten die Microsoft-Netze am Tunnel vorbei:
+
+```text
+route 13.107.64.0 255.255.192.0 net_gateway
+route 52.112.0.0 255.252.0.0 net_gateway
+route 52.122.0.0 255.254.0.0 net_gateway
+```
+
+`net_gateway` steht dabei für das Standard-Gateway des lokalen Netzes, nicht für das VPN-Gateway.
+
+**Enterprise-Clients (Cisco Secure Client/AnyConnect, Palo Alto GlobalProtect, Fortinet FortiClient):** Hier konfiguriert die Firma die Ausnahmen zentral, bei Cisco als „Split Exclude"-Liste in der Gruppenrichtlinie, bei GlobalProtect als „Exclude Access Route". Microsoft dokumentiert dieses Vorgehen ausdrücklich als empfohlenes Modell für Microsoft-365-Verkehr und liefert die Optimize-Liste über den Endpoint-Webservice, sodass sich die Ausnahmen automatisiert aktuell halten lassen. Wer als Mitarbeiter hinter einem Firmen-VPN sitzt, kann die Ausnahme also nicht selbst setzen, sondern muss sie beim Netzwerk-Team beantragen; das Microsoft-Dokument dazu ist die passende Argumentationsgrundlage.
+
+**Windows-Bordmittel:** Bei einer mit Windows-Bordmitteln eingerichteten VPN-Verbindung im Split-Modus (`Set-VpnConnection -SplitTunneling $true`) landen nur die per `Add-VpnConnectionRoute` eingetragenen Netze im Tunnel. Solange die Microsoft-Netze dort nicht auftauchen, laufen sie automatisch direkt; ein expliziter Ausschluss ist dann unnötig.
+
+## Sicherheitsabwägung: was am Tunnel vorbeigeht
+
+Split Tunneling ist eine bewusste Aufweichung des Grundsatzes, allen Verkehr durch den Tunnel zu führen. Vor der Umsetzung sollten Sie drei Punkte klären.
+
+Die eigene öffentliche IP-Adresse wird für Microsoft sichtbar, denn genau das ist beabsichtigt: Der Medienstrom soll den kürzesten Weg nehmen. Wer ein VPN primär einsetzt, um den eigenen Standort zu verbergen, gibt diesen Schutz für Teams-Anrufe auf. Die Inhalte bleiben davon unberührt, weil SRTP den Medienstrom Ende-zu-Ende zwischen Client und Microsoft-Infrastruktur verschlüsselt.
+
+Im Firmenumfeld verliert das zentrale Security-Gateway die Sicht auf den ausgenommenen Verkehr: TLS-Inspektion, IDS-Signaturen und Volumen-Auswertung greifen für diese Netze nicht mehr. Da die Ausnahme auf wenige, fest Microsoft zugeordnete Netze mit definierten Ports beschränkt ist, bewertet Microsoft dieses Restrisiko als gering; die Optimize-Endpunkte sind genau dafür kuratiert. Eine pauschale Ausnahme ganzer Anwendungen oder gar des Browsers hat dagegen eine deutlich grössere Angriffsfläche und sollte im Firmenumfeld unterbleiben.
+
+Und schliesslich der Kill Switch: Manche VPN-Clients setzen Split-Tunneling-Ausnahmen erst nach einem Neuaufbau der Verbindung um oder verhalten sich mit aktivem Kill Switch abweichend. Nach jeder Änderung an der Ausschlussliste gehört darum ein Verbindungsneuaufbau und ein Kontrolltest dazu.
+
+## Kontrolle: läuft der Medienverkehr wirklich direkt?
+
+Ob die Ausnahme greift, lässt sich auf zwei Ebenen prüfen. Auf Routing-Ebene zeigt PowerShell, welches Interface Windows für ein Ziel in den Microsoft-Netzen wählt:
+
+```powershell
+Find-NetRoute -RemoteIPAddress 52.112.1.1 |
+  Select-Object InterfaceAlias, NextHop
+```
+
+Erscheint hier das physische Interface (Ethernet oder WLAN) statt des VPN-Adapters, stimmt die Route. Auf Anwendungsebene liefert Teams selbst die Bestätigung: Während eines Anrufs zeigt die Anrufintegrität (unter „Weitere Aktionen" im Anruffenster) die ausgehandelte Verbindungsart, die Round-Trip-Zeit und die Paketverlustrate. Eine Round-Trip-Zeit, die nach der Umstellung deutlich sinkt, und der Verbindungstyp UDP statt TCP sind die beiden Kennzeichen einer funktionierenden Ausnahme.
+
+Bleibt der Verkehr trotz korrekter Route im Tunnel, lohnt ein Blick auf die Reihenfolge der Netzwerkadapter und auf Client-Eigenheiten: Einige VPN-Clients erzwingen ihre Routen mit niedrigerer Metrik nach jedem Verbindungsaufbau neu, und eine veraltete Ausschlussliste fällt erst auf, wenn Microsoft ein Netz ergänzt. Der Abgleich mit der offiziellen Endpunktliste gehört darum in denselben Rhythmus wie andere wiederkehrende Netzwerk-Prüfungen.
+
+## Quellen
+
+1.  [Microsoft: Office 365 URLs and IP address ranges](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges): offizielle Endpunktliste; die Teams-Medien-Netze stehen unter den IDs 11 und 12 in der Kategorie Optimize.
+
+2.  [Microsoft: Implementing VPN split tunneling for Microsoft 365](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-vpn-implement-split-tunnel): Microsofts Umsetzungsleitfaden für Enterprise-VPNs inklusive Begründung der Risikobewertung.
+
+3.  [Microsoft: Microsoft 365 network connectivity principles](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-network-connectivity-principles): die Grundsätze hinter dem lokalen Internet-Ausstieg, inklusive der Latenz-Zielwerte für Echtzeitmedien.
+
+4.  [Proton VPN: How to use split tunneling](https://protonvpn.com/support/protonvpn-split-tunneling/): Beispiel eines Consumer-Clients mit IP- und App-basiertem Split Tunneling unter Windows und Android.
+
+5.  [WireGuard AllowedIPs Calculator](https://www.procustodibus.com/blog/2021/03/wireguard-allowedips-calculator/): Rechner für die Komplementärliste, wenn Ausnahmen über AllowedIPs abgebildet werden müssen.
+
+----
+
+# F5 BIG-IP als Outbound-Proxy für den Mail-Massenversand: Persistenz, SNAT, Timeouts und DNS-Auflösung
+
+URL: https://rafaelpfister.ch/blog/f5-big-ip-outbound-smtp-massenversand
+Datum: 2026-08-26
+
+Ein Rechnungslauf oder Newsletter-Versand mit rund 1000 Mails pro Minute verlässt das Unternehmensnetz, dazwischen steht eine F5 BIG-IP als ausgehender Proxy zum Einlieferungspunkt des Providers. Die BIG-IP verteilt dabei nicht auf mehrere Ziele, sie reicht durch. Genau diese Konstellation entscheidet, welche Einstellungen sinnvoll sind und welche vermeintlichen Optimierungen ins Leere laufen.
+
+## Die Architektur in einem Satz
+
+Die Versandsysteme sprechen als Smarthost eine interne Virtual-Server-Adresse auf der BIG-IP an, die BIG-IP übersetzt die Absenderadressen per SNAT auf eine feste öffentliche IP und leitet jede Verbindung an den Provider-Hostnamen weiter. Load Balancing im eigentlichen Sinn findet auf der BIG-IP nicht statt, weil der Pool nur ein Mitglied hat. Das klingt nach einer trivialen Konfiguration, aber die Detailentscheide (Persistenz, Timeouts, SNAT-Typ, DNS-Auflösung) bestimmen, ob der Versand stabil läuft oder unter Last unerklärliche Abbrüche zeigt.
+
+## Sind Sticky Sessions besser? Nein, und zwar aus zwei Gründen
+
+Die Frage nach Session-Persistenz stammt aus der HTTP-Welt, wo ein Benutzer mit Warenkorb oder Login-Session immer auf demselben Backend landen muss. Auf SMTP übertragen ergibt das Konzept keinen Sinn.
+
+Erstens ist SMTP pro Verbindung zustandslos abgeschlossen: Jede Verbindung wickelt eine oder mehrere vollständige Transaktionen ab (MAIL FROM, RCPT TO, DATA) und endet mit QUIT. Es gibt keinen Zustand, der über Verbindungen hinweg auf demselben Zielsystem liegen müsste. Welches System auf der Providerseite die nächste Verbindung annimmt, ist für die Zustellung belanglos.
+
+Zweitens gibt es auf dieser BIG-IP schlicht nichts zu persistieren: Der Pool enthält genau ein Mitglied, die eine IP-Adresse des Providers. Ein Persistenzprofil würde nur Speicher für eine Persistenztabelle verbrauchen und bei jeder Verbindung einen Lookup kosten, der immer dasselbe Ergebnis liefert. Die richtige Einstellung ist darum: Default Persistence Profile auf None. Selbst wenn der Provider später mehrere IP-Adressen hinter dem Hostnamen publizieren sollte, wäre Persistenz kontraproduktiv, weil sie die Verteilung auf diese Adressen verhindern und einzelne Ziele einseitig belasten würde.
+
+Entscheidend für den Durchsatz beim Massenversand ist das Verbindungsprofil des Senders: wenige langlebige Verbindungen mit vielen Nachrichten pro Verbindung statt einer neuen Verbindung pro Mail; dazu unten mehr.
+
+## Virtual Server: FastL4 statt Full Proxy
+
+Für reines Durchreichen von SMTP ist ein Performance-(Layer-4)-Virtual-Server mit FastL4-Profil die richtige Wahl. Die BIG-IP verarbeitet die Verbindung dann weitgehend in Hardware beziehungsweise im beschleunigten Pfad, ohne die TCP-Verbindung vollständig zu terminieren. Ein Standard-Virtual-Server im Full-Proxy-Modus bringt nur dann einen Mehrwert, wenn Sie auf der BIG-IP wirklich in den Datenstrom eingreifen wollen, etwa mit einem SMTP-Sicherheitsprofil oder iRules auf Protokollebene. Für einen Outbound-Proxy zum eigenen Vertragsprovider ist das unnötig und schafft nur zusätzliche Fehlerquellen.
+
+Wichtig in beiden Fällen: kein Profil aktivieren, das in die Verbindung hineinschreibt. STARTTLS handeln die Versandsysteme direkt mit dem Provider-Relay aus; jede Instanz, die Bytes verändert oder filtert, gefährdet den TLS-Aufbau.
+
+## DNS-Auflösung: der Provider-Hostname gehört als FQDN-Node in den Pool
+
+Der Provider hat einen Hostnamen geliefert, keine IP-Adresse. Der naheliegende Reflex, die IP einmal aufzulösen und statisch als Node einzutragen, ist die schlechteste Variante: Wechselt der Provider die Adresse (Wartung, Umzug, DR-Fall), steht der Versand, bis jemand die BIG-IP-Konfiguration anpasst. Genau dafür gibt es FQDN-Nodes.
+
+Ein FQDN-Node hinterlegt den Hostnamen statt der Adresse. Die BIG-IP löst den Namen selbst auf, legt für jede zurückgelieferte Adresse ein sogenanntes Ephemeral-Node an und aktualisiert diese automatisch, wenn sich die DNS-Antwort ändert. Standardmässig fragt sie den Namen nach Ablauf der DNS-TTL erneut ab; alternativ lässt sich ein festes Abfrageintervall setzen. Mit aktiviertem Autopopulate übernimmt der Pool auch mehrere A-Records automatisch als Mitglieder: Sollte der Provider seine Einlieferung später auf mehrere Adressen erweitern, folgt die BIG-IP ohne Konfigurationsänderung.
+
+Zwei Voraussetzungen werden dabei gerne vergessen. Erstens braucht die BIG-IP dafür funktionierende DNS-Server in der Systemkonfiguration (System, Configuration, Device, DNS); FQDN-Nodes nutzen die System-Resolver, nicht etwa einen DNS-Cache aus einem Listener-Profil. Zweitens sollten diese Resolver aus dem Management- beziehungsweise TMM-Kontext tatsächlich erreichbar sein, sonst bleibt der Node im Status unresolved und der Pool leer.
+
+Die Konfiguration in tmsh sieht so aus (Adressen und Namen sind Beispiele):
+
+```bash
+tmsh create ltm node relay-provider fqdn { \
+  name mail-relay.provider.example autopopulate enabled }
+
+tmsh create ltm pool pool_provider_smtp \
+  members add { relay-provider:25 } monitor tcp
+
+tmsh create ltm snatpool snat_mailout \
+  members add { 198.51.100.10 }
+
+tmsh create ltm virtual vs_mailout_smtp \
+  destination 10.0.5.10:25 ip-protocol tcp \
+  profiles add { fastL4 } pool pool_provider_smtp \
+  source-address-translation { type snat pool snat_mailout }
+```
+
+Die Versandsysteme tragen anschliessend 10.0.5.10 als Smarthost ein. Ob Sie Port 25 oder 587 verwenden, gibt der Provider vor; die BIG-IP-Konfiguration ist in beiden Fällen identisch, nur der Port ändert.
+
+## SNAT: feste Adresse statt Automap
+
+Für ausgehenden Mailverkehr gehört die Quelladresse unter Kontrolle. SNAT Automap nimmt die Floating-Self-IP des ausgehenden VLANs, und die kann sich bei Netzwerkänderungen oder Failover-Umbauten unbemerkt ändern. Provider koppeln die Einlieferung aber häufig an ein IP-Allowlisting, und selbst ohne formales Allowlisting hängt Reputation an der Quelladresse. Ein dedizierter SNAT-Pool mit einer fest zugewiesenen Adresse macht die Quell-IP zu einem dokumentierten, stabilen Konfigurationsobjekt.
+
+Zur Kapazität: Eine einzelne SNAT-Adresse bietet gegen ein einzelnes Ziel (eine IP, ein Port) rund 64'000 gleichzeitige Übersetzungen, weil jede Verbindung einen eigenen ephemeren Quellport erhält. Bei dem hier beschriebenen Lastprofil mit wenigen Dutzend gleichzeitigen Verbindungen ist das um Grössenordnungen ausreichend. Port-Erschöpfung wird erst zum Thema, wenn ein fehlkonfigurierter Sender pro Mail eine neue Verbindung öffnet und diese nicht sauber schliesst; dann sammeln sich Übersetzungen im TIME-WAIT-ähnlichen Zustand. Ein solches Verhalten beheben Sie am Sender, nicht mit einer zweiten SNAT-Adresse.
+
+## Timeouts: die häufigste Ursache für Verbindungsabbrüche unter Last
+
+Ein Bulk-Sender hält Verbindungen offen und schiebt Nachricht um Nachricht hindurch. Zwischen zwei Nachrichten können Pausen entstehen: Der Sender generiert den nächsten Block, das Relay verzögert die Annahme (Tarpitting, Greylisting-Reste, interne Queues). Das Idle-Timeout des FastL4-Profils steht standardmässig auf 300 Sekunden. Liegt eine Pause darüber, räumt die BIG-IP die Verbindung ab, und der Sender schreibt in eine Verbindung, die es nicht mehr gibt.
+
+Zwei Einstellungen entschärfen das. Erstens das Idle-Timeout auf einen Wert setzen, der über den realistischen Pausen liegt; für Massenversand sind 600 Sekunden ein vernünftiger Startwert. Beliebig hoch sollte der Wert nicht sein, sonst sammeln sich verwaiste Verbindungen in der Verbindungstabelle. Zweitens im Profil Reset on Timeout aktiviert lassen: Die BIG-IP quittiert das Abräumen dann mit einem TCP-Reset, und der sendende MTA erkennt sofort, dass die Verbindung weg ist, statt in einen Timeout zu laufen und die Nachricht erst nach Minuten neu einzuplanen.
+
+Auf die Timeouts der Gegenseite haben Sie keinen Einfluss, aber sie gehören ins Bild: Wenn das Provider-Relay Verbindungen nach 120 Sekunden Inaktivität schliesst, nützt ein grosszügiges BIG-IP-Timeout nichts. Massgebend ist der kleinste Timeout-Wert auf dem gesamten Pfad; im Zweifel beim Provider nachfragen und diesen Wert als Planungsgrundlage nehmen.
+
+## Verbindungs-Strategie: wenige Verbindungen, viele Nachrichten
+
+Ohne Einliefervorgaben des Providers lohnt sich eine kurze Rechnung. 1000 Mails pro Minute sind rund 17 pro Sekunde. Eine SMTP-Transaktion über eine bereits stehende Verbindung dauert bei normaler Latenz deutlich unter einer halben Sekunde. Mit 10 bis 20 parallelen Verbindungen und beispielsweise 100 Nachrichten pro Verbindung, bevor der Sender sie erneuert, ist die Zielrate bequem erreicht. Auf der Providerseite steht in der Regel deutlich mehr Verbindungskapazität bereit, aber sie teilt sich mit allen anderen Kunden. Wenige langlebige Verbindungen mit vielen Transaktionen sind darum nicht nur effizient (der TCP- und TLS-Aufbau entfällt pro Nachricht), sondern auch die verträglichste Art, fremde Infrastruktur zu nutzen.
+
+Die Stellschrauben dafür liegen im Versandsystem, nicht auf der BIG-IP: maximale Nachrichten pro Verbindung, maximale parallele Verbindungen zum Smarthost, Wiederverwendung stehender Verbindungen. Auf der BIG-IP lässt sich das Ganze mit einem Connection Limit auf dem Pool-Member absichern, etwa 200 gleichzeitige Verbindungen: Im Normalbetrieb wird der Wert nie erreicht, aber ein fehlkonfigurierter Sender, der plötzlich pro Mail eine Verbindung öffnet, flutet damit nicht ungebremst das Provider-Relay. Das Limit ist ein Sicherheitsnetz, kein Steuerungsinstrument.
+
+Ob das eingestellte Verbindungsprofil in der Praxis auch ankommt, zeigt die Messung: Verbindungen pro Minute und Nachrichten pro Verbindung lassen sich aus dem Message Tracking beziehungsweise den Connector-Logs auswerten, wie im Artikel [Das Lastprofil eines Mailservers ermitteln](https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln) beschrieben. Für einen Lasttest mit realistischem Bulk-Lastbild (wenige Sessions, viele Nachrichten pro Session) eignet sich smtp-source aus dem Postfix-Paket besser als HTTP-orientierte Lastwerkzeuge, weil es genau dieses Verbindungsprofil erzeugt.
+
+## Monitoring: den Provider nicht mit Healthchecks belasten
+
+Ein Monitor auf dem Pool-Member ist sinnvoll, damit die BIG-IP einen Ausfall der Provider-Seite erkennt und sauber meldet. Dabei gilt: Jeder Healthcheck ist eine echte Verbindung zum Provider und zählt dort gegen dieselben Limits wie der Nutzverkehr. Ein einfacher TCP-Monitor mit moderatem Intervall (30 Sekunden oder mehr) genügt vollauf. Ein vollständiger SMTP-Monitor, der bis zum Banner oder EHLO prüft, liefert kaum zusätzlichen Erkenntnisgewinn, erzeugt aber auf der Providerseite Logeinträge und im schlechtesten Fall Rückfragen, warum alle 5 Sekunden eine Verbindung ohne Mail eingeht.
+
+## Checkliste
+
+| Einstellung | Empfehlung |
+|---|---|
+| Persistenzprofil | None; Sticky Sessions bringen bei SMTP nichts und bei einem Ein-Member-Pool erst recht nicht |
+| Virtual-Server-Typ | Performance (Layer 4) mit FastL4-Profil, kein Eingriff in den Datenstrom |
+| Ziel-Node | FQDN-Node mit Autopopulate statt statischer IP; DNS-Server auf der BIG-IP konfiguriert |
+| SNAT | dedizierter SNAT-Pool mit fester, beim Provider bekannter Adresse; kein Automap |
+| Idle-Timeout | über den realen Sendepausen, Startwert 600 s; Reset on Timeout aktiv |
+| Connection Limit | als Sicherheitsnetz auf dem Pool-Member, z. B. 200 |
+| Monitor | TCP, Intervall 30 s oder mehr; kein aggressiver SMTP-Monitor |
+| Sender-Konfiguration | wenige parallele Verbindungen, viele Nachrichten pro Verbindung; Wiederverwendung aktiv |
+
+Die kurze Antwort auf die Ausgangsfrage lautet also: Nein, Sticky Sessions sind nicht besser, sie sind in dieser Konstellation wirkungslos bis schädlich. Die Qualität der Lösung entscheidet sich an der DNS-Auflösung des Provider-Hostnamens, an einer stabilen SNAT-Adresse, an zum Lastprofil passenden Timeouts und daran, dass die Versandsysteme ihre 1000 Mails pro Minute über wenige stehende Verbindungen einliefern statt über tausend einzelne.
+
+## Quellen
+
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Abschnitt 4.5.4 und das Transaktionsmodell zeigen, dass mehrere Mail-Transaktionen über eine Verbindung der vorgesehene Normalfall sind.
+
+2.  [K7820: Overview of SNAT features](https://my.f5.com/manage/s/article/K7820): F5-Grundlagenartikel zu SNAT, SNAT-Pools und der Portübersetzung pro Ziel.
+
+3.  [tmsh-Referenz: ltm node](https://clouddocs.f5.com/cli/tmsh-reference/latest/modules/ltm/ltm_node.html): dokumentiert die FQDN-Optionen (name, autopopulate, interval) für Nodes und damit für Pool-Member.
+
+4.  [smtp-source(1), Postfix](https://www.postfix.org/smtp-source.1.html): Lastgenerator, der das Bulk-Sender-Verbindungsprofil (wenige Sessions, viele Nachrichten) nachbildet.
+
+5.  [Das Lastprofil eines Mailservers ermitteln](https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln): eigene Anleitung, wie Verbindungen pro Minute und Nachrichten pro Verbindung aus dem Message Tracking ausgewertet werden.
+
+----
+
 # BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Vorbereitung
 
 URL: https://rafaelpfister.ch/blog/bios-update-asrock-am5-sicher-durchfuehren

@@ -10,6 +10,8 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 
 ## Blog-Artikel (Deutsch, Originale)
 
+- [VPN-Split-Tunneling für Microsoft Teams: Medienverkehr am Tunnel vorbeiführen](https://rafaelpfister.ch/blog/vpn-split-tunneling-microsoft-teams): Teams-Anrufe über ein VPN leiden unter Latenz, Jitter und dem Umweg über das VPN-Gateway. Der Artikel zeigt, welche Microsoft-Netze und Ports für den Medienverkehr zuständig sind, warum IP-basiertes Split Tunneling dem App-Ausschluss überlegen ist und wie die Umsetzung in Consumer-VPNs, WireGuard, OpenVPN und Enterprise-Clients aussieht.
+- [F5 BIG-IP als Outbound-Proxy für den Mail-Massenversand: Persistenz, SNAT, Timeouts und DNS-Auflösung](https://rafaelpfister.ch/blog/f5-big-ip-outbound-smtp-massenversand): Ein Massenversand mit 1000 Mails pro Minute läuft über eine BIG-IP als ausgehenden Proxy zum Provider-Relay. Der Artikel klärt, warum Sticky Sessions hier nichts bringen, wie der Provider-Hostname sauber per FQDN-Node aufgelöst wird und welche Einstellungen bei SNAT, Timeouts und Verbindungs-Limits den Durchsatz tatsächlich bestimmen.
 - [BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Vorbereitung](https://rafaelpfister.ch/blog/bios-update-asrock-am5-sicher-durchfuehren): Der komplette Ablauf eines BIOS-Updates am Beispiel eines ASRock-AM5-Boards: Version ermitteln, Download per Hash verifizieren, BitLocker korrekt pausieren, ins UEFI booten (auch wenn F2 ins Leere läuft), per Instant Flash aktualisieren und die Einstellungen nach dem Update sinnvoll setzen.
 - [Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking](https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln): Wie viele Mails pro Minute verarbeitet Ihr Mailserver wirklich, und wie hoch sind die Spitzen? Wie Sie mit PowerShell aus dem Exchange Message Tracking das echte Lastprofil ermitteln: Raten pro Minute und Stunde, Burst-Dauer, Empfängerstruktur, Nachrichtengrössen und die typischen Auswertungsfehler.
 - [Claude Desktop stürzt ständig ab: „GPU process gone“ mit Exit-Code 101457950, Ursache und Lösung](https://rafaelpfister.ch/blog/claude-desktop-webgpu-absturz): Die Claude-Desktop-App unter Windows beendet sich komplett mit „GPU process gone: exitCode 101457950“ (0x060C201E), oft gefolgt vom Reparatur-Dialog der Store-App. Die vollständige Ursachenkette: Code Integrity blockiert vk_swiftshader.dll, Chromiums Fallback-Kette läuft leer, der eingebaute Selbstabbruch beendet die App. Mit Sofortlösung, Selbstdiagnose per Event-Log und der Analyse bis zum Minidump.
@@ -320,6 +322,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Exchange OnPrem / Hybrid](https://rafaelpfister.ch/blog/thema/exchange-onprem-hybrid)
 - [Exchange-Updates (SU & CU)](https://rafaelpfister.ch/blog/thema/exchange-updates)
 - [HIN-Gateway](https://rafaelpfister.ch/blog/thema/hin-gateway)
+- [Loadbalancer](https://rafaelpfister.ch/blog/thema/loadbalancer)
 - [Microsoft 365 / Exchange](https://rafaelpfister.ch/blog/thema/microsoft-365-exchange)
 - [Microsoft Entra](https://rafaelpfister.ch/blog/thema/microsoft-entra)
 - [Paperless-ngx](https://rafaelpfister.ch/blog/thema/paperless-ngx)
