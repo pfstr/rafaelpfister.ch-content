@@ -145,7 +145,7 @@ IP            Name
 203.0.113.9   (kein PTR)
 ```
 
-Ein fehlender PTR ist kein Beweis für etwas Böses, aber er ist ein guter Grund, genauer hinzusehen. Nehmen Sie sich für solche Adressen die zugehörigen Nachrichten vor:
+Ein fehlender PTR ist für sich genommen kein Hinweis auf ein Problem, aber er ist ein guter Grund, genauer hinzusehen. Nehmen Sie sich für solche Adressen die zugehörigen Nachrichten vor:
 
 ```powershell
 Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -ResultSize 5000 |

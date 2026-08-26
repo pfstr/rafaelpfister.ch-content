@@ -26,7 +26,7 @@ aiPrompt: |
   Du bist mein Assistent für die Evaluation eines E-Mail-Security-Gateways. Erstelle auf Basis der Pflichtenheft-Vorlage aus diesem Artikel eine auf unser Unternehmen zugeschnittene Version. Frage mich zuerst: 1. Branche und regulatorische Anforderungen (Schweiz: revDSG, Berufsgeheimnis, Bankkundengeheimnis; EU-Bezug ja/nein), 2. Anzahl Benutzer und erwartetes Mailvolumen, 3. Mailumgebung (Exchange OnPrem, Hybrid, Exchange Online, andere), 4. benötigte Verschlüsselungsarten (S/MIME, PGP, Domainverschlüsselung, Web-Portal für Ad-hoc-Empfänger), 5. Betriebsmodell (eigene Appliance, Hosting in der Schweiz, SaaS). Passe danach die MUSS- und SOLL-Anforderungen an, schlage eine Gewichtung für die Bewertungsmatrix vor und formuliere die Vorlage so, dass sie direkt als Beilage einer Offertanfrage taugt.
 ---
 
-Der Markt für E-Mail-Verschlüsselungsgateways ist in Bewegung: Produkte wechseln den Besitzer, Plattformen werden abgelöst, Hersteller richten ihre Roadmaps neu aus. Früher oder später landet deshalb bei vielen Unternehmen dieselbe Aufgabe auf dem Tisch: das bestehende Gateway ersetzen oder ein neues beschaffen, oft unter Zeitdruck und mit laufendem Betrieb im Rücken.
+Der Markt für E-Mail-Verschlüsselungsgateways ist in Bewegung: Produkte wechseln den Besitzer, Plattformen werden abgelöst, Hersteller richten ihre Roadmaps neu aus. Früher oder später fällt deshalb bei vielen Unternehmen dieselbe Aufgabe an: das bestehende Gateway ersetzen oder ein neues beschaffen, oft unter Zeitdruck und mit laufendem Betrieb im Rücken.
 
 Die typische Abkürzung, die Auswahl der Produktbroschüre des lautesten Anbieters zu überlassen, rächt sich in diesem Segment besonders. Ein E-Mail-Security-Gateway sitzt mitten im Mailfluss, berührt Schlüsselmaterial, Verzeichnisdienste und regulierte Daten. Wer hier ohne messbare Kriterien entscheidet, geht eine Wette ein. Dieser Artikel liefert den Kriterienkatalog in sechs Blöcken und ein Pflichtenheft, das Sie kopieren, anpassen und Ihrer Offertanfrage beilegen können.
 
@@ -145,7 +145,7 @@ Bewertungsmatrix (Vorschlag)
 
 ## Vom Pflichtenheft zur Entscheidung
 
-Drei Hinweise aus der Praxis: Erstens, testen Sie die zwei bestplatzierten Produkte mit einem Proof of Concept gegen Ihre realen Gegenstellen, bevor Sie unterschreiben; kein Papier ersetzt den Versuch mit echten Zertifikatsketten und echten Empfängern. Zweitens, holen Sie den Betrieb früh ins Boot: Die Personen, die das Gateway nachher warten, erkennen Betriebsrisiken schneller als jede Projektgruppe. Drittens, verhandeln Sie die Exit-Klauseln vor der Unterschrift; nach der Migration ist Ihre Verhandlungsposition weg.
+Drei Hinweise aus der Praxis: Erstens, testen Sie die zwei bestplatzierten Produkte mit einem Proof of Concept gegen Ihre realen Gegenstellen, bevor Sie unterschreiben; kein Papier ersetzt den Versuch mit echten Zertifikatsketten und echten Empfängern. Zweitens, beziehen Sie den Betrieb früh ein: Die Personen, die das Gateway nachher warten, erkennen Betriebsrisiken schneller als jede Projektgruppe. Drittens, verhandeln Sie die Exit-Klauseln vor der Unterschrift; nach der Migration ist Ihre Verhandlungsposition weg.
 
 Wie Sie bei einer erzwungenen Migration die Fragen an den bisherigen oder neuen Betreiber stellen, zeigt die [Checkliste zum Provider-Wechsel beim Massenmailing](https://rafaelpfister.ch/blog/massenmailing-provider-wechsel-checkliste). Weitere Vorlagen für Entscheider finden Sie auf der [Entscheider-Seite](https://rafaelpfister.ch/cio).
 

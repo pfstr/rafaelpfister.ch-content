@@ -94,9 +94,9 @@ Der zweite, vom SU-Release unabhängige Punkt: Der **Exchange Health Checker** (
 
 Diese beiden Gruppen stammen aus dem Berechtigungsmodell von Exchange 2000/2003 und sind seit Exchange 2007 deprecated. Mit Exchange 2007/2010 kam das Split-Permissions- bzw. RBAC-Modell, und seither werden sie schlicht nicht mehr verwendet. Das Problem: Verschwunden sind sie damit nicht. In vielen Verzeichnissen liegen sie seit rund zwei Jahrzehnten unbeachtet herum und tragen teilweise noch weitreichende ACLs aus dem alten Modell, also mehr Rechte, als eine moderne Exchange-Sicherheitsgruppe je hätte.
 
-Genau das macht sie zum Angriffsvektor. Eine dormante Gruppe mit stehenden, breiten Berechtigungen ist eine klassische Eskalationskette: Wer es schafft, sich (oder ein kontrolliertes Konto) in eine solche Gruppe aufzunehmen, erbt deren Rechte im Verzeichnis. Da niemand die Gruppe aktiv beobachtet, fällt eine solche Manipulation kaum auf.
+Genau das macht sie zum Angriffsvektor. Eine inaktive Gruppe mit stehenden, breiten Berechtigungen ist eine klassische Eskalationskette: Wer es schafft, sich (oder ein kontrolliertes Konto) in eine solche Gruppe aufzunehmen, erbt deren Rechte im Verzeichnis. Da niemand die Gruppe aktiv beobachtet, fällt eine solche Manipulation kaum auf.
 
-### Warum die meisten Admins sie nicht auf dem Schirm haben
+### Warum die meisten Admins sie nicht kennen
 
 Diese Gruppen sind aus mehreren Gründen ein blinder Fleck: Sie sind seit ~20 Jahren inaktiv, existierten meist schon vor der Amtszeit des heutigen Teams, überleben klaglos jede Migration und wurden vom Health Checker bisher nie angezeigt. Besonders heikel: Sie überstehen sogar die *vollständige* Ausserbetriebnahme von on-premises Exchange. Wer den letzten Exchange-Server entfernt hat, räumt in der Regel die Server-Objekte weg, übersieht aber diese Legacy-Gruppen komplett.
 

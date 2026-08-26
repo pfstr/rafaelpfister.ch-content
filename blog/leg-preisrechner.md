@@ -21,7 +21,7 @@ url: "https://rafaelpfister.ch/blog/leg-preisrechner"
 
 # Neues Tool: LEG-Preisrechner
 
-Die Rechnung, ob sich eine lokale Elektrizitätsgemeinschaft lohnt, ist keine hohe Mathematik: Netznutzungsabschlag minus Servicegebühr, mal LEG-Anteil, mal Jahresverbrauch. Trotzdem macht sie kaum jemand, bevor er die Beitrittserklärung unterschreibt, vermutlich weil die Zahlen dazu in drei verschiedenen Tarifblättern stehen. Der neue **[LEG-Preisrechner](/tools/leg-rechner)** macht sie in Sekunden.
+Die Rechnung, ob sich eine lokale Elektrizitätsgemeinschaft lohnt, ist einfach: Netznutzungsabschlag minus Servicegebühr, mal LEG-Anteil, mal Jahresverbrauch. Trotzdem macht sie kaum jemand, bevor er die Beitrittserklärung unterschreibt, vermutlich weil die Zahlen dazu in drei verschiedenen Tarifblättern stehen. Der neue **[LEG-Preisrechner](/tools/leg-rechner)** macht sie in Sekunden.
 
 ## Was der Rechner kann
 

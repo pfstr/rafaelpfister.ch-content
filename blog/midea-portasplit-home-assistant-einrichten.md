@@ -60,7 +60,7 @@ Der grösste Nachteil ist derzeit die Warnung des Entwicklers: Die für das Hinz
 
 ### Empfehlung
 
-Für eine reine PortaSplit-Installation würde ich mit `Midea Smart AC` beginnen und `Midea AC LAN` als Alternative im Hinterkopf behalten. `Midea Smart AC` ist enger auf Klimageräte zugeschnitten und dokumentiert die aktuellen PortaSplit-Funktionen explizit.
+Für eine reine PortaSplit-Installation würde ich mit `Midea Smart AC` beginnen und `Midea AC LAN` als Alternative kennen. `Midea Smart AC` ist enger auf Klimageräte zugeschnitten und dokumentiert die aktuellen PortaSplit-Funktionen explizit.
 
 Beide Integrationen gleichzeitig und dauerhaft mit demselben Gerät zu betreiben ist nicht sinnvoll. Mehrere parallele Verbindungen führen zu Statusproblemen, unnötigem Netzwerkverkehr und schwer nachvollziehbarem Verhalten.
 

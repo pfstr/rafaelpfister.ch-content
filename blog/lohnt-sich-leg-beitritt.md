@@ -56,7 +56,7 @@ So sieht es auch bei uns aus: gleicher Rechnungsbetrag wie vorher, einzig die Re
 
 ## Wann eine LEG finanziell doch etwas bringt
 
-Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Auswege:
+Das kostenneutrale Ergebnis gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Auswege:
 
 **1. Die 40-Prozent-Stufe.** Hängen alle Teilnehmer an derselben Trafostation, gilt der doppelte Abschlag: 40 Prozent von 7.50 Rp. sind 3.00 Rp., minus 1.50 Rp. Servicegebühr bleiben **1.50 Rp. pro LEG-kWh**. Bei 3'000 LEG-kWh im Jahr rund 49 Franken (inkl. MWST). Immer noch kein Vermögen, aber ein echter Rabatt. Quartier-LEGs sind darum finanziell interessanter als Gemeinde-LEGs.
 
@@ -75,7 +75,7 @@ Im Sommer, wenn der meiste Überschuss anfällt, nehmen sich beide Wege 2026 fas
 
 Finanziell beim Netzbetreiber-Modell: nein, es gibt schlicht nichts zu holen und nichts zu verlieren. Beim EKZ-Angebot gilt ein monatliches Rückkehrrecht ohne Wechselgebühren, und für den Reststrom bleibt man ohnehin Grundversorgungskunde. Zwei Dinge würde ich mir als Mitglied trotzdem jährlich ansehen:
 
-- **Das Verhältnis von Abschlag zu Servicegebühr.** 2026 ist es auf exakt null austariert. Ändert der Netzbetreiber Netztarif oder Gebühr fürs Folgejahr asymmetrisch, kann aus der Nullnummer ein kleines Plus oder Minus werden. Die Tarifblätter fürs Folgejahr erscheinen jeweils Ende August.
+- **Das Verhältnis von Abschlag zu Servicegebühr.** 2026 ist es auf exakt null austariert. Ändert der Netzbetreiber Netztarif oder Gebühr fürs Folgejahr asymmetrisch, kann aus dem kostenneutralen Ergebnis ein kleines Plus oder Minus werden. Die Tarifblätter fürs Folgejahr erscheinen jeweils Ende August.
 - **Kompatibilität mit Tarifwechseln.** Wer auf einen dynamischen Tarif oder ein anderes Energieprodukt wechseln will, sollte klären, ob sich das mit dem LEG-Bezug kombinieren lässt.
 
 ## Fazit

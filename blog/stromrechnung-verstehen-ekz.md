@@ -22,7 +22,7 @@ aiPrompt: "Ich füge dir gleich die Positionen meiner Schweizer Stromrechnung ei
 
 # Stromrechnung lesen und verstehen: Position für Position durch eine EKZ-Rechnung
 
-Die Stromrechnung gehört zu den Dokumenten, die man bezahlt, ohne sie zu lesen. Dabei ist sie erstaunlich ehrlich aufgebaut: Jede Position hat einen klaren Zweck, einen klaren Absender und eine klare Antwort auf die Frage, ob man daran etwas ändern kann. Wer die vier Blöcke einmal verstanden hat, liest jede Schweizer Stromrechnung, denn der Aufbau ist gesetzlich vorgegeben und bei allen Netzbetreibern gleich.
+Die Stromrechnung gehört zu den Dokumenten, die man bezahlt, ohne sie zu lesen. Dabei ist sie transparent aufgebaut: Jede Position hat einen klaren Zweck, einen klaren Absender und eine klare Antwort auf die Frage, ob man daran etwas ändern kann. Wer die vier Blöcke einmal verstanden hat, liest jede Schweizer Stromrechnung, denn der Aufbau ist gesetzlich vorgegeben und bei allen Netzbetreibern gleich.
 
 Dieser Beitrag geht Position für Position durch eine Rechnung der EKZ (Elektrizitätswerke des Kantons Zürich), unserem Netzbetreiber. Die interaktive Beispielrechnung unten folgt dem Aufbau unserer eigenen Quartalsrechnung; die Zahlen sind ein Musterhaushalt mit 1'800 kWh Verbrauch im Quartal, gerechnet mit den echten EKZ-Tarifen 2026.
 
@@ -34,7 +34,7 @@ Auf einer Stromrechnung stehen drei Absender, auch wenn nur einer sie verschickt
 2. **Der Netzbetreiber** transportiert den Strom. Das Netz ist ein reguliertes Monopol: Man kann es nicht wechseln, die ElCom prüft die Tarife. Dafür gibt es hier Wahltarife und seit 2026 den LEG-Abschlag.
 3. **Bund, Kanton und Gemeinde** hängen Abgaben an: Netzzuschlag, Stromreserve, kommunale Gebühren. Daran ändert weder Lieferant noch Netzbetreiber etwas.
 
-Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus über die Zeilen der Beispielrechnung (oder tippe sie an), um die Erklärung einzublenden:
+Mit diesem Raster wird jede Position unten einsortierbar. Fahren Sie mit der Maus über die Zeilen der Beispielrechnung (oder tippen Sie sie an), um die Erklärung einzublenden:
 
 <div class="sr-embed">
 <div class="sr-grid">
@@ -73,7 +73,7 @@ Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus üb
 </div>
 <aside class="sr-panel" aria-live="polite">
 <div class="sr-panel-inner" id="sr-panel-target">
-<p class="sr-panel-hint">Fahre über eine Position oder tippe sie an, um zu sehen, was dahintersteckt.</p>
+<p class="sr-panel-hint">Fahren Sie über eine Position oder tippen Sie sie an, um zu sehen, was dahintersteckt.</p>
 </div>
 </aside>
 </div>

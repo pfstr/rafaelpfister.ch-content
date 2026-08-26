@@ -53,7 +53,7 @@ Damit das einen Reboot übersteht, gehört es in eine systemd-Unit mit `Before=d
 
 ## 2. AppArmor prüft `fusermount3` auch im Container
 
-Mit korrekter Propagation kam die nächste Überraschung. Der Mount auf den geteilten Pfad scheiterte weiterhin:
+Mit korrekter Propagation trat das nächste Problem auf. Der Mount auf den geteilten Pfad scheiterte weiterhin:
 
 ```text
 NOTICE: mount helper error: fusermount3: mount failed: Permission denied

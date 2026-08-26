@@ -124,7 +124,7 @@ Der Blueprint passt nicht oder nur angepasst, wenn:
 
 ## 4. Annahmen
 
-Die Umsetzung setzt voraus: Schreibzugriff auf alle DNS-Zonen oder einen kurzen Draht zum DNS-Dienstleister; die Fähigkeit, Versandquellen zu inventarisieren (Fachbereiche antworten, Logs sind zugänglich); ein Budget für ein Report-Auswertungswerkzeug oder eine externe Auswertung; Rückendeckung der Geschäftsleitung für die Durchsetzungsphase, weil dort im Zweifel einzelne Altsysteme angepasst werden müssen. Fehlt eine dieser Voraussetzungen, adressieren Sie sie vor Projektstart; die Entscheidungsvorlage (Kapitel 10) holt die Rückendeckung formal ein.
+Die Umsetzung setzt voraus: Schreibzugriff auf alle DNS-Zonen oder einen direkten Kontakt zum DNS-Dienstleister; die Fähigkeit, Versandquellen zu inventarisieren (Fachbereiche antworten, Logs sind zugänglich); ein Budget für ein Report-Auswertungswerkzeug oder eine externe Auswertung; Rückendeckung der Geschäftsleitung für die Durchsetzungsphase, weil dort im Zweifel einzelne Altsysteme angepasst werden müssen. Fehlt eine dieser Voraussetzungen, adressieren Sie sie vor Projektstart; die Entscheidungsvorlage (Kapitel 10) holt die Rückendeckung formal ein.
 
 ## 5. Umsetzung
 
@@ -205,7 +205,7 @@ Wenige Kennzahlen, dafür konsequent erhoben und quartalsweise an das definierte
 
 ## 10. Entscheidungsvorlage
 
-Zum Schluss das Mitnahme-Werkzeug: der Antrag an die Geschäftsleitung auf einer halben Seite, in ihrer Sprache: Risiko, Nutzen, Kosten, Entscheid. Ersetzen Sie die Platzhalter mit den Resultaten aus Ihrem Domain-Check und den eingeholten Offerten.
+Zum Schluss die Vorlage für die Praxis: der Antrag an die Geschäftsleitung auf einer halben Seite, in ihrer Sprache: Risiko, Nutzen, Kosten, Entscheid. Ersetzen Sie die Platzhalter mit den Resultaten aus Ihrem Domain-Check und den eingeholten Offerten.
 
 ```text
 Antrag an die Geschäftsleitung: Schutz unserer Maildomains (DMARC)
@@ -270,7 +270,7 @@ Der [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) liefert den Ist-
 
 ## Einordnung
 
-DMARC ist kein Allheilmittel: Es schützt Ihre Domain vor Fälschung, nicht Ihre Mitarbeitenden vor Phishing von ähnlich klingenden Fremddomains, und es ersetzt weder Schulung noch technische Mailhygiene. Es ist aber die eine Massnahme in der E-Mail-Sicherheit, die gleichzeitig Betrug erschwert, die Zustellbarkeit sichert und pro Monat messbar ausweist, was sie verhindert. Mit diesem Blueprint lässt sie sich der Geschäftsleitung sauber beantragen und ohne Abschaltrisiko umsetzen.
+DMARC schützt nur Ihre Domain vor Fälschung, nicht Ihre Mitarbeitenden vor Phishing von ähnlich klingenden Fremddomains, und es ersetzt weder Schulung noch technische Mailhygiene. Es ist aber die eine Massnahme in der E-Mail-Sicherheit, die gleichzeitig Betrug erschwert, die Zustellbarkeit sichert und pro Monat messbar ausweist, was sie verhindert. Mit diesem Blueprint lässt sie sich der Geschäftsleitung sauber beantragen und ohne Abschaltrisiko umsetzen.
 
 ## Quellen
 

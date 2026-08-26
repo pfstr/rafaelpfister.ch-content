@@ -26,7 +26,7 @@ url: "https://rafaelpfister.ch/blog/smtp-verbindung-testen-linux"
 ---
 # SMTP unter Linux testen: von der TCP-Verbindung bis zur zugestellten Mail
 
-Wenn ein Mailgateway plötzlich nichts mehr zustellt, liefern die Logs der Appliance oft nur die Endstufe der Geschichte: eine Zustellung schlägt fehl, die Queue wächst, eine Fehlermeldung nennt einen Timeout. Woran es tatsächlich liegt, zeigt erst ein manueller Test von der Kommandozeile aus. SMTP ist ein Klartextprotokoll, das sich vollständig von Hand sprechen lässt, und genau das macht es zu einem der dankbarsten Diagnosewerkzeuge im Mailbetrieb.
+Wenn ein Mailgateway plötzlich nichts mehr zustellt, zeigen die Logs der Appliance oft nur das Endergebnis: eine Zustellung schlägt fehl, die Queue wächst, eine Fehlermeldung nennt einen Timeout. Woran es tatsächlich liegt, zeigt erst ein manueller Test von der Kommandozeile aus. SMTP ist ein Klartextprotokoll, das sich vollständig von Hand sprechen lässt, und genau das macht es zu einem Diagnosewerkzeug, das ohne Zusatzinstallation überall verfügbar ist.
 
 Der zweite Grund für den manuellen Test: Auf Appliances lässt sich meist nichts installieren. Kein Paketmanager, keine Root-Rechte, kein `swaks`. Alle folgenden Schritte funktionieren deshalb mit dem, was auf praktisch jedem Linux-System ohnehin vorhanden ist.
 
@@ -48,7 +48,7 @@ Die Diagnose gewinnt enorm, wenn Sie diese Ebenen nacheinander und einzeln prüf
 getent hosts relay.example.com
 ```
 
-Bleibt die Ausgabe leer, ist auf diesem Host kein Nameserver erreichbar oder er beantwortet externe Namen nicht. Das ist häufiger, als man denkt: Appliances in abgeschotteten Zonen bekommen oft nur einen internen Resolver, der ausschliesslich eigene Zonen kennt.
+Bleibt die Ausgabe leer, ist auf diesem Host kein Nameserver erreichbar oder er beantwortet externe Namen nicht. Das kommt in der Praxis regelmässig vor: Appliances in abgeschotteten Zonen bekommen oft nur einen internen Resolver, der ausschliesslich eigene Zonen kennt.
 
 ```bash
 cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf

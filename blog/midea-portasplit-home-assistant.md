@@ -53,7 +53,7 @@ Cloud liefert Token
 App verwendet Token lokal
 ```
 
-Die Home-Assistant-Integration hat genau diesen Cloud-Aufruf nachimplementiert. Sie meldet sich mit denselben Endpunkten und demselben Ablauf bei der Cloud an wie die App und erhält so denselben Token und Key. Das eigentliche Fundament ist also nicht eine clevere Berechnung, sondern ein nachgebauter Abruf. Fällt der Endpunkt weg, fällt auch die Beschaffung weg.
+Die Home-Assistant-Integration hat genau diesen Cloud-Aufruf nachimplementiert. Sie meldet sich mit denselben Endpunkten und demselben Ablauf bei der Cloud an wie die App und erhält so denselben Token und Key. Das eigentliche Fundament ist also ein nachgebauter Abruf, keine Berechnung. Fällt der Endpunkt weg, fällt auch die Beschaffung weg.
 
 ### Könnte man den Token aus der offiziellen App auslesen?
 

@@ -243,7 +243,7 @@ Bestimmen Sie die Quell-IP des einliefernden Systems und suchen Sie den Connecto
 
 Der zweite Weg ist das SMTP-Protokoll, und das verdient einen eigenen Abschnitt.
 
-## Das SMTP-Protokoll: der einzige Ort mit der ganzen Wahrheit
+## Das SMTP-Protokoll: die einzige vollständige Quelle
 
 Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die den Fallstrick oben auflöst.
 

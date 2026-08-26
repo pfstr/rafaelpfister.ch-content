@@ -788,7 +788,7 @@ Datum: 2026-08-20
 
 # Stromrechnung lesen und verstehen: Position für Position durch eine EKZ-Rechnung
 
-Die Stromrechnung gehört zu den Dokumenten, die man bezahlt, ohne sie zu lesen. Dabei ist sie erstaunlich ehrlich aufgebaut: Jede Position hat einen klaren Zweck, einen klaren Absender und eine klare Antwort auf die Frage, ob man daran etwas ändern kann. Wer die vier Blöcke einmal verstanden hat, liest jede Schweizer Stromrechnung, denn der Aufbau ist gesetzlich vorgegeben und bei allen Netzbetreibern gleich.
+Die Stromrechnung gehört zu den Dokumenten, die man bezahlt, ohne sie zu lesen. Dabei ist sie transparent aufgebaut: Jede Position hat einen klaren Zweck, einen klaren Absender und eine klare Antwort auf die Frage, ob man daran etwas ändern kann. Wer die vier Blöcke einmal verstanden hat, liest jede Schweizer Stromrechnung, denn der Aufbau ist gesetzlich vorgegeben und bei allen Netzbetreibern gleich.
 
 Dieser Beitrag geht Position für Position durch eine Rechnung der EKZ (Elektrizitätswerke des Kantons Zürich), unserem Netzbetreiber. Die interaktive Beispielrechnung unten folgt dem Aufbau unserer eigenen Quartalsrechnung; die Zahlen sind ein Musterhaushalt mit 1'800 kWh Verbrauch im Quartal, gerechnet mit den echten EKZ-Tarifen 2026.
 
@@ -800,7 +800,7 @@ Auf einer Stromrechnung stehen drei Absender, auch wenn nur einer sie verschickt
 2. **Der Netzbetreiber** transportiert den Strom. Das Netz ist ein reguliertes Monopol: Man kann es nicht wechseln, die ElCom prüft die Tarife. Dafür gibt es hier Wahltarife und seit 2026 den LEG-Abschlag.
 3. **Bund, Kanton und Gemeinde** hängen Abgaben an: Netzzuschlag, Stromreserve, kommunale Gebühren. Daran ändert weder Lieferant noch Netzbetreiber etwas.
 
-Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus über die Zeilen der Beispielrechnung (oder tippe sie an), um die Erklärung einzublenden:
+Mit diesem Raster wird jede Position unten einsortierbar. Fahren Sie mit der Maus über die Zeilen der Beispielrechnung (oder tippen Sie sie an), um die Erklärung einzublenden:
 
 <div class="sr-embed">
 <div class="sr-grid">
@@ -839,7 +839,7 @@ Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus üb
 </div>
 <aside class="sr-panel" aria-live="polite">
 <div class="sr-panel-inner" id="sr-panel-target">
-<p class="sr-panel-hint">Fahre über eine Position oder tippe sie an, um zu sehen, was dahintersteckt.</p>
+<p class="sr-panel-hint">Fahren Sie über eine Position oder tippen Sie sie an, um zu sehen, was dahintersteckt.</p>
 </div>
 </aside>
 </div>
@@ -1076,7 +1076,7 @@ So sieht es auch bei uns aus: gleicher Rechnungsbetrag wie vorher, einzig die Re
 
 ## Wann eine LEG finanziell doch etwas bringt
 
-Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Auswege:
+Das kostenneutrale Ergebnis gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Auswege:
 
 **1. Die 40-Prozent-Stufe.** Hängen alle Teilnehmer an derselben Trafostation, gilt der doppelte Abschlag: 40 Prozent von 7.50 Rp. sind 3.00 Rp., minus 1.50 Rp. Servicegebühr bleiben **1.50 Rp. pro LEG-kWh**. Bei 3'000 LEG-kWh im Jahr rund 49 Franken (inkl. MWST). Immer noch kein Vermögen, aber ein echter Rabatt. Quartier-LEGs sind darum finanziell interessanter als Gemeinde-LEGs.
 
@@ -1095,7 +1095,7 @@ Im Sommer, wenn der meiste Überschuss anfällt, nehmen sich beide Wege 2026 fas
 
 Finanziell beim Netzbetreiber-Modell: nein, es gibt schlicht nichts zu holen und nichts zu verlieren. Beim EKZ-Angebot gilt ein monatliches Rückkehrrecht ohne Wechselgebühren, und für den Reststrom bleibt man ohnehin Grundversorgungskunde. Zwei Dinge würde ich mir als Mitglied trotzdem jährlich ansehen:
 
-- **Das Verhältnis von Abschlag zu Servicegebühr.** 2026 ist es auf exakt null austariert. Ändert der Netzbetreiber Netztarif oder Gebühr fürs Folgejahr asymmetrisch, kann aus der Nullnummer ein kleines Plus oder Minus werden. Die Tarifblätter fürs Folgejahr erscheinen jeweils Ende August.
+- **Das Verhältnis von Abschlag zu Servicegebühr.** 2026 ist es auf exakt null austariert. Ändert der Netzbetreiber Netztarif oder Gebühr fürs Folgejahr asymmetrisch, kann aus dem kostenneutralen Ergebnis ein kleines Plus oder Minus werden. Die Tarifblätter fürs Folgejahr erscheinen jeweils Ende August.
 - **Kompatibilität mit Tarifwechseln.** Wer auf einen dynamischen Tarif oder ein anderes Energieprodukt wechseln will, sollte klären, ob sich das mit dem LEG-Bezug kombinieren lässt.
 
 ## Fazit
@@ -1115,7 +1115,7 @@ Datum: 2026-08-20
 
 # Neues Tool: LEG-Preisrechner
 
-Die Rechnung, ob sich eine lokale Elektrizitätsgemeinschaft lohnt, ist keine hohe Mathematik: Netznutzungsabschlag minus Servicegebühr, mal LEG-Anteil, mal Jahresverbrauch. Trotzdem macht sie kaum jemand, bevor er die Beitrittserklärung unterschreibt, vermutlich weil die Zahlen dazu in drei verschiedenen Tarifblättern stehen. Der neue **[LEG-Preisrechner](/tools/leg-rechner)** macht sie in Sekunden.
+Die Rechnung, ob sich eine lokale Elektrizitätsgemeinschaft lohnt, ist einfach: Netznutzungsabschlag minus Servicegebühr, mal LEG-Anteil, mal Jahresverbrauch. Trotzdem macht sie kaum jemand, bevor er die Beitrittserklärung unterschreibt, vermutlich weil die Zahlen dazu in drei verschiedenen Tarifblättern stehen. Der neue **[LEG-Preisrechner](/tools/leg-rechner)** macht sie in Sekunden.
 
 ## Was der Rechner kann
 
@@ -1593,7 +1593,7 @@ Bestimmen Sie die Quell-IP des einliefernden Systems und suchen Sie den Connecto
 
 Der zweite Weg ist das SMTP-Protokoll, und das verdient einen eigenen Abschnitt.
 
-## Das SMTP-Protokoll: der einzige Ort mit der ganzen Wahrheit
+## Das SMTP-Protokoll: die einzige vollständige Quelle
 
 Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die den Fallstrick oben auflöst.
 
@@ -1988,7 +1988,7 @@ IP            Name
 203.0.113.9   (kein PTR)
 ```
 
-Ein fehlender PTR ist kein Beweis für etwas Böses, aber er ist ein guter Grund, genauer hinzusehen. Nehmen Sie sich für solche Adressen die zugehörigen Nachrichten vor:
+Ein fehlender PTR ist für sich genommen kein Hinweis auf ein Problem, aber er ist ein guter Grund, genauer hinzusehen. Nehmen Sie sich für solche Adressen die zugehörigen Nachrichten vor:
 
 ```powershell
 Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -ResultSize 5000 |
@@ -3715,7 +3715,7 @@ Datum: 2026-07-31
 
 # SMTP unter Linux testen: von der TCP-Verbindung bis zur zugestellten Mail
 
-Wenn ein Mailgateway plötzlich nichts mehr zustellt, liefern die Logs der Appliance oft nur die Endstufe der Geschichte: eine Zustellung schlägt fehl, die Queue wächst, eine Fehlermeldung nennt einen Timeout. Woran es tatsächlich liegt, zeigt erst ein manueller Test von der Kommandozeile aus. SMTP ist ein Klartextprotokoll, das sich vollständig von Hand sprechen lässt, und genau das macht es zu einem der dankbarsten Diagnosewerkzeuge im Mailbetrieb.
+Wenn ein Mailgateway plötzlich nichts mehr zustellt, zeigen die Logs der Appliance oft nur das Endergebnis: eine Zustellung schlägt fehl, die Queue wächst, eine Fehlermeldung nennt einen Timeout. Woran es tatsächlich liegt, zeigt erst ein manueller Test von der Kommandozeile aus. SMTP ist ein Klartextprotokoll, das sich vollständig von Hand sprechen lässt, und genau das macht es zu einem Diagnosewerkzeug, das ohne Zusatzinstallation überall verfügbar ist.
 
 Der zweite Grund für den manuellen Test: Auf Appliances lässt sich meist nichts installieren. Kein Paketmanager, keine Root-Rechte, kein `swaks`. Alle folgenden Schritte funktionieren deshalb mit dem, was auf praktisch jedem Linux-System ohnehin vorhanden ist.
 
@@ -3737,7 +3737,7 @@ Die Diagnose gewinnt enorm, wenn Sie diese Ebenen nacheinander und einzeln prüf
 getent hosts relay.example.com
 ```
 
-Bleibt die Ausgabe leer, ist auf diesem Host kein Nameserver erreichbar oder er beantwortet externe Namen nicht. Das ist häufiger, als man denkt: Appliances in abgeschotteten Zonen bekommen oft nur einen internen Resolver, der ausschliesslich eigene Zonen kennt.
+Bleibt die Ausgabe leer, ist auf diesem Host kein Nameserver erreichbar oder er beantwortet externe Namen nicht. Das kommt in der Praxis regelmässig vor: Appliances in abgeschotteten Zonen bekommen oft nur einen internen Resolver, der ausschliesslich eigene Zonen kennt.
 
 ```bash
 cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
@@ -4259,7 +4259,7 @@ Damit das einen Reboot übersteht, gehört es in eine systemd-Unit mit `Before=d
 
 ## 2. AppArmor prüft `fusermount3` auch im Container
 
-Mit korrekter Propagation kam die nächste Überraschung. Der Mount auf den geteilten Pfad scheiterte weiterhin:
+Mit korrekter Propagation trat das nächste Problem auf. Der Mount auf den geteilten Pfad scheiterte weiterhin:
 
 ```text
 NOTICE: mount helper error: fusermount3: mount failed: Permission denied
@@ -4393,7 +4393,7 @@ Der Kern des Problems liegt eine Ebene tiefer als Client oder SDK: **Proton kenn
 
 Zum Vergleich: Bei S3-kompatiblen Speichern sind Zugriffsschlüssel-Paare der Normalfall, widerrufbar und auf Buckets oder Präfixe einschränkbar. Google und Microsoft kennen App-Passwörter und Service-Accounts. Bei Proton gilt hingegen Alles oder nichts: Wer einem Server Zugriff auf einen Ordner geben will, gibt ihm das ganze Konto.
 
-Fairerweise ist das bei einem Ende-zu-Ende-verschlüsselten Dienst schwieriger als bei S3, weil ein begrenzter Zugang auch begrenztes Schlüsselmaterial bedeuten müsste. Die SDK-Sessions zeigen aber, dass Proton solche Konstrukte beherrscht. Eine Session ist bereits ein abgeleiteter, widerrufbarer Zugang. Ein offizieller „Maschinen-Token für genau diesen Ordner, nur lesend" wäre der grösste einzelne Fortschritt für den Server-Einsatz, weit vor jedem Client.
+Bei einem Ende-zu-Ende-verschlüsselten Dienst ist das schwieriger als bei S3, weil ein begrenzter Zugang auch begrenztes Schlüsselmaterial bedeuten müsste. Die SDK-Sessions zeigen aber, dass Proton solche Konstrukte beherrscht. Eine Session ist bereits ein abgeleiteter, widerrufbarer Zugang. Ein offizieller „Maschinen-Token für genau diesen Ordner, nur lesend" wäre der grösste einzelne Fortschritt für den Server-Einsatz, weit vor jedem Client.
 
 ## Empfehlung nach Anwendungsfall
 
@@ -4427,7 +4427,7 @@ Datum: 2026-07-26
 
 Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses Verzeichnis wächst mit jedem Scan. Dabei braucht Paperless die Dateien im Alltag kaum: Die Suche läuft gegen die Datenbank, die Liste zeigt Vorschaubilder, und die eigentliche Datei wird erst beim Öffnen gelesen. Also habe ich getestet, ob sich die Ablage in einen Clouddienst verlagern lässt. Das Werkzeug dafür ist Rclone, mit dem Plex-Nutzer seit Jahren ganze Mediensammlungen aus der Cloud einbinden.
 
-Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie du das Setup selbst aufsetzt. Die technischen Details stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik.
+Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Details stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik.
 
 ## Das Prinzip: Hot Storage bleibt lokal, Cold Storage liegt in der Cloud
 
@@ -4438,7 +4438,7 @@ Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist i
 | **Dokumentdateien** | **Cloud** | werden selten gelesen |
 | Cache (zuletzt geöffnete Dokumente) | lokal, begrenzt | wiederholte Zugriffe bleiben schnell |
 
-In Paperless führt ausgerechnet der Verzeichnisname in die Irre: `archive/` ist **kein Cold Storage**, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird. Trotz des Namens gehört sie zum Hot Storage. Die selten benötigten Originale unter `originals/` sind der eigentliche Cold Storage. Wenn du maximal sparen willst, schaltest du die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
+In Paperless führt ausgerechnet der Verzeichnisname in die Irre: `archive/` ist **kein Cold Storage**, sondern enthält die PDF/A-Version, die bei jeder Ansicht ausgeliefert wird. Trotz des Namens gehört sie zum Hot Storage. Die selten benötigten Originale unter `originals/` sind der eigentliche Cold Storage. Wenn Sie maximal sparen wollen, schalten Sie die Archiv-Kopie mit `PAPERLESS_ARCHIVE_FILE_GENERATION=never` ganz ab; die Volltextsuche bleibt davon unberührt, weil der Text in der Datenbank liegt.
 
 Eine eigene Cloud-Anbindung bringt Paperless-ngx übrigens nicht mit, weder S3 noch `django-storages`. Ein Dateisystem-Mount über Rclone ist derzeit der einzige Weg, und der funktioniert mit jedem der über 70 von Rclone unterstützten Dienste. Proton Drive war meine Testwahl wegen der Ende-zu-Ende-Verschlüsselung; ein S3-kompatibler Speicher ist die robustere Alternative.
 
@@ -4457,7 +4457,7 @@ Getestet mit einer isolierten Paperless-Instanz, 40 generierten Test-PDFs (13.9 
 
 Der lokale Speicherbedarf ist damit von der Grösse des Archivs entkoppelt: Die Sammlung darf wachsen, die Platte nicht.
 
-## So richtest du es ein
+## So richten Sie es ein
 
 Die komplette Konfiguration liegt als Vorlage auf GitHub: [pfstr/paperless-cloud-storage](https://github.com/pfstr/paperless-cloud-storage). Auf dem Server:
 
@@ -4471,20 +4471,20 @@ sudo ./setup.sh      # einmalig, bereitet den Host vor (einziger Root-Schritt)
 Der Wizard fragt den Clouddienst ab (Proton, S3, Backblaze B2, WebDAV, SFTP oder „Not in the list" für jeden anderen Rclone-Dienst), prüft die Verbindung mit einem echten Hoch- und Runterlade-Test und startet den Storage-Container. Danach:
 
 - **Neuinstallation:** `docker compose -f paperless.yml up -d`, fertig.
-- **Bestehende Paperless-Instanz:** Datenbank und Einstellungen bleiben unangetastet; die Anleitung [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) beschreibt den Upload der Bestandsdokumente und die nötige Änderung an deiner Compose-Datei.
+- **Bestehende Paperless-Instanz:** Datenbank und Einstellungen bleiben unangetastet; die Anleitung [RETROFIT.md](https://github.com/pfstr/paperless-cloud-storage/blob/main/docs/RETROFIT.md) beschreibt den Upload der Bestandsdokumente und die nötige Änderung an Ihrer Compose-Datei.
 
 Auf ein Webinterface habe ich bewusst verzichtet. Rclones Web-GUI war zunächst im Einsatz, aber SSH-Tunnel, CORS und flüchtige Mounts machten sie schlimmer als die Kommandozeile, die sie ersetzen sollte. Drei Fragen im Terminal sind schneller.
 
 ## Damit der Mount im Alltag stabil bleibt
 
-Die Vorlage kümmert sich um vier Punkte, die du bei einem eigenen Aufbau ebenfalls berücksichtigen musst:
+Die Vorlage kümmert sich um vier Punkte, die Sie bei einem eigenen Aufbau ebenfalls berücksichtigen müssen:
 
 1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers, sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
 2. **Paperless anhalten, wenn der Mount fehlt.** Sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, und der zurückkehrende Mount überdeckt sie unsichtbar. Ein Watchdog-Skript liegt in der Vorlage bei.
 3. **Ein Konto, das sich unbeaufsichtigt anmelden kann.** Bei Proton heisst das: den TOTP-Schlüssel in der Rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`), denn die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.
 
-## Was du vor dem Einsatz abwägen solltest
+## Was Sie vor dem Einsatz abwägen sollten
 
 Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist. Fällt die Maschine genau in diesem Fenster aus, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und Rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Weil Langzeitdaten aus dem Dauerbetrieb noch fehlen, ist die Vorlage als experimentell gekennzeichnet.
 
@@ -4492,7 +4492,7 @@ Wie die Messwerte zustande kamen, welche Ausfälle simuliert wurden und wie sich
 
 ## Fazit
 
-Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagstauglich: knapp zwei Sekunden beim ersten Öffnen, danach Cache-Geschwindigkeit, Suche und Oberfläche bleiben cloud-unabhängig, und der Aufbau heilt sich nach Ausfällen selbst. Wenn du auf einem normal dimensionierten Server nur ein paar Gigabyte sparen willst, solltest du allerdings nachrechnen: In meinem Fall belegte die gesamte Ablage 71 MB, das Betriebssystem mehrere Gigabyte. Der Gewinn liegt nicht im sofort gesparten Platz, sondern darin, dass der Bestand wachsen darf, ohne dass die Platte mitwachsen muss.
+Paperless-ngx auf einer kleinen Platte mit Cloud-Ablage ist machbar und alltagstauglich: knapp zwei Sekunden beim ersten Öffnen, danach Cache-Geschwindigkeit, Suche und Oberfläche bleiben cloud-unabhängig, und der Aufbau heilt sich nach Ausfällen selbst. Wenn Sie auf einem normal dimensionierten Server nur ein paar Gigabyte sparen wollen, sollten Sie allerdings nachrechnen: In meinem Fall belegte die gesamte Ablage 71 MB, das Betriebssystem mehrere Gigabyte. Der Gewinn liegt nicht im sofort gesparten Platz, sondern darin, dass der Bestand wachsen darf, ohne dass die Platte mitwachsen muss.
 
 ## Quellen
 
@@ -4515,13 +4515,13 @@ Ein Rclone-Mount ist schnell eingerichtet. Das Remote erscheint als Verzeichnis,
 
 Sobald ein Dienst auf den Mount zugreift, kommen weitere Fragen dazu: Wie lange dauert der erste Zugriff auf eine Datei? Welche Zugriffe bedient der lokale Cache? Was geschieht mit einer noch nicht hochgeladenen Datei, wenn Rclone abstürzt? Sieht ein laufender Container den neu aufgebauten Mount wieder? Und wie reagiert der Dienst, wenn die Cloud vorübergehend nicht erreichbar ist?
 
-Dieser Artikel liefert dafür einen allgemeinen Testplan. Du kannst ihn für ein Dokumentenarchiv, einen Medienserver, eine Fotoverwaltung oder jeden anderen Dienst verwenden, der selten benötigte Dateien über Rclone aus einem Cold Storage bezieht.
+Dieser Artikel liefert dafür einen allgemeinen Testplan. Sie können ihn für ein Dokumentenarchiv, einen Medienserver, eine Fotoverwaltung oder jeden anderen Dienst verwenden, der selten benötigte Dateien über Rclone aus einem Cold Storage bezieht.
 
-## Zuerst festlegen, was du erreichen willst
+## Zuerst festlegen, was Sie erreichen wollen
 
 Cold Storage bedeutet nicht automatisch dasselbe für jede Anwendung. Ein Medienserver liest grosse Dateien meist sequenziell. Eine Fotoverwaltung lädt viele kleine Vorschaudaten und springt an verschiedene Stellen. Ein Dokumentenarchiv öffnet vergleichsweise kleine Dateien, dafür aber oft nur einmal.
 
-Notiere vor dem Test die wichtigsten Eigenschaften deines echten Bestands:
+Notieren Sie vor dem Test die wichtigsten Eigenschaften Ihres echten Bestands:
 
 - typische Dateigrösse sowie grösste vorkommende Datei
 - Anzahl Dateien pro Verzeichnis
@@ -4547,9 +4547,9 @@ rclone test makefiles ./testdata \
   --max-file-size 32M
 ```
 
-Passe Anzahl und Grössen an deinen echten Bestand an. Teste nicht nur Durchschnittsdateien. Einige sehr kleine Dateien zeigen, wie teuer Metadatenzugriffe sind; einige grosse Dateien machen Durchsatz, Read-Ahead und Cache-Verhalten sichtbar.
+Passen Sie Anzahl und Grössen an Ihren echten Bestand an. Testen Sie nicht nur Durchschnittsdateien. Einige sehr kleine Dateien zeigen, wie teuer Metadatenzugriffe sind; einige grosse Dateien machen Durchsatz, Read-Ahead und Cache-Verhalten sichtbar.
 
-Ergänze ausserdem Dateinamen, die in der Praxis Probleme verursachen können:
+Ergänzen Sie ausserdem Dateinamen, die in der Praxis Probleme verursachen können:
 
 ```bash
 mkdir -p "testdata/Sonderfälle/Unterordner"
@@ -4561,11 +4561,11 @@ printf 'Kleinschreibung\n' > "testdata/Sonderfälle/test.txt"
 
 Der letzte Test ist besonders wichtig, wenn lokales Dateisystem und Cloud-Backend Gross- und Kleinschreibung unterschiedlich behandeln.
 
-Wenn dein Dienst nur bestimmte Formate akzeptiert, reichen beliebige Binärdateien nicht. Erzeuge dann zusätzlich synthetische Dateien in genau diesen Formaten. Bei Paperless-ngx waren das PDFs mit echter Textebene, damit der Test nicht versehentlich die OCR-Leistung statt des Speicherpfads misst. Bei einer Fotoverwaltung gehören unterschiedliche Bildgrössen und Formate in den Bestand, bei einem Medienserver kurze Dateien mit verschiedenen Codecs.
+Wenn Ihr Dienst nur bestimmte Formate akzeptiert, reichen beliebige Binärdateien nicht. Erzeugen Sie dann zusätzlich synthetische Dateien in genau diesen Formaten. Bei Paperless-ngx waren das PDFs mit echter Textebene, damit der Test nicht versehentlich die OCR-Leistung statt des Speicherpfads misst. Bei einer Fotoverwaltung gehören unterschiedliche Bildgrössen und Formate in den Bestand, bei einem Medienserver kurze Dateien mit verschiedenen Codecs.
 
 ## Eine Referenzmessung ohne Mount
 
-Bevor FUSE und VFS-Cache ins Spiel kommen, solltest du das Backend direkt messen. Kopiere den Bestand mit Rclone ins Test-Remote und speichere ein ausführliches Protokoll:
+Bevor FUSE und VFS-Cache ins Spiel kommen, sollten Sie das Backend direkt messen. Kopieren Sie den Bestand mit Rclone ins Test-Remote und speichern Sie ein ausführliches Protokoll:
 
 ```bash
 rclone copy ./testdata remote:cold-storage-test \
@@ -4575,7 +4575,7 @@ rclone copy ./testdata remote:cold-storage-test \
   --log-level INFO
 ```
 
-Prüfe danach, ob Quelle und Ziel übereinstimmen:
+Prüfen Sie danach, ob Quelle und Ziel übereinstimmen:
 
 ```bash
 rclone check ./testdata remote:cold-storage-test \
@@ -4585,11 +4585,11 @@ rclone check ./testdata remote:cold-storage-test \
 
 Mit `--download` liest Rclone die Daten tatsächlich und vergleicht sie, auch wenn das Backend keine passenden Hashes bereitstellt. Das dauert länger, liefert aber eine brauchbare Ausgangsbasis für den späteren Integritätstest.
 
-Halte Upload-Zeit, Transferrate, Anzahl Retries und API-Fehler fest. Wenn bereits der direkte Zugriff instabil ist, kann der Mount das nicht reparieren.
+Halten Sie Upload-Zeit, Transferrate, Anzahl Retries und API-Fehler fest. Wenn bereits der direkte Zugriff instabil ist, kann der Mount das nicht reparieren.
 
 ## Den Test-Mount vom produktiven Cache trennen
 
-Verwende für die Messung einen eigenen Mountpunkt und ein eigenes Cache-Verzeichnis:
+Verwenden Sie für die Messung einen eigenen Mountpunkt und ein eigenes Cache-Verzeichnis:
 
 ```bash
 rclone mount remote:cold-storage-test /mnt/rclone-test \
@@ -4602,15 +4602,15 @@ rclone mount remote:cold-storage-test /mnt/rclone-test \
   --log-level INFO
 ```
 
-Die Werte sind ein Beispiel und keine allgemeine Empfehlung. Entscheidend ist die Trennung: Ein leerer Test-Cache macht Cold Reads reproduzierbar, ohne dass du Dateien aus einem laufenden produktiven Cache löschen musst.
+Die Werte sind ein Beispiel und keine allgemeine Empfehlung. Entscheidend ist die Trennung: Ein leerer Test-Cache macht Cold Reads reproduzierbar, ohne dass Sie Dateien aus einem laufenden produktiven Cache löschen müssen.
 
 `--vfs-cache-mode full` ist für Anwendungen meist der aufschlussreichste Testmodus. Rclone puffert dabei Lese- und Schreibzugriffe lokal und kann Dateizugriffe besser abbilden, die bei einem reinen Objektspeicher nicht möglich wären. Die zusätzliche Kompatibilität kostet lokalen Speicherplatz.
 
 ## Immer aus Sicht des echten Dienstes prüfen
 
-Ein Mount kann für deinen Benutzer funktionieren und für den Dienst trotzdem unbrauchbar sein. Häufige Ursachen sind eine andere Benutzer-ID, fehlendes `--allow-other`, Container-Grenzen oder eine falsche Mount-Propagation.
+Ein Mount kann für Ihren Benutzer funktionieren und für den Dienst trotzdem unbrauchbar sein. Häufige Ursachen sind eine andere Benutzer-ID, fehlendes `--allow-other`, Container-Grenzen oder eine falsche Mount-Propagation.
 
-Führe deshalb mindestens einen vollständigen Lesezugriff mit derselben Identität aus, unter der später die Anwendung läuft:
+Führen Sie deshalb mindestens einen vollständigen Lesezugriff mit derselben Identität aus, unter der später die Anwendung läuft:
 
 ```bash
 sudo -u <service-user> sha256sum /mnt/rclone-test/pfad/zur/datei
@@ -4623,7 +4623,7 @@ docker exec --user <uid>:<gid> <app-container> \
   sha256sum /pfad/im/container/datei
 ```
 
-Noch besser ist ein echter Anwendungstest. Öffne die Datei über die Weboberfläche oder API des Dienstes. Nur so bemerkst du, ob die Anwendung beispielsweise mehrere parallele Reads startet, an das Dateiende springt oder zusätzliche Metadaten erwartet.
+Noch besser ist ein echter Anwendungstest. Öffnen Sie die Datei über die Weboberfläche oder API des Dienstes. Nur so bemerken Sie, ob die Anwendung beispielsweise mehrere parallele Reads startet, an das Dateiende springt oder zusätzliche Metadaten erwartet.
 
 ## Cold Reads und Warm Reads getrennt messen
 
@@ -4635,7 +4635,7 @@ Bei `--vfs-cache-mode full` liegen zwischen Anwendung und Cloud drei Ebenen:
 | VFS-Cache | lokal gespeicherte Bereiche bereits gelesener Dateien |
 | Linux-Page-Cache | kürzlich verwendete Daten im RAM |
 
-Für einen Cold Read nimmst du eine Datei, deren Inhalt noch nie über den Test-Mount gelesen wurde. Beim direkt anschliessenden Warm Read liegt sie im VFS-Cache und meistens zusätzlich im RAM.
+Für einen Cold Read nehmen Sie eine Datei, deren Inhalt noch nie über den Test-Mount gelesen wurde. Beim direkt anschliessenden Warm Read liegt sie im VFS-Cache und meistens zusätzlich im RAM.
 
 ```bash
 measure_read() {
@@ -4651,9 +4651,9 @@ measure_read "/mnt/rclone-test/grosse-datei.bin" "Cold Read"
 measure_read "/mnt/rclone-test/grosse-datei.bin" "Warm Read"
 ```
 
-Miss nicht nur eine Datei. Verwende mindestens zehn bisher ungelesene Dateien verschiedener Grösse und notiere Median, langsamsten Wert und Dateigrösse. Ein einzelner Bestwert ist keine Entscheidungsgrundlage.
+Messen Sie nicht nur eine Datei. Verwenden Sie mindestens zehn bisher ungelesene Dateien verschiedener Grösse und notieren Sie Median, langsamsten Wert und Dateigrösse. Ein einzelner Bestwert ist keine Entscheidungsgrundlage.
 
-Ein Warm Read ist kein reiner Festplattentest, weil der Kernel Teile der Datei im RAM halten kann. Für die meisten Cold-Storage-Szenarien ist das kein Problem. Entscheidend ist, was ein Benutzer beim ersten und beim wiederholten Öffnen erlebt. Wenn du RAM und lokale Platte getrennt beurteilen willst, musst du den Page-Cache zusätzlich kontrollieren und nachweislich räumen.
+Ein Warm Read ist kein reiner Festplattentest, weil der Kernel Teile der Datei im RAM halten kann. Für die meisten Cold-Storage-Szenarien ist das kein Problem. Entscheidend ist, was ein Benutzer beim ersten und beim wiederholten Öffnen erlebt. Wenn Sie RAM und lokale Platte getrennt beurteilen wollen, müssen Sie den Page-Cache zusätzlich kontrollieren und nachweislich räumen.
 
 ## Nicht nur vollständige Lesezugriffe testen
 
@@ -4664,15 +4664,15 @@ Ein Warm Read ist kein reiner Festplattentest, weil der Kernel Teile der Datei i
 - Ein Archivprogramm kann zuerst das Dateiende lesen.
 - Mehrere Worker können gleichzeitig auf verschiedene Dateien zugreifen.
 
-Teste diese Abläufe mit der tatsächlichen Anwendung. Beobachte parallel das Rclone-Protokoll und den Cache. Bei grossen Dateien ist interessant, wie viel Rclone wirklich lokal ablegt und ob `--vfs-read-ahead` zum Zugriffsmuster passt.
+Testen Sie diese Abläufe mit der tatsächlichen Anwendung. Beobachten Sie parallel das Rclone-Protokoll und den Cache. Bei grossen Dateien ist interessant, wie viel Rclone wirklich lokal ablegt und ob `--vfs-read-ahead` zum Zugriffsmuster passt.
 
 Ein Rclone-Mount ist ausserdem kein sinnvoller Speicherort für Datenbanken oder andere Dateien, die verlässliches Locking und häufige Änderungen innerhalb derselben Datei benötigen. Der VFS-Layer gleicht Unterschiede zwischen Dateisystem und Objektspeicher aus, macht aus dem Backend aber kein lokales Dateisystem.
 
 ## Den Schreibpfad separat abnehmen
 
-Wenn dein Dienst nur liest, mounte das Remote nach Möglichkeit schreibgeschützt. Muss er schreiben, teste Erstellen, Überschreiben, Umbenennen und Löschen einzeln.
+Wenn Ihr Dienst nur liest, mounten Sie das Remote nach Möglichkeit schreibgeschützt. Muss er schreiben, testen Sie Erstellen, Überschreiben, Umbenennen und Löschen einzeln.
 
-Eine geschriebene Datei erscheint nicht zwingend sofort im Remote. Bei aktivem VFS-Cache beginnt der Upload erst, nachdem die Datei geschlossen wurde und `--vfs-write-back` abgelaufen ist. Prüfe deshalb beide Zustände:
+Eine geschriebene Datei erscheint nicht zwingend sofort im Remote. Bei aktivem VFS-Cache beginnt der Upload erst, nachdem die Datei geschlossen wurde und `--vfs-write-back` abgelaufen ist. Prüfen Sie deshalb beide Zustände:
 
 1. Die Anwendung hat die Datei erfolgreich geschlossen.
 2. Die Datei ist anschliessend über einen direkten Rclone-Zugriff im Remote lesbar.
@@ -4684,15 +4684,15 @@ printf 'writeback-test\n' > /mnt/rclone-test/writeback-test.txt
 rclone cat remote:cold-storage-test/writeback-test.txt
 ```
 
-Wiederhole den Test mit einer grossen Datei und beende Rclone während des noch laufenden Uploads. Starte danach mit demselben Cache-Verzeichnis neu und kontrolliere, ob der Upload fortgesetzt wird. Genau dieses Zeitfenster entscheidet darüber, wie viele Daten bei einem Serverausfall gefährdet sind.
+Wiederholen Sie den Test mit einer grossen Datei und beenden Sie Rclone während des noch laufenden Uploads. Starten Sie danach mit demselben Cache-Verzeichnis neu und kontrollieren Sie, ob der Upload fortgesetzt wird. Genau dieses Zeitfenster entscheidet darüber, wie viele Daten bei einem Serverausfall gefährdet sind.
 
-Teste auch Umbenennen und Löschen. Viele Cloud-Backends bilden diese Operationen anders ab als ein lokales Dateisystem. Relevant ist nicht nur, ob der Befehl erfolgreich endet, sondern wann die Änderung bei einem direkten Zugriff auf das Remote und bei weiteren Clients sichtbar wird.
+Testen Sie auch Umbenennen und Löschen. Viele Cloud-Backends bilden diese Operationen anders ab als ein lokales Dateisystem. Relevant ist nicht nur, ob der Befehl erfolgreich endet, sondern wann die Änderung bei einem direkten Zugriff auf das Remote und bei weiteren Clients sichtbar wird.
 
 ## Änderungen ausserhalb des Mounts testen
 
 Dateien können über die Weboberfläche des Anbieters, einen zweiten Rclone-Prozess oder einen anderen Server verändert werden. Der Mount sieht solche Änderungen nicht immer sofort, weil Verzeichnisinformationen zwischengespeichert werden.
 
-Lege deshalb mit einem zweiten Rclone-Aufruf eine Datei direkt im Remote an:
+Legen Sie deshalb mit einem zweiten Rclone-Aufruf eine Datei direkt im Remote an:
 
 ```bash
 printf 'external-change\n' > external-change.txt
@@ -4700,9 +4700,9 @@ rclone copyto external-change.txt \
   remote:cold-storage-test/external-change.txt
 ```
 
-Miss, wann die Datei im Mount erscheint. Wiederhole den Test für Änderung und Löschung. Das Ergebnis hängt vom Backend, dessen Polling-Unterstützung sowie `--poll-interval` und `--dir-cache-time` ab. Wenn die Anwendung aktuelle Änderungen sofort sehen muss, gehört dieses Verhalten ausdrücklich in die Abnahmekriterien.
+Messen Sie, wann die Datei im Mount erscheint. Wiederholen Sie den Test für Änderung und Löschung. Das Ergebnis hängt vom Backend, dessen Polling-Unterstützung sowie `--poll-interval` und `--dir-cache-time` ab. Wenn die Anwendung aktuelle Änderungen sofort sehen muss, gehört dieses Verhalten ausdrücklich in die Abnahmekriterien.
 
-Bei aktivierter Remote-Control-Schnittstelle kannst du den Verzeichnis-Cache gezielt verwerfen:
+Bei aktivierter Remote-Control-Schnittstelle können Sie den Verzeichnis-Cache gezielt verwerfen:
 
 ```bash
 rclone rc vfs/forget
@@ -4712,7 +4712,7 @@ Das ist nützlich für einen manuellen Test, ersetzt aber keine passende Betrieb
 
 ## Den Cache unter Druck setzen
 
-Ein fast leerer Cache ist der einfachste Fall. Setze `--vfs-cache-max-size` in einer zweiten Testrunde bewusst klein und lies mehr Daten, als hineinpassen.
+Ein fast leerer Cache ist der einfachste Fall. Setzen Sie `--vfs-cache-max-size` in einer zweiten Testrunde bewusst klein und lesen Sie mehr Daten, als hineinpassen.
 
 ```bash
 du -sh /var/cache/rclone-test/vfs
@@ -4724,31 +4724,31 @@ Die beiden Grössen können stark voneinander abweichen. Im Full-Modus verwendet
 
 Das Cache-Limit ist zudem weich. Rclone prüft es im Rhythmus von `--vfs-cache-poll-interval`, und geöffnete Dateien können nicht entfernt werden. Der Cache darf das Limit deshalb kurzzeitig überschreiten. Er sollte nach dem Schliessen der Dateien und dem nächsten Aufräumlauf aber wieder sinken.
 
-Protokolliere Spitzenwert, Wert nach der Bereinigung und die dafür benötigte Zeit. So lässt sich der nötige lokale Speicher vernünftig dimensionieren.
+Protokollieren Sie Spitzenwert, Wert nach der Bereinigung und die dafür benötigte Zeit. So lässt sich der nötige lokale Speicher vernünftig dimensionieren.
 
 ## Zwei unterschiedliche Ausfälle simulieren
 
 Eine nicht erreichbare Cloud und ein abgestürzter Rclone-Prozess sind zwei verschiedene Fehler:
 
-| Ausfall | Was du damit prüfst |
+| Ausfall | Was Sie damit prüfen |
 |---|---|
 | Backend oder Netzwerk nicht erreichbar, Rclone läuft weiter | Verhalten bei Retries, Timeouts und bereits gecachten Dateien |
 | Rclone-Prozess beendet | Verhalten des FUSE-Mounts und Wiederherstellung des Mountpunkts |
 
-Simuliere beides nur in der Testumgebung. Einen Rclone-Container kannst du für den zweiten Fall hart beenden:
+Simulieren Sie beides nur in der Testumgebung. Einen Rclone-Container können Sie für den zweiten Fall hart beenden:
 
 ```bash
 docker kill --signal KILL <rclone-container>
 ```
 
-Prüfe während des Ausfalls die Anwendung und nicht nur den Mountpunkt:
+Prüfen Sie während des Ausfalls die Anwendung und nicht nur den Mountpunkt:
 
 - Welche Funktionen bleiben verfügbar?
 - Wie lange wartet ein Zugriff, bevor ein Fehler erscheint?
 - Sind bereits vollständig gecachte Dateien noch erreichbar?
 - Stoppt die Anwendung neue Schreibvorgänge?
 - Entsteht eine verständliche Fehlermeldung oder nur ein hängender Prozess?
-- Löst dein Monitoring aus?
+- Löst Ihr Monitoring aus?
 
 Ein Schreibdienst darf bei fehlendem Mount nicht unbemerkt in das darunterliegende lokale Verzeichnis schreiben. Nach der Rückkehr des Mounts würden diese Dateien verdeckt. Ein einfacher Schutz vor jedem Schreibjob ist:
 
@@ -4756,7 +4756,7 @@ Ein Schreibdienst darf bei fehlendem Mount nicht unbemerkt in das darunterliegen
 mountpoint -q /mnt/rclone-test || exit 1
 ```
 
-Nach dem Neustart von Rclone prüfst du den Mount auf dem Host und aus jedem konsumierenden Container. Ein neu aufgebauter Mount erreicht einen bereits laufenden Container nur mit passender Mount-Propagation. Für Docker ist meistens `rslave` auf der konsumierenden Seite nötig. Die Details stehen im Artikel [Rclone-Mounts in Docker zuverlässig betreiben](/blog/rclone-mount-in-docker-container).
+Nach dem Neustart von Rclone prüfen Sie den Mount auf dem Host und aus jedem konsumierenden Container. Ein neu aufgebauter Mount erreicht einen bereits laufenden Container nur mit passender Mount-Propagation. Für Docker ist meistens `rslave` auf der konsumierenden Seite nötig. Die Details stehen im Artikel [Rclone-Mounts in Docker zuverlässig betreiben](/blog/rclone-mount-in-docker-container).
 
 ## Ein konkretes Beispiel aus Paperless-ngx
 
@@ -4782,11 +4782,11 @@ Ein später nachvollziehbares Ergebnis enthält mindestens:
 - Wiederherstellungszeit aus Sicht der Anwendung
 - Retries, Timeouts, Drosselungen und Authentifizierungsfehler aus dem Log
 
-Definiere für jeden Punkt vorab einen Grenzwert. Dann endet der Test mit einer Entscheidung und nicht nur mit einer Sammlung interessanter Zahlen.
+Definieren Sie für jeden Punkt vorab einen Grenzwert. Dann endet der Test mit einer Entscheidung und nicht nur mit einer Sammlung interessanter Zahlen.
 
 ## Wann der Aufbau bereit ist
 
-Ein Cold-Storage-Mount ist einsatzbereit, wenn du diese Fragen mit Ja beantworten kannst:
+Ein Cold-Storage-Mount ist einsatzbereit, wenn Sie diese Fragen mit Ja beantworten können:
 
 - Sind Cold Reads für den vorgesehenen Dienst schnell genug?
 - Beschleunigt der Cache wiederholte Zugriffe wie erwartet?
@@ -4798,7 +4798,7 @@ Ein Cold-Storage-Mount ist einsatzbereit, wenn du diese Fragen mit Ja beantworte
 - Erreicht ein neu aufgebauter Mount alle laufenden Verbraucher?
 - Zeigt das Monitoring den Ausfall, bevor ein Benutzer ihn meldet?
 
-Wenn eine Antwort fehlt, weisst du immerhin genau, woran du weiterarbeiten musst. Das ist wesentlich hilfreicher als ein Mount, der beim ersten `ls` gut aussah und erst im Betrieb seine Grenzen zeigt.
+Wenn eine Antwort fehlt, wissen Sie immerhin genau, woran Sie weiterarbeiten müssen. Das ist wesentlich hilfreicher als ein Mount, der beim ersten `ls` gut aussah und erst im Betrieb seine Grenzen zeigt.
 
 ## Quellen
 
@@ -5164,7 +5164,7 @@ Cloud liefert Token
 App verwendet Token lokal
 ```
 
-Die Home-Assistant-Integration hat genau diesen Cloud-Aufruf nachimplementiert. Sie meldet sich mit denselben Endpunkten und demselben Ablauf bei der Cloud an wie die App und erhält so denselben Token und Key. Das eigentliche Fundament ist also nicht eine clevere Berechnung, sondern ein nachgebauter Abruf. Fällt der Endpunkt weg, fällt auch die Beschaffung weg.
+Die Home-Assistant-Integration hat genau diesen Cloud-Aufruf nachimplementiert. Sie meldet sich mit denselben Endpunkten und demselben Ablauf bei der Cloud an wie die App und erhält so denselben Token und Key. Das eigentliche Fundament ist also ein nachgebauter Abruf, keine Berechnung. Fällt der Endpunkt weg, fällt auch die Beschaffung weg.
 
 ### Könnte man den Token aus der offiziellen App auslesen?
 
@@ -5281,7 +5281,7 @@ Der grösste Nachteil ist derzeit die Warnung des Entwicklers: Die für das Hinz
 
 ### Empfehlung
 
-Für eine reine PortaSplit-Installation würde ich mit `Midea Smart AC` beginnen und `Midea AC LAN` als Alternative im Hinterkopf behalten. `Midea Smart AC` ist enger auf Klimageräte zugeschnitten und dokumentiert die aktuellen PortaSplit-Funktionen explizit.
+Für eine reine PortaSplit-Installation würde ich mit `Midea Smart AC` beginnen und `Midea AC LAN` als Alternative kennen. `Midea Smart AC` ist enger auf Klimageräte zugeschnitten und dokumentiert die aktuellen PortaSplit-Funktionen explizit.
 
 Beide Integrationen gleichzeitig und dauerhaft mit demselben Gerät zu betreiben ist nicht sinnvoll. Mehrere parallele Verbindungen führen zu Statusproblemen, unnötigem Netzwerkverkehr und schwer nachvollziehbarem Verhalten.
 
@@ -6134,7 +6134,7 @@ Ergänzend wurde die TPM-Behandlung verbessert: Das Setup testet die Signierfäh
 
 ### PowerShell-Cmdlets verlangen jetzt eine explizite Admin-Anmeldung
 
-Eine Änderung, die Skript-Betreiber auf dem Schirm haben müssen: Die Cmdlets `Set-ADSyncAADCompanyFeature` und `Set-ADSyncAADPasswordSyncState`, die Cloud-Konfiguration verändern, verlangen neu den Parameter `-AADUsername` für eine interaktive Admin-Authentifizierung. Auch der Wizard selbst schreibt Cloud-Änderungen nicht mehr mit gespeicherten Dienst-Credentials, sondern über eine interaktive MSAL-Anmeldung. Und der Uninstall-Wizard fragt für das Aufräumen der Cloud-Konfiguration nach Admin-Credentials; überspringt man das, wird nur lokal aufgeräumt.
+Eine Änderung, die Skript-Betreiber kennen müssen: Die Cmdlets `Set-ADSyncAADCompanyFeature` und `Set-ADSyncAADPasswordSyncState`, die Cloud-Konfiguration verändern, verlangen neu den Parameter `-AADUsername` für eine interaktive Admin-Authentifizierung. Auch der Wizard selbst schreibt Cloud-Änderungen nicht mehr mit gespeicherten Dienst-Credentials, sondern über eine interaktive MSAL-Anmeldung. Und der Uninstall-Wizard fragt für das Aufräumen der Cloud-Konfiguration nach Admin-Credentials; überspringt man das, wird nur lokal aufgeräumt.
 
 Der Hintergrund ist derselbe rote Faden wie bei ABA: Aktionen gegen den Tenant sollen einer echten, nachvollziehbaren Administrator-Identität zugeordnet sein statt einem anonymen Dienstkonto. Das passt zu einem Bugfix im selben Release: Bisher protokollierte das Admin-Audit-Logging bei Änderungen an Synchronisationsregeln die Identität des Dienstkontos statt des tatsächlich handelnden Administrators: ein Audit-Trail, der seinen Zweck verfehlt. Beides zusammen ergibt erst ein brauchbares Auditing. Die praktische Konsequenz: Wer diese Cmdlets bisher unbeaufsichtigt in Skripten aufgerufen hat, muss diese Abläufe umbauen: interaktive Authentifizierung und Automation vertragen sich nicht.
 
@@ -6464,9 +6464,9 @@ Der zweite, vom SU-Release unabhängige Punkt: Der **Exchange Health Checker** (
 
 Diese beiden Gruppen stammen aus dem Berechtigungsmodell von Exchange 2000/2003 und sind seit Exchange 2007 deprecated. Mit Exchange 2007/2010 kam das Split-Permissions- bzw. RBAC-Modell, und seither werden sie schlicht nicht mehr verwendet. Das Problem: Verschwunden sind sie damit nicht. In vielen Verzeichnissen liegen sie seit rund zwei Jahrzehnten unbeachtet herum und tragen teilweise noch weitreichende ACLs aus dem alten Modell, also mehr Rechte, als eine moderne Exchange-Sicherheitsgruppe je hätte.
 
-Genau das macht sie zum Angriffsvektor. Eine dormante Gruppe mit stehenden, breiten Berechtigungen ist eine klassische Eskalationskette: Wer es schafft, sich (oder ein kontrolliertes Konto) in eine solche Gruppe aufzunehmen, erbt deren Rechte im Verzeichnis. Da niemand die Gruppe aktiv beobachtet, fällt eine solche Manipulation kaum auf.
+Genau das macht sie zum Angriffsvektor. Eine inaktive Gruppe mit stehenden, breiten Berechtigungen ist eine klassische Eskalationskette: Wer es schafft, sich (oder ein kontrolliertes Konto) in eine solche Gruppe aufzunehmen, erbt deren Rechte im Verzeichnis. Da niemand die Gruppe aktiv beobachtet, fällt eine solche Manipulation kaum auf.
 
-### Warum die meisten Admins sie nicht auf dem Schirm haben
+### Warum die meisten Admins sie nicht kennen
 
 Diese Gruppen sind aus mehreren Gründen ein blinder Fleck: Sie sind seit ~20 Jahren inaktiv, existierten meist schon vor der Amtszeit des heutigen Teams, überleben klaglos jede Migration und wurden vom Health Checker bisher nie angezeigt. Besonders heikel: Sie überstehen sogar die *vollständige* Ausserbetriebnahme von on-premises Exchange. Wer den letzten Exchange-Server entfernt hat, räumt in der Regel die Server-Objekte weg, übersieht aber diese Legacy-Gruppen komplett.
 
