@@ -28,7 +28,7 @@ aiPrompt: |
 ---
 # SMTP-Lasttest mit Apache JMeter in der Praxis: 10'000 Mails, fünf Regelpfade, ein HTML-Report
 
-Der [Überblicksartikel zu Mail-Lasttests](/blog/mail-lasttest-tools-linux-windows-vergleich) hat die Werkzeuge verglichen und den Testplan skizziert. Dieser Artikel macht die Probe aufs Exempel: ein vollständig durchgeführter JMeter-Lasttest mit 10'000 Mails, einem Nachrichtenmix entlang realer Gateway-Regelpfade und dem HTML-Report als Auswertung. Alle gezeigten Werte stammen aus dem tatsächlichen Lauf, inklusive der Fehler, die unterwegs auftraten.
+Der [Überblicksartikel zu Mail-Lasttests](/blog/mail-lasttest-tools-linux-windows-vergleich) hat die Werkzeuge verglichen und den Testplan skizziert. Hier folgt die praktische Durchführung: ein vollständiger JMeter-Lasttest mit 10'000 Mails, einem Nachrichtenmix entlang realer Gateway-Regelpfade und dem HTML-Report als Auswertung. Alle gezeigten Werte stammen aus dem tatsächlichen Lauf, inklusive der Fehler, die unterwegs auftraten.
 
 Das Szenario ist einem realen Projekt nachempfunden: Ein E-Mail-Verschlüsselungs-Gateway auf Apache-James-Basis (Totemomail) hängt als Smarthost-Schlaufe hinter Exchange Online und entscheidet pro Nachricht über Verschlüsselung, Signierung und Sonderrouting. Das Mailet-Ruleset kennt dafür mehrere Pfade: Betreff-Trigger wie (sec), (sign) und (unsec), Schlüsselwörter wie VERTRAULICH für das Routing zu einem Branchen-Gateway und den Standardpfad mit Zertifikatsprüfung und Klartext-Fallback. Ein Lasttest, der nur eine einzige Nachrichtensorte einliefert, würde immer denselben Pfad durch dieses Regelwerk messen; der Testplan bildet deshalb fünf Klassen ab, deren Mischverhältnis dem erwarteten Verkehr entspricht.
 
