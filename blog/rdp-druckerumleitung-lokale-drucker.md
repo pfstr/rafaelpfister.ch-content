@@ -25,7 +25,7 @@ Die Umleitung greift nur beim Verbindungsaufbau. Nach jeder Änderung an den Ein
 
 ## Client-Seite: die Umleitung aktivieren
 
-Der schnellste Weg führt über die grafische Oberfläche: `mstsc` starten, **Optionen einblenden**, Reiter **Lokale Ressourcen**, Haken bei **Drucker** setzen und die Verbindung im Reiter **Allgemein** speichern. Wer mit .rdp-Dateien arbeitet, kann die Zeile direkt in der Datei anpassen; .rdp-Dateien sind einfache Textdateien und lassen sich mit jedem Editor bearbeiten:
+Am einfachsten lässt sich die Druckerumleitung über die grafische Oberfläche aktivieren: `mstsc` starten, **Optionen einblenden**, Reiter **Lokale Ressourcen**, Haken bei **Drucker** setzen und die Verbindung im Reiter **Allgemein** speichern. Wer mit .rdp-Dateien arbeitet, kann die Zeile direkt in der Datei anpassen; .rdp-Dateien sind einfache Textdateien und lassen sich mit jedem Editor bearbeiten:
 
 ```text
 redirectprinters:i:1
