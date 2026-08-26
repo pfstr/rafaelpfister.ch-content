@@ -19,6 +19,7 @@ related:
   - "massenmailing-provider-wechsel-checkliste"
   - "mailserver-lastprofil-ermitteln"
 slug: "f5-big-ip-outbound-smtp-massenversand"
+featured: true
 translationId: "article-ee5e63e82ffd2604"
 url: "https://rafaelpfister.ch/blog/f5-big-ip-outbound-smtp-massenversand"
 aiPrompt: |
