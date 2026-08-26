@@ -1,7 +1,7 @@
 ---
 title: "Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren"
 navTitle: "Mailfluss analysieren"
-description: "Wie Sie in Exchange OnPrem, Hybrid und Exchange Online systematisch herausfinden, wo eine Nachricht geblieben ist: die Abfragen mit Beispielausgaben, das SMTP-Protokoll richtig lesen, und die Fallstricke, die regelmässig auf falsche Fährten führen."
+description: "Wie Sie in Exchange OnPrem, Hybrid und Exchange Online systematisch herausfinden, wo eine Nachricht geblieben ist: die Abfragen mit Beispielausgaben, das SMTP-Protokoll richtig lesen, und die Fallstricke, die regelmässig zu Fehlschlüssen führen."
 date: "2026-08-11"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "22 Min. Lesezeit"
@@ -200,7 +200,7 @@ Count Name
 
 Eine einzige Absenderdomäne bedeutet: eng begrenztes Problem, kein Vorfall, Sie können in Ruhe weitersuchen. Stünden dort zwanzig verschiedene Domänen, hätten Sie einen laufenden Ausfall, und alles andere müsste warten. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
 
-## Fallstrick 3: Die `ConnectorId` verrät nicht den echten Receive-Connector
+## Fallstrick 3: Die `ConnectorId` nennt nicht den echten Receive-Connector
 
 Das ist der teuerste Fallstrick, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
 
@@ -379,7 +379,7 @@ Die ersten drei sind der Standardsatz für anonyme Einlieferung und für den Emp
 
 Verwechseln Sie `Accept-Any-Sender` nicht mit `Accept-Any-Recipient`. Das erste ist harmlos und notwendig, das zweite ist die sicherheitsrelevante Einstellung.
 
-## Schritt 5: Gegenprobe durch eigene Einlieferung
+## Schritt 5: Kontrolltest durch eigene Einlieferung
 
 Wenn die Auswertung mehrdeutig bleibt, liefern Sie selbst ein. Damit kontrollieren Sie Absender, Empfänger und Einlieferungspunkt vollständig:
 

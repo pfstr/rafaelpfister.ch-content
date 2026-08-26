@@ -111,7 +111,7 @@ Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in di
 
 ## Fazit
 
-Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der Appliance lange bestand: Administratorzugänge lassen sich nun zentral im Verzeichnis steuern statt pro Gerät. Zusammen mit dem separaten MFA-Feld macht 15.0.6 die Anmeldung an der Administrationsoberfläche damit in einem einzigen Release deutlich erwachsener. Wer die Funktion einführt, sollte das Gruppen-Mapping bewusst restriktiv halten und den lokalen Notfallzugang nicht opfern.
+Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der Appliance lange bestand: Administratorzugänge lassen sich nun zentral im Verzeichnis steuern statt pro Gerät. Zusammen mit dem separaten MFA-Feld verbessert 15.0.6 die Anmeldung an der Administrationsoberfläche damit in einem einzigen Release deutlich. Wer die Funktion einführt, sollte das Gruppen-Mapping bewusst restriktiv halten und den lokalen Notfallzugang beibehalten.
 
 ## Quellen
 

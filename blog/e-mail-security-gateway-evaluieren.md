@@ -28,7 +28,7 @@ aiPrompt: |
 
 Der Markt für E-Mail-Verschlüsselungsgateways ist in Bewegung: Produkte wechseln den Besitzer, Plattformen werden abgelöst, Hersteller richten ihre Roadmaps neu aus. Früher oder später landet deshalb bei vielen Unternehmen dieselbe Aufgabe auf dem Tisch: das bestehende Gateway ersetzen oder ein neues beschaffen, oft unter Zeitdruck und mit laufendem Betrieb im Rücken.
 
-Die typische Abkürzung, die Auswahl der Produktbroschüre des lautesten Anbieters zu überlassen, rächt sich in diesem Segment besonders. Ein E-Mail-Security-Gateway sitzt mitten im Mailfluss, berührt Schlüsselmaterial, Verzeichnisdienste und regulierte Daten. Wer hier ohne messbare Kriterien entscheidet, kauft eine Wette. Dieser Artikel liefert den Kriterienkatalog in sechs Blöcken und ein Pflichtenheft, das Sie kopieren, anpassen und Ihrer Offertanfrage beilegen können.
+Die typische Abkürzung, die Auswahl der Produktbroschüre des lautesten Anbieters zu überlassen, rächt sich in diesem Segment besonders. Ein E-Mail-Security-Gateway sitzt mitten im Mailfluss, berührt Schlüsselmaterial, Verzeichnisdienste und regulierte Daten. Wer hier ohne messbare Kriterien entscheidet, geht eine Wette ein. Dieser Artikel liefert den Kriterienkatalog in sechs Blöcken und ein Pflichtenheft, das Sie kopieren, anpassen und Ihrer Offertanfrage beilegen können.
 
 **Schweiz-Fokus:** Die rechtlichen Aussagen in diesem Artikel beziehen sich auf Schweizer Recht, insbesondere das revidierte Datenschutzgesetz (revDSG) und die branchenspezifischen Geheimnispflichten. Wo die Rechtslage in der EU abweicht, ist der Absatz ausdrücklich als EU-Hinweis gekennzeichnet.
 

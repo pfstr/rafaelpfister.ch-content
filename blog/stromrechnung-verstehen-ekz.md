@@ -89,7 +89,7 @@ Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus üb
 <div data-exp="solidarisiert"><strong>Solidarisierte Kosten</strong><p>Schweizweit umgelegte Kosten für Netzverstärkungen (etwa für den Anschluss von Solaranlagen) und Unterstützungsmassnahmen. Die kleinste Position: 0.05 Rp./kWh.</p></div>
 <div data-exp="effizienz"><strong>Förderung Energieeffizienz</strong><p>Kantonale respektive kommunale Abgabe für Energieberatung und Förderprogramme, 0.16 Rp./kWh. Je nach Gemeinde können hier zusätzlich Konzessionsabgaben stehen.</p></div>
 <div data-exp="netto"><strong>Nettobetrag</strong><p>Summe aller Positionen vor Mehrwertsteuer. Bei diesem Musterhaushalt: rund 22.5 Rp. pro verbrauchte kWh, wovon nur etwa 10.4 Rp. tatsächlich Energie sind.</p></div>
-<div data-exp="mwst"><strong>Mehrwertsteuer</strong><p>8.1 Prozent auf den Nettobetrag, auf alle Positionen inklusive der staatlichen Abgaben. Ja: auf Abgaben wird Mehrwertsteuer erhoben.</p></div>
+<div data-exp="mwst"><strong>Mehrwertsteuer</strong><p>8.1 Prozent auf den Nettobetrag, auf alle Positionen inklusive der staatlichen Abgaben. Das heisst: Auch auf Abgaben wird Mehrwertsteuer erhoben.</p></div>
 <div data-exp="total"><strong>Rechnungsbetrag</strong><p>Der Endbetrag wird auf 5 Rappen gerundet, deshalb weicht er um wenige Rappen von der exakten Summe ab. Die Rundungsdifferenz weist die EKZ separat aus.</p></div>
 </div>
 </div>
@@ -183,7 +183,7 @@ Die Position «Systemdienstleistungen» (0.27 Rp./kWh) geht an Swissgrid für di
 
 ### Messung: neu sichtbar
 
-Seit 2026 weist die EKZ die Messkosten separat aus: CHF 5.00 pro Monat für Zähler, Datenübertragung und Bereitstellung der Messwerte. Vorher steckte das unsichtbar in der Netznutzung. Der Smart Meter, der hier bezahlt wird, misst viertelstundengenau und ist die technische Grundlage für alles, was der Strommarkt gerade Neues lernt: dynamische Tarife, LEG-Abrechnung, Lastverschiebung.
+Seit 2026 weist die EKZ die Messkosten separat aus: CHF 5.00 pro Monat für Zähler, Datenübertragung und Bereitstellung der Messwerte. Vorher steckte das unsichtbar in der Netznutzung. Der Smart Meter, der hier bezahlt wird, misst viertelstundengenau und ist die technische Grundlage für die aktuellen Neuerungen im Strommarkt: dynamische Tarife, LEG-Abrechnung, Lastverschiebung.
 
 ### Zuschläge und Abgaben: der staatliche Block
 

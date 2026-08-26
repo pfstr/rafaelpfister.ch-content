@@ -148,7 +148,7 @@ Bei einem korrekt beschränkten Partner-Connector ist eine SMTP-Ablehnung wie `5
 
 «Ghost Sender» ist kein neuer SMTP-Exploit. Es ist ein griffiger Name für einen offenen Nebeneingang, dessen Absicherung Microsoft seit langem dokumentiert und den der Administrator offengelassen hat.
 
-Das Ironische daran: InfoGuard bezeichnet das Problem im eigenen Beitrag selbst als «widespread and systematic misconfiguration» und schliesst mit dem Satz «Ghost-Sender is a misconfiguration». Auch Microsofts Security Response Center stufte die Meldung zunächst nicht als Sicherheitslücke ein. Die Fakten sind im Artikel also durchaus vorhanden: nur Titel, Testmail und «Vulnerability»-Branding erzählen leider eine dramatischere Geschichte.
+Das Ironische daran: InfoGuard bezeichnet das Problem im eigenen Beitrag selbst als «widespread and systematic misconfiguration» und schliesst mit dem Satz «Ghost-Sender is a misconfiguration». Auch Microsofts Security Response Center stufte die Meldung zunächst nicht als Sicherheitslücke ein. Die Fakten sind im Artikel also durchaus vorhanden: nur Titel, Testmail und «Vulnerability»-Branding legen leider eine dramatischere Deutung nahe.
 
 Der sinnvolle Teil der Veröffentlichung ist der Weckruf: Viele Unternehmen haben ihren Mailflow offenbar nicht sauber verriegelt. Der problematische Teil ist die Behauptung, Exchange Online habe dafür eine universelle Sicherheitslücke. Nein: Exchange Online verhält sich hier zunächst wie ein MTA. Unsicher wird es durch die nicht zu Ende konfigurierte Vertrauensgrenze.
 

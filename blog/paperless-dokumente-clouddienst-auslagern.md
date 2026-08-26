@@ -81,7 +81,7 @@ Die Vorlage kümmert sich um vier Punkte, die du bei einem eigenen Aufbau ebenfa
 
 ## Was du vor dem Einsatz abwägen solltest
 
-Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist. Stirbt die Maschine genau in diesem Fenster, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und Rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Weil Langzeitdaten aus dem Dauerbetrieb noch fehlen, ist die Vorlage als experimentell gekennzeichnet.
+Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist. Fällt die Maschine genau in diesem Fenster aus, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und Rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Weil Langzeitdaten aus dem Dauerbetrieb noch fehlen, ist die Vorlage als experimentell gekennzeichnet.
 
 Wie die Messwerte zustande kamen, welche Ausfälle simuliert wurden und wie sich so ein Aufbau überhaupt seriös testen lässt, steht im Methodik-Artikel: [Cloud-Mounts testen mit generierten PDFs](/blog/cloud-mount-testen-dummy-pdfs).
 

@@ -50,13 +50,13 @@ Das ist kein Zufall, das ist Produktdesign. Pro LEG-Kilowattstunde sieht die Rec
 | SDL und Abgaben | 3.19 | 3.19 |
 | **Total** | **19.69 / 23.99** | **19.69 / 23.99** |
 
-Der Rabatt und die Gebühr heben sich exakt auf. Die EKZ schreibt selbst, das Angebot sei ein «Upgrade auf lokalen Sonnenstrom ohne Mehrkosten gegenüber der Grundversorgung», und genau so ist es gemeint: kostenneutral, nicht kostensenkend. Wer den Standardtarif 400ST hat (7.95 Rp./kWh), gewinnt rechnerisch 0.09 Rp. pro LEG-kWh; beim Wärmepumpentarif 400WP (6.45 Rp./kWh) verliert er 0.21 Rp. In Franken: Bei 10'000 kWh Jahresverbrauch und optimistischen 30 Prozent LEG-Anteil reden wir über plus/minus wenige Franken **pro Jahr**. Das ist Rundungsrauschen, keine Rendite.
+Der Rabatt und die Gebühr heben sich exakt auf. Die EKZ schreibt selbst, das Angebot sei ein «Upgrade auf lokalen Sonnenstrom ohne Mehrkosten gegenüber der Grundversorgung», und genau so ist es gemeint: kostenneutral, nicht kostensenkend. Wer den Standardtarif 400ST hat (7.95 Rp./kWh), gewinnt rechnerisch 0.09 Rp. pro LEG-kWh; beim Wärmepumpentarif 400WP (6.45 Rp./kWh) verliert er 0.21 Rp. In Franken: Bei 10'000 kWh Jahresverbrauch und optimistischen 30 Prozent LEG-Anteil geht es um plus/minus wenige Franken **pro Jahr**. Das ist Rundungsrauschen, keine Rendite.
 
 So sieht es auch bei uns aus: gleicher Rechnungsbetrag wie vorher, einzig die Rechnung bekommt neue Positionen (reduzierte Netznutzung plus Servicegebühr auf dem LEG-Anteil), und bilanziell stammt ein Teil des Bezugs neu von Dächern aus der Gemeinde statt aus dem allgemeinen Liefermix.
 
 ## Wann eine LEG finanziell doch etwas bringt
 
-Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Wege heraus:
+Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Auswege:
 
 **1. Die 40-Prozent-Stufe.** Hängen alle Teilnehmer an derselben Trafostation, gilt der doppelte Abschlag: 40 Prozent von 7.50 Rp. sind 3.00 Rp., minus 1.50 Rp. Servicegebühr bleiben **1.50 Rp. pro LEG-kWh**. Bei 3'000 LEG-kWh im Jahr rund 49 Franken (inkl. MWST). Immer noch kein Vermögen, aber ein echter Rabatt. Quartier-LEGs sind darum finanziell interessanter als Gemeinde-LEGs.
 

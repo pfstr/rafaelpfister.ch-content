@@ -84,7 +84,7 @@ for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
 done
 ```
 
-Läuft auch die Gegenprobe ins Leere, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
+Schlägt auch der Kontrolltest fehl, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
 
 Fehlt `/dev/tcp`, ist die Shell keine bash. Unter `sh`, `ash` oder `ksh` gibt es das Feature nicht, was gerne als vermeintliches Netzwerkproblem fehlgedeutet wird:
 
@@ -102,7 +102,7 @@ Ein SMTP-Server begrüsst von sich aus mit einem `220`-Banner. Der aussagekräft
 
 Diese wenigen Zeichen trennen zwei völlig verschiedene Situationen. Kommt ein `220 mail.example.com ESMTP`, spricht die Gegenstelle und alle weiteren Fehler liegen im Dialog. Kommt nichts, liegt es nicht an einem falsch formulierten Kommando Ihrerseits, denn Sie haben ja keines geschickt.
 
-Der Filedeskriptor bleibt danach in der Shell offen. Schliessen Sie ihn, bevor Sie den nächsten Test starten, sonst arbeiten Sie unter Umständen mit einer alten, halbtoten Verbindung weiter:
+Der Filedeskriptor bleibt danach in der Shell offen. Schliessen Sie ihn, bevor Sie den nächsten Test starten, sonst arbeiten Sie unter Umständen mit einer alten, nicht mehr intakten Verbindung weiter:
 
 ```bash
 exec 3<&- 3>&-
@@ -127,7 +127,7 @@ sleep 2; kill $R 2>/dev/null
 }
 ```
 
-Zwei Details entscheiden über Erfolg oder Frust. SMTP verlangt CRLF als Zeilenende, deshalb `printf` mit `\r\n` und nicht `echo`. Und der Punkt auf einer eigenen Zeile beendet den Nachrichtenteil; er muss als `\r\n.\r\n` gesendet werden.
+Zwei Details entscheiden über Erfolg oder Misserfolg. SMTP verlangt CRLF als Zeilenende, deshalb `printf` mit `\r\n` und nicht `echo`. Und der Punkt auf einer eigenen Zeile beendet den Nachrichtenteil; er muss als `\r\n.\r\n` gesendet werden.
 
 Der erwartete Verlauf: `220` beim Verbindungsaufbau, `250` auf EHLO, `250 2.1.0` auf MAIL FROM, `250 2.1.5` auf RCPT TO, `354` auf DATA und am Ende `250 2.0.0 Ok: queued as <id>`. Notieren Sie sich die Queue-ID. Damit lässt sich die Nachricht beim betreibenden Provider nachverfolgen, falls sie beim Empfänger nie ankommt.
 
@@ -151,13 +151,13 @@ openssl s_client -connect 192.0.2.25:25 \
 
 Zwei Fehlerbilder tauchen hier regelmässig auf und werden gerne falsch gedeutet.
 
-**«Didn't find STARTTLS in server response, trying anyway»** bedeutet, dass der Server in seiner EHLO-Antwort kein STARTTLS angeboten hat. `openssl` schickt trotzdem ein TLS-ClientHello, der Server sieht darin Protokollmüll und die Verbindung endet mit `wrong version number` oder `write:errno=32` (EPIPE). Beide Meldungen sind Folgefehler. Die eigentliche Information ist: kein STARTTLS. Sehen Sie mit dem Klartext-Dialog aus Schritt 4 nach, welche Capabilities der Server tatsächlich meldet.
+**«Didn't find STARTTLS in server response, trying anyway»** bedeutet, dass der Server in seiner EHLO-Antwort kein STARTTLS angeboten hat. `openssl` schickt trotzdem ein TLS-ClientHello, der Server sieht darin ungültige Protokolldaten und die Verbindung endet mit `wrong version number` oder `write:errno=32` (EPIPE). Beide Meldungen sind Folgefehler. Die eigentliche Information ist: kein STARTTLS. Sehen Sie mit dem Klartext-Dialog aus Schritt 4 nach, welche Capabilities der Server tatsächlich meldet.
 
 **Kein STARTTLS auf einem internen Hop** ist oft völlig korrekt. Wenn ein Load Balancer die Verbindung auf Layer 4 weiterreicht, verhandelt nicht er das TLS, sondern erst das dahinterliegende System gegenüber dem eigentlichen Ziel. Auf dem internen Segment im Klartext zu testen ist dann kein Sicherheitsmangel, sondern schlicht die Architektur.
 
 ## Schritt 6: Python als Alternative
 
-Ist Python vorhanden, ersparen Sie sich das Timing-Gebastel mit `sleep`. Die Standardbibliothek reicht aus, es muss nichts nachinstalliert werden:
+Ist Python vorhanden, ersparen Sie sich die manuelle Zeitsteuerung mit `sleep`. Die Standardbibliothek reicht aus, es muss nichts nachinstalliert werden:
 
 ```python
 #!/usr/bin/env python3
@@ -245,7 +245,7 @@ Steht das System hinter NAT, sieht die Gegenstelle nicht diese, sondern die öff
 
 Für Volumentests gilt eine Regel, die im Alltag oft übersehen wird: Nicht die Anzahl Nachrichten ist das Problem, sondern die Anzahl Verbindungen. Typische Relays erlauben einige Hundert Verbindungen pro Minute, aber Zehntausende Nachrichten. Halten Sie deshalb eine Session offen und schicken Sie viele Envelopes darüber, statt für jede Nachricht neu zu verbinden.
 
-In `smtplib` heisst das schlicht, dasselbe Verbindungsobjekt mehrfach zu verwenden und die Session nach einer festen Zahl Nachrichten kontrolliert neu aufzubauen. Wer dagegen pro Mail eine neue Verbindung öffnet, reisst das Verbindungslimit weit vor dem Nachrichtenlimit und provoziert Ablehnungen, die wie ein Problem der Gegenstelle aussehen.
+In `smtplib` heisst das schlicht, dasselbe Verbindungsobjekt mehrfach zu verwenden und die Session nach einer festen Zahl Nachrichten kontrolliert neu aufzubauen. Wer dagegen pro Mail eine neue Verbindung öffnet, überschreitet das Verbindungslimit weit vor dem Nachrichtenlimit und provoziert Ablehnungen, die wie ein Problem der Gegenstelle aussehen.
 
 ## Fazit
 

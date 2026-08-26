@@ -50,7 +50,7 @@ Nebenbei: Die Mitigation hat IE-Clients und Edge im IE-Modus ohnehin nie geschü
 
 ### Die Stolperfalle: der EM Service spielt die Mitigation wieder ein
 
-Wer die Regel voreilig löscht, erlebt eine Überraschung. Der EM Service läuft stündlich und gleicht den Ist-Zustand mit den vom Office-Config-Service (Flighting) gelieferten Vorgaben ab. Die Zuordnung «welcher Build braucht welche Mitigation» liegt serverseitig. Erst eine serverseitige Änderung markiert den Juli-2026-Build als «Mitigation nicht mehr nötig». Diese Änderung wurde laut Microsoft erst rund um den 16. Juli 2026 vollständig ausgerollt. Bis dahin trägt der EM Service eine gelöschte M2.1.0-Regel im nächsten stündlichen Lauf einfach wieder ein.
+Eine voreilig gelöschte Regel bleibt nicht dauerhaft entfernt. Der EM Service läuft stündlich und gleicht den Ist-Zustand mit den vom Office-Config-Service (Flighting) gelieferten Vorgaben ab. Die Zuordnung «welcher Build braucht welche Mitigation» liegt serverseitig. Erst eine serverseitige Änderung markiert den Juli-2026-Build als «Mitigation nicht mehr nötig». Diese Änderung wurde laut Microsoft erst rund um den 16. Juli 2026 vollständig ausgerollt. Bis dahin trägt der EM Service eine gelöschte M2.1.0-Regel im nächsten stündlichen Lauf einfach wieder ein.
 
 Praktisch heisst das: Entweder wartet man mit dem manuellen Entfernen bis nach dem 16. Juli, oder man blockiert die Mitigation explizit, damit sie nicht reaktiviert wird.
 
@@ -82,7 +82,7 @@ Auch hier ein wenig bekanntes Detail: EOMT sichert vor jeder Änderung den IIS-A
 
 ### Warum sich das Entfernen lohnt
 
-Die Mitigation ist nicht «gratis». Solange sie aktiv ist, schleppt man ihre bekannten Nebenwirkungen mit: Die OWA-Funktion «Kalender drucken» funktioniert nicht, Inline-Bilder werden im OWA-Lesebereich unter Umständen nicht korrekt angezeigt, OWA Light (`/?layout=light`) ist defekt (wird ohnehin demnächst abgeschaltet), veröffentlichte Kalender liefern teils Fehler 500. Besonders tückisch fürs Monitoring: Der Healthset **OWACalendar.Proxy** kann auf *unhealthy* springen und damit Fehlalarme in der Überwachung auslösen. Wer das SU installiert hat, aber die Mitigation stehen lässt, jagt am Ende Geistern hinterher. Sobald das Update installiert *und* die Mitigation entfernt ist, verschwinden auch diese Known Issues.
+Die Mitigation ist nicht «gratis». Solange sie aktiv ist, schleppt man ihre bekannten Nebenwirkungen mit: Die OWA-Funktion «Kalender drucken» funktioniert nicht, Inline-Bilder werden im OWA-Lesebereich unter Umständen nicht korrekt angezeigt, OWA Light (`/?layout=light`) ist defekt (wird ohnehin demnächst abgeschaltet), veröffentlichte Kalender liefern teils Fehler 500. Besonders tückisch fürs Monitoring: Der Healthset **OWACalendar.Proxy** kann auf *unhealthy* springen und damit Fehlalarme in der Überwachung auslösen. Wer das SU installiert hat, aber die Mitigation stehen lässt, sucht am Ende nach Fehlern, die keine sind. Sobald das Update installiert *und* die Mitigation entfernt ist, verschwinden auch diese Known Issues.
 
 Ein Sonderfall: In gemischten Umgebungen dürfen noch nicht aktualisierte Server die Mitigation behalten. Man sollte aber wissen, dass die Office-Online-Server-Integration (OOS) unter Umständen erst dann wieder sauber funktioniert, wenn *alle* Exchange-Server in der Organisation auf dem Juli-Stand sind.
 

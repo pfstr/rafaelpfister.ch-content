@@ -20,20 +20,20 @@ draft: false
 
 # Exchange-Sicherheitsupdates vom August 2026: Pwn2Own-Lücke geschlossen, OWA Light abgeschaltet
 
-Microsoft hat am 11. August 2026 Sicherheitsupdates (SUs) für Exchange Server veröffentlicht — bereits den vierten Monat in Folge. Die Updates schliessen sieben Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird nach aktuellem Stand aktiv ausgenutzt, und Microsoft stuft die Ausnutzung bei allen sieben als «Exploitation Less Likely» ein. Ein Routine-Patchday ist es trotzdem nicht, aus drei Gründen: Das Update schliesst die am Hacking-Wettbewerb Pwn2Own demonstrierte Exchange-Lücke, es schaltet **OWA Light nach fast zwanzig Jahren endgültig ab**, und das Exchange-Team hat im Nachgang erklärt, warum der Monatsrhythmus vorerst der Normalzustand bleibt.
+Microsoft hat am 11. August 2026 Sicherheitsupdates (SUs) für Exchange Server veröffentlicht, bereits den vierten Monat in Folge. Die Updates schliessen sieben Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird nach aktuellem Stand aktiv ausgenutzt, und Microsoft stuft die Ausnutzung bei allen sieben als «Exploitation Less Likely» ein. Ein Routine-Patchday ist es trotzdem nicht, aus drei Gründen: Das Update schliesst die am Hacking-Wettbewerb Pwn2Own demonstrierte Exchange-Lücke, es schaltet **OWA Light nach fast zwanzig Jahren endgültig ab**, und das Exchange-Team hat im Nachgang erklärt, warum der Monatsrhythmus vorerst der Normalzustand bleibt.
 
 ## Für welche Exchange-Versionen das Update verfügbar ist
 
 Die SUs stehen für folgende Versionen bereit:
 
-- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, Build 15.2.2562.46 — als regulär verfügbares, öffentliches Update.
-- **Exchange Server 2019 CU15**: KB5121574, Build 15.2.1748.49 — nur über das **Period-2-ESU-Programm**.
-- **Exchange Server 2019 CU14**: KB5121575, Build 15.2.1544.44 — nur über Period 2 ESU.
-- **Exchange Server 2016 CU23**: KB5121576, Build 15.1.2507.72 — nur über Period 2 ESU.
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, Build 15.2.2562.46; als regulär verfügbares, öffentliches Update.
+- **Exchange Server 2019 CU15**: KB5121574, Build 15.2.1748.49; nur über das **Period-2-ESU-Programm**.
+- **Exchange Server 2019 CU14**: KB5121575, Build 15.2.1544.44; nur über Period 2 ESU.
+- **Exchange Server 2016 CU23**: KB5121576, Build 15.1.2507.72; nur über Period 2 ESU.
 
-Es gilt dieselbe Lage wie im Juli: Exchange 2016 und 2019 sind out of support. Die SUs von Mai bis Oktober 2026 erhält nur, wer im Period-2-ESU-Programm eingeschrieben ist. Alle anderen bleiben ungepatcht auf einem Stand mit inzwischen vierzehn offenen, teils hochbewerteten Schwachstellen — der Wechsel auf Exchange SE duldet dort keinen Aufschub mehr. Exchange Online ist bereits geschützt; in Hybrid-Umgebungen muss das SU trotzdem auf alle Exchange-Server, auch auf reine Management-Server und auf Maschinen, auf denen nur die Exchange Management Tools installiert sind.
+Es gilt dieselbe Lage wie im Juli: Exchange 2016 und 2019 sind out of support. Die SUs von Mai bis Oktober 2026 erhält nur, wer im Period-2-ESU-Programm eingeschrieben ist. Alle anderen bleiben ungepatcht auf einem Stand mit inzwischen vierzehn offenen, teils hochbewerteten Schwachstellen; der Wechsel auf Exchange SE duldet dort keinen Aufschub mehr. Exchange Online ist bereits geschützt; in Hybrid-Umgebungen muss das SU trotzdem auf alle Exchange-Server, auch auf reine Management-Server und auf Maschinen, auf denen nur die Exchange Management Tools installiert sind.
 
-Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von Hybrid-Umgebungen besteht auch mit dem August-SU weiter; der Fix ist laut Microsoft für ein kommendes Update vorgesehen. Immerhin gibt es eine gute Nachricht aus dem Kommentarbereich der Release-Ankündigung: Wer den dokumentierten SettingOverride als Workaround gesetzt hat, muss ihn nach der Installation des August-SUs **nicht** neu anlegen — das Update lässt den Override unangetastet, wie das Exchange-Team dort bestätigt.
+Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von Hybrid-Umgebungen besteht auch mit dem August-SU weiter; der Fix ist laut Microsoft für ein kommendes Update vorgesehen. Immerhin gibt es eine Entwarnung aus dem Kommentarbereich der Release-Ankündigung: Wer den dokumentierten SettingOverride als Workaround gesetzt hat, muss ihn nach der Installation des August-SUs **nicht** neu anlegen. Das Update lässt den Override unangetastet, wie das Exchange-Team dort bestätigt.
 
 ## Die sieben Schwachstellen im Überblick
 
@@ -49,11 +49,11 @@ Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von
 
 Drei davon verdienen einen genaueren Blick.
 
-**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** trägt mit CVSS 8.8 den höchsten Wert des Monats: eine Remote-Code-Execution, die ein authentifizierter Angreifer mit einfachen Rechten ohne jede Benutzerinteraktion auslösen kann. Ein beliebiges kompromittiertes Postfach-Konto genügt als Ausgangspunkt — in Zeiten von Phishing und Credential-Stuffing ist «authentifiziert» keine hohe Hürde.
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** trägt mit CVSS 8.8 den höchsten Wert des Monats: eine Remote-Code-Execution, die ein authentifizierter Angreifer mit einfachen Rechten ohne jede Benutzerinteraktion auslösen kann. Ein beliebiges kompromittiertes Postfach-Konto genügt als Ausgangspunkt; in Zeiten von Phishing und Credential-Stuffing ist «authentifiziert» keine hohe Hürde.
 
-**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** ist die einzige Schwachstelle des Monats, die Microsoft als *Critical* einstuft (Elevation of Privilege, CVSS 8.0). Dahinter steckt mehr Geschichte, als die nüchterne Nummer verrät: Auf die Frage, ob der an der **Pwn2Own 2026** von Orange Tsai demonstrierte Exchange-Exploit inzwischen behoben sei, verweist das Exchange-Team im Kommentarbereich der Release-Ankündigung genau auf diese CVE. Der Wettbewerbsfund ist damit geschlossen — ein Grund mehr, das August-SU nicht liegen zu lassen, denn Pwn2Own-Techniken werden nach Ablauf der Sperrfristen üblicherweise im Detail publiziert.
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** ist die einzige Schwachstelle des Monats, die Microsoft als *Critical* einstuft (Elevation of Privilege, CVSS 8.0). Dahinter steckt mehr Geschichte, als die nüchterne Nummer erkennen lässt: Auf die Frage, ob der an der **Pwn2Own 2026** von Orange Tsai demonstrierte Exchange-Exploit inzwischen behoben sei, verweist das Exchange-Team im Kommentarbereich der Release-Ankündigung genau auf diese CVE. Der Wettbewerbsfund ist damit geschlossen: ein Grund mehr, das August-SU nicht liegen zu lassen, denn Pwn2Own-Techniken werden nach Ablauf der Sperrfristen üblicherweise im Detail publiziert.
 
-**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) ist der direkte Anlass für die Abschaltung von OWA Light — dazu gleich mehr.
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) ist der direkte Anlass für die Abschaltung von OWA Light, dazu gleich mehr.
 
 Die übrigen Lücken: CVE-2026-62910 (EoP, 7.2) setzt bereits hohe Rechte voraus, CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass) und CVE-2026-65813 (EoP) liegen bei CVSS 6.5. Die Details stehen wie üblich im Security Update Guide (Filter «Server Software» für Exchange SE bzw. «ESU» für 2016/2019).
 
@@ -61,13 +61,13 @@ Die übrigen Lücken: CVE-2026-62910 (EoP, 7.2) setzt bereits hohe Rechte voraus
 
 ### Was das Update ändert
 
-Mit der Installation des August-SUs wird **OWA Light dauerhaft deaktiviert** — auf jedem Server, auf dem das Update (oder ein späteres) landet. Wer die Light-Oberfläche aufruft, landet künftig im normalen Outlook on the web. Die Abschaltung ist Teil des Updates selbst und lässt sich nicht per Schalter rückgängig machen; Microsoft hatte sie einige Wochen vorher in einem eigenen Blogpost angekündigt.
+Mit der Installation des August-SUs wird **OWA Light dauerhaft deaktiviert**: auf jedem Server, auf dem das Update (oder ein späteres) landet. Wer die Light-Oberfläche aufruft, landet künftig im normalen Outlook on the web. Die Abschaltung ist Teil des Updates selbst und lässt sich nicht per Schalter rückgängig machen; Microsoft hatte sie einige Wochen vorher in einem eigenen Blogpost angekündigt.
 
-OWA Light stammt aus der Ära von Exchange 2007: eine bewusst schlichte Weboberfläche als Fallback für alte Browser und langsame Verbindungen, seit August 2024 offiziell deprecated. Die Begründung für das Ende ist sicherheitsgetrieben: Ein separater Legacy-Rendering-Pfad neben dem modernen OWA erhöht die Komplexität und damit die Angriffsfläche — CVE-2026-62914 liefert dafür den konkreten Beleg. Wer den [Juli-Artikel](/blog/exchange-security-updates-juli-2026) gelesen hat, erinnert sich zudem: Schon die CVE-2026-42897-Mitigation vom Mai hatte OWA Light nebenbei funktionsunfähig gemacht. Die Oberfläche war also bereits auf Abruf.
+OWA Light stammt aus der Ära von Exchange 2007: eine bewusst schlichte Weboberfläche als Fallback für alte Browser und langsame Verbindungen, seit August 2024 offiziell deprecated. Die Begründung für das Ende ist sicherheitsgetrieben: Ein separater Legacy-Rendering-Pfad neben dem modernen OWA erhöht die Komplexität und damit die Angriffsfläche; CVE-2026-62914 liefert dafür den konkreten Beleg. Wer den [Juli-Artikel](/blog/exchange-security-updates-juli-2026) gelesen hat, erinnert sich zudem: Schon die CVE-2026-42897-Mitigation vom Mai hatte OWA Light nebenbei funktionsunfähig gemacht. Die Oberfläche war also bereits auf Abruf.
 
 ### Wer nicht patchen kann: OWA Light manuell abschalten
 
-Wichtig für alle, die das August-SU (noch) nicht installieren können — etwa weil die ESU-Freischaltung fehlt: Microsoft empfiehlt ausdrücklich, OWA Light in diesem Fall **manuell zu deaktivieren**, um CVE-2026-62914 zu entschärfen. Das geht über die OWA-Mailbox-Policy und die Anmeldeseite:
+Wichtig für alle, die das August-SU (noch) nicht installieren können, etwa weil die ESU-Freischaltung fehlt: Microsoft empfiehlt ausdrücklich, OWA Light in diesem Fall **manuell zu deaktivieren**, um CVE-2026-62914 zu entschärfen. Das geht über die OWA-Mailbox-Policy und die Anmeldeseite:
 
 ```powershell
 Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
@@ -78,27 +78,27 @@ Der erste Befehl schaltet die Light-Version für alle Postfächer der jeweiligen
 
 ### Was Admins jetzt prüfen sollten
 
-Die Abschaltung ist technisch trivial, organisatorisch aber nicht immer: OWA Light war der stille Rettungsanker für Nischen-Szenarien. Prüfenswert sind jetzt Lesezeichen und Helpdesk-Anleitungen, die `?layout=light` fest verdrahtet haben, Kiosk- und Terminalgeräte mit alten Browsern sowie interne Anleitungen für Nutzerinnen und Nutzer, die die Light-Version aus Gründen der Barrierefreiheit verwendet haben. Das moderne Outlook on the web läuft in allen aktuellen Browsern und bringt eigene Barrierefreiheits-Funktionen mit — aber wer betroffene Anwender nicht vorab informiert, produziert Tickets.
+Die Abschaltung ist technisch trivial, organisatorisch aber nicht immer: OWA Light war die stille Rückfalllösung für Nischen-Szenarien. Prüfenswert sind jetzt Lesezeichen und Helpdesk-Anleitungen, die `?layout=light` fest verdrahtet haben, Kiosk- und Terminalgeräte mit alten Browsern sowie interne Anleitungen für Nutzerinnen und Nutzer, die die Light-Version aus Gründen der Barrierefreiheit verwendet haben. Das moderne Outlook on the web läuft in allen aktuellen Browsern und bringt eigene Barrierefreiheits-Funktionen mit; aber wer betroffene Anwender nicht vorab informiert, produziert Tickets.
 
-## Warum jetzt jeden Monat ein SU kommt — und wo Exchange SE CU1 bleibt
+## Warum jetzt jeden Monat ein SU kommt und wo Exchange SE CU1 bleibt
 
-Zwei Tage nach dem Release hat das Exchange-Team in einem bemerkenswert offenen Blogpost («Where is Exchange SE CU1 anyway?») die Frage beantwortet, die sich viele Admins stellen. Die Kurzfassung: Microsoft setzt konzernweit KI-Werkzeuge ein, um Schwachstellen in den eigenen Produkten zu finden. Die Teams — Exchange eingeschlossen — arbeiten die gemeldeten Funde derzeit ab: validieren, reproduzieren, fixen, auf Regressionen testen, monatlich ausliefern. Seit Mai 2026 ist so jeden Monat ein Exchange-SU erschienen, und Microsoft sagt ausdrücklich: Dieses erhöhte Tempo wird anhalten.
+Zwei Tage nach dem Release hat das Exchange-Team in einem bemerkenswert offenen Blogpost («Where is Exchange SE CU1 anyway?») die Frage beantwortet, die sich viele Admins stellen. Die Kurzfassung: Microsoft setzt konzernweit KI-Werkzeuge ein, um Schwachstellen in den eigenen Produkten zu finden. Die Teams, Exchange eingeschlossen, arbeiten die gemeldeten Funde derzeit ab: validieren, reproduzieren, fixen, auf Regressionen testen, monatlich ausliefern. Seit Mai 2026 ist so jeden Monat ein Exchange-SU erschienen, und Microsoft sagt ausdrücklich: Dieses erhöhte Tempo wird anhalten.
 
-Das lang erwartete **CU1 für Exchange SE** verzögert sich genau deshalb. Ursprünglich für das erste Halbjahr 2026 angekündigt, dann auf das zweite verschoben, gibt es inzwischen gar kein Zieldatum mehr. Microsoft will CU1 erst veröffentlichen, wenn ein Monat ohne dringende Security-Zulieferung dazwischenliegt — ein CU, das sofort von einem SU überholt wird, würde vielen Organisationen doppelte Update-Arbeit bescheren. Bis dahin fliesst die monatliche Security-Payload laufend in den internen CU1-Build ein.
+Das lang erwartete **CU1 für Exchange SE** verzögert sich genau deshalb. Ursprünglich für das erste Halbjahr 2026 angekündigt, dann auf das zweite verschoben, gibt es inzwischen gar kein Zieldatum mehr. Microsoft will CU1 erst veröffentlichen, wenn ein Monat ohne dringende Security-Zulieferung dazwischenliegt; ein CU, das sofort von einem SU überholt wird, würde vielen Organisationen doppelte Update-Arbeit bescheren. Bis dahin fliesst die monatliche Security-Payload laufend in den internen CU1-Build ein.
 
-Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strategie — weder für die Migration auf SE noch für das Einspielen der SUs. Zweitens: Ein **monatliches Wartungsfenster** für Exchange gehört ab sofort fest in den Betriebskalender, so wie es bei Windows-Servern längst selbstverständlich ist.
+Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strategie, weder für die Migration auf SE noch für das Einspielen der SUs. Zweitens: Ein **monatliches Wartungsfenster** für Exchange gehört ab sofort fest in den Betriebskalender, so wie es bei Windows-Servern längst selbstverständlich ist.
 
 ## Installation und Nachbereitung
 
-Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen — dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
+Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen; dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
 
 SUs sind kumulativ: Wer das Juli-SU übersprungen hat, installiert direkt das August-SU. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
 
-Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen — wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
+Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen; wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
 
 ## Empfohlenes Vorgehen
 
-Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen — die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann, deaktiviert OWA Light manuell als Sofortmassnahme gegen CVE-2026-62914. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen — und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
+Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann, deaktiviert OWA Light manuell als Sofortmassnahme gegen CVE-2026-62914. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
 ## Quellen
 

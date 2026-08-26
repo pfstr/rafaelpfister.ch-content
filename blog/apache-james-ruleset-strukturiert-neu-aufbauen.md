@@ -169,7 +169,7 @@ Dieser Befund ist wertvoller als die Prozessorliste, weil er mitten in aktiven K
 
 ## Werkzeug 4: Strukturprüfung
 
-Wohlgeformtes XML ist nur die halbe Miete. Diese vier Prüfungen fangen die Fehler ab, die ein Parser durchgehen lässt, das Gateway aber nicht:
+Wohlgeformtes XML allein genügt nicht. Diese vier Prüfungen fangen die Fehler ab, die ein Parser durchgehen lässt, das Gateway aber nicht:
 
 ```python
 dom = xml.dom.minidom.parseString(daten.replace("\n", "\r\n").encode("utf-8"))
@@ -202,9 +202,9 @@ print("Strukturfehler:      ", fehler or "keine")
 print("Ziele ohne Definition:", sorted(zielnamen - set(namen)) or "keine")
 ```
 
-Ein `ToProcessor` auf einen Prozessor, den es nicht gibt, ist der klassische Fehler nach einer Umbenennung. Das XML bleibt wohlgeformt, das Gateway stolpert erst zur Laufzeit darüber, und dann meist mit einer wenig hilfreichen Meldung.
+Ein `ToProcessor` auf einen Prozessor, den es nicht gibt, ist der klassische Fehler nach einer Umbenennung. Das XML bleibt wohlgeformt, das Gateway scheitert erst zur Laufzeit daran, und dann meist mit einer wenig hilfreichen Meldung.
 
-## Ein Zwischenruf: das ist Compilerbau, nicht Bastelei
+## Einordnung: das ist Compilerbau
 
 Was Sie hier tun, hat einen Namen und eine Theorie dahinter. Ein Regelwerk ist ein **Kontrollflussgraph**, also dasselbe Modell, mit dem Compiler seit Jahrzehnten Programme analysieren. Das lohnt sich zu wissen, weil damit fertige Algorithmen und, wichtiger, klare Aussagen über deren Grenzen zur Verfügung stehen.
 
@@ -219,7 +219,7 @@ Die letzten beiden Zeilen sind die praktisch wertvollsten. Ein Mail-Loop ist kei
 
 ### Zyklen finden, bevor sie zu Mail-Loops werden
 
-Die Breitensuche beantwortet die Frage nach totem Code. Für Schleifen brauchen Sie die Tiefensuche, denn dort verrät eine **Rückwärtskante** den Zyklus. Das Verfahren ist die klassische Dreifarbenmarkierung:
+Die Breitensuche beantwortet die Frage nach totem Code. Für Schleifen brauchen Sie die Tiefensuche, denn dort zeigt eine **Rückwärtskante** den Zyklus an. Das Verfahren ist die klassische Dreifarbenmarkierung:
 
 ```python
 def zyklen_finden(bloecke, ziele):
@@ -268,7 +268,7 @@ Verfahren aus dem maschinellen Lernen, etwa Graph Neural Networks oder Knotenein
 
 Wenn Sie ein Regelwerk per Skript ändern, gibt es drei Fehler, die zuverlässig auftreten. Alle drei habe ich selbst gemacht.
 
-**Der Klassiker: das gierige Muster über Prozessorgrenzen hinweg.** Wer einen Prozessor per regulärem Ausdruck entfernen will, greift naheliegend zu:
+**Das gierige Muster über Prozessorgrenzen hinweg.** Wer einen Prozessor per regulärem Ausdruck entfernen will, greift naheliegend zu:
 
 ```python
 muster = re.compile(r'   <processor name="%s">.*?</processor>\n' % name, re.S)

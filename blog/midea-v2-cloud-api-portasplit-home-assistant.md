@@ -234,7 +234,7 @@ Eine cloudbasierte Alternative existiert also bereits. Sie bringt aber auch die 
 
 ### Bereits eingerichtete lokale Steuerung
 
-Für eine bereits konfigurierte PortaSplit ist die Lage relativ entspannt. `Midea Smart AC` speichert Token und Key nach der Einrichtung lokal und benötigt laut eigener [Cloud-Dokumentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) für die weitere Steuerung keine Cloud-Verbindung.
+Für eine bereits konfigurierte PortaSplit ist die Lage vergleichsweise unkritisch. `Midea Smart AC` speichert Token und Key nach der Einrichtung lokal und benötigt laut eigener [Cloud-Dokumentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) für die weitere Steuerung keine Cloud-Verbindung.
 
 Eine Abschaltung des reinen Token-Abrufs würde daher nicht automatisch die vorhandene lokale Verbindung beenden.
 
@@ -255,7 +255,7 @@ Ob ein Werksreset oder eine erneute Kopplung bei jeder PortaSplit zwingend neue 
 
 ### Eine echte Abschaltung der LAN-Steuerung
 
-Damit eine bereits eingerichtete PortaSplit ihre lokal gespeicherten Zugangsdaten nicht mehr akzeptiert, müsste sich zusätzlich das Verhalten des Geräts oder WLAN-Moduls ändern – etwa durch eine neue Firmware oder ein geändertes Authentifizierungsverfahren.
+Damit eine bereits eingerichtete PortaSplit ihre lokal gespeicherten Zugangsdaten nicht mehr akzeptiert, müsste sich zusätzlich das Verhalten des Geräts oder WLAN-Moduls ändern, etwa durch eine neue Firmware oder ein geändertes Authentifizierungsverfahren.
 
 Eine blosse Abschaltung des Cloud-Endpunkts `/v1/iot/secure/getToken` entfernt nicht automatisch die bereits im Gerät und in Home Assistant vorhandenen Zugangsdaten. Das folgt aus der von [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) dokumentierten Trennung zwischen einmaligem Cloud-Abruf und anschliessender LAN-Steuerung.
 

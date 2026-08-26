@@ -76,7 +76,7 @@ EPD-Zugang
 
 Mit dem Wechsel ändern sich Attributformate und Bindings. Die Attributmenge wird auf GLN, Name, Geburtsdatum und Geschlecht reduziert.
 
-Das ist der Punkt, der Integrationen bricht. Jede Anwendung, die weitere Attribute für Rollen oder Mandantentrennung verwertet, bekommt sie nach dem 14. September nicht mehr. Der Fehler zeigt sich nicht als Anmeldefehler, sondern als fehlende Berechtigung im Zielsystem.
+Das ist der Punkt, an dem Integrationen scheitern. Jede Anwendung, die weitere Attribute für Rollen oder Mandantentrennung verwertet, bekommt sie nach dem 14. September nicht mehr. Der Fehler zeigt sich nicht als Anmeldefehler, sondern als fehlende Berechtigung im Zielsystem.
 
 Testidentitäten verfallen am selben Datum, wer die Umstellung also in einer Integrationsumgebung erproben möchte, sollte das vorher tun.
 

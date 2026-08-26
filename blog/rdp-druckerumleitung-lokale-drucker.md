@@ -56,7 +56,7 @@ Auf dem Zielsystem entscheidet die Richtlinie **Clientdruckerumleitung nicht zul
 
 Ohne Gruppenrichtlinie steuert derselbe Mechanismus über die Registry: `fDisableCpm` unter `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp` (0 = Umleitung erlaubt, 1 = gesperrt). Daneben muss auf dem Zielsystem der Dienst **Druckwarteschlange** laufen; ohne Spooler werden auch umgeleitete Drucker nicht angelegt.
 
-In derselben GPO-Kategorie sitzen zwei nützliche Nachbarn: **Zuerst den Remotedesktop-Easy Print-Druckertreiber verwenden** (Standard und meist die richtige Wahl) und **Standarddrucker des Clients als Standarddrucker der Sitzung festlegen**.
+In derselben GPO-Kategorie finden sich zwei weitere nützliche Einstellungen: **Zuerst den Remotedesktop-Easy Print-Druckertreiber verwenden** (Standard und meist die richtige Wahl) und **Standarddrucker des Clients als Standarddrucker der Sitzung festlegen**.
 
 ## Die Warnung «Unbekannter Herausgeber»
 

@@ -51,7 +51,7 @@ Karl Popper hat die Wissenschaftstheorie um eine Einsicht bereichert, die für d
 
 Übertragen heisst das: Formulieren Sie Ihre Vermutung so, dass sie eine **Vorhersage** enthält, die falsch sein kann. Nicht „irgendetwas mit der Absenderdomäne stimmt nicht", sondern „wenn ich dieselbe Nachricht mit einer anderen Absenderdomäne über denselben Weg schicke, kommt sie an".
 
-Die zweite Formulierung ist etwas wert, weil sie sich in fünf Minuten zerstören lässt. Die erste können Sie stundenlang mit Belegen füttern, ohne je schlauer zu werden.
+Die zweite Formulierung ist etwas wert, weil sie sich in fünf Minuten widerlegen lässt. Die erste können Sie stundenlang mit Belegen füttern, ohne je schlauer zu werden.
 
 Ein guter Test dafür: Fragen Sie sich vor dem Versuch, welches Ergebnis Ihre Hypothese **widerlegen** würde. Fällt Ihnen keines ein, haben Sie keine Hypothese, sondern eine Stimmung.
 
@@ -96,9 +96,9 @@ Drei Nachrichten, zehn Minuten, und die Ursache war belegt statt vermutet. Vorhe
 
 Eine widerlegte Hypothese fühlt sich nach Rückschritt an. Tatsächlich ist sie das Einzige, was Sie sicher wissen. Bestätigungen sind schwach, denn eine Beobachtung kann zu mehreren Erklärungen passen. Eine saubere Widerlegung entfernt einen ganzen Ast aus dem Suchraum, und zwar dauerhaft.
 
-Genau hier wirkt der Bestätigungsfehler am stärksten. Haben Sie eine Vermutung, finden Sie fast immer etwas, das dazu passt. In der oben beschriebenen Analyse gab es eine Korrelation zwischen der Ablehnung und der Frage, wo die Absenderdomäne ihre Mail hosten lässt. Sie sah überzeugend aus, beruhte aber auf zwei Datenpunkten, die sich in mehreren Merkmalen unterschieden. Der dritte Versuch hat sie zerlegt.
+Genau hier wirkt der Bestätigungsfehler am stärksten. Haben Sie eine Vermutung, finden Sie fast immer etwas, das dazu passt. In der oben beschriebenen Analyse gab es eine Korrelation zwischen der Ablehnung und der Frage, wo die Absenderdomäne ihre Mail hosten lässt. Sie sah überzeugend aus, beruhte aber auf zwei Datenpunkten, die sich in mehreren Merkmalen unterschieden. Der dritte Versuch hat sie entkräftet.
 
-Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie gefallen sind. Das ist nichts anderes als ein Laborbuch. Es hat zwei Wirkungen: Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon verworfene Idee unter neuem Namen zurückkehrt.
+Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie verworfen wurden. Das ist nichts anderes als ein Laborbuch. Es hat zwei Wirkungen: Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon verworfene Idee unter neuem Namen zurückkehrt.
 
 In der Dokumentation gehören die widerlegten Punkte ausdrücklich neben die belegten. Ein Bericht, der nur die richtige Antwort enthält, verschweigt die Hälfte der Arbeit und lädt dazu ein, sie zu wiederholen.
 

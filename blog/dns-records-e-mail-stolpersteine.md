@@ -87,7 +87,7 @@ In der Zonendatei ist das Gegenstück der fehlende abschliessende Punkt. `mail.e
 
 Mail-Record-Werte werden fast nie getippt, sondern aus einem PDF, einem Ticket, einer Excel-Zelle oder einem Chat kopiert. Dabei entstehen Schäden, die im Eingabefeld unsichtbar bleiben:
 
-- Ein doppeltes `p=` am Anfang des DKIM-Schlüssels, weil der Präfix beim Zusammensetzen zweimal gesetzt wurde. Der Wert `v=DKIM1;k=rsa;p=p=MIIBIjAN...` ist ein realer Klassiker und ergibt einen unbrauchbaren Schlüssel.
+- Ein doppeltes `p=` am Anfang des DKIM-Schlüssels, weil der Präfix beim Zusammensetzen zweimal gesetzt wurde. Der Wert `v=DKIM1;k=rsa;p=p=MIIBIjAN...` kommt in der Praxis regelmässig vor und ergibt einen unbrauchbaren Schlüssel.
 - Typografische Anführungszeichen aus Word statt gerader.
 - Geschützte Leerzeichen aus PDF-Layouts, die wie normale aussehen.
 - Zeilenumbrüche mitten im Base64-Block, wenn der Wert im PDF über mehrere Zeilen lief.

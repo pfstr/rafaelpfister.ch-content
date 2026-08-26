@@ -411,7 +411,7 @@ Dass dieser Dump überhaupt existiert, war der schwierigste Teil der Analyse: Di
 
 ## Warum „Hardware-Beschleunigung deaktivieren" alles verschlimmert
 
-Die Kette erklärt auch den kontraintuitivsten Befund. Deaktivierte Hardware-Beschleunigung hat hier zwei fatale Effekte gleichzeitig. Erstens erzwingt sie den SwiftShader-Pfad, also genau den DLL-Ladeversuch, den Code Integrity blockiert; mit aktiver Hardware-Beschleunigung wird `vk_swiftshader.dll` dagegen kaum je gebraucht. Zweitens startet der GPU-Prozess dann bereits am unteren Ende der Fallback-Kette: Ein einziger Absturz genügt, und Glied 4 schlägt zu. Das erklärt auch die Beobachtung aus dem Community-Thread, dass ein Code-Integrity-Block mal folgenlos bleibt und mal die App beendet: Es hängt davon ab, wie viele Fallback-Stufen der Browser-Prozess noch übrig hat.
+Die Kette erklärt auch den kontraintuitivsten Befund. Deaktivierte Hardware-Beschleunigung hat hier zwei fatale Effekte gleichzeitig. Erstens erzwingt sie den SwiftShader-Pfad, also genau den DLL-Ladeversuch, den Code Integrity blockiert; mit aktiver Hardware-Beschleunigung wird `vk_swiftshader.dll` dagegen kaum je gebraucht. Zweitens startet der GPU-Prozess dann bereits am unteren Ende der Fallback-Kette: Ein einziger Absturz genügt, und Glied 4 greift. Das erklärt auch die Beobachtung aus dem Community-Thread, dass ein Code-Integrity-Block mal folgenlos bleibt und mal die App beendet: Es hängt davon ab, wie viele Fallback-Stufen der Browser-Prozess noch übrig hat.
 
 Besonders unglücklich: Die App kennt ein automatisches Abschalten der Hardware-Beschleunigung nach Problemen (`isHardwareAccelerationAutoDisabled`). Als Stabilitätsmassnahme gedacht, befördert es betroffene Systeme genau in die Konfiguration, in der der nächste Absturz die ganze App kostet.
 
@@ -485,7 +485,7 @@ Auf dem Zielsystem entscheidet die Richtlinie **Clientdruckerumleitung nicht zul
 
 Ohne Gruppenrichtlinie steuert derselbe Mechanismus über die Registry: `fDisableCpm` unter `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp` (0 = Umleitung erlaubt, 1 = gesperrt). Daneben muss auf dem Zielsystem der Dienst **Druckwarteschlange** laufen; ohne Spooler werden auch umgeleitete Drucker nicht angelegt.
 
-In derselben GPO-Kategorie sitzen zwei nützliche Nachbarn: **Zuerst den Remotedesktop-Easy Print-Druckertreiber verwenden** (Standard und meist die richtige Wahl) und **Standarddrucker des Clients als Standarddrucker der Sitzung festlegen**.
+In derselben GPO-Kategorie finden sich zwei weitere nützliche Einstellungen: **Zuerst den Remotedesktop-Easy Print-Druckertreiber verwenden** (Standard und meist die richtige Wahl) und **Standarddrucker des Clients als Standarddrucker der Sitzung festlegen**.
 
 ## Die Warnung «Unbekannter Herausgeber»
 
@@ -586,7 +586,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 
 Die unterschätzte Hälfte des Testaufbaus ist das Ziel. Drei Varianten haben sich bewährt:
 
-- **smtp-sink** oder `bhm` als schwarzes Loch: nimmt alles an, verwirft alles, misst die reine Transportkette. `smtp-sink` kann auf Wunsch künstliche Antwortverzögerungen und Fehlercodes erzeugen und damit auch das Verhalten des Testsystems bei einem langsamen oder störrischen Ziel prüfen.
+- **smtp-sink** oder `bhm` als schwarzes Loch: nimmt alles an, verwirft alles, misst die reine Transportkette. `smtp-sink` kann auf Wunsch künstliche Antwortverzögerungen und Fehlercodes erzeugen und damit auch das Verhalten des Testsystems bei einem langsamen oder fehlerhaft antwortenden Ziel prüfen.
 - **Postfix mit discard-Transport** als realistischere Senke, wenn das Ziel selbst ein vollwertiger SMTP-Server mit Queueing sein soll.
 - **Einige wenige echte Seed-Postfächer** zusätzlich zur Senke, um stichprobenartig zu prüfen, dass Nachrichten inhaltlich unversehrt ankommen, inklusive Verschlüsselungs- oder Signaturstufe.
 
@@ -855,7 +855,7 @@ Mit diesem Raster wird jede Position unten einsortierbar. Fahre mit der Maus üb
 <div data-exp="solidarisiert"><strong>Solidarisierte Kosten</strong><p>Schweizweit umgelegte Kosten für Netzverstärkungen (etwa für den Anschluss von Solaranlagen) und Unterstützungsmassnahmen. Die kleinste Position: 0.05 Rp./kWh.</p></div>
 <div data-exp="effizienz"><strong>Förderung Energieeffizienz</strong><p>Kantonale respektive kommunale Abgabe für Energieberatung und Förderprogramme, 0.16 Rp./kWh. Je nach Gemeinde können hier zusätzlich Konzessionsabgaben stehen.</p></div>
 <div data-exp="netto"><strong>Nettobetrag</strong><p>Summe aller Positionen vor Mehrwertsteuer. Bei diesem Musterhaushalt: rund 22.5 Rp. pro verbrauchte kWh, wovon nur etwa 10.4 Rp. tatsächlich Energie sind.</p></div>
-<div data-exp="mwst"><strong>Mehrwertsteuer</strong><p>8.1 Prozent auf den Nettobetrag, auf alle Positionen inklusive der staatlichen Abgaben. Ja: auf Abgaben wird Mehrwertsteuer erhoben.</p></div>
+<div data-exp="mwst"><strong>Mehrwertsteuer</strong><p>8.1 Prozent auf den Nettobetrag, auf alle Positionen inklusive der staatlichen Abgaben. Das heisst: Auch auf Abgaben wird Mehrwertsteuer erhoben.</p></div>
 <div data-exp="total"><strong>Rechnungsbetrag</strong><p>Der Endbetrag wird auf 5 Rappen gerundet, deshalb weicht er um wenige Rappen von der exakten Summe ab. Die Rundungsdifferenz weist die EKZ separat aus.</p></div>
 </div>
 </div>
@@ -949,7 +949,7 @@ Die Position «Systemdienstleistungen» (0.27 Rp./kWh) geht an Swissgrid für di
 
 ### Messung: neu sichtbar
 
-Seit 2026 weist die EKZ die Messkosten separat aus: CHF 5.00 pro Monat für Zähler, Datenübertragung und Bereitstellung der Messwerte. Vorher steckte das unsichtbar in der Netznutzung. Der Smart Meter, der hier bezahlt wird, misst viertelstundengenau und ist die technische Grundlage für alles, was der Strommarkt gerade Neues lernt: dynamische Tarife, LEG-Abrechnung, Lastverschiebung.
+Seit 2026 weist die EKZ die Messkosten separat aus: CHF 5.00 pro Monat für Zähler, Datenübertragung und Bereitstellung der Messwerte. Vorher steckte das unsichtbar in der Netznutzung. Der Smart Meter, der hier bezahlt wird, misst viertelstundengenau und ist die technische Grundlage für die aktuellen Neuerungen im Strommarkt: dynamische Tarife, LEG-Abrechnung, Lastverschiebung.
 
 ### Zuschläge und Abgaben: der staatliche Block
 
@@ -1002,7 +1002,7 @@ Wichtig, und das wird in jeder Diskussion falsch verstanden: Der Abschlag gilt *
 
 ## LEG, ZEV, vZEV: die Abgrenzung
 
-Die LEG ist das dritte Modell einer Familie, und die Begriffe werden munter durcheinandergeworfen:
+Die LEG ist das dritte Modell einer Familie, und die Begriffe werden oft durcheinandergeworfen:
 
 | Modell | Seit | Raum | Netznutzung auf internem Strom |
 | --- | --- | --- | --- |
@@ -1031,7 +1031,7 @@ Bequemlichkeit hat einen Preis, und beim Netzbetreiber-Modell steckt er in der S
 
 ## Einordnung: Was die LEG will
 
-Man kann die LEG als Renditevehikel missverstehen und wird dann enttäuscht (Spoiler: Beim Standardangebot des Netzbetreibers ist der finanzielle Effekt für reine Bezüger etwa null). Gedacht ist sie als Marktinstrument: Lokale Produktion soll lokal einen Abnehmer und einen fairen Preis finden, Produzenten sollen mehr erlösen als die magere Rückliefervergütung, und das Netz soll profitieren, wenn Strom dort verbraucht wird, wo er entsteht. Ob das aufgeht, entscheidet sich an der Beteiligung, und die beginnt damit, dass man versteht, was man da unterschreibt.
+Man kann die LEG als Renditevehikel missverstehen und wird dann enttäuscht (beim Standardangebot des Netzbetreibers ist der finanzielle Effekt für reine Bezüger etwa null). Gedacht ist sie als Marktinstrument: Lokale Produktion soll lokal einen Abnehmer und einen fairen Preis finden, Produzenten sollen mehr erlösen als die magere Rückliefervergütung, und das Netz soll profitieren, wenn Strom dort verbraucht wird, wo er entsteht. Ob das aufgeht, entscheidet sich an der Beteiligung, und die beginnt damit, dass man versteht, was man da unterschreibt.
 
 ----
 
@@ -1070,13 +1070,13 @@ Das ist kein Zufall, das ist Produktdesign. Pro LEG-Kilowattstunde sieht die Rec
 | SDL und Abgaben | 3.19 | 3.19 |
 | **Total** | **19.69 / 23.99** | **19.69 / 23.99** |
 
-Der Rabatt und die Gebühr heben sich exakt auf. Die EKZ schreibt selbst, das Angebot sei ein «Upgrade auf lokalen Sonnenstrom ohne Mehrkosten gegenüber der Grundversorgung», und genau so ist es gemeint: kostenneutral, nicht kostensenkend. Wer den Standardtarif 400ST hat (7.95 Rp./kWh), gewinnt rechnerisch 0.09 Rp. pro LEG-kWh; beim Wärmepumpentarif 400WP (6.45 Rp./kWh) verliert er 0.21 Rp. In Franken: Bei 10'000 kWh Jahresverbrauch und optimistischen 30 Prozent LEG-Anteil reden wir über plus/minus wenige Franken **pro Jahr**. Das ist Rundungsrauschen, keine Rendite.
+Der Rabatt und die Gebühr heben sich exakt auf. Die EKZ schreibt selbst, das Angebot sei ein «Upgrade auf lokalen Sonnenstrom ohne Mehrkosten gegenüber der Grundversorgung», und genau so ist es gemeint: kostenneutral, nicht kostensenkend. Wer den Standardtarif 400ST hat (7.95 Rp./kWh), gewinnt rechnerisch 0.09 Rp. pro LEG-kWh; beim Wärmepumpentarif 400WP (6.45 Rp./kWh) verliert er 0.21 Rp. In Franken: Bei 10'000 kWh Jahresverbrauch und optimistischen 30 Prozent LEG-Anteil geht es um plus/minus wenige Franken **pro Jahr**. Das ist Rundungsrauschen, keine Rendite.
 
 So sieht es auch bei uns aus: gleicher Rechnungsbetrag wie vorher, einzig die Rechnung bekommt neue Positionen (reduzierte Netznutzung plus Servicegebühr auf dem LEG-Anteil), und bilanziell stammt ein Teil des Bezugs neu von Dächern aus der Gemeinde statt aus dem allgemeinen Liefermix.
 
 ## Wann eine LEG finanziell doch etwas bringt
 
-Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Wege heraus:
+Die Nullnummer gilt für einen spezifischen, wenn auch häufigen Fall: reiner Bezüger, gemeindeweite LEG (20-Prozent-Stufe), Komfort-Angebot des Netzbetreibers. Es gibt drei Auswege:
 
 **1. Die 40-Prozent-Stufe.** Hängen alle Teilnehmer an derselben Trafostation, gilt der doppelte Abschlag: 40 Prozent von 7.50 Rp. sind 3.00 Rp., minus 1.50 Rp. Servicegebühr bleiben **1.50 Rp. pro LEG-kWh**. Bei 3'000 LEG-kWh im Jahr rund 49 Franken (inkl. MWST). Immer noch kein Vermögen, aber ein echter Rabatt. Quartier-LEGs sind darum finanziell interessanter als Gemeinde-LEGs.
 
@@ -1142,20 +1142,20 @@ Datum: 2026-08-19
 
 # Exchange-Sicherheitsupdates vom August 2026: Pwn2Own-Lücke geschlossen, OWA Light abgeschaltet
 
-Microsoft hat am 11. August 2026 Sicherheitsupdates (SUs) für Exchange Server veröffentlicht — bereits den vierten Monat in Folge. Die Updates schliessen sieben Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird nach aktuellem Stand aktiv ausgenutzt, und Microsoft stuft die Ausnutzung bei allen sieben als «Exploitation Less Likely» ein. Ein Routine-Patchday ist es trotzdem nicht, aus drei Gründen: Das Update schliesst die am Hacking-Wettbewerb Pwn2Own demonstrierte Exchange-Lücke, es schaltet **OWA Light nach fast zwanzig Jahren endgültig ab**, und das Exchange-Team hat im Nachgang erklärt, warum der Monatsrhythmus vorerst der Normalzustand bleibt.
+Microsoft hat am 11. August 2026 Sicherheitsupdates (SUs) für Exchange Server veröffentlicht, bereits den vierten Monat in Folge. Die Updates schliessen sieben Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird nach aktuellem Stand aktiv ausgenutzt, und Microsoft stuft die Ausnutzung bei allen sieben als «Exploitation Less Likely» ein. Ein Routine-Patchday ist es trotzdem nicht, aus drei Gründen: Das Update schliesst die am Hacking-Wettbewerb Pwn2Own demonstrierte Exchange-Lücke, es schaltet **OWA Light nach fast zwanzig Jahren endgültig ab**, und das Exchange-Team hat im Nachgang erklärt, warum der Monatsrhythmus vorerst der Normalzustand bleibt.
 
 ## Für welche Exchange-Versionen das Update verfügbar ist
 
 Die SUs stehen für folgende Versionen bereit:
 
-- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, Build 15.2.2562.46 — als regulär verfügbares, öffentliches Update.
-- **Exchange Server 2019 CU15**: KB5121574, Build 15.2.1748.49 — nur über das **Period-2-ESU-Programm**.
-- **Exchange Server 2019 CU14**: KB5121575, Build 15.2.1544.44 — nur über Period 2 ESU.
-- **Exchange Server 2016 CU23**: KB5121576, Build 15.1.2507.72 — nur über Period 2 ESU.
+- **Exchange Server Subscription Edition (SE) RTM**: KB5121573, Build 15.2.2562.46; als regulär verfügbares, öffentliches Update.
+- **Exchange Server 2019 CU15**: KB5121574, Build 15.2.1748.49; nur über das **Period-2-ESU-Programm**.
+- **Exchange Server 2019 CU14**: KB5121575, Build 15.2.1544.44; nur über Period 2 ESU.
+- **Exchange Server 2016 CU23**: KB5121576, Build 15.1.2507.72; nur über Period 2 ESU.
 
-Es gilt dieselbe Lage wie im Juli: Exchange 2016 und 2019 sind out of support. Die SUs von Mai bis Oktober 2026 erhält nur, wer im Period-2-ESU-Programm eingeschrieben ist. Alle anderen bleiben ungepatcht auf einem Stand mit inzwischen vierzehn offenen, teils hochbewerteten Schwachstellen — der Wechsel auf Exchange SE duldet dort keinen Aufschub mehr. Exchange Online ist bereits geschützt; in Hybrid-Umgebungen muss das SU trotzdem auf alle Exchange-Server, auch auf reine Management-Server und auf Maschinen, auf denen nur die Exchange Management Tools installiert sind.
+Es gilt dieselbe Lage wie im Juli: Exchange 2016 und 2019 sind out of support. Die SUs von Mai bis Oktober 2026 erhält nur, wer im Period-2-ESU-Programm eingeschrieben ist. Alle anderen bleiben ungepatcht auf einem Stand mit inzwischen vierzehn offenen, teils hochbewerteten Schwachstellen; der Wechsel auf Exchange SE duldet dort keinen Aufschub mehr. Exchange Online ist bereits geschützt; in Hybrid-Umgebungen muss das SU trotzdem auf alle Exchange-Server, auch auf reine Management-Server und auf Maschinen, auf denen nur die Exchange Management Tools installiert sind.
 
-Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von Hybrid-Umgebungen besteht auch mit dem August-SU weiter; der Fix ist laut Microsoft für ein kommendes Update vorgesehen. Immerhin gibt es eine gute Nachricht aus dem Kommentarbereich der Release-Ankündigung: Wer den dokumentierten SettingOverride als Workaround gesetzt hat, muss ihn nach der Installation des August-SUs **nicht** neu anlegen — das Update lässt den Override unangetastet, wie das Exchange-Team dort bestätigt.
+Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von Hybrid-Umgebungen besteht auch mit dem August-SU weiter; der Fix ist laut Microsoft für ein kommendes Update vorgesehen. Immerhin gibt es eine Entwarnung aus dem Kommentarbereich der Release-Ankündigung: Wer den dokumentierten SettingOverride als Workaround gesetzt hat, muss ihn nach der Installation des August-SUs **nicht** neu anlegen. Das Update lässt den Override unangetastet, wie das Exchange-Team dort bestätigt.
 
 ## Die sieben Schwachstellen im Überblick
 
@@ -1171,11 +1171,11 @@ Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von
 
 Drei davon verdienen einen genaueren Blick.
 
-**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** trägt mit CVSS 8.8 den höchsten Wert des Monats: eine Remote-Code-Execution, die ein authentifizierter Angreifer mit einfachen Rechten ohne jede Benutzerinteraktion auslösen kann. Ein beliebiges kompromittiertes Postfach-Konto genügt als Ausgangspunkt — in Zeiten von Phishing und Credential-Stuffing ist «authentifiziert» keine hohe Hürde.
+**[CVE-2026-62913](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62913)** trägt mit CVSS 8.8 den höchsten Wert des Monats: eine Remote-Code-Execution, die ein authentifizierter Angreifer mit einfachen Rechten ohne jede Benutzerinteraktion auslösen kann. Ein beliebiges kompromittiertes Postfach-Konto genügt als Ausgangspunkt; in Zeiten von Phishing und Credential-Stuffing ist «authentifiziert» keine hohe Hürde.
 
-**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** ist die einzige Schwachstelle des Monats, die Microsoft als *Critical* einstuft (Elevation of Privilege, CVSS 8.0). Dahinter steckt mehr Geschichte, als die nüchterne Nummer verrät: Auf die Frage, ob der an der **Pwn2Own 2026** von Orange Tsai demonstrierte Exchange-Exploit inzwischen behoben sei, verweist das Exchange-Team im Kommentarbereich der Release-Ankündigung genau auf diese CVE. Der Wettbewerbsfund ist damit geschlossen — ein Grund mehr, das August-SU nicht liegen zu lassen, denn Pwn2Own-Techniken werden nach Ablauf der Sperrfristen üblicherweise im Detail publiziert.
+**[CVE-2026-62911](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62911)** ist die einzige Schwachstelle des Monats, die Microsoft als *Critical* einstuft (Elevation of Privilege, CVSS 8.0). Dahinter steckt mehr Geschichte, als die nüchterne Nummer erkennen lässt: Auf die Frage, ob der an der **Pwn2Own 2026** von Orange Tsai demonstrierte Exchange-Exploit inzwischen behoben sei, verweist das Exchange-Team im Kommentarbereich der Release-Ankündigung genau auf diese CVE. Der Wettbewerbsfund ist damit geschlossen: ein Grund mehr, das August-SU nicht liegen zu lassen, denn Pwn2Own-Techniken werden nach Ablauf der Sperrfristen üblicherweise im Detail publiziert.
 
-**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) ist der direkte Anlass für die Abschaltung von OWA Light — dazu gleich mehr.
+**[CVE-2026-62914](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62914)** (Spoofing, CVSS 7.3) ist der direkte Anlass für die Abschaltung von OWA Light, dazu gleich mehr.
 
 Die übrigen Lücken: CVE-2026-62910 (EoP, 7.2) setzt bereits hohe Rechte voraus, CVE-2026-62912 (DoS), CVE-2026-62915 (Security Feature Bypass) und CVE-2026-65813 (EoP) liegen bei CVSS 6.5. Die Details stehen wie üblich im Security Update Guide (Filter «Server Software» für Exchange SE bzw. «ESU» für 2016/2019).
 
@@ -1183,13 +1183,13 @@ Die übrigen Lücken: CVE-2026-62910 (EoP, 7.2) setzt bereits hohe Rechte voraus
 
 ### Was das Update ändert
 
-Mit der Installation des August-SUs wird **OWA Light dauerhaft deaktiviert** — auf jedem Server, auf dem das Update (oder ein späteres) landet. Wer die Light-Oberfläche aufruft, landet künftig im normalen Outlook on the web. Die Abschaltung ist Teil des Updates selbst und lässt sich nicht per Schalter rückgängig machen; Microsoft hatte sie einige Wochen vorher in einem eigenen Blogpost angekündigt.
+Mit der Installation des August-SUs wird **OWA Light dauerhaft deaktiviert**: auf jedem Server, auf dem das Update (oder ein späteres) landet. Wer die Light-Oberfläche aufruft, landet künftig im normalen Outlook on the web. Die Abschaltung ist Teil des Updates selbst und lässt sich nicht per Schalter rückgängig machen; Microsoft hatte sie einige Wochen vorher in einem eigenen Blogpost angekündigt.
 
-OWA Light stammt aus der Ära von Exchange 2007: eine bewusst schlichte Weboberfläche als Fallback für alte Browser und langsame Verbindungen, seit August 2024 offiziell deprecated. Die Begründung für das Ende ist sicherheitsgetrieben: Ein separater Legacy-Rendering-Pfad neben dem modernen OWA erhöht die Komplexität und damit die Angriffsfläche — CVE-2026-62914 liefert dafür den konkreten Beleg. Wer den [Juli-Artikel](/blog/exchange-security-updates-juli-2026) gelesen hat, erinnert sich zudem: Schon die CVE-2026-42897-Mitigation vom Mai hatte OWA Light nebenbei funktionsunfähig gemacht. Die Oberfläche war also bereits auf Abruf.
+OWA Light stammt aus der Ära von Exchange 2007: eine bewusst schlichte Weboberfläche als Fallback für alte Browser und langsame Verbindungen, seit August 2024 offiziell deprecated. Die Begründung für das Ende ist sicherheitsgetrieben: Ein separater Legacy-Rendering-Pfad neben dem modernen OWA erhöht die Komplexität und damit die Angriffsfläche; CVE-2026-62914 liefert dafür den konkreten Beleg. Wer den [Juli-Artikel](/blog/exchange-security-updates-juli-2026) gelesen hat, erinnert sich zudem: Schon die CVE-2026-42897-Mitigation vom Mai hatte OWA Light nebenbei funktionsunfähig gemacht. Die Oberfläche war also bereits auf Abruf.
 
 ### Wer nicht patchen kann: OWA Light manuell abschalten
 
-Wichtig für alle, die das August-SU (noch) nicht installieren können — etwa weil die ESU-Freischaltung fehlt: Microsoft empfiehlt ausdrücklich, OWA Light in diesem Fall **manuell zu deaktivieren**, um CVE-2026-62914 zu entschärfen. Das geht über die OWA-Mailbox-Policy und die Anmeldeseite:
+Wichtig für alle, die das August-SU (noch) nicht installieren können, etwa weil die ESU-Freischaltung fehlt: Microsoft empfiehlt ausdrücklich, OWA Light in diesem Fall **manuell zu deaktivieren**, um CVE-2026-62914 zu entschärfen. Das geht über die OWA-Mailbox-Policy und die Anmeldeseite:
 
 ```powershell
 Get-OwaMailboxPolicy | Set-OwaMailboxPolicy -OWALightEnabled $false
@@ -1200,27 +1200,27 @@ Der erste Befehl schaltet die Light-Version für alle Postfächer der jeweiligen
 
 ### Was Admins jetzt prüfen sollten
 
-Die Abschaltung ist technisch trivial, organisatorisch aber nicht immer: OWA Light war der stille Rettungsanker für Nischen-Szenarien. Prüfenswert sind jetzt Lesezeichen und Helpdesk-Anleitungen, die `?layout=light` fest verdrahtet haben, Kiosk- und Terminalgeräte mit alten Browsern sowie interne Anleitungen für Nutzerinnen und Nutzer, die die Light-Version aus Gründen der Barrierefreiheit verwendet haben. Das moderne Outlook on the web läuft in allen aktuellen Browsern und bringt eigene Barrierefreiheits-Funktionen mit — aber wer betroffene Anwender nicht vorab informiert, produziert Tickets.
+Die Abschaltung ist technisch trivial, organisatorisch aber nicht immer: OWA Light war die stille Rückfalllösung für Nischen-Szenarien. Prüfenswert sind jetzt Lesezeichen und Helpdesk-Anleitungen, die `?layout=light` fest verdrahtet haben, Kiosk- und Terminalgeräte mit alten Browsern sowie interne Anleitungen für Nutzerinnen und Nutzer, die die Light-Version aus Gründen der Barrierefreiheit verwendet haben. Das moderne Outlook on the web läuft in allen aktuellen Browsern und bringt eigene Barrierefreiheits-Funktionen mit; aber wer betroffene Anwender nicht vorab informiert, produziert Tickets.
 
-## Warum jetzt jeden Monat ein SU kommt — und wo Exchange SE CU1 bleibt
+## Warum jetzt jeden Monat ein SU kommt und wo Exchange SE CU1 bleibt
 
-Zwei Tage nach dem Release hat das Exchange-Team in einem bemerkenswert offenen Blogpost («Where is Exchange SE CU1 anyway?») die Frage beantwortet, die sich viele Admins stellen. Die Kurzfassung: Microsoft setzt konzernweit KI-Werkzeuge ein, um Schwachstellen in den eigenen Produkten zu finden. Die Teams — Exchange eingeschlossen — arbeiten die gemeldeten Funde derzeit ab: validieren, reproduzieren, fixen, auf Regressionen testen, monatlich ausliefern. Seit Mai 2026 ist so jeden Monat ein Exchange-SU erschienen, und Microsoft sagt ausdrücklich: Dieses erhöhte Tempo wird anhalten.
+Zwei Tage nach dem Release hat das Exchange-Team in einem bemerkenswert offenen Blogpost («Where is Exchange SE CU1 anyway?») die Frage beantwortet, die sich viele Admins stellen. Die Kurzfassung: Microsoft setzt konzernweit KI-Werkzeuge ein, um Schwachstellen in den eigenen Produkten zu finden. Die Teams, Exchange eingeschlossen, arbeiten die gemeldeten Funde derzeit ab: validieren, reproduzieren, fixen, auf Regressionen testen, monatlich ausliefern. Seit Mai 2026 ist so jeden Monat ein Exchange-SU erschienen, und Microsoft sagt ausdrücklich: Dieses erhöhte Tempo wird anhalten.
 
-Das lang erwartete **CU1 für Exchange SE** verzögert sich genau deshalb. Ursprünglich für das erste Halbjahr 2026 angekündigt, dann auf das zweite verschoben, gibt es inzwischen gar kein Zieldatum mehr. Microsoft will CU1 erst veröffentlichen, wenn ein Monat ohne dringende Security-Zulieferung dazwischenliegt — ein CU, das sofort von einem SU überholt wird, würde vielen Organisationen doppelte Update-Arbeit bescheren. Bis dahin fliesst die monatliche Security-Payload laufend in den internen CU1-Build ein.
+Das lang erwartete **CU1 für Exchange SE** verzögert sich genau deshalb. Ursprünglich für das erste Halbjahr 2026 angekündigt, dann auf das zweite verschoben, gibt es inzwischen gar kein Zieldatum mehr. Microsoft will CU1 erst veröffentlichen, wenn ein Monat ohne dringende Security-Zulieferung dazwischenliegt; ein CU, das sofort von einem SU überholt wird, würde vielen Organisationen doppelte Update-Arbeit bescheren. Bis dahin fliesst die monatliche Security-Payload laufend in den internen CU1-Build ein.
 
-Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strategie — weder für die Migration auf SE noch für das Einspielen der SUs. Zweitens: Ein **monatliches Wartungsfenster** für Exchange gehört ab sofort fest in den Betriebskalender, so wie es bei Windows-Servern längst selbstverständlich ist.
+Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strategie, weder für die Migration auf SE noch für das Einspielen der SUs. Zweitens: Ein **monatliches Wartungsfenster** für Exchange gehört ab sofort fest in den Betriebskalender, so wie es bei Windows-Servern längst selbstverständlich ist.
 
 ## Installation und Nachbereitung
 
-Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen — dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
+Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen; dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
 
 SUs sind kumulativ: Wer das Juli-SU übersprungen hat, installiert direkt das August-SU. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
 
-Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen — wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
+Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen; wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
 
 ## Empfohlenes Vorgehen
 
-Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen — die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann, deaktiviert OWA Light manuell als Sofortmassnahme gegen CVE-2026-62914. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen — und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
+Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann, deaktiviert OWA Light manuell als Sofortmassnahme gegen CVE-2026-62914. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
 ## Quellen
 
@@ -1273,7 +1273,7 @@ Karl Popper hat die Wissenschaftstheorie um eine Einsicht bereichert, die für d
 
 Übertragen heisst das: Formulieren Sie Ihre Vermutung so, dass sie eine **Vorhersage** enthält, die falsch sein kann. Nicht „irgendetwas mit der Absenderdomäne stimmt nicht", sondern „wenn ich dieselbe Nachricht mit einer anderen Absenderdomäne über denselben Weg schicke, kommt sie an".
 
-Die zweite Formulierung ist etwas wert, weil sie sich in fünf Minuten zerstören lässt. Die erste können Sie stundenlang mit Belegen füttern, ohne je schlauer zu werden.
+Die zweite Formulierung ist etwas wert, weil sie sich in fünf Minuten widerlegen lässt. Die erste können Sie stundenlang mit Belegen füttern, ohne je schlauer zu werden.
 
 Ein guter Test dafür: Fragen Sie sich vor dem Versuch, welches Ergebnis Ihre Hypothese **widerlegen** würde. Fällt Ihnen keines ein, haben Sie keine Hypothese, sondern eine Stimmung.
 
@@ -1318,9 +1318,9 @@ Drei Nachrichten, zehn Minuten, und die Ursache war belegt statt vermutet. Vorhe
 
 Eine widerlegte Hypothese fühlt sich nach Rückschritt an. Tatsächlich ist sie das Einzige, was Sie sicher wissen. Bestätigungen sind schwach, denn eine Beobachtung kann zu mehreren Erklärungen passen. Eine saubere Widerlegung entfernt einen ganzen Ast aus dem Suchraum, und zwar dauerhaft.
 
-Genau hier wirkt der Bestätigungsfehler am stärksten. Haben Sie eine Vermutung, finden Sie fast immer etwas, das dazu passt. In der oben beschriebenen Analyse gab es eine Korrelation zwischen der Ablehnung und der Frage, wo die Absenderdomäne ihre Mail hosten lässt. Sie sah überzeugend aus, beruhte aber auf zwei Datenpunkten, die sich in mehreren Merkmalen unterschieden. Der dritte Versuch hat sie zerlegt.
+Genau hier wirkt der Bestätigungsfehler am stärksten. Haben Sie eine Vermutung, finden Sie fast immer etwas, das dazu passt. In der oben beschriebenen Analyse gab es eine Korrelation zwischen der Ablehnung und der Frage, wo die Absenderdomäne ihre Mail hosten lässt. Sie sah überzeugend aus, beruhte aber auf zwei Datenpunkten, die sich in mehreren Merkmalen unterschieden. Der dritte Versuch hat sie entkräftet.
 
-Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie gefallen sind. Das ist nichts anderes als ein Laborbuch. Es hat zwei Wirkungen: Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon verworfene Idee unter neuem Namen zurückkehrt.
+Notieren Sie deshalb die widerlegten Erklärungen zusammen mit dem Grund, aus dem sie verworfen wurden. Das ist nichts anderes als ein Laborbuch. Es hat zwei Wirkungen: Wer den Fall später übernimmt, läuft nicht dieselben Sackgassen ab. Und Sie selbst merken, wenn Sie im Kreis denken, weil eine schon verworfene Idee unter neuem Namen zurückkehrt.
 
 In der Dokumentation gehören die widerlegten Punkte ausdrücklich neben die belegten. Ein Bericht, der nur die richtige Antwort enthält, verschweigt die Hälfte der Arbeit und lädt dazu ein, sie zu wiederholen.
 
@@ -1550,7 +1550,7 @@ Count Name
 
 Eine einzige Absenderdomäne bedeutet: eng begrenztes Problem, kein Vorfall, Sie können in Ruhe weitersuchen. Stünden dort zwanzig verschiedene Domänen, hätten Sie einen laufenden Ausfall, und alles andere müsste warten. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
 
-## Fallstrick 3: Die `ConnectorId` verrät nicht den echten Receive-Connector
+## Fallstrick 3: Die `ConnectorId` nennt nicht den echten Receive-Connector
 
 Das ist der teuerste Fallstrick, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
 
@@ -1729,7 +1729,7 @@ Die ersten drei sind der Standardsatz für anonyme Einlieferung und für den Emp
 
 Verwechseln Sie `Accept-Any-Sender` nicht mit `Accept-Any-Recipient`. Das erste ist harmlos und notwendig, das zweite ist die sicherheitsrelevante Einstellung.
 
-## Schritt 5: Gegenprobe durch eigene Einlieferung
+## Schritt 5: Kontrolltest durch eigene Einlieferung
 
 Wenn die Auswertung mehrdeutig bleibt, liefern Sie selbst ein. Damit kontrollieren Sie Absender, Empfänger und Einlieferungspunkt vollständig:
 
@@ -1960,7 +1960,7 @@ Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufz
 
 Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer sie in einen Topf wirft, zieht falsche Schlüsse.
 
-**`255.255.255.255` steht nicht für ein System.** Dieser Wert erscheint, wenn es zur Nachricht keine eingehende SMTP-Verbindung von aussen gab. Das betrifft im Dienst selbst erzeugte Nachrichten: Journalberichte, Unzustellbarkeitsmeldungen, Abwesenheitsnotizen, Nachrichten zwischen Postfächern desselben Tenants. In fast jeder Umgebung ist das der grösste Posten, und er ist völlig unauffällig. Erschrecken Sie nicht.
+**`255.255.255.255` steht nicht für ein System.** Dieser Wert erscheint, wenn es zur Nachricht keine eingehende SMTP-Verbindung von aussen gab. Das betrifft im Dienst selbst erzeugte Nachrichten: Journalberichte, Unzustellbarkeitsmeldungen, Abwesenheitsnotizen, Nachrichten zwischen Postfächern desselben Tenants. In fast jeder Umgebung ist das der grösste Posten, und er ist völlig unauffällig.
 
 **Private Adressen aus RFC 1918** stammen aus Ihrem eigenen Netz. In Hybrid-Umgebungen sehen Sie hier die lokalen Transportserver, denn deren interne Adresse wird bei der Übergabe an den Dienst erhalten. Das sind die grossen Zahlen in der Liste und in aller Regel der erwartete Hauptweg.
 
@@ -1970,7 +1970,7 @@ Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer 
 
 ## Die Auflösung: aus Adressen werden Namen
 
-Für alles, was Sie nicht sofort zuordnen können, hilft die Rückwärtsauflösung. Sie ist nicht immer gesetzt und nicht immer ehrlich, aber sie liefert in der Mehrzahl der Fälle den entscheidenden Hinweis:
+Für alles, was Sie nicht sofort zuordnen können, hilft die Rückwärtsauflösung. Sie ist nicht immer gesetzt und nicht immer verlässlich, aber sie liefert in der Mehrzahl der Fälle den entscheidenden Hinweis:
 
 ```powershell
 $unbekannt = '198.51.100.77','203.0.113.9'
@@ -2000,7 +2000,7 @@ Absender und Betreff sagen Ihnen in aller Regel sofort, welche Anwendung dahinte
 
 ## Der Abgleich: welche Adresse gehört zu welchem Connector?
 
-Jetzt kommt der eigentliche Erkenntnisgewinn. Stellen Sie Ihre Ergebnisliste den konfigurierten Connectoren gegenüber:
+Stellen Sie Ihre Ergebnisliste den konfigurierten Connectoren gegenüber:
 
 ```powershell
 Get-InboundConnector |
@@ -2204,7 +2204,7 @@ Dieser Befund ist wertvoller als die Prozessorliste, weil er mitten in aktiven K
 
 ## Werkzeug 4: Strukturprüfung
 
-Wohlgeformtes XML ist nur die halbe Miete. Diese vier Prüfungen fangen die Fehler ab, die ein Parser durchgehen lässt, das Gateway aber nicht:
+Wohlgeformtes XML allein genügt nicht. Diese vier Prüfungen fangen die Fehler ab, die ein Parser durchgehen lässt, das Gateway aber nicht:
 
 ```python
 dom = xml.dom.minidom.parseString(daten.replace("\n", "\r\n").encode("utf-8"))
@@ -2237,9 +2237,9 @@ print("Strukturfehler:      ", fehler or "keine")
 print("Ziele ohne Definition:", sorted(zielnamen - set(namen)) or "keine")
 ```
 
-Ein `ToProcessor` auf einen Prozessor, den es nicht gibt, ist der klassische Fehler nach einer Umbenennung. Das XML bleibt wohlgeformt, das Gateway stolpert erst zur Laufzeit darüber, und dann meist mit einer wenig hilfreichen Meldung.
+Ein `ToProcessor` auf einen Prozessor, den es nicht gibt, ist der klassische Fehler nach einer Umbenennung. Das XML bleibt wohlgeformt, das Gateway scheitert erst zur Laufzeit daran, und dann meist mit einer wenig hilfreichen Meldung.
 
-## Ein Zwischenruf: das ist Compilerbau, nicht Bastelei
+## Einordnung: das ist Compilerbau
 
 Was Sie hier tun, hat einen Namen und eine Theorie dahinter. Ein Regelwerk ist ein **Kontrollflussgraph**, also dasselbe Modell, mit dem Compiler seit Jahrzehnten Programme analysieren. Das lohnt sich zu wissen, weil damit fertige Algorithmen und, wichtiger, klare Aussagen über deren Grenzen zur Verfügung stehen.
 
@@ -2254,7 +2254,7 @@ Die letzten beiden Zeilen sind die praktisch wertvollsten. Ein Mail-Loop ist kei
 
 ### Zyklen finden, bevor sie zu Mail-Loops werden
 
-Die Breitensuche beantwortet die Frage nach totem Code. Für Schleifen brauchen Sie die Tiefensuche, denn dort verrät eine **Rückwärtskante** den Zyklus. Das Verfahren ist die klassische Dreifarbenmarkierung:
+Die Breitensuche beantwortet die Frage nach totem Code. Für Schleifen brauchen Sie die Tiefensuche, denn dort zeigt eine **Rückwärtskante** den Zyklus an. Das Verfahren ist die klassische Dreifarbenmarkierung:
 
 ```python
 def zyklen_finden(bloecke, ziele):
@@ -2303,7 +2303,7 @@ Verfahren aus dem maschinellen Lernen, etwa Graph Neural Networks oder Knotenein
 
 Wenn Sie ein Regelwerk per Skript ändern, gibt es drei Fehler, die zuverlässig auftreten. Alle drei habe ich selbst gemacht.
 
-**Der Klassiker: das gierige Muster über Prozessorgrenzen hinweg.** Wer einen Prozessor per regulärem Ausdruck entfernen will, greift naheliegend zu:
+**Das gierige Muster über Prozessorgrenzen hinweg.** Wer einen Prozessor per regulärem Ausdruck entfernen will, greift naheliegend zu:
 
 ```python
 muster = re.compile(r'   <processor name="%s">.*?</processor>\n' % name, re.S)
@@ -2417,7 +2417,7 @@ Internet
   → ...
 ```
 
-Nicht jeder mehrfach auftauchende Microsoft-Hostname ist bereits eine Schleife. Exchange Online verarbeitet Nachrichten intern über mehrere Transportrollen. Verdächtig ist die wiederholte Rückkehr zwischen denselben administrativen Grenzen, beispielsweise zwischen Exchange Online und einem lokalen Gateway. Zeitstempel, sendende IP, empfangender Host und `Message-ID` helfen, die Runde eindeutig zu erkennen.
+Nicht jeder mehrfach auftauchende Microsoft-Hostname ist bereits eine Schleife. Exchange Online verarbeitet Nachrichten intern über mehrere Transportrollen. Auffällig ist die wiederholte Rückkehr zwischen denselben administrativen Grenzen, beispielsweise zwischen Exchange Online und einem lokalen Gateway. Zeitstempel, sendende IP, empfangender Host und `Message-ID` helfen, die Runde eindeutig zu erkennen.
 
 Für die erste Analyse werden diese Fragen beantwortet:
 
@@ -2567,7 +2567,7 @@ Get-OutboundConnector -IncludeTestModeConnectors |
         RecipientDomains,SmartHosts,UseMXRecord -AutoSize
 ```
 
-Mehrere Connectoren mit überlappendem Scope sind ebenfalls verdächtig. Microsoft empfiehlt für Hybrid-Mailflow einen dedizierten On-Premises-Connector; eine Reparatur über den Hybrid Configuration Wizard ist häufig sicherer als isolierte Einzeländerungen.
+Mehrere Connectoren mit überlappendem Scope sollten ebenfalls geprüft werden. Microsoft empfiehlt für Hybrid-Mailflow einen dedizierten On-Premises-Connector; eine Reparatur über den Hybrid Configuration Wizard ist häufig sicherer als isolierte Einzeländerungen.
 
 Wenn Centralized Mail Transport nachweislich nicht mehr benötigt wird, kann die Einstellung gezielt deaktiviert werden:
 
@@ -2941,7 +2941,7 @@ foreach ($row in $targets) {
 }
 ```
 
-Das Skript ist absichtlich kein vollständig autonomer Migrationsmotor. Es beendet den Lauf beim ersten Widerspruch, damit ein Administrator Ursache und Zustand beurteilen kann. Vor einem produktiven Batch sollte der Code mit wenigen Testpostfächern und den eingesetzten Exchange-Versionen validiert werden.
+Das Skript ist absichtlich kein vollautomatisches Migrationswerkzeug. Es beendet den Lauf beim ersten Widerspruch, damit ein Administrator Ursache und Zustand beurteilen kann. Vor einem produktiven Batch sollte der Code mit wenigen Testpostfächern und den eingesetzten Exchange-Versionen validiert werden.
 
 ## Phase 4: Synchronisieren, lizenzieren und verifizieren
 
@@ -3089,7 +3089,7 @@ In der Zonendatei ist das Gegenstück der fehlende abschliessende Punkt. `mail.e
 
 Mail-Record-Werte werden fast nie getippt, sondern aus einem PDF, einem Ticket, einer Excel-Zelle oder einem Chat kopiert. Dabei entstehen Schäden, die im Eingabefeld unsichtbar bleiben:
 
-- Ein doppeltes `p=` am Anfang des DKIM-Schlüssels, weil der Präfix beim Zusammensetzen zweimal gesetzt wurde. Der Wert `v=DKIM1;k=rsa;p=p=MIIBIjAN...` ist ein realer Klassiker und ergibt einen unbrauchbaren Schlüssel.
+- Ein doppeltes `p=` am Anfang des DKIM-Schlüssels, weil der Präfix beim Zusammensetzen zweimal gesetzt wurde. Der Wert `v=DKIM1;k=rsa;p=p=MIIBIjAN...` kommt in der Praxis regelmässig vor und ergibt einen unbrauchbaren Schlüssel.
 - Typografische Anführungszeichen aus Word statt gerader.
 - Geschützte Leerzeichen aus PDF-Layouts, die wie normale aussehen.
 - Zeilenumbrüche mitten im Base64-Block, wenn der Wert im PDF über mehrere Zeilen lief.
@@ -3442,7 +3442,7 @@ Für ein Zertifikat, das mehrere Appliances und den Quarantäne-Hostnamen abdeck
 
 Alle folgenden Schritte laufen über OpenSSL, auf einem System innerhalb der Umgebung, etwa einem Admin-Server. Die Light-Edition der Windows-Builds von Shining Light Productions genügt, der Installer ist rund 6 MB gross und lässt sich gegen die von slproweb publizierte Prüfsummenliste verifizieren.
 
-Der Installer legt alles unter `C:\Program Files\OpenSSL-Win64` ab, die ausführbare Datei liegt in `bin\openssl.exe`. In den Suchpfad trägt er sich nicht ein: Wer in einer frischen Eingabeaufforderung `openssl` tippt, bekommt eine Fehlermeldung. Drei Wege führen zum Ziel:
+Der Installer legt alles unter `C:\Program Files\OpenSSL-Win64` ab, die ausführbare Datei liegt in `bin\openssl.exe`. In den Suchpfad trägt er sich nicht ein: Wer in einer frischen Eingabeaufforderung `openssl` tippt, bekommt eine Fehlermeldung. Es gibt drei Möglichkeiten:
 
 - Im Startmenü den Eintrag `Win64 OpenSSL Command Prompt` aufrufen. Er startet die `start.bat` aus dem Installationsverzeichnis, setzt die Umgebung und begrüsst mit der Ausgabe von `openssl version -a`. In diesem Fenster funktioniert `openssl` direkt.
 - Den vollständigen Pfad angeben: `"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version`.
@@ -3656,7 +3656,7 @@ EPD-Zugang
 
 Mit dem Wechsel ändern sich Attributformate und Bindings. Die Attributmenge wird auf GLN, Name, Geburtsdatum und Geschlecht reduziert.
 
-Das ist der Punkt, der Integrationen bricht. Jede Anwendung, die weitere Attribute für Rollen oder Mandantentrennung verwertet, bekommt sie nach dem 14. September nicht mehr. Der Fehler zeigt sich nicht als Anmeldefehler, sondern als fehlende Berechtigung im Zielsystem.
+Das ist der Punkt, an dem Integrationen scheitern. Jede Anwendung, die weitere Attribute für Rollen oder Mandantentrennung verwertet, bekommt sie nach dem 14. September nicht mehr. Der Fehler zeigt sich nicht als Anmeldefehler, sondern als fehlende Berechtigung im Zielsystem.
 
 Testidentitäten verfallen am selben Datum, wer die Umstellung also in einer Integrationsumgebung erproben möchte, sollte das vorher tun.
 
@@ -3773,7 +3773,7 @@ for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
 done
 ```
 
-Läuft auch die Gegenprobe ins Leere, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
+Schlägt auch der Kontrolltest fehl, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
 
 Fehlt `/dev/tcp`, ist die Shell keine bash. Unter `sh`, `ash` oder `ksh` gibt es das Feature nicht, was gerne als vermeintliches Netzwerkproblem fehlgedeutet wird:
 
@@ -3791,7 +3791,7 @@ Ein SMTP-Server begrüsst von sich aus mit einem `220`-Banner. Der aussagekräft
 
 Diese wenigen Zeichen trennen zwei völlig verschiedene Situationen. Kommt ein `220 mail.example.com ESMTP`, spricht die Gegenstelle und alle weiteren Fehler liegen im Dialog. Kommt nichts, liegt es nicht an einem falsch formulierten Kommando Ihrerseits, denn Sie haben ja keines geschickt.
 
-Der Filedeskriptor bleibt danach in der Shell offen. Schliessen Sie ihn, bevor Sie den nächsten Test starten, sonst arbeiten Sie unter Umständen mit einer alten, halbtoten Verbindung weiter:
+Der Filedeskriptor bleibt danach in der Shell offen. Schliessen Sie ihn, bevor Sie den nächsten Test starten, sonst arbeiten Sie unter Umständen mit einer alten, nicht mehr intakten Verbindung weiter:
 
 ```bash
 exec 3<&- 3>&-
@@ -3816,7 +3816,7 @@ sleep 2; kill $R 2>/dev/null
 }
 ```
 
-Zwei Details entscheiden über Erfolg oder Frust. SMTP verlangt CRLF als Zeilenende, deshalb `printf` mit `\r\n` und nicht `echo`. Und der Punkt auf einer eigenen Zeile beendet den Nachrichtenteil; er muss als `\r\n.\r\n` gesendet werden.
+Zwei Details entscheiden über Erfolg oder Misserfolg. SMTP verlangt CRLF als Zeilenende, deshalb `printf` mit `\r\n` und nicht `echo`. Und der Punkt auf einer eigenen Zeile beendet den Nachrichtenteil; er muss als `\r\n.\r\n` gesendet werden.
 
 Der erwartete Verlauf: `220` beim Verbindungsaufbau, `250` auf EHLO, `250 2.1.0` auf MAIL FROM, `250 2.1.5` auf RCPT TO, `354` auf DATA und am Ende `250 2.0.0 Ok: queued as <id>`. Notieren Sie sich die Queue-ID. Damit lässt sich die Nachricht beim betreibenden Provider nachverfolgen, falls sie beim Empfänger nie ankommt.
 
@@ -3840,13 +3840,13 @@ openssl s_client -connect 192.0.2.25:25 \
 
 Zwei Fehlerbilder tauchen hier regelmässig auf und werden gerne falsch gedeutet.
 
-**«Didn't find STARTTLS in server response, trying anyway»** bedeutet, dass der Server in seiner EHLO-Antwort kein STARTTLS angeboten hat. `openssl` schickt trotzdem ein TLS-ClientHello, der Server sieht darin Protokollmüll und die Verbindung endet mit `wrong version number` oder `write:errno=32` (EPIPE). Beide Meldungen sind Folgefehler. Die eigentliche Information ist: kein STARTTLS. Sehen Sie mit dem Klartext-Dialog aus Schritt 4 nach, welche Capabilities der Server tatsächlich meldet.
+**«Didn't find STARTTLS in server response, trying anyway»** bedeutet, dass der Server in seiner EHLO-Antwort kein STARTTLS angeboten hat. `openssl` schickt trotzdem ein TLS-ClientHello, der Server sieht darin ungültige Protokolldaten und die Verbindung endet mit `wrong version number` oder `write:errno=32` (EPIPE). Beide Meldungen sind Folgefehler. Die eigentliche Information ist: kein STARTTLS. Sehen Sie mit dem Klartext-Dialog aus Schritt 4 nach, welche Capabilities der Server tatsächlich meldet.
 
 **Kein STARTTLS auf einem internen Hop** ist oft völlig korrekt. Wenn ein Load Balancer die Verbindung auf Layer 4 weiterreicht, verhandelt nicht er das TLS, sondern erst das dahinterliegende System gegenüber dem eigentlichen Ziel. Auf dem internen Segment im Klartext zu testen ist dann kein Sicherheitsmangel, sondern schlicht die Architektur.
 
 ## Schritt 6: Python als Alternative
 
-Ist Python vorhanden, ersparen Sie sich das Timing-Gebastel mit `sleep`. Die Standardbibliothek reicht aus, es muss nichts nachinstalliert werden:
+Ist Python vorhanden, ersparen Sie sich die manuelle Zeitsteuerung mit `sleep`. Die Standardbibliothek reicht aus, es muss nichts nachinstalliert werden:
 
 ```python
 #!/usr/bin/env python3
@@ -3934,7 +3934,7 @@ Steht das System hinter NAT, sieht die Gegenstelle nicht diese, sondern die öff
 
 Für Volumentests gilt eine Regel, die im Alltag oft übersehen wird: Nicht die Anzahl Nachrichten ist das Problem, sondern die Anzahl Verbindungen. Typische Relays erlauben einige Hundert Verbindungen pro Minute, aber Zehntausende Nachrichten. Halten Sie deshalb eine Session offen und schicken Sie viele Envelopes darüber, statt für jede Nachricht neu zu verbinden.
 
-In `smtplib` heisst das schlicht, dasselbe Verbindungsobjekt mehrfach zu verwenden und die Session nach einer festen Zahl Nachrichten kontrolliert neu aufzubauen. Wer dagegen pro Mail eine neue Verbindung öffnet, reisst das Verbindungslimit weit vor dem Nachrichtenlimit und provoziert Ablehnungen, die wie ein Problem der Gegenstelle aussehen.
+In `smtplib` heisst das schlicht, dasselbe Verbindungsobjekt mehrfach zu verwenden und die Session nach einer festen Zahl Nachrichten kontrolliert neu aufzubauen. Wer dagegen pro Mail eine neue Verbindung öffnet, überschreitet das Verbindungslimit weit vor dem Nachrichtenlimit und provoziert Ablehnungen, die wie ein Problem der Gegenstelle aussehen.
 
 ## Fazit
 
@@ -4204,7 +4204,7 @@ Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in di
 
 ## Fazit
 
-Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der Appliance lange bestand: Administratorzugänge lassen sich nun zentral im Verzeichnis steuern statt pro Gerät. Zusammen mit dem separaten MFA-Feld macht 15.0.6 die Anmeldung an der Administrationsoberfläche damit in einem einzigen Release deutlich erwachsener. Wer die Funktion einführt, sollte das Gruppen-Mapping bewusst restriktiv halten und den lokalen Notfallzugang nicht opfern.
+Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der Appliance lange bestand: Administratorzugänge lassen sich nun zentral im Verzeichnis steuern statt pro Gerät. Zusammen mit dem separaten MFA-Feld verbessert 15.0.6 die Anmeldung an der Administrationsoberfläche damit in einem einzigen Release deutlich. Wer die Funktion einführt, sollte das Gruppen-Mapping bewusst restriktiv halten und den lokalen Notfallzugang beibehalten.
 
 ## Quellen
 
@@ -4297,13 +4297,13 @@ Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über 
 
 ## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Stirbt der Rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
+Die dritte Falle betrifft die Gegenseite. Bricht der Rclone-Prozess ab und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
 ```
 
-Docker verwendet für Bind-Mounts standardmässig `rprivate`: Ein Mount, der auf dem Host **nach** dem Container-Start entsteht, erreicht dessen Mount-Namensraum nie. Der Container bleibt am toten FUSE-Mount hängen, bis er neu erstellt wird. Die Lösung kostet eine Zeile:
+Docker verwendet für Bind-Mounts standardmässig `rprivate`: Ein Mount, der auf dem Host **nach** dem Container-Start entsteht, erreicht dessen Mount-Namensraum nie. Der Container bleibt am nicht mehr verbundenen FUSE-Mount hängen, bis er neu erstellt wird. Die Lösung kostet eine Zeile:
 
 ```yaml
     volumes:
@@ -4322,7 +4322,7 @@ Aus den drei Bausteinen ergibt sich ein robustes Gesamtmuster, das ohne Watchdog
 
 1. Der Mount-Container prüft seine Mounts in einer Schleife. Antwortet einer nicht mehr, beendet er sich mit Fehlercode.
 2. `restart: unless-stopped` lässt Docker den Container neu starten.
-3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem Vorleben** ab: ein toter Bind auf dem Zielpfad würde das erneute Publizieren sonst blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
+3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem vorherigen Lauf** ab: ein verwaister Bind auf dem Zielpfad würde das erneute Publizieren sonst blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
 
 ```sh
 while grep -q " /data/dokumente " /proc/self/mountinfo; do
@@ -4486,7 +4486,7 @@ Die Vorlage kümmert sich um vier Punkte, die du bei einem eigenen Aufbau ebenfa
 
 ## Was du vor dem Einsatz abwägen solltest
 
-Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist. Stirbt die Maschine genau in diesem Fenster, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und Rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Weil Langzeitdaten aus dem Dauerbetrieb noch fehlen, ist die Vorlage als experimentell gekennzeichnet.
+Ein frisch aufgenommenes Dokument liegt einige Sekunden nur im lokalen Cache, bis der Upload durch ist. Fällt die Maschine genau in diesem Fenster aus, fehlt die Datei. Das Cache-Limit ist weich und kann bei Zugriffsschüben kurzzeitig deutlich überschritten werden. Und Rclones Proton-Backend ist offiziell Beta; unter schnellen API-Aufrufen zeigte es Drosselungssymptome. Weil Langzeitdaten aus dem Dauerbetrieb noch fehlen, ist die Vorlage als experimentell gekennzeichnet.
 
 Wie die Messwerte zustande kamen, welche Ausfälle simuliert wurden und wie sich so ein Aufbau überhaupt seriös testen lässt, steht im Methodik-Artikel: [Cloud-Mounts testen mit generierten PDFs](/blog/cloud-mount-testen-dummy-pdfs).
 
@@ -5031,7 +5031,7 @@ Eine cloudbasierte Alternative existiert also bereits. Sie bringt aber auch die 
 
 ### Bereits eingerichtete lokale Steuerung
 
-Für eine bereits konfigurierte PortaSplit ist die Lage relativ entspannt. `Midea Smart AC` speichert Token und Key nach der Einrichtung lokal und benötigt laut eigener [Cloud-Dokumentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) für die weitere Steuerung keine Cloud-Verbindung.
+Für eine bereits konfigurierte PortaSplit ist die Lage vergleichsweise unkritisch. `Midea Smart AC` speichert Token und Key nach der Einrichtung lokal und benötigt laut eigener [Cloud-Dokumentation](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) für die weitere Steuerung keine Cloud-Verbindung.
 
 Eine Abschaltung des reinen Token-Abrufs würde daher nicht automatisch die vorhandene lokale Verbindung beenden.
 
@@ -5052,7 +5052,7 @@ Ob ein Werksreset oder eine erneute Kopplung bei jeder PortaSplit zwingend neue 
 
 ### Eine echte Abschaltung der LAN-Steuerung
 
-Damit eine bereits eingerichtete PortaSplit ihre lokal gespeicherten Zugangsdaten nicht mehr akzeptiert, müsste sich zusätzlich das Verhalten des Geräts oder WLAN-Moduls ändern – etwa durch eine neue Firmware oder ein geändertes Authentifizierungsverfahren.
+Damit eine bereits eingerichtete PortaSplit ihre lokal gespeicherten Zugangsdaten nicht mehr akzeptiert, müsste sich zusätzlich das Verhalten des Geräts oder WLAN-Moduls ändern, etwa durch eine neue Firmware oder ein geändertes Authentifizierungsverfahren.
 
 Eine blosse Abschaltung des Cloud-Endpunkts `/v1/iot/secure/getToken` entfernt nicht automatisch die bereits im Gerät und in Home Assistant vorhandenen Zugangsdaten. Das folgt aus der von [`Midea Smart AC`](https://github.com/mill1000/midea-ac-py#note-on-cloud-usage) dokumentierten Trennung zwischen einmaligem Cloud-Abruf und anschliessender LAN-Steuerung.
 
@@ -5152,7 +5152,7 @@ Das Projekt Midea AC LAN warnt vor möglichen Änderungen an diesen Cloud-Schnit
 
 ### Warum konnte Home Assistant den Token bisher überhaupt bekommen?
 
-Das Interessante ist: Die Community hat den Token nie berechnet. Sie hat vielmehr den Netzwerkverkehr der offiziellen App analysiert und dabei festgestellt, dass die App den Token gar nicht selbst erzeugt, sondern aus der Cloud bezieht:
+Die Community hat den Token nie berechnet. Sie hat vielmehr den Netzwerkverkehr der offiziellen App analysiert und dabei festgestellt, dass die App den Token gar nicht selbst erzeugt, sondern aus der Cloud bezieht:
 
 ```text
 App
@@ -5253,7 +5253,7 @@ Die eigentlichen Steuerbefehle gehen nach der Einrichtung direkt von Home Assist
 Home Assistant → lokales Netzwerk → Midea PortaSplit
 ```
 
-Ein Schaltbefehl muss nicht über einen externen Midea-Server laufen, die Reaktionszeit ist kurz, eine Störung der Midea-Cloud legt die bereits eingerichtete lokale Steuerung nicht zwingend lahm, und das Gerät bleibt grundsätzlich auch ohne Internetzugriff steuerbar.
+Ein Schaltbefehl muss nicht über einen externen Midea-Server laufen, die Reaktionszeit ist kurz, eine Störung der Midea-Cloud unterbricht die bereits eingerichtete lokale Steuerung nicht zwingend, und das Gerät bleibt grundsätzlich auch ohne Internetzugriff steuerbar.
 
 Bei neueren Geräten mit dem sogenannten V3-Protokoll akzeptiert die PortaSplit lokale Befehle jedoch nicht ungeschützt. Home Assistant benötigt zwei gerätespezifische Werte, einen Token und einen Key, die der Authentifizierung und Verschlüsselung der lokalen Verbindung dienen. Die Integration holt sie während der erstmaligen Einrichtung einmalig über eine Midea-Cloud-Schnittstelle ab und speichert sie danach lokal; für die weitere Steuerung ist keine Cloud-Verbindung erforderlich.
 
@@ -5668,7 +5668,7 @@ Midea PortaSplit
 
 ## Empfohlener Betriebszustand
 
-Die Midea PortaSplit lässt sich erstaunlich gut in Home Assistant integrieren. Nach erfolgreicher Einrichtung ist sie lokal steuerbar und in Automationen einbindbar, womit für den täglichen Betrieb ein grosser Teil der Cloud-Abhängigkeit entfällt.
+Die Midea PortaSplit lässt sich gut in Home Assistant integrieren. Nach erfolgreicher Einrichtung ist sie lokal steuerbar und in Automationen einbindbar, womit für den täglichen Betrieb ein grosser Teil der Cloud-Abhängigkeit entfällt.
 
 Unter Sicherheitsgesichtspunkten ist die Integration vertretbar, wenn einige Grundregeln eingehalten werden: keine Portweiterleitung, Token und Key geheim halten, Backups verschlüsseln, Debug-Logs vor Veröffentlichung prüfen, Home Assistant absichern, IoT-Geräte segmentieren, ausgehenden Internetzugriff auf das Notwendige beschränken und Firmware- sowie HACS-Updates nicht blind installieren. So betrieben bleibt die PortaSplit eine leistungsfähige Klimaanlage und wird zugleich ein sinnvoll integrierbarer Bestandteil eines lokal gesteuerten Smart Homes.
 
@@ -5732,7 +5732,7 @@ Das Datenmodell umfasst vier Tabellen: `subscribers` (E-Mail als Primärschlüss
 
 ## Deployment ohne Kommandozeile
 
-Der interessanteste Teil ist nicht der Code, sondern der Weg zum laufenden System. Der Deploy-to-Cloudflare-Button liest die Wrangler-Konfiguration des Repositories und erledigt die komplette Einrichtung: Er klont das Repository in den eigenen GitHub-Account, provisioniert die D1-Datenbank, führt die Schema-Migrationen aus und richtet CI ein, sodass jeder Push automatisch deployt. Seit Juli 2025 fragt der Deploy-Flow zusätzlich Umgebungsvariablen und Secrets direkt im Formular ab: im Fall dieses Templates das Admin-Passwort (`ADMIN_TOKEN`), Absendername und -adresse, der Double-Opt-in-Schalter und die Versand-Batch-Grösse (`SEND_BATCH`).
+Interessanter als der Code ist der Weg zum laufenden System. Der Deploy-to-Cloudflare-Button liest die Wrangler-Konfiguration des Repositories und erledigt die komplette Einrichtung: Er klont das Repository in den eigenen GitHub-Account, provisioniert die D1-Datenbank, führt die Schema-Migrationen aus und richtet CI ein, sodass jeder Push automatisch deployt. Seit Juli 2025 fragt der Deploy-Flow zusätzlich Umgebungsvariablen und Secrets direkt im Formular ab: im Fall dieses Templates das Admin-Passwort (`ADMIN_TOKEN`), Absendername und -adresse, der Double-Opt-in-Schalter und die Versand-Batch-Grösse (`SEND_BATCH`).
 
 Das Ergebnis nach einem Klick und einem Formular: Die Anmeldeseite ist unter `https://<worker-name>.workers.dev` live und sammelt Abonnenten. Ein Terminal wird an keiner Stelle geöffnet.
 
@@ -5789,8 +5789,8 @@ Beim Betreiber verbleiben wahrheitsgemässe Absender- und Betreffzeilen, der Ver
 Drei Funktionen sind eingebaut, aber standardmässig deaktiviert, damit das System ohne Konfiguration lauffähig bleibt:
 
 - **Double-Opt-in** (`DOUBLE_OPT_IN = "true"`): Neue Abonnenten werden als `pending` gespeichert und erst nach Klick auf einen Bestätigungslink aktiv. Für die Schweiz (DSG) und die EU ist dieses Verfahren die sauberere Wahl.
-- **Bot-Schutz** mit Cloudflare Turnstile: Site- und Secret-Key als Variablen setzen, mehr nicht; das Widget erscheint automatisch auf beiden Formularen, und der Worker verifiziert jede Anmeldung serverseitig. Ohne gültiges Token wird die Anmeldung abgelehnt.
-- **RSS-Auto-Versand**: Ein Cron-Job prüft alle 15 Minuten den eigenen Blog-Feed (RSS 2.0 oder Atom) und reiht neue Artikel automatisch in die Versand-Warteschlange ein. Zwei Sicherungen sind eingebaut: Beim allerersten Lauf wird der bestehende Feed nur als Baseline markiert (das Archiv wird also nicht als E-Mail-Flut verschickt), und jede Artikel-ID wird in `sent_posts` festgehalten, sodass kein Beitrag zweimal rausgeht.
+- **Bot-Schutz** mit Cloudflare Turnstile: Site- und Secret-Key als Variablen setzen; das Widget erscheint automatisch auf beiden Formularen, und der Worker verifiziert jede Anmeldung serverseitig. Ohne gültiges Token wird die Anmeldung abgelehnt.
+- **RSS-Auto-Versand**: Ein Cron-Job prüft alle 15 Minuten den eigenen Blog-Feed (RSS 2.0 oder Atom) und reiht neue Artikel automatisch in die Versand-Warteschlange ein. Zwei Sicherungen sind eingebaut: Beim allerersten Lauf wird der bestehende Feed nur als Baseline markiert (das Archiv wird also nicht als E-Mail-Flut verschickt), und jede Artikel-ID wird in `sent_posts` festgehalten, sodass kein Beitrag zweimal versendet wird.
 
 ## Grenzen
 
@@ -6109,7 +6109,7 @@ Der interessanteste Teil des Releases sind nicht die neuen Funktionen, sondern d
 
 Das ist die Änderung mit der längsten Vorgeschichte. Bisher überschrieb Auto-Upgrade die Datei `miiserver.exe.config` beim Update vollständig. Manuelle Anpassungen gingen verloren. Das klingt nach einem Randfall, war es aber nicht: Microsoft selbst hatte Administratoren in FIPS-Umgebungen angewiesen, genau diese Datei zu bearbeiten, damit Password Hash Synchronization mit aktiviertem FIPS-Modus funktioniert. Wer der offiziellen Anleitung gefolgt war, hatte also eine «modifizierte» Konfigurationsdatei.
 
-Die Folgen zeigten sich beim Upgrade auf 2.5.190.0 und 2.6.1.0 als bekanntes Problem: Erkennt der Installer eine veränderte `miiserver.exe.config`, lässt er die Datei unangetastet; dann fehlt aber das neue Assembly-Binding, und der Synchronisationsdienst stirbt nach dem Upgrade mit `System.IO.FileLoadException: Could not load file or assembly 'System.Diagnostics.DiagnosticSource, Version=6.0.0.1'`. Der dokumentierte Workaround: in der `assemblyBinding`-Sektion von `miiserver.exe.config` (unter `%programfiles%\Microsoft Azure AD Sync\Bin`) manuell einen bindingRedirect nachtragen:
+Die Folgen zeigten sich beim Upgrade auf 2.5.190.0 und 2.6.1.0 als bekanntes Problem: Erkennt der Installer eine veränderte `miiserver.exe.config`, lässt er die Datei unangetastet; dann fehlt aber das neue Assembly-Binding, und der Synchronisationsdienst schlägt nach dem Upgrade fehl mit `System.IO.FileLoadException: Could not load file or assembly 'System.Diagnostics.DiagnosticSource, Version=6.0.0.1'`. Der dokumentierte Workaround: in der `assemblyBinding`-Sektion von `miiserver.exe.config` (unter `%programfiles%\Microsoft Azure AD Sync\Bin`) manuell einen bindingRedirect nachtragen:
 
 ```xml
 <dependentAssembly>
@@ -6128,7 +6128,7 @@ Zur Erinnerung: Seit 2.5.76.0 ist die Application-Based Authentication (ABA) gen
 
 **Kein stiller Fallback mehr.** Schlug die ABA-Einrichtung im Wizard fehl, fiel das Setup bisher kommentarlos auf das Legacy-Konto zurück. Das Ergebnis: Der Administrator glaubte, eine zertifikatsbasierte Anmeldung zu haben, tatsächlich lief der Server mit dem alten Passwort-Konto. Ein klassisches Fail-Open-Muster. Neu bricht der Wizard mit einer klaren Fehlermeldung ab («Microsoft Entra Connect could not configure application-based authentication for this server. Setup cannot continue.»), damit die eigentliche Ursache behoben wird, statt sie zu verdecken.
 
-**Keine automatische Umstellung im Hintergrund mehr.** Bisher stellte Entra Connect bestehende Server während des laufenden Sync-Betriebs selbstständig vom Legacy-Konto auf ABA um. Aus Security-Sicht gut gemeint, aus Betriebssicht ein Albtraum: Ein Authentifizierungsverfahren wechselt ungefragt, ohne Change-Fenster, ohne dass jemand davon weiss. Und wenn dabei etwas schiefgeht (TPM-Probleme, Conditional-Access-Konflikte, Firewall), steht die Synchronisation. Neu gilt: Nur Neuinstallationen konfigurieren ABA automatisch; Bestandsserver wechseln erst, wenn ein Administrator den Wizard startet und **Configure application-based authentication to Microsoft Entra ID** explizit auswählt. Der Wechsel gehört damit wieder dorthin, wo er hingehört: in einen geplanten Change.
+**Keine automatische Umstellung im Hintergrund mehr.** Bisher stellte Entra Connect bestehende Server während des laufenden Sync-Betriebs selbstständig vom Legacy-Konto auf ABA um. Aus Security-Sicht gut gemeint, aus Betriebssicht ein erhebliches Risiko: Ein Authentifizierungsverfahren wechselt ungefragt, ohne Change-Fenster, ohne dass jemand davon weiss. Und wenn dabei etwas schiefgeht (TPM-Probleme, Conditional-Access-Konflikte, Firewall), steht die Synchronisation. Neu gilt: Nur Neuinstallationen konfigurieren ABA automatisch; Bestandsserver wechseln erst, wenn ein Administrator den Wizard startet und **Configure application-based authentication to Microsoft Entra ID** explizit auswählt. Der Wechsel gehört damit wieder dorthin, wo er hingehört: in einen geplanten Change.
 
 Ergänzend wurde die TPM-Behandlung verbessert: Das Setup testet die Signierfähigkeit eines Zertifikats jetzt vorab und behandelt die TPM-Signaturprüfung korrekt. Auf Servern mit fehlerhafter TPM-Firmware, die keine gültige Signatur erzeugen können, fällt das Setup kontrolliert auf ein softwarebasiertes Zertifikat zurück. Auch das hat Vorgeschichte: TPM-bezogene ABA-Fehlschläge zogen sich durch mehrere frühere Releases (2.5.79.0, 2.5.190.0), unter anderem wegen Inkompatibilitäten zwischen TPM-Implementierungen und dem Standard-Signaturverfahren der MSAL-Bibliothek.
 
@@ -6342,7 +6342,7 @@ Bei einem korrekt beschränkten Partner-Connector ist eine SMTP-Ablehnung wie `5
 
 «Ghost Sender» ist kein neuer SMTP-Exploit. Es ist ein griffiger Name für einen offenen Nebeneingang, dessen Absicherung Microsoft seit langem dokumentiert und den der Administrator offengelassen hat.
 
-Das Ironische daran: InfoGuard bezeichnet das Problem im eigenen Beitrag selbst als «widespread and systematic misconfiguration» und schliesst mit dem Satz «Ghost-Sender is a misconfiguration». Auch Microsofts Security Response Center stufte die Meldung zunächst nicht als Sicherheitslücke ein. Die Fakten sind im Artikel also durchaus vorhanden: nur Titel, Testmail und «Vulnerability»-Branding erzählen leider eine dramatischere Geschichte.
+Das Ironische daran: InfoGuard bezeichnet das Problem im eigenen Beitrag selbst als «widespread and systematic misconfiguration» und schliesst mit dem Satz «Ghost-Sender is a misconfiguration». Auch Microsofts Security Response Center stufte die Meldung zunächst nicht als Sicherheitslücke ein. Die Fakten sind im Artikel also durchaus vorhanden: nur Titel, Testmail und «Vulnerability»-Branding legen leider eine dramatischere Deutung nahe.
 
 Der sinnvolle Teil der Veröffentlichung ist der Weckruf: Viele Unternehmen haben ihren Mailflow offenbar nicht sauber verriegelt. Der problematische Teil ist die Behauptung, Exchange Online habe dafür eine universelle Sicherheitslücke. Nein: Exchange Online verhält sich hier zunächst wie ein MTA. Unsicher wird es durch die nicht zu Ende konfigurierte Vertrauensgrenze.
 
@@ -6420,7 +6420,7 @@ Nebenbei: Die Mitigation hat IE-Clients und Edge im IE-Modus ohnehin nie geschü
 
 ### Die Stolperfalle: der EM Service spielt die Mitigation wieder ein
 
-Wer die Regel voreilig löscht, erlebt eine Überraschung. Der EM Service läuft stündlich und gleicht den Ist-Zustand mit den vom Office-Config-Service (Flighting) gelieferten Vorgaben ab. Die Zuordnung «welcher Build braucht welche Mitigation» liegt serverseitig. Erst eine serverseitige Änderung markiert den Juli-2026-Build als «Mitigation nicht mehr nötig». Diese Änderung wurde laut Microsoft erst rund um den 16. Juli 2026 vollständig ausgerollt. Bis dahin trägt der EM Service eine gelöschte M2.1.0-Regel im nächsten stündlichen Lauf einfach wieder ein.
+Eine voreilig gelöschte Regel bleibt nicht dauerhaft entfernt. Der EM Service läuft stündlich und gleicht den Ist-Zustand mit den vom Office-Config-Service (Flighting) gelieferten Vorgaben ab. Die Zuordnung «welcher Build braucht welche Mitigation» liegt serverseitig. Erst eine serverseitige Änderung markiert den Juli-2026-Build als «Mitigation nicht mehr nötig». Diese Änderung wurde laut Microsoft erst rund um den 16. Juli 2026 vollständig ausgerollt. Bis dahin trägt der EM Service eine gelöschte M2.1.0-Regel im nächsten stündlichen Lauf einfach wieder ein.
 
 Praktisch heisst das: Entweder wartet man mit dem manuellen Entfernen bis nach dem 16. Juli, oder man blockiert die Mitigation explizit, damit sie nicht reaktiviert wird.
 
@@ -6452,7 +6452,7 @@ Auch hier ein wenig bekanntes Detail: EOMT sichert vor jeder Änderung den IIS-A
 
 ### Warum sich das Entfernen lohnt
 
-Die Mitigation ist nicht «gratis». Solange sie aktiv ist, schleppt man ihre bekannten Nebenwirkungen mit: Die OWA-Funktion «Kalender drucken» funktioniert nicht, Inline-Bilder werden im OWA-Lesebereich unter Umständen nicht korrekt angezeigt, OWA Light (`/?layout=light`) ist defekt (wird ohnehin demnächst abgeschaltet), veröffentlichte Kalender liefern teils Fehler 500. Besonders tückisch fürs Monitoring: Der Healthset **OWACalendar.Proxy** kann auf *unhealthy* springen und damit Fehlalarme in der Überwachung auslösen. Wer das SU installiert hat, aber die Mitigation stehen lässt, jagt am Ende Geistern hinterher. Sobald das Update installiert *und* die Mitigation entfernt ist, verschwinden auch diese Known Issues.
+Die Mitigation ist nicht «gratis». Solange sie aktiv ist, schleppt man ihre bekannten Nebenwirkungen mit: Die OWA-Funktion «Kalender drucken» funktioniert nicht, Inline-Bilder werden im OWA-Lesebereich unter Umständen nicht korrekt angezeigt, OWA Light (`/?layout=light`) ist defekt (wird ohnehin demnächst abgeschaltet), veröffentlichte Kalender liefern teils Fehler 500. Besonders tückisch fürs Monitoring: Der Healthset **OWACalendar.Proxy** kann auf *unhealthy* springen und damit Fehlalarme in der Überwachung auslösen. Wer das SU installiert hat, aber die Mitigation stehen lässt, sucht am Ende nach Fehlern, die keine sind. Sobald das Update installiert *und* die Mitigation entfernt ist, verschwinden auch diese Known Issues.
 
 Ein Sonderfall: In gemischten Umgebungen dürfen noch nicht aktualisierte Server die Mitigation behalten. Man sollte aber wissen, dass die Office-Online-Server-Integration (OOS) unter Umständen erst dann wieder sauber funktioniert, wenn *alle* Exchange-Server in der Organisation auf dem Juli-Stand sind.
 
@@ -6882,7 +6882,7 @@ Wichtig: Die Unterlizenzierung blockiert den Mailfluss nicht. Es ist ein lizenzr
 
 ### Manuelles Löschen
 
-Sie können interne Benutzer unter **Internal Users** einzeln suchen und löschen. Das behebt den akuten Zustand, das Problem kommt aber nach einigen Monaten zurück. Bei mehreren tausend Konten werden Sie damit nicht glücklich.
+Sie können interne Benutzer unter **Internal Users** einzeln suchen und löschen. Das behebt den akuten Zustand, das Problem kommt aber nach einigen Monaten zurück. Bei mehreren tausend Konten ist das nicht praktikabel.
 
 ### LDAP-Anbindung mit Cleanup-Agent
 
@@ -6942,7 +6942,7 @@ Wenn Ihre Sicherheitsrichtlinie es vorsieht, können Sie auch ein gMSA (Group Ma
 
 ## Schritt 2: LDAP-Verbindung auf der Kommandozeile prüfen
 
-Bevor Sie etwas in totemomail konfigurieren, sollten Sie die LDAP-Verbindung auf der Kommandozeile verifizieren. Das ist der Schritt, den die meisten überspringen. Funktioniert `ldapsearch`, funktioniert auch die Anbindung in totemomail. Schlägt der Test fehl, wissen Sie wenigstens, an welcher Stelle es klemmt, statt im totemomail-GUI zu raten.
+Bevor Sie etwas in totemomail konfigurieren, sollten Sie die LDAP-Verbindung auf der Kommandozeile verifizieren. Das ist der Schritt, den die meisten überspringen. Funktioniert `ldapsearch`, funktioniert auch die Anbindung in totemomail. Schlägt der Test fehl, wissen Sie wenigstens, an welcher Stelle es scheitert, statt im totemomail-GUI zu raten.
 
 ### 2.1 Portprüfung
 
@@ -7185,7 +7185,7 @@ Datum: 2026-06-19
 
 # HIN Mailgateway 15.0.5: Login-Ausfall nach dem Cluster-Update beheben
 
-Beim Update eines HIN Mailgateway von 14.1.4.2 auf 15.0.5 kann ein Fehler in der Cluster-Replikation die Anmeldung auf beiden Appliances lahmlegen. Einzelne Systeme sind nicht betroffen. Der Hersteller kennt das Problem und plant eine Korrektur für eine folgende Version.
+Beim Update eines HIN Mailgateway von 14.1.4.2 auf 15.0.5 kann ein Fehler in der Cluster-Replikation die Anmeldung auf beiden Appliances ausfallen lassen. Einzelne Systeme sind nicht betroffen. Der Hersteller kennt das Problem und plant eine Korrektur für eine folgende Version.
 
 **Update vom 29. Juli 2026:** Die angekündigte Korrektur ist da. Das Patch-Release 15.0.6 unterdrückt das Passwort-Rehashing, wenn Cluster-Mitglieder unterschiedliche Firmware-Versionen fahren. Das ist exakt die Konstellation, die den hier beschriebenen Ausfall ausgelöst hatte. Die Einordnung steht im Artikel zu [SEPPmail 15.0.6 und 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1); die folgende Wiederherstellungsprozedur bleibt für Cluster relevant, die noch auf 15.0.5 aktualisieren.
 

@@ -41,7 +41,7 @@ Das Projekt Midea AC LAN warnt vor möglichen Änderungen an diesen Cloud-Schnit
 
 ### Warum konnte Home Assistant den Token bisher überhaupt bekommen?
 
-Das Interessante ist: Die Community hat den Token nie berechnet. Sie hat vielmehr den Netzwerkverkehr der offiziellen App analysiert und dabei festgestellt, dass die App den Token gar nicht selbst erzeugt, sondern aus der Cloud bezieht:
+Die Community hat den Token nie berechnet. Sie hat vielmehr den Netzwerkverkehr der offiziellen App analysiert und dabei festgestellt, dass die App den Token gar nicht selbst erzeugt, sondern aus der Cloud bezieht:
 
 ```text
 App

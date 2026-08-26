@@ -66,7 +66,7 @@ Für ein Zertifikat, das mehrere Appliances und den Quarantäne-Hostnamen abdeck
 
 Alle folgenden Schritte laufen über OpenSSL, auf einem System innerhalb der Umgebung, etwa einem Admin-Server. Die Light-Edition der Windows-Builds von Shining Light Productions genügt, der Installer ist rund 6 MB gross und lässt sich gegen die von slproweb publizierte Prüfsummenliste verifizieren.
 
-Der Installer legt alles unter `C:\Program Files\OpenSSL-Win64` ab, die ausführbare Datei liegt in `bin\openssl.exe`. In den Suchpfad trägt er sich nicht ein: Wer in einer frischen Eingabeaufforderung `openssl` tippt, bekommt eine Fehlermeldung. Drei Wege führen zum Ziel:
+Der Installer legt alles unter `C:\Program Files\OpenSSL-Win64` ab, die ausführbare Datei liegt in `bin\openssl.exe`. In den Suchpfad trägt er sich nicht ein: Wer in einer frischen Eingabeaufforderung `openssl` tippt, bekommt eine Fehlermeldung. Es gibt drei Möglichkeiten:
 
 - Im Startmenü den Eintrag `Win64 OpenSSL Command Prompt` aufrufen. Er startet die `start.bat` aus dem Installationsverzeichnis, setzt die Umgebung und begrüsst mit der Ausgabe von `openssl version -a`. In diesem Fenster funktioniert `openssl` direkt.
 - Den vollständigen Pfad angeben: `"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" version`.

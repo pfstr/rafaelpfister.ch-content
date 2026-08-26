@@ -53,7 +53,7 @@ Das Datenmodell umfasst vier Tabellen: `subscribers` (E-Mail als Primärschlüss
 
 ## Deployment ohne Kommandozeile
 
-Der interessanteste Teil ist nicht der Code, sondern der Weg zum laufenden System. Der Deploy-to-Cloudflare-Button liest die Wrangler-Konfiguration des Repositories und erledigt die komplette Einrichtung: Er klont das Repository in den eigenen GitHub-Account, provisioniert die D1-Datenbank, führt die Schema-Migrationen aus und richtet CI ein, sodass jeder Push automatisch deployt. Seit Juli 2025 fragt der Deploy-Flow zusätzlich Umgebungsvariablen und Secrets direkt im Formular ab: im Fall dieses Templates das Admin-Passwort (`ADMIN_TOKEN`), Absendername und -adresse, der Double-Opt-in-Schalter und die Versand-Batch-Grösse (`SEND_BATCH`).
+Interessanter als der Code ist der Weg zum laufenden System. Der Deploy-to-Cloudflare-Button liest die Wrangler-Konfiguration des Repositories und erledigt die komplette Einrichtung: Er klont das Repository in den eigenen GitHub-Account, provisioniert die D1-Datenbank, führt die Schema-Migrationen aus und richtet CI ein, sodass jeder Push automatisch deployt. Seit Juli 2025 fragt der Deploy-Flow zusätzlich Umgebungsvariablen und Secrets direkt im Formular ab: im Fall dieses Templates das Admin-Passwort (`ADMIN_TOKEN`), Absendername und -adresse, der Double-Opt-in-Schalter und die Versand-Batch-Grösse (`SEND_BATCH`).
 
 Das Ergebnis nach einem Klick und einem Formular: Die Anmeldeseite ist unter `https://<worker-name>.workers.dev` live und sammelt Abonnenten. Ein Terminal wird an keiner Stelle geöffnet.
 
@@ -110,8 +110,8 @@ Beim Betreiber verbleiben wahrheitsgemässe Absender- und Betreffzeilen, der Ver
 Drei Funktionen sind eingebaut, aber standardmässig deaktiviert, damit das System ohne Konfiguration lauffähig bleibt:
 
 - **Double-Opt-in** (`DOUBLE_OPT_IN = "true"`): Neue Abonnenten werden als `pending` gespeichert und erst nach Klick auf einen Bestätigungslink aktiv. Für die Schweiz (DSG) und die EU ist dieses Verfahren die sauberere Wahl.
-- **Bot-Schutz** mit Cloudflare Turnstile: Site- und Secret-Key als Variablen setzen, mehr nicht; das Widget erscheint automatisch auf beiden Formularen, und der Worker verifiziert jede Anmeldung serverseitig. Ohne gültiges Token wird die Anmeldung abgelehnt.
-- **RSS-Auto-Versand**: Ein Cron-Job prüft alle 15 Minuten den eigenen Blog-Feed (RSS 2.0 oder Atom) und reiht neue Artikel automatisch in die Versand-Warteschlange ein. Zwei Sicherungen sind eingebaut: Beim allerersten Lauf wird der bestehende Feed nur als Baseline markiert (das Archiv wird also nicht als E-Mail-Flut verschickt), und jede Artikel-ID wird in `sent_posts` festgehalten, sodass kein Beitrag zweimal rausgeht.
+- **Bot-Schutz** mit Cloudflare Turnstile: Site- und Secret-Key als Variablen setzen; das Widget erscheint automatisch auf beiden Formularen, und der Worker verifiziert jede Anmeldung serverseitig. Ohne gültiges Token wird die Anmeldung abgelehnt.
+- **RSS-Auto-Versand**: Ein Cron-Job prüft alle 15 Minuten den eigenen Blog-Feed (RSS 2.0 oder Atom) und reiht neue Artikel automatisch in die Versand-Warteschlange ein. Zwei Sicherungen sind eingebaut: Beim allerersten Lauf wird der bestehende Feed nur als Baseline markiert (das Archiv wird also nicht als E-Mail-Flut verschickt), und jede Artikel-ID wird in `sent_posts` festgehalten, sodass kein Beitrag zweimal versendet wird.
 
 ## Grenzen
 

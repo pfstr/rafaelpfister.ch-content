@@ -117,7 +117,7 @@ Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufz
 
 Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer sie in einen Topf wirft, zieht falsche Schlüsse.
 
-**`255.255.255.255` steht nicht für ein System.** Dieser Wert erscheint, wenn es zur Nachricht keine eingehende SMTP-Verbindung von aussen gab. Das betrifft im Dienst selbst erzeugte Nachrichten: Journalberichte, Unzustellbarkeitsmeldungen, Abwesenheitsnotizen, Nachrichten zwischen Postfächern desselben Tenants. In fast jeder Umgebung ist das der grösste Posten, und er ist völlig unauffällig. Erschrecken Sie nicht.
+**`255.255.255.255` steht nicht für ein System.** Dieser Wert erscheint, wenn es zur Nachricht keine eingehende SMTP-Verbindung von aussen gab. Das betrifft im Dienst selbst erzeugte Nachrichten: Journalberichte, Unzustellbarkeitsmeldungen, Abwesenheitsnotizen, Nachrichten zwischen Postfächern desselben Tenants. In fast jeder Umgebung ist das der grösste Posten, und er ist völlig unauffällig.
 
 **Private Adressen aus RFC 1918** stammen aus Ihrem eigenen Netz. In Hybrid-Umgebungen sehen Sie hier die lokalen Transportserver, denn deren interne Adresse wird bei der Übergabe an den Dienst erhalten. Das sind die grossen Zahlen in der Liste und in aller Regel der erwartete Hauptweg.
 
@@ -127,7 +127,7 @@ Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer 
 
 ## Die Auflösung: aus Adressen werden Namen
 
-Für alles, was Sie nicht sofort zuordnen können, hilft die Rückwärtsauflösung. Sie ist nicht immer gesetzt und nicht immer ehrlich, aber sie liefert in der Mehrzahl der Fälle den entscheidenden Hinweis:
+Für alles, was Sie nicht sofort zuordnen können, hilft die Rückwärtsauflösung. Sie ist nicht immer gesetzt und nicht immer verlässlich, aber sie liefert in der Mehrzahl der Fälle den entscheidenden Hinweis:
 
 ```powershell
 $unbekannt = '198.51.100.77','203.0.113.9'
@@ -157,7 +157,7 @@ Absender und Betreff sagen Ihnen in aller Regel sofort, welche Anwendung dahinte
 
 ## Der Abgleich: welche Adresse gehört zu welchem Connector?
 
-Jetzt kommt der eigentliche Erkenntnisgewinn. Stellen Sie Ihre Ergebnisliste den konfigurierten Connectoren gegenüber:
+Stellen Sie Ihre Ergebnisliste den konfigurierten Connectoren gegenüber:
 
 ```powershell
 Get-InboundConnector |

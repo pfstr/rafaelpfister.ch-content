@@ -252,7 +252,7 @@ foreach ($row in $targets) {
 }
 ```
 
-Das Skript ist absichtlich kein vollständig autonomer Migrationsmotor. Es beendet den Lauf beim ersten Widerspruch, damit ein Administrator Ursache und Zustand beurteilen kann. Vor einem produktiven Batch sollte der Code mit wenigen Testpostfächern und den eingesetzten Exchange-Versionen validiert werden.
+Das Skript ist absichtlich kein vollautomatisches Migrationswerkzeug. Es beendet den Lauf beim ersten Widerspruch, damit ein Administrator Ursache und Zustand beurteilen kann. Vor einem produktiven Batch sollte der Code mit wenigen Testpostfächern und den eingesetzten Exchange-Versionen validiert werden.
 
 ## Phase 4: Synchronisieren, lizenzieren und verifizieren
 

@@ -73,7 +73,7 @@ Das Diagramm zeigt den Zielzustand: Jede legitime Versandquelle ist authentifizi
 
 ![Zielarchitektur des DMARC-Blueprints: Versandquellen, DNS-Records, empfangende Mailserver und der Berichtsfluss zurück in Auswertung und Betrieb, mit den Massnahmen M1 bis M6](../images/dmarc-blueprint-architektur.svg)
 
-Die Architektur hat einen entscheidenden Kniff: Die Durchsetzung passiert nicht bei Ihnen, sondern bei den empfangenden Mailservern weltweit, und zwar anhand der Vorgaben, die Sie im DNS publizieren. Unterhalb der Vertrauensgrenze haben Sie keine technische Kontrolle mehr; deshalb müssen die Vorgaben oberhalb stimmen, bevor Sie sie verschärfen. Der Berichtsfluss (rechts im Diagramm) ist Ihr einziges Fenster in das, was fremde Empfänger sehen, und damit die Grundlage jeder Entscheidung im Projekt.
+Die Architektur hat eine entscheidende Besonderheit: Die Durchsetzung passiert nicht bei Ihnen, sondern bei den empfangenden Mailservern weltweit, und zwar anhand der Vorgaben, die Sie im DNS publizieren. Unterhalb der Vertrauensgrenze haben Sie keine technische Kontrolle mehr; deshalb müssen die Vorgaben oberhalb stimmen, bevor Sie sie verschärfen. Der Berichtsfluss (rechts im Diagramm) ist Ihr einziges Fenster in das, was fremde Empfänger sehen, und damit die Grundlage jeder Entscheidung im Projekt.
 
 ### Gestaltungsprinzipien
 
@@ -114,7 +114,7 @@ Der Blueprint passt, wenn mindestens einer dieser Punkte zutrifft:
 - Newsletter- oder Transaktionsversand läuft über externe Dienstleister, deren Authentifizierung Sie nie geprüft haben.
 - Sie sind von den Bulk-Sender-Anforderungen grosser Empfänger betroffen oder beliefern Kundschaft bei Google, Microsoft oder Yahoo.
 - Es gab bereits Spoofing- oder Phishing-Vorfälle mit Ihrer Absenderdomain, oder Ihre Branche ist ein typisches Ziel für Zahlungsbetrug.
-- Sie besitzen Domains ohne Mailversand: Auch die brauchen Schutz-Records, sonst sind sie das offene Scheunentor.
+- Sie besitzen Domains ohne Mailversand: Auch die brauchen Schutz-Records, sonst sind sie der einfachste Angriffsweg.
 
 Der Blueprint passt nicht oder nur angepasst, wenn:
 

@@ -91,13 +91,13 @@ Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über 
 
 ## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Stirbt der Rclone-Prozess und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
+Die dritte Falle betrifft die Gegenseite. Bricht der Rclone-Prozess ab und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
 ```
 
-Docker verwendet für Bind-Mounts standardmässig `rprivate`: Ein Mount, der auf dem Host **nach** dem Container-Start entsteht, erreicht dessen Mount-Namensraum nie. Der Container bleibt am toten FUSE-Mount hängen, bis er neu erstellt wird. Die Lösung kostet eine Zeile:
+Docker verwendet für Bind-Mounts standardmässig `rprivate`: Ein Mount, der auf dem Host **nach** dem Container-Start entsteht, erreicht dessen Mount-Namensraum nie. Der Container bleibt am nicht mehr verbundenen FUSE-Mount hängen, bis er neu erstellt wird. Die Lösung kostet eine Zeile:
 
 ```yaml
     volumes:
@@ -116,7 +116,7 @@ Aus den drei Bausteinen ergibt sich ein robustes Gesamtmuster, das ohne Watchdog
 
 1. Der Mount-Container prüft seine Mounts in einer Schleife. Antwortet einer nicht mehr, beendet er sich mit Fehlercode.
 2. `restart: unless-stopped` lässt Docker den Container neu starten.
-3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem Vorleben** ab: ein toter Bind auf dem Zielpfad würde das erneute Publizieren sonst blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
+3. Beim Start räumt der Container zuerst **verwaiste Mounts aus dem vorherigen Lauf** ab: ein verwaister Bind auf dem Zielpfad würde das erneute Publizieren sonst blockieren, und vom Host aus kann ein unprivilegierter Benutzer ihn nicht entfernen. Im Container geht es, und der umount propagiert nach draussen:
 
 ```sh
 while grep -q " /data/dokumente " /proc/self/mountinfo; do

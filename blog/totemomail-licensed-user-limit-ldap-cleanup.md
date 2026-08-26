@@ -65,7 +65,7 @@ Wichtig: Die Unterlizenzierung blockiert den Mailfluss nicht. Es ist ein lizenzr
 
 ### Manuelles Löschen
 
-Sie können interne Benutzer unter **Internal Users** einzeln suchen und löschen. Das behebt den akuten Zustand, das Problem kommt aber nach einigen Monaten zurück. Bei mehreren tausend Konten werden Sie damit nicht glücklich.
+Sie können interne Benutzer unter **Internal Users** einzeln suchen und löschen. Das behebt den akuten Zustand, das Problem kommt aber nach einigen Monaten zurück. Bei mehreren tausend Konten ist das nicht praktikabel.
 
 ### LDAP-Anbindung mit Cleanup-Agent
 
@@ -125,7 +125,7 @@ Wenn Ihre Sicherheitsrichtlinie es vorsieht, können Sie auch ein gMSA (Group Ma
 
 ## Schritt 2: LDAP-Verbindung auf der Kommandozeile prüfen
 
-Bevor Sie etwas in totemomail konfigurieren, sollten Sie die LDAP-Verbindung auf der Kommandozeile verifizieren. Das ist der Schritt, den die meisten überspringen. Funktioniert `ldapsearch`, funktioniert auch die Anbindung in totemomail. Schlägt der Test fehl, wissen Sie wenigstens, an welcher Stelle es klemmt, statt im totemomail-GUI zu raten.
+Bevor Sie etwas in totemomail konfigurieren, sollten Sie die LDAP-Verbindung auf der Kommandozeile verifizieren. Das ist der Schritt, den die meisten überspringen. Funktioniert `ldapsearch`, funktioniert auch die Anbindung in totemomail. Schlägt der Test fehl, wissen Sie wenigstens, an welcher Stelle es scheitert, statt im totemomail-GUI zu raten.
 
 ### 2.1 Portprüfung
 

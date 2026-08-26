@@ -32,7 +32,7 @@ Die eigentlichen Steuerbefehle gehen nach der Einrichtung direkt von Home Assist
 Home Assistant → lokales Netzwerk → Midea PortaSplit
 ```
 
-Ein Schaltbefehl muss nicht über einen externen Midea-Server laufen, die Reaktionszeit ist kurz, eine Störung der Midea-Cloud legt die bereits eingerichtete lokale Steuerung nicht zwingend lahm, und das Gerät bleibt grundsätzlich auch ohne Internetzugriff steuerbar.
+Ein Schaltbefehl muss nicht über einen externen Midea-Server laufen, die Reaktionszeit ist kurz, eine Störung der Midea-Cloud unterbricht die bereits eingerichtete lokale Steuerung nicht zwingend, und das Gerät bleibt grundsätzlich auch ohne Internetzugriff steuerbar.
 
 Bei neueren Geräten mit dem sogenannten V3-Protokoll akzeptiert die PortaSplit lokale Befehle jedoch nicht ungeschützt. Home Assistant benötigt zwei gerätespezifische Werte, einen Token und einen Key, die der Authentifizierung und Verschlüsselung der lokalen Verbindung dienen. Die Integration holt sie während der erstmaligen Einrichtung einmalig über eine Midea-Cloud-Schnittstelle ab und speichert sie danach lokal; für die weitere Steuerung ist keine Cloud-Verbindung erforderlich.
 
@@ -447,7 +447,7 @@ Midea PortaSplit
 
 ## Empfohlener Betriebszustand
 
-Die Midea PortaSplit lässt sich erstaunlich gut in Home Assistant integrieren. Nach erfolgreicher Einrichtung ist sie lokal steuerbar und in Automationen einbindbar, womit für den täglichen Betrieb ein grosser Teil der Cloud-Abhängigkeit entfällt.
+Die Midea PortaSplit lässt sich gut in Home Assistant integrieren. Nach erfolgreicher Einrichtung ist sie lokal steuerbar und in Automationen einbindbar, womit für den täglichen Betrieb ein grosser Teil der Cloud-Abhängigkeit entfällt.
 
 Unter Sicherheitsgesichtspunkten ist die Integration vertretbar, wenn einige Grundregeln eingehalten werden: keine Portweiterleitung, Token und Key geheim halten, Backups verschlüsseln, Debug-Logs vor Veröffentlichung prüfen, Home Assistant absichern, IoT-Geräte segmentieren, ausgehenden Internetzugriff auf das Notwendige beschränken und Firmware- sowie HACS-Updates nicht blind installieren. So betrieben bleibt die PortaSplit eine leistungsfähige Klimaanlage und wird zugleich ein sinnvoll integrierbarer Bestandteil eines lokal gesteuerten Smart Homes.
 

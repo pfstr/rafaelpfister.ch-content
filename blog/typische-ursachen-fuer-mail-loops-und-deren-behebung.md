@@ -52,7 +52,7 @@ Internet
   → ...
 ```
 
-Nicht jeder mehrfach auftauchende Microsoft-Hostname ist bereits eine Schleife. Exchange Online verarbeitet Nachrichten intern über mehrere Transportrollen. Verdächtig ist die wiederholte Rückkehr zwischen denselben administrativen Grenzen, beispielsweise zwischen Exchange Online und einem lokalen Gateway. Zeitstempel, sendende IP, empfangender Host und `Message-ID` helfen, die Runde eindeutig zu erkennen.
+Nicht jeder mehrfach auftauchende Microsoft-Hostname ist bereits eine Schleife. Exchange Online verarbeitet Nachrichten intern über mehrere Transportrollen. Auffällig ist die wiederholte Rückkehr zwischen denselben administrativen Grenzen, beispielsweise zwischen Exchange Online und einem lokalen Gateway. Zeitstempel, sendende IP, empfangender Host und `Message-ID` helfen, die Runde eindeutig zu erkennen.
 
 Für die erste Analyse werden diese Fragen beantwortet:
 
@@ -202,7 +202,7 @@ Get-OutboundConnector -IncludeTestModeConnectors |
         RecipientDomains,SmartHosts,UseMXRecord -AutoSize
 ```
 
-Mehrere Connectoren mit überlappendem Scope sind ebenfalls verdächtig. Microsoft empfiehlt für Hybrid-Mailflow einen dedizierten On-Premises-Connector; eine Reparatur über den Hybrid Configuration Wizard ist häufig sicherer als isolierte Einzeländerungen.
+Mehrere Connectoren mit überlappendem Scope sollten ebenfalls geprüft werden. Microsoft empfiehlt für Hybrid-Mailflow einen dedizierten On-Premises-Connector; eine Reparatur über den Hybrid Configuration Wizard ist häufig sicherer als isolierte Einzeländerungen.
 
 Wenn Centralized Mail Transport nachweislich nicht mehr benötigt wird, kann die Einstellung gezielt deaktiviert werden:
 

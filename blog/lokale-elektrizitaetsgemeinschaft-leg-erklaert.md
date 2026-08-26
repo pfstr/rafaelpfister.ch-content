@@ -44,7 +44,7 @@ Wichtig, und das wird in jeder Diskussion falsch verstanden: Der Abschlag gilt *
 
 ## LEG, ZEV, vZEV: die Abgrenzung
 
-Die LEG ist das dritte Modell einer Familie, und die Begriffe werden munter durcheinandergeworfen:
+Die LEG ist das dritte Modell einer Familie, und die Begriffe werden oft durcheinandergeworfen:
 
 | Modell | Seit | Raum | Netznutzung auf internem Strom |
 | --- | --- | --- | --- |
@@ -73,4 +73,4 @@ Bequemlichkeit hat einen Preis, und beim Netzbetreiber-Modell steckt er in der S
 
 ## Einordnung: Was die LEG will
 
-Man kann die LEG als Renditevehikel missverstehen und wird dann enttäuscht (Spoiler: Beim Standardangebot des Netzbetreibers ist der finanzielle Effekt für reine Bezüger etwa null). Gedacht ist sie als Marktinstrument: Lokale Produktion soll lokal einen Abnehmer und einen fairen Preis finden, Produzenten sollen mehr erlösen als die magere Rückliefervergütung, und das Netz soll profitieren, wenn Strom dort verbraucht wird, wo er entsteht. Ob das aufgeht, entscheidet sich an der Beteiligung, und die beginnt damit, dass man versteht, was man da unterschreibt.
+Man kann die LEG als Renditevehikel missverstehen und wird dann enttäuscht (beim Standardangebot des Netzbetreibers ist der finanzielle Effekt für reine Bezüger etwa null). Gedacht ist sie als Marktinstrument: Lokale Produktion soll lokal einen Abnehmer und einen fairen Preis finden, Produzenten sollen mehr erlösen als die magere Rückliefervergütung, und das Netz soll profitieren, wenn Strom dort verbraucht wird, wo er entsteht. Ob das aufgeht, entscheidet sich an der Beteiligung, und die beginnt damit, dass man versteht, was man da unterschreibt.

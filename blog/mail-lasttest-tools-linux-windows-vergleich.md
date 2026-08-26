@@ -80,7 +80,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 
 Die unterschätzte Hälfte des Testaufbaus ist das Ziel. Drei Varianten haben sich bewährt:
 
-- **smtp-sink** oder `bhm` als schwarzes Loch: nimmt alles an, verwirft alles, misst die reine Transportkette. `smtp-sink` kann auf Wunsch künstliche Antwortverzögerungen und Fehlercodes erzeugen und damit auch das Verhalten des Testsystems bei einem langsamen oder störrischen Ziel prüfen.
+- **smtp-sink** oder `bhm` als schwarzes Loch: nimmt alles an, verwirft alles, misst die reine Transportkette. `smtp-sink` kann auf Wunsch künstliche Antwortverzögerungen und Fehlercodes erzeugen und damit auch das Verhalten des Testsystems bei einem langsamen oder fehlerhaft antwortenden Ziel prüfen.
 - **Postfix mit discard-Transport** als realistischere Senke, wenn das Ziel selbst ein vollwertiger SMTP-Server mit Queueing sein soll.
 - **Einige wenige echte Seed-Postfächer** zusätzlich zur Senke, um stichprobenartig zu prüfen, dass Nachrichten inhaltlich unversehrt ankommen, inklusive Verschlüsselungs- oder Signaturstufe.
 
