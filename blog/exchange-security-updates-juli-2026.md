@@ -48,7 +48,7 @@ Das ist der Punkt, der die meisten überrascht: Auch nach der Installation des J
 
 Nebenbei: Die Mitigation hat IE-Clients und Edge im IE-Modus ohnehin nie geschützt, weil der Internet Explorer keine CSP unterstützt. Wer solche Clients im Einsatz hatte, war über die Mitigation allein nie abgesichert. Das ist ein weiteres Argument, zeitnah zu patchen statt sich auf die Mitigation zu verlassen.
 
-### Die Stolperfalle: der EM Service spielt die Mitigation wieder ein
+### Der heikle Punkt: der EM Service spielt die Mitigation wieder ein
 
 Eine voreilig gelöschte Regel bleibt nicht dauerhaft entfernt. Der EM Service läuft stündlich und gleicht den Ist-Zustand mit den vom Office-Config-Service (Flighting) gelieferten Vorgaben ab. Die Zuordnung «welcher Build braucht welche Mitigation» liegt serverseitig. Erst eine serverseitige Änderung markiert den Juli-2026-Build als «Mitigation nicht mehr nötig». Diese Änderung wurde laut Microsoft erst rund um den 16. Juli 2026 vollständig ausgerollt. Bis dahin trägt der EM Service eine gelöschte M2.1.0-Regel im nächsten stündlichen Lauf einfach wieder ein.
 

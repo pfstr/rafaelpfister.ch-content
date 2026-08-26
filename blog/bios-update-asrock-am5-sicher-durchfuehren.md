@@ -1,5 +1,5 @@
 ---
-title: "BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Fallstrick"
+title: "BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Vorbereitung"
 navTitle: "BIOS-Update"
 description: "Der komplette Ablauf eines BIOS-Updates am Beispiel eines ASRock-AM5-Boards: Version ermitteln, Download per Hash verifizieren, BitLocker korrekt pausieren, ins UEFI booten (auch wenn F2 ins Leere läuft), per Instant Flash aktualisieren und die Einstellungen nach dem Update sinnvoll setzen."
 date: "2026-08-26"
@@ -17,7 +17,7 @@ url: "https://rafaelpfister.ch/blog/bios-update-asrock-am5-sicher-durchfuehren"
 translationId: "article-82840b2d159b9367"
 ---
 
-Ein BIOS-Update gehört zu den Wartungsarbeiten, die selten anstehen und deshalb bei jedem Mal wieder Fragen aufwerfen: Welche Version ist die richtige, wie kommt sie sicher auf das Board, und was ist vorher und nachher zu beachten? Diese Anleitung dokumentiert den kompletten Ablauf am Beispiel eines ASRock A620I Lightning WiFi (Sockel AM5) mit der herstellereigenen Methode Instant Flash. Die Schritte übertragen sich auf jedes moderne Mainboard, die Fallstricke (BitLocker, Fast Boot, Einstellungs-Reset) sind herstellerunabhängig.
+Ein BIOS-Update gehört zu den Wartungsarbeiten, die selten anstehen und deshalb bei jedem Mal wieder Fragen aufwerfen: Welche Version ist die richtige, wie kommt sie sicher auf das Board, und was ist vorher und nachher zu beachten? Diese Anleitung dokumentiert den kompletten Ablauf am Beispiel eines ASRock A620I Lightning WiFi (Sockel AM5) mit der herstellereigenen Methode Instant Flash. Die Schritte übertragen sich auf jedes moderne Mainboard, die kritischen Punkte (BitLocker, Fast Boot, Einstellungs-Reset) sind herstellerunabhängig.
 
 ## Wann ein BIOS-Update angezeigt ist
 
@@ -59,7 +59,7 @@ Ein Hinweis zur Methodenwahl: Viele Boards bieten zusätzlich einen BIOS-Flashba
 
 ## Schritt 4: BitLocker pausieren, sonst droht die Schlüsselabfrage
 
-Das ist der Fallstrick, der in vielen Anleitungen fehlt. Ist die Systemplatte mit BitLocker verschlüsselt (bei Windows 11 mit Microsoft-Konto häufig automatisch aktiv), bindet BitLocker den Schlüssel an die Messwerte des TPM. Ein BIOS-Update verändert diese Messwerte, und beim nächsten Start verlangt Windows den 48-stelligen Wiederherstellungsschlüssel. Wer den nicht griffbereit hat, steht vor einem unzugänglichen System.
+Das ist der Punkt, der in vielen Anleitungen fehlt. Ist die Systemplatte mit BitLocker verschlüsselt (bei Windows 11 mit Microsoft-Konto häufig automatisch aktiv), bindet BitLocker den Schlüssel an die Messwerte des TPM. Ein BIOS-Update verändert diese Messwerte, und beim nächsten Start verlangt Windows den 48-stelligen Wiederherstellungsschlüssel. Wer den nicht griffbereit hat, steht vor einem unzugänglichen System.
 
 BitLocker bringt für dieses Szenario einen eigenen Mechanismus mit. In einer PowerShell mit Administratorrechten:
 

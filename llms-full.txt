@@ -12,12 +12,12 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Fallstrick
+# BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Vorbereitung
 
 URL: https://rafaelpfister.ch/blog/bios-update-asrock-am5-sicher-durchfuehren
 Datum: 2026-08-26
 
-Ein BIOS-Update gehört zu den Wartungsarbeiten, die selten anstehen und deshalb bei jedem Mal wieder Fragen aufwerfen: Welche Version ist die richtige, wie kommt sie sicher auf das Board, und was ist vorher und nachher zu beachten? Diese Anleitung dokumentiert den kompletten Ablauf am Beispiel eines ASRock A620I Lightning WiFi (Sockel AM5) mit der herstellereigenen Methode Instant Flash. Die Schritte übertragen sich auf jedes moderne Mainboard, die Fallstricke (BitLocker, Fast Boot, Einstellungs-Reset) sind herstellerunabhängig.
+Ein BIOS-Update gehört zu den Wartungsarbeiten, die selten anstehen und deshalb bei jedem Mal wieder Fragen aufwerfen: Welche Version ist die richtige, wie kommt sie sicher auf das Board, und was ist vorher und nachher zu beachten? Diese Anleitung dokumentiert den kompletten Ablauf am Beispiel eines ASRock A620I Lightning WiFi (Sockel AM5) mit der herstellereigenen Methode Instant Flash. Die Schritte übertragen sich auf jedes moderne Mainboard, die kritischen Punkte (BitLocker, Fast Boot, Einstellungs-Reset) sind herstellerunabhängig.
 
 ## Wann ein BIOS-Update angezeigt ist
 
@@ -59,7 +59,7 @@ Ein Hinweis zur Methodenwahl: Viele Boards bieten zusätzlich einen BIOS-Flashba
 
 ## Schritt 4: BitLocker pausieren, sonst droht die Schlüsselabfrage
 
-Das ist der Fallstrick, der in vielen Anleitungen fehlt. Ist die Systemplatte mit BitLocker verschlüsselt (bei Windows 11 mit Microsoft-Konto häufig automatisch aktiv), bindet BitLocker den Schlüssel an die Messwerte des TPM. Ein BIOS-Update verändert diese Messwerte, und beim nächsten Start verlangt Windows den 48-stelligen Wiederherstellungsschlüssel. Wer den nicht griffbereit hat, steht vor einem unzugänglichen System.
+Das ist der Punkt, der in vielen Anleitungen fehlt. Ist die Systemplatte mit BitLocker verschlüsselt (bei Windows 11 mit Microsoft-Konto häufig automatisch aktiv), bindet BitLocker den Schlüssel an die Messwerte des TPM. Ein BIOS-Update verändert diese Messwerte, und beim nächsten Start verlangt Windows den 48-stelligen Wiederherstellungsschlüssel. Wer den nicht griffbereit hat, steht vor einem unzugänglichen System.
 
 BitLocker bringt für dieses Szenario einen eigenen Mechanismus mit. In einer PowerShell mit Administratorrechten:
 
@@ -274,7 +274,7 @@ with open("tracking-export.csv", encoding="utf-8") as f:
 print(per_min.most_common(10))
 ```
 
-## Die fünf klassischen Auswertungsfallen
+## Die fünf typischen Auswertungsfehler
 
 **Mehrfach-Events pro Mail.** Die häufigste Fehlerquelle: Zeilen zählen statt Nachrichten. Prüfen Sie mit `$events | Group-Object EventId`, was wirklich in Ihrer Datenmenge steckt, und filtern Sie auf genau ein Event pro Nachricht.
 
@@ -460,7 +460,7 @@ Am einfachsten lässt sich die Druckerumleitung über die grafische Oberfläche 
 redirectprinters:i:1
 ```
 
-Ein Stolperstein bei Verknüpfungen ohne .rdp-Datei: Wird die Verbindung mit `mstsc /v:hostname` gestartet, gelten die Einstellungen aus der versteckten Datei `Default.rdp` im Dokumente-Ordner des Anwenders. Fehlt dort die Zeile `redirectprinters:i:1`, bleibt der Drucker weg, obwohl scheinbar alles richtig konfiguriert ist. Dieses Snippet trägt die Zeile idempotent nach (vorhandene `0` wird zu `1`, fehlende Zeile wird ergänzt) und zeigt zur Kontrolle das Ergebnis an:
+Eine Besonderheit bei Verknüpfungen ohne .rdp-Datei: Wird die Verbindung mit `mstsc /v:hostname` gestartet, gelten die Einstellungen aus der versteckten Datei `Default.rdp` im Dokumente-Ordner des Anwenders. Fehlt dort die Zeile `redirectprinters:i:1`, bleibt der Drucker weg, obwohl scheinbar alles richtig konfiguriert ist. Dieses Snippet trägt die Zeile idempotent nach (vorhandene `0` wird zu `1`, fehlende Zeile wird ergänzt) und zeigt zur Kontrolle das Ergebnis an:
 
 ```powershell
 $f = "$env:USERPROFILE\Documents\Default.rdp"
@@ -477,7 +477,7 @@ if (Test-Path $f) {
 Select-String -Path $f -Pattern 'redirectprinters'
 ```
 
-Zwei weitere Fallen auf der Client-Seite: Erstens merkt sich Windows pro Zielrechner unter `HKCU\Software\Microsoft\Terminal Server Client\LocalDevices`, welche Umleitungen der Anwender im Sicherheitsdialog zuletzt erlaubt hat; diese gespeicherte Auswahl überschreibt die Vorgabe aus der .rdp-Datei. Das Löschen des Schlüssels setzt den Zustand zurück. Zweitens deaktiviert der Registry-Wert `DisablePrinterRedirection` (DWORD, Wert 1) unter `HKLM\Software\Microsoft\Terminal Server Client` die Druckerumleitung auf dem Client komplett; auf verwalteten Geräten lohnt ein Blick darauf, bevor die Fehlersuche in der Sitzung beginnt.
+Zwei weitere Fehlerquellen auf der Client-Seite: Erstens merkt sich Windows pro Zielrechner unter `HKCU\Software\Microsoft\Terminal Server Client\LocalDevices`, welche Umleitungen der Anwender im Sicherheitsdialog zuletzt erlaubt hat; diese gespeicherte Auswahl überschreibt die Vorgabe aus der .rdp-Datei. Das Löschen des Schlüssels setzt den Zustand zurück. Zweitens deaktiviert der Registry-Wert `DisablePrinterRedirection` (DWORD, Wert 1) unter `HKLM\Software\Microsoft\Terminal Server Client` die Druckerumleitung auf dem Client komplett; auf verwalteten Geräten lohnt ein Blick darauf, bevor die Fehlersuche in der Sitzung beginnt.
 
 ## Server-Seite: Umleitung erlauben
 
@@ -530,7 +530,7 @@ Datum: 2026-08-24
 
 # Mail-Lasttests planen: Tools für 10'000-Mail-Bursts unter Linux und Windows im Vergleich
 
-Ob ein neues Mailgateway die Spitzenlast einer Rechnungsläufe-Nacht verkraftet, zeigt sich nicht im Datenblatt, sondern im Test. Wer eine Appliance ablöst, eine Exchange-Umgebung dimensioniert oder einen Newsletter-Versand über die eigene Infrastruktur plant, braucht vorher belastbare Zahlen: Wie viele Nachrichten pro Sekunde nimmt das System an, wie verhält sich die Queue unter Druck, und ab welchem Punkt beginnen Deferrals? Dieser Artikel vergleicht die gängigen Lastgeneratoren unter Linux und Windows und zeigt, wie ein Test mit Bursts von mehreren zehntausend Mails geplant, durchgeführt und ausgewertet wird.
+Ob ein neues Mailgateway die Spitzenlast eines nächtlichen Rechnungslaufs verkraftet, lässt sich nur mit einem Lasttest überprüfen. Wer eine Appliance ablöst, eine Exchange-Umgebung dimensioniert oder einen Newsletter-Versand über die eigene Infrastruktur plant, braucht vorher belastbare Zahlen: Wie viele Nachrichten pro Sekunde nimmt das System an, wie verhält sich die Queue unter Druck, und ab welchem Punkt beginnen Deferrals? Dieser Artikel vergleicht die gängigen Lastgeneratoren unter Linux und Windows und zeigt, wie ein Test mit Bursts von mehreren zehntausend Mails geplant, durchgeführt und ausgewertet wird.
 
 Vorweg die wichtigste Regel: Lasttests gehören ausschliesslich in die eigene Infrastruktur oder in eine ausdrücklich dafür freigegebene Testumgebung. Ein Burst gegen fremde Systeme ist ein Angriff, und ein Test mit erfundenen Absenderadressen gegen produktive Ziele erzeugt Backscatter, der auf Blocklisten führt. Der saubere Aufbau besteht aus einem Lastgenerator, dem zu testenden System und einer kontrollierten Senke, die die Mails am Ende annimmt und verwirft.
 
@@ -578,7 +578,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 | smtp-source / smtp-sink | Linux (Postfix) | Maximale Rohlast mit minimalem Aufwand, Generator und Senke aus einer Hand | Keine Latenz-Perzentile, gleichförmige Nachrichten |
 | Postal / bhm | Linux | Dauerlast mit Zielrate, variierende Nachrichten, Minutenstatistik | Betagtes Tooling, Auswertung selbst bauen |
 | swaks | Linux, Windows (Perl) | Voll kontrollierbarer Einzeltest, ideal als Funktionscheck vor dem Burst | Kein Lastgenerator |
-| JMeter (SMTP Sampler) | Windows, Linux (Java) | Lastprofile, Perzentile, Reports, EML-Nachrichtenquellen | Java-Overhead, GUI-Falle bei hohen Raten |
+| JMeter (SMTP Sampler) | Windows, Linux (Java) | Lastprofile, Perzentile, Reports, EML-Nachrichtenquellen | Java-Overhead, GUI-Modus für hohe Raten ungeeignet |
 | PowerShell + MailKit | Windows | Ohne Zusatzinstallation auf jedem Admin-Rechner, CSV-Ausgabe | Durchsatz begrenzt, Parallelisierung selbst bauen |
 | Eigenes Skript (Python/Go) | beide | Realistischer Nachrichtenmix, eigene Messpunkte | Entwicklungsaufwand, Generator selbst validieren |
 
@@ -721,7 +721,7 @@ Die Aufteilung auf fünf getrennte Sampler statt eines Samplers mit variablem Be
 
 Jeder Sampler füllt die üblichen Felder: Zielhost und Port als benutzerdefinierte Variablen (`${zielhost}`, `${zielport}`), damit derselbe Plan ohne Änderung gegen Senke, Testumgebung oder PreProd laufen kann, dazu Absender, Empfänger, Betreff mit einem klaren Marker (hier das Wort LOADTEST im Betreff) und ein Textkörper von rund 1 bis 2 KB. Die Option "Include timestamp in subject" ergänzt den Einlieferungszeitpunkt in Millisekunden; bei einem späteren Lauf gegen ein echtes mehrstufiges System lässt sich daraus zusammen mit den Empfangszeitpunkten der Senke die Ende-zu-Ende-Latenz pro Nachricht rechnen.
 
-Ein Stolperstein aus diesem Lauf, der sich verallgemeinern lässt: Der erste Versuch scheiterte mit 10'000 Fehlern in 10 Sekunden, alle mit `java.lang.ClassCastException ... NullProperty cannot be cast to ... CollectionProperty` statt einer SMTP-Antwort. Ursache war eine von Hand gebaute JMX-Datei, in der die Header-Liste des Samplers fehlte; der Sampler erwartet die Property zwingend, auch wenn sie leer ist. Die Lehre daraus ist weniger die konkrete Property als das Muster: Testpläne in der GUI zusammenklicken und speichern, nicht als XML von Hand schreiben, und vor jedem Burst einen Kleinstlauf machen und auf der Senke nachsehen, dass Betreff und Inhalt wirklich ankommen. Ein Fehlerzähler von 100 Prozent bei 0 ms Antwortzeit bedeutet fast immer, dass der Fehler vor dem Netzwerk passiert, der Test also nie beim Zielsystem war.
+Ein Fehler aus diesem Lauf, der sich verallgemeinern lässt: Der erste Versuch scheiterte mit 10'000 Fehlern in 10 Sekunden, alle mit `java.lang.ClassCastException ... NullProperty cannot be cast to ... CollectionProperty` statt einer SMTP-Antwort. Ursache war eine von Hand gebaute JMX-Datei, in der die Header-Liste des Samplers fehlte; der Sampler erwartet die Property zwingend, auch wenn sie leer ist. Die Lehre daraus ist weniger die konkrete Property als das Muster: Testpläne in der GUI zusammenklicken und speichern, nicht als XML von Hand schreiben, und vor jedem Burst einen Kleinstlauf machen und auf der Senke nachsehen, dass Betreff und Inhalt wirklich ankommen. Ein Fehlerzähler von 100 Prozent bei 0 ms Antwortzeit bedeutet fast immer, dass der Fehler vor dem Netzwerk passiert, der Test also nie beim Zielsystem war.
 
 ## Der Lauf
 
@@ -749,7 +749,7 @@ Die Statistiktabelle ist der wichtigste Teil des Reports. Pro Sampler-Label, als
 
 Der APDEX-Block darüber verdichtet dasselbe auf eine Zahl pro Klasse (hier überall 1.000, weil alle Antworten weit unter der Toleranzschwelle von 500 ms lagen); die Schwellen lassen sich in den Report-Properties an eigene Service-Ziele anpassen. Der Errors-Block bleibt in diesem Lauf leer, ist aber bei Tests gegen echte Systeme die erste Anlaufstelle: Er gruppiert Fehler nach Antworttext, sodass ein `421`-Drosseln des Zielsystems sofort von Verbindungsabbrüchen unterscheidbar ist.
 
-Ein Stolperstein auch hier, und er betrifft jeden kurzen Burst: Die Zeitreihen-Charts des Reports arbeiten standardmässig mit einer Granularität von einer Minute. Ein Lauf von 13 Sekunden kollabiert damit zu einem einzigen Datenpunkt, und die Kurven unter "Charts" sehen aus wie ein Messfehler. Der Report lässt sich aus der vorhandenen JTL-Datei ohne neuen Lauf mit feinerer Auflösung regenerieren:
+Ein typischer Auswertungsfehler auch hier, und er betrifft jeden kurzen Burst: Die Zeitreihen-Charts des Reports arbeiten standardmässig mit einer Granularität von einer Minute. Ein Lauf von 13 Sekunden kollabiert damit zu einem einzigen Datenpunkt, und die Kurven unter "Charts" sehen aus wie ein Messfehler. Der Report lässt sich aus der vorhandenen JTL-Datei ohne neuen Lauf mit feinerer Auflösung regenerieren:
 
 ```bash
 jmeter -g lauf-10k.jtl -o report-fein -Jjmeter.reportgenerator.overall_granularity=1000
@@ -1381,7 +1381,7 @@ Datum: 2026-08-11
 
 # Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren
 
-Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen **nicht** sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, zeigt zu jeder Abfrage die typische Ausgabe, und benennt die Fallstricke, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
+Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen **nicht** sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, zeigt zu jeder Abfrage die typische Ausgabe, und benennt die Fehlerquellen, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
 
 Alle Beispiele verwenden generische Namen: `SRV-MAIL01` und `SRV-MAIL02` als Transportserver, `example.com` als Domäne. Wenn Sie die Befehle für Ihre Umgebung zusammenklicken wollen, statt sie abzutippen: Der [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) enthält die gängigen Message-Tracking- und Mitschnitt-Befehle für PowerShell und Unix-Shell nebeneinander, komplett lokal im Browser.
 
@@ -1467,7 +1467,7 @@ Get-Queue -Server SRV-MAIL01 |
         -AutoSize -Wrap
 ```
 
-## Fallstrick 1: Tracking ist serverbezogen, und viele Einträge sind Schattenkopien
+## Fehlerquelle 1: Tracking ist serverbezogen, und viele Einträge sind Schattenkopien
 
 Wenn Sie in der Ausgabe Paare aus `HARECEIVE` und `HADISCARD` sehen, oft mit dem Zusatz `ExplicitlyDiscarded`, dann hat dieser Server die Nachricht **nicht verarbeitet**. Er hielt nur eine Schattenkopie im Rahmen der Shadow Redundancy, während ein anderer Server die eigentliche Zustellung übernahm. Sobald der primäre Server Erfolg meldet, verwirft der Partner seine Kopie.
 
@@ -1484,7 +1484,7 @@ Zwei Zeilen, kein Fehler, keine Zustellung. Wer daraus schliesst, die Nachricht 
 
 Praktisch heisst das zweierlei. Erstens sind solche Zeilen kein Hinweis auf ein Problem, sondern Normalbetrieb. Zweitens müssen Sie zwingend alle Transportserver abfragen.
 
-## Fallstrick 2: `Format-Table` schneidet genau die entscheidenden Spalten ab
+## Fehlerquelle 2: `Format-Table` schneidet genau die entscheidenden Spalten ab
 
 Der Fehlergrund steht in `RecipientStatus`, und dieses Feld ist lang. In einer Tabelle fällt es entweder ganz weg oder wird abgeschnitten. Genau das führt dazu, dass man den `FAIL` sieht, aber nicht den Grund, und stattdessen zu raten beginnt.
 
@@ -1550,9 +1550,9 @@ Count Name
 
 Eine einzige Absenderdomäne bedeutet: eng begrenztes Problem, kein Vorfall, Sie können in Ruhe weitersuchen. Stünden dort zwanzig verschiedene Domänen, hätten Sie einen laufenden Ausfall, und alles andere müsste warten. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
 
-## Fallstrick 3: Die `ConnectorId` nennt nicht den echten Receive-Connector
+## Fehlerquelle 3: Die `ConnectorId` nennt nicht den echten Receive-Connector
 
-Das ist der teuerste Fallstrick, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
+Das ist die teuerste Fehlerquelle, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
 
 Die Folge sehen Sie an dieser Zeile:
 
@@ -1595,7 +1595,7 @@ Der zweite Weg ist das SMTP-Protokoll, und das verdient einen eigenen Abschnitt.
 
 ## Das SMTP-Protokoll: die einzige vollständige Quelle
 
-Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die den Fallstrick oben auflöst.
+Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die das oben beschriebene Problem mit der `ConnectorId` auflöst.
 
 ### Protokollierung einschalten
 
@@ -1699,7 +1699,7 @@ Fehlt zum fraglichen Zeitpunkt jede Zeile, gibt es drei übliche Gründe: Die Pr
 
 ## Schritt 4: Berechtigungen prüfen
 
-Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier lauert ein technischer Fallstrick: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit der irreführenden Meldung, das Objekt sei nicht auffindbar.
+Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier gibt es eine technische Besonderheit: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit der irreführenden Meldung, das Objekt sei nicht auffindbar.
 
 ```powershell
 $dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName
@@ -1823,9 +1823,9 @@ Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -Auto
 
 Planen Sie Zeit ein, solche Aufträge laufen je nach Umfang Stunden.
 
-### Fallstrick 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
+### Fehlerquelle 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
 
-Das ist der subtilste Fallstrick im Tenant. `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen je Aufruf. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
+Das ist die subtilste Fehlerquelle im Tenant. `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen je Aufruf. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
 
 Erkennbar ist das an der Warnung, die auf weitere Ergebnisse hinweist:
 
@@ -1839,7 +1839,7 @@ Erscheint sie, ist Ihre Auswertung **unvollständig**. Kommt kein Treffer zurüc
 
 Es gibt zwei saubere Auswege. Entweder Sie verkleinern das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, erkennbar am Ausbleiben der Warnung. Oder Sie hangeln sich mit den Fortsetzungsangaben aus der Warnung durch alle Seiten. Für die Frage, ob etwas **nie** vorkommt, ist eine Konfigurationsprüfung ohnehin überlegen: Wenn ein System keine Route auf ein Ziel besitzt, kann es dorthin nicht zustellen, unabhängig von jedem Beobachtungsfenster.
 
-Die vollständige Auswertung aller einliefernden Adressen ist ein Thema für sich, mit eigenen Fallstricken bei der Interpretation. Sie steht in [Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
+Die vollständige Auswertung aller einliefernden Adressen ist ein Thema für sich, mit eigenen heiklen Punkten bei der Interpretation. Sie steht in [Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
 
 ## Ein Vorgehen, das sich bewährt hat
 
@@ -1913,7 +1913,7 @@ Count Name
 
 Bevor Sie daraus Schlüsse ziehen, müssen zwei Dinge stimmen: Die Liste muss vollständig sein, und Sie müssen wissen, was die Einträge bedeuten.
 
-## Fallstrick 1: Die Liste ist fast immer unvollständig
+## Fehlerquelle 1: Die Liste ist fast immer unvollständig
 
 `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen pro Aufruf. Bei hohem Aufkommen deckt eine Seite nur einen Bruchteil Ihres Zeitfensters ab. Sie gruppieren dann über einen Ausschnitt und halten das Ergebnis für die Gesamtheit.
 
@@ -1956,7 +1956,7 @@ $alle | Group-Object FromIP | Sort-Object Count -Descending |
 
 Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufzeit. Für eine einmalige Bestandsaufnahme ist das gut investiert.
 
-## Fallstrick 2: Die Zahlen bedeuten nicht, was sie zu bedeuten scheinen
+## Fehlerquelle 2: Die Zahlen bedeuten nicht, was sie zu bedeuten scheinen
 
 Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer sie in einen Topf wirft, zieht falsche Schlüsse.
 
@@ -2131,7 +2131,7 @@ for name, block in bloecke.items():
     print(f"{name} -> {', '.join(ziele(block)) or '(kein Ziel)'}")
 ```
 
-Beachten Sie den Unterschied zwischen dem **Definitionstag** `<processor name="...">` und dem **Zieltag** `<processor>name</processor>` innerhalb eines `ToProcessor`-Mailets. Beide heissen gleich, meinen aber Verschiedenes. Wer sie verwechselt, bekommt sinnlose Ergebnisse. Genau darauf beruht auch der Fallstrick weiter unten.
+Beachten Sie den Unterschied zwischen dem **Definitionstag** `<processor name="...">` und dem **Zieltag** `<processor>name</processor>` innerhalb eines `ToProcessor`-Mailets. Beide heissen gleich, meinen aber Verschiedenes. Wer sie verwechselt, bekommt sinnlose Ergebnisse. Genau darauf beruht auch die Fehlerquelle weiter unten.
 
 ## Werkzeug 2: Erreichbarkeit ab dem Einstiegspunkt
 
@@ -2299,7 +2299,7 @@ Die Analyse ersetzt den Test also nicht, sie verkleinert den Testraum. Für die 
 
 Verfahren aus dem maschinellen Lernen, etwa Graph Neural Networks oder Knoteneinbettungen, brauchen Sie hier ausdrücklich nicht. Die lohnen sich bei grossen Graphen mit unbekannter Struktur und statistischen Mustern. Ein Regelwerk hat einige Dutzend Knoten, vollständig bekannte Struktur und deterministische Semantik. Exakte Algorithmen sind hier nicht nur billiger, sie liefern Beweise statt Wahrscheinlichkeiten.
 
-## Fallstricke beim maschinellen Bearbeiten
+## Fehlerquellen beim maschinellen Bearbeiten
 
 Wenn Sie ein Regelwerk per Skript ändern, gibt es drei Fehler, die zuverlässig auftreten. Alle drei habe ich selbst gemacht.
 
@@ -3023,12 +3023,12 @@ Wenn Hybrid Remote Moves nicht erlaubt sind und keine Postfachdaten in Exchange 
 
 ----
 
-# Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Stolpersteine
+# Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Fehlerquellen
 
 URL: https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine
 Datum: 2026-08-04
 
-# Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Stolpersteine
+# Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Fehlerquellen
 
 Wer eine DNS-Zone betreut, bekommt Mail-Records selten selbst geschrieben geliefert. Das Mailteam, ein Provider oder ein Marketingdienstleister schickt eine Zeile mit dem Hinweis, sie müsse "nur noch publiziert werden". Genau daraus entstehen die meisten Fehler, denn Mail-Records sind die Record-Art, bei der ein Tippfehler zwei völlig verschiedene Folgen haben kann. Entweder die Zustellung bricht sofort ab und jemand meldet sich innerhalb von Minuten, oder sie läuft unverändert weiter und lediglich die Absenderprüfung fällt still aus. Der zweite Fall bleibt regelmässig monatelang unbemerkt, bis ein grosser Empfänger die Domain in Quarantäne schiebt.
 
@@ -3270,7 +3270,7 @@ mx: mail2.example.com
 max_age: 604800
 ```
 
-Die Stolpersteine liegen fast alle ausserhalb der Zone:
+Die Fehlerquellen liegen fast alle ausserhalb der Zone:
 
 - **Die `id` muss sich bei jeder Policy-Änderung ändern.** Sie ist der einzige Hinweis für sendende Systeme, dass eine neue Policy abzuholen ist. Wer die Datei anpasst und die `id` stehen lässt, arbeitet bis zum Ablauf von `max_age` gegen zwischengespeicherte Kopien.
 - **Die MX-Liste in der Policy und die MX-Records müssen übereinstimmen.** Ein neuer MX, der in der Policy fehlt, wird von Sendern mit `mode: enforce` abgelehnt. Bei Migrationen gehört die Policy deshalb vor dem MX-Wechsel angepasst.
@@ -3402,7 +3402,7 @@ Datum: 2026-08-04
 
 Die Cisco SMA (Security Management Appliance, inzwischen unter dem Namen Cisco Secure Email and Web Manager geführt) übernimmt in vielen Mailumgebungen die zentrale Spam-Quarantäne und das Reporting für die Secure-Email-Gateways. Ihr HTTPS-Zertifikat deckt die Admin-GUI und die Quarantäneseite ab, auf der Endbenutzer ihre zurückgehaltenen Mails sichten und freigeben. Läuft es ab, bricht kein Mailfluss zusammen. Sichtbar wird der Ablauf trotzdem sofort: Jeder Aufruf der Quarantäneseite endet mit einer Zertifikatswarnung im Browser, und ausgerechnet die Benutzer, denen Awareness-Schulungen beibringen, bei solchen Warnungen nicht weiterzuklicken, sollen sie dann ignorieren.
 
-Bei einer Erneuerung in einem Kundenprojekt gab es gleich zwei Stolpersteine: Erst quittierte OpenSSL 3 die PFX-Datei der internen CA mit einem kryptischen Fehler zu `RC2-40-CBC`, dann verweigerte die Appliance den Import des fertigen Zertifikats, weil ihr die ausstellende Root-CA nicht bekannt war. Beide Hürden samt Lösung weiter unten.
+Bei einer Erneuerung in einem Kundenprojekt gab es gleich zwei Probleme: Erst quittierte OpenSSL 3 die PFX-Datei der internen CA mit einem kryptischen Fehler zu `RC2-40-CBC`, dann verweigerte die Appliance den Import des fertigen Zertifikats, weil ihr die ausstellende Root-CA nicht bekannt war. Beide Hürden samt Lösung weiter unten.
 
 ## Was die SMA anders macht als die ESA
 
@@ -3454,7 +3454,7 @@ Ohne zusätzliche Installation kommt aus, wer Git für Windows schon einsetzt: E
 openssl list -providers -provider legacy
 ```
 
-Eine Stolperfalle hat die Git Bash allerdings: Sie hält Argumente, die mit `/` beginnen, für Pfade und schreibt sie um. Aus `-subj "/C=CH/O=Example AG/CN=..."` wird `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, und OpenSSL bricht ab:
+Eine Eigenheit hat die Git Bash allerdings: Sie hält Argumente, die mit `/` beginnen, für Pfade und schreibt sie um. Aus `-subj "/C=CH/O=Example AG/CN=..."` wird `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, und OpenSSL bricht ab:
 
 ```text
 req: subject name is expected to be in the format /type0=value0/type1=value1/type2=...
@@ -3878,7 +3878,7 @@ s.quit()
 
 `set_debuglevel(1)` protokolliert den kompletten Dialog inklusive aller Antwortcodes, und `smtplib` liest jede Antwort synchron. Ein Abbruch erscheint als `SMTPServerDisconnected` samt der letzten empfangenen Zeile, statt als stiller Broken Pipe.
 
-Zwei Fallstricke: `server_hostname` ist beim Verbinden über eine IP-Adresse zwingend, sonst prüft Python das Zertifikat gegen die numerische Adresse. Und wenn Sie die Prüfung bewusst abschalten, muss `check_hostname = False` vor `verify_mode = ssl.CERT_NONE` stehen, sonst wirft Python einen `ValueError`.
+Zwei Punkte gehen hier oft schief: `server_hostname` ist beim Verbinden über eine IP-Adresse zwingend, sonst prüft Python das Zertifikat gegen die numerische Adresse. Und wenn Sie die Prüfung bewusst abschalten, muss `check_hostname = False` vor `verify_mode = ssl.CERT_NONE` stehen, sonst wirft Python einen `ValueError`.
 
 ## Absenderadresse, SPF und Alignment
 
@@ -3993,7 +3993,7 @@ Einige Eigenheiten der verwalteten Domäne, die bei der Anbindung von Anwendunge
 - Es gibt keinen Domain Administrator. Die Verwaltung läuft über die delegierte Gruppe AAD DC Administrators; Schema-Erweiterungen sind nicht möglich.
 - Für LDAP-Bind-Konten genügt ein dediziertes, unprivilegiertes Konto; für reine Verzeichnisabfragen in Entra ID die Rolle Directory Readers.
 
-## Die Passwort-Hash-Falle
+## Das Passwort-Hash-Problem
 
 Ein Punkt kostet in Tests regelmässig Zeit: Kerberos- und NTLM-Anmeldungen sowie LDAP-Binds brauchen Passwort-Hashes in der verwalteten Domäne. Für cloud-only-Konten erzeugt Entra ID diese Hashes erst bei der nächsten Passwortänderung nach der Aktivierung des Dienstes. Ein frisch synchronisierter Benutzer ist also im Verzeichnis sichtbar, kann sich aber erst anmelden, nachdem er sein Passwort einmal geändert hat. Bei hybriden Konten müssen die Hashes per Entra Connect aus dem lokalen AD mitsynchronisiert werden.
 
@@ -4066,7 +4066,7 @@ Dazu kommen aktualisierte Bibliotheken: OpenSSH 10.4 und OpenSSL 3.0.21 beheben 
 
 Drei Änderungen in der Admin-GUI fallen im Alltag auf:
 
-- **Separates MFA-Eingabefeld:** Der zweite Faktor muss nicht mehr an das Passwort angehängt werden, sondern hat ein eigenes Feld. Das beseitigt eine langjährige Stolperfalle beim Login.
+- **Separates MFA-Eingabefeld:** Der zweite Faktor muss nicht mehr an das Passwort angehängt werden, sondern hat ein eigenes Feld. Das beseitigt eine langjährige Fehlerquelle beim Login.
 - **LDAP-Authentifizierung für die Admin-GUI:** Administratoren können sich nun gegen einen externen LDAP-Server authentifizieren, statt lokale Konten auf der Appliance zu pflegen. Die Einrichtung ist im Artikel zur [Admin-GUI-Anbindung an Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung) beschrieben. Ob das HIN Mailgateway diese Funktion ebenfalls erhalten hat, teste ich noch und ergänze den Artikel anschliessend; da HIN dieselbe Firmware-Basis einsetzt, gehe ich davon aus.
 - **AutoRenew-Button für MPKI:** In den MPKI-Connector-Einstellungen lässt sich die automatische Zertifikatserneuerung per «Trigger AutoRenew...» manuell anstossen.
 
@@ -4297,7 +4297,7 @@ Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über 
 
 ## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Bricht der Rclone-Prozess ab und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
+Das dritte Problem betrifft die Gegenseite. Bricht der Rclone-Prozess ab und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected
@@ -4375,7 +4375,7 @@ Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung
 
 Damit bleibt das Konto gegen ein isoliert gestohlenes Passwort geschützt. Ein kompromittierter Server gibt jedoch Passwort und TOTP-Schlüssel preis. Für automatisierte Zugriffe empfiehlt sich deshalb ein **dediziertes Proton-Konto**.
 
-Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
+Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Probleme, steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
 
 ## Das offizielle SDK zeigt, wohin die Entwicklung geht
 
@@ -4427,7 +4427,7 @@ Datum: 2026-07-26
 
 Paperless-ngx speichert seine Dokumente in einem lokalen Verzeichnis, und dieses Verzeichnis wächst mit jedem Scan. Dabei braucht Paperless die Dateien im Alltag kaum: Die Suche läuft gegen die Datenbank, die Liste zeigt Vorschaubilder, und die eigentliche Datei wird erst beim Öffnen gelesen. Also habe ich getestet, ob sich die Ablage in einen Clouddienst verlagern lässt. Das Werkzeug dafür ist Rclone, mit dem Plex-Nutzer seit Jahren ganze Mediensammlungen aus der Cloud einbinden.
 
-Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Details stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Fallen, Zwei-Faktor-Authentifizierung und die Messmethodik.
+Das Ergebnis: **Es funktioniert in beide Richtungen**, und die Einrichtung ist inzwischen auf drei Befehle geschrumpft. Dieser Artikel fasst zusammen, was der Test ergeben hat und wie Sie das Setup selbst aufsetzen. Die technischen Details stehen in eigenen Artikeln, die am Ende verlinkt sind: Docker-Mount-Propagation, AppArmor-Eigenheiten, Zwei-Faktor-Authentifizierung und die Messmethodik.
 
 ## Das Prinzip: Hot Storage bleibt lokal, Cold Storage liegt in der Cloud
 
@@ -4479,7 +4479,7 @@ Auf ein Webinterface habe ich bewusst verzichtet. Rclones Web-GUI war zunächst 
 
 Die Vorlage kümmert sich um vier Punkte, die Sie bei einem eigenen Aufbau ebenfalls berücksichtigen müssen:
 
-1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers, sonst überlebt der Container keinen Neustart des Mounts. Details und die AppArmor-Falle dahinter: [Rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
+1. **`propagation: rslave`** am Media-Bind-Mount des Paperless-Containers, sonst überlebt der Container keinen Neustart des Mounts. Details und das AppArmor-Problem dahinter: [Rclone-Mount im Docker-Container](/blog/rclone-mount-in-docker-container).
 2. **Paperless anhalten, wenn der Mount fehlt.** Sonst schreibt es Dokumente in ein leeres lokales Verzeichnis, und der zurückkehrende Mount überdeckt sie unsichtbar. Ein Watchdog-Skript liegt in der Vorlage bei.
 3. **Ein Konto, das sich unbeaufsichtigt anmelden kann.** Bei Proton heisst das: den TOTP-Schlüssel in der Rclone-Konfiguration hinterlegen. Warum das die Zwei-Faktor-Authentifizierung nicht entwertet und wo Proton unter Linux insgesamt steht: [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 4. **Geplante Volllese-Aufgaben abschalten** (`PAPERLESS_SANITY_TASK_CRON=disable`), denn die Integritätsprüfung liest sonst regelmässig den kompletten Bestand aus der Cloud.
@@ -5929,7 +5929,7 @@ Welcher Port das wird, ist nicht beliebig. Die IANA unterscheidet drei Zonen: **
 
 Ein Vorbehalt bleibt: Viele Linux-Systeme, auch Debian, nutzen einen Teil desselben Bereichs als Quellport für eigene ausgehende Verbindungen (`net.ipv4.ip_local_port_range`, standardmässig um 32768–60999). Ein dauerhaft lauschender Dienst kollidiert dadurch nicht wirklich, der Kernel vergibt keinen bereits gebundenen Port, aber ein Port oberhalb von 60999 umgeht auch diese theoretische Unschärfe. Das Beispiel in diesem Artikel (`61417`) liegt deshalb bewusst dort. Vor der Umstellung zusätzlich mit `ss -lntup` (siehe Schritt 7) prüfen, ob der gewählte Port auf dem eigenen Server nicht schon belegt ist.
 
-Bei Debian 13 gibt es hier einen Stolperstein: SSH kann über systemd-Socket-Aktivierung gestartet werden. Ist das der Fall, wird die `Port`-Angabe in der `sshd_config` schlicht ignoriert; der Port muss dann am Socket gesetzt werden. Zuerst prüfen, welcher Fall vorliegt:
+Bei Debian 13 gibt es hier eine Besonderheit: SSH kann über systemd-Socket-Aktivierung gestartet werden. Ist das der Fall, wird die `Port`-Angabe in der `sshd_config` schlicht ignoriert; der Port muss dann am Socket gesetzt werden. Zuerst prüfen, welcher Fall vorliegt:
 
 ```bash
 systemctl is-enabled ssh.socket
@@ -6418,7 +6418,7 @@ Das ist der Punkt, der die meisten überrascht: Auch nach der Installation des J
 
 Nebenbei: Die Mitigation hat IE-Clients und Edge im IE-Modus ohnehin nie geschützt, weil der Internet Explorer keine CSP unterstützt. Wer solche Clients im Einsatz hatte, war über die Mitigation allein nie abgesichert. Das ist ein weiteres Argument, zeitnah zu patchen statt sich auf die Mitigation zu verlassen.
 
-### Die Stolperfalle: der EM Service spielt die Mitigation wieder ein
+### Der heikle Punkt: der EM Service spielt die Mitigation wieder ein
 
 Eine voreilig gelöschte Regel bleibt nicht dauerhaft entfernt. Der EM Service läuft stündlich und gleicht den Ist-Zustand mit den vom Office-Config-Service (Flighting) gelieferten Vorgaben ab. Die Zuordnung «welcher Build braucht welche Mitigation» liegt serverseitig. Erst eine serverseitige Änderung markiert den Juli-2026-Build als «Mitigation nicht mehr nötig». Diese Änderung wurde laut Microsoft erst rund um den 16. Juli 2026 vollständig ausgerollt. Bis dahin trägt der EM Service eine gelöschte M2.1.0-Regel im nächsten stündlichen Lauf einfach wieder ein.
 

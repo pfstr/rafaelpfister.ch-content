@@ -49,7 +49,7 @@ Einige Eigenheiten der verwalteten Domäne, die bei der Anbindung von Anwendunge
 - Es gibt keinen Domain Administrator. Die Verwaltung läuft über die delegierte Gruppe AAD DC Administrators; Schema-Erweiterungen sind nicht möglich.
 - Für LDAP-Bind-Konten genügt ein dediziertes, unprivilegiertes Konto; für reine Verzeichnisabfragen in Entra ID die Rolle Directory Readers.
 
-## Die Passwort-Hash-Falle
+## Das Passwort-Hash-Problem
 
 Ein Punkt kostet in Tests regelmässig Zeit: Kerberos- und NTLM-Anmeldungen sowie LDAP-Binds brauchen Passwort-Hashes in der verwalteten Domäne. Für cloud-only-Konten erzeugt Entra ID diese Hashes erst bei der nächsten Passwortänderung nach der Aktivierung des Dienstes. Ein frisch synchronisierter Benutzer ist also im Verzeichnis sichtbar, kann sich aber erst anmelden, nachdem er sein Passwort einmal geändert hat. Bei hybriden Konten müssen die Hashes per Entra Connect aus dem lokalen AD mitsynchronisiert werden.
 

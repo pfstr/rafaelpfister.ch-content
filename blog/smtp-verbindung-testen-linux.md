@@ -189,7 +189,7 @@ s.quit()
 
 `set_debuglevel(1)` protokolliert den kompletten Dialog inklusive aller Antwortcodes, und `smtplib` liest jede Antwort synchron. Ein Abbruch erscheint als `SMTPServerDisconnected` samt der letzten empfangenen Zeile, statt als stiller Broken Pipe.
 
-Zwei Fallstricke: `server_hostname` ist beim Verbinden über eine IP-Adresse zwingend, sonst prüft Python das Zertifikat gegen die numerische Adresse. Und wenn Sie die Prüfung bewusst abschalten, muss `check_hostname = False` vor `verify_mode = ssl.CERT_NONE` stehen, sonst wirft Python einen `ValueError`.
+Zwei Punkte gehen hier oft schief: `server_hostname` ist beim Verbinden über eine IP-Adresse zwingend, sonst prüft Python das Zertifikat gegen die numerische Adresse. Und wenn Sie die Prüfung bewusst abschalten, muss `check_hostname = False` vor `verify_mode = ssl.CERT_NONE` stehen, sonst wirft Python einen `ValueError`.
 
 ## Absenderadresse, SPF und Alignment
 

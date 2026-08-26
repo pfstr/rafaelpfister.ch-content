@@ -1,5 +1,5 @@
 ---
-title: "Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Stolpersteine"
+title: "Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Fehlerquellen"
 navTitle: "E-Mail-DNS-Records"
 description: "Wer eine Zone betreut, bekommt Mail-Records meist fertig geliefert und soll sie nur noch publizieren. Was dabei regelmässig schiefgeht: die 255-Byte-Grenze bei DKIM, doppelte SPF-Records, das Lookup-Limit, MX auf einem CNAME, der automatisch angehängte Zonen-Suffix und Policies, die niemand mehr durchsetzt."
 date: "2026-08-04"
@@ -26,7 +26,7 @@ url: "https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine"
 aiPrompt: |
   Du bist mein Assistent für DNS-Records rund um E-Mail. Ich gebe dir einen Record-Wert oder eine Zonendatei, du prüfst sie gegen die Regeln aus diesem Artikel: Syntax, doppelte Records, SPF-Lookup-Limit und Void-Lookups, DKIM-Base64 auf Copy-Paste-Schäden, DMARC-Tags nach RFC 9989 inklusive sp und np, externe Report-Adressen mit Autorisierungsrecord, MX ohne CNAME-Ziel, MTA-STS-ID. Frage mich zuerst: 1. um welche Domain und welchen Record es geht, 2. ob die Domain sendet, empfängt oder beides, 3. welche Versanddienste beteiligt sind (Marketing, ERP, Ticketsystem, Scan-to-Mail), 4. welches DNS-System die Zone hält. Gib mir am Ende den korrigierten Record als kopierfertige Zeile plus die dig-Befehle zur Kontrolle.
 ---
-# Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Stolpersteine
+# Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Fehlerquellen
 
 Wer eine DNS-Zone betreut, bekommt Mail-Records selten selbst geschrieben geliefert. Das Mailteam, ein Provider oder ein Marketingdienstleister schickt eine Zeile mit dem Hinweis, sie müsse "nur noch publiziert werden". Genau daraus entstehen die meisten Fehler, denn Mail-Records sind die Record-Art, bei der ein Tippfehler zwei völlig verschiedene Folgen haben kann. Entweder die Zustellung bricht sofort ab und jemand meldet sich innerhalb von Minuten, oder sie läuft unverändert weiter und lediglich die Absenderprüfung fällt still aus. Der zweite Fall bleibt regelmässig monatelang unbemerkt, bis ein grosser Empfänger die Domain in Quarantäne schiebt.
 
@@ -268,7 +268,7 @@ mx: mail2.example.com
 max_age: 604800
 ```
 
-Die Stolpersteine liegen fast alle ausserhalb der Zone:
+Die Fehlerquellen liegen fast alle ausserhalb der Zone:
 
 - **Die `id` muss sich bei jeder Policy-Änderung ändern.** Sie ist der einzige Hinweis für sendende Systeme, dass eine neue Policy abzuholen ist. Wer die Datei anpasst und die `id` stehen lässt, arbeitet bis zum Ablauf von `max_age` gegen zwischengespeicherte Kopien.
 - **Die MX-Liste in der Policy und die MX-Records müssen übereinstimmen.** Ein neuer MX, der in der Policy fehlt, wird von Sendern mit `mode: enforce` abgelehnt. Bei Migrationen gehört die Policy deshalb vor dem MX-Wechsel angepasst.

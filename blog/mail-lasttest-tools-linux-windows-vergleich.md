@@ -24,7 +24,7 @@ aiPrompt: |
 ---
 # Mail-Lasttests planen: Tools für 10'000-Mail-Bursts unter Linux und Windows im Vergleich
 
-Ob ein neues Mailgateway die Spitzenlast einer Rechnungsläufe-Nacht verkraftet, zeigt sich nicht im Datenblatt, sondern im Test. Wer eine Appliance ablöst, eine Exchange-Umgebung dimensioniert oder einen Newsletter-Versand über die eigene Infrastruktur plant, braucht vorher belastbare Zahlen: Wie viele Nachrichten pro Sekunde nimmt das System an, wie verhält sich die Queue unter Druck, und ab welchem Punkt beginnen Deferrals? Dieser Artikel vergleicht die gängigen Lastgeneratoren unter Linux und Windows und zeigt, wie ein Test mit Bursts von mehreren zehntausend Mails geplant, durchgeführt und ausgewertet wird.
+Ob ein neues Mailgateway die Spitzenlast eines nächtlichen Rechnungslaufs verkraftet, lässt sich nur mit einem Lasttest überprüfen. Wer eine Appliance ablöst, eine Exchange-Umgebung dimensioniert oder einen Newsletter-Versand über die eigene Infrastruktur plant, braucht vorher belastbare Zahlen: Wie viele Nachrichten pro Sekunde nimmt das System an, wie verhält sich die Queue unter Druck, und ab welchem Punkt beginnen Deferrals? Dieser Artikel vergleicht die gängigen Lastgeneratoren unter Linux und Windows und zeigt, wie ein Test mit Bursts von mehreren zehntausend Mails geplant, durchgeführt und ausgewertet wird.
 
 Vorweg die wichtigste Regel: Lasttests gehören ausschliesslich in die eigene Infrastruktur oder in eine ausdrücklich dafür freigegebene Testumgebung. Ein Burst gegen fremde Systeme ist ein Angriff, und ein Test mit erfundenen Absenderadressen gegen produktive Ziele erzeugt Backscatter, der auf Blocklisten führt. Der saubere Aufbau besteht aus einem Lastgenerator, dem zu testenden System und einer kontrollierten Senke, die die Mails am Ende annimmt und verwirft.
 
@@ -72,7 +72,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 | smtp-source / smtp-sink | Linux (Postfix) | Maximale Rohlast mit minimalem Aufwand, Generator und Senke aus einer Hand | Keine Latenz-Perzentile, gleichförmige Nachrichten |
 | Postal / bhm | Linux | Dauerlast mit Zielrate, variierende Nachrichten, Minutenstatistik | Betagtes Tooling, Auswertung selbst bauen |
 | swaks | Linux, Windows (Perl) | Voll kontrollierbarer Einzeltest, ideal als Funktionscheck vor dem Burst | Kein Lastgenerator |
-| JMeter (SMTP Sampler) | Windows, Linux (Java) | Lastprofile, Perzentile, Reports, EML-Nachrichtenquellen | Java-Overhead, GUI-Falle bei hohen Raten |
+| JMeter (SMTP Sampler) | Windows, Linux (Java) | Lastprofile, Perzentile, Reports, EML-Nachrichtenquellen | Java-Overhead, GUI-Modus für hohe Raten ungeeignet |
 | PowerShell + MailKit | Windows | Ohne Zusatzinstallation auf jedem Admin-Rechner, CSV-Ausgabe | Durchsatz begrenzt, Parallelisierung selbst bauen |
 | Eigenes Skript (Python/Go) | beide | Realistischer Nachrichtenmix, eigene Messpunkte | Entwicklungsaufwand, Generator selbst validieren |
 

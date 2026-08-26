@@ -1,7 +1,7 @@
 ---
 title: "Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking"
 navTitle: "Lastprofil ermitteln"
-description: "Wie viele Mails pro Minute verarbeitet Ihr Mailserver wirklich, und wie hoch sind die Spitzen? Wie Sie mit PowerShell aus dem Exchange Message Tracking das echte Lastprofil ermitteln: Raten pro Minute und Stunde, Burst-Dauer, Empfängerstruktur, Nachrichtengrössen und die typischen Auswertungsfallen."
+description: "Wie viele Mails pro Minute verarbeitet Ihr Mailserver wirklich, und wie hoch sind die Spitzen? Wie Sie mit PowerShell aus dem Exchange Message Tracking das echte Lastprofil ermitteln: Raten pro Minute und Stunde, Burst-Dauer, Empfängerstruktur, Nachrichtengrössen und die typischen Auswertungsfehler."
 date: "2026-08-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "9 Min. Lesezeit"
@@ -19,7 +19,7 @@ slug: "mailserver-lastprofil-ermitteln"
 translationId: "article-1ff17a188d73e289"
 url: "https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln"
 aiPrompt: |
-  Du bist mein Mailflow-Assistent. Hilf mir Schritt für Schritt, das Lastprofil meines Mailservers zu ermitteln: 1. Die richtige Datenquelle wählen (Message Tracking, Gateway-Logs) und das passende Event pro Nachricht bestimmen. 2. Raten pro Minute, Stunde und Tag berechnen und Bursts mit Dauer und Peak charakterisieren. 3. Empfängerstruktur, Domain-Verteilung und Nachrichtengrössen auswerten. Weise mich auf Doppelzählungen, Export-Limits und Zeitzonen-Fallen hin.
+  Du bist mein Mailflow-Assistent. Hilf mir Schritt für Schritt, das Lastprofil meines Mailservers zu ermitteln: 1. Die richtige Datenquelle wählen (Message Tracking, Gateway-Logs) und das passende Event pro Nachricht bestimmen. 2. Raten pro Minute, Stunde und Tag berechnen und Bursts mit Dauer und Peak charakterisieren. 3. Empfängerstruktur, Domain-Verteilung und Nachrichtengrössen auswerten. Weise mich auf Doppelzählungen, Export-Limits und Zeitzonen-Fehler hin.
 ---
 # Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking
 
@@ -178,7 +178,7 @@ with open("tracking-export.csv", encoding="utf-8") as f:
 print(per_min.most_common(10))
 ```
 
-## Die fünf klassischen Auswertungsfallen
+## Die fünf typischen Auswertungsfehler
 
 **Mehrfach-Events pro Mail.** Die häufigste Fehlerquelle: Zeilen zählen statt Nachrichten. Prüfen Sie mit `$events | Group-Object EventId`, was wirklich in Ihrer Datenmenge steckt, und filtern Sie auf genau ein Event pro Nachricht.
 

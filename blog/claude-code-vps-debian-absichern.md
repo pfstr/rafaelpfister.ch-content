@@ -118,7 +118,7 @@ Welcher Port das wird, ist nicht beliebig. Die IANA unterscheidet drei Zonen: **
 
 Ein Vorbehalt bleibt: Viele Linux-Systeme, auch Debian, nutzen einen Teil desselben Bereichs als Quellport für eigene ausgehende Verbindungen (`net.ipv4.ip_local_port_range`, standardmässig um 32768–60999). Ein dauerhaft lauschender Dienst kollidiert dadurch nicht wirklich, der Kernel vergibt keinen bereits gebundenen Port, aber ein Port oberhalb von 60999 umgeht auch diese theoretische Unschärfe. Das Beispiel in diesem Artikel (`61417`) liegt deshalb bewusst dort. Vor der Umstellung zusätzlich mit `ss -lntup` (siehe Schritt 7) prüfen, ob der gewählte Port auf dem eigenen Server nicht schon belegt ist.
 
-Bei Debian 13 gibt es hier einen Stolperstein: SSH kann über systemd-Socket-Aktivierung gestartet werden. Ist das der Fall, wird die `Port`-Angabe in der `sshd_config` schlicht ignoriert; der Port muss dann am Socket gesetzt werden. Zuerst prüfen, welcher Fall vorliegt:
+Bei Debian 13 gibt es hier eine Besonderheit: SSH kann über systemd-Socket-Aktivierung gestartet werden. Ist das der Fall, wird die `Port`-Angabe in der `sshd_config` schlicht ignoriert; der Port muss dann am Socket gesetzt werden. Zuerst prüfen, welcher Fall vorliegt:
 
 ```bash
 systemctl is-enabled ssh.socket

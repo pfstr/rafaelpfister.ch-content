@@ -96,7 +96,7 @@ for name, block in bloecke.items():
     print(f"{name} -> {', '.join(ziele(block)) or '(kein Ziel)'}")
 ```
 
-Beachten Sie den Unterschied zwischen dem **Definitionstag** `<processor name="...">` und dem **Zieltag** `<processor>name</processor>` innerhalb eines `ToProcessor`-Mailets. Beide heissen gleich, meinen aber Verschiedenes. Wer sie verwechselt, bekommt sinnlose Ergebnisse. Genau darauf beruht auch der Fallstrick weiter unten.
+Beachten Sie den Unterschied zwischen dem **Definitionstag** `<processor name="...">` und dem **Zieltag** `<processor>name</processor>` innerhalb eines `ToProcessor`-Mailets. Beide heissen gleich, meinen aber Verschiedenes. Wer sie verwechselt, bekommt sinnlose Ergebnisse. Genau darauf beruht auch die Fehlerquelle weiter unten.
 
 ## Werkzeug 2: Erreichbarkeit ab dem Einstiegspunkt
 
@@ -264,7 +264,7 @@ Die Analyse ersetzt den Test also nicht, sie verkleinert den Testraum. Für die 
 
 Verfahren aus dem maschinellen Lernen, etwa Graph Neural Networks oder Knoteneinbettungen, brauchen Sie hier ausdrücklich nicht. Die lohnen sich bei grossen Graphen mit unbekannter Struktur und statistischen Mustern. Ein Regelwerk hat einige Dutzend Knoten, vollständig bekannte Struktur und deterministische Semantik. Exakte Algorithmen sind hier nicht nur billiger, sie liefern Beweise statt Wahrscheinlichkeiten.
 
-## Fallstricke beim maschinellen Bearbeiten
+## Fehlerquellen beim maschinellen Bearbeiten
 
 Wenn Sie ein Regelwerk per Skript ändern, gibt es drei Fehler, die zuverlässig auftreten. Alle drei habe ich selbst gemacht.
 

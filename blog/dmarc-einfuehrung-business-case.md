@@ -51,7 +51,7 @@ Dieser Beitrag ist deshalb als Blueprint aufgebaut, ein katalogisiertes Umsetzun
 
 ## Der Blueprint im Überblick
 
-Alle Blueprints auf dieser Website folgen derselben Logik, damit Sie sich nur einmal einarbeiten müssen: **Was ist die Lösung** (1. Zielarchitektur, 2. Massnahmenkatalog), **passt sie zu mir** (3. Eignung, 4. Annahmen), **wie führe ich sie ein** (5. Umsetzung, 6. Betrieb, 7. Fallstricke), **wie sichere ich sie ab** (8. Recht und Governance), **wie messe ich sie** (9. Messgrössen) und **wie entscheide ich** (10. Entscheidungsvorlage zum Kopieren). Die Bausteine funktionieren einzeln und als Ganzes.
+Alle Blueprints auf dieser Website folgen derselben Logik, damit Sie sich nur einmal einarbeiten müssen: **Was ist die Lösung** (1. Zielarchitektur, 2. Massnahmenkatalog), **passt sie zu mir** (3. Eignung, 4. Annahmen), **wie führe ich sie ein** (5. Umsetzung, 6. Betrieb, 7. Fehlerquellen), **wie sichere ich sie ab** (8. Recht und Governance), **wie messe ich sie** (9. Messgrössen) und **wie entscheide ich** (10. Entscheidungsvorlage zum Kopieren). Die Bausteine funktionieren einzeln und als Ganzes.
 
 ## Ausgangslage
 
@@ -86,7 +86,7 @@ Die Architektur hat eine entscheidende Besonderheit: Die Durchsetzung passiert n
 
 ## 2. Massnahmenkatalog
 
-Die sechs Massnahmen sind die referenzierbaren Bausteine des Blueprints; Umsetzung (Kapitel 5), Fallstricke (Kapitel 7) und Messgrössen (Kapitel 9) verweisen auf sie.
+Die sechs Massnahmen sind die referenzierbaren Bausteine des Blueprints; Umsetzung (Kapitel 5), Fehlerquellen (Kapitel 7) und Messgrössen (Kapitel 9) verweisen auf sie.
 
 ### Authentifizierung der Quellen (M1, M2)
 
@@ -168,7 +168,7 @@ DMARC ist nach dem Projekt nicht fertig, sondern in Betrieb (M5). Diese Regelpro
 | Spoofing-Vorfall: Missbrauchswelle erkennen, Meldekette auslösen (inkl. Prüfung der Meldepflicht nach Art. 24 revDSG) | Auffälligkeit in Reports oder Meldung | ad hoc | Mailadministration mit Sicherheitsverantwortlichem |
 | Management-Reporting: KPI-Set (Kapitel 9) an das definierte Gremium | Quartalsende | quartalsweise | IT-Leitung |
 
-## 7. Typische Fallstricke
+## 7. Typische Fehlerquellen
 
 | Risiko | Wirkung | Gegenmassnahme im Blueprint |
 | --- | --- | --- |

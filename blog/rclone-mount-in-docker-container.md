@@ -91,7 +91,7 @@ Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über 
 
 ## 3. Konsumenten brauchen `rslave`
 
-Die dritte Falle betrifft die Gegenseite. Bricht der Rclone-Prozess ab und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
+Das dritte Problem betrifft die Gegenseite. Bricht der Rclone-Prozess ab und wird der Mount neu aufgebaut, sieht ihn der Host sofort. Ein Container, der den Pfad ganz normal per Bind eingebunden hat, sieht ihn dagegen nicht:
 
 ```text
 ls: cannot access '/usr/src/app/media': Transport endpoint is not connected

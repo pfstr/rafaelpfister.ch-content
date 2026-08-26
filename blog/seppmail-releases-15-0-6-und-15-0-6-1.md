@@ -43,7 +43,7 @@ Dazu kommen aktualisierte Bibliotheken: OpenSSH 10.4 und OpenSSL 3.0.21 beheben 
 
 Drei Änderungen in der Admin-GUI fallen im Alltag auf:
 
-- **Separates MFA-Eingabefeld:** Der zweite Faktor muss nicht mehr an das Passwort angehängt werden, sondern hat ein eigenes Feld. Das beseitigt eine langjährige Stolperfalle beim Login.
+- **Separates MFA-Eingabefeld:** Der zweite Faktor muss nicht mehr an das Passwort angehängt werden, sondern hat ein eigenes Feld. Das beseitigt eine langjährige Fehlerquelle beim Login.
 - **LDAP-Authentifizierung für die Admin-GUI:** Administratoren können sich nun gegen einen externen LDAP-Server authentifizieren, statt lokale Konten auf der Appliance zu pflegen. Die Einrichtung ist im Artikel zur [Admin-GUI-Anbindung an Active Directory](/blog/seppmail-admin-gui-ldap-authentifizierung) beschrieben. Ob das HIN Mailgateway diese Funktion ebenfalls erhalten hat, teste ich noch und ergänze den Artikel anschliessend; da HIN dieselbe Firmware-Basis einsetzt, gehe ich davon aus.
 - **AutoRenew-Button für MPKI:** In den MPKI-Connector-Einstellungen lässt sich die automatische Zertifikatserneuerung per «Trigger AutoRenew...» manuell anstossen.
 

@@ -7,4 +7,4 @@ url: "https://rafaelpfister.ch/blog/thema/exchange-updates"
 
 # Exchange-Updates (SU & CU)
 
-Die Sicherheitsupdates (SU) und kumulativen Updates (CU) für Exchange Server in chronologischer Reihenfolge: geschlossene Schwachstellen, Stolpersteine bei der Installation und die Nacharbeiten, die nach dem Patchday anstehen.
+Die Sicherheitsupdates (SU) und kumulativen Updates (CU) für Exchange Server in chronologischer Reihenfolge: geschlossene Schwachstellen, bekannte Probleme bei der Installation und die Nacharbeiten, die nach dem Patchday anstehen.

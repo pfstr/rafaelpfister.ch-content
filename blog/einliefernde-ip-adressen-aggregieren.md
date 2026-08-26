@@ -1,7 +1,7 @@
 ---
 title: "Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren"
 navTitle: "Einliefernde IPs"
-description: "Eine einzige Auswertung zeigt, welche Systeme tatsächlich Mail in Ihren Tenant einliefern: vergessene Connectoren, direkt sendende Anwendungen und Dienstleister, die niemand dokumentiert hat, inklusive der Fallstricke bei Seitenlogik und Interpretation."
+description: "Eine einzige Auswertung zeigt, welche Systeme tatsächlich Mail in Ihren Tenant einliefern: vergessene Connectoren, direkt sendende Anwendungen und Dienstleister, die niemand dokumentiert hat, inklusive der typischen Auswertungsfehler bei Seitenlogik und Interpretation."
 date: "2026-08-11"
 kategorie: "Microsoft 365 / Exchange"
 timeToRead: "12 Min. Lesezeit"
@@ -70,7 +70,7 @@ Count Name
 
 Bevor Sie daraus Schlüsse ziehen, müssen zwei Dinge stimmen: Die Liste muss vollständig sein, und Sie müssen wissen, was die Einträge bedeuten.
 
-## Fallstrick 1: Die Liste ist fast immer unvollständig
+## Fehlerquelle 1: Die Liste ist fast immer unvollständig
 
 `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen pro Aufruf. Bei hohem Aufkommen deckt eine Seite nur einen Bruchteil Ihres Zeitfensters ab. Sie gruppieren dann über einen Ausschnitt und halten das Ergebnis für die Gesamtheit.
 
@@ -113,7 +113,7 @@ $alle | Group-Object FromIP | Sort-Object Count -Descending |
 
 Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufzeit. Für eine einmalige Bestandsaufnahme ist das gut investiert.
 
-## Fallstrick 2: Die Zahlen bedeuten nicht, was sie zu bedeuten scheinen
+## Fehlerquelle 2: Die Zahlen bedeuten nicht, was sie zu bedeuten scheinen
 
 Die Ergebnisliste enthält vier grundverschiedene Arten von Einträgen, und wer sie in einen Topf wirft, zieht falsche Schlüsse.
 

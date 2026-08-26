@@ -26,7 +26,7 @@ aiPrompt: |
 
 Die Cisco SMA (Security Management Appliance, inzwischen unter dem Namen Cisco Secure Email and Web Manager geführt) übernimmt in vielen Mailumgebungen die zentrale Spam-Quarantäne und das Reporting für die Secure-Email-Gateways. Ihr HTTPS-Zertifikat deckt die Admin-GUI und die Quarantäneseite ab, auf der Endbenutzer ihre zurückgehaltenen Mails sichten und freigeben. Läuft es ab, bricht kein Mailfluss zusammen. Sichtbar wird der Ablauf trotzdem sofort: Jeder Aufruf der Quarantäneseite endet mit einer Zertifikatswarnung im Browser, und ausgerechnet die Benutzer, denen Awareness-Schulungen beibringen, bei solchen Warnungen nicht weiterzuklicken, sollen sie dann ignorieren.
 
-Bei einer Erneuerung in einem Kundenprojekt gab es gleich zwei Stolpersteine: Erst quittierte OpenSSL 3 die PFX-Datei der internen CA mit einem kryptischen Fehler zu `RC2-40-CBC`, dann verweigerte die Appliance den Import des fertigen Zertifikats, weil ihr die ausstellende Root-CA nicht bekannt war. Beide Hürden samt Lösung weiter unten.
+Bei einer Erneuerung in einem Kundenprojekt gab es gleich zwei Probleme: Erst quittierte OpenSSL 3 die PFX-Datei der internen CA mit einem kryptischen Fehler zu `RC2-40-CBC`, dann verweigerte die Appliance den Import des fertigen Zertifikats, weil ihr die ausstellende Root-CA nicht bekannt war. Beide Hürden samt Lösung weiter unten.
 
 ## Was die SMA anders macht als die ESA
 
@@ -78,7 +78,7 @@ Ohne zusätzliche Installation kommt aus, wer Git für Windows schon einsetzt: E
 openssl list -providers -provider legacy
 ```
 
-Eine Stolperfalle hat die Git Bash allerdings: Sie hält Argumente, die mit `/` beginnen, für Pfade und schreibt sie um. Aus `-subj "/C=CH/O=Example AG/CN=..."` wird `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, und OpenSSL bricht ab:
+Eine Eigenheit hat die Git Bash allerdings: Sie hält Argumente, die mit `/` beginnen, für Pfade und schreibt sie um. Aus `-subj "/C=CH/O=Example AG/CN=..."` wird `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, und OpenSSL bricht ab:
 
 ```text
 req: subject name is expected to be in the format /type0=value0/type1=value1/type2=...

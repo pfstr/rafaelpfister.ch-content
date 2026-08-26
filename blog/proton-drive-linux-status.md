@@ -44,7 +44,7 @@ Wer versehentlich einen aktuellen Einmalcode einträgt, kann die erste Anmeldung
 
 Damit bleibt das Konto gegen ein isoliert gestohlenes Passwort geschützt. Ein kompromittierter Server gibt jedoch Passwort und TOTP-Schlüssel preis. Für automatisierte Zugriffe empfiehlt sich deshalb ein **dediziertes Proton-Konto**.
 
-Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Fallen, steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
+Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokumentierter Probleme, steht im [eigenen Artikel zu Rclone in Containern](/blog/rclone-mount-in-docker-container).
 
 ## Das offizielle SDK zeigt, wohin die Entwicklung geht
 

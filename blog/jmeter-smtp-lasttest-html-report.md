@@ -1,7 +1,7 @@
 ---
 title: "SMTP-Lasttest mit Apache JMeter in der Praxis: 10'000 Mails, fünf Regelpfade, ein HTML-Report"
 navTitle: "JMeter-Lasttest"
-description: "Ein durchgeführter Lasttest von A bis Z: Testplan mit Nachrichtenmix entlang der Ruleset-Pfade eines Verschlüsselungs-Gateways, portables Setup ohne Installation, 10'000 Mails im Burst und die Auswertung über den JMeter-HTML-Report, inklusive der Stolpersteine, die dabei tatsächlich auftraten."
+description: "Ein durchgeführter Lasttest von A bis Z: Testplan mit Nachrichtenmix entlang der Ruleset-Pfade eines Verschlüsselungs-Gateways, portables Setup ohne Installation, 10'000 Mails im Burst und die Auswertung über den JMeter-HTML-Report, inklusive der Probleme, die dabei tatsächlich auftraten."
 date: "2026-08-24"
 kategorie: "SMTP und Mailflow"
 timeToRead: "11 Min. Lesezeit"
@@ -79,7 +79,7 @@ Die Aufteilung auf fünf getrennte Sampler statt eines Samplers mit variablem Be
 
 Jeder Sampler füllt die üblichen Felder: Zielhost und Port als benutzerdefinierte Variablen (`${zielhost}`, `${zielport}`), damit derselbe Plan ohne Änderung gegen Senke, Testumgebung oder PreProd laufen kann, dazu Absender, Empfänger, Betreff mit einem klaren Marker (hier das Wort LOADTEST im Betreff) und ein Textkörper von rund 1 bis 2 KB. Die Option "Include timestamp in subject" ergänzt den Einlieferungszeitpunkt in Millisekunden; bei einem späteren Lauf gegen ein echtes mehrstufiges System lässt sich daraus zusammen mit den Empfangszeitpunkten der Senke die Ende-zu-Ende-Latenz pro Nachricht rechnen.
 
-Ein Stolperstein aus diesem Lauf, der sich verallgemeinern lässt: Der erste Versuch scheiterte mit 10'000 Fehlern in 10 Sekunden, alle mit `java.lang.ClassCastException ... NullProperty cannot be cast to ... CollectionProperty` statt einer SMTP-Antwort. Ursache war eine von Hand gebaute JMX-Datei, in der die Header-Liste des Samplers fehlte; der Sampler erwartet die Property zwingend, auch wenn sie leer ist. Die Lehre daraus ist weniger die konkrete Property als das Muster: Testpläne in der GUI zusammenklicken und speichern, nicht als XML von Hand schreiben, und vor jedem Burst einen Kleinstlauf machen und auf der Senke nachsehen, dass Betreff und Inhalt wirklich ankommen. Ein Fehlerzähler von 100 Prozent bei 0 ms Antwortzeit bedeutet fast immer, dass der Fehler vor dem Netzwerk passiert, der Test also nie beim Zielsystem war.
+Ein Fehler aus diesem Lauf, der sich verallgemeinern lässt: Der erste Versuch scheiterte mit 10'000 Fehlern in 10 Sekunden, alle mit `java.lang.ClassCastException ... NullProperty cannot be cast to ... CollectionProperty` statt einer SMTP-Antwort. Ursache war eine von Hand gebaute JMX-Datei, in der die Header-Liste des Samplers fehlte; der Sampler erwartet die Property zwingend, auch wenn sie leer ist. Die Lehre daraus ist weniger die konkrete Property als das Muster: Testpläne in der GUI zusammenklicken und speichern, nicht als XML von Hand schreiben, und vor jedem Burst einen Kleinstlauf machen und auf der Senke nachsehen, dass Betreff und Inhalt wirklich ankommen. Ein Fehlerzähler von 100 Prozent bei 0 ms Antwortzeit bedeutet fast immer, dass der Fehler vor dem Netzwerk passiert, der Test also nie beim Zielsystem war.
 
 ## Der Lauf
 
@@ -107,7 +107,7 @@ Die Statistiktabelle ist der wichtigste Teil des Reports. Pro Sampler-Label, als
 
 Der APDEX-Block darüber verdichtet dasselbe auf eine Zahl pro Klasse (hier überall 1.000, weil alle Antworten weit unter der Toleranzschwelle von 500 ms lagen); die Schwellen lassen sich in den Report-Properties an eigene Service-Ziele anpassen. Der Errors-Block bleibt in diesem Lauf leer, ist aber bei Tests gegen echte Systeme die erste Anlaufstelle: Er gruppiert Fehler nach Antworttext, sodass ein `421`-Drosseln des Zielsystems sofort von Verbindungsabbrüchen unterscheidbar ist.
 
-Ein Stolperstein auch hier, und er betrifft jeden kurzen Burst: Die Zeitreihen-Charts des Reports arbeiten standardmässig mit einer Granularität von einer Minute. Ein Lauf von 13 Sekunden kollabiert damit zu einem einzigen Datenpunkt, und die Kurven unter "Charts" sehen aus wie ein Messfehler. Der Report lässt sich aus der vorhandenen JTL-Datei ohne neuen Lauf mit feinerer Auflösung regenerieren:
+Ein typischer Auswertungsfehler auch hier, und er betrifft jeden kurzen Burst: Die Zeitreihen-Charts des Reports arbeiten standardmässig mit einer Granularität von einer Minute. Ein Lauf von 13 Sekunden kollabiert damit zu einem einzigen Datenpunkt, und die Kurven unter "Charts" sehen aus wie ein Messfehler. Der Report lässt sich aus der vorhandenen JTL-Datei ohne neuen Lauf mit feinerer Auflösung regenerieren:
 
 ```bash
 jmeter -g lauf-10k.jtl -o report-fein -Jjmeter.reportgenerator.overall_granularity=1000

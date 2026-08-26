@@ -1,7 +1,7 @@
 ---
 title: "Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren"
 navTitle: "Mailfluss analysieren"
-description: "Wie Sie in Exchange OnPrem, Hybrid und Exchange Online systematisch herausfinden, wo eine Nachricht geblieben ist: die Abfragen mit Beispielausgaben, das SMTP-Protokoll richtig lesen, und die Fallstricke, die regelmässig zu Fehlschlüssen führen."
+description: "Wie Sie in Exchange OnPrem, Hybrid und Exchange Online systematisch herausfinden, wo eine Nachricht geblieben ist: die Abfragen mit Beispielausgaben, das SMTP-Protokoll richtig lesen, und die Punkte, die regelmässig zu Fehlschlüssen führen."
 date: "2026-08-11"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "22 Min. Lesezeit"
@@ -31,7 +31,7 @@ draft: false
 
 # Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren
 
-Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen **nicht** sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, zeigt zu jeder Abfrage die typische Ausgabe, und benennt die Fallstricke, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
+Die häufigste Frage im Mailbetrieb lautet: Eine Nachricht ist nicht angekommen, wo ist sie geblieben? Das Message Tracking beantwortet das zuverlässig, aber nur, wenn Sie wissen, was es Ihnen **nicht** sagt. Dieser Artikel beschreibt das Vorgehen in der Reihenfolge, in der es sich bewährt hat, zeigt zu jeder Abfrage die typische Ausgabe, und benennt die Fehlerquellen, die regelmässig Stunden kosten, weil sie plausible, aber falsche Schlüsse nahelegen.
 
 Alle Beispiele verwenden generische Namen: `SRV-MAIL01` und `SRV-MAIL02` als Transportserver, `example.com` als Domäne. Wenn Sie die Befehle für Ihre Umgebung zusammenklicken wollen, statt sie abzutippen: Der [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) enthält die gängigen Message-Tracking- und Mitschnitt-Befehle für PowerShell und Unix-Shell nebeneinander, komplett lokal im Browser.
 
@@ -117,7 +117,7 @@ Get-Queue -Server SRV-MAIL01 |
         -AutoSize -Wrap
 ```
 
-## Fallstrick 1: Tracking ist serverbezogen, und viele Einträge sind Schattenkopien
+## Fehlerquelle 1: Tracking ist serverbezogen, und viele Einträge sind Schattenkopien
 
 Wenn Sie in der Ausgabe Paare aus `HARECEIVE` und `HADISCARD` sehen, oft mit dem Zusatz `ExplicitlyDiscarded`, dann hat dieser Server die Nachricht **nicht verarbeitet**. Er hielt nur eine Schattenkopie im Rahmen der Shadow Redundancy, während ein anderer Server die eigentliche Zustellung übernahm. Sobald der primäre Server Erfolg meldet, verwirft der Partner seine Kopie.
 
@@ -134,7 +134,7 @@ Zwei Zeilen, kein Fehler, keine Zustellung. Wer daraus schliesst, die Nachricht 
 
 Praktisch heisst das zweierlei. Erstens sind solche Zeilen kein Hinweis auf ein Problem, sondern Normalbetrieb. Zweitens müssen Sie zwingend alle Transportserver abfragen.
 
-## Fallstrick 2: `Format-Table` schneidet genau die entscheidenden Spalten ab
+## Fehlerquelle 2: `Format-Table` schneidet genau die entscheidenden Spalten ab
 
 Der Fehlergrund steht in `RecipientStatus`, und dieses Feld ist lang. In einer Tabelle fällt es entweder ganz weg oder wird abgeschnitten. Genau das führt dazu, dass man den `FAIL` sieht, aber nicht den Grund, und stattdessen zu raten beginnt.
 
@@ -200,9 +200,9 @@ Count Name
 
 Eine einzige Absenderdomäne bedeutet: eng begrenztes Problem, kein Vorfall, Sie können in Ruhe weitersuchen. Stünden dort zwanzig verschiedene Domänen, hätten Sie einen laufenden Ausfall, und alles andere müsste warten. Diese Unterscheidung so früh zu treffen, spart erfahrungsgemäss am meisten Zeit.
 
-## Fallstrick 3: Die `ConnectorId` nennt nicht den echten Receive-Connector
+## Fehlerquelle 3: Die `ConnectorId` nennt nicht den echten Receive-Connector
 
-Das ist der teuerste Fallstrick, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
+Das ist die teuerste Fehlerquelle, weil die Ausgabe seriös aussieht. Mail, die ein Client oder ein Fremdsystem auf Port 25 einliefert, trifft zuerst den **Front End Transport**. Dieser reicht die Nachricht an den **Transport Service** auf Port 2525 weiter. Das Message Tracking wird erst dort geschrieben, der Front End Transport schreibt kein eigenes Tracking.
 
 Die Folge sehen Sie an dieser Zeile:
 
@@ -245,7 +245,7 @@ Der zweite Weg ist das SMTP-Protokoll, und das verdient einen eigenen Abschnitt.
 
 ## Das SMTP-Protokoll: die einzige vollständige Quelle
 
-Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die den Fallstrick oben auflöst.
+Das Protokoll des Front End Transport zeichnet die vollständige SMTP-Sitzung auf: welcher Connector angesprochen wurde, welche IP verbunden hat, was Client und Server einander gesagt haben. Es ist die einzige Quelle, die das oben beschriebene Problem mit der `ConnectorId` auflöst.
 
 ### Protokollierung einschalten
 
@@ -349,7 +349,7 @@ Fehlt zum fraglichen Zeitpunkt jede Zeile, gibt es drei übliche Gründe: Die Pr
 
 ## Schritt 4: Berechtigungen prüfen
 
-Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier lauert ein technischer Fallstrick: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit der irreführenden Meldung, das Objekt sei nicht auffindbar.
+Wenn eine Einlieferung abgelehnt wird oder umgekehrt mehr erlaubt ist als gedacht, führt der Weg über die Berechtigungen des Connectors. Hier gibt es eine technische Besonderheit: `Get-ADPermission` benötigt den **DistinguishedName**. Übergeben Sie die gewohnte Identität in der Form `Server\Connectorname`, scheitert der Aufruf in einer Remote-Sitzung mit der irreführenden Meldung, das Objekt sei nicht auffindbar.
 
 ```powershell
 $dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName
@@ -473,9 +473,9 @@ Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -Auto
 
 Planen Sie Zeit ein, solche Aufträge laufen je nach Umfang Stunden.
 
-### Fallstrick 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
+### Fehlerquelle 4: Fehlende Treffer sind kein Beweis für fehlenden Verkehr
 
-Das ist der subtilste Fallstrick im Tenant. `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen je Aufruf. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
+Das ist die subtilste Fehlerquelle im Tenant. `Get-MessageTraceV2` liefert seitenweise, maximal 5000 Zeilen je Aufruf. Bei hohem Aufkommen deckt eine Seite unter Umständen nur wenige Minuten ab, obwohl Sie sieben Tage abgefragt haben. Filtern Sie danach lokal, etwa nach einer Quell-IP, dann filtern Sie über einen winzigen Ausschnitt.
 
 Erkennbar ist das an der Warnung, die auf weitere Ergebnisse hinweist:
 
@@ -489,7 +489,7 @@ Erscheint sie, ist Ihre Auswertung **unvollständig**. Kommt kein Treffer zurüc
 
 Es gibt zwei saubere Auswege. Entweder Sie verkleinern das Zeitfenster so weit, dass eine Seite es vollständig abdeckt, erkennbar am Ausbleiben der Warnung. Oder Sie hangeln sich mit den Fortsetzungsangaben aus der Warnung durch alle Seiten. Für die Frage, ob etwas **nie** vorkommt, ist eine Konfigurationsprüfung ohnehin überlegen: Wenn ein System keine Route auf ein Ziel besitzt, kann es dorthin nicht zustellen, unabhängig von jedem Beobachtungsfenster.
 
-Die vollständige Auswertung aller einliefernden Adressen ist ein Thema für sich, mit eigenen Fallstricken bei der Interpretation. Sie steht in [Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
+Die vollständige Auswertung aller einliefernden Adressen ist ein Thema für sich, mit eigenen heiklen Punkten bei der Interpretation. Sie steht in [Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
 
 ## Ein Vorgehen, das sich bewährt hat
 
