@@ -134,7 +134,7 @@ openssl pkcs12 -legacy -in spam-quarantine.example.ch.pfx -out spam-quarantine.e
 
 `-legacy` lädt den Legacy-Provider für diesen Aufruf mit, danach läuft die Konvertierung durch. Voraussetzung ist eine OpenSSL-Installation, die den Legacy-Provider mitbringt; bei den gängigen Windows-Builds ist das der Fall.
 
-Wer den Fehler dauerhaft loswerden will, setzt an der Quelle an und lässt die PFX-Datei mit moderner Verschlüsselung exportieren: Aktuelle Export-Dialoge und CA-Werkzeuge bieten AES-256 an, damit entfällt der Legacy-Umweg komplett.
+Wer den Fehler dauerhaft loswerden will, kann an der Quelle ansetzen und die PFX-Datei mit moderner Verschlüsselung exportieren lassen: Aktuelle Export-Dialoge und CA-Werkzeuge bieten AES-256 an, damit entfällt der Legacy-Umweg komplett.
 
 Als grafische Alternative funktioniert XCA (X Certificate and Key Management): Die PFX-Datei über `Importieren > PKCS#12` einlesen, danach das Zertifikat im Tab `Zertifikate` als PEM exportieren und den Schlüssel im Tab `Private Schlüssel` separat als unverschlüsseltes PEM. Beide Exporte werden gebraucht, `certconfig` fragt Zertifikat und Schlüssel einzeln ab. XCA bringt seine eigene Kryptobibliothek mit und öffnet auch Container mit Legacy-Algorithmen.
 

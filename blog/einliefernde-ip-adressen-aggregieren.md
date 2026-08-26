@@ -1,7 +1,7 @@
 ---
 title: "Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen aggregieren"
 navTitle: "Einliefernde IPs"
-description: "Eine einzige Auswertung zeigt, welche Systeme tatsächlich Mail in Ihren Tenant einliefern: vergessene Connectoren, direkt sendende Anwendungen und Dienstleister, die niemand dokumentiert hat. Inklusive der Fallstricke bei Seitenlogik und Interpretation."
+description: "Eine einzige Auswertung zeigt, welche Systeme tatsächlich Mail in Ihren Tenant einliefern: vergessene Connectoren, direkt sendende Anwendungen und Dienstleister, die niemand dokumentiert hat, inklusive der Fallstricke bei Seitenlogik und Interpretation."
 date: "2026-08-11"
 kategorie: "Microsoft 365 / Exchange"
 timeToRead: "12 Min. Lesezeit"

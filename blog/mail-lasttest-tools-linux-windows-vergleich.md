@@ -63,7 +63,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 
 **Microsoft Exchange Load Generator (LoadGen)** war jahrelang das offizielle Werkzeug, um Exchange-Umgebungen mit simulierten Benutzerprofilen (Outlook, ActiveSync, OWA) zu belasten. Microsoft hat es nach Exchange 2013 nicht weitergepflegt und den Download eingestellt. Für reine SMTP-Last war LoadGen ohnehin das falsche Werkzeug; wer heute Exchange-Postfachlast simulieren will, steht ohne offizielles Tool da und testet den SMTP-Pfad besser direkt.
 
-**WSL** verdient einen eigenen Punkt: Wer auf einer Windows-Maschine sitzt, aber Linux-Tools braucht, installiert `smtp-source` und Postal in einer WSL-Distribution und hat damit die volle Linux-Werkzeugkiste ohne separate Test-VM. Für die hier diskutierten Lasten ist der WSL-Netzwerkpfad kein relevanter Engpass.
+**WSL** verdient einen eigenen Punkt: Wer auf einer Windows-Maschine sitzt, aber Linux-Tools braucht, kann `smtp-source` und Postal in einer WSL-Distribution installieren und hat damit die vollen Linux-Werkzeuge ohne separate Test-VM. Für die hier diskutierten Lasten ist der WSL-Netzwerkpfad kein relevanter Engpass.
 
 ## Vergleich
 

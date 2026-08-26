@@ -1,7 +1,7 @@
 ---
 title: "Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking"
 navTitle: "Lastprofil ermitteln"
-description: "Wie viele Mails pro Minute verarbeitet Ihr Mailserver wirklich, und wie hoch sind die Spitzen? Wie Sie mit PowerShell aus dem Exchange Message Tracking das echte Lastprofil ermitteln: Raten pro Minute und Stunde, Burst-Dauer, Empfängerstruktur, Nachrichtengrössen. Mit den typischen Auswertungsfallen."
+description: "Wie viele Mails pro Minute verarbeitet Ihr Mailserver wirklich, und wie hoch sind die Spitzen? Wie Sie mit PowerShell aus dem Exchange Message Tracking das echte Lastprofil ermitteln: Raten pro Minute und Stunde, Burst-Dauer, Empfängerstruktur, Nachrichtengrössen und die typischen Auswertungsfallen."
 date: "2026-08-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "9 Min. Lesezeit"

@@ -87,7 +87,7 @@ Im UEFI finden Sie Instant Flash im Tool-Menü. Das Werkzeug listet alle ROM-Dat
 
 Nach dem Flash stehen sämtliche BIOS-Einstellungen auf Werkseinstellung. Das ist so vorgesehen und bietet eine diagnostische Chance: Das RAM läuft jetzt ohne EXPO-Profil auf der JEDEC-Grundgeschwindigkeit. Wenn Sie wegen Stabilitätsproblemen geflasht haben, lassen Sie es bewusst ein bis zwei Wochen so. Bleiben die Abstürze aus, war das Speicherprofil beteiligt, und Sie können EXPO mit der neuen Firmware gezielt erneut testen. Der Alltagsunterschied zwischen 4800 und 6000 MT/s ist ausserhalb von Benchmarks kaum spürbar; ein stabiler Rechner ist jeden Benchmark-Punkt wert.
 
-Zwei Einstellungen lohnen den Besuch im UEFI ohnehin: Wer die Neustarts im Leerlauf hatte, setzt unter Advanced, AMD CBS die Option "Power Supply Idle Control" auf "Typical Current Idle"; das entschärft eine bekannte Unverträglichkeit mancher Netzteile mit den tiefen Idle-Zuständen der Ryzen-CPUs. Und wer künftig wieder per F2 ins Setup will, stellt Fast Boot ab.
+Zwei Einstellungen lohnen den Besuch im UEFI ohnehin: Wer die Neustarts im Leerlauf hatte, kann unter Advanced, AMD CBS die Option "Power Supply Idle Control" auf "Typical Current Idle" setzen; das entschärft eine bekannte Unverträglichkeit mancher Netzteile mit den tiefen Idle-Zuständen der Ryzen-CPUs. Und wer künftig wieder per F2 ins Setup will, kann Fast Boot abstellen.
 
 Die Erfolgskontrolle zurück in Windows:
 
@@ -454,7 +454,7 @@ Die Umleitung greift nur beim Verbindungsaufbau. Nach jeder Änderung an den Ein
 
 ## Client-Seite: die Umleitung aktivieren
 
-Der schnellste Weg führt über die grafische Oberfläche: `mstsc` starten, **Optionen einblenden**, Reiter **Lokale Ressourcen**, Haken bei **Drucker** setzen und die Verbindung im Reiter **Allgemein** speichern. Wer stattdessen mit .rdp-Dateien arbeitet, setzt die entsprechende Zeile direkt in der Datei; .rdp-Dateien sind einfache Textdateien und lassen sich mit jedem Editor bearbeiten:
+Der schnellste Weg führt über die grafische Oberfläche: `mstsc` starten, **Optionen einblenden**, Reiter **Lokale Ressourcen**, Haken bei **Drucker** setzen und die Verbindung im Reiter **Allgemein** speichern. Wer mit .rdp-Dateien arbeitet, kann die Zeile direkt in der Datei anpassen; .rdp-Dateien sind einfache Textdateien und lassen sich mit jedem Editor bearbeiten:
 
 ```text
 redirectprinters:i:1
@@ -569,7 +569,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 
 **Microsoft Exchange Load Generator (LoadGen)** war jahrelang das offizielle Werkzeug, um Exchange-Umgebungen mit simulierten Benutzerprofilen (Outlook, ActiveSync, OWA) zu belasten. Microsoft hat es nach Exchange 2013 nicht weitergepflegt und den Download eingestellt. Für reine SMTP-Last war LoadGen ohnehin das falsche Werkzeug; wer heute Exchange-Postfachlast simulieren will, steht ohne offizielles Tool da und testet den SMTP-Pfad besser direkt.
 
-**WSL** verdient einen eigenen Punkt: Wer auf einer Windows-Maschine sitzt, aber Linux-Tools braucht, installiert `smtp-source` und Postal in einer WSL-Distribution und hat damit die volle Linux-Werkzeugkiste ohne separate Test-VM. Für die hier diskutierten Lasten ist der WSL-Netzwerkpfad kein relevanter Engpass.
+**WSL** verdient einen eigenen Punkt: Wer auf einer Windows-Maschine sitzt, aber Linux-Tools braucht, kann `smtp-source` und Postal in einer WSL-Distribution installieren und hat damit die vollen Linux-Werkzeuge ohne separate Test-VM. Für die hier diskutierten Lasten ist der WSL-Netzwerkpfad kein relevanter Engpass.
 
 ## Vergleich
 
@@ -1214,13 +1214,13 @@ Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strat
 
 Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen; dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
 
-SUs sind kumulativ: Wer das Juli-SU übersprungen hat, installiert direkt das August-SU. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
+SUs sind kumulativ: Wer das Juli-SU übersprungen hat, kann direkt das August-SU installieren. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
 
 Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen; wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
 
 ## Empfohlenes Vorgehen
 
-Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann, deaktiviert OWA Light manuell als Sofortmassnahme gegen CVE-2026-62914. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
+Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann: OWA Light lässt sich manuell als Sofortmassnahme gegen CVE-2026-62914 deaktivieren. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
 ## Quellen
 
@@ -3510,7 +3510,7 @@ openssl pkcs12 -legacy -in spam-quarantine.example.ch.pfx -out spam-quarantine.e
 
 `-legacy` lädt den Legacy-Provider für diesen Aufruf mit, danach läuft die Konvertierung durch. Voraussetzung ist eine OpenSSL-Installation, die den Legacy-Provider mitbringt; bei den gängigen Windows-Builds ist das der Fall.
 
-Wer den Fehler dauerhaft loswerden will, setzt an der Quelle an und lässt die PFX-Datei mit moderner Verschlüsselung exportieren: Aktuelle Export-Dialoge und CA-Werkzeuge bieten AES-256 an, damit entfällt der Legacy-Umweg komplett.
+Wer den Fehler dauerhaft loswerden will, kann an der Quelle ansetzen und die PFX-Datei mit moderner Verschlüsselung exportieren lassen: Aktuelle Export-Dialoge und CA-Werkzeuge bieten AES-256 an, damit entfällt der Legacy-Umweg komplett.
 
 Als grafische Alternative funktioniert XCA (X Certificate and Key Management): Die PFX-Datei über `Importieren > PKCS#12` einlesen, danach das Zertifikat im Tab `Zertifikate` als PEM exportieren und den Schlüssel im Tab `Private Schlüssel` separat als unverschlüsseltes PEM. Beide Exporte werden gebraucht, `certconfig` fragt Zertifikat und Schlüssel einzeln ab. XCA bringt seine eigene Kryptobibliothek mit und öffnet auch Container mit Legacy-Algorithmen.
 

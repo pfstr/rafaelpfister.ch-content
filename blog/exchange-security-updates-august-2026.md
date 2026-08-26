@@ -92,13 +92,13 @@ Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strat
 
 Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen; dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
 
-SUs sind kumulativ: Wer das Juli-SU übersprungen hat, installiert direkt das August-SU. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
+SUs sind kumulativ: Wer das Juli-SU übersprungen hat, kann direkt das August-SU installieren. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
 
 Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen; wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
 
 ## Empfohlenes Vorgehen
 
-Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann, deaktiviert OWA Light manuell als Sofortmassnahme gegen CVE-2026-62914. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
+Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann: OWA Light lässt sich manuell als Sofortmassnahme gegen CVE-2026-62914 deaktivieren. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
 ## Quellen
 

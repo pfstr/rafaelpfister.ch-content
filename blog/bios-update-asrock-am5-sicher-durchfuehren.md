@@ -87,7 +87,7 @@ Im UEFI finden Sie Instant Flash im Tool-Menü. Das Werkzeug listet alle ROM-Dat
 
 Nach dem Flash stehen sämtliche BIOS-Einstellungen auf Werkseinstellung. Das ist so vorgesehen und bietet eine diagnostische Chance: Das RAM läuft jetzt ohne EXPO-Profil auf der JEDEC-Grundgeschwindigkeit. Wenn Sie wegen Stabilitätsproblemen geflasht haben, lassen Sie es bewusst ein bis zwei Wochen so. Bleiben die Abstürze aus, war das Speicherprofil beteiligt, und Sie können EXPO mit der neuen Firmware gezielt erneut testen. Der Alltagsunterschied zwischen 4800 und 6000 MT/s ist ausserhalb von Benchmarks kaum spürbar; ein stabiler Rechner ist jeden Benchmark-Punkt wert.
 
-Zwei Einstellungen lohnen den Besuch im UEFI ohnehin: Wer die Neustarts im Leerlauf hatte, setzt unter Advanced, AMD CBS die Option "Power Supply Idle Control" auf "Typical Current Idle"; das entschärft eine bekannte Unverträglichkeit mancher Netzteile mit den tiefen Idle-Zuständen der Ryzen-CPUs. Und wer künftig wieder per F2 ins Setup will, stellt Fast Boot ab.
+Zwei Einstellungen lohnen den Besuch im UEFI ohnehin: Wer die Neustarts im Leerlauf hatte, kann unter Advanced, AMD CBS die Option "Power Supply Idle Control" auf "Typical Current Idle" setzen; das entschärft eine bekannte Unverträglichkeit mancher Netzteile mit den tiefen Idle-Zuständen der Ryzen-CPUs. Und wer künftig wieder per F2 ins Setup will, kann Fast Boot abstellen.
 
 Die Erfolgskontrolle zurück in Windows:
 

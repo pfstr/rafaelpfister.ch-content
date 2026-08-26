@@ -1,7 +1,7 @@
 ---
 title: "Was wir aus der Naturwissenschaft für die Fehlersuche in der IT lernen können"
 navTitle: "Kontrollierte Experimente"
-description: "Falsifizierbarkeit, Kontrollgruppe, Störvariablen und Stichprobenverzerrung: Die Methode, mit der Naturwissenschaften seit Jahrhunderten arbeiten, löst genau die Probleme, an denen IT-Fehlersuche regelmässig scheitert. Mit durchgespielten Beispielen aus dem Mailfluss."
+description: "Falsifizierbarkeit, Kontrollgruppe, Störvariablen und Stichprobenverzerrung: Die Methode, mit der Naturwissenschaften seit Jahrhunderten arbeiten, löst genau die Probleme, an denen IT-Fehlersuche regelmässig scheitert, durchgespielt an Beispielen aus dem Mailfluss."
 date: "2026-08-11"
 kategorie: "SMTP / Mailfluss"
 timeToRead: "15 Min. Lesezeit"

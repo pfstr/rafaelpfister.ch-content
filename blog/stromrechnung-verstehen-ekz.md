@@ -1,7 +1,7 @@
 ---
 title: "Stromrechnung lesen und verstehen: Position für Position durch eine EKZ-Rechnung"
 navTitle: "Stromrechnung verstehen"
-description: "Energie, Netznutzung, Messung, Abgaben: Was auf einer Schweizer Stromrechnung wirklich steht, wer die einzelnen Preise festlegt und an welchen Positionen sich etwas ändern lässt. Mit interaktiver Beispielrechnung nach dem Muster der EKZ."
+description: "Energie, Netznutzung, Messung, Abgaben: Was auf einer Schweizer Stromrechnung wirklich steht, wer die einzelnen Preise festlegt und an welchen Positionen sich etwas ändern lässt, dazu eine interaktive Beispielrechnung nach dem Muster der EKZ."
 date: "2026-08-20"
 kategorie: "Strom und Energie"
 timeToRead: "9 Min. Lesezeit"
