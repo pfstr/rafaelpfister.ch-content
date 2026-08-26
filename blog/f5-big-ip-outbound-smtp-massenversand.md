@@ -3,17 +3,18 @@ title: "F5 BIG-IP als Outbound-Proxy für den Mail-Massenversand: Persistenz, SN
 navTitle: "F5 Massenversand"
 description: "Ein Massenversand mit 1000 Mails pro Minute läuft über eine BIG-IP als ausgehenden Proxy zum Provider-Relay. Der Artikel klärt, warum Sticky Sessions hier nichts bringen, wie der Provider-Hostname sauber per FQDN-Node aufgelöst wird und welche Einstellungen bei SNAT, Timeouts und Verbindungs-Limits den Durchsatz tatsächlich bestimmen."
 date: "2026-08-26"
-kategorie: "SMTP und Mailflow"
+kategorie: "Loadbalancer"
 timeToRead: "9 Min. Lesezeit"
 themen:
+  - "loadbalancer"
   - "smtp-mailflow"
 produkte:
-  - "uebergreifend"
+  - "loadbalancer"
 protokolle:
   - "smtp"
   - "tcp"
   - "dns"
-hauptthema: "smtp-mailflow"
+hauptthema: "loadbalancer"
 related:
   - "massenmailing-provider-wechsel-checkliste"
   - "mailserver-lastprofil-ermitteln"
