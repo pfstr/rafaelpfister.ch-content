@@ -39,6 +39,16 @@ Bevor ein Tool zur Sprache kommt, lohnt sich die Frage, welche Grösse eigentlic
 
 Ein Test, der nur die Annahmerate misst, sagt über eine mehrstufige Umgebung mit Gateway, Verschlüsselungsstufe und Zielserver wenig aus. Gerade dort entscheidet die Ende-zu-Ende-Sicht.
 
+## Das Lastbild bestimmt das Werkzeug
+
+Neben der Messgrösse entscheidet eine zweite Frage über die Werkzeugwahl, und sie wird häufig übersprungen: Welches Verbindungsverhalten hat die Last, die simuliert werden soll? Zwei Lastbilder sind zu unterscheiden.
+
+Ein **Bulk-Sender mit offenen Sessions** ist das Lastbild von Rechnungsläufen, Lohnabrechnungen und Newsletter-Systemen: Ein einzelnes System baut wenige Verbindungen auf und schickt darüber hunderte bis tausende Nachrichten am Stück. Der Verbindungs-Overhead fällt einmal pro Session an, nicht einmal pro Nachricht, und das Gateway sieht wenige Verbindungen mit vielen Transaktionen.
+
+**Viele unabhängige Einlieferer** sind das Lastbild von Applikationslandschaften und Benutzerverkehr: Zahlreiche Systeme liefern je einzelne Nachrichten über je eigene Verbindungen ein. Hier gehört der Verbindungsaufbau inklusive TLS und AUTH zu jeder Nachricht dazu.
+
+Für die Dimensionierung eines Massenversands zählt das erste Lastbild, und dafür muss der Lastgenerator Sessions offenhalten können: `smtp-source` tut das (viele Nachrichten verteilt auf wenige Sessions), ebenso Postal und eigene Skripte mit persistenter Verbindung. JMeter kann es nicht; die Hintergründe stehen im Windows-Abschnitt. Für die Spitzenlast eines Rechnungslaufs ist deshalb dieses Session-Kriterium massgebend und nicht die Plattform; unter Windows führt der Weg dann über WSL.
+
 ## Werkzeuge unter Linux
 
 **smtp-source und smtp-sink** aus dem Postfix-Paket sind der Standard für rohe SMTP-Last und auf praktisch jedem System verfügbar, das Postfix installiert hat. `smtp-source` erzeugt Nachrichten mit einstellbarer Grösse, Parallelität und Anzahl, `smtp-sink` ist das Gegenstück: ein SMTP-Server, der alles annimmt und verwirft. Ein Burst von 10'000 Mails mit 50 parallelen Sessions und 5-KB-Nachrichten ist ein Einzeiler:
@@ -57,7 +67,9 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 
 ## Werkzeuge unter Windows
 
-**Apache JMeter** ist unter Windows die erste Empfehlung. Der eingebaute SMTP Sampler beherrscht Auth, STARTTLS, Anhänge und EML-Dateien als Nachrichtenquelle, und die JMeter-Mechanik liefert das, was den Postfix-Tools fehlt: Thread-Gruppen für gestufte Lastprofile, Antwortzeit-Perzentile, Fehlerraten und Reports. Für Bursts jenseits von ein paar tausend Mails pro Minute gilt die übliche JMeter-Regel: GUI nur zum Erstellen des Testplans, die Messung selbst im CLI-Modus fahren, sonst misst man die Oberfläche mit.
+**Apache JMeter** ist unter Windows das passende Werkzeug, wenn das Lastbild viele unabhängige Einlieferer sind oder wenn Perzentile, Nachrichtenmix und Reports im Vordergrund stehen. Der eingebaute SMTP Sampler beherrscht Auth, STARTTLS, Anhänge und EML-Dateien als Nachrichtenquelle, und die JMeter-Mechanik liefert das, was den Postfix-Tools fehlt: Thread-Gruppen für gestufte Lastprofile, Antwortzeit-Perzentile, Fehlerraten und Reports. Für Bursts jenseits von ein paar tausend Mails pro Minute gilt die übliche JMeter-Regel: GUI nur zum Erstellen des Testplans, die Messung selbst im CLI-Modus fahren, sonst misst man die Oberfläche mit.
+
+Eine Grenze des SMTP Samplers muss dabei bekannt sein: JMeter kann SMTP-Sessions nicht offenhalten. Jeder Sample-Durchlauf öffnet eine neue Verbindung, durchläuft den kompletten Dialog aus TCP-Handshake, EHLO, gegebenenfalls STARTTLS und AUTH, sendet genau eine Nachricht und beendet die Verbindung mit QUIT. Mehrere Nachrichten über dieselbe offene Verbindung, wie es Massenversender mit Session-Wiederverwendung tun, lassen sich nicht abbilden; `smtp-source` verteilt dagegen viele Nachrichten auf wenige offene Sessions. Der Grund liegt in der Architektur: JMeter ist ein protokollübergreifendes Lasttest-Framework, kein SMTP-Werkzeug. Sein Ausführungsmodell behandelt jeden Sampler als in sich geschlossene, unabhängig gemessene Einheit, denn nur so funktionieren Timer, Assertions und die Perzentil-Auswertung für alle unterstützten Protokolle einheitlich. Der SMTP Sampler ist entsprechend ein dünner Aufsatz auf die JavaMail-Bibliothek, die als Client-API pro Sendevorgang eine Verbindung aufbaut und wieder schliesst; eine Verbindungs-Wiederverwendung über Samples hinweg, wie sie der HTTP-Sampler mit Keep-Alive bietet, wurde für SMTP nie implementiert. Für die Messung bedeutet das: JMeter erzeugt das Lastbild vieler einzelner Einlieferer, nicht das eines Bulk-Senders mit offener Session. Der gemessene Durchsatz enthält pro Nachricht den vollen Verbindungs- und TLS-Overhead, und Verbindungs-Limits am Gateway greifen entsprechend früher als bei Session-Wiederverwendung. Für das Bulk-Sender-Lastbild eines Rechnungslaufs ist JMeter damit nicht das richtige Werkzeug; unter Windows ist der WSL-Weg mit `smtp-source` die bessere Wahl.
 
 **PowerShell mit MailKit** ist der Bordmittel-Weg. Das früher übliche `Send-MailMessage` markiert Microsoft selbst als veraltet und empfiehlt den Umstieg; MailKit lässt sich per NuGet laden und aus PowerShell 7 heraus mit Runspaces parallelisieren. Realistisch sind damit einige hundert bis wenige tausend Mails pro Minute, genug für Funktions- und Regressionstests, zu wenig für die Maximallastmessung. Der Vorteil: Das Skript läuft ohne Zusatzinstallation auf jedem Admin-Arbeitsplatz und kann Ergebnisse direkt als CSV für die Auswertung schreiben.
 
@@ -72,7 +84,7 @@ Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die 
 | smtp-source / smtp-sink | Linux (Postfix) | Maximale Rohlast mit minimalem Aufwand, Generator und Senke aus einer Hand | Keine Latenz-Perzentile, gleichförmige Nachrichten |
 | Postal / bhm | Linux | Dauerlast mit Zielrate, variierende Nachrichten, Minutenstatistik | Betagtes Tooling, Auswertung selbst bauen |
 | swaks | Linux, Windows (Perl) | Voll kontrollierbarer Einzeltest, ideal als Funktionscheck vor dem Burst | Kein Lastgenerator |
-| JMeter (SMTP Sampler) | Windows, Linux (Java) | Lastprofile, Perzentile, Reports, EML-Nachrichtenquellen | Java-Overhead, GUI-Modus für hohe Raten ungeeignet |
+| JMeter (SMTP Sampler) | Windows, Linux (Java) | Lastprofile, Perzentile, Reports, EML-Nachrichtenquellen | Java-Overhead, GUI-Modus für hohe Raten ungeeignet, eine Verbindung pro Nachricht (keine Session-Wiederverwendung) |
 | PowerShell + MailKit | Windows | Ohne Zusatzinstallation auf jedem Admin-Rechner, CSV-Ausgabe | Durchsatz begrenzt, Parallelisierung selbst bauen |
 | Eigenes Skript (Python/Go) | beide | Realistischer Nachrichtenmix, eigene Messpunkte | Entwicklungsaufwand, Generator selbst validieren |
 
