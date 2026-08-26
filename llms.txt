@@ -325,6 +325,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Loadbalancer](https://rafaelpfister.ch/blog/thema/loadbalancer)
 - [Microsoft 365 / Exchange](https://rafaelpfister.ch/blog/thema/microsoft-365-exchange)
 - [Microsoft Entra](https://rafaelpfister.ch/blog/thema/microsoft-entra)
+- [Microsoft Teams](https://rafaelpfister.ch/blog/thema/microsoft-teams)
 - [Paperless-ngx](https://rafaelpfister.ch/blog/thema/paperless-ngx)
 - [PC & Hardware](https://rafaelpfister.ch/blog/thema/pc-hardware)
 - [Proton Drive](https://rafaelpfister.ch/blog/thema/proton-drive)

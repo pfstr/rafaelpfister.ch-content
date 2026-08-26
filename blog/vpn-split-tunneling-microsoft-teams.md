@@ -3,15 +3,16 @@ title: "VPN-Split-Tunneling für Microsoft Teams: Medienverkehr am Tunnel vorbei
 navTitle: "Teams Split Tunneling"
 description: "Teams-Anrufe über ein VPN leiden unter Latenz, Jitter und dem Umweg über das VPN-Gateway. Der Artikel zeigt, welche Microsoft-Netze und Ports für den Medienverkehr zuständig sind, warum IP-basiertes Split Tunneling dem App-Ausschluss überlegen ist und wie die Umsetzung in Consumer-VPNs, WireGuard, OpenVPN und Enterprise-Clients aussieht."
 date: "2026-08-26"
-kategorie: "Microsoft 365 / Exchange"
+kategorie: "Microsoft Teams"
 timeToRead: "8 Min. Lesezeit"
 themen:
+  - "microsoft-teams"
   - "microsoft-365-exchange"
 produkte:
-  - "uebergreifend"
+  - "teams"
 protokolle:
   - "tcp"
-hauptthema: "microsoft-365-exchange"
+hauptthema: "microsoft-teams"
 slug: "vpn-split-tunneling-microsoft-teams"
 translationId: "article-d15f1e7ff6af231c"
 url: "https://rafaelpfister.ch/blog/vpn-split-tunneling-microsoft-teams"
