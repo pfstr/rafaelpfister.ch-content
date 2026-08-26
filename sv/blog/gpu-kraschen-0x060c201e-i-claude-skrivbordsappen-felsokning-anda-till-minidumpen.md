@@ -1,143 +1,51 @@
 ---
-title: "GPU-kraschen 0x060C201E i Claude-skrivbordsappen: felsökning ända till minidumpen"
-navTitle: "GPU-krasch 0x060C201E"
-description: "Claude-skrivbordsappen avslutas reproducerbart med ”GPU process gone”. Först ser allt ut som en AMD-drivrutinsbugg, sedan motbevisar egna experiment teorin, och till slut avslöjar en fångad minidump den verkliga orsaken: Chromiums inbyggda självavslutning ”GPU process isn't usable. Goodbye.”"
+title: "Claude Desktop kraschar hela tiden: ”GPU process gone” med exitkod 101457950, orsak och lösning"
+navTitle: "Claude Desktop-krasch"
+description: "Claude Desktop-appen i Windows avslutas helt med ”GPU process gone: exitCode 101457950” (0x060C201E), ofta följt av reparationsdialogen i Store-appen. Den fullständiga orsakskedjan: Code Integrity blockerar vk_swiftshader.dll, Chromiums fallback-kedja töms, den inbyggda självavslutningen stänger appen. Med omedelbar lösning, självdiagnostik via händelseloggen och analys ända ned till minidumpen."
 date: "2026-08-25"
 kategorie: "Claude"
-timeToRead: "12 min läsning"
+timeToRead: "9 min läsning"
 themen:
   - claude
 slug: "gpu-kraschen-0x060c201e-i-claude-skrivbordsappen-felsokning-anda-till-minidumpen"
 translationId: "article-0932cd50b8160b45"
 translationOf: claude-desktop-webgpu-absturz
-url: https://rafaelpfister.ch/sv/blog/gpu-kraschen-0x060c201e-i-claude-skrivbordsappen-felsokning-anda-till-minidumpen
-translationSourceHash: 6bd2b58fe661a5639010e16b417412ca9e85f687bae94531890c8fefaef4050d
+translationSourceHash: 2cf7e9455d4d9b5c148e7b55fd0433206810dc26e53bacb85e1d2dc82a0444c6
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-25T04:06:36.693Z
+translatedAt: 2026-08-26T04:08:29.291Z
 translationReview: automatic
+url: https://rafaelpfister.ch/sv/blog/gpu-kraschen-0x060c201e-i-claude-skrivbordsappen-felsokning-anda-till-minidumpen
 ---
 
-Sedan slutet av juli avslutas min Claude-skrivbordsapp i Windows flera gånger om dagen. Ingen dialogruta, inget felmeddelande – appen är bara borta, tillsammans med alla pågående Claude Code-sessioner. Över 25 gånger vid det här laget. Dags att sluta starta om och i stället ta reda på var felet faktiskt uppstår. Så mycket kan avslöjas redan nu: huvudmisstänkten från första stund visar sig vara oskyldig, och den verkliga orsaken står till slut svart på vitt i en minidump som appen egentligen inte ville lämna ut.
-
-## Spåret i loggen
-
-Appen sparar sina loggar under `%LOCALAPPDATA%\Claude\Logs`, medan äldre generationer och konfigurationen finns i den virtualiserade Store-sökvägen `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude`. I `main.log` står exakt samma sak före varje krasch:
+Claude Desktop-appen i Windows avslutas utan felmeddelande, alla pågående Claude Code-sessioner försvinner, och ibland startar appen därefter först igen efter en ”Reparera” via Windows-inställningarna. I appens logg står då denna rad:
 
 ```text
-16:01:38 [info] GPU process gone: {
+GPU process gone: {
   type: 'GPU',
   reason: 'crashed',
   exitCode: 101457950,
   serviceName: 'GPU'
 }
-16:03:34 [info] Starting app { appVersion: '1.34493.1', ... }
 ```
 
-101457950 är `0x060C201E` i hexadecimal form. Kom ihåg det talet – det är buggens signatur. Fönsterloggen ger också utlösaren: omedelbart före varje krasch begär en sida i appens inbäddade webbläsare en WebGPU-adapter.
+101457950 är hexadecimal `0x060C201E`. Om du hittar denna signatur i din logg har du kommit rätt: Den här artikeln dokumenterar den fullständiga orsakskedjan bakom kraschen, de omedelbara åtgärder som gör appen stabil igen och självdiagnostiken som låter dig bekräfta fyndet på ditt eget system på två minuter. Installationer från Microsoft Store (MSIX) påverkas på alla GPU-tillverkare, från Intel-iGPU:er via NVIDIA till AMD; hårdvaran är, för att säga det direkt, inte orsaken.
 
-```text
-16:01:38 [warn] The powerPreference option is currently ignored
-                when calling requestAdapter() on Windows.
-16:01:38 [warn] A valid external Instance reference no longer exists.
-14:59:15 [warn] WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost
+## Lösningen i korthet
+
+Det egentliga felet ligger i appens installationspaket och kan bara åtgärdas av Anthropic (fortfarande öppet den 25.08.2026, issue [#81341](https://github.com/anthropics/claude-code/issues/81341)). Fram till dess gör tre åtgärder appen stabil, i fallande effektivitetsordning:
+
+**1. Aktivera hårdvaruacceleration.** Kontrollera dessa två värden i filen `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\config.json` och sätt dem vid behov till `false` (avsluta appen först och starta om den efteråt):
+
+```json
+"isHardwareAccelerationDisabled": false,
+"isHardwareAccelerationAutoDisabled": false
 ```
 
-Alltså: `navigator.gpu.requestAdapter()` går i Chromiums GPU-process in i Dawns adapteruppräkning, GPU-processen kraschar och i stället för att appen startar om den avslutas hela applikationen.
+Det låter paradoxalt, eftersom avaktiverad hårdvaruacceleration vanligtvis är det stabilare valet. Med denna bugg är det tvärtom, och orsakskedjan längre ned förklarar varför: Inställningen avgör om en GPU-processkrasch bara kostar ett fallback-steg eller hela appen.
 
-## Misstänkt nr 1: grafikdrivrutinen
+**2. Använd den inbäddade webbläsaren sparsamt.** Sidor i appens webbläsar-/förhandsgranskningsområde utlöser kraschen. Den som stänger området efter användning i stället för att låta flikar ligga kvar minskar kraschfrekvensen drastiskt; sambandet är belagt flera gånger med siffror i community-tråden.
 
-Maskinen har ett Radeon RX 7900 XT med Adrenalin 32.0.31035.1003, och appen paketerar Electron 42.9.2 med Chromium 148. Den bekväma förklaringen ligger på bordet: gammal Dawn-kod möter RDNA3-drivrutin, drivrutinen kraschar, fallet löst. Bekvämt, plausibelt och, som det ska visa sig: fel. Men först i turordning, för det går bara att motbevisa med experiment.
-
-Två saker föll bort som villospår redan på förhand. Den inaktiverade iGPU:n i Enhetshanteraren (status ”Error”) är helt enkelt kod 22, avsiktligt inaktiverad. Och appen hade redan stängt av hårdvaruacceleration (`isHardwareAccelerationDisabled: true` i config.json), vilket krascherna inte brydde sig om. Varför den inställningen till och med förvärrar problemet framgår först allra sist.
-
-## Experiment 1: kontroll i aktuellt Chromium
-
-Samma belastning, samma maskin, aktuell webbläsare: webgpureport.org i Chromium 151 initierar WebGPU fullt ut, adapter `amd / rdna-3`, inklusive skapande av enhet, utan minsta avvikelse. Den aktuella drivrutinen med aktuell Dawn fungerar alltså korrekt.
-
-## Experiment 2: standard-Electron 42.9.2, hårdvarusökväg
-
-Om Electron 42 inte klarar denna drivrutin måste det gå att återskapa med 20 rader. Alltså: exakt samma Electron-version som i appen som rent testprojekt, ett fönster, en sida, ett `requestAdapter()`:
-
-```js
-const { app, BrowserWindow, crashReporter } = require('electron');
-crashReporter.start({ submitURL: '', uploadToServer: false });
-app.on('child-process-gone', (e, d) =>
-  console.log('GONE: ' + JSON.stringify(d)));
-app.whenReady().then(() => {
-  const win = new BrowserWindow({ show: false });
-  win.loadFile('index.html'); // ruft requestAdapter() auf
-});
-```
-
-Resultat med hårdvaruacceleration: `adapter ok (amd/rdna-3), device ok`. Ingen krasch. Electron 42:s D3D12-sökväg med denna drivrutin fungerar felfritt. Hypotesen ”gammal Dawn-kod är inte kompatibel med RDNA3-drivrutinen” är därmed motbevisad.
-
-## Experiment 3: standard-Electron 42.9.2, programvarusökväg som i appen
-
-Appen kör dock utan hårdvaruacceleration. Alltså samma experiment med `app.disableHardwareAcceleration()`, dessutom en aktiv WebGL-kontext (som körs via SwiftShader i programvaruläge) och `powerPreference: 'high-performance'` vid adapterbegäran, för att återskapa förloppet i apploggarna exakt:
-
-```text
-[renderer] webgl context: WebKit WebGL
-[renderer] The powerPreference option is currently ignored
-           when calling requestAdapter() on Windows.
-[renderer] No available adapters.
-[renderer] RESULT: adapter=null
-TIMEOUT: no crash after 25s
-```
-
-Samma powerPreference-varning som i apploggen, samma kodsökväg in i adapteruppräkningen, och sedan rätt svar: ingen adapter tillgänglig, avvisas korrekt, processen lever vidare. Standard-Electron 42.9.2 kraschar helt enkelt inte på denna maskin, oavsett sökväg.
-
-## Experiment 4: annan hårdvara, samma signatur
-
-Innan man fortsätter gissa är det värt att titta i issue-trackern, och där blir det tydligt: den identiska kraschen med identisk exit-kod 0x060C201E har rapporterats flera gånger, bland annat på en NVIDIA RTX 5080 Laptop-GPU. I systemets händelselogg: inga TDR-händelser, inga drivrutinsåterställningar. Drivrutinen, oavsett tillverkare, är inte orsaken. Kraschoraken ligger i appens GPU-process själv, eller snarare, som snart framgår, i appens reaktion på dess krasch.
-
-## Experiment 5: få tag i minidumpen som appen raderar
-
-Hittills saknades det avgörande beviset: en kraschdump. Appens Crashpad-mapp var tom efter varje krasch, vilket först såg ut som avstängd kraschrapportering. Processlistan säger något annat: en `crashpad-handler`-process körs, och dess kommandorad pekar på databasen i Roaming-profilen och på en platshållar-URL för uppladdning. Det är det vanliga mönstret för Sentry-integrering i Electron-appar: Crashpad skriver dumpen lokalt, Sentry-biblioteket konsumerar den vid nästa appstart, skickar den till tillverkarens telemetri och raderar den lokalt. Dumparna finns alltså, bara inte för användaren.
-
-Lösningen är odramatisk: en observatör som är oberoende av appens processträd (startad via WMI så att appkraschen inte tar med sig den), som genomsöker Crashpad-databasen efter `*.dmp` var 200:e millisekund och kopierar undan fynd direkt. Utlös sedan kraschen avsiktligt: öppna webgpureport.org i appens inbäddade webbläsare. Sekunder senare finns en 35 MB stor minidump i säkerhetskopieringsmappen, som Sentry försöker radera ut i tomma intet vid nästa appstart.
-
-## Minidumpen: ingen drivrutin så långt ögat når
-
-Analysen med Python-paketet `minidump` ger tre fynd som vänder bilden helt:
-
-```text
-Exception: EXCEPTION_BREAKPOINT (0x80000003)
-Adresse:   Claude.exe+0x5e8a6c9
-Prozess:   PID 27660
-```
-
-För det första: den dumpade processen är inte GPU-processen, utan appens **huvudprocess** (PID:t förekommer i apploggarna som `electron_main`). För det andra: undantaget är en breakpoint, alltså ett avsiktligt utfört `int3`. Så avslutar Chromium sig självt när ett `CHECK()` eller `LOG(FATAL)` inträffar; ett drivrutinsfel skulle se ut som en Access Violation. För det tredje: i processens modullista finns inte en enda grafikdrivrutins-DLL laddad.
-
-Och i dumpens minne står det ödesdigra loggmeddelandet i klartext:
-
-```text
-FATAL:content\browser\gpu\gpu_data_manager_impl_private.cc:418]
-GPU process isn't usable. Goodbye.
-```
-
-## Upplösningen: Chromiums inbyggda självavslutning
-
-Den här raden är inte ett fel, den är avsiktlig. I Chromium-källkoden för den exakt paketerade versionen (148.0.7778.280) står följande i `gpu_data_manager_impl_private.cc`:
-
-```cpp
-NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
-  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
-}
-```
-
-Den anropas av `FallBackToNextGpuMode()`: kraschar GPU-processen växlar Chromium ned ett steg (hårdvaru-GL → programvaru-GL → ren displaykompositor). Om listan över fallback-lägen är tom avslutar Chromium avsiktligt webbläsarprocessen, eftersom det utan en fungerande GPU-process inte ens längre kan samordna programvarurendering.
-
-Det förklarar också varför appen drabbas så mycket hårdare än en vanlig webbläsare: den startar med avstängd hårdvaruacceleration, alltså redan längst ned i fallback-kedjan. Om en sida i den inbäddade webbläsaren då begär WebGPU och programvaru-GPU-processen kraschar, finns inget steg kvar som Chromium kan falla tillbaka till. Nästa stopp är ”Goodbye”. I en vanlig Chrome med aktiv hårdvaruacceleration kostar samma krasch ett fallback-steg, och webbläsaren fortsätter köra.
-
-Särskilt olyckligt: appkonfigurationen känner till ett fält `isHardwareAccelerationAutoDisabled`, så appen tycks själv stänga av hårdvaruacceleration efter problem. Avsett som en åtgärd mot krascher förkortar det i stället fallback-kedjan och gör den fatala självavslutningen mer sannolik, inte mindre. En skyddsmekanism och en nödbrytare som skärper varandra.
-
-## Vad som återstår av exit-koden
-
-Kvar är GPU-barnprocessen själv, som sätter igång förloppet varje gång. Den lämnar ingen egen kraschrapport, trots att Crashpad-hanteraren bevisligen fungerar (den dumpade huvudprocessen sekunder senare). Det talar för att GPU-processen inte utlöser ett normalt undantag utan avslutas hårt, i stil med `TerminateProcess`, och att den odokumenterade exit-koden 0x060C201E härrör exakt från detta. Dess sista sträcka ligger därmed hos Anthropic: deras Sentry-telemetri tar emot dumparna som raderas lokalt, inklusive frågan om kraschrapporteringen över huvud taget omfattar GPU-processen.
-
-## Workaround och status för rapporterna
-
-Eftersom utlösaren är sidornas WebGPU-begäranden i den inbäddade webbläsaren hjälper det tills en fix finns att stänga av WebGPU med en Chromium-flagga. Vid en Store-installation ändras installationssökvägen vid varje uppdatering, därför löser en liten launcher upp den på nytt vid varje start:
+**3. Valfritt: stäng av WebGPU.** Start med `--disable-features=WebGPU` förhindrar helt den vanligaste utlösaren. För en Store-app ändras installationssökvägen vid varje uppdatering, därför används en launcher som löser upp den på nytt vid varje start:
 
 ```bat
 @echo off
@@ -146,34 +54,97 @@ for /f "delims=" %%i in ('powershell -NoProfile -Command ^
 start "" "%PKG%\app\Claude.exe" --disable-features=WebGPU
 ```
 
-Sedan ändringen: inte en enda krasch till. Den fullständiga analysen är rapporterad: laboratorieexperimenten och dubblettreferenserna i det första ärendet, minidump-utvärderingen med orsakskedjan i det andra. De tre meningsfulla korrigeringarna följer direkt av fyndet: klargöra kraschoraken i programvaru-GPU-processen (dumparna för detta finns i tillverkarens telemetri), stänga av WebGPU riktat vid upprepade GPU-krascher i stället för att låta fallback-kedjan ta slut, och ompröva den automatiska avstängningen av hårdvaruacceleration eftersom den förkortar kedjan.
+Nackdelen: Detta fungerar bara om appen också startas via denna launcher. Åtgärd 1 fungerar vid varje start.
 
-## Tillägg: workarounden räcker inte, lösningen ligger djupare
+Att ”Reparera” eller installera om appen löser för övrigt inte problemet, det botar bara följdsymptomet (mer om det nedan). Även uppdateringar av grafikdrivrutiner är förgäves.
 
-Redan samma kväll kom nästa krasch, med identisk signatur. Orsaken är enkel: launchern med `--disable-features=WebGPU` fungerar bara när appen också startas via den. Vid den vanliga starten via Start-menyn kör appen utan flaggan, och för en Store-app finns inget rent sätt att permanent ge en normal start kommandoradsflaggor.
+## Självdiagnostik: bekräfta fyndet på det egna systemet
 
-Den permanenta lösningen finns dock sedan länge i den här artikelns orsakskedja: den fatala självavslutningen förutsätter att fallback-kedjan är tom, och den är bara tom omedelbart eftersom appen startar med avstängd hårdvaruacceleration. Hårdvaruacceleration ska alltså slås på igen i appens `config.json`:
+Två kontroller räcker. Först kraschsiganaturen i appens logg:
 
-```json
-"isHardwareAccelerationDisabled": false
+```powershell
+Select-String -Path "$env:LOCALAPPDATA\Claude\Logs\main.log" `
+  -Pattern 'GPU process gone'
 ```
 
-Detta träder i kraft vid nästa appstart och löser båda sidor av problemet på en gång. För det första körs `requestAdapter()` då via hårdvarusökvägen, som på denna maskin bevisligen är stabil (experiment 2: adapter och enhet utan fel). För det andra har Chromium åter fallback-steg i reserv: om GPU-processen ändå skulle krascha någon gång växlar webbläsaren tillbaka till programvarurendering och fortsätter köra, i stället för att avslutas. Den ursprungliga avstängningen av hårdvaruacceleration, sannolikt inställd någon gång som en stabilitetsåtgärd, var i själva verket förutsättningen för kraschen.
+För det andra, och det är det egentliga beviset, Windows CodeIntegrity-logg:
 
-Slutsatsen av felsökningen: den mest närliggande förklaringen (”det var drivrutinen”) skulle ha lett till en resultatlös drivrutinsodyssé. Den motbevisades av två timmars laborationer med den verkliga motorversionen, och orsaken hittades först i minidumpen som appen rutinmässigt städar undan. När en GPU-process kraschar bör därför fyra kontroller göras först, innan man skyller på en tillverkare: kontrollen i den aktuella webbläsaren, kontrollen i den rena motorversionen, kontrollen av om annan hårdvara visar samma signatur, och dumpen av processen som faktiskt beslutar om avslutet.
+```powershell
+Get-WinEvent -FilterHashtable @{
+  LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3033
+} -MaxEvents 30 | Where-Object { $_.Message -match 'claude' } |
+  Select-Object TimeCreated, Message
+```
+
+På berörda system hittar du där Event 3033-poster vars tidsstämplar överensstämmer på sekunden med kraschtiderna, med detta meddelande:
+
+```text
+Code Integrity determined that a process
+(...\WindowsApps\Claude_..._x64__pzs8sxrjxfjjc\app\claude.exe)
+attempted to load ...\app\vk_swiftshader.dll that did not meet
+the Microsoft signing level requirements.
+```
+
+På systemet som undersöktes här överensstämde sju av sju krascher under tre veckor på sekunden med en sådan händelse, inklusive en avsiktligt utlöst kontrollkrasch.
+
+## Den fullständiga orsakskedjan
+
+Kraschen är slutledet i en kedja med fyra länkar, som framgår av två analyser tillsammans: Code Integrity-spåret från community-issue [#81698](https://github.com/anthropics/claude-code/issues/81698) och en egen minidump-analys ([#89250](https://github.com/anthropics/claude-code/issues/89250)).
+
+**Länk 1: En sida i den inbäddade webbläsaren behöver mjukvarurendering.** En typisk utlösare är ett WebGPU-anrop (`navigator.gpu.requestAdapter()`), vilket kan identifieras i fönsterloggen genom denna varning direkt före kraschen:
+
+```text
+[warn] The powerPreference option is currently ignored
+       when calling requestAdapter() on Windows.
+```
+
+Om appen körs utan hårdvaruacceleration går vägen obligatoriskt via SwiftShader, Vulkan-implementeringen i mjukvara: GPU-processen försöker ladda den medföljande `vk_swiftshader.dll`.
+
+**Länk 2: Windows Code Integrity blockerar appens egen DLL.** GPU-processen körs med härdningsprincipen ”MicrosoftSignedOnly” (kan kontrolleras via `Get-ProcessMitigation`). För att en Store-app ska få ladda sina egna, tillverkarsignerade DLL:er måste MSIX-paketet innehålla en signaturkatalog `AppxMetadata\CodeIntegrity.cat`. Just denna fil saknas i det levererade paketet, vilket community-medlemmar har belagt genom inspektion av MSIX-filen. Följden: signaturkontrollen misslyckas, Windows loggar Event 3033 och avslutar GPU-processen hårt. Exitkoden `0x060C201E` är ett AppX-integritetsfel från Windows-laddaren, inte Chromium-kod; därför finns den inte i någon Chromium-källa och därför lämnar GPU-processen inte heller någon crash dump efter sig – det finns inget undantag att dumpa.
+
+**Länk 3: Chromiums fallback-kedja töms.** När GPU-processen kraschar växlar Chromium ned ett renderingssteg: hårdvaru-GL, sedan mjukvaru-GL och därefter en ren display-compositor. Först när inget steg återstår aktiveras den inbyggda självavslutningen. I källkoden för den paketerade versionen (Chromium 148.0.7778.280 i Electron 42.9.2) står det bokstavligen så här:
+
+```cpp
+NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
+  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
+}
+```
+
+**Länk 4: Huvudprocessen avslutas avsiktligt.** Detta `LOG(FATAL)` är ögonblicket då ”appen kraschar”. Det beläggs av en minidump från huvudprocessen: `EXCEPTION_BREAKPOINT` (en avsiktlig `int3`, inte ett drivrutinsfel), inte en enda grafikdrivrutins-DLL i processen och följande i klartext i minnet:
+
+```text
+FATAL:content\browser\gpu\gpu_data_manager_impl_private.cc:418]
+GPU process isn't usable. Goodbye.
+```
+
+Att denna dump över huvud taget finns var den svåraste delen av analysen: Appens Sentry-integrering konsumerar Crashpad-dumpar vid nästa appstart, skickar dem till tillverkarens telemetri och raderar dem lokalt. Crashpad-mappen är därför alltid tom för användaren. Lösningen är en övervakare som är oberoende av appens processträd (startas via WMI så att appkraschen inte avslutar den) och som genomsöker Crashpad-databasen var 200:e millisekund efter `*.dmp` samt omedelbart kopierar bort träffar innan de raderas. Analysen utförs av Python-paketet `minidump`, helt utan WinDbg.
+
+## Varför ”avaktivera hårdvaruacceleration” gör allt värre
+
+Kedjan förklarar också det mest kontraintuitiva fyndet. Avaktiverad hårdvaruacceleration har här två ödesdigra effekter samtidigt. För det första tvingar den fram SwiftShader-vägen, alltså just det DLL-laddningsförsök som Code Integrity blockerar; med aktiv hårdvaruacceleration behövs `vk_swiftshader.dll` däremot nästan aldrig. För det andra startar GPU-processen då redan längst ned i fallback-kedjan: En enda krasch räcker, och länk 4 träder i kraft. Det förklarar också observationen från community-tråden att en Code Integrity-blockering ibland inte får några följder och ibland avslutar appen: Det beror på hur många fallback-steg webbläsarprocessen har kvar.
+
+Särskilt olyckligt: Appen har automatisk avstängning av hårdvaruacceleration efter problem (`isHardwareAccelerationAutoDisabled`). Den är tänkt som en stabilitetsåtgärd, men för berörda system leder den rakt in i den konfiguration där nästa krasch kostar hela appen.
+
+## Följdsymptomet: reparationsslingan
+
+Code Integrity-felet har en bieffekt som många drabbade betraktar som ett separat problem: Efter händelsen klassar Windows ibland app-paketet som ”Modified, NeedsRemediation”. Appen startar då inte alls längre, förrän du återställer den via Inställningar → Appar → Claude → Avancerade alternativ → ”Reparera”. Den som alltså ”ständigt måste reparera” appen ser samma grundproblem, bara en länk längre fram: Reparationen åtgärdar paketstatusen, inte orsaken; nästa krasch följer vid nästa blockerade DLL-laddningsförsök.
+
+## Status för rapporterna
+
+Paketeringsorsaken har rapporterats som [#81341](https://github.com/anthropics/claude-code/issues/81341), samlingstråden med community-bevisen är [#81698](https://github.com/anthropics/claude-code/issues/81698), och minidump-analysen med förklaringen av fallback-kedjan är [#89250](https://github.com/anthropics/claude-code/issues/89250). Den egentliga lösningen, en fullständig signaturkatalog i MSIX-paketet, ligger hos Anthropic. Fram till dess gäller: Aktivera hårdvaruacceleration, stäng webbläsarområdet disciplinerat och stäng vid behov av WebGPU med en flagga. På systemet som undersöktes här har appen varit kraschfri sedan åtgärd 1 genomfördes.
 
 ## Källor
 
-1.  [Grundorsak: Chromiums ”GPU process isn't usable. Goodbye.” (GitHub-issue #89250)](https://github.com/anthropics/claude-code/issues/89250): Minidump-analysen i denna artikel som felrapport, inklusive insamlingsmetod och förslag på korrigeringar.
+1.  [GitHub-issue #81698: GPU process crash kills entire app](https://github.com/anthropics/claude-code/issues/81698): Samlingstråden med community-bevis för Code Integrity-kedjan, datapunkter från olika tillverkare och korrelationen med browser pane.
 
-2.  [Egen första rapport med laboratorieresultat (GitHub-issue #89226)](https://github.com/anthropics/claude-code/issues/89226): Experiment 1 till 3 och korrigeringen av AMD-hypotesen, med hänvisningar till dubbletterna.
+2.  [GitHub-issue #81341: CIG + vk_swiftshader.dll kills GPU process](https://github.com/anthropics/claude-code/issues/81341): Paketeringsorsaken; saknad CodeIntegrity-katalog i MSIX.
 
-3.  [GPU process crash kills entire app (GitHub-issue #81698)](https://github.com/anthropics/claude-code/issues/81698): Samma krasch med identisk exit-kod på NVIDIA RTX 5080, utan TDR-händelser; frikänner grafikdrivrutinerna.
+3.  [GitHub-issue #89250: Minidump-analys av appavslutet](https://github.com/anthropics/claude-code/issues/89250): Den andra halvan av kedjan som beskrivs här, med metod för dumpinsamling och förslag på åtgärder.
 
 4.  [Chromium-källkod: gpu_data_manager_impl_private.cc (tagg 148.0.7778.280)](https://chromium.googlesource.com/chromium/src/+/refs/tags/148.0.7778.280/content/browser/gpu/gpu_data_manager_impl_private.cc): Funktionen IntentionallyCrashBrowserForUnusableGpuProcess och fallback-logiken.
 
-5.  [Electron-dokumentation: child-process-gone](https://www.electronjs.org/docs/latest/api/app#event-child-process-gone): Händelsen som en Electron-app kan använda för att övervaka GPU-processkrascher och vidta egna åtgärder.
+5.  [Electron-dokumentation: child-process-gone](https://www.electronjs.org/docs/latest/api/app#event-child-process-gone): Händelsen som en Electron-app kan använda för att observera GPU-processkrascher och vidta egna motåtgärder.
 
-6.  [Python-paketet minidump](https://pypi.org/project/minidump/): Verktyg för dumpanalys (exception-record, modullista, minnessträngar), helt utan WinDbg.
+6.  [Python-paketet minidump](https://pypi.org/project/minidump/): Verktyg för dumpanalys (exception record, modullista, minnessträngar).
 
-7.  [webgpureport.org](https://webgpureport.org/): WebGPU-diagnossida; användes som minimal utlösare och som kontroll i aktuellt Chromium.
+7.  [webgpureport.org](https://webgpureport.org/): WebGPU-diagnossida; användes som minimal utlösare för kontrollkraschen och för jämförelsetestet i aktuell Chromium.

@@ -1,143 +1,51 @@
 ---
-title: "Le crash GPU 0x060C201E dans l’application de bureau Claude : enquête jusqu’au minidump"
-navTitle: "Crash GPU 0x060C201E"
-description: "L’application de bureau Claude se ferme de manière reproductible avec « GPU process gone ». Tout semble d’abord indiquer un bug du pilote AMD, puis des expériences personnelles réfutent cette hypothèse, et finalement un minidump intercepté révèle la véritable cause : l’arrêt automatique intégré de Chromium, « GPU process isn't usable. Goodbye. »."
+title: "Claude Desktop plante constamment : « GPU process gone » avec le code de sortie 101457950, cause et solution"
+navTitle: "Plantage de Claude Desktop"
+description: "Sous Windows, l’application Claude Desktop se ferme complètement avec « GPU process gone: exitCode 101457950 » (0x060C201E), souvent suivi de la boîte de dialogue de réparation de l’application Store. La chaîne de causes complète : Code Integrity bloque vk_swiftshader.dll, la chaîne de repli de Chromium s’épuise, puis l’arrêt automatique intégré ferme l’application. Avec solution immédiate, autodiagnostic via le journal d’événements et analyse jusqu’au minidump."
 date: "2026-08-25"
 kategorie: "Claude"
-timeToRead: "12 min de lecture"
+timeToRead: "9 min de lecture"
 themen:
   - claude
 slug: "le-crash-gpu-0x060c201e-dans-l-application-de-bureau-claude-enquete-jusqu-au-minidump"
 translationId: "article-0932cd50b8160b45"
 translationOf: claude-desktop-webgpu-absturz
-url: https://rafaelpfister.ch/fr/blog/le-crash-gpu-0x060c201e-dans-l-application-de-bureau-claude-enquete-jusqu-au-minidump
-translationSourceHash: 6bd2b58fe661a5639010e16b417412ca9e85f687bae94531890c8fefaef4050d
+translationSourceHash: 2cf7e9455d4d9b5c148e7b55fd0433206810dc26e53bacb85e1d2dc82a0444c6
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-25T04:04:59.328Z
+translatedAt: 2026-08-26T04:07:18.159Z
 translationReview: automatic
+url: https://rafaelpfister.ch/fr/blog/le-crash-gpu-0x060c201e-dans-l-application-de-bureau-claude-enquete-jusqu-au-minidump
 ---
 
-Depuis la fin juillet, mon application de bureau Claude se ferme plusieurs fois par jour sous Windows. Pas de boîte de dialogue, pas de fenêtre d’erreur : l’application a simplement disparu, avec toutes les sessions Claude Code en cours. Plus de 25 fois à ce jour. Il est temps de ne plus redémarrer, mais de voir où l’erreur se produit réellement. Pour l’essentiel : le principal suspect de la première heure s’avère innocent, et la véritable cause apparaît noir sur blanc à la fin dans un minidump que l’application ne voulait en fait pas du tout livrer.
-
-## La piste dans le journal
-
-L’application enregistre ses journaux sous `%LOCALAPPDATA%\Claude\Logs`, les générations plus anciennes et la configuration se trouvent dans le chemin de Store virtualisé `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude`. Dans `main.log`, on trouve exactement la même chose avant chaque crash :
+Sous Windows, l’application Claude Desktop se ferme sans message d’erreur, toutes les sessions Claude Code en cours disparaissent et il arrive que l’application ne redémarre ensuite qu’après une « Réparation » via les paramètres Windows. Cette ligne apparaît alors dans le journal de l’application :
 
 ```text
-16:01:38 [info] GPU process gone: {
+GPU process gone: {
   type: 'GPU',
   reason: 'crashed',
   exitCode: 101457950,
   serviceName: 'GPU'
 }
-16:03:34 [info] Starting app { appVersion: '1.34493.1', ... }
 ```
 
-101457950 correspond en hexadécimal à `0x060C201E`. Retenez ce nombre : c’est la signature du bug. Le journal de la fenêtre en fournit le déclencheur : juste avant chaque crash, une page dans le navigateur intégré de l’application demande un adaptateur WebGPU.
+101457950 s’écrit en hexadécimal `0x060C201E`. Si vous trouvez cette signature dans votre journal, vous êtes au bon endroit : cet article documente la chaîne de causes complète de ce plantage, les mesures immédiates permettant de stabiliser l’application, ainsi que l’autodiagnostic qui permet de confirmer le constat sur votre propre système en deux minutes. Les installations provenant du Microsoft Store (MSIX) sont concernées sur tous les fabricants de GPU, des iGPU Intel à NVIDIA et AMD ; le matériel n’est, précisons-le d’emblée, pas la cause.
 
-```text
-16:01:38 [warn] The powerPreference option is currently ignored
-                when calling requestAdapter() on Windows.
-16:01:38 [warn] A valid external Instance reference no longer exists.
-14:59:15 [warn] WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost
+## La solution en bref
+
+L’erreur réelle se trouve dans le paquet d’installation de l’application et ne peut être corrigée que par Anthropic (toujours ouvert au 25.08.2026, ticket [#81341](https://github.com/anthropics/claude-code/issues/81341)). En attendant, trois mesures rendent l’application stable, par ordre d’efficacité :
+
+**1. Activer l’accélération matérielle.** Vérifiez ces deux valeurs dans le fichier `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\config.json` et définissez-les sur `false` si nécessaire (quittez l’application avant, puis redémarrez-la) :
+
+```json
+"isHardwareAccelerationDisabled": false,
+"isHardwareAccelerationAutoDisabled": false
 ```
 
-Donc : `navigator.gpu.requestAdapter()` passe, dans le processus GPU de Chromium, à l’énumération des adaptateurs de Dawn, le processus GPU plante et, au lieu de le redémarrer, l’application entière se ferme.
+Cela semble paradoxal, car désactiver l’accélération matérielle est généralement le choix le plus stable. Pour ce bug, c’est l’inverse, et la chaîne de causes expliquée plus bas montre pourquoi : ce paramètre détermine si un plantage du processus GPU ne coûte qu’un niveau de repli ou toute l’application.
 
-## Suspect n° 1 : le pilote graphique
+**2. Utiliser avec parcimonie le navigateur intégré.** Les pages dans la zone navigateur/aperçu de l’application déclenchent le plantage. Fermer la zone après utilisation au lieu de laisser des onglets ouverts réduit drastiquement la fréquence des plantages ; ce lien est étayé à plusieurs reprises par des chiffres dans le fil communautaire.
 
-La machine dispose d’une Radeon RX 7900 XT avec Adrenalin 32.0.31035.1003, et l’application embarque Electron 42.9.2 avec Chromium 148. L’explication commode est sur la table : ancien code Dawn rencontre un pilote RDNA3, le pilote plante, affaire classée. Commode, plausible et, comme on le verra : fausse. Mais procédons dans l’ordre, car on ne peut réfuter qu’avec des expériences.
-
-Deux éléments se sont d’emblée révélés être de fausses pistes. L’iGPU désactivé dans le Gestionnaire de périphériques (statut « Error ») correspond simplement au code 22, une désactivation volontaire. Et l’application avait depuis longtemps désactivé l’accélération matérielle (`isHardwareAccelerationDisabled: true` dans config.json), ce qui n’a nullement impressionné les crashes. La raison pour laquelle ce réglage aggrave même le problème ne devient visible qu’à la toute fin.
-
-## Expérience 1 : contre-épreuve dans Chromium actuel
-
-Même charge, même machine, navigateur actuel : webgpureport.org initialise entièrement WebGPU dans Chromium 151, adaptateur `amd / rdna-3`, création du périphérique comprise, sans aucune anomalie. Le pilote actuel avec Dawn actuel est donc sain.
-
-## Expérience 2 : Electron 42.9.2 standard, chemin matériel
-
-Si Electron 42 ne s’entend pas avec ce pilote, il doit être possible de le reproduire en 20 lignes. Donc : exactement la même version d’Electron que dans l’application, sous forme de simple projet de test, une fenêtre, une page, un `requestAdapter()` :
-
-```js
-const { app, BrowserWindow, crashReporter } = require('electron');
-crashReporter.start({ submitURL: '', uploadToServer: false });
-app.on('child-process-gone', (e, d) =>
-  console.log('GONE: ' + JSON.stringify(d)));
-app.whenReady().then(() => {
-  const win = new BrowserWindow({ show: false });
-  win.loadFile('index.html'); // ruft requestAdapter() auf
-});
-```
-
-Résultat avec accélération matérielle : `adapter ok (amd/rdna-3), device ok`. Aucun crash. Le chemin D3D12 d’Electron 42 sur ce pilote fonctionne parfaitement. L’hypothèse selon laquelle « l’ancien code Dawn ne supporte pas le pilote RDNA3 » est ainsi réfutée.
-
-## Expérience 3 : Electron 42.9.2 standard, chemin logiciel comme dans l’application
-
-L’application fonctionne toutefois sans accélération matérielle. Donc la même expérience avec `app.disableHardwareAcceleration()`, en ajoutant un contexte WebGL actif (qui passe par SwiftShader en mode logiciel) et `powerPreference: 'high-performance'` lors de la demande d’adaptateur, afin de reproduire exactement le déroulement des journaux de l’application :
-
-```text
-[renderer] webgl context: WebKit WebGL
-[renderer] The powerPreference option is currently ignored
-           when calling requestAdapter() on Windows.
-[renderer] No available adapters.
-[renderer] RESULT: adapter=null
-TIMEOUT: no crash after 25s
-```
-
-Même avertissement powerPreference que dans le journal de l’application, même chemin de code jusqu’à l’énumération des adaptateurs, puis la réponse correcte : aucun adaptateur disponible, rejet propre, processus vivant. Electron 42.9.2 standard ne plante tout simplement pas sur cette machine, quel que soit le chemin.
-
-## Expérience 4 : autre matériel, même signature
-
-Avant de continuer à spéculer, il vaut la peine de consulter le suivi des issues, et le constat y est clair : le crash identique avec le même code de sortie 0x060C201E a été signalé plusieurs fois, notamment sur un GPU portable NVIDIA RTX 5080. Dans leur journal d’événements système : aucun événement TDR, aucune réinitialisation du pilote. Le pilote, quel que soit son fabricant, n’est pas la cause. La cause du crash se situe dans le processus GPU de l’application elle-même ou, comme on va le voir, dans la réaction de l’application à son crash.
-
-## Expérience 5 : récupérer le minidump que l’application supprime
-
-Jusqu’ici, il manquait la pièce décisive : un dump de crash. Le dossier Crashpad de l’application était vide après chaque crash, ce qui semblait d’abord indiquer que le signalement des crashes était désactivé. La liste des processus raconte autre chose : un processus `crashpad-handler` est en cours d’exécution, sa ligne de commande pointe vers la base de données du profil Roaming et vers une URL d’envoi fictive. C’est le schéma habituel de l’intégration Sentry dans les applications Electron : Crashpad écrit le dump localement, la bibliothèque Sentry le consomme au démarrage suivant de l’application, l’envoie à la télémétrie du fabricant et le supprime localement. Les dumps existent donc, mais pas pour l’utilisateur.
-
-La solution est peu spectaculaire : un observateur indépendant de l’arbre de processus de l’application (lancé via WMI afin que le crash de l’application ne l’emporte pas), qui parcourt toutes les 200 millisecondes la base de données Crashpad à la recherche de `*.dmp` et copie immédiatement ailleurs toute découverte. Ensuite, déclencher le crash délibérément : ouvrir webgpureport.org dans le navigateur intégré de l’application. Quelques secondes plus tard, un minidump de 35 Mo se trouve dans le dossier de sauvegarde, et Sentry tente en vain de le supprimer au démarrage suivant de l’application.
-
-## Le minidump : aucun pilote à l’horizon
-
-L’analyse avec le paquet Python `minidump` fournit trois résultats qui changent complètement la perspective :
-
-```text
-Exception: EXCEPTION_BREAKPOINT (0x80000003)
-Adresse:   Claude.exe+0x5e8a6c9
-Prozess:   PID 27660
-```
-
-Premièrement : le processus dumpé n’est pas le processus GPU, mais le **processus principal** de l’application (le PID apparaît dans les journaux de l’application sous `electron_main`). Deuxièmement : l’exception est un breakpoint, donc un `int3` exécuté intentionnellement. C’est ainsi que Chromium s’arrête lui-même lorsqu’un `CHECK()` ou `LOG(FATAL)` se déclenche ; une erreur de pilote apparaîtrait comme une violation d’accès. Troisièmement : aucune DLL de pilote graphique n’est chargée dans la liste des modules du processus.
-
-Et dans la mémoire du dump, le message de journal fatal apparaît en clair :
-
-```text
-FATAL:content\browser\gpu\gpu_data_manager_impl_private.cc:418]
-GPU process isn't usable. Goodbye.
-```
-
-## La résolution : l’arrêt automatique intégré de Chromium
-
-Cette ligne n’est pas un dysfonctionnement, elle est intentionnelle. Dans le code source Chromium de la version exacte embarquée (148.0.7778.280), on trouve dans `gpu_data_manager_impl_private.cc` :
-
-```cpp
-NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
-  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
-}
-```
-
-Elle est appelée par `FallBackToNextGpuMode()` : si le processus GPU plante, Chromium recule d’un niveau (GL matériel → GL logiciel → compositeur d’affichage seul). Si la liste des modes de repli est vide, Chromium arrête volontairement le processus navigateur, car sans processus GPU fonctionnel, il ne peut même plus coordonner le rendu logiciel.
-
-Cela explique également pourquoi l’application est bien plus durement touchée qu’un navigateur normal : elle démarre avec l’accélération matérielle désactivée, donc déjà tout en bas de la chaîne de repli. Si une page du navigateur intégré demande alors WebGPU et que le processus GPU logiciel plante, Chromium n’a plus aucun niveau vers lequel se replier. L’étape suivante est « Goodbye ». Dans un Chrome normal avec accélération matérielle active, le même crash coûte un niveau de repli, et le navigateur continue de fonctionner.
-
-Particulièrement malheureux : la configuration de l’application connaît un champ `isHardwareAccelerationAutoDisabled`, l’application désactive donc apparemment elle-même l’accélération matérielle après des problèmes. Conçue comme mesure anti-crash, cette action raccourcit précisément la chaîne de repli et rend l’arrêt automatique fatal plus probable au lieu de plus rare. Un mécanisme de protection et un coupe-circuit qui s’arment mutuellement.
-
-## Ce qui reste du code de sortie
-
-Reste le processus enfant GPU lui-même, qui déclenche à chaque fois la séquence. Il ne laisse aucun rapport de crash propre, bien que le gestionnaire Crashpad fonctionne manifestement (il a dumpé le processus principal quelques secondes plus tard). Cela indique que le processus GPU ne provoque pas d’exception normale, mais est arrêté brutalement, à la manière de `TerminateProcess`, et que le code de sortie non documenté 0x060C201E provient précisément de là. Son dernier kilomètre se situe donc chez Anthropic : leur télémétrie Sentry reçoit les dumps supprimés localement, y compris la question de savoir si le signalement des crashes couvre le processus GPU.
-
-## Contournement et état des signalements
-
-Puisque le déclencheur est constitué par les demandes WebGPU des pages dans le navigateur intégré, désactiver WebGPU via un flag Chromium aide jusqu’à la correction. Dans une installation Store, le chemin d’installation change à chaque mise à jour ; un petit lanceur le résout donc à nouveau à chaque démarrage :
+**3. Facultatif : désactiver WebGPU.** Un démarrage avec `--disable-features=WebGPU` empêche totalement le déclencheur le plus fréquent. Avec une application Store, le chemin d’installation change à chaque mise à jour ; il faut donc un lanceur qui le résout à nouveau à chaque démarrage :
 
 ```bat
 @echo off
@@ -146,34 +54,97 @@ for /f "delims=" %%i in ('powershell -NoProfile -Command ^
 start "" "%PKG%\app\Claude.exe" --disable-features=WebGPU
 ```
 
-Depuis ce changement : plus un seul crash. L’analyse complète a été signalée : les expériences de laboratoire et les références aux doublons dans la première issue, l’évaluation du minidump avec la chaîne causale dans la seconde. Les trois corrections pertinentes découlent directement du constat : clarifier la cause du crash dans le processus GPU logiciel (les dumps correspondants sont disponibles dans la télémétrie du fabricant), désactiver WebGPU de manière ciblée lors de crashes GPU répétés au lieu de laisser la chaîne de repli s’épuiser, et repenser la désactivation automatique de l’accélération matérielle, car elle raccourcit la chaîne.
+Inconvénient : cela ne fonctionne que si l’application est lancée via ce lanceur. La mesure 1 s’applique à chaque démarrage.
 
-## Addendum : le contournement va trop peu loin, la solution est plus profonde
+Une « Réparation » ou une réinstallation de l’application ne résout d’ailleurs pas le problème ; elle ne traite que le symptôme secondaire (voir plus bas). Les mises à jour des pilotes graphiques sont également vaines.
 
-Le soir même, nouveau crash, signature identique. La raison est simple : le lanceur avec `--disable-features=WebGPU` ne fonctionne que si l’application est effectivement lancée par son intermédiaire. Lors du démarrage habituel depuis le menu Démarrer, l’application s’exécute sans le flag et, pour une application Store, il n’existe aucun moyen propre d’ajouter durablement des flags de ligne de commande à un démarrage normal.
+## Autodiagnostic : confirmer le constat sur son propre système
 
-La solution durable figure pourtant depuis longtemps dans la chaîne causale de cet article : l’arrêt automatique fatal suppose que la chaîne de repli soit vide, et elle ne l’est immédiatement que parce que l’application démarre avec l’accélération matérielle désactivée. Il faut donc réactiver l’accélération matérielle dans la `config.json` de l’application :
+Deux vérifications suffisent. Premièrement, la signature du plantage dans le journal de l’application :
 
-```json
-"isHardwareAccelerationDisabled": false
+```powershell
+Select-String -Path "$env:LOCALAPPDATA\Claude\Logs\main.log" `
+  -Pattern 'GPU process gone'
 ```
 
-Cela prend effet au démarrage suivant de l’application et résout simultanément les deux aspects du problème. Premièrement, `requestAdapter()` emprunte alors le chemin matériel, dont la stabilité sur cette machine est démontrée (expérience 2 : adaptateur et périphérique sans erreur). Deuxièmement, Chromium dispose à nouveau de niveaux de repli en réserve : si le processus GPU devait à nouveau planter, le navigateur bascule vers le rendu logiciel et continue de fonctionner, au lieu de se fermer. La désactivation initiale de l’accélération matérielle, probablement définie à un moment donné comme mesure de stabilité, était en réalité la condition préalable au crash.
+Deuxièmement, et c’est la véritable preuve, le journal CodeIntegrity de Windows :
 
-Conclusion de l’enquête : l’explication la plus évidente (« c’était le pilote ») aurait conduit à une odyssée infructueuse des pilotes. Deux heures de laboratoire avec la véritable version du moteur l’ont réfutée, et la cause n’a été trouvée que dans le minidump que l’application élimine habituellement. Lorsqu’un processus GPU plante, quatre vérifications doivent donc être effectuées en premier, avant d’accuser un fabricant : la contre-épreuve dans le navigateur actuel, la contre-épreuve dans la version pure du moteur, vérifier si d’autres matériels présentent la même signature, et dumper le processus qui décide réellement de l’arrêt.
+```powershell
+Get-WinEvent -FilterHashtable @{
+  LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3033
+} -MaxEvents 30 | Where-Object { $_.Message -match 'claude' } |
+  Select-Object TimeCreated, Message
+```
+
+Sur les systèmes concernés, vous y trouverez des entrées Event 3033 dont les horodatages correspondent à la seconde près aux heures des plantages, avec ce message :
+
+```text
+Code Integrity determined that a process
+(...\WindowsApps\Claude_..._x64__pzs8sxrjxfjjc\app\claude.exe)
+attempted to load ...\app\vk_swiftshader.dll that did not meet
+the Microsoft signing level requirements.
+```
+
+Sur le système examiné ici, sept plantages sur sept, répartis sur trois semaines, correspondaient à la seconde près à un tel événement, y compris un plantage de contrôle déclenché délibérément.
+
+## La chaîne de causes complète
+
+Le plantage est le dernier maillon d’une chaîne de quatre éléments révélée par deux analyses : la piste Code Integrity issue du ticket communautaire [#81698](https://github.com/anthropics/claude-code/issues/81698) et notre propre analyse de minidump ([#89250](https://github.com/anthropics/claude-code/issues/89250)).
+
+**Maillon 1 : une page dans le navigateur intégré nécessite un rendu logiciel.** Un appel WebGPU (`navigator.gpu.requestAdapter()`) est un déclencheur typique, reconnaissable dans le journal de la fenêtre à cet avertissement juste avant le plantage :
+
+```text
+[warn] The powerPreference option is currently ignored
+       when calling requestAdapter() on Windows.
+```
+
+Lorsque l’application s’exécute sans accélération matérielle, le chemin passe obligatoirement par l’implémentation logicielle Vulkan SwiftShader : le processus GPU tente de charger la `vk_swiftshader.dll` fournie.
+
+**Maillon 2 : Windows Code Integrity bloque la DLL de l’application elle-même.** Le processus GPU s’exécute avec la stratégie de renforcement « MicrosoftSignedOnly » (vérifiable via `Get-ProcessMitigation`). Pour qu’une application Store puisse charger ses propres DLL signées par le fabricant, le paquet MSIX doit inclure un catalogue de signatures `AppxMetadata\CodeIntegrity.cat`. Or ce fichier manque précisément dans le paquet distribué, comme des membres de la communauté l’ont démontré en inspectant le fichier MSIX. Conséquence : la vérification de signature échoue, Windows enregistre l’Event 3033 et termine brutalement le processus GPU. Le code de sortie `0x060C201E` est une erreur d’intégrité AppX du chargeur Windows, et non un code Chromium ; c’est pourquoi il ne figure dans aucune source Chromium, et pourquoi le processus GPU ne laisse pas non plus de dump de crash : il n’y a aucune exception à capturer dans un dump.
+
+**Maillon 3 : la chaîne de repli de Chromium s’épuise.** Lorsqu’un processus GPU plante, Chromium recule d’un niveau de rendu : GL matériel, puis GL logiciel, puis simple compositeur d’affichage. Ce n’est que lorsqu’il ne reste plus aucun niveau que l’arrêt automatique intégré intervient. Dans le code source de la version embarquée (Chromium 148.0.7778.280 dans Electron 42.9.2), il est écrit littéralement ainsi :
+
+```cpp
+NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
+  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
+}
+```
+
+**Maillon 4 : le processus principal se termine volontairement.** Cet `LOG(FATAL)` est le moment où « l’application plante ». Cela est prouvé par un minidump du processus principal : `EXCEPTION_BREAKPOINT` (un `int3` intentionnel, pas une erreur de pilote), aucune DLL de pilote graphique dans le processus, et en clair dans la mémoire :
+
+```text
+FATAL:content\browser\gpu\gpu_data_manager_impl_private.cc:418]
+GPU process isn't usable. Goodbye.
+```
+
+Le fait que ce dump existe a été la partie la plus difficile de l’analyse : l’intégration Sentry de l’application consomme les dumps Crashpad au démarrage suivant de l’application, les envoie à la télémétrie du fabricant et les supprime localement. Le dossier Crashpad est donc toujours vide pour l’utilisateur. La solution consiste en un observateur indépendant de l’arbre des processus de l’application (lancé via WMI afin que le plantage de l’application ne le termine pas avec elle), qui recherche toutes les 200 millisecondes `*.dmp` dans la base de données Crashpad et copie immédiatement les éléments trouvés avant leur suppression. L’évaluation est assurée par le paquet Python `minidump`, sans WinDbg.
+
+## Pourquoi « désactiver l’accélération matérielle » aggrave tout
+
+La chaîne explique aussi le constat le plus contre-intuitif. Ici, l’accélération matérielle désactivée a simultanément deux effets fatals. Premièrement, elle impose le chemin SwiftShader, c’est-à-dire précisément la tentative de chargement de DLL que Code Integrity bloque ; avec l’accélération matérielle active, `vk_swiftshader.dll` n’est en revanche presque jamais nécessaire. Deuxièmement, le processus GPU démarre alors déjà à l’extrémité inférieure de la chaîne de repli : un seul plantage suffit et le maillon 4 entre en jeu. Cela explique aussi l’observation du fil communautaire selon laquelle un blocage Code Integrity reste parfois sans conséquence et termine parfois l’application : tout dépend du nombre de niveaux de repli restant au processus navigateur.
+
+Particulièrement malheureux : l’application connaît une désactivation automatique de l’accélération matérielle après des problèmes (`isHardwareAccelerationAutoDisabled`). Conçue comme mesure de stabilité, elle place les systèmes concernés précisément dans la configuration où le plantage suivant coûte toute l’application.
+
+## Le symptôme secondaire : la boucle de réparation
+
+L’échec de Code Integrity a un effet secondaire que de nombreuses personnes concernées considèrent comme un problème distinct : après l’incident, Windows classe parfois le paquet de l’application comme « Modified, NeedsRemediation ». L’application ne démarre alors plus du tout jusqu’à ce qu’elle soit réinitialisée via Paramètres → Applications → Claude → Options avancées → « Réparer ». Ceux qui doivent donc « constamment réparer » l’application constatent le même problème de fond, simplement un maillon plus loin : la réparation corrige l’état du paquet, pas la cause ; le plantage suivant survient lors de la prochaine tentative bloquée de chargement de DLL.
+
+## État des signalements
+
+La cause liée au empaquetage est signalée dans [#81341](https://github.com/anthropics/claude-code/issues/81341), le fil collectif contenant les preuves de la communauté est [#81698](https://github.com/anthropics/claude-code/issues/81698), et l’analyse de minidump avec l’explication de la chaîne de repli est [#89250](https://github.com/anthropics/claude-code/issues/89250). Le véritable correctif, un catalogue de signatures complet dans le paquet MSIX, relève d’Anthropic. D’ici là : activez l’accélération matérielle, fermez rigoureusement la zone navigateur et, si nécessaire, désactivez WebGPU via un indicateur. Sur le système examiné ici, l’application ne plante plus depuis la mise en œuvre de la mesure 1.
 
 ## Sources
 
-1.  [Cause racine : « GPU process isn't usable. Goodbye. » de Chromium (issue GitHub #89250)](https://github.com/anthropics/claude-code/issues/89250): L’analyse du minidump de cet article sous forme de rapport de bug, y compris la méthode de capture et des propositions de correction.
+1.  [Ticket GitHub #81698: GPU process crash kills entire app](https://github.com/anthropics/claude-code/issues/81698): Le fil collectif avec les preuves de la communauté concernant la chaîne Code Integrity, les données couvrant plusieurs fabricants et la corrélation avec le panneau navigateur.
 
-2.  [Premier rapport personnel avec résultats de laboratoire (issue GitHub #89226)](https://github.com/anthropics/claude-code/issues/89226): Les expériences 1 à 3 et la correction de l’hypothèse AMD, avec des références aux doublons.
+2.  [Ticket GitHub #81341: CIG + vk_swiftshader.dll kills GPU process](https://github.com/anthropics/claude-code/issues/81341): La cause liée à l’empaquetage ; catalogue CodeIntegrity manquant dans le MSIX.
 
-3.  [Le crash du processus GPU ferme toute l’application (issue GitHub #81698)](https://github.com/anthropics/claude-code/issues/81698): Le même crash avec le même code de sortie sur NVIDIA RTX 5080, sans événements TDR ; cela disculpe les pilotes graphiques.
+3.  [Ticket GitHub #89250: Analyse du minidump de l’arrêt de l’application](https://github.com/anthropics/claude-code/issues/89250): La seconde moitié de la chaîne décrite ici, avec la méthode de capture de dump et des propositions de correctifs.
 
-4.  [Code source Chromium : gpu_data_manager_impl_private.cc (tag 148.0.7778.280)](https://chromium.googlesource.com/chromium/src/+/refs/tags/148.0.7778.280/content/browser/gpu/gpu_data_manager_impl_private.cc): La fonction IntentionallyCrashBrowserForUnusableGpuProcess et la logique de repli.
+4.  [Code source Chromium : gpu_data_manager_impl_private.cc (balise 148.0.7778.280)](https://chromium.googlesource.com/chromium/src/+/refs/tags/148.0.7778.280/content/browser/gpu/gpu_data_manager_impl_private.cc): La fonction IntentionallyCrashBrowserForUnusableGpuProcess et la logique de repli.
 
-5.  [Documentation Electron : child-process-gone](https://www.electronjs.org/docs/latest/api/app#event-child-process-gone): L’événement permettant à une application Electron d’observer les crashes du processus GPU et de prendre ses propres mesures.
+5.  [Documentation Electron : child-process-gone](https://www.electronjs.org/docs/latest/api/app#event-child-process-gone): L’événement permettant à une application Electron d’observer les plantages du processus GPU et de prendre ses propres contre-mesures.
 
-6.  [Paquet Python minidump](https://pypi.org/project/minidump/): Outil d’analyse des dumps (enregistrement d’exception, liste des modules, chaînes mémoire), sans WinDbg.
+6.  [Paquet Python minidump](https://pypi.org/project/minidump/): Outil d’analyse de dump (enregistrement d’exception, liste des modules, chaînes mémoire).
 
-7.  [webgpureport.org](https://webgpureport.org/): Page de diagnostic WebGPU ; elle a servi de déclencheur minimal et de contre-épreuve dans Chromium actuel.
+7.  [webgpureport.org](https://webgpureport.org/): Page de diagnostic WebGPU ; a servi de déclencheur minimal pour le plantage de contrôle et pour le test comparatif dans le Chromium actuel.
