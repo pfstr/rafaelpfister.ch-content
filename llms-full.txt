@@ -295,14 +295,14 @@ Das beschriebene Vorgehen eignet sich über die beiden SMTP-Werkzeuge hinaus fü
 
 ----
 
-# SMTP-Lasttest mit nummerierten Empfängern: 50'000 Mails nachvollziehbar versenden
+# SMTP-Lasttest mit nummerierten Empfängern: jede Mail nachvollziehbar versenden
 
 URL: https://rafaelpfister.ch/blog/smtp-lasttest-nummerierte-empfaenger
 Datum: 2026-08-27
 
-# SMTP-Lasttest mit nummerierten Empfängern: 50'000 Mails nachvollziehbar versenden
+# SMTP-Lasttest mit nummerierten Empfängern: jede Mail nachvollziehbar versenden
 
-Wer einen Lasttest mit 50'000 Mails fährt, will hinterher zwei Fragen beantworten können: Sind alle angekommen, und wenn nicht, welche fehlen? Mit identischen Testmails lässt sich nur zählen, und eine Differenz von 49'987 zu 50'000 sagt nichts darüber, wann und wo die 13 fehlenden Nachrichten verloren gingen. Trägt dagegen jede Mail eine fortlaufende Nummer, wird aus dem Zählen ein Abgleich: Jede Nummer ist in den Logs des Zielsystems einzeln auffindbar, Lücken zeigen den Zeitpunkt des Verlusts, und die Reihenfolge der Zustellung lässt sich prüfen.
+Wer einen Lasttest fährt, will hinterher zwei Fragen beantworten können: Sind alle Mails angekommen, und wenn nicht, welche fehlen? Mit identischen Testmails lässt sich nur zählen, und ein Zählerstand mit 13 fehlenden Nachrichten sagt nichts darüber, wann und wo sie verloren gingen. Trägt dagegen jede Mail eine fortlaufende Nummer, wird aus dem Zählen ein Abgleich: Jede Nummer ist in den Logs des Zielsystems einzeln auffindbar, Lücken zeigen den Zeitpunkt des Verlusts, und die Reihenfolge der Zustellung lässt sich prüfen.
 
 Die verbreitete Reflexreaktion ist ein Skript, das den Betreff hochzählt. Das funktioniert, kostet aber Durchsatz, denn der Lastgenerator `smtp-source` aus dem Postfix-Paket setzt den Betreff pro Aufruf fix, und eine Schleife mit einem Aufruf pro Mail erzwingt für jede Nachricht einen eigenen Verbindungsaufbau. Die bessere Nachrichtenkennung ist bereits eingebaut: Die Option `-N` nummeriert die Empfängeradresse pro Nachricht durch, und zwar innerhalb eines einzigen Aufrufs mit parallelen Sessions. Für die Auswertung ist die Empfängeradresse genauso brauchbar wie der Betreff, denn sie steht in jedem Tracking-Log.
 
@@ -344,9 +344,11 @@ Erstens hängt die genaue Adressform von der Postfix-Version ab. Postfix 3.5, wi
 
 Zweitens ist der Zähler prozessweit und wird von allen parallelen Sessions geteilt. Bei `-s 8` vergeben die acht Sessions die Nummern gemeinsam, jede Nummer kommt genau einmal vor. Die Reihenfolge über die Sessions hinweg ist nicht deterministisch, die Vollständigkeit der Nummernmenge aber garantiert.
 
-Drittens ist der Startwert nicht konfigurierbar: 1 bei Postfix 3.5, 0 bei aktuellen Versionen. Die 50'000 Mails tragen also die Nummern 1 bis 50'000 beziehungsweise 0 bis 49'999, und die Sollmenge für den Abgleich muss dazu passen.
+Drittens ist der Startwert nicht konfigurierbar: 1 bei Postfix 3.5, 0 bei aktuellen Versionen. Die Mails tragen also die Nummern 1 bis zur Gesamtzahl aus `-m` beziehungsweise 0 bis Gesamtzahl minus 1, und die Sollmenge für den Abgleich muss dazu passen.
 
 ## Der Testlauf in einem Aufruf
+
+Wie viele Mails der Lauf umfasst, spielt für das Vorgehen keine Rolle; `-m` bestimmt die Gesamtzahl, und die Beispiele in diesem Beitrag verwenden dafür 50'000 als beliebigen Platzhalter.
 
 ```bash
 smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
@@ -367,14 +369,14 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
 | `-m 50000` | Gesamtzahl der Nachrichten, verteilt auf die Sessions |
 | `-l 5120` | Nachrichtengrösse in Bytes (ohne Header), hier 5 KB |
 | `-f` | Absenderadresse |
-| `-t` | Empfänger-Basisadresse; `-N` macht daraus `1test@` bis `50000test@` (Postfix 3.5) bzw. `test0@` bis `test49999@` (aktuelle Versionen) |
+| `-t` | Empfänger-Basisadresse; `-N` macht daraus `1test@`, `2test@` und so weiter (Postfix 3.5) bzw. `test0@`, `test1@` und so weiter (aktuelle Versionen) |
 | `gateway.example.com:25` | Zielhost und Port |
 
 </details>
 
 `-d` ist für das Lastbild entscheidend: Ohne diese Option trennt `smtp-source` nach jeder Nachricht die Verbindung und baut für die nächste eine neue auf; mit `-d` bleiben die acht Verbindungen stehen und liefern nacheinander alle Nachrichten aus, wie es ein Massenversender tut.
 
-Bewusst fehlt das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei 50'000 Mails hunderttausende Logzeilen ohne Mehrwert für die Auswertung. `-c` liefert stattdessen die Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Die Gesamtdauer für die Ratenberechnung liefert ein vorangestelltes `time`.
+Bewusst fehlt das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei einem grossen Lauf hunderttausende Logzeilen ohne Mehrwert für die Auswertung. `-c` liefert stattdessen die Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Die Gesamtdauer für die Ratenberechnung liefert ein vorangestelltes `time`.
 
 Voraussetzung für den ganzen Ansatz: Das Zielsystem nimmt die generierten Adressen an. Ein `smtp-sink`, eine Catch-all-Domain, eine Verwerf-Domain des Providers oder ein Gateway, das Empfänger erst nach der Annahme auflöst, erfüllen das. Prüft das Ziel dagegen jeden Empfänger gegen ein Verzeichnis, lehnt es die nummerierten Adressen ab, und es bleibt nur die Betreff-Variante.
 
@@ -468,7 +470,7 @@ Die erwartete Ausgabe ist eine Zeile pro Stufe. Mit erfundenen, aber typischen B
 32 Sessions: 80 Mails/s
 ```
 
-Die Lesart: Solange sich die Rate mit der Session-Zahl etwa verdoppelt, überdecken die parallelen Sessions die Wartezeit auf die Antworten des Ziels; der Engpass ist dann die Latenz der Strecke, nicht die Kapazität. Ab dem Punkt, an dem die Kurve abflacht (im Beispiel zwischen 8 und 16 Sessions), ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt, im Beispiel also 8 bis 16; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Für den Hauptlauf mit 50'000 Mails lässt sich aus der gemessenen Rate auch gleich die erwartete Dauer abschätzen: bei 71 Mails/s rund 12 Minuten.
+Die Lesart: Solange sich die Rate mit der Session-Zahl etwa verdoppelt, überdecken die parallelen Sessions die Wartezeit auf die Antworten des Ziels; der Engpass ist dann die Latenz der Strecke, nicht die Kapazität. Ab dem Punkt, an dem die Kurve abflacht (im Beispiel zwischen 8 und 16 Sessions), ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt, im Beispiel also 8 bis 16; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Für den Hauptlauf lässt sich aus der gemessenen Rate auch gleich die erwartete Dauer abschätzen: die Gesamtzahl aus `-m` geteilt durch die Rate.
 
 ## Auswertung auf der Empfangsseite
 
@@ -490,7 +492,7 @@ smtp-sink -c -d "mails/%Y%m%d-%H%M%S." 0.0.0.0:2525 200
 
 </details>
 
-Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht. Das Suchmuster passt zur Adressform von Postfix 3.5 (Nummer vor der Adresse); bei aktuellen Versionen entsprechend `test[0-9]+@` und `seq 0 49999`:
+Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht. Das Suchmuster passt zur Adressform von Postfix 3.5 (Nummer vor der Adresse); bei aktuellen Versionen entsprechend `test[0-9]+@` und `seq` ab 0:
 
 ```bash
 grep -rhoE '[0-9]+test@example\.com' mails/ | \
@@ -523,7 +525,7 @@ seq 1 50000 | awk '{printf "%08d\n", $1}' | \
 
 | Option | Wirkung |
 |---|---|
-| `seq 1 50000` | Erzeugt die Sollmenge der Nummern 1 bis 50'000 |
+| `seq 1 50000` | Erzeugt die Sollmenge der Nummern; der Endwert entspricht der versendeten Gesamtzahl aus `-m` |
 | `comm -23` | Unterdrückt Spalte 2 (nur in Datei 2) und Spalte 3 (in beiden); übrig bleiben die Zeilen, die nur in der Sollmenge stehen |
 | `-` | Liest die erste Vergleichsliste aus der Pipe statt aus einer Datei |
 | `empfangen.txt` | Zweite Vergleichsliste: die tatsächlich empfangenen Nummern |
@@ -572,9 +574,9 @@ Der Preis ist ein vollständiger Verbindungsaufbau pro Mail: TCP-Handshake, Bann
 
 ## Regeln für Tests gegen andere Systeme
 
-Sobald der Test das eigene System verlässt, gelten drei Bedingungen. Erstens: Der Betreiber des Zielsystems weiss Bescheid und hat dem Zeitfenster zugestimmt; 50'000 Mails sehen für jedes Monitoring wie ein Angriff oder eine Spamwelle aus. Zweitens: Die Empfängeradresse endet kontrolliert, in einem dedizierten Testpostfach, einer Verwerf-Regel auf dem Ziel oder einer vom Provider dafür vorgesehenen Verwerf-Domain; produktive Adressen gehören nicht in einen Lasttest. Drittens: Ein Abbruchkriterium steht vor dem Start fest, etwa eine wachsende Queue auf dem Ziel oder eine Fehlerrate über einem Schwellwert, und jemand beobachtet diese Werte während des Laufs.
+Sobald der Test das eigene System verlässt, gelten drei Bedingungen. Erstens: Der Betreiber des Zielsystems weiss Bescheid und hat dem Zeitfenster zugestimmt; ein Lasttest sieht für jedes Monitoring wie ein Angriff oder eine Spamwelle aus. Zweitens: Die Empfängeradresse endet kontrolliert, in einem dedizierten Testpostfach, einer Verwerf-Regel auf dem Ziel oder einer vom Provider dafür vorgesehenen Verwerf-Domain; produktive Adressen gehören nicht in einen Lasttest. Drittens: Ein Abbruchkriterium steht vor dem Start fest, etwa eine wachsende Queue auf dem Ziel oder eine Fehlerrate über einem Schwellwert, und jemand beobachtet diese Werte während des Laufs.
 
-Mit diesen drei Punkten und der Nummerierung liefert der Lauf am Ende nicht nur eine Durchsatzzahl, sondern eine belegbare Aussage: welche der 50'000 Mails angekommen sind, welche fehlen und wo auf der Strecke sie zuletzt gesehen wurden.
+Mit diesen drei Punkten und der Nummerierung liefert der Lauf am Ende nicht nur eine Durchsatzzahl, sondern eine belegbare Aussage: welche Mails angekommen sind, welche fehlen und wo auf der Strecke sie zuletzt gesehen wurden.
 
 ## Quellen
 
