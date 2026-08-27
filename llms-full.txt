@@ -196,7 +196,7 @@ Zur Orientierung vorab die Optionen, die in diesem Beitrag vorkommen, sinngemäs
 | `-t adresse` | Empfängeradresse (Standard: `foo@hostname`) |
 | `-S text` | Betreffzeile, fix für alle Nachrichten des Aufrufs |
 | `-F datei` | Sendet Header und Body unverändert aus einer Datei; verdrängt `-l` und `-S` |
-| `-N` | Nummeriert die Empfängeradresse pro Nachricht durch (per-Prozess-Zähler am Local-Part) |
+| `-N` | Nummeriert die Empfängeradresse pro Nachricht durch (per-Prozess-Zähler; Position und Startwert versionsabhängig, siehe unten) |
 | `-r n` | Anzahl Empfänger pro Nachricht (Standard: 1), Adressbildung wie bei `-N` |
 | `-d` | Nach einer Nachricht nicht trennen, die nächste über dieselbe Verbindung senden |
 | `-c` | Laufenden Zähler anzeigen, der mit jedem abgeschlossenen `DATA` hochzählt |
@@ -208,20 +208,20 @@ Die vollständige Liste inklusive TLS-, LMTP- und Timing-Optionen steht in der M
 
 ## Wie -N die Empfänger nummeriert
 
-Die Manpage beschreibt `-N` als per-Prozess-Zähler, der an den Local-Part der Empfängeradresse angehängt wird. Drei Eigenschaften davon bestimmen den Testaufbau, alle drei sind im Quellcode von `smtp-source.c` nachlesbar:
+`-N` aktiviert einen per-Prozess-Zähler, der in die Empfängeradresse eingebaut wird. Drei Eigenschaften bestimmen den Testaufbau, alle drei sind im Quellcode von `smtp-source.c` nachlesbar:
 
-Erstens wird die Nummer direkt zwischen Local-Part und `@domain` eingefügt. Aus `-t test@example.com` wird also `test0@example.com`, `test1@example.com` und so weiter. Damit die Adressen als Varianten eines einzigen Postfachs erkennbar bleiben, empfiehlt die Manpage Plus-Adressierung: Mit `-t 'test+@example.com'` entstehen `test+0@example.com` bis `test+49999@example.com`, und ein Zielsystem mit Subadressierung ordnet alles demselben Postfach zu.
+Erstens hängt die genaue Adressform von der Postfix-Version ab. Postfix 3.5, wie es RHEL 8 ausliefert, stellt die Nummer der gesamten Adresse voran (`RCPT TO:<%d%s>`): Aus `-t test@example.com` werden `1test@example.com`, `2test@example.com` und so weiter, und der Zähler beginnt bei 1. Aktuelle Postfix-Versionen fügen die Nummer stattdessen am Ende des Local-Parts ein und beginnen bei 0 (`test0@` bis `test49999@`); für diese Variante empfiehlt die Manpage Plus-Adressierung (`-t 'test+@example.com'` ergibt `test+0@` und folgende), damit ein Zielsystem mit Subadressierung alles demselben Postfach zuordnet. Prüfen Sie die Form vor dem grossen Lauf mit einer Handvoll Mails gegen einen `smtp-sink` oder im Log des Ziels; davon hängen die Sollmenge und das Suchmuster der Auswertung ab.
 
 Zweitens ist der Zähler prozessweit und wird von allen parallelen Sessions geteilt. Bei `-s 8` vergeben die acht Sessions die Nummern gemeinsam, jede Nummer kommt genau einmal vor. Die Reihenfolge über die Sessions hinweg ist nicht deterministisch, die Vollständigkeit der Nummernmenge aber garantiert.
 
-Drittens beginnt der Zähler bei 0, nicht bei 1. Die 50'000 Mails tragen die Nummern 0 bis 49'999, und die Sollmenge für den Abgleich muss entsprechend lauten. Ein konfigurierbarer Startwert existiert nicht; wer zwingend bei 1 beginnen will, ist wieder beim Betreff-Skript am Ende dieses Beitrags.
+Drittens ist der Startwert nicht konfigurierbar: 1 bei Postfix 3.5, 0 bei aktuellen Versionen. Die 50'000 Mails tragen also die Nummern 1 bis 50'000 beziehungsweise 0 bis 49'999, und die Sollmenge für den Abgleich muss dazu passen.
 
 ## Der Testlauf in einem Aufruf
 
 ```bash
 smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
   -f lasttest@example.com \
-  -t 'test+@example.com' \
+  -t test@example.com \
   gateway.example.com:25
 ```
 
@@ -234,7 +234,7 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
 | `-m 50000` | Gesamtzahl der Nachrichten, verteilt auf die Sessions |
 | `-l 5120` | Nachrichtengrösse in Bytes (ohne Header), hier 5 KB |
 | `-f` | Absenderadresse |
-| `-t` | Empfänger-Muster; mit Plus-Adressierung entstehen `test+0@` bis `test+49999@` |
+| `-t` | Empfänger-Basisadresse; `-N` macht daraus `1test@` bis `50000test@` (Postfix 3.5) bzw. `test0@` bis `test49999@` (aktuelle Versionen) |
 | `gateway.example.com:25` | Zielhost und Port |
 
 `-d` ist für das Lastbild entscheidend: Ohne diese Option trennt `smtp-source` nach jeder Nachricht die Verbindung und baut für die nächste eine neue auf; mit `-d` bleiben die acht Verbindungen stehen und liefern nacheinander alle Nachrichten aus, wie es ein Massenversender tut.
@@ -258,7 +258,7 @@ Manche Lasttests brauchen einen eigenen Header, etwa als Marker, an dem das Gate
 ```bash
 smtp-source -c -d -N -s 8 -m 50000 -F lasttest.eml \
   -f lasttest@example.com \
-  -t 'test+@example.com' \
+  -t test@example.com \
   gateway.example.com:25
 ```
 
@@ -276,14 +276,14 @@ Die passende Session-Zahl ermitteln Sie am zuverlässigsten durch Messung. Ein k
 for s in 1 2 4 8 16 32; do
   t0=$(date +%s%N)
   smtp-source -d -N -s "$s" -m 2000 -l 5120 \
-    -f lasttest@example.com -t 'test+@example.com' \
+    -f lasttest@example.com -t test@example.com \
     gateway.example.com:25
   t1=$(date +%s%N)
   echo "$s Sessions: $(( 2000000000000 / (t1 - t0) )) Mails/s"
 done
 ```
 
-Die Rate steigt anfangs etwa linear mit der Session-Zahl, weil parallele Sessions die Wartezeit auf die Antworten des Ziels überdecken. Ab einem bestimmten Punkt flacht die Kurve ab: Dann ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Typische Ergebnisse liegen im einstelligen bis niedrigen zweistelligen Bereich. Beachten Sie dabei die 2'000 Kalibrier-Mails pro Stufe: Auch die brauchen eine kontrollierte Empfängeradresse, und die Nummern beginnen in jedem Aufruf wieder bei 0.
+Die Rate steigt anfangs etwa linear mit der Session-Zahl, weil parallele Sessions die Wartezeit auf die Antworten des Ziels überdecken. Ab einem bestimmten Punkt flacht die Kurve ab: Dann ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Typische Ergebnisse liegen im einstelligen bis niedrigen zweistelligen Bereich. Beachten Sie dabei die 2'000 Kalibrier-Mails pro Stufe: Auch die brauchen eine kontrollierte Empfängeradresse, und die Nummerierung beginnt in jedem Aufruf wieder beim Startwert.
 
 ## Auswertung auf der Empfangsseite
 
@@ -300,22 +300,22 @@ smtp-sink -c -d "mails/%Y%m%d-%H%M%S." 0.0.0.0:2525 200
 | `0.0.0.0:2525` | Lauscht auf allen Interfaces auf Port 2525 |
 | `200` | Backlog: maximale Länge der Warteschlange wartender Verbindungen gemäss listen(2) |
 
-Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht:
+Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht. Das Suchmuster passt zur Adressform von Postfix 3.5 (Nummer vor der Adresse); bei aktuellen Versionen entsprechend `test[0-9]+@` und `seq 0 49999`:
 
 ```bash
-grep -rhoE 'test\+[0-9]+@example\.com' mails/ | \
-  grep -oE '[0-9]+' | sort -u | \
+grep -rhoE '[0-9]+test@example\.com' mails/ | \
+  grep -oE '^[0-9]+' | sort -u | \
   awk '{printf "%08d\n", $1}' | sort > empfangen.txt
 ```
 
 ```bash
-seq 0 49999 | awk '{printf "%08d\n", $1}' | \
+seq 1 50000 | awk '{printf "%08d\n", $1}' | \
   comm -23 - empfangen.txt
 ```
 
 `comm -23` gibt genau die Nummern aus, die in der Sollmenge stehen, aber nicht in der Empfangsliste: die fehlenden Mails. Eine leere Ausgabe bedeutet vollständige Zustellung. Tauchen Nummern doppelt auf (erkennbar am Unterschied zwischen `sort` und `sort -u`), hat unterwegs ein System die Nachricht dupliziert, was ebenfalls ein Befund ist.
 
-Ist das Ziel ein produktnahes System statt eines smtp-sink, übernimmt dessen Logging die Rolle der Dump-Dateien. Auf einem Exchange-Server etwa liefert `Get-MessageTrackingLog -Recipients` beziehungsweise ein Filter auf die Empfängeradresse die angekommenen Nummern, auf einem Postfix-System ein `grep to=<test+` über das Maillog. Genau das ist der Vorteil der Nummer in der Adresse: Der Empfänger steht in jedem Message-Tracking, während der Betreff dort je nach System fehlt oder erst eingeschaltet werden muss.
+Ist das Ziel ein produktnahes System statt eines smtp-sink, übernimmt dessen Logging die Rolle der Dump-Dateien. Auf einem Exchange-Server etwa liefert `Get-MessageTrackingLog -Recipients` beziehungsweise ein Filter auf die Empfängeradresse die angekommenen Nummern, auf einem Postfix-System ein `grep` auf `to=` und die Basisadresse über das Maillog. Genau das ist der Vorteil der Nummer in der Adresse: Der Empfänger steht in jedem Message-Tracking, während der Betreff dort je nach System fehlt oder erst eingeschaltet werden muss.
 
 ## Wenn die Nummer im Betreff stehen muss
 
@@ -347,9 +347,9 @@ Mit diesen drei Punkten und der Nummerierung liefert der Lauf am Ende nicht nur 
 
 ## Quellen
 
-1.  [Postfix: smtp-source(1)](https://www.postfix.org/smtp-source.1.html): Manpage des Lastgenerators; beschreibt `-N` als per-Prozess-Zähler am Local-Part und empfiehlt die Plus-Adressierung.
+1.  [Postfix: smtp-source(1)](https://www.postfix.org/smtp-source.1.html): Manpage des Lastgenerators; beschreibt das `-N`-Verhalten der aktuellen Version (Zähler am Local-Part, Plus-Adressierung).
 
-2.  [Postfix-Quellcode: smtp-source.c](https://github.com/vdukhovni/postfix/blob/master/postfix/src/smtpstone/smtp-source.c): belegt das Einfügen der Nummer zwischen Local-Part und Domain, den geteilten Zähler und den Startwert 0.
+2.  [Postfix-Quellcode 3.5.8: smtp-source.c](https://github.com/vdukhovni/postfix/blob/v3.5.8/postfix/src/smtpstone/smtp-source.c): belegt für die RHEL-8-Version das Voranstellen der Nummer (`RCPT TO:<%d%s>`) mit Startwert 1; im [aktuellen Stand](https://github.com/vdukhovni/postfix/blob/master/postfix/src/smtpstone/smtp-source.c) wird die Nummer stattdessen am Local-Part angefügt, ab 0.
 
 3.  [Postfix: smtp-sink(1)](https://www.postfix.org/smtp-sink.1.html): Manpage des Test-Empfängers mit den Dump-Optionen und den aufgezeichneten X-Headern.
 
