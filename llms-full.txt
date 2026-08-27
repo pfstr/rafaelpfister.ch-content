@@ -162,111 +162,107 @@ Das beschriebene Vorgehen eignet sich über die beiden SMTP-Werkzeuge hinaus fü
 
 ----
 
-# SMTP-Lasttest mit nummerierten Betreffzeilen: 50'000 Mails nachvollziehbar versenden
+# SMTP-Lasttest mit nummerierten Empfängern: 50'000 Mails nachvollziehbar versenden
 
-URL: https://rafaelpfister.ch/blog/smtp-lasttest-nummerierte-betreffzeilen
+URL: https://rafaelpfister.ch/blog/smtp-lasttest-nummerierte-empfaenger
 Datum: 2026-08-27
 
-# SMTP-Lasttest mit nummerierten Betreffzeilen: 50'000 Mails nachvollziehbar versenden
+# SMTP-Lasttest mit nummerierten Empfängern: 50'000 Mails nachvollziehbar versenden
 
-Wer einen Lasttest mit 50'000 Mails fährt, will hinterher zwei Fragen beantworten können: Sind alle angekommen, und wenn nicht, welche fehlen? Mit identischen Testmails lässt sich nur zählen, und eine Differenz von 49'987 zu 50'000 sagt nichts darüber, wann und wo die 13 fehlenden Nachrichten verloren gingen. Trägt dagegen jede Mail eine fortlaufende Nummer im Betreff, wird aus dem Zählen ein Abgleich: Jede Nummer ist in den Logs des Zielsystems einzeln auffindbar, Lücken zeigen den Zeitpunkt des Verlusts, und die Reihenfolge der Zustellung lässt sich prüfen.
+Wer einen Lasttest mit 50'000 Mails fährt, will hinterher zwei Fragen beantworten können: Sind alle angekommen, und wenn nicht, welche fehlen? Mit identischen Testmails lässt sich nur zählen, und eine Differenz von 49'987 zu 50'000 sagt nichts darüber, wann und wo die 13 fehlenden Nachrichten verloren gingen. Trägt dagegen jede Mail eine fortlaufende Nummer, wird aus dem Zählen ein Abgleich: Jede Nummer ist in den Logs des Zielsystems einzeln auffindbar, Lücken zeigen den Zeitpunkt des Verlusts, und die Reihenfolge der Zustellung lässt sich prüfen.
 
-Dieser Testaufbau sendet, anders als ein reiner Loopback-Funktionstest, an ein anderes System über das Netz. Als Lastgenerator dient `smtp-source` aus dem Postfix-Paket; falls auf dem Quellsystem kein Postfix installiert ist, zeigt der Beitrag [smtp-source ohne Postfix-Installation](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation), wie Sie die Werkzeuge aus dem RPM entpacken.
+Die verbreitete Reflexreaktion ist ein Skript, das den Betreff hochzählt. Das funktioniert, kostet aber Durchsatz, denn der Lastgenerator `smtp-source` aus dem Postfix-Paket setzt den Betreff pro Aufruf fix, und eine Schleife mit einem Aufruf pro Mail erzwingt für jede Nachricht einen eigenen Verbindungsaufbau. Die bessere Nachrichtenkennung ist bereits eingebaut: Die Option `-N` nummeriert die Empfängeradresse pro Nachricht durch, und zwar innerhalb eines einzigen Aufrufs mit parallelen Sessions. Für die Auswertung ist die Empfängeradresse genauso brauchbar wie der Betreff, denn sie steht in jedem Tracking-Log.
 
-## Warum smtp-source allein nicht reicht
+Dieser Testaufbau sendet, anders als ein reiner Loopback-Funktionstest, an ein anderes System über das Netz. Falls auf dem Quellsystem kein Postfix installiert ist, zeigt der Beitrag [smtp-source ohne Postfix-Installation](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation), wie Sie die Werkzeuge aus dem RPM entpacken.
 
-`smtp-source` kennt mit `-S` eine Betreffzeile, setzt sie aber für den gesamten Aufruf fix: Alle Nachrichten eines Laufs tragen denselben Betreff. Eine Option, die den Betreff pro Nachricht hochzählt, gibt es nicht. Die einzige eingebaute Nummerierung ist `-N`, und die hängt einen Zähler an die Empfängeradresse an, nicht an den Betreff.
+## Wie -N die Empfänger nummeriert
 
-Für nummerierte Betreffzeilen bleibt deshalb nur eine Schleife: ein `smtp-source`-Aufruf pro Mail mit `-m 1` und einem Betreff, den die Shell hochzählt. Das verändert das Lastbild, denn jede Mail bekommt ihre eigene TCP-Verbindung samt SMTP-Handshake. Was das für die Messung bedeutet, folgt weiter unten; zuerst der Aufbau.
+Die Manpage beschreibt `-N` als per-Prozess-Zähler, der an den Local-Part der Empfängeradresse angehängt wird. Drei Eigenschaften davon bestimmen den Testaufbau, alle drei sind im Quellcode von `smtp-source.c` nachlesbar:
 
-## Das Testskript
+Erstens wird die Nummer direkt zwischen Local-Part und `@domain` eingefügt. Aus `-t test@example.com` wird also `test0@example.com`, `test1@example.com` und so weiter. Damit die Adressen als Varianten eines einzigen Postfachs erkennbar bleiben, empfiehlt die Manpage Plus-Adressierung: Mit `-t 'test+@example.com'` entstehen `test+0@example.com` bis `test+49999@example.com`, und ein Zielsystem mit Subadressierung ordnet alles demselben Postfach zu.
 
-Die Eckdaten stehen am Anfang, damit sich der Lauf ohne Eingriff in die Logik anpassen lässt:
+Zweitens ist der Zähler prozessweit und wird von allen parallelen Sessions geteilt. Bei `-s 8` vergeben die acht Sessions die Nummern gemeinsam, jede Nummer kommt genau einmal vor. Die Reihenfolge über die Sessions hinweg ist nicht deterministisch, die Vollständigkeit der Nummernmenge aber garantiert.
+
+Drittens beginnt der Zähler bei 0, nicht bei 1. Die 50'000 Mails tragen die Nummern 0 bis 49'999, und die Sollmenge für den Abgleich muss entsprechend lauten. Ein konfigurierbarer Startwert existiert nicht; wer zwingend bei 1 beginnen will, ist wieder beim Betreff-Skript am Ende dieses Beitrags.
+
+## Der Testlauf in einem Aufruf
 
 ```bash
-#!/usr/bin/env bash
-set -u
-
-ZIEL="gateway.example.com:25"
-VON="lasttest@example.com"
-AN="test@example.com"
-GESAMT=50000
-WORKER=4
-GROESSE=5120
+smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
+  -f lasttest@example.com \
+  -t 'test+@example.com' \
+  gateway.example.com:25
 ```
 
-Die Nummern werden mit führenden Nullen formatiert (`00001` bis `50000`). Das ist kein Selbstzweck: Bei fester Stellenzahl entspricht die alphabetische Sortierung der numerischen, und der spätere Abgleich mit `comm` funktioniert ohne Umwege.
+Die Optionen im Einzelnen: `-N` aktiviert die Empfänger-Nummerierung, `-s 8` fährt acht parallele Sessions, `-m 50000` verteilt die Gesamtmenge darauf, `-l 5120` setzt die Nachrichtengrösse auf 5 KB. `-d` ist für das Lastbild entscheidend: Ohne diese Option trennt `smtp-source` nach jeder Nachricht die Verbindung und baut für die nächste eine neue auf; mit `-d` bleiben die acht Verbindungen stehen und liefern nacheinander alle Nachrichten aus, wie es ein Massenversender tut.
+
+Bewusst fehlt das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei 50'000 Mails hunderttausende Logzeilen ohne Mehrwert für die Auswertung. Stattdessen zeigt `-c` einen laufenden Zähler abgeschlossener Zustellungen an: eine einzeilige Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Die Gesamtdauer für die Ratenberechnung liefert ein vorangestelltes `time`.
+
+Voraussetzung für den ganzen Ansatz: Das Zielsystem nimmt die generierten Adressen an. Ein `smtp-sink`, eine Catch-all-Domain, eine Verwerf-Domain des Providers oder ein Gateway, das Empfänger erst nach der Annahme auflöst, erfüllen das. Prüft das Ziel dagegen jeden Empfänger gegen ein Verzeichnis, lehnt es die nummerierten Adressen ab, und es bleibt nur die Betreff-Variante.
+
+## Wie viele Sessions?
+
+Die passende Session-Zahl ermitteln Sie am zuverlässigsten durch Messung. Ein kurzer Kalibrierlauf mit steigender Session-Zahl und einem Bruchteil der Mailmenge zeigt, ab wann zusätzliche Sessions nichts mehr bringen:
 
 ```bash
-worker() {
-  local i betreff
-  for ((i = $1; i <= $2; i++)); do
-    betreff=$(printf 'Lasttest %05d' "$i")
-    smtp-source -s 1 -m 1 -l "$GROESSE" \
-      -S "$betreff" -f "$VON" -t "$AN" \
-      "$ZIEL" || echo "$i" >> fehlend.log
-  done
-}
-```
-
-Schlägt ein Sendeversuch fehl, landet die Nummer in `fehlend.log`. Damit ist schon auf der Sendeseite dokumentiert, welche Mails das Quellsystem gar nie verlassen haben; das Zielsystem muss diese Nummern beim Abgleich nicht suchen.
-
-Ein einzelner sequenzieller Sender wäre durch die Netzwerklatenz begrenzt, deshalb teilen sich mehrere Worker den Nummernkreis in zusammenhängende Bereiche. Bei vier Workern sendet der erste die Nummern 1 bis 12'500, der zweite 12'501 bis 25'000 und so weiter:
-
-```bash
-PRO_WORKER=$(( GESAMT / WORKER ))
-start=$(date +%s)
-for ((w = 0; w < WORKER; w++)); do
-  worker $(( w * PRO_WORKER + 1 )) \
-         $(( (w + 1) * PRO_WORKER )) &
+for s in 1 2 4 8 16 32; do
+  t0=$(date +%s%N)
+  smtp-source -d -N -s "$s" -m 2000 -l 5120 \
+    -f lasttest@example.com -t 'test+@example.com' \
+    gateway.example.com:25
+  t1=$(date +%s%N)
+  echo "$s Sessions: $(( 2000000000000 / (t1 - t0) )) Mails/s"
 done
-wait
-dauer=$(( $(date +%s) - start ))
-echo "$GESAMT Mails in $dauer Sekunden"
 ```
 
-Die Aufteilung in Bereiche statt in verschränkte Nummern hat einen praktischen Grund: Bricht ein Worker ab, fehlt ein zusammenhängender Block, und der Lauf lässt sich mit angepassten Bereichsgrenzen fortsetzen, statt von vorn zu beginnen. Die auf der Sendeseite protokollierten Ausfälle senden Sie nach dem Lauf gezielt nach:
-
-```bash
-while read -r i; do
-  smtp-source -s 1 -m 1 -l "$GROESSE" \
-    -S "$(printf 'Lasttest %05d' "$i")" \
-    -f "$VON" -t "$AN" "$ZIEL"
-done < fehlend.log
-```
+Die Rate steigt anfangs etwa linear mit der Session-Zahl, weil parallele Sessions die Wartezeit auf die Antworten des Ziels überdecken. Ab einem bestimmten Punkt flacht die Kurve ab: Dann ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Typische Ergebnisse liegen im einstelligen bis niedrigen zweistelligen Bereich. Beachten Sie dabei die 2'000 Kalibrier-Mails pro Stufe: Auch die brauchen eine kontrollierte Empfängeradresse, und die Nummern beginnen in jedem Aufruf wieder bei 0.
 
 ## Auswertung auf der Empfangsseite
 
-Steht auf dem Zielsystem ein eigener Testempfänger, übernimmt `smtp-sink` die Protokollierung gleich mit. Die Option `-d` schreibt jede angenommene Nachricht in eine eigene Datei, der Dateiname entsteht aus einem strftime-Muster plus einer eindeutigen Kennung:
+Steht auf dem Zielsystem ein eigener Testempfänger, übernimmt `smtp-sink` die Protokollierung gleich mit. Die Option `-d` (beim Sink: Dump, nicht Verbindungshaltung) schreibt jede angenommene Nachricht in eine eigene Datei, inklusive eines `X-Rcpt-Args`-Headers mit der Empfängeradresse; `-c` zeigt auch hier laufende Zähler statt des vollen Dialogs:
 
 ```bash
 smtp-sink -c -d "mails/%Y%m%d-%H%M%S." 0.0.0.0:2525 200
 ```
 
-Bewusst fehlt hier das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei 50'000 Mails hunderttausende Logzeilen ohne Mehrwert für die Auswertung. Stattdessen zeigt `-c` laufende Zähler an, die bei jedem Sitzungsende und jeder angenommenen Nachricht aktualisiert werden: eine einzeilige Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Dasselbe gilt für die Sendeseite: `smtp-source -c` blendet einen laufenden Zähler abgeschlossener Zustellungen ein, was vor allem beim Durchsatz-Lauf ohne Schleife (dazu unten) den Fortschritt sichtbar macht.
-
-Nach dem Lauf extrahieren Sie die empfangenen Nummern aus den Betreffzeilen und vergleichen sie mit der Sollmenge:
+Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht:
 
 ```bash
-grep -rhoE '^Subject: Lasttest [0-9]{5}' mails/ | \
-  awk '{print $3}' | sort -u > empfangen.txt
+grep -rhoE 'test\+[0-9]+@example\.com' mails/ | \
+  grep -oE '[0-9]+' | sort -u | \
+  awk '{printf "%08d\n", $1}' | sort > empfangen.txt
 ```
 
 ```bash
-seq -f '%05g' 1 50000 | comm -23 - empfangen.txt
+seq 0 49999 | awk '{printf "%08d\n", $1}' | \
+  comm -23 - empfangen.txt
 ```
 
 `comm -23` gibt genau die Nummern aus, die in der Sollmenge stehen, aber nicht in der Empfangsliste: die fehlenden Mails. Eine leere Ausgabe bedeutet vollständige Zustellung. Tauchen Nummern doppelt auf (erkennbar am Unterschied zwischen `sort` und `sort -u`), hat unterwegs ein System die Nachricht dupliziert, was ebenfalls ein Befund ist.
 
-Ist das Ziel ein produktnahes System statt eines smtp-sink, übernimmt dessen Logging die Rolle der Dump-Dateien. Auf einem Exchange-Server etwa liefert `Get-MessageTrackingLog -MessageSubject "Lasttest"` die angekommenen Nummern, auf einem Postfix-System ein `grep` über das Maillog. Entscheidend ist nur, dass der Betreff oder eine daraus abgeleitete Kennung in den Logs des Ziels auftaucht; genau dafür steht die Nummer im Betreff und nicht im Nachrichtentext.
+Ist das Ziel ein produktnahes System statt eines smtp-sink, übernimmt dessen Logging die Rolle der Dump-Dateien. Auf einem Exchange-Server etwa liefert `Get-MessageTrackingLog -Recipients` beziehungsweise ein Filter auf die Empfängeradresse die angekommenen Nummern, auf einem Postfix-System ein `grep to=<test+` über das Maillog. Genau das ist der Vorteil der Nummer in der Adresse: Der Empfänger steht in jedem Message-Tracking, während der Betreff dort je nach System fehlt oder erst eingeschaltet werden muss.
 
-## Was die Nummerierung an Durchsatz kostet
+## Wenn die Nummer im Betreff stehen muss
 
-Die Schleife mit `-m 1` erzwingt pro Mail einen vollständigen Verbindungsaufbau: TCP-Handshake, SMTP-Banner, `HELO`, Versand, `QUIT`. Ein Massenversender mit stehenden Verbindungen erreicht auf derselben Strecke ein Mehrfaches davon, denn `smtp-source` liefert mit `-s` und `-m` in einem einzigen Aufruf viele Mails über gehaltene Sessions. Der nummerierte Test misst also nicht den maximalen Durchsatz des Zielsystems, sondern einen bewusst verbindungsintensiven Fall.
+Manche Auswertungen hängen am Betreff, etwa wenn das Zielsystem Empfängeradressen umschreibt oder die Logs den Empfänger nur maskiert zeigen. Dann bleibt die Schleifen-Variante: ein `smtp-source`-Aufruf pro Mail mit `-m 1` und einem Betreff, den die Shell hochzählt, verteilt auf mehrere parallele Worker mit zusammenhängenden Nummernbereichen.
 
-Daraus folgt eine Zweiteilung, die sich in der Praxis bewährt: Den reinen Durchsatz messen Sie mit `smtp-source` ohne Schleife (`-c -s 4 -m 50000` in einem Aufruf, alle Mails mit gleichem Betreff und laufendem Zähler statt Einzelprotokoll), die Vollständigkeit und Nachverfolgbarkeit mit dem nummerierten Lauf. Wer beides in einem Lauf will, kann auf die eingebaute Empfänger-Nummerierung `-N` ausweichen: Die Sessions bleiben stehen, und der Zähler steckt in der Empfängeradresse statt im Betreff, sofern das Zielsystem beliebige lokale Adressteile annimmt.
+```bash
+worker() {
+  local i
+  for ((i = $1; i <= $2; i++)); do
+    smtp-source -s 1 -m 1 -l 5120 \
+      -S "$(printf 'Lasttest %05d' "$i")" \
+      -f lasttest@example.com -t test@example.com \
+      gateway.example.com:25 || echo "$i" >> fehlend.log
+  done
+}
+for w in 0 1 2 3; do
+  worker $(( w * 12500 + 1 )) $(( (w + 1) * 12500 )) &
+done
+wait
+```
 
-Mehr Durchsatz im nummerierten Lauf holen Sie über die Worker-Zahl. Da jeder Worker sequenziell arbeitet, skaliert die Rate bis zur Sättigung von CPU oder Zielsystem etwa linear mit `WORKER`; Werte zwischen 4 und 16 sind ein brauchbarer Startbereich.
+Der Preis ist ein vollständiger Verbindungsaufbau pro Mail: TCP-Handshake, Banner, `HELO`, Versand, `QUIT`. Dieser Lauf misst damit nicht den maximalen Durchsatz des Zielsystems, sondern einen bewusst verbindungsintensiven Fall. Die Worker-Zahl ermitteln Sie analog zum Kalibrierlauf oben, nur mit der Worker-Schleife statt `-s`. Die führenden Nullen im Betreff ersparen beim Abgleich das Umformatieren, das die `-N`-Variante braucht.
 
 ## Regeln für Tests gegen andere Systeme
 
@@ -276,11 +272,13 @@ Mit diesen drei Punkten und der Nummerierung liefert der Lauf am Ende nicht nur 
 
 ## Quellen
 
-1.  [Postfix: smtp-source(1)](https://www.postfix.org/smtp-source.1.html): Manpage des Lastgenerators; belegt, dass `-S` den Betreff pro Aufruf fix setzt und `-N` nur Empfängeradressen nummeriert.
+1.  [Postfix: smtp-source(1)](https://www.postfix.org/smtp-source.1.html): Manpage des Lastgenerators; beschreibt `-N` als per-Prozess-Zähler am Local-Part und empfiehlt die Plus-Adressierung.
 
-2.  [Postfix: smtp-sink(1)](https://www.postfix.org/smtp-sink.1.html): Manpage des Test-Empfängers mit den Dump-Optionen `-d` und `-D` samt strftime-Dateinamensmuster.
+2.  [Postfix-Quellcode: smtp-source.c](https://github.com/vdukhovni/postfix/blob/master/postfix/src/smtpstone/smtp-source.c): belegt das Einfügen der Nummer zwischen Local-Part und Domain, den geteilten Zähler und den Startwert 0.
 
-3.  [GNU Coreutils: comm](https://www.gnu.org/software/coreutils/manual/html_node/comm-invocation.html): Mengenvergleich zweier sortierter Listen, hier für den Abgleich von Soll- und Empfangsnummern.
+3.  [Postfix: smtp-sink(1)](https://www.postfix.org/smtp-sink.1.html): Manpage des Test-Empfängers mit den Dump-Optionen und den aufgezeichneten X-Headern.
+
+4.  [GNU Coreutils: comm](https://www.gnu.org/software/coreutils/manual/html_node/comm-invocation.html): Mengenvergleich zweier sortierter Listen, hier für den Abgleich von Soll- und Empfangsnummern.
 
 ----
 
