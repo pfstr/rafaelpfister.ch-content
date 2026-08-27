@@ -183,6 +183,28 @@ Die verbreitete Reflexreaktion ist ein Skript, das den Betreff hochzählt. Das f
 
 Dieser Testaufbau sendet, anders als ein reiner Loopback-Funktionstest, an ein anderes System über das Netz. Falls auf dem Quellsystem kein Postfix installiert ist, zeigt der Beitrag [smtp-source ohne Postfix-Installation](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation), wie Sie die Werkzeuge aus dem RPM entpacken.
 
+## Die wichtigsten Optionen von smtp-source
+
+Zur Orientierung vorab die Optionen, die in diesem Beitrag vorkommen, sinngemäss aus der Manpage übersetzt:
+
+| Option | Bedeutung |
+|---|---|
+| `-s n` | Anzahl paralleler SMTP-Sessions (Standard: 1) |
+| `-m n` | Anzahl zu sendender Nachrichten insgesamt (Standard: 1) |
+| `-l n` | Grösse des Nachrichtentexts in Bytes, ohne Header |
+| `-f adresse` | Absenderadresse |
+| `-t adresse` | Empfängeradresse (Standard: `foo@hostname`) |
+| `-S text` | Betreffzeile, fix für alle Nachrichten des Aufrufs |
+| `-N` | Nummeriert die Empfängeradresse pro Nachricht durch (per-Prozess-Zähler am Local-Part) |
+| `-r n` | Anzahl Empfänger pro Nachricht (Standard: 1), Adressbildung wie bei `-N` |
+| `-d` | Nach einer Nachricht nicht trennen, die nächste über dieselbe Verbindung senden |
+| `-c` | Laufenden Zähler anzeigen, der mit jedem abgeschlossenen `DATA` hochzählt |
+| `-w n` | Feste Wartezeit von n Sekunden zwischen Nachrichten (pro Session) |
+| `-v` | Ausführliche Ausgabe für die Fehlersuche |
+| `host:port` | Ziel der Einlieferung via TCP; ohne Portangabe der Standardport smtp |
+
+Die vollständige Liste inklusive TLS-, LMTP- und Timing-Optionen steht in der Manpage `smtp-source(1)`; das Gegenstück für die Empfangsseite ist `smtp-sink(1)` und kommt bei der Auswertung weiter unten zum Einsatz.
+
 ## Wie -N die Empfänger nummeriert
 
 Die Manpage beschreibt `-N` als per-Prozess-Zähler, der an den Local-Part der Empfängeradresse angehängt wird. Drei Eigenschaften davon bestimmen den Testaufbau, alle drei sind im Quellcode von `smtp-source.c` nachlesbar:
