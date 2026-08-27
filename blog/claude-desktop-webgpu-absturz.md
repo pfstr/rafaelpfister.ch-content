@@ -9,6 +9,7 @@ themen:
   - "claude"
 produkte:
   - "claude"
+  - "windows-client"
 protokolle:
   - "troubleshooting"
 slug: "claude-desktop-webgpu-absturz"
