@@ -12,7 +12,7 @@ produkte:
   - "uebergreifend"
 protokolle:
   - "smtp"
-  - "troubleshooting"
+  - "testing"
 slug: "smtp-lasttest-nummerierte-betreffzeilen"
 translationId: "article-47f507432200b9da"
 url: "https://rafaelpfister.ch/blog/smtp-lasttest-nummerierte-betreffzeilen"

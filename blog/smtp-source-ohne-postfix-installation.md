@@ -12,6 +12,7 @@ produkte:
   - "uebergreifend"
 protokolle:
   - "smtp"
+  - "testing"
   - "troubleshooting"
 slug: "smtp-source-ohne-postfix-installation"
 translationId: "article-d0a27da11509d24b"
