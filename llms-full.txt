@@ -195,6 +195,7 @@ Zur Orientierung vorab die Optionen, die in diesem Beitrag vorkommen, sinngemäs
 | `-f adresse` | Absenderadresse |
 | `-t adresse` | Empfängeradresse (Standard: `foo@hostname`) |
 | `-S text` | Betreffzeile, fix für alle Nachrichten des Aufrufs |
+| `-F datei` | Sendet Header und Body unverändert aus einer Datei; verdrängt `-l` und `-S` |
 | `-N` | Nummeriert die Empfängeradresse pro Nachricht durch (per-Prozess-Zähler am Local-Part) |
 | `-r n` | Anzahl Empfänger pro Nachricht (Standard: 1), Adressbildung wie bei `-N` |
 | `-d` | Nach einer Nachricht nicht trennen, die nächste über dieselbe Verbindung senden |
@@ -241,6 +242,31 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
 Bewusst fehlt das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei 50'000 Mails hunderttausende Logzeilen ohne Mehrwert für die Auswertung. `-c` liefert stattdessen die Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Die Gesamtdauer für die Ratenberechnung liefert ein vorangestelltes `time`.
 
 Voraussetzung für den ganzen Ansatz: Das Zielsystem nimmt die generierten Adressen an. Ein `smtp-sink`, eine Catch-all-Domain, eine Verwerf-Domain des Providers oder ein Gateway, das Empfänger erst nach der Annahme auflöst, erfüllen das. Prüft das Ziel dagegen jeden Empfänger gegen ein Verzeichnis, lehnt es die nummerierten Adressen ab, und es bleibt nur die Betreff-Variante.
+
+## Eigene Header setzen
+
+Manche Lasttests brauchen einen eigenen Header, etwa als Marker, an dem das Gateway die Testmails erkennt oder eine Regel greift. Eine Option dafür kennt `smtp-source` nicht, aber `-F` liest eine vollständig vorformatierte Nachricht aus einer Datei, und dort steht jeder gewünschte Header. Die Datei besteht aus den Header-Zeilen, einer Leerzeile und dem Body, alle Zeilen mit `\r\n` beendet:
+
+```bash
+{ printf 'X-Lasttest: aktiv\r\n'
+  printf 'Subject: Lasttest\r\n'
+  printf '\r\n'
+  head -c 5120 /dev/zero | tr '\0' 'x'
+  printf '\r\n'; } > lasttest.eml
+```
+
+```bash
+smtp-source -c -d -N -s 8 -m 50000 -F lasttest.eml \
+  -f lasttest@example.com \
+  -t 'test+@example.com' \
+  gateway.example.com:25
+```
+
+| Option | Wirkung |
+|---|---|
+| `-F datei` | Sendet Header und Body unverändert aus der Datei; ersetzt den generierten Nachrichteninhalt |
+
+Zwei Konsequenzen: `-F` verdrängt `-l` und `-S`, weil Grösse und Betreff nun aus der Datei kommen (beides gehört deshalb hinein). `-N` bleibt dagegen wirksam, die Empfänger werden weiter durchnummeriert; der Header ist in allen Nachrichten identisch, da er aus der festen Datei stammt.
 
 ## Wie viele Sessions?
 
