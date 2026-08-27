@@ -1,5 +1,5 @@
 ---
-title: "Bis zu 10 Millionen Gratis-Tokens pro Tag: OpenAIs Data-Sharing-Programm mit Kostenbremsen nutzen"
+title: "Bis zu 10 Millionen Gratis-Tokens pro Tag: OpenAIs Data-Sharing-Programm mit Cost-Guardrails nutzen"
 navTitle: "OpenAI-Gratis-Tokens"
 description: "OpenAI schreibt Organisationen, die ihren API-Traffic zum Training freigeben, ein tägliches Gratis-Kontingent gut: je nach Tier bis zu 10 Millionen Tokens. Mit Prepaid-Guthaben, Projekt-Limits und einem Token-Budget im Code bleibt die Nutzung dauerhaft gratis."
 date: "2026-08-27"
@@ -19,7 +19,7 @@ aiPrompt: |
   Du bist mein Assistent für die OpenAI-Plattform. Prüfe mit mir Schritt für Schritt, ob mein OpenAI-Konto für das Data-Sharing-Programm mit Gratis-Tokens sauber abgesichert ist: 1) Billing: Prepaid-Guthaben statt Rechnung, Auto-Reload aus. 2) Data controls → Sharing: "Share inputs and outputs" nur für ein dediziertes Projekt aktiviert, Enrollment-Hinweis sichtbar. 3) Projekt: eigenes Spend-Limit gesetzt, nur ein restricted API-Key. 4) Limits: Spend-Alerts konfiguriert. 5) Code: tägliches Token-Budget deutlich unter Gratis-Kontingent und Tages-Rate-Limit. Frage mich nach meinem Usage-Tier und Modell und rechne mir mein Gratis-Kontingent aus.
 ---
 
-# Bis zu 10 Millionen Gratis-Tokens pro Tag: OpenAIs Data-Sharing-Programm mit Kostenbremsen nutzen
+# Bis zu 10 Millionen Gratis-Tokens pro Tag: OpenAIs Data-Sharing-Programm mit Cost-Guardrails nutzen
 
 OpenAI bezahlt für Trainingsdaten mit Rechenleistung statt mit Geld: Organisationen, die ihre API-Ein- und Ausgaben zum Training freigeben, erhalten seit Dezember 2024 ein tägliches Kontingent an Gratis-Tokens. Je nach Usage-Tier und Modellgruppe sind das zwischen 250'000 und 10 Millionen Tokens pro Tag. Für viele kleine Automatisierungen reicht das vollständig: Eine nächtliche Batch-Übersetzung, ein Klassifikations-Cronjob oder die automatische Verschlagwortung eines öffentlichen Archivs bleiben damit dauerhaft gratis.
 
@@ -51,11 +51,11 @@ Die Gegenleistung ist unmissverständlich: Alle Ein- und Ausgaben der freigegebe
 
 Gut geeignet sind Workloads über Daten, die ohnehin öffentlich sind. Ein Beispiel ist die nächtliche Übersetzung eines öffentlichen Blogs in mehrere Sprachen: Die Artikel stehen im Netz, jeder Crawler liest sie heute schon, und die Übersetzungen werden ebenfalls veröffentlicht. Das Sharing gibt in einem solchen Fall nichts preis, was nicht schon preisgegeben wäre. Weitere Kandidaten sind Alt-Texte für ein öffentliches Bildarchiv, die Verschlagwortung von Open-Source-Dokumentation oder Zusammenfassungen öffentlicher Release Notes für ein Changelog.
 
-## Kostenbremsen im OpenAI-Konto einrichten
+## Cost-Guardrails im OpenAI-Konto einrichten
 
 Die Reihenfolge ist bewusst gewählt: Zuerst kommen die Limiten, die OpenAI serverseitig durchsetzt. Sie greifen auch dann, wenn der eigene Code einen Fehler hat, ein Cronjob doppelt läuft oder ein Key in falsche Hände gerät.
 
-**Prepaid-Guthaben, Auto-Reload aus.** Das Billing auf "Pay as you go" mit vorausbezahltem Guthaben stellen und die automatische Aufladung deaktivieren. Damit ist der maximale Schaden auf das Restguthaben begrenzt: Ist es aufgebraucht, lehnt die API weitere Requests ab. Da das Programm ein positives Guthaben voraussetzt, braucht es einen kleinen Sockel; 5 bis 10 Dollar genügen und bleiben bei sauberem Betrieb unangetastet. Das ist die einzige Bremse, die im schlimmsten Fall wirklich alles stoppt, deshalb steht sie an erster Stelle.
+**Prepaid-Guthaben, Auto-Reload aus.** Das Billing auf "Pay as you go" mit vorausbezahltem Guthaben stellen und die automatische Aufladung deaktivieren. Damit ist der maximale Schaden auf das Restguthaben begrenzt: Ist es aufgebraucht, lehnt die API weitere Requests ab. Da das Programm ein positives Guthaben voraussetzt, braucht es einen kleinen Sockel; 5 bis 10 Dollar genügen und bleiben bei sauberem Betrieb unangetastet. Dieser Schritt ist der einzige, der im schlimmsten Fall wirklich alles stoppt, deshalb steht er an erster Stelle.
 
 **Ein dediziertes Projekt für den geteilten Traffic.** Das Sharing auf "Enabled for selected projects" stellen und nur ein eigens dafür angelegtes Projekt freigeben. Alle anderen Projekte der Organisation bleiben vom Training ausgenommen, und versehentlicher Traffic aus anderen Anwendungen landet weder im Trainingsdatensatz noch im falschen Budget.
 
@@ -96,7 +96,7 @@ Ob die Rechnung aufgeht, zeigt das Usage-Dashboard der Plattform. Zwei Ansichten
 - Die **Usage**-Ansicht zählt alle Tokens, auch die gratis abgerechneten. Hier steht der volle Verbrauch des Workloads.
 - Die **Costs**-Ansicht (und das Feld "Monthly spend" in der Projektliste) zeigt nur bezahlte Tokens. Hier muss dauerhaft 0.00 stehen.
 
-Wer es genauer wissen will, kann die Usage-Ansicht nach *Service tier* gruppieren: Gratis verrechnete Tokens erscheinen dort als eigener Posten "data sharing incentive tier". Ein einmal pro Monat gesetzter Kalendereintrag für diesen Blick ins Dashboard ist die letzte Bremse in der Kette, denn OpenAI kann das Programm mit 30 Tagen Frist beenden, und ab diesem Tag liefe derselbe Workload zum Normaltarif weiter.
+Wer es genauer wissen will, kann die Usage-Ansicht nach *Service tier* gruppieren: Gratis verrechnete Tokens erscheinen dort als eigener Posten "data sharing incentive tier". Ein einmal pro Monat gesetzter Kalendereintrag für diesen Blick ins Dashboard schliesst die Kette der Guardrails ab, denn OpenAI kann das Programm mit 30 Tagen Frist beenden, und ab diesem Tag liefe derselbe Workload zum Normaltarif weiter.
 
 ## Quellen
 
