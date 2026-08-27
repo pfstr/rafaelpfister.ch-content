@@ -10,7 +10,8 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 
 ## Blog-Artikel (Deutsch, Originale)
 
-- [smtp-source ohne Postfix-Installation: Lasttest-Werkzeuge aus dem RPM entpacken](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation): smtp-source und smtp-sink gehören zu Postfix, laufen aber auch ohne installierten Mailserver. Wie Sie die beiden Werkzeuge auf RHEL aus dem Paket entpacken, warum /tmp dafür nicht taugt und welche Bibliotheken mitkommen müssen.
+- [smtp-source ohne Postfix-Installation: Lasttest-Werkzeuge aus dem RPM entpacken](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation): smtp-source und smtp-sink gehören zu Postfix, laufen aber auch ohne installierten Mailserver. Wie Sie die beiden Werkzeuge auf RHEL aus dem Paket entpacken, warum die Ausführung aus /tmp an der Mount-Option noexec scheitern kann und welche Bibliotheken mitkommen müssen.
+- [SMTP-Lasttest mit nummerierten Betreffzeilen: 50'000 Mails nachvollziehbar versenden](https://rafaelpfister.ch/blog/smtp-lasttest-nummerierte-betreffzeilen): Ein Lasttest ist nur so gut wie seine Auswertung. Wie Sie mit smtp-source 50'000 Mails mit durchnummerierten Betreffzeilen an ein Zielsystem senden, fehlende Nummern automatisch finden und was die Nummerierung an Durchsatz kostet.
 - [VPN-Split-Tunneling für Microsoft Teams: Medienverkehr am Tunnel vorbeiführen](https://rafaelpfister.ch/blog/vpn-split-tunneling-microsoft-teams): Teams-Anrufe über ein VPN leiden unter Latenz, Jitter und dem Umweg über das VPN-Gateway. Der Artikel zeigt, welche Microsoft-Netze und Ports für den Medienverkehr zuständig sind, warum IP-basiertes Split Tunneling dem App-Ausschluss überlegen ist und wie die Umsetzung in Consumer-VPNs, WireGuard, OpenVPN und Enterprise-Clients aussieht.
 - [F5 BIG-IP als Outbound-Proxy für den Mail-Massenversand: Persistenz, SNAT, Timeouts und DNS-Auflösung](https://rafaelpfister.ch/blog/f5-big-ip-outbound-smtp-massenversand): Ein Massenversand mit 1000 Mails pro Minute läuft über eine BIG-IP als ausgehenden Proxy zum Provider-Relay. Der Artikel klärt, warum Sticky Sessions hier nichts bringen, wie der Provider-Hostname sauber per FQDN-Node aufgelöst wird und welche Einstellungen bei SNAT, Timeouts und Verbindungs-Limits den Durchsatz tatsächlich bestimmen.
 - [BIOS-Update sicher durchführen: Anleitung am Beispiel ASRock AM5, inklusive BitLocker-Vorbereitung](https://rafaelpfister.ch/blog/bios-update-asrock-am5-sicher-durchfuehren): Der komplette Ablauf eines BIOS-Updates am Beispiel eines ASRock-AM5-Boards: Version ermitteln, Download per Hash verifizieren, BitLocker korrekt pausieren, ins UEFI booten (auch wenn F2 ins Leere läuft), per Instant Flash aktualisieren und die Einstellungen nach dem Update sinnvoll setzen.
@@ -333,6 +334,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Rclone](https://rafaelpfister.ch/blog/thema/rclone)
 - [SEPPmail](https://rafaelpfister.ch/blog/thema/seppmail)
 - [Home Assistant und IoT](https://rafaelpfister.ch/blog/thema/smart-home-iot)
+- [SMTP-Lasttests](https://rafaelpfister.ch/blog/thema/smtp-lasttests)
 - [SMTP und Mailflow](https://rafaelpfister.ch/blog/thema/smtp-mailflow)
 - [Stromtarife und LEG](https://rafaelpfister.ch/blog/thema/stromtarife-leg)
 - [Testing und Lasttests](https://rafaelpfister.ch/blog/thema/testing)

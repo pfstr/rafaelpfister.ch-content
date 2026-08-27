@@ -1,12 +1,13 @@
 ---
 title: "smtp-source ohne Postfix-Installation: Lasttest-Werkzeuge aus dem RPM entpacken"
 navTitle: "smtp-source entpacken"
-description: "smtp-source und smtp-sink gehören zu Postfix, laufen aber auch ohne installierten Mailserver. Wie Sie die beiden Werkzeuge auf RHEL aus dem Paket entpacken, warum /tmp dafür nicht taugt und welche Bibliotheken mitkommen müssen."
+description: "smtp-source und smtp-sink gehören zu Postfix, laufen aber auch ohne installierten Mailserver. Wie Sie die beiden Werkzeuge auf RHEL aus dem Paket entpacken, warum die Ausführung aus /tmp an der Mount-Option noexec scheitern kann und welche Bibliotheken mitkommen müssen."
 date: "2026-08-27"
 kategorie: "SMTP und Mailflow"
 timeToRead: "7 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
+  - "smtp-lasttests"
 produkte:
   - "uebergreifend"
 protokolle:
