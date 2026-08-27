@@ -32,6 +32,17 @@ Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer, Model
 Get-CimInstance Win32_BIOS | Select-Object SMBIOSBIOSVersion, ReleaseDate
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Win32_ComputerSystem` | Positionsargument ClassName: CIM-Klasse mit Hersteller und Modell des Systems |
+| `Win32_BIOS` | CIM-Klasse mit den Firmware-Angaben, darunter Version und Datum |
+| `Select-Object <eigenschaften>` | reduziert die Ausgabe auf die genannten Eigenschaften |
+
+</details>
+
 Notieren Sie sich die Version. Sie brauchen sie später für die Erfolgskontrolle, und beim Lesen der Changelogs wollen Sie wissen, welche Versionen Sie überspringen.
 
 ## Schritt 2: BIOS herunterladen und Prüfsumme verifizieren
@@ -41,6 +52,16 @@ Laden Sie das BIOS ausschliesslich von der Produktseite des Herstellers, nie von
 ```powershell
 Get-FileHash .\A620I_Lightning_WiFi_4.43.zip -Algorithm SHA256
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `.\A620I_…_4.43.zip` | Positionsargument Path: die zu prüfende Datei |
+| `-Algorithm SHA256` | Hash-Verfahren; muss zum vom Hersteller publizierten Prüfsummen-Typ passen |
+
+</details>
 
 Stimmt der Wert nicht mit der Herstellerangabe überein, ist der Download beschädigt oder manipuliert: nicht flashen. Nach dem Entpacken bleibt eine einzelne ROM-Datei übrig, im Beispiel `A62IRW_4.43.ROM` mit 32 MB.
 
@@ -52,6 +73,17 @@ Der Flash-Mechanismus im UEFI (bei ASRock "Instant Flash", bei anderen Herstelle
 Get-CimInstance Win32_LogicalDisk -Filter "DriveType=2" |
   Select-Object DeviceID, FileSystem, VolumeName
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Win32_LogicalDisk` | CIM-Klasse der logischen Laufwerke |
+| `-Filter "DriveType=2"` | WQL-Filter auf Wechseldatenträger; blendet Festplatten und CD-Laufwerke aus |
+| `Select-Object DeviceID, FileSystem, VolumeName` | zeigt Laufwerksbuchstabe, Dateisystem und Datenträgername |
+
+</details>
 
 Kopieren Sie die ROM-Datei ins Wurzelverzeichnis des Sticks. Ein Neuformatieren ist nur nötig, wenn das Dateisystem nicht passt. Die Stick-Grösse ist unkritisch, die Datei ist kleiner als jede heute übliche Kapazität.
 
@@ -67,7 +99,17 @@ BitLocker bringt für dieses Szenario einen eigenen Mechanismus mit. In einer Po
 Suspend-BitLocker -MountPoint C: -RebootCount 2
 ```
 
-Der Parameter `RebootCount 2` deckt beide anstehenden Neustarts ab (einmal ins UEFI, einmal nach dem Flash); danach reaktiviert sich der Schutz von selbst und versiegelt den Schlüssel gegen die neuen Messwerte. Prüfen Sie unabhängig davon vorher, dass der Wiederherstellungsschlüssel auffindbar ist, etwa im Microsoft-Konto unter aka.ms/myrecoverykey oder per `manage-bde -protectors -get C:`.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-MountPoint C:` | das betroffene Volume, hier die Systemplatte |
+| `-RebootCount 2` | Zahl der Neustarts, für die der Schutz pausiert bleibt (0 bis 15; 0 = bis zur manuellen Reaktivierung) |
+
+</details>
+
+Der Wert 2 deckt beide anstehenden Neustarts ab (einmal ins UEFI, einmal nach dem Flash); danach reaktiviert sich der Schutz von selbst und versiegelt den Schlüssel gegen die neuen Messwerte. Prüfen Sie unabhängig davon vorher, dass der Wiederherstellungsschlüssel auffindbar ist, etwa im Microsoft-Konto unter aka.ms/myrecoverykey oder per `manage-bde -protectors -get C:`.
 
 ## Schritt 5: Ins UEFI kommen, auch wenn F2 nicht reagiert
 
@@ -76,6 +118,17 @@ Der klassische Weg über F2 oder Entf beim Einschalten scheitert auf modernen Sy
 ```powershell
 shutdown /r /fw /t 5
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `/r` | Neustart statt Herunterfahren |
+| `/fw` | setzt die Firmware-Variable, die den nächsten Start direkt ins UEFI-Setup lenkt; nur zusammen mit einer Shutdown-Option wie `/r`, erfordert Administratorrechte |
+| `/t 5` | Wartezeit in Sekunden bis zur Ausführung |
+
+</details>
 
 Meldet der Befehl den Fehler 203 ("The system could not find the environment option that was entered"), fehlen fast immer die Administratorrechte: Ohne Elevation darf der Prozess die nötige Firmware-Variable nicht setzen, und die Fehlermeldung benennt diese Ursache nicht. Ein zweiter möglicher Weg ohne Firmware-Variable führt über die Wiederherstellungsumgebung: `shutdown /r /o`, dann Problembehandlung, Erweiterte Optionen, UEFI-Firmwareeinstellungen.
 
@@ -97,6 +150,18 @@ Get-CimInstance Win32_PhysicalMemory |
   Select-Object PartNumber, ConfiguredClockSpeed
 manage-bde -status C:
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Win32_BIOS` | CIM-Klasse mit der Firmware-Version; `SMBIOSBIOSVersion` muss jetzt den neuen Stand zeigen |
+| `Win32_PhysicalMemory` | CIM-Klasse der Speichermodule; `ConfiguredClockSpeed` zeigt den tatsächlich anliegenden Takt in MT/s |
+| `-status` | manage-bde: zeigt Verschlüsselungs- und Schutzstatus des Volumes |
+| `C:` | Positionsargument: das zu prüfende Volume |
+
+</details>
 
 Die erste Zeile muss die neue Version zeigen, die zweite den erwarteten Speichertakt, und BitLocker muss wieder "Schutz aktiviert" melden. Damit ist das Update abgeschlossen und dokumentiert. Wurde wegen Stabilitätsproblemen geflasht, zeigt erst die Beobachtung über die folgenden Wochen, ob sie behoben sind, am einfachsten mit einem Blick auf neue Kernel-Power-41-Einträge im System-Ereignisprotokoll.
 

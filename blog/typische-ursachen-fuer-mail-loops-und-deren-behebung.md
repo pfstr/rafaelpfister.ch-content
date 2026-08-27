@@ -83,6 +83,19 @@ $trace |
     Sort-Object Received
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-RecipientAddress` | Filtert den Trace auf die angegebene Empfängeradresse |
+| `-StartDate` / `-EndDate` | Zeitfenster der Abfrage; pro Abfrage sind höchstens zehn Tage zulässig |
+| `-ResultSize 5000` | Maximale Anzahl zurückgegebener Einträge |
+| `Select-Object …` | Reduziert die Ausgabe auf die für die Loop-Analyse relevanten Felder |
+| `Sort-Object Received` | Sortiert die Treffer chronologisch nach Annahmezeitpunkt |
+
+</details>
+
 Die Details eines Treffers zeigen einzelne Transportereignisse:
 
 ```powershell
@@ -92,6 +105,17 @@ $trace | ForEach-Object {
         -RecipientAddress $_.RecipientAddress
 } | Format-Table Date,Event,Action,Detail -AutoSize
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-MessageTraceId` | Eindeutige Trace-ID aus dem Ergebnis von `Get-MessageTraceV2` |
+| `-RecipientAddress` | Empfängeradresse des Treffers; zusammen mit der Trace-ID für die Detailabfrage erforderlich |
+| `Format-Table … -AutoSize` | Passt die Spaltenbreiten an den Inhalt an, damit die Ereignisdetails lesbar bleiben |
+
+</details>
 
 Danach werden Domain, Empfänger und Connectoren gemeinsam aufgenommen:
 
@@ -113,6 +137,18 @@ Get-InboundConnector |
         RestrictDomainsToCertificate
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity $recipient` | Wählt das Empfängerobjekt über Adresse, Alias oder Namen aus |
+| `-IncludeTestModeConnectors` | Nimmt auch Connectoren im Testmodus in die Ausgabe auf |
+| `Format-Table … -AutoSize` | Tabellenansicht mit Spaltenbreiten nach Inhalt |
+| `Format-List …` | Listenansicht der genannten Eigenschaften, geeignet für lange Werte wie Adresslisten |
+
+</details>
+
 Entscheidend ist nicht, ob ein einzelnes Objekt plausibel aussieht. Domain-Typ, tatsächlicher Empfängertyp und anwendbarer Connector müssen zusammen denselben Zielort beschreiben.
 
 ## Diagnose im lokalen Exchange
@@ -133,6 +169,16 @@ Get-RemoteMailbox -Identity $recipient -ErrorAction SilentlyContinue |
 Get-MailUser -Identity $recipient -ErrorAction SilentlyContinue |
     Format-List RecipientTypeDetails,PrimarySmtpAddress,ExternalEmailAddress
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity $recipient` | Wählt das Objekt über Adresse, Alias oder Namen aus |
+| `-ErrorAction SilentlyContinue` | Unterdrückt die Fehlermeldung, wenn das Objekt im jeweiligen Typ nicht existiert; die Abfrage liefert dann schlicht kein Ergebnis |
+
+</details>
 
 Für den Transportpfad werden Send- und Receive-Connectoren sowie die Tracking-Logs benötigt:
 
@@ -157,6 +203,20 @@ $servers |
         ConnectorId,Sender,Recipients,MessageId,NetworkMessageId |
     Sort-Object Timestamp
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Where-Object { … }` | Beschränkt die Serverliste auf Mailbox- und Hub-Transport-Server, also die Rollen mit Tracking-Logs |
+| `-Start` / `-End` | Zeitfenster für die Log-Suche |
+| `-Recipients $recipient` | Filtert auf Tracking-Ereignisse mit dieser Empfängeradresse |
+| `-ResultSize Unlimited` | Hebt die Standardgrenze von 1000 zurückgegebenen Einträgen auf |
+| `Select-Object …` | Reduziert die Ausgabe auf die für die Pfadanalyse relevanten Felder |
+| `Sort-Object Timestamp` | Sortiert die Ereignisse aller Server chronologisch |
+
+</details>
 
 Ein `SEND` zu Exchange Online, gefolgt von einem erneuten `RECEIVE` derselben Nachricht aus Exchange Online, macht die Rückgabe sichtbar. Mit `MessageId` und `NetworkMessageId` lässt sich vermeiden, verschiedene Testnachrichten miteinander zu verwechseln.
 
@@ -183,12 +243,32 @@ Get-AcceptedDomain -Identity contoso.com |
     Format-List DomainName,DomainType,MatchSubDomains
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity contoso.com` | Wählt die zu prüfende Accepted Domain aus |
+| `Format-List …` | Zeigt Domainname, Domain-Typ und Subdomain-Abdeckung als Liste |
+
+</details>
+
 Wenn nach Abschluss einer Migration alle Empfänger in Exchange Online liegen, ist `Authoritative` meist der richtige Zielzustand:
 
 ```powershell
 # Erst nach vollständiger Empfänger- und Routingprüfung ausführen.
 Set-AcceptedDomain -Identity contoso.com -DomainType Authoritative
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity contoso.com` | Die zu ändernde Accepted Domain |
+| `-DomainType Authoritative` | Setzt die Domain auf authoritative: unbekannte Empfänger werden abgewiesen statt weitergeleitet |
+
+</details>
 
 Bei einer echten Split-Domain darf `InternalRelay` korrekt sein. Dann braucht es jedoch einen klaren Connector zu dem System, das die verbleibenden Empfänger kennt. Dieses Ziel darf unbekannte Adressen nicht wieder an den Ausgangspunkt zurücksenden.
 
@@ -202,6 +282,16 @@ Get-OutboundConnector -IncludeTestModeConnectors |
         RecipientDomains,SmartHosts,UseMXRecord -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-IncludeTestModeConnectors` | Nimmt auch Connectoren im Testmodus in die Ausgabe auf |
+| `Format-Table … -AutoSize` | Tabellenansicht der Routing-Eigenschaften mit Spaltenbreiten nach Inhalt |
+
+</details>
+
 Mehrere Connectoren mit überlappendem Scope sollten ebenfalls geprüft werden. Microsoft empfiehlt für Hybrid-Mailflow einen dedizierten On-Premises-Connector; eine Reparatur über den Hybrid Configuration Wizard ist häufig sicherer als isolierte Einzeländerungen.
 
 Wenn Centralized Mail Transport nachweislich nicht mehr benötigt wird, kann die Einstellung gezielt deaktiviert werden:
@@ -212,6 +302,16 @@ Set-OutboundConnector `
     -Identity "Outbound to On-Premises" `
     -RouteAllMessagesViaOnPremises:$false
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity "Outbound to On-Premises"` | Der zu ändernde Outbound-Connector |
+| `-RouteAllMessagesViaOnPremises:$false` | Deaktiviert Centralized Mail Transport: ausgehende Nachrichten aus Exchange Online laufen nicht mehr über den lokalen Exchange |
+
+</details>
 
 ## Ursache 3: Ein Gateway verarbeitet seine Rückläufer erneut
 
@@ -227,6 +327,16 @@ Get-TransportRule |
         SetHeaderName,SetHeaderValue,ExceptIfHeaderContainsMessageHeader,
         ExceptIfHeaderContainsWords
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Sort-Object Priority` | Sortiert die Regeln in ihrer Auswertungsreihenfolge |
+| `Format-List …` | Zeigt die Eigenschaften, die Connectoren wählen, Empfänger umleiten oder Header setzen beziehungsweise als Ausnahme auswerten |
+
+</details>
 
 Die konkrete Ausnahme muss der Dokumentation des Gateway-Herstellers folgen. Üblich ist ein vom Dienst gesetzter, nicht vom Internet vertrauenswürdig fälschbarer Header. Zusätzlich sollten Inbound-Connectoren den Dienst über Zertifikat oder feste Absender-IP identifizieren. Eine pauschale Ausnahme für alle «intern» erscheinenden Nachrichten ist zu breit.
 
@@ -261,6 +371,18 @@ Get-InboxRule -Mailbox user01@contoso.com |
     Select-Object Name,Enabled,Priority,ForwardTo,RedirectTo,ForwardAsAttachmentTo
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Sort-Object Priority` | Sortiert die Transportregeln in ihrer Auswertungsreihenfolge |
+| `-ResultSize Unlimited` | Hebt die Standardgrenze von 1000 zurückgegebenen Postfächern auf |
+| `-Mailbox user01@contoso.com` | Postfach, dessen Inbox-Regeln abgefragt werden |
+| `Select-Object …` | Reduziert die Ausgabe auf die Weiterleitungs- und Umleitungsziele |
+
+</details>
+
 Die Behebung besteht nicht nur darin, eine Regel kurzfristig abzuschalten. Die vollständige Kette muss aufgelöst werden, und Regeln für externe Dienste benötigen eine Ausnahme, die bereits verarbeitete Nachrichten sicher erkennt.
 
 ## Ursache 6: MX, Smart Host oder Subdomain zeigt zurück
@@ -275,6 +397,17 @@ Get-SendConnector |
     Format-List Name,AddressSpaces,DNSRoutingEnabled,SmartHosts
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Type MX` | Fragt die MX-Records statt der Standard-A-Records ab |
+| `contoso.com` / `app.contoso.com` | Abzufragende Domain als Positionsargument (Parameter `-Name`) |
+| `Format-List …` | Zeigt pro Send Connector Adressräume, Routing-Modus und Smart Hosts |
+
+</details>
+
 Subdomains verdienen eine eigene Prüfung. Microsoft dokumentiert Fälle, in denen eine Anwendungs-Subdomain explizit als Internal-Relay-Domain angelegt und zu den Edge-Systemen synchronisiert werden muss:
 
 ```powershell
@@ -285,6 +418,17 @@ New-AcceptedDomain `
 
 Start-EdgeSynchronization
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Name "app.contoso.com"` | Anzeigename des neuen Accepted-Domain-Objekts |
+| `-DomainName app.contoso.com` | Die SMTP-Domain, für die Exchange Nachrichten annimmt |
+| `-DomainType InternalRelay` | Ein Teil der Empfänger liegt ausserhalb der Organisation; unbekannte Empfänger werden über einen Send Connector weitergeleitet statt abgewiesen |
+
+</details>
 
 Diese Befehle sind kein universeller Fix. Sie passen nur, wenn `app.contoso.com` tatsächlich ausserhalb der Exchange-Organisation zugestellt wird und der Send Connector einen eindeutigen nächsten Hop besitzt.
 

@@ -52,6 +52,20 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) `
   Format-Table Count, Name -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-StartDate (Get-Date).AddHours(-2)` | Beginn des Abfragefensters, hier vor zwei Stunden |
+| `-EndDate (Get-Date)` | Ende des Abfragefensters, der aktuelle Zeitpunkt |
+| `-ResultSize 5000` | maximale Zeilenzahl pro Aufruf; 5000 ist zugleich der Höchstwert |
+| `Group-Object FromIP` | gruppiert die Nachrichten nach der einliefernden IP-Adresse |
+| `Sort-Object Count -Descending` | sortiert die Gruppen absteigend nach Nachrichtenzahl |
+| `Format-Table Count, Name -AutoSize` | zweispaltige Ausgabe (Anzahl, IP-Adresse) mit automatischer Spaltenbreite |
+
+</details>
+
 Eine typische Ausgabe:
 
 ```text
@@ -111,6 +125,22 @@ $alle | Group-Object FromIP | Sort-Object Count -Descending |
     Format-Table Count, Name -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-StartDate` / `-EndDate` | Abfragefenster, hier die letzten 24 Stunden |
+| `-StartingRecipientAddress` | Fortsetzungspunkt der Seitenlogik: die Empfängeradresse, ab der die nächste Seite beginnt |
+| `-ResultSize 5000` | Seitengrösse; eine volle Seite signalisiert, dass weitere Ergebnisse folgen |
+| `Group-Object FromIP` | gruppiert den Gesamtbestand nach der einliefernden IP-Adresse |
+| `Sort-Object Count -Descending` | sortiert die Gruppen absteigend nach Nachrichtenzahl |
+| `Format-Table Count, Name -AutoSize` | Ausgabe der Anzahl pro Adresse mit automatischer Spaltenbreite |
+
+</details>
+
+Die Schleife ruft so lange weitere Seiten ab, wie eine Seite mit genau 5000 Zeilen zurückkommt, und setzt dabei jeweils mit der letzten Empfängeradresse der Vorseite fort; erst der vollständige Bestand wird gruppiert.
+
 Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufzeit. Für eine einmalige Bestandsaufnahme ist das gut investiert.
 
 ## Fehlerquelle 2: Die Zahlen bedeuten nicht, was sie zu bedeuten scheinen
@@ -138,6 +168,18 @@ $unbekannt | ForEach-Object {
 } | Format-Table -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Resolve-DnsName $_ -Type PTR` | fragt den Reverse-Eintrag (PTR) der jeweiligen IP-Adresse ab |
+| `-ErrorAction Stop` | macht einen fehlenden Eintrag zu einem abfangbaren Fehler für den `try`/`catch`-Block |
+| `[pscustomobject]@{ … }` | baut pro Adresse ein Objekt mit IP und aufgelöstem Namen für die Tabellenausgabe |
+| `Format-Table -AutoSize` | Ausgabe mit automatischer Spaltenbreite |
+
+</details>
+
 ```text
 IP            Name
 --            ----
@@ -153,6 +195,17 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -Resul
   Format-Table Received, SenderAddress, RecipientAddress, Subject, Status -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-StartDate` / `-EndDate` / `-ResultSize` | Abfragefenster und Seitengrösse wie in der Hauptabfrage |
+| `Where-Object { $_.FromIP -eq '203.0.113.9' }` | filtert clientseitig auf die fragliche Quelladresse |
+| `Format-Table Received, SenderAddress, RecipientAddress, Subject, Status -AutoSize` | zeigt pro Nachricht Empfangszeit, Absender, Empfänger, Betreff und Zustellstatus |
+
+</details>
+
 Absender und Betreff sagen Ihnen in aller Regel sofort, welche Anwendung dahintersteckt.
 
 ## Der Abgleich: welche Adresse gehört zu welchem Connector?
@@ -167,6 +220,18 @@ Get-InboundConnector |
         RequireTls, TlsSenderCertificateName,
         RestrictDomainsToCertificate, CloudServicesMailEnabled, TreatMessagesAsInternal
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Get-InboundConnector` | listet alle eingehenden Connectoren des Tenants; hier bewusst ohne einschränkende Parameter |
+| `Format-List <Eigenschaften>` | Ausgabe als Liste der genannten Eigenschaften, eine pro Zeile |
+| `@{n='…'; e={…}}` | berechnete Eigenschaft mit Name (`n`) und Ausdruck (`e`) |
+| `-join ', '` | macht aus dem Array der Adressen bzw. Domänen eine lesbare, kommagetrennte Zeile |
+
+</details>
 
 Drei Konstellationen sind aufschlussreich.
 

@@ -45,6 +45,16 @@ sudo apt update
 sudo apt full-upgrade
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `update` | Liest die Paketlisten aller konfigurierten Quellen neu ein |
+| `full-upgrade` | Aktualisiert alle Pakete und darf dafür auch neue Pakete installieren oder bestehende entfernen |
+
+</details>
+
 `full-upgrade` löst im Gegensatz zu `upgrade` auch Abhängigkeiten auf, die neue oder entfernte Pakete erfordern. Bei einem frischen System ist das der richtige Weg, um wirklich alle verfügbaren Sicherheitsaktualisierungen einzuspielen. Nach Kernel-Updates einmal neu starten.
 
 ## 2. Eigener Benutzer statt root
@@ -55,6 +65,17 @@ Als root zu arbeiten ist unnötig riskant: Jeder Tippfehler wirkt systemweit, un
 sudo adduser claude
 sudo usermod -aG sudo claude
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-a` | Anhängen: ergänzt die Gruppenliste des Benutzers, statt sie zu ersetzen; nur zusammen mit `-G` gültig |
+| `-G sudo` | Ergänzungsgruppe(n), in die der Benutzer aufgenommen wird |
+| `claude` | Der betroffene Benutzer; bei `adduser` der Name des neu anzulegenden Kontos |
+
+</details>
 
 Ab jetzt läuft alle Administration über `claude` und `sudo`, nicht mehr über den direkten root-Zugang.
 
@@ -67,6 +88,16 @@ Auf dem PC:
 ```bash
 ssh-keygen -t ed25519 -C "pc-thinkpad"
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-t ed25519` | Schlüsseltyp, hier das elliptische Verfahren Ed25519 |
+| `-C "pc-thinkpad"` | Kommentar, der an den öffentlichen Schlüssel angehängt wird |
+
+</details>
 
 Der Kommentar (`-C`) benennt das Gerät. Das zahlt sich später aus: Für jedes Gerät wird ein eigener Schlüssel erzeugt: einer für den PC, ein separater fürs iPhone. Geht ein Gerät verloren, entfernt man gezielt dessen öffentlichen Schlüssel aus `~/.ssh/authorized_keys`, ohne alle anderen Zugänge neu ausrollen zu müssen.
 
@@ -82,6 +113,15 @@ Den öffentlichen PC-Schlüssel initial übertragen. Solange die Passwortanmeldu
 ```bash
 ssh-copy-id claude@SERVER
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `claude@SERVER` | Benutzer und Zielhost; der öffentliche Standardschlüssel wird dort an `~/.ssh/authorized_keys` angehängt |
+
+</details>
 
 Danach testen, dass der Login mit Schlüssel funktioniert, bevor im nächsten Schritt die Passwortanmeldung abgeschaltet wird. Die Dateirechte müssen stimmen, sonst ignoriert sshd die Datei: `~/.ssh` auf `700`, `authorized_keys` auf `600`.
 
@@ -102,11 +142,30 @@ Das deaktiviert den direkten root-Login und die Passwortanmeldung. Ab jetzt komm
 sudo sshd -t
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-t` | Testmodus: prüft Konfigurationsdatei und Schlüssel auf Gültigkeit, ohne den Dienst zu starten |
+
+</details>
+
 Meldet `sshd -t` nichts, ist die Datei valide. Erst dann neu laden:
 
 ```bash
 sudo systemctl reload ssh
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `reload` | Weist den Dienst an, seine Konfiguration neu zu laden, ohne bestehende Verbindungen zu trennen |
+| `ssh` | Die Ziel-Unit, hier der OpenSSH-Dienst |
+
+</details>
 
 **Wichtig:** Die bestehende SSH-Sitzung offen lassen und den neuen Zugang in einem zweiten Terminal testen. Erst wenn der Login mit Schlüssel dort nachweislich klappt, darf die alte Sitzung geschlossen werden. Diese Vorsichtsmassnahme reduziert das Aussperrrisiko auf praktisch null. Ein Fehler in der Konfiguration kostet sonst den kompletten Zugang.
 
@@ -124,11 +183,31 @@ Bei Debian 13 gibt es hier eine Besonderheit: SSH kann über systemd-Socket-Akti
 systemctl is-enabled ssh.socket
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `is-enabled` | Zeigt, ob die Unit für den Systemstart aktiviert ist |
+| `ssh.socket` | Die Socket-Unit des SSH-Diensts |
+
+</details>
+
 Antwortet der Befehl mit `enabled`, läuft SSH über den Socket. Dann den Port dort ändern:
 
 ```bash
 sudo systemctl edit ssh.socket
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `edit` | Legt eine Drop-in-Override-Datei für die Unit an und öffnet sie im Editor |
+| `ssh.socket` | Die zu überschreibende Socket-Unit |
+
+</details>
 
 Im Editor folgende Zeilen eintragen. Die erste, leere `ListenStream=`-Zeile löscht den voreingestellten Port 22, die zweite setzt den neuen:
 
@@ -144,6 +223,16 @@ Anschliessend übernehmen:
 sudo systemctl daemon-reload
 sudo systemctl restart ssh.socket
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `daemon-reload` | Liest alle Unit-Dateien neu ein, inklusive der eben angelegten Override-Datei |
+| `restart ssh.socket` | Startet die Socket-Unit neu, damit sie auf dem neuen Port lauscht |
+
+</details>
 
 Ist die Socket-Aktivierung nicht aktiv (`disabled`), gehört stattdessen `Port 61417` in die Drop-in-Datei aus Schritt 4, gefolgt von `sudo sshd -t` und `sudo systemctl restart ssh`.
 
@@ -168,13 +257,35 @@ Nach der Härtung kontrollieren, was der Server tatsächlich nach aussen anbiete
 sudo ss -lntup
 ```
 
-`ss` listet alle lauschenden TCP- und UDP-Sockets samt zugehörigem Prozess (`sudo` ist nötig, um die Prozessnamen zu sehen). Entscheidend ist die Adressspalte: Ein Dienst auf `0.0.0.0` oder `[::]` ist von aussen erreichbar, einer auf `127.0.0.1` oder `[::1]` nur lokal. Im abgesicherten Zustand sollte ausschliesslich SSH öffentlich erscheinen. Dienste wie `chronyd` (Zeitsynchronisation) dürfen auftauchen, aber nur an lokale Adressen gebunden. Hört `chronyd` ausschliesslich auf `127.0.0.1` und `::1`, ist er nicht von aussen ansprechbar und damit unkritisch.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-l` | Nur lauschende Sockets anzeigen |
+| `-n` | Numerische Ausgabe: Ports und Adressen werden nicht in Namen aufgelöst |
+| `-t` | TCP-Sockets einbeziehen |
+| `-u` | UDP-Sockets einbeziehen |
+| `-p` | Zeigt den Prozess hinter jedem Socket; dafür ist `sudo` nötig |
+
+</details>
+
+Entscheidend ist die Adressspalte: Ein Dienst auf `0.0.0.0` oder `[::]` ist von aussen erreichbar, einer auf `127.0.0.1` oder `[::1]` nur lokal. Im abgesicherten Zustand sollte ausschliesslich SSH öffentlich erscheinen. Dienste wie `chronyd` (Zeitsynchronisation) dürfen auftauchen, aber nur an lokale Adressen gebunden. Hört `chronyd` ausschliesslich auf `127.0.0.1` und `::1`, ist er nicht von aussen ansprechbar und damit unkritisch.
 
 Zweitens: Gibt es fehlgeschlagene Systemdienste, die auf ein Konfigurationsproblem hindeuten?
 
 ```bash
 systemctl --failed
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `--failed` | Listet ausschliesslich Units im Fehlerzustand |
+
+</details>
 
 Die Antwort sollte `0 loaded units listed` lauten, kein einziger fehlgeschlagener Dienst. Fehlerhafte Units sind nicht nur ein Betriebs-, sondern potenziell auch ein Sicherheitsproblem, wenn dahinter ein halb gestarteter, falsch konfigurierter Netzwerkdienst steckt.
 
@@ -188,11 +299,31 @@ Für den dauerhaften Betrieb `tmux`:
 tmux new -s claude
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `new` | Erzeugt eine neue Sitzung |
+| `-s claude` | Vergibt den Sitzungsnamen, unter dem sie später wieder aufgenommen wird |
+
+</details>
+
 Innerhalb der Sitzung Claude starten. Mit `Ctrl-b`, dann `d` löst man sich von der Sitzung, ohne sie zu beenden; Claude läuft weiter. Zurück geht es mit:
 
 ```bash
 tmux attach -t claude
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `attach` | Verbindet das Terminal wieder mit einer laufenden Sitzung |
+| `-t claude` | Wählt die Zielsitzung anhand ihres Namens |
+
+</details>
 
 So überlebt eine laufende Aufgabe getrennte Verbindungen, Gerätewechsel und die Nachtruhe des Laptops.
 
@@ -213,6 +344,17 @@ Vom PC aus einen lokal auf Port 4321 laufenden Dienst erreichbar machen:
 ```bash
 ssh -p 61417 -L 4321:localhost:4321 claude@SERVER
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-p 61417` | Port, auf dem der SSH-Server lauscht (der in Schritt 5 gewählte) |
+| `-L 4321:localhost:4321` | Lokale Portweiterleitung: Verbindungen auf den lokalen Port 4321 werden durch den Tunnel an `localhost:4321` aus Sicht des Servers weitergereicht |
+| `claude@SERVER` | Benutzer und Zielhost der SSH-Verbindung |
+
+</details>
 
 Danach öffnet man im lokalen Browser `http://localhost:4321`. Der Verkehr läuft vollständig durch die bestehende, authentifizierte SSH-Verbindung, ohne dass in der Firewall auch nur ein einziger weiterer Port geöffnet werden muss.
 

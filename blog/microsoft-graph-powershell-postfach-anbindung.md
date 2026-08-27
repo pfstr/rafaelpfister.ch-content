@@ -32,6 +32,16 @@ Es genügen drei Module des Microsoft-Graph-SDK, nicht das gesamte Meta-Modul `M
 Install-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.Graph.Users.Actions -Scope AllUsers
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.Graph.Users.Actions` | Die drei benötigten Teilmodule als Positionsargument `-Name`: Anmeldung, Mail-Cmdlets und Aktionen wie `Send-MgUserMail` |
+| `-Scope AllUsers` | Installiert die Module maschinenweit unter `Program Files`; nötig, damit sie auch dem später konfigurierten Dienstkonto des Scheduled Tasks zur Verfügung stehen (erfordert Administratorrechte) |
+
+</details>
+
 ## 2\. App-Registrierung in Entra ID
 
 Ein unbeaufsichtigtes Skript meldet sich als Anwendung mit eigenen Rechten an. Legen Sie im [Entra Admin Center](https://entra.microsoft.com) unter **App registrations** eine neue Registrierung an und vergeben Sie unter **API permissions → Microsoft Graph → Application permissions** diese beiden Rechte:
@@ -57,6 +67,22 @@ Export-Certificate -Cert $cert -FilePath .\eCall-Graph.cer
 $cert.Thumbprint   # -> im Skript als Thumbprint verwenden
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `New-SelfSignedCertificate -Subject` | Antragstellername des Zertifikats; dient nur der Wiedererkennung im Zertifikatspeicher |
+| `-CertStoreLocation "Cert:\LocalMachine\My"` | Legt das Zertifikat im Computerspeicher ab, nicht im Benutzerspeicher; damit ist es unabhängig vom angemeldeten Benutzer verfügbar |
+| `-KeyExportPolicy NonExportable` | Verhindert den Export des privaten Schlüssels; er verlässt den Server nicht |
+| `-KeySpec Signature` | Erzeugt einen Signaturschlüssel; die App-Anmeldung signiert damit das Token-Request-Assertion |
+| `-KeyLength 2048` | RSA-Schlüssellänge 2048 Bit |
+| `-NotAfter (Get-Date).AddYears(2)` | Gültigkeitsende in zwei Jahren; danach muss das Zertifikat erneuert und neu hochgeladen werden |
+| `Export-Certificate -Cert` | Zu exportierendes Zertifikatsobjekt |
+| `-FilePath` | Zieldatei; enthält als `.cer` nur den öffentlichen Teil |
+
+</details>
+
 Die exportierte `.cer`\-Datei in der App-Registrierung unter Certificates & secrets hochladen. Das Konto des Scheduled Tasks braucht Leserecht auf den privaten Schlüssel (`certlm.msc` → Zertifikat → All Tasks → Manage Private Keys).
 
 ## 4\. Zugriff auf einzelne Postfächer einschränken
@@ -73,6 +99,19 @@ New-ApplicationAccessPolicy -AppId "<App-ID>" `
 Test-ApplicationAccessPolicy -AppId "<App-ID>" -Identity "ecall-logs@example.com"
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `New-ApplicationAccessPolicy -AppId` | Application (Client) ID der App-Registrierung, für die die Richtlinie gilt |
+| `-PolicyScopeGroupId` | Mailaktivierte Sicherheitsgruppe, deren Mitglieder den Geltungsbereich definieren |
+| `-AccessRight RestrictAccess` | Beschränkt die App auf die Postfächer der Gruppe; die Alternative `DenyAccess` würde genau diese Postfächer sperren |
+| `-Description` | Freitext zur Dokumentation der Richtlinie |
+| `Test-ApplicationAccessPolicy -Identity` | Prüft für ein konkretes Postfach, ob die App darauf zugreifen darf (`AccessCheckResult: Granted` oder `Denied`) |
+
+</details>
+
 ## 5\. Verbindung aufbauen
 
 Die Anmeldung nutzt Tenant-ID, App-ID und den Zertifikat-Thumbprint, ganz ohne Benutzerinteraktion:
@@ -87,6 +126,18 @@ Import-Module Microsoft.Graph.Authentication, Microsoft.Graph.Mail, Microsoft.Gr
 Connect-MgGraph -TenantId $TenantId -ClientId $ClientId `
     -CertificateThumbprint $Thumbprint -NoWelcome
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Connect-MgGraph -TenantId` | Tenant, gegen den sich die App anmeldet |
+| `-ClientId` | Application (Client) ID der App-Registrierung |
+| `-CertificateThumbprint` | Wählt das Anmeldezertifikat über seinen Thumbprint aus dem lokalen Zertifikatspeicher; die Kombination aus `-ClientId` und Zertifikat ergibt eine App-Only-Anmeldung ohne Benutzer |
+| `-NoWelcome` | Unterdrückt den Begrüssungstext nach der Anmeldung; sinnvoll für Skriptausgaben und Logs |
+
+</details>
 
 ## 6. Nachrichten lesen und ZIP-Anhänge herunterladen
 
@@ -121,6 +172,23 @@ foreach ($msg in $messages) {
 }
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Add-Type -AssemblyName System.IO.Compression.FileSystem` | Lädt die .NET-Assembly mit der Klasse `ZipFile` zum Entpacken |
+| `Get-MgUserMessage -UserId` | Postfach, dessen Nachrichten gelesen werden; bei App-Only-Anmeldung ist die Angabe zwingend |
+| `-Top 100` | Begrenzt die Abfrage auf maximal 100 Nachrichten pro Aufruf |
+| `-Property id, subject, hasAttachments` | Fordert nur die benötigten Felder an; das verkleinert die Antwort und beschleunigt den Aufruf |
+| `Get-MgUserMessageAttachment -MessageId` | Nachricht, deren Anhänge aufgelistet werden |
+| `Invoke-MgGraphRequest -Method GET` | HTTP-Methode des Direktaufrufs gegen die Graph-API |
+| `-Uri` | Aufgerufener Endpunkt; das angehängte `/$value` liefert den rohen Dateiinhalt des Anhangs statt eines JSON-Objekts |
+| `-OutputFilePath` | Schreibt die Antwort direkt in die Zieldatei, ohne den Anhang komplett im Arbeitsspeicher zu halten |
+| `Move-MgUserMessage -DestinationId "deleteditems"` | Verschiebt die verarbeitete Nachricht in den Zielordner; `deleteditems` ist der wohlbekannte Ordnername für «Gelöschte Elemente» |
+
+</details>
+
 Bei mehr als 100 Mails mit `Get-MgUserMessage -All` oder Paging arbeiten; für einen Monatslauf reicht meist ein Batch.
 
 ## 7\. Report-Mail über Graph senden
@@ -145,6 +213,16 @@ $body = @{
 Send-MgUserMail -UserId "reporting@example.com" -BodyParameter $body
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-UserId` | Postfach, in dessen Namen die Mail versendet wird; muss vom Geltungsbereich der Application Access Policy abgedeckt sein |
+| `-BodyParameter` | Die komplette Nachricht als Hashtable im Graph-Schema: `message` mit Betreff, Body, Empfängern und Anhängen sowie `saveToSentItems` für die Ablage in «Gesendete Elemente» |
+
+</details>
+
 ## 8\. Unbeaufsichtigt ausführen
 
 Als geplante Aufgabe läuft das Skript ohne Anmeldung, weil das Zertifikat im Store des Kontos liegt:
@@ -156,6 +234,21 @@ $trigger = New-ScheduledTaskTrigger -Daily -At 06:00
 Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $trigger `
     -User "DOMAIN\svc-ecall" -Password (Read-Host "Passwort")
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `New-ScheduledTaskAction -Execute` | Auszuführendes Programm, hier `powershell.exe` |
+| `-Argument` | Kommandozeile für das Programm: `-NoProfile` überspringt Profilskripte, `-ExecutionPolicy Bypass` umgeht die Skriptrichtlinie für diesen Aufruf, `-File` benennt das Skript |
+| `New-ScheduledTaskTrigger -Daily -At 06:00` | Täglicher Auslöser um 06:00 Uhr |
+| `Register-ScheduledTask -TaskName` | Name der Aufgabe in der Aufgabenplanung |
+| `-Action` / `-Trigger` | Verknüpft die zuvor erstellte Aktion und den Auslöser mit der Aufgabe |
+| `-User` | Konto, unter dem die Aufgabe läuft; in dessen Zertifikatspeicher muss der private Schlüssel lesbar sein |
+| `-Password (Read-Host "Passwort")` | Fragt das Kontopasswort interaktiv ab, damit die Aufgabe auch ohne angemeldeten Benutzer starten kann; so landet es nicht im Skript oder in der Verlaufsdatei |
+
+</details>
 
 Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf GitHub: [pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer).
 

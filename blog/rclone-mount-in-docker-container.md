@@ -49,6 +49,16 @@ mount --bind /srv/storage/media /srv/storage/media
 mount --make-shared /srv/storage/media
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `--bind quelle ziel` | Bindet ein Verzeichnis an einen zweiten Pfad; hier auf sich selbst, wodurch das Verzeichnis zum eigenständigen Mountpoint wird |
+| `--make-shared pfad` | Setzt die Propagation dieses Mountpoints auf shared, sodass Mount-Ereignisse in beide Richtungen weitergereicht werden |
+
+</details>
+
 Damit das einen Reboot übersteht, gehört es in eine systemd-Unit mit `Before=docker.service`. Kontrolle: `findmnt -no PROPAGATION /srv/storage/media` muss `shared` liefern.
 
 ## 2. AppArmor prüft `fusermount3` auch im Container
@@ -87,6 +97,20 @@ rclone mount remote:pfad /mnt/inner/dokumente --allow-other --vfs-cache-mode ful
 mount --bind /mnt/inner/dokumente /data/dokumente
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `remote:pfad` | Zu mountendes Rclone-Remote samt Pfad |
+| `/mnt/inner/dokumente` | Mountpunkt unter `/mnt`, einem vom AppArmor-Profil erlaubten Muster |
+| `--allow-other` | Erlaubt anderen Benutzern als dem mountenden den Zugriff auf den FUSE-Mount |
+| `--vfs-cache-mode full` | Puffert Lese- und Schreibzugriffe vollständig im lokalen Cache |
+| `&` | Startet den Mount im Hintergrund, damit die Shell für den Bind frei bleibt |
+| `mount --bind quelle ziel` | Publiziert den FUSE-Mount per Bind auf den geteilten Pfad; unterliegt als mount(2)-Aufruf nicht dem fusermount3-Profil |
+
+</details>
+
 Der Bind ist ein normaler mount(2)-Aufruf und propagiert wie jeder andere über den Shared-Pfad zum Host. Das liess sich bis in einen zweiten Container verifizieren, der die Dateien als uid 1000 lesen konnte. `--allow-other` ist dabei Pflicht, sobald ein anderer Benutzer als der mountende auf die Dateien zugreift; im Rclone-Container muss dafür `user_allow_other` in `/etc/fuse.conf` stehen (im offiziellen Image bereits der Fall).
 
 ## 3. Konsumenten brauchen `rslave`
@@ -123,6 +147,18 @@ while grep -q " /data/dokumente " /proc/self/mountinfo; do
     umount -l /data/dokumente 2>/dev/null || break
 done
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `grep -q` | Keine Ausgabe; nur der Exit-Code meldet, ob der Pfad noch als Mount in `/proc/self/mountinfo` steht |
+| `umount -l` | Lazy Unmount: hängt den Mount sofort aus dem Baum aus und räumt Referenzen erst auf, wenn er nicht mehr benutzt wird |
+| `2>/dev/null` | Unterdrückt Fehlermeldungen des umount |
+| `\|\| break` | Beendet die Schleife, wenn ein umount fehlschlägt, statt endlos weiterzulaufen |
+
+</details>
 
 4. Danach normal mounten und publizieren; Konsumenten mit `rslave` übernehmen den frischen Mount von selbst.
 

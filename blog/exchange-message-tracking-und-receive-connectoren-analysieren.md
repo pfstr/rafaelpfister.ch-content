@@ -56,6 +56,20 @@ Beginnen Sie über den Empfänger, denn den kennen Sie fast immer. Wichtig ist, 
         -AutoSize -Wrap
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server` | Transportserver, dessen Tracking-Log abgefragt wird; hier über die Pipeline nacheinander beide Server |
+| `-Start` | Untere Zeitgrenze der Suche, hier die letzten sechs Stunden |
+| `-ResultSize Unlimited` | Hebt die Standardgrenze von 1000 Einträgen auf |
+| `-Recipients` | Filtert auf Nachrichten an diese Empfängeradresse |
+| `Sort-Object Timestamp` | Sortiert die zusammengeführten Ergebnisse beider Server chronologisch |
+| `-AutoSize -Wrap` | Spaltenbreite an den Inhalt anpassen und lange Werte umbrechen statt abschneiden |
+
+</details>
+
 Eine typische Ausgabe für eine Nachricht, die sauber durchgelaufen ist:
 
 ```text
@@ -82,6 +96,19 @@ Findet die Abfrage nichts, prüfen Sie, ob der Empfänger über einen Verteiler 
     Format-Table Timestamp, EventId, Sender,
         @{n='To'; e={$_.Recipients -join ','}}, MessageSubject -AutoSize -Wrap
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server` | Transportserver, dessen Tracking-Log abgefragt wird |
+| `-Start` | Untere Zeitgrenze der Suche |
+| `-ResultSize Unlimited` | Hebt die Standardgrenze von 1000 Einträgen auf |
+| `Where-Object` | Filtert clientseitig auf Absender der eigenen Domäne, da `-Sender` nur exakte Adressen akzeptiert |
+| `@{n=…; e=…}` | Berechnete Spalte: fasst das Sammelfeld `Recipients` zu einer kommagetrennten Zeichenkette zusammen |
+
+</details>
 
 ## Schritt 2: Das letzte Ereignis lesen
 
@@ -117,6 +144,17 @@ Get-Queue -Server SRV-MAIL01 |
         -AutoSize -Wrap
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server` | Server, dessen Transport-Queues abgefragt werden |
+| `Where-Object` | Blendet leere Queues aus, zeigt nur Queues mit wartenden Nachrichten |
+| `-AutoSize -Wrap` | Verhindert, dass die lange Spalte `LastError` abgeschnitten wird |
+
+</details>
+
 ## Fehlerquelle 1: Tracking ist serverbezogen, und viele Einträge sind Schattenkopien
 
 Wenn Sie in der Ausgabe Paare aus `HARECEIVE` und `HADISCARD` sehen, oft mit dem Zusatz `ExplicitlyDiscarded`, dann hat dieser Server die Nachricht **nicht verarbeitet**. Er hielt nur eine Schattenkopie im Rahmen der Shadow Redundancy, während ein anderer Server die eigentliche Zustellung übernahm. Sobald der primäre Server Erfolg meldet, verwirft der Partner seine Kopie.
@@ -151,6 +189,21 @@ Get-MessageTrackingLog -Server SRV-MAIL01 `
     @{n='Status'; e={$_.RecipientStatus -join ' | '}},
     MessageSubject, MessageId, SourceContext
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server` | Transportserver, dessen Tracking-Log abgefragt wird |
+| `-Start` | Untere Zeitgrenze der Suche |
+| `-ResultSize Unlimited` | Hebt die Standardgrenze von 1000 Einträgen auf |
+| `-Recipients` | Filtert auf Nachrichten an diese Empfängeradresse |
+| `-EventId FAIL` | Nur Einträge mit endgültigem Zustellfehler |
+| `Format-List` | Zeigt jedes Feld auf eigener Zeile in voller Länge, nichts wird abgeschnitten |
+| `@{n=…; e=…}` | Berechnete Felder: lösen die Sammelfelder `Recipients` und `RecipientStatus` in lesbare Zeichenketten auf |
+
+</details>
 
 Und so sieht der Unterschied aus. Erst die Tabellenansicht, die nichts erklärt:
 
@@ -190,6 +243,20 @@ Bevor Sie sich in einen einzelnen Fall vertiefen, klären Sie den Umfang. Diese 
     Format-Table Count, Name -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Start` | Untere Zeitgrenze, hier die letzten acht Stunden |
+| `-EventId FAIL` | Nur endgültig gescheiterte Zustellungen |
+| `-ResultSize Unlimited` | Hebt die Standardgrenze von 1000 Einträgen auf |
+| `Where-Object` | Filtert auf den untersuchten SMTP-Statuscode im Feld `RecipientStatus` |
+| `Group-Object` | Gruppiert nach Absenderdomäne (dem Teil hinter dem `@`) |
+| `Sort-Object Count -Descending` | Häufigste Domäne zuoberst |
+
+</details>
+
 Ersetzen Sie `5.1.8` durch den Statuscode, den Sie untersuchen. Die Ausgabe beantwortet die Frage in einer Zeile:
 
 ```text
@@ -225,6 +292,17 @@ Es gibt zwei Wege zur Antwort. Der erste ist die Rekonstruktion über die Konfig
         PermissionGroups, AuthMechanism
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server` | Server, dessen Receive-Connectoren aufgelistet werden |
+| `Format-List` | Volle Feldlängen; `RemoteIPRanges` und `PermissionGroups` würden in Tabellen abgeschnitten |
+| `@{n=…; e=…}` | Berechnete Felder: fassen die Sammelfelder `Bindings` und `RemoteIPRanges` zu kommagetrennten Zeichenketten zusammen |
+
+</details>
+
 ```text
 Identity         : SRV-MAIL01\Default Frontend SRV-MAIL01
 Bindings         : 10.0.1.11:25
@@ -256,6 +334,16 @@ Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
     -ProtocolLoggingLevel Verbose
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity` | Der zu ändernde Connector in der Form `Server\Connectorname` |
+| `-ProtocolLoggingLevel Verbose` | Schaltet die SMTP-Protokollierung ein; `None` schaltet sie wieder aus |
+
+</details>
+
 Für ausgehende Verbindungen entsprechend über `Set-SendConnector`. Denken Sie daran, den Wert nach der Analyse wieder auf `None` zu setzen, denn ausführliche Protokollierung kostet Plattenplatz und schreibt bei hohem Aufkommen erhebliche Datenmengen.
 
 ### Wo die Dateien liegen
@@ -270,6 +358,18 @@ Get-FrontendTransportService SRV-MAIL01 |
 Get-TransportService SRV-MAIL01 |
     Format-List ReceiveProtocolLogPath, SendProtocolLogPath
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `SRV-MAIL01` | Positionsparameter `-Identity`: der abzufragende Server |
+| `ReceiveProtocolLogPath`, `SendProtocolLogPath` | Ablagepfade der Protokolle für eingehende bzw. ausgehende Verbindungen |
+| `ReceiveProtocolLogMaxAge` | Höchstalter der Protokolldateien, ältere werden gelöscht |
+| `ReceiveProtocolLogMaxDirectorySize` | Obergrenze für den Platzverbrauch des Protokollverzeichnisses |
+
+</details>
 
 Typischerweise liegen sie unterhalb des Installationspfads in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` für den Front End Transport und in `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` für den Transport Service. **Das ist der Kern der Sache:** Client-Verbindungen auf Port 25 finden Sie ausschliesslich im `FrontEnd`-Pfad, im `Hub`-Pfad steht nur der interne Weiterreichungsverkehr auf 2525.
 
@@ -316,12 +416,35 @@ Select-String -Path "$pfad\*.log" -Pattern "dienst@example-test.com" -SimpleMatc
     Select-Object -First 5 Line
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Path "$pfad\*.log"` | Durchsucht alle Protokolldateien im zuvor abgefragten Pfad |
+| `-Pattern` | Der Suchbegriff, hier die Absenderadresse |
+| `-SimpleMatch` | Behandelt das Muster als Text statt als regulären Ausdruck; der Punkt in der Adresse braucht so kein Escaping |
+| `-First 5` | Begrenzt die Ausgabe auf die ersten fünf Treffer |
+
+</details>
+
 Mit der gefundenen `session-id` holen Sie die vollständige Sitzung:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
     ForEach-Object { $_.Line } | Select-Object -First 40
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Pattern` | Die Sitzungskennung aus dem ersten Treffer |
+| `-SimpleMatch` | Wörtliche Suche ohne Regex-Auswertung |
+| `-First 40` | Begrenzt die Ausgabe auf die ersten 40 Zeilen der Sitzung |
+
+</details>
 
 Wollen Sie nur wissen, welche Connectoren überhaupt Verkehr sehen, zählen Sie die Verbindungsaufbauten. Das ist bei grossen Dateien um Grössenordnungen schneller, als jede Zeile zu parsen:
 
@@ -331,6 +454,18 @@ Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
     Group-Object | Sort-Object Count -Descending |
     Format-Table Count, Name -AutoSize
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Pattern ',\+,'` | Regulärer Ausdruck für das Ereignis `+` (Verbindungsaufbau) zwischen zwei CSV-Kommas; das Plus ist escaped |
+| `ForEach-Object { … -split ',' }` | Zerlegt die Trefferzeile an den Kommas und greift die zweite Spalte, die `connector-id` |
+| `Group-Object` | Zählt die Verbindungsaufbauten pro Connector |
+| `Sort-Object Count -Descending` | Meistgenutzter Connector zuoberst |
+
+</details>
 
 ```text
 Count Name
@@ -357,6 +492,17 @@ Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" |
     Where-Object { $_.ExtendedRights -like "*ms-Exch-SMTP*" } |
     Format-Table User, @{n='Rights'; e={$_.ExtendedRights}} -AutoSize
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Identity $dn` | Das zu prüfende Objekt als DistinguishedName; die Form `Server\Connectorname` scheitert in Remote-Sitzungen |
+| `-User` | Beschränkt die Ausgabe auf die Berechtigungen dieses Sicherheitsprinzipals, hier des anonymen Zugriffs |
+| `Where-Object` | Filtert auf die SMTP-relevanten Extended Rights |
+
+</details>
 
 ```text
 User                         Rights
@@ -391,6 +537,21 @@ Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
     -Body 'Testeinlieferung' `
     -Encoding UTF8
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-SmtpServer` | Zielhost der Einlieferung, hier bewusst als IP-Adresse, um einen bestimmten Endpunkt zu treffen |
+| `-Port 25` | Zielport; 25 für unauthentifizierte Server-zu-Server-Einlieferung |
+| `-From` | Envelope- und Header-Absender der Testnachricht |
+| `-To` | Empfängeradresse |
+| `-Subject` | Betreffzeile |
+| `-Body` | Nachrichtentext |
+| `-Encoding UTF8` | Zeichencodierung für Betreff und Text, vermeidet Umlautprobleme |
+
+</details>
 
 `Send-MailMessage` ist offiziell abgekündigt, für Diagnosezwecke aber weiterhin das schnellste Werkzeug und auf jedem Windows-Server vorhanden. Bei Erfolg gibt es keine Ausgabe, was gewöhnungsbedürftig ist.
 
@@ -431,6 +592,18 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) `
   Format-Table Received, SenderAddress, RecipientAddress, Status, FromIP, Size -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-StartDate` | Untere Zeitgrenze der Abfrage, hier die letzten vier Stunden |
+| `-EndDate` | Obere Zeitgrenze; das Cmdlet verlangt beide Grenzen |
+| `-RecipientAddress` | Filtert auf Nachrichten an diese Empfängeradresse |
+| `-ResultSize 1000` | Maximale Zeilen dieser Seite; die Obergrenze liegt bei 5000 |
+
+</details>
+
 ```text
 Received            SenderAddress          RecipientAddress          Status    FromIP
 --------            -------------          ----------------          ------    ------
@@ -454,6 +627,16 @@ Get-MessageTraceDetailV2 -MessageTraceId $n.MessageTraceId `
   Format-List Date, Event, Action, Detail
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-MessageTraceId` | Eindeutige Kennung der Nachricht aus der Basisabfrage; Pflichtangabe |
+| `-RecipientAddress` | Empfänger, dessen Verarbeitungsschritte gezeigt werden; ebenfalls Pflicht, da eine Nachricht mehrere Empfänger haben kann |
+
+</details>
+
 Dort stehen die Verarbeitungsschritte im Dienst, etwa Regelanwendungen, Filterentscheide und der Grund einer Ablehnung.
 
 ### Über zehn Tage hinaus
@@ -470,6 +653,19 @@ Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
 
 Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -AutoSize
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-ReportTitle` | Frei wählbarer Name des Auftrags, unter dem das Ergebnis später auffindbar ist |
+| `-StartDate`, `-EndDate` | Untersuchter Zeitraum, bis 90 Tage zurück |
+| `-ReportType MessageTrace` | Art des Berichts; `MessageTrace` liefert die Nachrichtenübersicht als CSV |
+| `-SenderAddress` | Filtert auf diese Absenderadresse |
+| `-NotifyAddress` | Empfänger der Fertigmeldung; muss eine Adresse einer Accepted Domain des Tenants sein |
+
+</details>
 
 Planen Sie Zeit ein, solche Aufträge laufen je nach Umfang Stunden.
 

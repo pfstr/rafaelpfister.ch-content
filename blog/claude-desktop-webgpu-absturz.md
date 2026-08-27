@@ -41,11 +41,16 @@ curl.exe -L -o "$env:USERPROFILE\Downloads\Claude-Setup-x64.exe" `
   "https://storage.googleapis.com/osprey-downloads-c02f6a0d-347c-492b-a752-3e0651722e97/nest-win-x64/Claude-Setup-x64.exe"
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `-L` | folgt HTTP-Weiterleitungen bis zur eigentlichen Datei |
 | `-o <pfad>` | Zieldatei; hier der Downloads-Ordner |
 | `<url>` | offizielle Installer-Quelle; identisch mit dem Ziel des Download-Redirects von claude.ai |
+
+</details>
 
 Prüfen Sie nach dem Download die Signatur (`Get-AuthenticodeSignature`, erwartet: `Valid`, Aussteller „Anthropic, PBC") und starten Sie die Datei. Der Installer legt zunächst eine ältere Basisversion ab; auf den aktuellen Stand bringt sie der Update-Mechanismus, entweder automatisch beim ersten Start oder sofort per:
 
@@ -54,9 +59,14 @@ Prüfen Sie nach dem Download die Signatur (`Get-AuthenticodeSignature`, erwarte
   --update https://downloads.claude.ai/releases/win32/x64
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `--update <url>` | lädt die neueste Version aus dem angegebenen Release-Feed und installiert sie als neues `app-<version>`-Verzeichnis |
+
+</details>
 
 **Schritt 2: Konfiguration übernehmen.** Die MSIX-Version hält Login, MCP-Server-Konfiguration und Einstellungen in ihrem virtualisierten Container; die klassische App liest `%APPDATA%\Claude`. Einmalig kopieren (die MSIX-App vorher beenden, beide Varianten laufen wegen eines gemeinsamen Single-Instance-Locks ohnehin nicht gleichzeitig):
 
@@ -65,12 +75,17 @@ robocopy "$env:LOCALAPPDATA\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Cla
   "$env:APPDATA\Claude" /E /XD Cache "Code Cache" GPUCache claude-code Crashpad logs sentry
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `<quelle>` | Konfigurationsordner im virtualisierten AppData des MSIX-Pakets |
 | `<ziel>` | Konfigurationsordner der klassischen Installation |
 | `/E` | kopiert alle Unterverzeichnisse, auch leere |
 | `/XD <namen>` | überspringt die genannten Verzeichnisse; hier Caches und Laufzeitdaten, welche die neue App selbst neu anlegt |
+
+</details>
 
 Chat-Verläufe gehen dabei nicht verloren: Sie liegen im claude.ai-Konto beziehungsweise (für Claude-Code-Sessions) unter `%USERPROFILE%\.claude` und hängen nicht an der App-Installation.
 
@@ -79,6 +94,16 @@ Chat-Verläufe gehen dabei nicht verloren: Sie liegen im claude.ai-Konto beziehu
 ```powershell
 Get-AppxPackage Claude | Remove-AppxPackage
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Claude` | Positionsargument Name von `Get-AppxPackage`: filtert die installierten AppX-/MSIX-Pakete auf den Paketnamen (Platzhalter erlaubt) |
+| `Remove-AppxPackage` | entfernt das über die Pipeline übergebene Paket für das aktuelle Benutzerkonto |
+
+</details>
 
 Der Startmenü-Eintrag „Anthropic → Claude" gehört danach zur klassischen Installation; ein allfälliger Taskleisten-Pin muss neu gesetzt werden.
 
@@ -97,6 +122,19 @@ for /f "delims=" %%i in ('powershell -NoProfile -Command ^
 start "" "%PKG%\app\Claude.exe" --disable-features=WebGPU
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `for /f "delims="` | verarbeitet die Befehlsausgabe zeilenweise; leeres `delims=` übernimmt die ganze Zeile (inklusive Leerzeichen im Pfad) in `%%i` |
+| `-NoProfile` | startet PowerShell ohne Profilskripte, für schnellen und reproduzierbaren Start |
+| `-Command` | führt den angegebenen Ausdruck aus; `(Get-AppxPackage Claude).InstallLocation` liefert den aktuellen Installationspfad des Pakets |
+| `start ""` | startet das Programm entkoppelt vom Batch-Fenster; die leeren Anführungszeichen sind der (hier leere) Fenstertitel |
+| `--disable-features=WebGPU` | Chromium-Schalter: deaktiviert das genannte Feature, hier die WebGPU-API |
+
+</details>
+
 Das wirkt nur, wenn die App auch über diesen Launcher gestartet wird.
 
 In der Erstfassung dieses Artikels stand an erster Stelle die Empfehlung, die Hardware-Beschleunigung über `isHardwareAccelerationDisabled: false` in der `config.json` zu aktivieren. Diese Empfehlung ist überholt: In aktuellen Versionen (1.37937.x) existiert das Flag nicht mehr, die App startet standardmässig mit aktiver Hardware-Beschleunigung, und sie stürzt trotzdem ab (Details im Nachtrag unten).
@@ -112,6 +150,16 @@ Select-String -Path "$env:LOCALAPPDATA\Claude\Logs\main.log" `
   -Pattern 'GPU process gone'
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Path` | zu durchsuchende Datei, hier das Hauptlog der App |
+| `-Pattern` | Suchmuster (regulärer Ausdruck); gibt alle Zeilen mit der Absturz-Signatur aus |
+
+</details>
+
 Zweitens, und das ist der eigentliche Beweis, das CodeIntegrity-Log von Windows:
 
 ```powershell
@@ -120,6 +168,18 @@ Get-WinEvent -FilterHashtable @{
 } -MaxEvents 30 | Where-Object { $_.Message -match 'claude' } |
   Select-Object TimeCreated, Message
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-FilterHashtable` | filtert bereits beim Abruf: `LogName` benennt das Ereignisprotokoll, `Id` die Ereignis-ID 3033 (Code-Integrity-Blockade) |
+| `-MaxEvents 30` | begrenzt die Abfrage auf die 30 neuesten Treffer |
+| `Where-Object { … -match 'claude' }` | behält nur Ereignisse, deren Meldungstext den App-Pfad enthält |
+| `Select-Object TimeCreated, Message` | reduziert die Ausgabe auf Zeitstempel und Meldung für den Abgleich mit den Absturzzeiten |
+
+</details>
 
 Auf betroffenen Systemen finden Sie dort Event-3033-Einträge, deren Zeitstempel sekundengenau mit den Absturzzeiten übereinstimmen, mit dieser Meldung:
 

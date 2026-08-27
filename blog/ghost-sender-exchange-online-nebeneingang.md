@@ -87,13 +87,22 @@ In der Diskussion werden zwei Dinge vermischt:
 - **Direct Send** bezeichnet bei Microsoft anonyme Nachrichten, deren Envelope-Sender (`5321.MailFrom`) eine eigene Accepted Domain des Tenants verwendet.
 - **Direkte Zustellung an Exchange Online** bezeichnet allgemein eine SMTP-Nachricht, die den veröffentlichten Drittanbieter-MX ignoriert und unmittelbar beim Exchange-Endpunkt eingeliefert wird. Der Absender kann dabei auch eine beliebige externe Domain verwenden.
 
-Der Schalter
+Für Direct Send gibt es einen eigenen Schalter:
 
 ```powershell
 Set-OrganizationConfig -RejectDirectSend $true
 ```
 
-ist sinnvoll, wenn Direct Send nicht benötigt wird. Er verhindert internes Domain-Spoofing über diesen Pfad. Er schliesst aber nicht den gesamten Nebeneingang für beliebige externe Absender. Microsoft beschreibt den genauen Geltungsbereich in der [Cmdlet-Dokumentation zu `RejectDirectSend`](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-organizationconfig?view=exchange-ps#-rejectdirectsend). Wer «Ghost Sender» vollständig verhindern will, braucht weiterhin die Zugriffsbeschränkung per Partner-Connector oder eine passende Mailflow-Regel.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-RejectDirectSend $true` | Weist anonyme Direkteinlieferungen ab, deren Envelope-Sender eine Accepted Domain des Tenants verwendet |
+
+</details>
+
+Der Schalter ist sinnvoll, wenn Direct Send nicht benötigt wird. Er verhindert internes Domain-Spoofing über diesen Pfad. Er schliesst aber nicht den gesamten Nebeneingang für beliebige externe Absender. Microsoft beschreibt den genauen Geltungsbereich in der [Cmdlet-Dokumentation zu `RejectDirectSend`](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-organizationconfig?view=exchange-ps#-rejectdirectsend). Wer «Ghost Sender» vollständig verhindern will, braucht weiterhin die Zugriffsbeschränkung per Partner-Connector oder eine passende Mailflow-Regel.
 
 ## Muss Microsoft dem Administrator wirklich alles abnehmen?
 
@@ -127,6 +136,20 @@ New-InboundConnector `
   -RequireTls $true
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Name` | Anzeigename des neuen Inbound Connectors |
+| `-ConnectorType Partner` | Connector-Klasse für externe Partner-Systeme; nur dieser Typ erzwingt die Ablehnung unpassender Verbindungen |
+| `-SenderDomains *` | Der Connector gilt für Mail von allen Absenderdomänen |
+| `-RestrictDomainsToIPAddresses $true` | Aktiviert die Sperre: Mail der genannten Domänen wird nur noch von den Adressen in `-SenderIpAddresses` angenommen |
+| `-SenderIpAddresses` | Die erlaubten Quell-IP-Adressen bzw. -Bereiche des vorgeschalteten Gateways |
+| `-RequireTls $true` | Verlangt TLS-Verschlüsselung für Verbindungen über diesen Connector |
+
+</details>
+
 Wo möglich, ist die Zertifikatsbindung der IP-Allowlist vorzuziehen. Änderungen gehören zuerst in einen kontrollierten Test, denn eine fehlerhafte Allowlist macht aus dem offenen Nebeneingang sehr schnell einen vollständigen Mailausfall.
 
 ## Der einfache Selbsttest
@@ -141,6 +164,19 @@ Send-MailMessage `
   -Subject "EXO Nebeneingang" `
   -Body "Testmail direkt zum Tenant"
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-SmtpServer` | Zielhost: der öffentliche Exchange-Online-Endpunkt des Tenants, bewusst am MX vorbei |
+| `-To` | Empfängeradresse im zu testenden Tenant |
+| `-From` | Beliebige externe Absenderadresse; genau das soll der Nebeneingang eigentlich nicht mehr annehmen |
+| `-Subject` | Betreffzeile, zum Wiederfinden im Message Trace |
+| `-Body` | Nachrichtentext |
+
+</details>
 
 Bei einem korrekt beschränkten Partner-Connector ist eine SMTP-Ablehnung wie `5.7.51 TenantInboundAttribution; Rejecting` zu erwarten. Eine alternative Transportregel kann die Nachricht zunächst annehmen und danach in Quarantäne verschieben; deshalb müssen neben der SMTP-Antwort auch Message Trace, Quarantäne und Postfach kontrolliert werden. `Send-MailMessage` (deprecated) dient hier nur der leicht verständlichen Illustration. Jedes kontrollierte SMTP-Testwerkzeug erfüllt denselben Zweck.
 

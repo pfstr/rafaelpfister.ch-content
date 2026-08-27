@@ -62,6 +62,41 @@ Für ein Zertifikat, das mehrere Appliances und den Quarantäne-Hostnamen abdeck
 2. Die CA erzeugt das Schlüsselpaar und liefert eine PFX-Datei. Funktioniert, hat aber zwei Haken: Der Schlüssel reist durch fremde Hände (das Passwort gehört deshalb in einen separaten Kanal und nicht in dieselbe Mail wie die Datei), und je nach CA-Werkzeug kommt eine RC2-verschlüsselte PFX zurück, die OpenSSL 3 nur mit Zusatzaufwand öffnet; dazu unten mehr.
 3. Der Umweg über eine ESA, dokumentiert in der Cisco-Technote: Dort unter `Network > Certificates` ein Zertifikat mit dem CN der SMA anlegen, den CSR herunterladen und von der CA signieren lassen, das signierte Zertifikat wieder auf die ESA hochladen und das Ganze als PFX exportieren. Auch hier steht am Ende die Konvertierung nach PEM an.
 
+## Die wichtigsten Optionen von openssl
+
+Zur Orientierung vorab die Unterbefehle und Optionen von `openssl`, die in diesem Beitrag vorkommen, sinngemäss aus der OpenSSL-Dokumentation übersetzt:
+
+<details class="options-details">
+<summary>Optionen im Überblick</summary>
+
+| Option | Bedeutung |
+|---|---|
+| `req` | Unterbefehl für Zertifikatsanträge (CSR): erzeugen, anzeigen, prüfen |
+| `-new` | Erzeugt einen neuen Antrag |
+| `-newkey rsa:2048` | Erzeugt dazu ein neues RSA-Schlüsselpaar mit 2048 Bit |
+| `-noenc` | Schreibt den privaten Schlüssel unverschlüsselt (bis OpenSSL 3.0: `-nodes`) |
+| `-keyout datei` | Zieldatei für den privaten Schlüssel |
+| `-out datei` | Zieldatei für die Ausgabe, hier CSR beziehungsweise PEM |
+| `-subj text` | Subject des Antrags im Format `/C=…/O=…/CN=…` |
+| `-addext text` | Fügt dem Antrag eine Erweiterung hinzu, hier die SAN-Liste |
+| `pkcs12` | Unterbefehl für PKCS#12-Container (PFX): erstellen und entpacken |
+| `-in datei` | Eingabedatei |
+| `-legacy` | Lädt den Legacy-Provider mit, für Altalgorithmen wie RC2 |
+| `list` | Unterbefehl zum Anzeigen der Fähigkeiten der Installation |
+| `-providers` | Listet die geladenen Provider |
+| `-provider name` | Lädt den genannten Provider zusätzlich für diesen Aufruf |
+| `s_client` | Unterbefehl: TLS-Testclient für Verbindungen zu einem Server |
+| `-connect host:port` | Zielhost und Port der TLS-Verbindung |
+| `-servername name` | Setzt die Server Name Indication (SNI) im TLS-Handshake |
+| `x509` | Unterbefehl zum Anzeigen und Verarbeiten von Zertifikaten |
+| `-noout` | Unterdrückt die Ausgabe des kodierten Zertifikats |
+| `-subject` | Gibt den Subject des Zertifikats aus |
+| `-enddate` | Gibt das Ablaufdatum (notAfter) aus |
+
+</details>
+
+Die vollständigen Referenzen führt die OpenSSL-Dokumentation als eigene Manpage pro Unterbefehl: `openssl-req(1)`, `openssl-pkcs12(1)`, `openssl-s_client(1)` und `openssl-x509(1)`.
+
 ## OpenSSL unter Windows starten
 
 Alle folgenden Schritte laufen über OpenSSL, auf einem System innerhalb der Umgebung, etwa einem Admin-Server. Die Light-Edition der Windows-Builds von Shining Light Productions genügt, der Installer ist rund 6 MB gross und lässt sich gegen die von slproweb publizierte Prüfsummenliste verifizieren.
@@ -77,6 +112,17 @@ Ohne zusätzliche Installation kommt aus, wer Git für Windows schon einsetzt: E
 ```bash
 openssl list -providers -provider legacy
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `list` | Zeigt Fähigkeiten der OpenSSL-Installation an |
+| `-providers` | Listet die geladenen Provider mit Name, Version und Status |
+| `-provider legacy` | Lädt zusätzlich den Provider `legacy` für diesen Aufruf; erscheint er in der Liste, ist er verfügbar |
+
+</details>
 
 Eine Eigenheit hat die Git Bash allerdings: Sie hält Argumente, die mit `/` beginnen, für Pfade und schreibt sie um. Aus `-subj "/C=CH/O=Example AG/CN=..."` wird `C:/Program Files/Git/C=CH/O=Example AG/CN=...`, und OpenSSL bricht ab:
 
@@ -100,6 +146,21 @@ openssl req -new -newkey rsa:2048 -noenc \
   -addext "subjectAltName=DNS:spam-quarantine.example.ch,DNS:sma01.example.ch,DNS:sma02.example.ch"
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-new` | Erzeugt einen neuen Zertifikatsantrag (CSR) |
+| `-newkey rsa:2048` | Erzeugt dazu ein neues RSA-Schlüsselpaar mit 2048 Bit |
+| `-noenc` | Schreibt den privaten Schlüssel unverschlüsselt in die Datei |
+| `-keyout …` | Zieldatei für den privaten Schlüssel |
+| `-out …` | Zieldatei für den CSR |
+| `-subj …` | Subject mit Land, Organisation und Common Name |
+| `-addext …` | Hängt die SAN-Erweiterung mit allen DNS-Namen an den Antrag an |
+
+</details>
+
 Die CSR-Datei geht an die CA, der Schlüssel bleibt auf dem Server. Zurück kommt das signierte Zertifikat samt Intermediate, üblicherweise direkt als PEM. Damit liegt alles für die Installation bereit, die PFX-Konvertierung entfällt auf diesem Weg komplett.
 
 Die Schlüsseldatei ist unverschlüsselt (`-noenc`), weil `certconfig` sie genau so erwartet. Bis zur Installation bleibt sie unter restriktiven Berechtigungen auf dem Server, danach wird sie gelöscht oder in die Passwortverwaltung verschoben.
@@ -112,7 +173,19 @@ Dieser und der nächste Abschnitt betreffen die Wege 2 und 3, an deren Ende eine
 openssl pkcs12 -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
 ```
 
-`-noenc` (bis OpenSSL 3.0 hiess die Option `-nodes`) schreibt den privaten Schlüssel ohne Passphrase in die Ausgabedatei. Die Abfrage des Import-Passworts erfolgt ohne Echo, es erscheinen auch keine Sternchen. Die entstandene PEM-Datei enthält Zertifikat, Schlüssel und mitgelieferte Kettenzertifikate in einer Datei und ist entsprechend schützenswert: Nach der Installation löschen oder in die Passwortverwaltung verschieben.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `pkcs12` | Unterbefehl zum Erstellen und Entpacken von PKCS#12-Containern |
+| `-in …` | Die PFX-Eingabedatei |
+| `-out …` | Die PEM-Ausgabedatei mit Zertifikat, Schlüssel und Kettenzertifikaten |
+| `-noenc` | Schreibt den privaten Schlüssel ohne Passphrase (bis OpenSSL 3.0 hiess die Option `-nodes`) |
+
+</details>
+
+Die Abfrage des Import-Passworts erfolgt ohne Echo, es erscheinen auch keine Sternchen. Die entstandene PEM-Datei enthält Zertifikat, Schlüssel und mitgelieferte Kettenzertifikate in einer Datei und ist entsprechend schützenswert: Nach der Installation löschen oder in die Passwortverwaltung verschieben.
 
 ## Wenn OpenSSL 3 die PFX-Datei verweigert
 
@@ -132,7 +205,16 @@ Die Lösung ist eine einzige zusätzliche Option:
 openssl pkcs12 -legacy -in spam-quarantine.example.ch.pfx -out spam-quarantine.example.ch.pem -noenc
 ```
 
-`-legacy` lädt den Legacy-Provider für diesen Aufruf mit, danach läuft die Konvertierung durch. Voraussetzung ist eine OpenSSL-Installation, die den Legacy-Provider mitbringt; bei den gängigen Windows-Builds ist das der Fall.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-legacy` | Lädt den Legacy-Provider für diesen Aufruf mit; damit stehen Altalgorithmen wie RC2-40-CBC wieder zur Verfügung, und die Konvertierung läuft durch |
+
+</details>
+
+Voraussetzung ist eine OpenSSL-Installation, die den Legacy-Provider mitbringt; bei den gängigen Windows-Builds ist das der Fall.
 
 Wer den Fehler dauerhaft loswerden will, kann an der Quelle ansetzen und die PFX-Datei mit moderner Verschlüsselung exportieren lassen: Aktuelle Export-Dialoge und CA-Werkzeuge bieten AES-256 an, damit entfällt der Legacy-Umweg komplett.
 
@@ -196,6 +278,21 @@ openssl s_client -connect spam-quarantine.example.ch:83 \
   openssl x509 -noout -subject -enddate
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `s_client` | TLS-Testclient: baut die Verbindung auf und reicht das präsentierte Zertifikat weiter |
+| `-connect …:83` | Zielhost und Port, hier der HTTPS-Port der Spam-Quarantäne |
+| `-servername …` | Setzt die Server Name Indication (SNI), damit der Server das passende Zertifikat liefert |
+| `x509` | Verarbeitet das durchgereichte Zertifikat |
+| `-noout` | Unterdrückt die Ausgabe des kodierten Zertifikats |
+| `-subject` | Gibt den Subject des Zertifikats aus |
+| `-enddate` | Gibt das Ablaufdatum (notAfter) aus |
+
+</details>
+
 Die Ausgabe muss den neuen Subject und das neue Ablaufdatum zeigen. Auf der Appliance listet `certconfig` mit der Operation `PRINT` die aktiven Zertifikate, und der Browser-Check gegen Admin-GUI und Quarantäneseite bestätigt, dass die Kette sauber aufgebaut ist.
 
 ## Quellen
@@ -217,3 +314,7 @@ Die Ausgabe muss den neuen Subject und das neue Ablaufdatum zeigen. Auf der Appl
 8.  [Win32/Win64 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html): Windows-Builds von Shining Light Productions, auf die das OpenSSL-Projekt verweist, inklusive publizierter Prüfsummenliste.
 
 9.  [MSYS2: Filesystem Paths](https://www.msys2.org/docs/filesystem-paths/): Beschreibung der automatischen Pfadumschreibung, die in der Git Bash das `-subj`-Argument verändert, samt `MSYS_NO_PATHCONV`.
+
+10.  [openssl-s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Referenz des TLS-Testclients, unter anderem `-connect` und `-servername`.
+
+11.  [openssl-x509](https://docs.openssl.org/master/man1/openssl-x509/): Referenz der Anzeigeoptionen, unter anderem `-noout`, `-subject` und `-enddate`.

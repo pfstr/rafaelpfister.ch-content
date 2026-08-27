@@ -59,6 +59,18 @@ Die Kontrolle danach ist wichtig, denn ein falsch zusammengesetzter Schlüssel s
 dig +short TXT selector1._domainkey.example.com | tr -d '" ' | wc -c
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `+short` | Gibt nur die Record-Werte aus, ohne Header und Metadaten |
+| `TXT selector1._domainkey.example.com` | Record-Typ und Name des DKIM-Schlüsselrecords |
+| `tr -d '" '` | Löscht Anführungszeichen und Leerzeichen, setzt also die Teil-Zeichenketten so zusammen, wie ein Prüfer sie liest |
+| `wc -c` | Zählt die Zeichen des zusammengesetzten Werts; die Länge muss zur Vorlage passen |
+
+</details>
+
 ### Ein Record pro Zweck
 
 SPF und DMARC sind so definiert, dass an einem Namen genau ein passender Record stehen darf. Bei SPF führen zwei `v=spf1`-Records zu einem `permerror`, und damit gilt die Prüfung als gescheitert, nicht etwa als bestanden. Bei DMARC ignorieren Empfänger die Domain vollständig, wenn mehrere Records mit `v=DMARC1` beginnen: statt einer strengen Policy greift dann gar keine.
@@ -69,6 +81,18 @@ Das ist der mit Abstand häufigste Fehler bei gewachsenen Zonen. Ein neuer Diens
 dig +short TXT example.com | grep -i spf1
 dig +short TXT _dmarc.example.com
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `+short` | Gibt nur die Record-Werte aus, ohne Header und Metadaten |
+| `TXT` | Abgefragter Record-Typ |
+| `example.com`, `_dmarc.example.com` | Abgefragte Namen: die Domain selbst für SPF, der `_dmarc`-Name für DMARC |
+| `grep -i spf1` | Filtert die SPF-Zeile heraus; `-i` ignoriert Gross- und Kleinschreibung |
+
+</details>
 
 Für DKIM gilt das Gegenteil: Dort ist pro Selektor ein Record vorgesehen, und mehrere Selektoren nebeneinander sind der Normalfall, weil jeder Versanddienst seinen eigenen Schlüssel mitbringt.
 
@@ -97,6 +121,17 @@ Base64 kennt genau die Zeichen A bis Z, a bis z, 0 bis 9, `+`, `/` und `=` als A
 ```bash
 printf '%s' "$KEY" | tr -d 'A-Za-z0-9+/=' | wc -c
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `'%s' "$KEY"` | Gibt den Schlüsselwert unverändert und ohne angehängten Zeilenumbruch aus |
+| `tr -d 'A-Za-z0-9+/='` | Löscht alle für Base64 gültigen Zeichen; übrig bleiben nur Fremdzeichen |
+| `wc -c` | Zählt die verbleibenden Zeichen |
+
+</details>
 
 Kommt hier etwas anderes als `0` heraus, enthält der Schlüssel Fremdzeichen.
 
@@ -135,6 +170,17 @@ Der PTR-Record für die ausgehende IP-Adresse liegt nicht in Ihrer Zone, sondern
 dig +short -x 192.0.2.10
 dig +short A mail1.example.com
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `+short` | Gibt nur die Record-Werte aus, ohne Header und Metadaten |
+| `-x 192.0.2.10` | Reverse-Abfrage: dig bildet daraus selbst den PTR-Namen in der `in-addr.arpa`-Zone |
+| `A mail1.example.com` | Vorwärtsabfrage des Namens aus dem PTR, zur Kontrolle, dass der Rundlauf zur selben IP-Adresse führt |
+
+</details>
 
 Der Name, den Ihr Mailserver im HELO oder EHLO nennt, sollte derselbe sein und ebenfalls auflösbar. Ein Gateway, das sich als `localhost.localdomain` oder mit einem internen Namen meldet, wird von grösseren Empfängern schlechter bewertet.
 
@@ -324,6 +370,18 @@ dig @1.1.1.1 +short TXT _mta-sts.example.com
 dig @1.1.1.1 +short TXT _smtp._tls.example.com
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `@1.1.1.1` | Stellt die Abfrage an diesen Resolver statt an den in `/etc/resolv.conf` konfigurierten |
+| `+short` | Gibt nur die Record-Werte aus, ohne Header und Metadaten |
+| `MX`, `TXT` | Abgefragte Record-Typen |
+| `_dmarc.…`, `selector1._domainkey.…`, `_mta-sts.…`, `_smtp._tls.…` | Die für DMARC, DKIM, MTA-STS und TLS-RPT definierten Namen unterhalb der Domain |
+
+</details>
+
 Gegen den autoritativen Server, um Caching vollständig zu umgehen:
 
 ```bash
@@ -331,11 +389,33 @@ dig +short NS example.com
 dig @ns1.example.com +norecurse TXT _dmarc.example.com
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `NS example.com` | Ermittelt die autoritativen Nameserver der Zone |
+| `@ns1.example.com` | Stellt die Folgeabfrage direkt an einen dieser autoritativen Server |
+| `+norecurse` | Setzt das Recursion-Desired-Bit nicht; der Server antwortet nur aus eigenen Zonendaten, nicht aus einem Cache |
+
+</details>
+
 Unter Windows ohne `dig`:
 
 ```text
 nslookup -type=TXT _dmarc.example.com 1.1.1.1
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-type=TXT` | Abzufragender Record-Typ |
+| `_dmarc.example.com` | Abgefragter Name |
+| `1.1.1.1` | Zu verwendender Resolver statt des systemweit konfigurierten |
+
+</details>
 
 Für die vollständige Auswertung inklusive SPF-Lookup-Zählung, DKIM-Selektorsuche und Alignment-Prüfung gibt es auf dieser Seite den [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check), der eine Domain in einem Durchgang gegen alle hier beschriebenen Records prüft.
 

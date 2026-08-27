@@ -37,6 +37,16 @@ Get-TransportService |
         MessageTrackingLogMaxDirectorySize, MessageTrackingLogPath
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Get-TransportService` | Listet alle Transport-Server der Organisation; ohne Parameter alle Server |
+| `Select-Object Name, MessageTrackingLog…` | Reduziert die Ausgabe auf die genannten Eigenschaften: Aufbewahrungsdauer, Grössenlimit des Log-Verzeichnisses und Log-Pfad |
+
+</details>
+
 Für ein Lastprofil sollte der Zeitraum mindestens einen vollen Batch-Zyklus des Unternehmens abdecken: Monatsrechnungsläufe, Lohnabrechnungen, Newsletter. Eine Woche ist das Minimum, ein Monat ist besser.
 
 ## Rohdaten einsammeln: ein Event pro Nachricht
@@ -52,6 +62,19 @@ $events = Get-TransportService | ForEach-Object {
 "{0} Nachrichten seit {1:yyyy-MM-dd}" -f $events.Count, $start
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server $_.Name` | Fragt das Tracking-Log des jeweiligen Transport-Servers aus der Pipeline ab |
+| `-ResultSize Unlimited` | Hebt das Standardlimit von 1'000 zurückgegebenen Einträgen auf |
+| `-Start $start` | Untere Zeitgrenze der Abfrage; hier die letzten sieben Tage |
+| `-EventId RECEIVE` | Filtert auf genau ein Event pro Nachricht, hier die Annahme durch den Transportdienst |
+| `-f` | Formatoperator: setzt die Werte rechts in die Platzhalter `{0}` und `{1}` der Zeichenkette ein |
+
+</details>
+
 Die Abfrage läuft bewusst über alle Transport-Server, denn jeder Server protokolliert nur seinen eigenen Anteil. Wer nur einen Server abfragt, sieht bei einem Cluster nur einen Bruchteil der Last.
 
 ## Raten pro Minute und Stunde: hier zeigen sich die Bursts
@@ -65,6 +88,17 @@ $proMinute = $events |
 
 $proMinute | Select-Object -First 10 Name, Count
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Group-Object { … }` | Gruppiert nach dem Rückgabewert des Skriptblocks, hier dem auf die Minute gekürzten Zeitstempel |
+| `Sort-Object Count -Descending` | Sortiert die Gruppen absteigend nach Anzahl; die stärksten Minuten stehen zuoberst |
+| `Select-Object -First 10 Name, Count` | Gibt nur die zehn grössten Gruppen aus, reduziert auf Minute und Anzahl |
+
+</details>
 
 Dasselbe pro Stunde und als Tagesgang (welche Uhrzeit ist typischerweise wie stark belastet):
 
@@ -80,6 +114,19 @@ $events |
     Format-Table Name, Count
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Group-Object { … ToString("yyyy-MM-dd HH") }` | Gruppiert auf volle Stunden eines konkreten Tages |
+| `Group-Object { … ToString("HH") }` | Gruppiert nur nach der Uhrzeit und aggregiert damit über alle Tage: der Tagesgang |
+| `Sort-Object Count -Descending` | Stärkste Stunden zuoberst |
+| `Sort-Object Name` | Sortiert den Tagesgang chronologisch nach Uhrzeit statt nach Anzahl |
+| `Format-Table Name, Count` | Tabellarische Ausgabe der beiden Spalten |
+
+</details>
+
 Ein Burst ist erst charakterisiert, wenn Sie neben dem Peak auch seine Dauer kennen. Ein Peak von 400/min, der zwei Minuten anhält, ist eine andere Anforderung als derselbe Peak über eine Stunde. Zählen Sie die Minuten über einem Schwellwert:
 
 ```powershell
@@ -88,6 +135,17 @@ $burstMinuten = $proMinute | Where-Object Count -ge $schwelle
 "{0} Minuten mit >= {1}/min, Peak: {2}/min" -f $burstMinuten.Count,
     $schwelle, ($proMinute | Select-Object -First 1).Count
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Where-Object Count -ge $schwelle` | Filtert auf Minuten mit mindestens Schwellwert vielen Nachrichten (vereinfachte Syntax ohne Skriptblock) |
+| `Select-Object -First 1` | Erste Gruppe der absteigend sortierten Liste, also die stärkste Minute |
+| `-f` | Formatoperator: setzt Anzahl, Schwellwert und Peak in die Platzhalter `{0}` bis `{2}` ein |
+
+</details>
 
 Liegen die Burst-Minuten zusammenhängend (im Output von `$burstMinuten | Sort-Object Name` direkt sichtbar), handelt es sich um einen Batch-Lauf. Notieren Sie Startzeit, Dauer und Wiederholmuster, denn genau dieses Fenster muss die Infrastruktur tragen.
 
@@ -104,6 +162,18 @@ $alleEmpfaenger = $events | ForEach-Object { $_.Recipients } |
 "Eindeutige Empfänger: {0}" -f ($alleEmpfaenger | Sort-Object -Unique).Count
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Measure-Object RecipientCount -Sum` | Summiert das Feld `RecipientCount` über alle Events: die Zahl der Empfänger-Zustellungen |
+| `ForEach-Object { $_.Recipients }` | Entrollt die Empfängerliste jedes Events zu einzelnen Adressen |
+| `ForEach-Object { $_.ToLower() }` | Normalisiert die Adressen auf Kleinschreibung, damit Duplikate als solche erkannt werden |
+| `Sort-Object -Unique` | Sortiert und entfernt Duplikate; `Count` liefert danach die eindeutigen Adressen |
+
+</details>
+
 Die Domain-Verteilung zeigt, wohin der Verkehr fliesst. Dominieren Gmail und Microsoft, entscheiden deren Rate-Limits und die eigene IP-Reputation über den erreichbaren Durchsatz, nicht die eigene Hardware:
 
 ```powershell
@@ -114,6 +184,18 @@ $alleEmpfaenger |
     Select-Object -First 10 Name, Count
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `($_ -split "@")[1]` | Zerlegt die Adresse am `@` und behält den Domain-Teil |
+| `Group-Object` | Gruppiert ohne Argument nach dem Wert selbst, hier der Domain |
+| `Sort-Object Count -Descending` | Häufigste Domains zuoberst |
+| `Select-Object -First 10 Name, Count` | Beschränkt die Ausgabe auf die Top 10 |
+
+</details>
+
 Und die Gegenrichtung: Welche Absender (Applikationen, Funktionspostfächer) erzeugen die Last überhaupt? Das beantwortet nebenbei die Frage, welche Systeme bei einer Migration mitgedacht werden müssen:
 
 ```powershell
@@ -122,6 +204,17 @@ $events |
     Sort-Object Count -Descending |
     Select-Object -First 10 Name, Count
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Group-Object Sender` | Gruppiert nach dem Feld `Sender` (Positionsparameter `-Property`) |
+| `Sort-Object Count -Descending` | Absender mit den meisten Nachrichten zuoberst |
+| `Select-Object -First 10 Name, Count` | Beschränkt die Ausgabe auf die Top 10 |
+
+</details>
 
 ## Nachrichtengrössen: Bytes pro Sekunde statt Mails pro Sekunde
 
@@ -133,6 +226,16 @@ $events | Measure-Object TotalBytes -Average -Maximum -Sum |
         @{n = "MaxMB"; e = { [math]::Round($_.Maximum / 1MB, 1) } },
         @{n = "TotalGB"; e = { [math]::Round($_.Sum / 1GB, 1) } }
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Measure-Object TotalBytes -Average -Maximum -Sum` | Berechnet Mittelwert, Maximum und Summe des Feldes `TotalBytes` in einem Durchgang |
+| `@{n = "…"; e = { … }}` | Berechnete Eigenschaft: `n` benennt die Spalte, `e` liefert den Wert per Skriptblock, hier die Umrechnung in KB, MB und GB |
+
+</details>
 
 Multiplizieren Sie die Burst-Rate mit der Durchschnittsgrösse im Burst-Fenster, und Sie haben die Bandbreiten-Anforderung, die ein neues Gateway oder eine WAN-Strecke tragen muss.
 
@@ -149,6 +252,18 @@ Get-TransportService |
     Format-Table -AutoSize
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Get-Queue -Server $_.Name` | Listet die Transport-Queues des jeweiligen Servers aus der Pipeline |
+| `Sort-Object MessageCount -Descending` | Vollste Queues zuoberst |
+| `Select-Object Identity, Status, …` | Beschränkt die Ausgabe auf die für die Lastbeurteilung relevanten Felder |
+| `Format-Table -AutoSize` | Passt die Spaltenbreiten an den Inhalt an, statt Spalten abzuschneiden |
+
+</details>
+
 Die Lesart: Eine `Submission`-Queue mit hoher Rate bei Tiefe 0 heisst, der Server verarbeitet die Last ohne anzustauen. `MessageCount` hoch bei `OutgoingRate` nahe null heisst Rückstau. `Status Retry` mit einer 4xx-Meldung in `LastError` heisst, die Gegenstelle drosselt. `Shadow`-Queues mit Bestand sind dagegen normal, das sind Redundanzkopien für den Partner-Server, kein Rückstau.
 
 Für eine kontinuierliche Kurve während eines Lastfensters eignet sich der Performance Counter der Transport-Queues, hier eine Minute lang alle fünf Sekunden:
@@ -157,6 +272,17 @@ Für eine kontinuierliche Kurve während eines Lastfensters eignet sich der Perf
 Get-Counter "\MSExchangeTransport Queues(_total)\Messages Completed Delivery Per Second" `
     -SampleInterval 5 -MaxSamples 12
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `"\MSExchangeTransport Queues(_total)\…"` | Pfad des Performance Counters (Positionsparameter `-Counter`); die Instanz `_total` summiert über alle Queues |
+| `-SampleInterval 5` | Abstand zwischen zwei Messungen in Sekunden |
+| `-MaxSamples 12` | Anzahl der Messungen; 12 Messungen alle 5 Sekunden ergeben eine Minute |
+
+</details>
 
 ## Andere Systeme: dasselbe Prinzip mit CSV
 

@@ -29,6 +29,9 @@ Dieser Testaufbau sendet, anders als ein reiner Loopback-Funktionstest, an ein a
 
 Zur Orientierung vorab die Optionen, die in diesem Beitrag vorkommen, sinngemäss aus der Manpage übersetzt:
 
+<details class="options-details">
+<summary>Optionen im Überblick</summary>
+
 | Option | Bedeutung |
 |---|---|
 | `-s n` | Anzahl paralleler SMTP-Sessions (Standard: 1) |
@@ -45,6 +48,8 @@ Zur Orientierung vorab die Optionen, die in diesem Beitrag vorkommen, sinngemäs
 | `-w n` | Feste Wartezeit von n Sekunden zwischen Nachrichten (pro Session) |
 | `-v` | Ausführliche Ausgabe für die Fehlersuche |
 | `host:port` | Ziel der Einlieferung via TCP; ohne Portangabe der Standardport smtp |
+
+</details>
 
 Die vollständige Liste inklusive TLS-, LMTP- und Timing-Optionen steht in der Manpage `smtp-source(1)`; das Gegenstück für die Empfangsseite ist `smtp-sink(1)` und kommt bei der Auswertung weiter unten zum Einsatz.
 
@@ -67,6 +72,9 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
   gateway.example.com:25
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `-c` | Laufender Zähler abgeschlossener Zustellungen als einzeilige Fortschrittsanzeige |
@@ -78,6 +86,8 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
 | `-f` | Absenderadresse |
 | `-t` | Empfänger-Basisadresse; `-N` macht daraus `1test@` bis `50000test@` (Postfix 3.5) bzw. `test0@` bis `test49999@` (aktuelle Versionen) |
 | `gateway.example.com:25` | Zielhost und Port |
+
+</details>
 
 `-d` ist für das Lastbild entscheidend: Ohne diese Option trennt `smtp-source` nach jeder Nachricht die Verbindung und baut für die nächste eine neue auf; mit `-d` bleiben die acht Verbindungen stehen und liefern nacheinander alle Nachrichten aus, wie es ein Massenversender tut.
 
@@ -97,6 +107,17 @@ Manche Lasttests brauchen einen eigenen Header, etwa als Marker, an dem das Gate
   printf '\r\n'; } > lasttest.eml
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `head -c 5120` | Gibt die ersten 5120 Bytes der Eingabe aus, hier aus `/dev/zero` |
+| `tr '\0' 'x'` | Ersetzt jedes Nullbyte durch das Zeichen `x` und erzeugt so den 5-KB-Fülltext |
+| `> lasttest.eml` | Schreibt die zusammengesetzte Nachricht in die Datei für `-F` |
+
+</details>
+
 ```bash
 smtp-source -c -d -N -s 8 -m 50000 -F lasttest.eml \
   -f lasttest@example.com \
@@ -104,9 +125,14 @@ smtp-source -c -d -N -s 8 -m 50000 -F lasttest.eml \
   gateway.example.com:25
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `-F datei` | Sendet Header und Body unverändert aus der Datei; ersetzt den generierten Nachrichteninhalt |
+
+</details>
 
 Zwei Konsequenzen: `-F` verdrängt `-l` und `-S`, weil Grösse und Betreff nun aus der Datei kommen (beides gehört deshalb hinein). `-N` bleibt dagegen wirksam, die Empfänger werden weiter durchnummeriert; der Header ist in allen Nachrichten identisch, da er aus der festen Datei stammt.
 
@@ -124,6 +150,23 @@ for s in 1 2 4 8 16 32; do
   echo "$s Sessions: $(( 2000000000000 / (t1 - t0) )) Mails/s"
 done
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `date +%s%N` | Gibt Unix-Sekunden direkt gefolgt vom Nanosekunden-Anteil als eine Zahl aus |
+| `-d` | Verbindungen bleiben über alle Nachrichten der Stufe stehen |
+| `-N` | Empfänger-Nummerierung über den per-Prozess-Zähler |
+| `-s "$s"` | Anzahl paralleler Sessions, pro Schleifendurchlauf 1 bis 32 |
+| `-m 2000` | 2'000 Nachrichten pro Messstufe |
+| `-F lasttest.eml` | Dieselbe Nachrichtendatei wie im geplanten Hauptlauf |
+| `-f` | Absenderadresse |
+| `-t '@blackhole.example.com'` | Empfänger-Basisadresse mit leerem Local-Part auf einer Verwerf-Domain |
+| `gateway.example.com:25` | Zielhost und Port |
+
+</details>
 
 Zwei Details am Aufruf: Auf `-c` wird hier bewusst verzichtet, damit zwischen den Messzeilen keine laufenden Zählerausgaben stehen; die Schleife liefert pro Stufe genau eine Ergebniszeile. Und der leere Local-Part in `-t` funktioniert bei einer Verwerf-Domain gut mit der Nummerierung zusammen: Beim vorangestellten Zähler von Postfix 3.5 entstehen daraus rein numerische Empfängeradressen (`1@blackhole.example.com`, `2@…`), was die Auswertung in den Logs übersichtlich hält.
 
@@ -152,12 +195,17 @@ Steht auf dem Zielsystem ein eigener Testempfänger, übernimmt `smtp-sink` die 
 smtp-sink -c -d "mails/%Y%m%d-%H%M%S." 0.0.0.0:2525 200
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `-c` | Laufende Zähler statt des vollen SMTP-Dialogs |
 | `-d "mails/…"` | Beim Sink: Dump, nicht Verbindungshaltung. Schreibt jede angenommene Nachricht in eine eigene Datei (Namensmuster per strftime), inklusive eines `X-Rcpt-Args`-Headers mit der Empfängeradresse |
 | `0.0.0.0:2525` | Lauscht auf allen Interfaces auf Port 2525 |
 | `200` | Backlog: maximale Länge der Warteschlange wartender Verbindungen gemäss listen(2) |
+
+</details>
 
 Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht. Das Suchmuster passt zur Adressform von Postfix 3.5 (Nummer vor der Adresse); bei aktuellen Versionen entsprechend `test[0-9]+@` und `seq 0 49999`:
 
@@ -167,10 +215,37 @@ grep -rhoE '[0-9]+test@example\.com' mails/ | \
   awk '{printf "%08d\n", $1}' | sort > empfangen.txt
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `grep -r` | Durchsucht das Verzeichnis `mails/` rekursiv |
+| `grep -h` | Unterdrückt die Dateinamen vor den Treffern |
+| `grep -o` | Gibt nur den passenden Adressteil aus, nicht die ganze Zeile |
+| `grep -E` | Erweiterte reguläre Ausdrücke, hier für `[0-9]+` |
+| `sort -u` | Sortiert und entfernt Duplikate (jede Nummer einmal) |
+| `awk '{printf "%08d\n", $1}'` | Füllt jede Nummer mit führenden Nullen auf acht Stellen auf |
+| `sort` | Sortiert die aufgefüllten Nummern für den Abgleich mit `comm` |
+
+</details>
+
 ```bash
 seq 1 50000 | awk '{printf "%08d\n", $1}' | \
   comm -23 - empfangen.txt
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `seq 1 50000` | Erzeugt die Sollmenge der Nummern 1 bis 50'000 |
+| `comm -23` | Unterdrückt Spalte 2 (nur in Datei 2) und Spalte 3 (in beiden); übrig bleiben die Zeilen, die nur in der Sollmenge stehen |
+| `-` | Liest die erste Vergleichsliste aus der Pipe statt aus einer Datei |
+| `empfangen.txt` | Zweite Vergleichsliste: die tatsächlich empfangenen Nummern |
+
+</details>
 
 `comm -23` gibt genau die Nummern aus, die in der Sollmenge stehen, aber nicht in der Empfangsliste: die fehlenden Mails. Eine leere Ausgabe bedeutet vollständige Zustellung. Tauchen Nummern doppelt auf (erkennbar am Unterschied zwischen `sort` und `sort -u`), hat unterwegs ein System die Nachricht dupliziert, was ebenfalls ein Befund ist.
 
@@ -195,6 +270,20 @@ for w in 0 1 2 3; do
 done
 wait
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-s 1` | Eine Session pro Aufruf; die Parallelität liefern die vier Worker |
+| `-m 1` | Genau eine Nachricht pro Aufruf, damit der Betreff pro Mail gesetzt werden kann |
+| `-l 5120` | Nachrichtengrösse in Bytes (ohne Header), hier 5 KB |
+| `-S "$(printf 'Lasttest %05d' "$i")"` | Betreff mit der auf fünf Stellen aufgefüllten laufenden Nummer |
+| `-f` / `-t` | Absender- und Empfängeradresse |
+| `gateway.example.com:25` | Zielhost und Port |
+
+</details>
 
 Der Preis ist ein vollständiger Verbindungsaufbau pro Mail: TCP-Handshake, Banner, `HELO`, Versand, `QUIT`. Dieser Lauf misst damit nicht den maximalen Durchsatz des Zielsystems, sondern einen bewusst verbindungsintensiven Fall. Die Worker-Zahl ermitteln Sie analog zum Kalibrierlauf oben, nur mit der Worker-Schleife statt `-s`. Die führenden Nullen im Betreff ersparen beim Abgleich das Umformatieren, das die `-N`-Variante braucht.
 

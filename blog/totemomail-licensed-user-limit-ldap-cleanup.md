@@ -119,6 +119,21 @@ New-ADUser -Name "svc-totemomail-ldap" `
   -Enabled $true
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Name` | Anzeigename und CN des neuen Kontos |
+| `-SamAccountName` | Anmeldename (Prä-Windows-2000-Logon-Name) |
+| `-UserPrincipalName` | UPN im Format `benutzer@domäne` |
+| `-Path` | Ziel-OU als Distinguished Name |
+| `-AccountPassword` | Passwort als SecureString; `Read-Host -AsSecureString` fragt es verdeckt an der Konsole ab |
+| `-PasswordNeverExpires $true` | Passwort läuft nicht ab |
+| `-Enabled $true` | Konto direkt aktiviert anlegen (Standard wäre deaktiviert) |
+
+</details>
+
 Ein gewöhnlicher Domänenbenutzer kann das AD bereits lesen, zusätzliche Rechte braucht der Account also nicht. Für das Passwort empfiehlt sich ein langer, zufälliger Wert, den Sie in Ihrem Passwort-Tresor ablegen.
 
 Wenn Ihre Sicherheitsrichtlinie es vorsieht, können Sie auch ein gMSA (Group Managed Service Account) verwenden. totemomail erwartet allerdings Bind-DN und Passwort, weshalb in der Praxis meist ein klassischer Service-Account mit `PasswordNeverExpires` zum Einsatz kommt.
@@ -136,11 +151,34 @@ nc -vz dc01.corp.example.com 636
 nmap -p 389,636,3268,3269 dc01.corp.example.com
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `nc -v` | Ausführliche Ausgabe: meldet Erfolg oder Fehlschlag des Verbindungsaufbaus |
+| `nc -z` | Nur Verbindungsaufbau prüfen, keine Daten senden |
+| `dc01.corp.example.com 636` | Zielhost und Zielport der Prüfung |
+| `nmap -p 389,636,3268,3269` | Liste der zu prüfenden TCP-Ports |
+| `dc01.corp.example.com` | Zielhost des Portscans |
+
+</details>
+
 Unter Windows mit PowerShell:
 
 ```powershell
 Test-NetConnection -ComputerName dc01.corp.example.com -Port 636
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-ComputerName` | Zielhost der Verbindungsprüfung |
+| `-Port` | Zu prüfender TCP-Port, hier 636 für LDAPS |
+
+</details>
 
 Kommt hier keine Verbindung zustande, haben Sie ein Firewall- oder Routing-Problem und kein LDAP-Problem.
 
@@ -151,6 +189,18 @@ In der Praxis scheitert LDAPS am häufigsten am Zertifikat. Sehen Sie sich desha
 ```bash
 openssl s_client -connect dc01.corp.example.com:636 -showcerts </dev/null
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `s_client` | TLS-Testclient von OpenSSL: baut die Verbindung auf und zeigt Handshake-Details |
+| `-connect dc01.corp.example.com:636` | Zielhost und Port des TLS-Handshakes |
+| `-showcerts` | Zeigt die komplette vom Server gelieferte Zertifikatskette, nicht nur das Serverzertifikat |
+| `</dev/null` | Schliesst die Standardeingabe, damit `s_client` nach dem Handshake beendet, statt auf Eingaben zu warten |
+
+</details>
 
 Achten Sie auf zwei Dinge:
 
@@ -173,6 +223,9 @@ ldapsearch -x \
   dn sAMAccountName mail userAccountControl
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Flag | Bedeutung |
 | --- | --- |
 | `-x` | Simple Authentication (Bind-DN und Passwort) |
@@ -182,6 +235,7 @@ ldapsearch -x \
 | `-b` | Search Base |
 | danach | Filter, anschliessend die zurückzugebenden Attribute |
 
+</details>
 
 Liefert die Abfrage das Objekt mit seinen Attributen zurück, steht die Verbindung. Wie viele Konten im AD deaktiviert sind, ermitteln Sie über den Bit-Filter:
 
@@ -192,6 +246,17 @@ ldapsearch -x -H ldaps://dc01.corp.example.com:636 \
   "(&(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=2))" \
   sAMAccountName | grep -c sAMAccountName
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-x`, `-H`, `-D`, `-W`, `-b` | wie in der Abfrage oben: Simple Bind über LDAPS mit Search Base |
+| `sAMAccountName` | einziges angefordertes Attribut; hält die Ausgabe auf eine Attributzeile pro Treffer |
+| `grep -c sAMAccountName` | zählt die Zeilen mit diesem Attribut und damit die gefundenen Konten |
+
+</details>
 
 ### 2.4 Werkzeuge unter Windows
 
@@ -205,6 +270,17 @@ $searcher.SearchRoot = [adsi]"LDAP://dc01.corp.example.com/DC=corp,DC=example,DC
 $searcher.FindOne().Properties
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `[adsisearcher]"(…)"` | erzeugt einen `DirectorySearcher` mit dem angegebenen LDAP-Filter |
+| `SearchRoot` | Startpunkt der Suche als ADSI-Pfad: Server plus Base DN |
+| `FindOne()` | liefert den ersten Treffer; `.Properties` zeigt dessen Attribute |
+
+</details>
+
 Mit RSAT und dem AD-Modul geht es kürzer:
 
 ```powershell
@@ -214,11 +290,34 @@ Get-ADUser -Server dc01.corp.example.com `
   Measure-Object
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Server` | Domain Controller, gegen den die Abfrage läuft |
+| `-SearchBase` | Wurzel der Suche als Distinguished Name |
+| `-Filter` | Filter in PowerShell-Syntax; hier nur aktivierte Konten |
+| `Measure-Object` | zählt die zurückgegebenen Objekte, statt sie aufzulisten |
+
+</details>
+
 Klassisch über `dsquery`, auf jedem DC verfügbar:
 
 ```bash
 dsquery user -disabled -limit 0
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `user` | Objekttyp der Suche: Benutzerkonten |
+| `-disabled` | nur deaktivierte Konten |
+| `-limit 0` | keine Begrenzung der Trefferzahl (Standard: 100) |
+
+</details>
 
 Erst wenn einer dieser Tests sauber durchläuft, gehen Sie in totemomail weiter.
 
@@ -316,6 +415,16 @@ Mit dem Flag `-d 1` liefert `ldapsearch` den Debug-Output des Verbindungsaufbaus
 ```bash
 ldapsearch -d 1 -x -H ldaps://dc01.corp.example.com:636 ...
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-d 1` | Debug-Level 1: protokolliert den Ablauf des Verbindungsaufbaus inklusive TLS-Handshake auf stderr |
+| `-x`, `-H` | Simple Bind und LDAP-URI wie in den Abfragen oben |
+
+</details>
 
 So sehen Sie, ob der TLS-Handshake oder erst der Bind fehlschlägt. Diese Unterscheidung zeigt Ihnen das totemomail-GUI unter seiner generischen Fehlermeldung nicht.
 

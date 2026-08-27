@@ -48,11 +48,32 @@ Die Diagnose gewinnt enorm, wenn Sie diese Ebenen nacheinander und einzeln prüf
 getent hosts relay.example.com
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `hosts` | Abzufragende NSS-Datenbank; nutzt dieselben Quellen und dieselbe Reihenfolge wie das System selbst, gemäss `nsswitch.conf` |
+| `relay.example.com` | Aufzulösender Hostname |
+
+</details>
+
 Bleibt die Ausgabe leer, ist auf diesem Host kein Nameserver erreichbar oder er beantwortet externe Namen nicht. Das kommt in der Praxis regelmässig vor: Appliances in abgeschotteten Zonen bekommen oft nur einen internen Resolver, der ausschliesslich eigene Zonen kennt.
 
 ```bash
 cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `/etc/resolv.conf` | Von `cat` ausgegebene Datei mit den konfigurierten Nameservern |
+| `hosts:` | Suchmuster für `grep`: die Zeile, die die Reihenfolge der Auflösungsquellen (Dateien, DNS) festlegt |
+| `/etc/nsswitch.conf` | Von `grep` durchsuchte Datei mit der NSS-Konfiguration |
+
+</details>
 
 Fehlt die Auflösung, testen Sie im Folgenden direkt gegen die IP-Adresse. Das ist für die Diagnose völlig ausreichend und trennt das DNS-Problem sauber vom Transportproblem ab. Für den Produktivbetrieb bleibt die fehlende Auflösung natürlich ein eigener Befund, der behoben gehört.
 
@@ -63,6 +84,18 @@ Für die reine TCP-Prüfung genügt bash. Das Pseudogerät `/dev/tcp` öffnet ei
 ```bash
 timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `timeout 10` | Bricht den nachfolgenden Befehl nach 10 Sekunden ab und liefert dann Exit-Code 124 |
+| `bash -c '…'` | Führt die Befehlszeichenkette in einer bash aus; nötig, weil `/dev/tcp` ein bash-Feature ist |
+| `exec 3<>/dev/tcp/192.0.2.25/25` | Öffnet Filedeskriptor 3 lesend und schreibend als TCP-Verbindung zu 192.0.2.25, Port 25 |
+| `echo "exit=$?"` | Gibt den Exit-Code des vorangegangenen Befehls aus |
+
+</details>
 
 Der Exit-Code ist hier die eigentliche Information:
 
@@ -84,6 +117,18 @@ for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
 done
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `set -- $t` | Zerlegt das Wertepaar am Leerzeichen in die Positionsparameter `$1` (IP-Adresse) und `$2` (Port) |
+| `timeout 8` | Bricht den Verbindungsversuch nach 8 Sekunden ab (Exit-Code 124) |
+| `bash -c "…"` | Führt den `/dev/tcp`-Verbindungsaufbau in einer bash aus |
+| `2>/dev/null` | Unterdrückt Fehlermeldungen, damit pro Ziel genau eine Ergebniszeile erscheint |
+
+</details>
+
 Schlägt auch der Kontrolltest fehl, hat das System generell keinen direkten Ausgang und der Verkehr gehört über ein internes Relay oder einen Proxy. Weiter unten mehr dazu, warum dieser Fall besonders tückisch ist.
 
 Fehlt `/dev/tcp`, ist die Shell keine bash. Unter `sh`, `ash` oder `ksh` gibt es das Feature nicht, was gerne als vermeintliches Netzwerkproblem fehlgedeutet wird:
@@ -91,6 +136,17 @@ Fehlt `/dev/tcp`, ist die Shell keine bash. Unter `sh`, `ash` oder `ksh` gibt es
 ```bash
 ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-p $$` | Beschränkt die Ausgabe auf den Prozess mit der PID der aktuellen Shell (`$$`) |
+| `-o comm=` | Gibt nur den Befehlsnamen aus; das leere Label nach `=` unterdrückt die Kopfzeile |
+| `${BASH_VERSION:-keine bash}` | Gibt die bash-Version aus oder den Ersatztext, falls die Variable nicht gesetzt ist |
+
+</details>
 
 ## Schritt 3: Erst zuhören, nicht senden
 
@@ -100,6 +156,17 @@ Ein SMTP-Server begrüsst von sich aus mit einem `220`-Banner. Der aussagekräft
 { exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `exec 3<>/dev/tcp/192.0.2.25/25` | Öffnet Filedeskriptor 3 als TCP-Verbindung zum Ziel |
+| `timeout 15 cat <&3` | Liest 15 Sekunden lang alles, was der Server von sich aus sendet, und gibt es aus |
+| `echo "[ende exit=$?]"` | Zeigt nach Ablauf den Exit-Code an; 124 heisst: 15 Sekunden lang kam nichts mehr |
+
+</details>
+
 Diese wenigen Zeichen trennen zwei völlig verschiedene Situationen. Kommt ein `220 mail.example.com ESMTP`, spricht die Gegenstelle und alle weiteren Fehler liegen im Dialog. Kommt nichts, liegt es nicht an einem falsch formulierten Kommando Ihrerseits, denn Sie haben ja keines geschickt.
 
 Der Filedeskriptor bleibt danach in der Shell offen. Schliessen Sie ihn, bevor Sie den nächsten Test starten, sonst arbeiten Sie unter Umständen mit einer alten, nicht mehr intakten Verbindung weiter:
@@ -107,6 +174,16 @@ Der Filedeskriptor bleibt danach in der Shell offen. Schliessen Sie ihn, bevor S
 ```bash
 exec 3<&- 3>&-
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `3<&-` | Schliesst die Leseseite von Filedeskriptor 3 |
+| `3>&-` | Schliesst die Schreibseite von Filedeskriptor 3 |
+
+</details>
 
 ## Schritt 4: Der SMTP-Dialog von Hand
 
@@ -127,6 +204,21 @@ sleep 2; kill $R 2>/dev/null
 }
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `exec 3<>/dev/tcp/192.0.2.25/25` | Öffnet Filedeskriptor 3 als TCP-Verbindung zum Ziel |
+| `cat <&3 & R=$!` | Startet einen Hintergrund-Leser für Filedeskriptor 3 und merkt sich dessen PID in `R` |
+| `printf '…\r\n' >&3` | Sendet ein SMTP-Kommando mit dem verlangten CRLF-Zeilenende auf die Verbindung |
+| `sleep n` | Wartet die angegebenen Sekunden auf die Serverantwort, bevor das nächste Kommando folgt |
+| `date -R` | Liefert das Datum im RFC-konformen Format für den `Date:`-Header |
+| `date +%s` | Liefert die Unix-Zeit als einfache eindeutige Basis für die Message-ID |
+| `kill $R 2>/dev/null` | Beendet den Hintergrund-Leser; die Fehlermeldung entfällt, falls er schon beendet ist |
+
+</details>
+
 Zwei Details entscheiden über Erfolg oder Misserfolg. SMTP verlangt CRLF als Zeilenende, deshalb `printf` mit `\r\n` und nicht `echo`. Und der Punkt auf einer eigenen Zeile beendet den Nachrichtenteil; er muss als `\r\n.\r\n` gesendet werden.
 
 Der erwartete Verlauf: `220` beim Verbindungsaufbau, `250` auf EHLO, `250 2.1.0` auf MAIL FROM, `250 2.1.5` auf RCPT TO, `354` auf DATA und am Ende `250 2.0.0 Ok: queued as <id>`. Notieren Sie sich die Queue-ID. Damit lässt sich die Nachricht beim betreibenden Provider nachverfolgen, falls sie beim Empfänger nie ankommt.
@@ -141,6 +233,19 @@ Für die verschlüsselte Verbindung übernimmt `openssl s_client` die STARTTLS-V
 openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-connect 192.0.2.25:25` | Zielhost und Port der Verbindung |
+| `-starttls smtp` | Führt zuerst den SMTP-Klartextdialog und wechselt dann per STARTTLS zu TLS |
+| `-tls1_2` | Verhandelt ausschliesslich TLS 1.2 |
+| `-brief` | Reduziert die Ausgabe auf eine kurze Zusammenfassung der ausgehandelten Verbindung |
+| `</dev/null` | Schliesst die Standardeingabe sofort, damit `s_client` nach dem Handshake nicht interaktiv wartet |
+
+</details>
+
 Verbinden Sie sich über die IP-Adresse, weil DNS fehlt, greift die Hostnamensprüfung ins Leere. Der Zertifikatsname passt dann nicht zur numerischen Adresse. SNI und Prüfnamen lassen sich explizit setzen, ganz ohne DNS-Abfrage:
 
 ```bash
@@ -148,6 +253,16 @@ openssl s_client -connect 192.0.2.25:25 \
   -servername mail.example.com -verify_hostname mail.example.com \
   -starttls smtp -tls1_2 -brief </dev/null
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-servername mail.example.com` | Setzt den SNI-Namen im ClientHello, unabhängig von der Verbindungsadresse |
+| `-verify_hostname mail.example.com` | Prüft das Serverzertifikat gegen diesen Namen statt gegen die numerische Adresse |
+
+</details>
 
 Zwei Fehlerbilder tauchen hier regelmässig auf und werden gerne falsch gedeutet.
 
@@ -203,11 +318,33 @@ Die Domain muss den verwendeten Versandweg autorisieren. Ein Blick in den SPF-Re
 dig +short TXT example.com | grep spf1
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `+short` | Gibt nur die Record-Werte aus, ohne Header und Metadaten |
+| `TXT` | Abgefragter Record-Typ |
+| `example.com` | Abgefragter Name |
+| `grep spf1` | Filtert aus mehreren TXT-Records die SPF-Zeile heraus |
+
+</details>
+
 Und bei aktivem DMARC entscheidet das Alignment. Steht im Record `aspf=s`, müssen die Domain im Envelope (MAIL FROM) und die Domain im `From:`-Header exakt übereinstimmen, nicht nur verwandt sein:
 
 ```bash
 dig +short TXT _dmarc.example.com
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `+short` | Gibt nur die Record-Werte aus, ohne Header und Metadaten |
+| `TXT _dmarc.example.com` | Record-Typ und der für DMARC definierte Name unterhalb der Domain |
+
+</details>
 
 Bei `p=reject` verschwindet eine Testmail mit unpassendem Alignment beim Empfänger kommentarlos, obwohl Ihr Relay sie mit `250 queued` angenommen hat. Das ist die häufigste Ursache für Nachrichten, die sendeseitig als erfolgreich gelten und trotzdem nie ankommen.
 
@@ -224,6 +361,16 @@ Welche Quelladresse Ihr System für ein bestimmtes Ziel verwendet, beantwortet e
 ```bash
 ip route get 192.0.2.25
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `route get` | Fragt den Kernel, welche Route er für ein konkretes Ziel wählen würde |
+| `192.0.2.25` | Zieladresse der simulierten Verbindung |
+
+</details>
 
 Steht das System hinter NAT, sieht die Gegenstelle nicht diese, sondern die öffentliche Adresse des Perimeters. Ermitteln lässt sich die von innen nicht, solange gar kein Verkehr durchkommt; sie steht in der NAT-Regel.
 

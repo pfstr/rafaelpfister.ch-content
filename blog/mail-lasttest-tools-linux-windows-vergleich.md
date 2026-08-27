@@ -57,7 +57,23 @@ Für die Dimensionierung eines Massenversands zählt das erste Lastbild, und daf
 time smtp-source -s 50 -m 10000 -l 5120 -c -f last@test.example -t senke@test.example gateway.test.example:25
 ```
 
-Die Option `-c` zählt die abgesetzten Nachrichten live mit, `time` liefert die Gesamtdauer und damit die Rate. Wichtige Grenzen: `smtp-source` misst keine Latenz-Perzentile und die Nachrichten sind synthetisch gleichförmig. Für die Frage "wie viel nimmt das System maximal an" ist es dennoch erste Wahl, weil es selbst auf schwacher Hardware zehntausende Nachrichten pro Minute erzeugt und der Generator praktisch nie zum Engpass wird.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `time` | Misst die Gesamtdauer des Aufrufs; daraus ergibt sich die Rate in Mails pro Sekunde |
+| `-s 50` | 50 parallele SMTP-Sessions |
+| `-m 10000` | Gesamtzahl der Nachrichten, verteilt auf die Sessions |
+| `-l 5120` | Grösse des Nachrichtentexts in Bytes (ohne Header), hier 5 KB |
+| `-c` | Laufender Zähler abgesetzter Nachrichten als Fortschrittsanzeige |
+| `-f last@test.example` | Absenderadresse |
+| `-t senke@test.example` | Empfängeradresse |
+| `gateway.test.example:25` | Zielhost und Port der Einlieferung |
+
+</details>
+
+Wichtige Grenzen: `smtp-source` misst keine Latenz-Perzentile und die Nachrichten sind synthetisch gleichförmig. Für die Frage "wie viel nimmt das System maximal an" ist es dennoch erste Wahl, weil es selbst auf schwacher Hardware zehntausende Nachrichten pro Minute erzeugt und der Generator praktisch nie zum Engpass wird.
 
 **Postal** ist der klassische dedizierte Mailserver-Benchmark unter Linux. Es variiert Absender, Empfänger und Nachrichtengrösse automatisch, hält eine Zielrate über lange Zeiträume und schreibt minütliche Statistiken. Damit eignet es sich besser als `smtp-source` für Soak-Tests, also Dauerlast über Stunden. Das zugehörige `bhm` (Black Hole Mailer) übernimmt die Rolle der Senke. Postal ist alt, aber genau dafür gebaut und in den Paketquellen der meisten Distributionen enthalten.
 
@@ -124,6 +140,19 @@ grep "status=sent" /var/log/mail.log |
   awk '{a[NR]=$1} END {print "n="NR, "p50="a[int(NR*0.5)], "p95="a[int(NR*0.95)], "p99="a[int(NR*0.99)], "max="a[NR]}'
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `grep "status=sent" /var/log/mail.log` | Filtert das Maillog auf erfolgreich zugestellte Nachrichten |
+| `grep -o "delay=[0-9.]*"` | `-o` gibt nur den Treffer selbst aus, hier das `delay`-Feld mit seinem Wert |
+| `cut -d= -f2` | Trennt am `=` (`-d`) und behält das zweite Feld (`-f2`), also den Zahlenwert |
+| `sort -n` | Sortiert numerisch statt alphabetisch; Voraussetzung für die Perzentilbildung |
+| `awk '…'` | Sammelt die sortierten Werte in einem Array und gibt Anzahl, p50, p95, p99 und Maximum aus |
+
+</details>
+
 Auf Exchange-Seite ist das Message Tracking Log die zentrale Quelle. Für einen Testlauf mit Betreffkonvention:
 
 ```powershell
@@ -136,6 +165,20 @@ $p = @{
 Get-MessageTrackingLog @p | Group-Object EventId |
     Sort-Object Count -Descending | Format-Table Name, Count
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Start` / `End` | Zeitfenster der Log-Suche; hier per Splatting (`@p`) übergeben |
+| `MessageSubject "LOADTEST"` | Filtert auf Nachrichten, deren Betreff den Marker enthält |
+| `ResultSize Unlimited` | Hebt die Standardgrenze von 1000 zurückgegebenen Einträgen auf |
+| `Group-Object EventId` | Gruppiert die Tracking-Ereignisse nach Typ (RECEIVE, DELIVER, DEFER, …) |
+| `Sort-Object Count -Descending` | Sortiert die Ereignisgruppen absteigend nach Häufigkeit |
+| `Format-Table Name, Count` | Zeigt pro Ereignistyp die Anzahl |
+
+</details>
 
 Die Differenz der Zeitstempel zwischen RECEIVE- und DELIVER-Ereignis derselben MessageId ergibt die Ende-zu-Ende-Latenz pro Nachricht; exportiert als CSV lässt sich daraus die Perzentilverteilung rechnen.
 

@@ -35,15 +35,47 @@ command -v smtp-source || \
   ls /usr/sbin/smtp-source /usr/lib/postfix/sbin/smtp-source 2>/dev/null
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `command -v smtp-source` | Gibt den Pfad aus, falls das Programm im PATH liegt; sonst nichts |
+| `/usr/sbin/... /usr/lib/postfix/sbin/...` | Die üblichen Ablageorte ausserhalb des PATH (RHEL bzw. Debian/Ubuntu) |
+| `2>/dev/null` | Unterdrückt die Fehlermeldungen von `ls` für nicht vorhandene Pfade |
+
+</details>
+
 Bleibt die Ausgabe leer, fehlt auch das zugehörige Paket. Auf RPM-Systemen bestätigen Sie das und prüfen zugleich, ob die Repositories Postfix anbieten:
 
 ```bash
 rpm -qa | grep -i postfix
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-q` | Abfragemodus von rpm |
+| `-a` | Listet alle installierten Pakete auf |
+| `grep -i postfix` | Filtert die Liste ohne Beachtung der Gross-/Kleinschreibung |
+
+</details>
+
 ```bash
 yum list available postfix
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `list available` | Zeigt nur Pakete, die in den Repositories vorhanden, aber nicht installiert sind |
+| `postfix` | Beschränkt die Ausgabe auf das gesuchte Paket |
+
+</details>
 
 Auf dem Testsystem war kein Postfix installiert, das BaseOS-Repository bot aber `postfix-3.5.8-8.el8_10` an. Damit ist der Weg frei: Das Paket lässt sich herunterladen, ohne es zu installieren.
 
@@ -55,11 +87,33 @@ Auf dem Testsystem war kein Postfix installiert, das BaseOS-Repository bot aber 
 cd /tmp && yum download postfix
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `cd /tmp` | Wechselt in ein beschreibbares Verzeichnis; `yum download` legt das RPM im aktuellen Verzeichnis ab |
+| `download` | Subcommand aus `dnf-plugins-core`: lädt das Paket herunter, ohne es zu installieren |
+| `postfix` | Name des herunterzuladenden Pakets |
+
+</details>
+
 Meldet yum `No such command: download`, fehlt das Plugin. Mit Root-Rechten erreichen Sie dasselbe über den Installationsbefehl mit `--downloadonly`:
 
 ```bash
 sudo yum install --downloadonly --downloaddir=/tmp postfix
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `--downloadonly` | Bricht nach dem Herunterladen ab, es wird nichts installiert |
+| `--downloaddir=/tmp` | Zielverzeichnis für das heruntergeladene RPM |
+| `postfix` | Name des Pakets |
+
+</details>
 
 Ganz ohne beides bleibt der Umweg über ein zweites System gleicher RHEL-Version: RPM dort herunterladen und per `scp` auf das Zielsystem kopieren.
 
@@ -73,7 +127,22 @@ cd /tmp && rpm2cpio postfix-*.rpm | \
   './usr/lib64/postfix/*'
 ```
 
-Die Dateien liegen danach unterhalb von `/tmp/usr/`. Die Pfadangaben beginnen mit `./`, weil cpio die Pfade exakt so erwartet, wie sie im Archiv stehen.
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `rpm2cpio postfix-*.rpm` | Wandelt das RPM in einen cpio-Archivstrom auf stdout um |
+| `-i` | cpio-Extraktionsmodus (copy-in) |
+| `-d` | Legt fehlende Verzeichnisse beim Entpacken an |
+| `-m` | Behält die Änderungszeiten der Dateien bei |
+| `-v` | Listet jede extrahierte Datei auf |
+| `./usr/sbin/smtp-source ./usr/sbin/smtp-sink` | Die beiden Binaries, Pfade exakt wie im Archiv (mit führendem `./`) |
+| `'./usr/lib64/postfix/*'` | Die Postfix-Bibliotheken; das Muster ist gequotet, damit cpio es auswertet und nicht die Shell |
+
+</details>
+
+Die Dateien liegen danach unterhalb von `/tmp/usr/`.
 
 ## Problem 1: /tmp ist mit noexec gemountet
 
@@ -90,6 +159,16 @@ Exit-Code 126 trotz korrekt gesetztem Execute-Bit ist das typische Bild für ein
 mount | grep ' /tmp '
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `mount` | Listet ohne Argumente alle eingehängten Dateisysteme mit ihren Mount-Optionen auf |
+| `' /tmp '` | Suchmuster mit Leerzeichen davor und danach, damit nur der Mountpoint `/tmp` trifft und nicht etwa `/var/tmp` |
+
+</details>
+
 Die Lösung: Binaries und Bibliotheken in ein Verzeichnis kopieren, dessen Dateisystem Ausführung erlaubt, zum Beispiel das eigene Home:
 
 ```bash
@@ -98,6 +177,17 @@ mkdir -p ~/bin && \
      /tmp/usr/lib64/postfix/libpostfix-*.so ~/bin/ && \
   chmod +x ~/bin/smtp-source ~/bin/smtp-sink
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `mkdir -p ~/bin` | Legt das Zielverzeichnis an; ohne Fehler, falls es schon existiert |
+| `cp ... ~/bin/` | Kopiert die beiden Binaries und die `libpostfix-*.so`-Bibliotheken in das ausführbare Verzeichnis |
+| `chmod +x` | Setzt das Execute-Bit auf beiden Binaries |
+
+</details>
 
 Beachten Sie, dass `noexec` auch das Laden von Shared Libraries betrifft. Es genügt also nicht, nur die Binaries zu verschieben und die Bibliotheken in /tmp zu lassen.
 
@@ -116,6 +206,16 @@ cannot open shared object file: No such file or directory
 LD_LIBRARY_PATH=~/bin ~/bin/smtp-source ...
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `LD_LIBRARY_PATH=~/bin` | Ergänzt den Suchpfad des dynamischen Linkers für diesen einen Aufruf um `~/bin` |
+| `~/bin/smtp-source` | Aufruf über den vollen Pfad, da `~/bin` nicht im PATH liegen muss |
+
+</details>
+
 Mit `ldd ~/bin/smtp-source` sehen Sie vorab, ob alle Abhängigkeiten auflösbar sind. Ausser den Postfix-Bibliotheken hängen die Werkzeuge nur an Standardbibliotheken des Systems.
 
 ## Funktionstest im Loopback
@@ -131,6 +231,9 @@ LD_LIBRARY_PATH=~/bin ~/bin/smtp-source -s 2 -m 10 -l 5120 \
   -f test@example.com -t test@example.com 127.0.0.1:2525
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
 | Option | Wirkung |
 |---|---|
 | `-v` (smtp-sink) | Protokolliert jeden Dialogschritt der angenommenen Verbindungen |
@@ -141,15 +244,37 @@ LD_LIBRARY_PATH=~/bin ~/bin/smtp-source -s 2 -m 10 -l 5120 \
 | `-l 5120` | Nachrichtengrösse in Bytes (ohne Header), hier 5 KB |
 | `-f` / `-t` | Absender- und Empfängeradresse |
 
+</details>
+
 Bei Erfolg erzeugt `smtp-source` keine Ausgabe, während der smtp-sink für jede Nachricht den vollständigen SMTP-Dialog von `HELO` bis `QUIT` ausgibt. Danach den Hintergrundprozess beenden und die Reste aus /tmp entfernen:
 
 ```bash
 kill %1
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `%1` | Job-Angabe der Shell: beendet den ersten Hintergrundjob, hier den smtp-sink |
+
+</details>
+
 ```bash
 rm -rf /tmp/usr /tmp/postfix-*.rpm
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-r` | Entfernt den Verzeichnisbaum rekursiv |
+| `-f` | Keine Rückfragen, kein Fehler bei nicht vorhandenen Pfaden |
+| `/tmp/usr /tmp/postfix-*.rpm` | Der entpackte Baum und das heruntergeladene RPM |
+
+</details>
 
 ## Hinweise für den echten Lasttest
 

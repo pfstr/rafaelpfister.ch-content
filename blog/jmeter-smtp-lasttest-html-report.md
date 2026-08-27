@@ -34,6 +34,27 @@ Das Szenario ist einem realen Projekt nachempfunden: Ein E-Mail-Verschlüsselung
 
 Wichtig für die Einordnung: Dieser Testplan erzeugt das Lastbild vieler unabhängiger Einlieferer, denn JMeter öffnet für jede Nachricht eine eigene Verbindung (die Hintergründe stehen in der Abgrenzung am Ende). Für den Nachweis, dass ein Regelwerk unter parallelem Mischverkehr korrekt und schnell genug arbeitet, ist das das passende Muster. Die Spitzenlast eines einzelnen Massenversenders mit offenen Sessions bildet der Plan dagegen nicht ab; für dieses Lastbild ist `smtp-source` aus dem [Überblicksartikel](/blog/mail-lasttest-tools-linux-windows-vergleich) das richtige Werkzeug.
 
+## Die wichtigsten Optionen von jmeter
+
+Zur Orientierung vorab die Kommandozeilenoptionen, die in diesem Beitrag vorkommen, sinngemäss aus der Dokumentation übersetzt:
+
+<details class="options-details">
+<summary>Optionen im Überblick</summary>
+
+| Option | Bedeutung |
+|---|---|
+| `-n` | CLI-Modus (non-GUI): führt den Testplan ohne grafische Oberfläche aus |
+| `-t datei` | Pfad zur JMX-Datei mit dem Testplan |
+| `-l datei` | Pfad zur JTL-Ergebnisdatei, in die die Messwerte geschrieben werden |
+| `-e` | Erzeugt nach dem Lauf direkt den HTML-Dashboard-Report |
+| `-o verzeichnis` | Zielverzeichnis für den Report; muss leer sein oder darf noch nicht existieren |
+| `-g datei` | Erzeugt den Report nachträglich aus einer vorhandenen JTL-Datei, ohne neuen Lauf |
+| `-J<property>=<wert>` | Setzt eine JMeter-Property nur für diesen Aufruf |
+
+</details>
+
+Die vollständige Liste zeigt `jmeter -?`; beschrieben sind die Optionen im Kapitel zum Non-GUI-Betrieb des [JMeter User's Manual](https://jmeter.apache.org/usermanual/get-started.html).
+
 ## Der Aufbau: nichts installieren müssen
 
 Der Test lief auf einer Windows-Maschine ohne Java und ohne JMeter. Beides lässt sich portabel betreiben, was auf Admin-Arbeitsplätzen mit eingeschränkten Installationsrechten der entscheidende Punkt ist: Temurin-JRE als ZIP von Adoptium, JMeter als ZIP von apache.org, beides entpacken, `JAVA_HOME` auf das JRE-Verzeichnis setzen, fertig.
@@ -43,6 +64,21 @@ export JAVA_HOME="$PWD/jdk-21-jre"
 export PATH="$JAVA_HOME/bin:$PATH"
 ./apache-jmeter-5.6.3/bin/jmeter -n -t gateway-lasttest.jmx -l lauf.jtl -e -o report
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `export JAVA_HOME=…` | Zeigt auf das entpackte JRE-Verzeichnis; JMeter findet darüber die Java-Laufzeit ohne Installation |
+| `export PATH=…` | Stellt die JRE-Binaries an den Anfang des Suchpfads |
+| `-n` | CLI-Modus ohne grafische Oberfläche |
+| `-t gateway-lasttest.jmx` | Der auszuführende Testplan |
+| `-l lauf.jtl` | Ergebnisdatei mit den Messwerten jedes Samplers |
+| `-e` | HTML-Report direkt nach dem Lauf erzeugen |
+| `-o report` | Zielverzeichnis für den Report |
+
+</details>
 
 Als Senke diente eine lokale SMTP-Blackbox auf Basis von aiosmtpd, gut 40 Zeilen Python: Sie nimmt jede Nachricht mit `250` an, verwirft den Inhalt, zählt mit und ordnet jede Mail anhand der Betreffzeile einer Klasse zu. Diese unabhängige Zählung auf der Empfangsseite ist der Kontrollversuch des Tests; stimmen Generator- und Senkenzahlen nicht überein, ist unterwegs etwas verloren gegangen.
 
@@ -91,6 +127,19 @@ Die Messung selbst läuft im CLI-Modus; die GUI ist nur der Editor. Ein einziger
 jmeter -n -t gateway-lasttest.jmx -l lauf-10k.jtl -e -o report-10k
 ```
 
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-n` | CLI-Modus: der Testplan läuft ohne GUI, nur der Summariser schreibt auf die Konsole |
+| `-t gateway-lasttest.jmx` | Der in der GUI erstellte Testplan |
+| `-l lauf-10k.jtl` | Rohdaten des Laufs; aus dieser Datei lässt sich der Report später erneut erzeugen |
+| `-e` | Report unmittelbar nach dem Lauf generieren |
+| `-o report-10k` | Zielverzeichnis für den HTML-Report |
+
+</details>
+
 Der Summariser auf der Konsole zeigt den Verlauf live, das Endergebnis des Laufs:
 
 ```text
@@ -114,6 +163,17 @@ Ein typischer Auswertungsfehler auch hier, und er betrifft jeden kurzen Burst: D
 ```bash
 jmeter -g lauf-10k.jtl -o report-fein -Jjmeter.reportgenerator.overall_granularity=1000
 ```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-g lauf-10k.jtl` | Erzeugt den Report aus der vorhandenen JTL-Datei, ohne den Test erneut auszuführen |
+| `-o report-fein` | Neues Zielverzeichnis; das bestehende Report-Verzeichnis bleibt unverändert |
+| `-Jjmeter.reportgenerator.overall_granularity=1000` | Setzt die Chart-Granularität für diesen Aufruf auf 1'000 ms statt der standardmässigen Minute |
+
+</details>
 
 Mit Sekunden-Granularität wird aus dem einzelnen Punkt der tatsächliche Lastverlauf:
 
@@ -140,3 +200,5 @@ Eine Grenze des Werkzeugs selbst gehört ebenfalls in die Abgrenzung: JMeter kan
 4.  [aiosmtpd, Dokumentation](https://aiosmtpd.aio-libs.org/): Der asyncio-basierte SMTP-Server, mit dem die Senke in wenigen Zeilen Python entsteht.
 
 5.  [Eclipse Temurin, Adoptium](https://adoptium.net/temurin/releases/): Portable JRE-Archive für den Betrieb von JMeter ohne Java-Installation.
+
+6.  [Apache JMeter: Getting Started, Non-GUI Mode](https://jmeter.apache.org/usermanual/get-started.html): Übersicht der Kommandozeilenoptionen für den CLI-Betrieb, inklusive `-n`, `-t`, `-l`, `-e`, `-o`, `-g` und `-J`.
