@@ -283,7 +283,22 @@ for s in 1 2 4 8 16 32; do
 done
 ```
 
-Die Rate steigt anfangs etwa linear mit der Session-Zahl, weil parallele Sessions die Wartezeit auf die Antworten des Ziels überdecken. Ab einem bestimmten Punkt flacht die Kurve ab: Dann ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Typische Ergebnisse liegen im einstelligen bis niedrigen zweistelligen Bereich. Beachten Sie dabei die 2'000 Kalibrier-Mails pro Stufe: Auch die brauchen eine kontrollierte Empfängeradresse, und die Nummerierung beginnt in jedem Aufruf wieder beim Startwert.
+Im Einzelnen passiert Folgendes: Die äussere Schleife durchläuft die Session-Zahlen 1 bis 32 in Verdopplungsschritten. Vor und nach jedem Lauf hält `date +%s%N` die aktuelle Zeit als eine grosse Zahl fest, nämlich Unix-Sekunden direkt gefolgt vom Nanosekunden-Anteil. Dazwischen versendet `smtp-source` 2'000 Nachrichten zu je 5 KB über die jeweilige Zahl paralleler, dank `-d` stehen bleibender Verbindungen; die Schleife wartet, bis der Aufruf komplett fertig ist. Die `echo`-Zeile rechnet die Zeitdifferenz in eine Rate um: 2'000 Mails geteilt durch die Laufzeit in Sekunden, wobei die Laufzeit in Nanosekunden vorliegt. Aus 2'000 mal 10⁹ entsteht so die Konstante `2000000000000`. Die Bash-Arithmetik `$(( ))` rechnet ganzzahlig und schneidet Nachkommastellen ab, was für diese Messung genau genug ist.
+
+Drei praktische Hinweise dazu: `%N` liefert nur GNU date Nanosekunden (auf RHEL und den meisten Linux-Systemen der Fall; BusyBox und macOS kennen es nicht). Der komplette Durchlauf versendet 6 × 2'000 = 12'000 Mails, auch die brauchen eine kontrollierte Empfängeradresse, und die `-N`-Nummerierung beginnt in jedem Aufruf wieder beim Startwert. Und falls ein `smtp-source`-Aufruf mit einer Fehlermeldung abbricht, ist die Rate dieser Zeile bedeutungslos; erst die Ursache beheben, dann neu messen.
+
+Die erwartete Ausgabe ist eine Zeile pro Stufe. Mit erfundenen, aber typischen Beispielwerten sieht das so aus:
+
+```text
+1 Sessions: 11 Mails/s
+2 Sessions: 21 Mails/s
+4 Sessions: 40 Mails/s
+8 Sessions: 71 Mails/s
+16 Sessions: 79 Mails/s
+32 Sessions: 80 Mails/s
+```
+
+Die Lesart: Solange sich die Rate mit der Session-Zahl etwa verdoppelt, überdecken die parallelen Sessions die Wartezeit auf die Antworten des Ziels; der Engpass ist dann die Latenz der Strecke, nicht die Kapazität. Ab dem Punkt, an dem die Kurve abflacht (im Beispiel zwischen 8 und 16 Sessions), ist entweder das Zielsystem gesättigt oder die Quelle am Limit. Nehmen Sie den kleinsten Wert, bei dem die Rate nicht mehr nennenswert zulegt, im Beispiel also 8 bis 16; noch mehr Sessions erhöhen dann nur die Last durch Parallelität, nicht den Durchsatz. Für den Hauptlauf mit 50'000 Mails lässt sich aus der gemessenen Rate auch gleich die erwartete Dauer abschätzen: bei 71 Mails/s rund 12 Minuten.
 
 ## Auswertung auf der Empfangsseite
 
