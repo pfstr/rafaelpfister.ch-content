@@ -270,20 +270,22 @@ Zwei Konsequenzen: `-F` verdrängt `-l` und `-S`, weil Grösse und Betreff nun a
 
 ## Wie viele Sessions?
 
-Die passende Session-Zahl ermitteln Sie am zuverlässigsten durch Messung. Ein kurzer Kalibrierlauf mit steigender Session-Zahl und einem Bruchteil der Mailmenge zeigt, ab wann zusätzliche Sessions nichts mehr bringen:
+Die passende Session-Zahl ermitteln Sie am zuverlässigsten durch Messung, und zwar mit exakt denselben Optionen wie der geplante Hauptlauf: gleiche Nachrichtenquelle (dieselbe `-F`-Datei beziehungsweise dasselbe `-l`), gleicher Absender, gleiches Ziel. Nur die Menge ist auf 2'000 pro Stufe reduziert, und `-s` variiert. Ein kurzer Kalibrierlauf mit steigender Session-Zahl zeigt, ab wann zusätzliche Sessions nichts mehr bringen:
 
 ```bash
 for s in 1 2 4 8 16 32; do
   t0=$(date +%s%N)
-  smtp-source -d -N -s "$s" -m 2000 -l 5120 \
-    -f lasttest@example.com -t test@example.com \
+  smtp-source -d -N -s "$s" -m 2000 -F lasttest.eml \
+    -f lasttest@example.com -t '@blackhole.example.com' \
     gateway.example.com:25
   t1=$(date +%s%N)
   echo "$s Sessions: $(( 2000000000000 / (t1 - t0) )) Mails/s"
 done
 ```
 
-Im Einzelnen passiert Folgendes: Die äussere Schleife durchläuft die Session-Zahlen 1 bis 32 in Verdopplungsschritten. Vor und nach jedem Lauf hält `date +%s%N` die aktuelle Zeit als eine grosse Zahl fest, nämlich Unix-Sekunden direkt gefolgt vom Nanosekunden-Anteil. Dazwischen versendet `smtp-source` 2'000 Nachrichten zu je 5 KB über die jeweilige Zahl paralleler, dank `-d` stehen bleibender Verbindungen; die Schleife wartet, bis der Aufruf komplett fertig ist. Die `echo`-Zeile rechnet die Zeitdifferenz in eine Rate um: 2'000 Mails geteilt durch die Laufzeit in Sekunden, wobei die Laufzeit in Nanosekunden vorliegt. Aus 2'000 mal 10⁹ entsteht so die Konstante `2000000000000`. Die Bash-Arithmetik `$(( ))` rechnet ganzzahlig und schneidet Nachkommastellen ab, was für diese Messung genau genug ist.
+Zwei Details am Aufruf: Auf `-c` wird hier bewusst verzichtet, damit zwischen den Messzeilen keine laufenden Zählerausgaben stehen; die Schleife liefert pro Stufe genau eine Ergebniszeile. Und der leere Local-Part in `-t` funktioniert bei einer Verwerf-Domain gut mit der Nummerierung zusammen: Beim vorangestellten Zähler von Postfix 3.5 entstehen daraus rein numerische Empfängeradressen (`1@blackhole.example.com`, `2@…`), was die Auswertung in den Logs übersichtlich hält.
+
+Im Einzelnen passiert Folgendes: Die äussere Schleife durchläuft die Session-Zahlen 1 bis 32 in Verdopplungsschritten. Vor und nach jedem Lauf hält `date +%s%N` die aktuelle Zeit als eine grosse Zahl fest, nämlich Unix-Sekunden direkt gefolgt vom Nanosekunden-Anteil. Dazwischen versendet `smtp-source` 2'000 Nachrichten (Inhalt, Header und Grösse kommen aus der `-F`-Datei) über die jeweilige Zahl paralleler, dank `-d` stehen bleibender Verbindungen; die Schleife wartet, bis der Aufruf komplett fertig ist. Die `echo`-Zeile rechnet die Zeitdifferenz in eine Rate um: 2'000 Mails geteilt durch die Laufzeit in Sekunden, wobei die Laufzeit in Nanosekunden vorliegt. Aus 2'000 mal 10⁹ entsteht so die Konstante `2000000000000`. Die Bash-Arithmetik `$(( ))` rechnet ganzzahlig und schneidet Nachkommastellen ab, was für diese Messung genau genug ist.
 
 Drei praktische Hinweise dazu: `%N` liefert nur GNU date Nanosekunden (auf RHEL und den meisten Linux-Systemen der Fall; BusyBox und macOS kennen es nicht). Der komplette Durchlauf versendet 6 × 2'000 = 12'000 Mails, auch die brauchen eine kontrollierte Empfängeradresse, und die `-N`-Nummerierung beginnt in jedem Aufruf wieder beim Startwert. Und falls ein `smtp-source`-Aufruf mit einer Fehlermeldung abbricht, ist die Rate dieser Zeile bedeutungslos; erst die Ursache beheben, dann neu messen.
 
