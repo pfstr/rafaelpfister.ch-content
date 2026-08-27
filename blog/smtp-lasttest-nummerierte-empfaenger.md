@@ -44,9 +44,21 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
   gateway.example.com:25
 ```
 
-Die Optionen im Einzelnen: `-N` aktiviert die Empfänger-Nummerierung, `-s 8` fährt acht parallele Sessions, `-m 50000` verteilt die Gesamtmenge darauf, `-l 5120` setzt die Nachrichtengrösse auf 5 KB. `-d` ist für das Lastbild entscheidend: Ohne diese Option trennt `smtp-source` nach jeder Nachricht die Verbindung und baut für die nächste eine neue auf; mit `-d` bleiben die acht Verbindungen stehen und liefern nacheinander alle Nachrichten aus, wie es ein Massenversender tut.
+| Option | Wirkung |
+|---|---|
+| `-c` | Laufender Zähler abgeschlossener Zustellungen als einzeilige Fortschrittsanzeige |
+| `-d` | Verbindungen bleiben über alle Nachrichten stehen; ohne `-d` neue Verbindung pro Nachricht |
+| `-N` | Empfänger-Nummerierung: hängt den per-Prozess-Zähler an den Local-Part an |
+| `-s 8` | Acht parallele SMTP-Sessions |
+| `-m 50000` | Gesamtzahl der Nachrichten, verteilt auf die Sessions |
+| `-l 5120` | Nachrichtengrösse in Bytes (ohne Header), hier 5 KB |
+| `-f` | Absenderadresse |
+| `-t` | Empfänger-Muster; mit Plus-Adressierung entstehen `test+0@` bis `test+49999@` |
+| `gateway.example.com:25` | Zielhost und Port |
 
-Bewusst fehlt das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei 50'000 Mails hunderttausende Logzeilen ohne Mehrwert für die Auswertung. Stattdessen zeigt `-c` einen laufenden Zähler abgeschlossener Zustellungen an: eine einzeilige Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Die Gesamtdauer für die Ratenberechnung liefert ein vorangestelltes `time`.
+`-d` ist für das Lastbild entscheidend: Ohne diese Option trennt `smtp-source` nach jeder Nachricht die Verbindung und baut für die nächste eine neue auf; mit `-d` bleiben die acht Verbindungen stehen und liefern nacheinander alle Nachrichten aus, wie es ein Massenversender tut.
+
+Bewusst fehlt das aus Funktionstests bekannte `-v`: Es protokolliert jeden einzelnen SMTP-Dialog von `HELO` bis `QUIT` und erzeugt bei 50'000 Mails hunderttausende Logzeilen ohne Mehrwert für die Auswertung. `-c` liefert stattdessen die Zusammenfassung, an der sich der Fortschritt des Laufs live ablesen lässt. Die Gesamtdauer für die Ratenberechnung liefert ein vorangestelltes `time`.
 
 Voraussetzung für den ganzen Ansatz: Das Zielsystem nimmt die generierten Adressen an. Ein `smtp-sink`, eine Catch-all-Domain, eine Verwerf-Domain des Providers oder ein Gateway, das Empfänger erst nach der Annahme auflöst, erfüllen das. Prüft das Ziel dagegen jeden Empfänger gegen ein Verzeichnis, lehnt es die nummerierten Adressen ab, und es bleibt nur die Betreff-Variante.
 
@@ -69,11 +81,18 @@ Die Rate steigt anfangs etwa linear mit der Session-Zahl, weil parallele Session
 
 ## Auswertung auf der Empfangsseite
 
-Steht auf dem Zielsystem ein eigener Testempfänger, übernimmt `smtp-sink` die Protokollierung gleich mit. Die Option `-d` (beim Sink: Dump, nicht Verbindungshaltung) schreibt jede angenommene Nachricht in eine eigene Datei, inklusive eines `X-Rcpt-Args`-Headers mit der Empfängeradresse; `-c` zeigt auch hier laufende Zähler statt des vollen Dialogs:
+Steht auf dem Zielsystem ein eigener Testempfänger, übernimmt `smtp-sink` die Protokollierung gleich mit:
 
 ```bash
 smtp-sink -c -d "mails/%Y%m%d-%H%M%S." 0.0.0.0:2525 200
 ```
+
+| Option | Wirkung |
+|---|---|
+| `-c` | Laufende Zähler statt des vollen SMTP-Dialogs |
+| `-d "mails/…"` | Beim Sink: Dump, nicht Verbindungshaltung. Schreibt jede angenommene Nachricht in eine eigene Datei (Namensmuster per strftime), inklusive eines `X-Rcpt-Args`-Headers mit der Empfängeradresse |
+| `0.0.0.0:2525` | Lauscht auf allen Interfaces auf Port 2525 |
+| `200` | Backlog: maximale Länge der Warteschlange wartender Verbindungen gemäss listen(2) |
 
 Nach dem Lauf extrahieren Sie die empfangenen Nummern und vergleichen sie mit der Sollmenge. Da die Nummern keine führenden Nullen tragen, werden beide Listen vor dem Abgleich auf eine feste Stellenzahl gebracht, damit die alphabetische Sortierung von `comm` der numerischen entspricht:
 

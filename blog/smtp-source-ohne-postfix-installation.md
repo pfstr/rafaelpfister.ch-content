@@ -131,7 +131,15 @@ LD_LIBRARY_PATH=~/bin ~/bin/smtp-source -s 2 -m 10 -l 5120 \
   -f test@example.com -t test@example.com 127.0.0.1:2525
 ```
 
-Die Parameter im Überblick: `-s 2` öffnet zwei parallele Sessions, `-m 10` verteilt insgesamt zehn Nachrichten darauf, `-l 5120` setzt die Nachrichtengrösse auf 5 KB, `-f` und `-t` setzen Absender und Empfänger. Beim smtp-sink steht `100` für die maximale Zahl gleichzeitiger Verbindungen, `-v` protokolliert jeden Dialogschritt.
+| Option | Wirkung |
+|---|---|
+| `-v` (smtp-sink) | Protokolliert jeden Dialogschritt der angenommenen Verbindungen |
+| `127.0.0.1:2525` | smtp-sink lauscht nur auf localhost, Port 2525 |
+| `100` | Backlog: maximale Länge der Warteschlange wartender Verbindungen gemäss listen(2) |
+| `-s 2` | Zwei parallele SMTP-Sessions |
+| `-m 10` | Insgesamt zehn Nachrichten, verteilt auf die Sessions |
+| `-l 5120` | Nachrichtengrösse in Bytes (ohne Header), hier 5 KB |
+| `-f` / `-t` | Absender- und Empfängeradresse |
 
 Bei Erfolg erzeugt `smtp-source` keine Ausgabe, während der smtp-sink für jede Nachricht den vollständigen SMTP-Dialog von `HELO` bis `QUIT` ausgibt. Danach den Hintergrundprozess beenden und die Reste aus /tmp entfernen:
 
