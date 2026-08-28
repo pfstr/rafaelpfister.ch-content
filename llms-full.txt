@@ -654,59 +654,48 @@ Datum: 2026-08-28
 
 # Mailversand über ein Relay: TLS und Authentisierung prüfen
 
-Viele Applikationen versenden Mails nicht selbst ins Internet, sondern liefern sie bei einem internen Relay ein: das ERP seine Bestellbestätigungen, das Monitoring seine Alarme, das Ticketsystem seine Benachrichtigungen. Das Relay betreibt das Mail-Team, die Applikationsseite konfiguriert der Application Manager. Bei einem Audit oder einer Schutzbedarfsanalyse landet die Frage darum bei ihm: Verlassen diese Mails das System verschlüsselt, und meldet sich die Applikation sauber am Relay an?
+Viele Applikationen versenden Mails nicht selbst ins Internet, sondern liefern sie bei einem internen Relay ein: das ERP seine Bestellbestätigungen, das Monitoring seine Alarme, das Ticketsystem seine Benachrichtigungen. Das Relay betreibt das Mail-Team; auf der Applikationsseite ist der Application Manager zuständig. Bei einem Audit oder einer Schutzbedarfsanalyse landet die Frage darum bei ihm: Verbindet sich die Applikation verschlüsselt mit dem Relay, und meldet sie sich sauber an?
 
-Die Frage hat zwei Teilstrecken, denn TLS bei SMTP wirkt pro Verbindung, nicht Ende-zu-Ende. Die erste Strecke führt von der Applikation zum Relay, die zweite vom Relay zum Zielsystem des Empfängers. Beide lassen sich ohne Zugriff auf das Relay prüfen: die erste mit `openssl s_client` und dem Received-Header einer Testmail, die zweite mit dem Header derselben Testmail in einem externen Postfach.
+Die Antwort steht an zwei Stellen, für die kein Mail-Werkzeug und kein Zugriff auf das Relay nötig ist: in der SMTP-Konfiguration der eigenen Applikation und im Header einer einzigen Testmail. Was das Relay selbst anbietet und wie es die Mails weiter zum Empfänger verschlüsselt, verantwortet das Mail-Team; auf der Applikationsseite genügt es, die eigene Teilstrecke zu belegen.
 
-## Die drei Prüfungen im Überblick
+## Wo die Einstellungen stehen
 
-1. **Relay-Angebot:** Bietet das Relay auf dem konfigurierten Port TLS an, mit welchem Zertifikat, und welche Authentisierungsverfahren stehen bereit?
-2. **Applikationsseite:** Verbindet sich die Applikation tatsächlich verschlüsselt und authentisiert? Der Beweis steht im Received-Header, den das Relay in jede Mail stempelt.
-3. **Weiterversand:** Verschlüsselt das Relay die zweite Strecke zum Empfänger? Der Beweis steht im Header der Testmail im Zielpostfach.
+Die SMTP-Konfiguration findet sich je nach Applikation an einem von drei Orten: in der Administrationsoberfläche (meist unter «E-Mail», «Benachrichtigungen», «SMTP» oder «Ausgangsserver»), in einer Konfigurationsdatei oder in Umgebungsvariablen des Deployments (typisch `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` und Varianten). Gesucht sind immer dieselben Angaben: Servername, Port, eine Verschlüsselungsoption und die Zugangsdaten.
 
-Vorab die Portkunde, weil die Applikationskonfiguration daran hängt:
+## Die drei Einstellungen, die zählen
 
-| Port | Verwendung | TLS-Variante |
+**Erstens Port und TLS-Modus.** Beide müssen zusammenpassen, denn hinter den Auswahlwerten stehen zwei verschiedene Verfahren: Bei STARTTLS beginnt die Verbindung im Klartext und schaltet dann auf TLS um, beim impliziten TLS (in den Masken meist «SSL/TLS» oder «SSL» genannt) ist sie von Beginn an verschlüsselt.
+
+| Port | TLS-Einstellung in der Applikation | Bewertung |
 |---|---|---|
-| 587 | Einlieferung durch Clients und Applikationen (Submission) | STARTTLS: Verbindung startet im Klartext, `STARTTLS` schaltet auf TLS um |
-| 465 | Einlieferung durch Clients und Applikationen | Implizites TLS: Verbindung ist von Beginn an verschlüsselt |
-| 25 | Mailtransport zwischen Servern | STARTTLS, meist opportunistisch (Klartext-Rückfall möglich) |
+| 587 | STARTTLS | Sollzustand für die Einlieferung durch Applikationen |
+| 465 | SSL/TLS (implizit) | ebenfalls in Ordnung |
+| 25 | keine oder STARTTLS | üblich bei Relays mit IP-Freischaltung; TLS-Einstellung trotzdem aktivieren, sofern das Relay STARTTLS anbietet |
+| beliebig | «Keine» / «None» | Befund: Versand läuft im Klartext |
+| beliebig | «TLS, wenn verfügbar» / opportunistisch | Befund: fällt bei einem Problem stillschweigend auf Klartext zurück; auf erzwungenes TLS umstellen |
 
-In Applikationsmasken heisst STARTTLS oft genau so, implizites TLS dagegen «SSL/TLS» oder «SSL». Eine Fehlkombination (z. B. «SSL» auf Port 587) führt zu Verbindungsabbrüchen, keine Kombination zu unbemerktem Klartext; gefährlicher sind Einstellungen wie «TLS, wenn verfügbar», die bei einem Problem stillschweigend auf unverschlüsselt zurückfallen.
+Eine Fehlkombination (etwa «SSL/TLS» auf Port 587) führt zu Verbindungsabbrüchen, nicht zu unbemerktem Klartext. Die riskanten Einstellungen sind die beiden letzten Zeilen der Tabelle, denn dort versendet die Applikation ohne Fehlermeldung unverschlüsselt.
 
-## Prüfung 1: Was bietet das Relay an?
+**Zweitens die Zertifikatsprüfung.** Viele Applikationen bieten eine Option wie «Zertifikat nicht prüfen», «Allow insecure» oder `verify=false` an, die bei Einführungsprojekten gern gesetzt wird, weil das Relay ein internes Zertifikat trägt. Die Verbindung bleibt damit zwar verschlüsselt, aber die Applikation akzeptiert jede Gegenstelle. Ist die Option gesetzt, gehört sie als Befund in den Bericht; die saubere Lösung ist das Vertrauen auf die interne CA statt das Abschalten der Prüfung.
 
-`openssl s_client` ist auf Linux vorhanden und auf Windows Teil von Git for Windows (`C:\Program Files\Git\usr\bin\openssl.exe`). Für einen STARTTLS-Port:
+**Drittens die Anmeldung.** Relays kennen zwei Modelle: SMTP AUTH mit Benutzername und Passwort oder eine IP-Freischaltung ohne Konto. Welche Variante gilt, steht in der Relay-Freigabe des Mail-Teams. Bei SMTP AUTH gehören drei Punkte auf die Checkliste: Die Anmeldung läuft über ein dediziertes Servicekonto der Applikation (nicht über ein persönliches Konto, das beim nächsten Austritt deaktiviert wird), das Passwort ist als Secret hinterlegt statt im Klartext in einer Konfigurationsdatei, und die TLS-Option ist aktiv, denn die gängigen Verfahren PLAIN und LOGIN übertragen die Zugangsdaten sonst im Klartext.
 
-```bash
-openssl s_client -starttls smtp \
-  -connect relay.example.com:587 -crlf
-```
+## So heissen die Einstellungen in gängigen Umgebungen
 
-<details class="options-details">
-<summary>Optionen erklärt</summary>
+| Umgebung | Verschlüsselung | Anmeldung |
+|---|---|---|
+| Admin-Oberflächen (ERP, Monitoring, Appliances) | Dropdown «Verschlüsselung»: None / STARTTLS / SSL-TLS | Felder Benutzername/Passwort; leer = keine Anmeldung |
+| Java (Jakarta Mail, Spring) | `mail.smtp.starttls.enable=true` plus `mail.smtp.starttls.required=true`; für Port 465 `mail.smtp.ssl.enable=true` | `mail.smtp.auth=true` |
+| .NET | `SmtpClient.EnableSsl=true` (macht STARTTLS); MailKit: `SecureSocketOptions.StartTls` | `Credentials` bzw. `Authenticate()` |
+| PHP (PHPMailer) | `SMTPSecure='tls'` für 587, `'ssl'` für 465 | `SMTPAuth=true` |
+| Python (smtplib) | `starttls()` nach dem Verbindungsaufbau oder `SMTP_SSL` für 465 | `login()` |
+| Node.js (Nodemailer) | Port 465: `secure:true`; Port 587: `secure:false` plus `requireTLS:true` | `auth: {user, pass}` |
 
-| Option | Wirkung |
-|---|---|
-| `-starttls smtp` | Baut erst die SMTP-Klartextverbindung auf und schaltet dann per `STARTTLS` auf TLS um |
-| `-connect host:port` | Zielhost und Port; für Submission 587, für den Servertransport 25 |
-| `-crlf` | Sendet Zeilenenden als CRLF, wie SMTP es verlangt |
+Zwei Punkte aus dieser Tabelle sind erfahrungsgemäss die häufigsten Befunde: In Java aktiviert `starttls.enable` allein nur opportunistisches TLS, erst `starttls.required` verhindert den Klartext-Rückfall. In Nodemailer bedeutet `secure:false` nicht «unverschlüsselt», sondern «kein implizites TLS»; ohne `requireTLS:true` bleibt STARTTLS aber ebenfalls opportunistisch.
 
-</details>
+## Gegenprobe: eine Testmail und ihr Received-Header
 
-Für Port 465 entfällt `-starttls smtp`, da die Verbindung dort von Beginn an verschlüsselt ist:
-
-```bash
-openssl s_client -connect relay.example.com:465 -crlf
-```
-
-Drei Dinge sind in der Ausgabe relevant. Erstens der Verbindungserfolg selbst: Erscheint `CONNECTED` mit anschliessendem Zertifikat, spricht das Relay auf diesem Port TLS; bricht der Handshake ab, bietet es dort keines an. Zweitens die Zeilen `Protocol` und `Cipher`: TLS 1.2 oder 1.3 ist der Sollzustand. Drittens die Zertifikatskette samt `Verify return code`: Ein selbstsigniertes oder abgelaufenes Zertifikat funktioniert zwar mit Applikationen, die die Prüfung abgeschaltet haben, aber genau diese Abschaltung sollte im Audit als Befund auftauchen.
-
-Die Sitzung bleibt nach dem Handshake offen und nimmt SMTP-Befehle entgegen. Mit `EHLO test.example.com` antwortet das Relay mit seiner Capability-Liste; dort zeigt eine Zeile wie `250-AUTH LOGIN PLAIN` die angebotenen Authentisierungsverfahren. Viele Relays nennen `AUTH` erst innerhalb der TLS-Sitzung, damit Zugangsdaten nie im Klartext übertragen werden; fehlt die Zeile auch dort, arbeitet das Relay vermutlich mit einer IP-Freischaltung statt mit Konten. Mit `QUIT` endet die Sitzung.
-
-## Prüfung 2: Verbindet sich die Applikation verschlüsselt und authentisiert?
-
-Die Applikationskonfiguration nennt den Sollzustand (Port, TLS-Modus, Konto), beweist aber nicht, was auf dem Draht passiert. Der Beweis steht im ersten Received-Header, den das Relay beim Empfang der Mail einträgt. Dazu genügt eine Testmail aus der Applikation an das eigene Postfach; dort den Nachrichtenheader anzeigen lassen (Outlook: Datei, Eigenschaften, Internetkopfzeilen; Gmail: Original anzeigen) und die unterste Received-Zeile lesen, denn Header wachsen von unten nach oben:
+Die Konfiguration nennt den Sollzustand, beweist aber nicht, was auf dem Draht passiert. Der Beweis steht im Received-Header, den das Relay beim Empfang jeder Mail einträgt. Dazu genügt eine Testmail aus der Applikation an das eigene Postfach; dort den Nachrichtenheader anzeigen lassen (Outlook: Datei, Eigenschaften, Internetkopfzeilen; Gmail: Original anzeigen) und die unterste Received-Zeile lesen, denn Header wachsen von unten nach oben:
 
 ```text
 Received: from app01.example.com (app01.example.com [10.1.2.3])
@@ -719,53 +708,35 @@ Das Schlüsselwort nach `with` ist die Kurzfassung des Prüfergebnisses. Die Ken
 
 | Kennung | Bedeutung | Bewertung |
 |---|---|---|
-| `SMTP` / `ESMTP` | unverschlüsselt, ohne Authentisierung | Handlungsbedarf, falls TLS gefordert ist |
-| `ESMTPS` | TLS, ohne Authentisierung | in Ordnung bei IP-Freischaltung |
-| `ESMTPA` | authentisiert, aber ohne TLS | kritisch: Zugangsdaten liefen im Klartext |
-| `ESMTPSA` | TLS und authentisiert | Sollzustand bei Konto-Anmeldung |
+| `SMTP` / `ESMTP` | unverschlüsselt, ohne Anmeldung | Handlungsbedarf, falls TLS gefordert ist |
+| `ESMTPS` | TLS, ohne Anmeldung | in Ordnung bei IP-Freischaltung |
+| `ESMTPA` | angemeldet, aber ohne TLS | kritisch: Zugangsdaten liefen im Klartext |
+| `ESMTPSA` | TLS und angemeldet | Sollzustand bei SMTP AUTH |
 
-Postfix und Exchange ergänzen in Klammern TLS-Version und Cipher, womit sich auch veraltete Protokollversionen erkennen lassen. Steht dort `ESMTPA` ohne S, ist das der dringendste Befund der ganzen Prüfung, denn dann überträgt die Applikation Benutzername und Passwort unverschlüsselt.
+Postfix und Exchange ergänzen in Klammern TLS-Version und Cipher, womit sich auch veraltete Protokollversionen erkennen lassen. Für die Auswertung längerer Header mit mehreren Stationen nimmt Ihnen der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/header-analyzer) auf dieser Website die Handarbeit ab; er läuft vollständig lokal im Browser, der Header verlässt Ihren Rechner nicht.
 
-Zur Authentisierung selbst gehören zwei Konfigurationsfragen, die der Header nicht beantwortet: Läuft die Anmeldung über ein dediziertes Servicekonto der Applikation (und nicht über ein persönliches Konto, das beim nächsten Austritt deaktiviert wird), und ist das Passwort in der Applikation als Secret hinterlegt statt im Klartext in einer Konfigurationsdatei? Beides klärt ein Blick in die Applikationsdoku und die Konfiguration, nicht in den Mailheader.
-
-Bleibt der Received-Header unklar oder stempelt ein vorgelagerter Loadbalancer die Verbindung um, hilft das Mail-Team mit dem Relay-Log weiter; Postfix protokolliert dort pro Einlieferung eine Zeile `TLS connection established from …` samt Version und Cipher, Exchange Verbindungsdetails im SMTP-Receive-Protokoll.
-
-## Prüfung 3: Verschlüsselt das Relay weiter zum Empfänger?
-
-Die zweite Strecke prüft dieselbe Testmail, diesmal an ein externes Postfach geschickt (z. B. ein privates Gmail- oder Outlook.com-Konto). Im Zielpostfach den vollständigen Header anzeigen und die Received-Zeile suchen, in der das externe System die Mail vom Relay entgegennimmt:
-
-```text
-Received: from relay.example.com (relay.example.com [203.0.113.10])
-        by mx.google.com with ESMTPS id a1b2c3
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384);
-        Thu, 28 Aug 2026 09:15:06 +0200
-```
-
-`ESMTPS` samt Versionsangabe belegt die verschlüsselte Übergabe. Gmail zeigt das Ergebnis zusätzlich in der Detailansicht der Mail als «Standardverschlüsselung (TLS)» an. Für die Auswertung längerer Header-Ketten mit mehreren Stationen nimmt Ihnen der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/header-analyzer) auf dieser Website die Handarbeit ab; er läuft vollständig lokal im Browser, der Header verlässt Ihren Rechner nicht.
-
-Eine Einschränkung gehört in jeden Prüfbericht: Zwischen Mailservern ist TLS üblicherweise opportunistisch. Das Relay verschlüsselt, wenn die Gegenstelle es anbietet, und fällt sonst auf Klartext zurück. Die Header-Prüfung belegt also den Regelfall zu diesem einen Empfänger, keine Garantie für alle Empfänger. Ist garantierte Transportverschlüsselung gefordert (etwa zu einem Partner mit Personendaten), gehört das als erzwungenes TLS für die betreffende Domäne auf das Relay; das ist eine Anforderung an das Mail-Team, keine Applikationseinstellung.
+Bleibt der Header unklar oder stempelt ein vorgelagerter Loadbalancer die Verbindung um, ist das der Moment für eine Anfrage an das Mail-Team: Das Relay-Log protokolliert pro Einlieferung, ob TLS ausgehandelt wurde und mit welchem Konto sich die Applikation angemeldet hat.
 
 ## Kurz-Checkliste für den Prüfbericht
 
-1. Relay-Port und TLS-Modus aus der Applikationskonfiguration notiert (587/STARTTLS, 465/implizit); keine Einstellung «TLS, wenn verfügbar».
-2. `openssl s_client` gegen den konfigurierten Port: Handshake erfolgreich, TLS 1.2 oder 1.3, Zertifikat gültig.
-3. `EHLO` in der TLS-Sitzung: angebotene `AUTH`-Verfahren notiert, oder IP-Freischaltung als Modell bestätigt.
-4. Received-Header der Testmail am Relay: `ESMTPSA` (mit Konto) bzw. `ESMTPS` (mit IP-Freischaltung); `ESMTPA` und `ESMTP` sind Befunde.
-5. Anmeldung über ein Servicekonto, Passwort als Secret hinterlegt, Zertifikatsprüfung in der Applikation aktiv.
-6. Received-Header im externen Zielpostfach: Übergabe mit `ESMTPS` und aktueller TLS-Version.
-7. Falls garantierte Verschlüsselung gefordert: erzwungenes TLS pro Zieldomäne beim Mail-Team beantragt.
+1. SMTP-Konfiguration der Applikation gefunden (Oberfläche, Konfigurationsdatei oder Umgebungsvariablen) und dokumentiert.
+2. Port und TLS-Modus passen zusammen (587/STARTTLS oder 465/SSL-TLS); keine Einstellung «Keine» oder «TLS, wenn verfügbar».
+3. Zertifikatsprüfung aktiv; ein gesetztes «Zertifikat nicht prüfen» ist als Befund erfasst.
+4. Anmeldemodell geklärt: SMTP AUTH mit Servicekonto und Secret-Ablage, oder IP-Freischaltung laut Relay-Freigabe.
+5. Received-Header der Testmail zeigt `ESMTPSA` (mit Konto) bzw. `ESMTPS` (mit IP-Freischaltung); `ESMTPA` und `ESMTP` sind Befunde.
+6. Falls die Verschlüsselung bis zum Empfänger gefordert ist: als Anforderung an das Mail-Team adressiert, denn die Strecke ab Relay liegt ausserhalb der Applikation.
 
 ## Quellen
 
 1.  [RFC 3207: SMTP Service Extension for Secure SMTP over Transport Layer Security](https://www.rfc-editor.org/rfc/rfc3207): definiert STARTTLS und das Umschalten der Klartextverbindung auf TLS.
 
-2.  [RFC 4954: SMTP Service Extension for Authentication](https://www.rfc-editor.org/rfc/rfc4954): definiert SMTP AUTH und die Capability-Anzeige im EHLO-Dialog.
+2.  [RFC 4954: SMTP Service Extension for Authentication](https://www.rfc-editor.org/rfc/rfc4954): definiert SMTP AUTH und die Verfahren wie PLAIN und LOGIN.
 
 3.  [RFC 8314: Cleartext Considered Obsolete](https://www.rfc-editor.org/rfc/rfc8314): empfiehlt implizites TLS auf Port 465 für die Einlieferung durch Clients.
 
 4.  [IANA: Mail Transmission Types](https://www.iana.org/assignments/mail-parameters/mail-parameters.xhtml#mail-parameters-7): Registry der `with`-Kennungen im Received-Header (ESMTPS, ESMTPA, ESMTPSA).
 
-5.  [OpenSSL-Manpage zu s_client](https://docs.openssl.org/master/man1/openssl-s_client/): vollständige Optionsliste inklusive `-starttls` und Zertifikatsprüfung.
+5.  [Jakarta Mail: Package com.sun.mail.smtp](https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/com/sun/mail/smtp/package-summary): dokumentiert die Properties mail.smtp.starttls.enable, starttls.required und ssl.enable.
 
 ----
 
