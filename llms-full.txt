@@ -12,6 +12,460 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Wichtigste Controls für Totemomail-Admins: Server stoppen, Queues prüfen und kontrolliert bereinigen
+
+URL: https://rafaelpfister.ch/blog/totemomail-server-stoppen-queues-bereinigen
+Datum: 2026-08-28
+
+# Wichtigste Controls für Totemomail-Admins: Server stoppen, Queues prüfen und kontrolliert bereinigen
+
+Für den Betrieb eines totemomail-Gateways (heute Kiteworks Email Protection Gateway) gehören vier Arbeitsschritte zum Grundwerkzeug: den Dienst sauber stoppen, den Queue-Bestand aufnehmen, einzelne Nachrichten inspizieren und die Queues kontrolliert bereinigen, bevor der Dienst wieder startet.
+
+Gebraucht werden diese Schritte bei geplanter Wartung ebenso wie bei Störungen, etwa wenn eine fehlerhafte Regel, ein nicht erreichbares Ziel oder ein Lasttest die Queues gefüllt hat. Dieser Beitrag zeigt jeden Schritt mit den konkreten Befehlen, inklusive der Frage, wie der Dienst überhaupt sauber gestoppt wird. Das Verarbeitungsmodell dahinter (Processors, Repositories, Dateiformate) ist im Beitrag [Mailrouting zwischen totemomail und Exchange Online verstehen](/blog/totemomail-m365) beschrieben.
+
+Alle Pfade beziehen sich auf eine Installation unter `/opt/totemomail` mit dem Servicebenutzer `totemo`. Passen Sie die Pfade an Ihre Umgebung an.
+
+## Wie totemomail gestartet und gestoppt wird
+
+Bevor Sie einen Dienst stoppen, sollten Sie wissen, wie er läuft. Bei totemomail sind drei Schichten beteiligt:
+
+- Eine **systemd-Unit** `totemomail.service` als äusserste Steuerungsebene.
+- Das **Control-Script** `/opt/totemomail/bin/totemomail`, das die Unit bei Start und Stopp aufruft.
+- Der **Tanuki Java Service Wrapper**: ein nativer `wrapper`-Prozess, der den eigentlichen Java-Prozess startet, überwacht und bei einem Absturz neu starten kann.
+
+Den Aufbau können Sie auf Ihrem System nachvollziehen, ohne die Unit-Datei lesen zu dürfen. `systemctl show` fragt die Eigenschaften direkt bei systemd ab und funktioniert auch dann, wenn die Datei unter `/etc/systemd/system/` nur für root lesbar ist:
+
+```bash
+systemctl show totemomail.service -p Type -p User -p ExecStart -p ExecStop \
+  -p KillMode -p TimeoutStopUSec --no-pager
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `show totemomail.service` | Zeigt die Laufzeit-Eigenschaften der Unit, wie systemd sie geladen hat |
+| `-p <Property>` | Beschränkt die Ausgabe auf die genannte Eigenschaft; mehrfach angebbar |
+| `--no-pager` | Gibt direkt auf die Konsole aus, statt einen Pager wie `less` zu öffnen |
+
+</details>
+
+Eine typische Ausgabe sieht so aus:
+
+```text
+Type=oneshot
+TimeoutStopUSec=1min 30s
+ExecStart={ path=/opt/totemomail/bin/totemomail ; argv[]=/opt/totemomail/bin/totemomail start ; ... }
+ExecStop={ path=/opt/totemomail/bin/totemomail ; argv[]=/opt/totemomail/bin/totemomail stop ; ... }
+User=totemo
+KillMode=control-group
+```
+
+Daraus lassen sich die wichtigen Eigenschaften ablesen: `systemctl stop totemomail` ruft das Control-Script mit dem Argument `stop` auf, wartet bis zu 90 Sekunden auf ein sauberes Ende und beendet danach über `KillMode=control-group` alle noch verbliebenen Prozesse der Unit. Der Stopp über systemd ist damit gleichwertig zum direkten Script-Aufruf, räumt aber zusätzlich auf, falls das Script hängen bleibt.
+
+Der Status `active (exited)` bei `systemctl status totemomail` ist bei diesem Aufbau normal und kein Fehler: Die Unit ist `Type=oneshot`, das Start-Script beendet sich nach dem Start, und der Wrapper läuft als eigenständiger, von systemd nur indirekt verwalteter Daemon weiter. Ob der Dienst wirklich läuft, zeigt deshalb nicht der Unit-Status, sondern die Prozessliste:
+
+```bash
+ps -ef | grep -E 'wrapper|TotemoBootStrapper' | grep -v grep
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-e` | Zeigt alle Prozesse, nicht nur die der eigenen Sitzung |
+| `-f` | Volles Ausgabeformat mit kompletter Befehlszeile |
+| `grep -E 'wrapper\|TotemoBootStrapper'` | Filtert auf den Wrapper-Prozess und die Java-Hauptklasse |
+| `grep -v grep` | Entfernt die grep-Prozesse selbst aus der Trefferliste |
+
+</details>
+
+Im Normalbetrieb erscheinen zwei Prozesse: der native `wrapper` (gestartet mit `../conf/wrapper.conf` und dem PID-File `totemomail.pid`) und der Java-Prozess mit der Hauptklasse `ch.totemo.bootstrapper.TotemoBootStrapper`. Fehlt einer der beiden, ist der Dienst nicht vollständig gestartet.
+
+## Schritt 1: Dienst stoppen
+
+Für alle Arbeiten an den Queues stoppen Sie den Dienst zuerst. Solange totemomail läuft, nimmt es Nachrichten an, verarbeitet die Queues und stellt zu; erst der Stopp friert den Bestand für die Analyse ein.
+
+```bash
+sudo systemctl stop totemomail
+```
+
+Kontrollieren Sie danach, dass Wrapper- und Java-Prozess beendet sind:
+
+```bash
+ps -ef | grep -E 'wrapper|TotemoBootStrapper' | grep -v grep
+```
+
+Die Ausgabe muss leer sein. Zusätzlich verschwindet das PID-File `/opt/totemomail/bin/totemomail.pid`. Bleibt ein Prozess nach Ablauf des Stop-Timeouts stehen, beendet systemd ihn über die Control-Group; prüfen Sie in diesem Fall `journalctl -u totemomail`, bevor Sie weiterarbeiten.
+
+Vergessen Sie die vorgelagerte Ebene nicht: Während des Stopps stauen sich neu eintreffende Nachrichten beim einliefernden System, etwa in der Exchange-Warteschlange oder beim vorgelagerten Relay. Das ist gewollt. Seriöse Absender stellen nach dem Wiederanlauf automatisch erneut zu.
+
+## Schritt 2: Queue-Bestand aufnehmen
+
+Die Queues von totemomail sind dateibasierte Mail-Repositories des zugrunde liegenden Apache James. Sie liegen unterhalb des James-Anwendungsverzeichnisses, hier `/opt/totemomail/mailer/apps/james/var/mail/`. Jedes Unterverzeichnis ist ein Repository, jede Nachricht besteht aus zwei Dateien: `*.FileStreamStore` enthält die vollständige MIME-Nachricht, `*.FileObjectStore` das serialisierte Statusobjekt mit Metadaten.
+
+Einen Überblick über den Bestand liefert eine Zählung der `FileObjectStore`-Dateien pro Verzeichnis:
+
+```bash
+for d in /opt/totemomail/mailer/apps/james/var/mail/*/; do \
+  printf '%-22s %s\n' "$(basename "$d")" \
+  "$(find "$d" -maxdepth 1 -name '*.FileObjectStore' | wc -l)"; \
+done
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `for d in .../*/` | Iteriert über alle Repository-Verzeichnisse (der abschliessende `/` beschränkt auf Verzeichnisse) |
+| `printf '%-22s %s\n'` | Formatiert die Ausgabe zweispaltig; `%-22s` füllt den Namen linksbündig auf 22 Zeichen auf |
+| `basename "$d"` | Reduziert den vollen Pfad auf den Verzeichnisnamen |
+| `find "$d" -maxdepth 1` | Sucht nur direkt im Verzeichnis, ohne Unterverzeichnisse |
+| `-name '*.FileObjectStore'` | Zählt eine Datei pro Nachricht; das Stream-Pendant würde die Zahl verdoppeln |
+| `wc -l` | Zählt die gefundenen Dateien |
+
+</details>
+
+Das Ergebnis ist eine Zeile pro Queue mit der Anzahl Nachrichten, zum Beispiel:
+
+```text
+DBUnavailable          0
+error                  12
+incoming               121
+outgoing               0
+spool                  0
+```
+
+Die Standard-Repositories bedeuten: `spool` enthält angenommene, noch unverarbeitete Nachrichten, `incoming` intern zuzustellende, `outgoing` ausgehende, `error` fehlgeschlagene und `DBUnavailable` Nachrichten, die wegen eines nicht erreichbaren Backends geparkt wurden. Je nach Konfiguration existieren weitere Repositories für spezielle Routen; sie folgen demselben Dateischema.
+
+Läuft `find` aus einem Verzeichnis heraus, auf das der Servicebenutzer keinen Zugriff hat (etwa dem Home eines anderen Benutzers nach `sudo -u totemo`), erscheint pro Aufruf die Warnung `Failed to restore initial working directory`. Sie ist harmlos und verschwindet nach einem `cd ~`.
+
+## Schritt 3: In die Nachrichten schauen
+
+Zahlen allein reichen für eine Entscheidung nicht. Bevor Sie etwas löschen, sollten Sie wissen, was in den Queues liegt: unerwünschte Nachrichten aus einer Störung, oder legitime Mails, die nach dem Wiederanlauf zugestellt werden sollen?
+
+Die `FileStreamStore`-Dateien sind unveränderte RFC-822-Nachrichten. Die wichtigsten Header lassen sich deshalb direkt auslesen:
+
+```bash
+for f in /opt/totemomail/mailer/apps/james/var/mail/incoming/*.FileStreamStore; do \
+  awk 'BEGIN{IGNORECASE=1} /^(From|To|Subject|Date):/{print} /^\r?$/{exit}' "$f"; \
+  echo ---; \
+done | less
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `BEGIN{IGNORECASE=1}` | Header-Namen ohne Beachtung der Gross-/Kleinschreibung vergleichen (GNU awk) |
+| `/^(From\|To\|Subject\|Date):/{print}` | Gibt nur die vier relevanten Header-Zeilen aus |
+| `/^\r?$/{exit}` | Bricht an der Leerzeile zwischen Header und Body ab; der Nachrichteninhalt wird nicht gelesen |
+| `echo ---` | Trennlinie zwischen den Nachrichten |
+| `less` | Blättern statt Durchscrollen bei vielen Nachrichten |
+
+</details>
+
+Bei grossen Beständen ist die Verteilung aussagekräftiger als die Einzelansicht. Die häufigsten Absender zeigt:
+
+```bash
+grep -him1 '^From:' /opt/totemomail/mailer/apps/james/var/mail/incoming/*.FileStreamStore \
+  | sort | uniq -c | sort -rn | head
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-h` | Unterdrückt die Dateinamen in der Ausgabe, damit identische Absender zusammenfallen |
+| `-i` | Gross-/Kleinschreibung ignorieren |
+| `-m1` | Nur den ersten Treffer pro Datei (den Header, nicht zitierte `From:`-Zeilen im Body) |
+| `sort \| uniq -c` | Gruppiert identische Absenderzeilen und zählt sie |
+| `sort -rn \| head` | Sortiert absteigend nach Häufigkeit und zeigt die zehn häufigsten |
+
+</details>
+
+Dominiert ein einzelner Absender oder ein einzelner Betreff mit hunderten Kopien, deutet das auf eine Schlaufe oder einen fehlgeleiteten Massenversand; diese Nachrichten sind die Kandidaten für die Bereinigung. Ein Blick auf die Dateizeitstempel (`ls -lt`) grenzt zusätzlich den Zeitraum ein und zeigt, ob ältere, legitime Nachrichten dazwischen liegen.
+
+## Schritt 4: Kontrolliert bereinigen
+
+Erst jetzt wird gelöscht, und auch jetzt noch mit einem Zwischenschritt: Verschieben Sie den Bestand zuerst in ein Sicherungsverzeichnis, statt ihn direkt zu löschen. Das Ergebnis für den Mailbetrieb ist dasselbe (die Queue ist leer), aber der Schritt ist umkehrbar, und einzelne legitime Nachrichten lassen sich später aus der Sicherung zurücklegen oder als `.eml` weiterverwenden.
+
+```bash
+mkdir -p /opt/totemomail/queue-backup-$(date +%F)
+mv /opt/totemomail/mailer/apps/james/var/mail/incoming/* \
+   /opt/totemomail/queue-backup-$(date +%F)/
+```
+
+Wichtig dabei: Die Repository-Verzeichnisse selbst bleiben stehen, nur ihr Inhalt wird verschoben. Und Stream- und Object-Datei einer Nachricht gehören zusammen; wer nur eine der beiden entfernt, hinterlässt verwaiste Dateien, die beim nächsten Start Fehler im Log erzeugen.
+
+Ist die Sicherung geprüft oder der Inhalt zweifelsfrei wertlos (etwa reine Lasttest-Nachrichten), löschen Sie den gesamten Queue-Inhalt über alle Repositories:
+
+```bash
+find /opt/totemomail/mailer/apps/james/var/mail/ -mindepth 2 -maxdepth 2 -type f \
+  \( -name '*.FileStreamStore' -o -name '*.FileObjectStore' \) -delete
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-mindepth 2 -maxdepth 2` | Trifft nur Dateien direkt in den Repository-Verzeichnissen, nicht `var/mail` selbst und keine tieferen Ebenen |
+| `-type f` | Nur reguläre Dateien; die Verzeichnisse bleiben erhalten |
+| `\( -name ... -o -name ... \)` | Beide Dateitypen einer Nachricht, Stream und Statusobjekt |
+| `-delete` | Löscht die Treffer direkt; vorab ohne diese Option ausführen, um die Trefferliste zu prüfen |
+
+</details>
+
+Danach dieselbe Zählung wie in Schritt 2 ausführen: Alle Repositories müssen 0 zeigen.
+
+## Schritt 5: Dienst wieder starten
+
+```bash
+sudo systemctl start totemomail
+```
+
+Der Start ruft das Control-Script mit `start` auf, das den Wrapper daemonisiert; der Wrapper startet anschliessend den Java-Prozess. Kontrollieren Sie beides über die Prozessliste aus dem ersten Abschnitt und werfen Sie einen Blick in die Logdateien unter `/opt/totemomail/bin/`: `wrapper.log` protokolliert den Start des Wrappers und der JVM, `console.log` und `console.err` die Ausgaben der Anwendung selbst.
+
+Zum Abschluss gehört ein Funktionstest mit einer einzelnen Testnachricht durch das Gateway, bevor der reguläre Mailfluss wieder freigegeben wird. Und falls eine Regel oder eine Mailschlaufe die Queues gefüllt hatte: erst die Ursache beheben, dann den Verkehr wieder zulassen. Sonst beginnt die Aufnahme des Queue-Bestands von vorn.
+
+## Zusammenfassung
+
+| Schritt | Befehl | Kontrolle |
+|---|---|---|
+| Stoppen | `sudo systemctl stop totemomail` | `ps`-Filter leer, PID-File weg |
+| Bestand zählen | `find`-Schleife über `var/mail/*/` | Anzahl pro Repository |
+| Inspizieren | `awk`-Header-Auszug, `grep`-Absenderstatistik | unerwünschte von legitimen Nachrichten trennen |
+| Bereinigen | `mv` in Sicherung, dann `find ... -delete` | Zählung zeigt überall 0 |
+| Starten | `sudo systemctl start totemomail` | Prozesse, `wrapper.log`, Testnachricht |
+
+## Quellen
+
+1.  [Apache James Server 2: Provided Mailets](https://james.apache.org/server/2/provided_mailets.html): Dokumentation der Mailets und Repositories, auf denen die Queue-Struktur von totemomail basiert.
+
+2.  [Tanuki Software: Java Service Wrapper](https://wrapper.tanukisoftware.com/doc/english/introduction.html): Funktionsweise des Wrappers, der den totemomail-Java-Prozess startet und überwacht, inklusive PID-File und `wrapper.conf`.
+
+3.  [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html): Bedeutung von `Type=oneshot`, `ExecStop` und `TimeoutStopSec` bei Units, die ein externes Control-Script aufrufen.
+
+4.  [systemd.kill(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.kill.html): `KillMode=control-group` als Absicherung, die nach dem Stop-Script verbliebene Prozesse der Unit beendet.
+
+5.  [RFC 5322: Internet Message Format](https://datatracker.ietf.org/doc/html/rfc5322): Aufbau der Nachrichten-Header, die beim Inspizieren der `FileStreamStore`-Dateien ausgelesen werden.
+
+----
+
+# Per PuTTY direkt in die Service-Account-Shell: Remote command, SSH-Key und sudoers
+
+URL: https://rafaelpfister.ch/blog/putty-ssh-login-service-account-shell
+Datum: 2026-08-28
+
+# Per PuTTY direkt in die Service-Account-Shell: Remote command, SSH-Key und sudoers
+
+Viele Linux-Server im Mail-Umfeld werden nicht mit dem persönlichen Konto administriert, sondern über einen Service-Account: Totemomail läuft unter `totemo`, andere Gateways und Applikationen haben ihre eigenen Funktionskonten. Der Arbeitsalltag beginnt darum bei jedem Login gleich: Benutzername eintippen, Passwort eintippen, dann `sudo -u totemo /bin/bash -l`, je nach Konfiguration nochmals ein Passwort. Das sind vier Eingaben für einen Vorgang, der sich vollständig automatisieren lässt.
+
+Drei Einstellungen bringen den Ablauf auf einen Doppelklick: ein Remote command in der PuTTY-Session, ein SSH-Key statt Passwort und eine eng gefasste `NOPASSWD`-Regel in der sudoers-Konfiguration. Die ersten beiden erledigen Sie allein auf Ihrem Windows-Rechner und im eigenen Home-Verzeichnis, für die dritte braucht es Root-Rechte oder den Server-Admin.
+
+## Warum der Umweg über das persönliche Konto richtig bleibt
+
+Der direkte SSH-Login als Service-Account wäre noch kürzer, ist aber aus gutem Grund meist gar nicht möglich: Funktionskonten haben oft kein Passwort oder eine gesperrte Login-Shell, und ein von mehreren Personen geteilter Direktzugang würde den personalisierten Audit-Trail beseitigen. Beim Weg über `sudo` bleibt nachvollziehbar, welche Person wann in die Service-Account-Shell gewechselt hat, denn sudo protokolliert jeden Aufruf mit aufrufendem Benutzer ins Syslog beziehungsweise Journal.
+
+Die hier beschriebene Automatisierung ändert an dieser Kontrolle nichts. Sie spart nur die Tipparbeit: Der Login läuft weiterhin über Ihr persönliches Konto, der Wechsel weiterhin über sudo.
+
+Der Zielbefehl, um den sich alles dreht:
+
+```bash
+sudo -u totemo /bin/bash -l
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `sudo` | Führt den folgenden Befehl mit anderen Rechten aus und protokolliert den Aufruf |
+| `-u totemo` | Zielbenutzer ist `totemo` statt des Standards `root` |
+| `/bin/bash` | Der auszuführende Befehl: eine neue Bash-Shell |
+| `-l` | Startet die Bash als Login-Shell; sie liest das Profil des Zielbenutzers ein (`.bash_profile`, Umgebungsvariablen, Pfade) |
+
+</details>
+
+Das `-l` ist bei Service-Accounts entscheidend: Ohne Login-Shell fehlen die Umgebungsvariablen aus dem Profil des Funktionskontos, etwa Pfade zu Applikationsverzeichnissen oder Java-Installationen, und applikationseigene Kommandos schlagen mit irreführenden Fehlermeldungen fehl.
+
+## Baustein 1: Remote command in der PuTTY-Session
+
+PuTTY kann pro gespeicherter Session einen Befehl hinterlegen, der nach dem Login anstelle der normalen Shell ausgeführt wird. Das entspricht der `RemoteCommand`-Option von OpenSSH:
+
+1. PuTTY öffnen, die gespeicherte Session markieren und mit **Load** laden.
+2. Links im Baum zu **Connection → SSH** navigieren (der Hauptknoten, nicht ein Unterpunkt).
+3. Im Feld **Remote command** eintragen: `sudo -u totemo /bin/bash -l`
+4. Zurück zur Kategorie **Session**, den Session-Namen wieder markieren und **Save** klicken.
+
+Der häufigste Bedienfehler dabei: **Load** vor der Änderung oder **Save** danach auslassen. Ohne Load bearbeiten Sie nur die Default-Einstellungen, ohne Save ist die Änderung beim nächsten Start von PuTTY verloren.
+
+Drei Eigenheiten des Remote command sollten Sie kennen:
+
+- Ein `exit` in der Service-Account-Shell beendet die Verbindung komplett, statt in Ihre persönliche Shell zurückzukehren. Der Befehl ersetzt die Login-Shell, er verschachtelt sie nicht.
+- Wenn Sie gelegentlich mit dem persönlichen Konto auf dem Server arbeiten, speichern Sie eine zweite Session ohne Remote command (Session laden, Feld leeren, unter neuem Namen sichern).
+- Dateitransfer-Werkzeuge wie WinSCP oder `pscp` sind nicht betroffen. Sie bauen eigene Verbindungen auf und ignorieren das Remote command der PuTTY-Session.
+
+Falls die Verbindung sich nach dem Aufbau sofort wieder schliesst oder sudo ein fehlendes Terminal meldet: Unter **Connection → SSH → TTY** prüfen, dass **Don't allocate a pseudo-terminal** nicht angehakt ist. Standardmässig ist es das nicht.
+
+## Baustein 2: SSH-Key statt Passwort
+
+PuTTY speichert Passwörter grundsätzlich nicht, und das ist auch richtig so. Der passwortlose Login läuft über ein Schlüsselpaar: Der private Schlüssel bleibt auf Ihrem Rechner, der öffentliche wird auf dem Server hinterlegt.
+
+### Schlüsselpaar erzeugen
+
+1. **PuTTYgen** starten (Teil des PuTTY-Pakets), als Typ **Ed25519** wählen, **Generate** klicken und die Maus über die Fläche bewegen.
+2. Eine **Passphrase** in beide Felder eintragen und den privaten Schlüssel mit **Save private key** als `.ppk`-Datei speichern.
+3. Das Textfeld oben (die Zeile beginnend mit `ssh-ed25519 AAAA...`) vollständig kopieren. Das ist der öffentliche Schlüssel im Format, das der Server erwartet.
+
+Speichern Sie den privaten Schlüssel mit Passphrase. Ohne Passphrase ist jede Kopie der Datei ein fertiger Serverzugang, mit Passphrase ist die Datei allein wertlos. Der Komfort-Nachteil entfällt durch Pageant (unten) fast vollständig. Ein Schlüssel ohne Passphrase ist nur für unbeaufsichtigte Automatisierung vertretbar, nicht für den interaktiven Login.
+
+### Public Key auf dem Server eintragen
+
+Auf dem Server, eingeloggt als Ihr **persönlicher** Benutzer:
+
+```bash
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+echo 'ssh-ed25519 AAAA... kommentar' >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+chmod go-w ~
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Befehl / Option | Wirkung |
+|---|---|
+| `mkdir -p ~/.ssh` | Legt das SSH-Verzeichnis an; `-p` unterdrückt den Fehler, falls es schon existiert |
+| `chmod 700 ~/.ssh` | Nur der Besitzer darf das Verzeichnis lesen, schreiben und betreten |
+| `echo '...' >> ~/.ssh/authorized_keys` | Hängt den Public Key als neue Zeile an die Datei an (`>>` statt `>`, sonst überschreiben Sie bestehende Schlüssel) |
+| `chmod 600 ~/.ssh/authorized_keys` | Nur der Besitzer darf die Schlüsseldatei lesen und schreiben |
+| `chmod go-w ~` | Entzieht Gruppe und Anderen das Schreibrecht am Home-Verzeichnis |
+
+</details>
+
+Die letzte Zeile wirkt unscheinbar, gehört aber dazu: Ein gruppen- oder weltbeschreibbares Home-Verzeichnis lässt den SSH-Daemon den Schlüssel stillschweigend ignorieren, und der Server fragt weiter nach dem Passwort, ohne einen Grund zu nennen.
+
+### PuTTY-Session vervollständigen
+
+1. Session mit **Load** laden.
+2. **Connection → SSH → Auth → Credentials**: bei **Private key file for authentication** die `.ppk`-Datei auswählen.
+3. **Connection → Data**: bei **Auto-login username** den persönlichen Benutzernamen eintragen, sonst fragt PuTTY weiterhin bei jedem Verbinden danach.
+4. Unter **Session** speichern.
+
+### Pageant: Passphrase einmal pro Windows-Sitzung
+
+Pageant ist der Schlüssel-Agent von PuTTY. Er hält den entschlüsselten privaten Schlüssel im Speicher, sodass die Passphrase pro Windows-Sitzung nur einmal fällig wird:
+
+1. Pageant starten (Icon erscheint im System-Tray).
+2. Rechtsklick auf das Icon, **Add Key**, die `.ppk`-Datei wählen, Passphrase eingeben.
+3. Ab dann laufen alle PuTTY- und WinSCP-Verbindungen ohne Abfrage, bis zum nächsten Neustart.
+
+Damit Pageant automatisch mitstartet, legen Sie eine Verknüpfung in den Autostart-Ordner (`Win+R`, dann `shell:startup`) und übergeben den Schlüssel als Argument:
+
+```text
+"C:\Program Files\PuTTY\pageant.exe" "C:\Pfad\zum\schluessel.ppk"
+```
+
+Windows fragt dann einmal nach der Anmeldung nach der Passphrase, der Rest des Arbeitstags läuft ohne.
+
+### Wenn der Server weiter nach dem Passwort fragt
+
+Die Fehlersuche beginnt im **Event Log** von PuTTY (Rechtsklick auf die Titelleiste der Terminal-Sitzung). Dort steht, ob der Schlüssel überhaupt angeboten wurde:
+
+| Befund im Event Log | Ursache und Abhilfe |
+|---|---|
+| Kein Eintrag zu einem Public Key | Die `.ppk` ist nicht in der gespeicherten Session hinterlegt, oder die falsche Session wurde bearbeitet. Session laden, Key setzen, speichern. |
+| `Server refused our key` | Der Server findet oder akzeptiert den Schlüssel nicht: falsches Home, falsches Format oder falsche Berechtigungen (siehe unten). |
+| `Access granted`, danach Passwortabfrage | Der Key-Login hat funktioniert; die Abfrage kommt von sudo. Das löst Baustein 3. |
+
+Die drei häufigsten Ursachen für `Server refused our key`:
+
+- **Schlüssel im falschen Home.** Wer die `authorized_keys` über eine Session mit bereits aktivem Remote command bearbeitet, ist beim Bearbeiten schon der Service-Account. Der Schlüssel landet dann in dessen Home statt im eigenen. `whoami` nach dem Login zeigt, wer die Datei tatsächlich angelegt hat.
+- **Falsches Format.** Der Public Key muss als eine einzige Zeile in `authorized_keys` stehen, im Format aus dem Textfeld oben in PuTTYgen. Die Datei aus **Save public key** hat ein anderes, mehrzeiliges Format (`---- BEGIN SSH2 PUBLIC KEY ----`) und funktioniert in `authorized_keys` nicht.
+- **Berechtigungen.** `~/.ssh` auf `700`, `authorized_keys` auf `600`, Home-Verzeichnis nicht gruppen- oder weltbeschreibbar.
+
+Bleibt der Befund unklar, hilft serverseitig ein Blick in `/var/log/secure` beziehungsweise `journalctl -u sshd`, dort begründet der SSH-Daemon die Ablehnung.
+
+## Baustein 3: sudo ohne Passwortabfrage
+
+Nach den ersten beiden Bausteinen bleibt eine einzige Eingabe übrig: die Passwortabfrage von sudo. Sie verschwindet nur über die sudoers-Konfiguration auf dem Server, und dafür braucht es Root-Rechte. Auf einem verwalteten Firmenserver ist das eine Anfrage an den Server-Admin, keine Einstellung in PuTTY.
+
+Die Regel gehört in eine eigene Datei unter `/etc/sudoers.d/` und wird mit `visudo` bearbeitet:
+
+```bash
+visudo -f /etc/sudoers.d/totemo-shell
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `visudo` | Öffnet die sudoers-Datei im Editor und prüft die Syntax vor dem Speichern |
+| `-f /etc/sudoers.d/totemo-shell` | Bearbeitet die angegebene Datei statt der zentralen `/etc/sudoers` |
+
+</details>
+
+Inhalt der Datei, mit dem persönlichen Benutzernamen (hier `mmuster` als Beispiel):
+
+```text
+mmuster ALL=(totemo) NOPASSWD: /bin/bash -l
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Bestandteil | Wirkung |
+|---|---|
+| `mmuster` | Die Regel gilt nur für diesen Benutzer |
+| `ALL=` | Auf allen Hosts (relevant bei zentral verteilten sudoers-Dateien) |
+| `(totemo)` | Nur für Befehle als Zielbenutzer `totemo`, nicht als root |
+| `NOPASSWD:` | Keine Passwortabfrage für die folgenden Befehle |
+| `/bin/bash -l` | Genau dieser Befehl mit genau diesem Argument, nichts anderes |
+
+</details>
+
+Zwei Punkte entscheiden darüber, ob die Regel greift und ob sie vertretbar ist:
+
+- **Exakte Übereinstimmung.** Der Befehl in der Regel muss dem Remote command entsprechen, inklusive Argument. Steht in PuTTY `sudo -u totemo /bin/bash -l`, muss die Regel `/bin/bash -l` erlauben. Eine Regel für `/bin/bash` ohne `-l` deckt den Aufruf mit `-l` nicht ab, und sudo fragt weiter nach dem Passwort.
+- **Minimaler Umfang.** Die Regel erlaubt einen einzigen Befehl als einen einzigen Zielbenutzer. Sie gibt weder Root-Rechte noch beliebige Befehle frei. In dieser Form ist sie auch auf verwalteten Servern eine übliche und begründbare Anfrage. Die sudo-Protokollierung bleibt vollständig erhalten, jeder Wechsel in die Service-Account-Shell steht weiterhin im Log.
+
+`visudo` ist dabei nicht optional: Es prüft die Syntax vor dem Speichern. Ein Tippfehler, der direkt in die Datei geschrieben wird, kann sudo für alle Benutzer des Systems unbrauchbar machen. Aus demselben Grund ist eine eigene Datei unter `/etc/sudoers.d/` der Bearbeitung der zentralen `/etc/sudoers` vorzuziehen; sie übersteht Paket-Updates und lässt sich gefahrlos wieder entfernen.
+
+## Das Ergebnis
+
+Nach den drei Bausteinen sieht der Login so aus: Doppelklick auf die PuTTY-Session, und die Service-Account-Shell steht bereit. Kein Benutzername, kein Passwort, keine sudo-Abfrage. Die Sicherheitslage hat sich dabei nicht verschlechtert, in einem Punkt sogar verbessert:
+
+| Aspekt | Vorher | Nachher |
+|---|---|---|
+| Authentifizierung | Passwort bei jedem Login | Ed25519-Schlüssel mit Passphrase, gehalten in Pageant |
+| Login-Identität | Persönliches Konto | Unverändert persönliches Konto |
+| sudo-Protokollierung | Jeder Wechsel im Log | Unverändert jeder Wechsel im Log |
+| NOPASSWD-Umfang | Keiner | Ein Befehl, ein Zielbenutzer, kein root |
+
+Wer denselben Ablauf ohne PuTTY mit OpenSSH nutzt (etwa aus dem Windows-Terminal), erreicht dasselbe mit einem `Host`-Eintrag in `~/.ssh/config` mit `RequestTTY yes` und `RemoteCommand sudo -u totemo /bin/bash -l`. Die Bausteine SSH-Key und sudoers-Regel bleiben identisch.
+
+## Quellen
+
+1.  [PuTTY User Manual, Kapitel 4: Configuring PuTTY](https://the.earth.li/~sgtatham/putty/0.83/htmldoc/Chapter4.html): Dokumentation der Session-Einstellungen, darunter Remote command (SSH panel), Auto-login username (Data panel) und Pseudo-Terminal (TTY panel).
+
+2.  [PuTTY User Manual, Kapitel 8: Using public keys for SSH authentication](https://the.earth.li/~sgtatham/putty/0.83/htmldoc/Chapter8.html): PuTTYgen, Schlüsseltypen, Passphrasen und das Eintragen des Public Key auf dem Server.
+
+3.  [PuTTY User Manual, Kapitel 9: Using Pageant for authentication](https://the.earth.li/~sgtatham/putty/0.83/htmldoc/Chapter9.html): Funktionsweise des Agents, Laden von Schlüsseln und Start mit Schlüssel als Kommandozeilen-Argument.
+
+4.  [sudoers(5) Manual](https://www.sudo.ws/docs/man/sudoers.man/): Syntax der sudoers-Regeln, Runas-Spezifikation und NOPASSWD-Tag.
+
+5.  [sshd(8) Manual, Abschnitt AUTHORIZED_KEYS FILE FORMAT](https://man.openbsd.org/sshd.8): Format der authorized_keys-Datei und die Anforderungen an die Dateiberechtigungen.
+
+----
+
 # smtp-source ohne Postfix-Installation: Lasttest-Werkzeuge aus dem RPM entpacken
 
 URL: https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation
