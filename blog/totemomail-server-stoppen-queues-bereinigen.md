@@ -1,7 +1,7 @@
 ---
-title: "Mailstorm auf totemomail: Server stoppen, Queues prüfen und kontrolliert bereinigen"
-navTitle: "Queues bereinigen"
-description: "Wenn ein Mailstorm die Queues von totemomail füllt, hilft ein kontrolliertes Vorgehen: Dienst über systemd und das Tanuki-Control-Script stoppen, Queue-Bestand pro Repository zählen, einzelne Nachrichten inspizieren, erst dann bereinigen und den Dienst wieder starten."
+title: "Wichtigste Controls für Totemomail-Admins: Server stoppen, Queues prüfen und kontrolliert bereinigen"
+navTitle: "Totemomail-Controls"
+description: "Die wichtigsten Controls für den Betrieb eines totemomail-Gateways: Dienst über systemd und das Tanuki-Control-Script stoppen, Queue-Bestand pro Repository zählen, einzelne Nachrichten inspizieren, kontrolliert bereinigen und den Dienst wieder starten."
 date: "2026-08-28"
 kategorie: "Totemomail"
 timeToRead: "9 Min. Lesezeit"
@@ -13,16 +13,16 @@ produkte:
 protokolle:
   - "smtp"
   - "troubleshooting"
-slug: "totemomail-mailstorm-queues-bereinigen"
-translationId: "article-ceab4ac53bb7acdd"
-url: "https://rafaelpfister.ch/blog/totemomail-mailstorm-queues-bereinigen"
+slug: "totemomail-server-stoppen-queues-bereinigen"
+translationId: "article-3a0a526ab6e38a06"
+url: "https://rafaelpfister.ch/blog/totemomail-server-stoppen-queues-bereinigen"
 ---
 
-# Mailstorm auf totemomail: Server stoppen, Queues prüfen und kontrolliert bereinigen
+# Wichtigste Controls für Totemomail-Admins: Server stoppen, Queues prüfen und kontrolliert bereinigen
 
-Ein Mailstorm hat viele mögliche Auslöser: eine Mailschlaufe zwischen Gateway und Exchange, eine fehlerhafte Weiterleitungsregel, ein Lasttest mit falschem Ziel oder ein Massenversand, der ungebremst auf das Gateway trifft. Auf einem totemomail-Gateway (heute Kiteworks Email Protection Gateway) füllen sich dann die Queues, und jede weitere Verarbeitungsrunde verschärft das Problem.
+Für den Betrieb eines totemomail-Gateways (heute Kiteworks Email Protection Gateway) gehören vier Arbeitsschritte zum Grundwerkzeug: den Dienst sauber stoppen, den Queue-Bestand aufnehmen, einzelne Nachrichten inspizieren und die Queues kontrolliert bereinigen, bevor der Dienst wieder startet.
 
-In dieser Situation hat sich ein festes Vorgehen bewährt: Dienst anhalten, Bestand aufnehmen, gezielt bereinigen, wieder anfahren. Regeländerungen im laufenden Betrieb verschärfen das Problem eher, weil jede Analyse auf einem Bestand arbeitet, der sich dabei laufend ändert. Dieser Beitrag zeigt jeden dieser Schritte mit den konkreten Befehlen, inklusive der Frage, wie der Dienst überhaupt sauber gestoppt wird. Das Verarbeitungsmodell dahinter (Processors, Repositories, Dateiformate) ist im Beitrag [Mailrouting zwischen totemomail und Exchange Online verstehen](/blog/totemomail-m365) beschrieben.
+Gebraucht werden diese Schritte bei geplanter Wartung ebenso wie bei Störungen, etwa wenn eine fehlerhafte Regel, ein nicht erreichbares Ziel oder ein Lasttest die Queues gefüllt hat. Dieser Beitrag zeigt jeden Schritt mit den konkreten Befehlen, inklusive der Frage, wie der Dienst überhaupt sauber gestoppt wird. Das Verarbeitungsmodell dahinter (Processors, Repositories, Dateiformate) ist im Beitrag [Mailrouting zwischen totemomail und Exchange Online verstehen](/blog/totemomail-m365) beschrieben.
 
 Alle Pfade beziehen sich auf eine Installation unter `/opt/totemomail` mit dem Servicebenutzer `totemo`. Passen Sie die Pfade an Ihre Umgebung an.
 
@@ -87,7 +87,7 @@ Im Normalbetrieb erscheinen zwei Prozesse: der native `wrapper` (gestartet mit `
 
 ## Schritt 1: Dienst stoppen
 
-Bei einem Mailstorm stoppen Sie den Dienst als Erstes. Solange totemomail läuft, nimmt es weiter Nachrichten an, verarbeitet die Queues und stellt zu; erst der Stopp friert den Bestand für die Analyse ein.
+Für alle Arbeiten an den Queues stoppen Sie den Dienst zuerst. Solange totemomail läuft, nimmt es Nachrichten an, verarbeitet die Queues und stellt zu; erst der Stopp friert den Bestand für die Analyse ein.
 
 ```bash
 sudo systemctl stop totemomail
@@ -101,7 +101,7 @@ ps -ef | grep -E 'wrapper|TotemoBootStrapper' | grep -v grep
 
 Die Ausgabe muss leer sein. Zusätzlich verschwindet das PID-File `/opt/totemomail/bin/totemomail.pid`. Bleibt ein Prozess nach Ablauf des Stop-Timeouts stehen, beendet systemd ihn über die Control-Group; prüfen Sie in diesem Fall `journalctl -u totemomail`, bevor Sie weiterarbeiten.
 
-Vergessen Sie die vorgelagerte Ebene nicht: Wenn der Mailstorm von aussen kommt, stauen sich die Nachrichten nach dem Stopp beim einliefernden System (etwa in der Exchange-Warteschlange oder beim vorgelagerten Relay). Das ist gewollt. Dort lassen sie sich ebenfalls anhalten oder verwerfen, und seriöse Absender stellen nach dem Wiederanlauf automatisch erneut zu.
+Vergessen Sie die vorgelagerte Ebene nicht: Während des Stopps stauen sich neu eintreffende Nachrichten beim einliefernden System, etwa in der Exchange-Warteschlange oder beim vorgelagerten Relay. Das ist gewollt. Seriöse Absender stellen nach dem Wiederanlauf automatisch erneut zu.
 
 ## Schritt 2: Queue-Bestand aufnehmen
 
@@ -146,7 +146,7 @@ Läuft `find` aus einem Verzeichnis heraus, auf das der Servicebenutzer keinen Z
 
 ## Schritt 3: In die Nachrichten schauen
 
-Zahlen allein reichen für eine Entscheidung nicht. Bevor Sie etwas löschen, sollten Sie wissen, was in den Queues liegt: Sind es die Sturm-Nachrichten, oder stecken dazwischen legitime Mails, die nach dem Wiederanlauf zugestellt werden sollen?
+Zahlen allein reichen für eine Entscheidung nicht. Bevor Sie etwas löschen, sollten Sie wissen, was in den Queues liegt: unerwünschte Nachrichten aus einer Störung, oder legitime Mails, die nach dem Wiederanlauf zugestellt werden sollen?
 
 Die `FileStreamStore`-Dateien sind unveränderte RFC-822-Nachrichten. Die wichtigsten Header lassen sich deshalb direkt auslesen:
 
@@ -190,7 +190,7 @@ grep -him1 '^From:' /opt/totemomail/mailer/apps/james/var/mail/incoming/*.FileSt
 
 </details>
 
-Dominiert ein einzelner Absender oder ein einzelner Betreff mit hunderten Kopien, haben Sie die Sturm-Nachrichten identifiziert. Ein Blick auf die Dateizeitstempel (`ls -lt`) grenzt zusätzlich den Zeitraum ein und zeigt, ob ältere, legitime Nachrichten zwischen den Sturm-Mails liegen.
+Dominiert ein einzelner Absender oder ein einzelner Betreff mit hunderten Kopien, deutet das auf eine Schlaufe oder einen fehlgeleiteten Massenversand; diese Nachrichten sind die Kandidaten für die Bereinigung. Ein Blick auf die Dateizeitstempel (`ls -lt`) grenzt zusätzlich den Zeitraum ein und zeigt, ob ältere, legitime Nachrichten dazwischen liegen.
 
 ## Schritt 4: Kontrolliert bereinigen
 
@@ -233,7 +233,7 @@ sudo systemctl start totemomail
 
 Der Start ruft das Control-Script mit `start` auf, das den Wrapper daemonisiert; der Wrapper startet anschliessend den Java-Prozess. Kontrollieren Sie beides über die Prozessliste aus dem ersten Abschnitt und werfen Sie einen Blick in die Logdateien unter `/opt/totemomail/bin/`: `wrapper.log` protokolliert den Start des Wrappers und der JVM, `console.log` und `console.err` die Ausgaben der Anwendung selbst.
 
-Zum Abschluss gehört ein Funktionstest mit einer einzelnen Testnachricht durch das Gateway, bevor der reguläre Mailfluss wieder freigegeben wird. Und falls die Ursache des Sturms eine Regel oder eine Schlaufe war: erst die Ursache beheben, dann den Verkehr wieder zulassen. Sonst beginnt die Aufnahme des Queue-Bestands von vorn.
+Zum Abschluss gehört ein Funktionstest mit einer einzelnen Testnachricht durch das Gateway, bevor der reguläre Mailfluss wieder freigegeben wird. Und falls eine Regel oder eine Mailschlaufe die Queues gefüllt hatte: erst die Ursache beheben, dann den Verkehr wieder zulassen. Sonst beginnt die Aufnahme des Queue-Bestands von vorn.
 
 ## Zusammenfassung
 
@@ -241,7 +241,7 @@ Zum Abschluss gehört ein Funktionstest mit einer einzelnen Testnachricht durch 
 |---|---|---|
 | Stoppen | `sudo systemctl stop totemomail` | `ps`-Filter leer, PID-File weg |
 | Bestand zählen | `find`-Schleife über `var/mail/*/` | Anzahl pro Repository |
-| Inspizieren | `awk`-Header-Auszug, `grep`-Absenderstatistik | Sturm-Mails von legitimen trennen |
+| Inspizieren | `awk`-Header-Auszug, `grep`-Absenderstatistik | unerwünschte von legitimen Nachrichten trennen |
 | Bereinigen | `mv` in Sicherung, dann `find ... -delete` | Zählung zeigt überall 0 |
 | Starten | `sudo systemctl start totemomail` | Prozesse, `wrapper.log`, Testnachricht |
 
