@@ -3,6 +3,7 @@ title: "AuthMechanism 10 und AuthAs Internal: Wie Exchange die Einlieferung im H
 navTitle: "AuthMechanism 10"
 description: "Der Header X-MS-Exchange-Organization-AuthMechanism dokumentiert, wie sich ein einliefernder Server authentifiziert hat. Der Wert 10 steht für einen Receive Connector mit Externally Secured und stuft externe Mails als intern ein: mit Folgen für Spamfilter, Mailflow-Regeln und Spoofing-Schutz."
 date: "2026-08-26"
+featured: "2026-08-27"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "8 Min. Lesezeit"
 themen:

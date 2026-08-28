@@ -1,5 +1,5 @@
 ---
-name: "Open Source Hub"
+name: "Off Topic"
 slug: "opensource"
 claim: "Open-source software, self-hosted: Home Assistant, Paperless-ngx, Rclone, and more."
 funnel: "After hours"
