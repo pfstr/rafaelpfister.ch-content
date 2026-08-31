@@ -1,7 +1,7 @@
 ---
-title: "SMTP-load test with numbered recipients: send 50,000 emails with traceability"
+title: "SMTP load testing with numbered recipients: send every email traceably"
 navTitle: "Numbered load tests"
-description: "A load test is only as good as its evaluation. With the -N option, smtp-source numbers every email via the recipient address without sacrificing throughput. Learn how to set up a run with 50,000 emails, how many sessions make sense and how to find missing numbers automatically."
+description: "A load test is only as good as its evaluation. With the -N option, smtp-source numbers every email through the recipient address without sacrificing throughput. How to structure the run, how many sessions make sense, and how to find missing numbers automatically."
 date: "2026-08-27"
 kategorie: "SMTP and mail flow"
 timeToRead: "8 min read"
@@ -16,24 +16,27 @@ protokolle:
 slug: "smtp-load-test-with-numbered-recipients-send-50-000-emails-with-traceability"
 translationId: "article-57f09c758baf6e1e"
 translationOf: smtp-lasttest-nummerierte-empfaenger
-url: https://rafaelpfister.ch/no/blog/smtp-load-test-with-numbered-recipients-send-50-000-emails-with-traceability
-translationSourceHash: a2ec75884c06a6d736ea9b5895211ddc4cbba252c7ddf491752e1bec5ab1a24d
+translationSourceHash: 7145f2b49fb0b141d9c74d009d7c480ce4d119b4c97236e2ed7d92a39f65a1c5
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-27T14:22:58.410Z
+translatedAt: 2026-08-28T15:50:31.250Z
 translationReview: automatic
+url: https://rafaelpfister.ch/no/blog/smtp-load-test-with-numbered-recipients-send-50-000-emails-with-traceability
 ---
 
-# SMTP-load test with numbered recipients: send 50,000 emails with traceability
+# SMTP load testing with numbered recipients: send every email traceably
 
-Anyone running a load test with 50,000 emails wants to be able to answer two questions afterwards: Did they all arrive, and if not, which ones are missing? With identical test emails, you can only count, and a difference between 49,987 and 50,000 says nothing about when and where the 13 missing messages were lost. If each email instead carries a sequential number, counting becomes reconciliation: each number can be found individually in the target system's logs, gaps reveal when the loss occurred, and the delivery order can be checked.
+Anyone running a load test wants to be able to answer two questions afterwards: Did all emails arrive, and if not, which ones are missing? With identical test emails, you can only count, and a count showing 13 missing messages says nothing about when or where they were lost. If each email carries a sequential number, counting becomes reconciliation: Every number can be found individually in the target system's logs, gaps show when the loss occurred, and the delivery order can be checked.
 
-The common reflex is a script that increments the subject line. That works, but it costs throughput because the load generator `smtp-source` from the Postfix package sets the subject once per invocation, and a loop with one invocation per email forces a separate connection setup for every message. The better message identifier is already built in: the `-N` option numbers the recipient address for each message, within a single invocation with parallel sessions. For evaluation, the recipient address is just as useful as the subject line because it appears in every tracking log.
+The common reflex is a script that increments the subject line. That works, but costs throughput, because the load generator `smtp-source` from the Postfix package sets the subject fixed per invocation, and a loop with one invocation per email forces a separate connection setup for every message. The better message identifier is already built in: The option `-N` numbers the recipient address for each message, within a single invocation with parallel sessions. For evaluation, the recipient address is just as useful as the subject, because it appears in every tracking log.
 
-Unlike a pure loopback functional test, this test setup sends over the network to another system. If Postfix is not installed on the source system, the article [smtp-source without a Postfix installation](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation) shows you how to extract the tools from the RPM.
+Unlike a pure loopback functional test, this test setup sends to another system over the network. If Postfix is not installed on the source system, the article [smtp-source without a Postfix installation](https://rafaelpfister.ch/blog/smtp-source-ohne-postfix-installation) shows how to extract the tools from the RPM.
 
 ## The most important smtp-source options
 
-For orientation, here are the options used in this article, translated in essence from the man page:
+For orientation, here are the options used in this article, translated in substance from the man page:
+
+<details class="options-details">
+<summary>Options at a glance</summary>
 
 | Option | Meaning |
 |---|---|
@@ -50,21 +53,25 @@ For orientation, here are the options used in this article, translated in essenc
 | `-c` | Display a running counter that increments with every completed `DATA` |
 | `-w n` | Fixed wait time of n seconds between messages (per session) |
 | `-v` | Verbose output for troubleshooting |
-| `host:port` | TCP delivery target; without a port specification, the default smtp port is used |
+| `host:port` | Delivery target via TCP; without a port specification, the default smtp port |
 
-The full list, including TLS, LMTP and timing options, is in the `smtp-source(1)` man page; its counterpart for the receiving side is `smtp-sink(1)` and is used later in the evaluation.
+</details>
+
+The complete list, including TLS, LMTP and timing options, is in the `smtp-source(1)` man page; the counterpart for the receiving side is `smtp-sink(1)` and is used later in the evaluation.
 
 ## How -N numbers recipients
 
-`-N` enables a per-process counter that is built into the recipient address. Three properties determine the test setup, all three can be read in the source code of `smtp-source.c`:
+`-N` enables a per-process counter that is inserted into the recipient address. Three characteristics determine the test setup, and all three can be found in the source code of `smtp-source.c`:
 
-First, the exact address form depends on the Postfix version. Postfix 3.5, as provided by RHEL 8, prefixes the number to the full address (`RCPT TO:<%d%s>`): `-t test@example.com` becomes `1test@example.com`, `2test@example.com` and so on, and the counter starts at 1. Current Postfix versions instead append the number to the end of the local part and start at 0 (`test0@` through `test49999@`); for this variant, the man page recommends plus addressing (`-t 'test+@example.com'` becomes `test+0@` and subsequent addresses) so that a target system with subaddressing assigns everything to the same mailbox. Before the large run, check the form with a handful of emails against a `smtp-sink` or in the target's log; the expected set and the search pattern used for evaluation depend on it.
+First, the exact address format depends on the Postfix version. Postfix 3.5, as provided by RHEL 8, prefixes the number to the complete address (`RCPT TO:<%d%s>`): `-t test@example.com` becomes `1test@example.com`, `2test@example.com` and so on, and the counter starts at 1. Current Postfix versions instead append the number to the end of the local part and start at 0 (`test0@` through `test49999@`); for this variant, the man page recommends plus addressing (`-t 'test+@example.com'` becomes `test+0@` and subsequent addresses), so a target system with subaddressing assigns everything to the same mailbox. Check the format before the large run with a handful of emails against an `smtp-sink` or in the target's log; the expected quantity and the search pattern used for evaluation depend on it.
 
-Second, the counter is process-wide and shared by all parallel sessions. With `-s 8`, the eight sessions assign the numbers together; each number occurs exactly once. The order across sessions is not deterministic, but completeness of the number set is guaranteed.
+Second, the counter is process-wide and shared by all parallel sessions. With `-s 8`, the eight sessions assign the numbers jointly; every number occurs exactly once. The ordering across sessions is non-deterministic, but the completeness of the set of numbers is guaranteed.
 
-Third, the starting value cannot be configured: 1 in Postfix 3.5 and 0 in current versions. The 50,000 emails therefore carry numbers 1 through 50,000 or 0 through 49,999, respectively, and the expected set used for reconciliation must match.
+Third, the starting value cannot be configured: 1 in Postfix 3.5, 0 in current versions. The emails therefore carry numbers from 1 up to the total count from `-m`, or from 0 up to total count minus 1, and the expected set for reconciliation must match.
 
 ## The test run in one invocation
+
+How many emails the run contains does not matter to the approach; `-m` determines the total count, and the examples in this article use 50,000 as an arbitrary placeholder.
 
 ```bash
 smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
@@ -73,27 +80,32 @@ smtp-source -c -d -N -s 8 -m 50000 -l 5120 \
   gateway.example.com:25
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
 | Option | Effect |
 |---|---|
-| `-c` | Running counter of completed deliveries as a single-line progress display |
-| `-d` | Connections remain open across all messages; without `-d`, a new connection is created per message |
+| `-c` | Running counter of completed deliveries as a one-line progress display |
+| `-d` | Connections remain open across all messages; without `-d`, a new connection per message |
 | `-N` | Recipient numbering: appends the per-process counter to the local part |
 | `-s 8` | Eight parallel SMTP sessions |
 | `-m 50000` | Total number of messages, distributed across sessions |
 | `-l 5120` | Message size in bytes (excluding headers), 5 KB here |
 | `-f` | Sender address |
-| `-t` | Base recipient address; `-N` turns it into `1test@` through `50000test@` (Postfix 3.5) or `test0@` through `test49999@` (current versions) |
+| `-t` | Base recipient address; `-N` turns it into `1test@`, `2test@` and so on (Postfix 3.5), or `test0@`, `test1@` and so on (current versions) |
 | `gateway.example.com:25` | Target host and port |
 
-`-d` is crucial for the load profile: without this option, `smtp-source` disconnects after every message and establishes a new connection for the next one; with `-d`, the eight connections remain open and deliver all messages in sequence, as a bulk sender does.
+</details>
 
-The `-v` familiar from functional tests is deliberately omitted: it logs every individual SMTP dialog from `HELO` to `QUIT` and produces hundreds of thousands of log lines for 50,000 emails without adding value to the evaluation. `-c` instead provides the summary from which the run's progress can be monitored live. A preceding `time` provides the total duration for calculating the rate.
+`-d` is decisive for the load profile: Without this option, `smtp-source` disconnects after every message and establishes a new connection for the next one; with `-d`, the eight connections remain open and deliver all messages in sequence, as a bulk sender does.
 
-A prerequisite for the entire approach is that the target system accepts the generated addresses. A `smtp-sink`, a catch-all domain, a provider discard domain or a gateway that resolves recipients only after acceptance meets this requirement. If the target checks every recipient against a directory, however, it rejects the numbered addresses and only the subject-line variant remains.
+The familiar `-v` from functional tests is deliberately omitted: It logs every individual SMTP dialogue from `HELO` to `QUIT` and produces hundreds of thousands of log lines in a large run, with no added value for evaluation. `-c` instead provides the summary that lets you follow the run's progress live. A preceding `time` provides the total duration for rate calculation.
+
+A prerequisite for the entire approach: The target system accepts the generated addresses. An `smtp-sink`, a catch-all domain, a provider discard domain, or a gateway that resolves recipients only after acceptance meet this requirement. If the target checks every recipient against a directory, however, it rejects the numbered addresses, leaving only the subject variant.
 
 ## Setting custom headers
 
-Some load tests need a custom header, for example as a marker by which the gateway recognises the test emails or to trigger a rule. `smtp-source` has no option for this, but `-F` reads a fully preformatted message from a file, where any desired header can be included. The file consists of header lines, a blank line and the body, with all lines terminated by `\r\n`:
+Some load tests need a custom header, for example as a marker by which the gateway recognizes the test emails or for a rule to take effect. `smtp-source` has no option for this, but `-F` reads a fully preformatted message from a file, where any desired header can be included. The file consists of header lines, a blank line and the body, with all lines terminated by `\r\n`:
 
 ```bash
 { printf 'X-Lasttest: aktiv\r\n'
@@ -103,6 +115,17 @@ Some load tests need a custom header, for example as a marker by which the gatew
   printf '\r\n'; } > lasttest.eml
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `head -c 5120` | Outputs the first 5120 bytes of input, here from `/dev/zero` |
+| `tr '\0' 'x'` | Replaces every null byte with the character `x` and thus generates the 5 KB filler text |
+| `> lasttest.eml` | Writes the assembled message to the file for `-F` |
+
+</details>
+
 ```bash
 smtp-source -c -d -N -s 8 -m 50000 -F lasttest.eml \
   -f lasttest@example.com \
@@ -110,15 +133,20 @@ smtp-source -c -d -N -s 8 -m 50000 -F lasttest.eml \
   gateway.example.com:25
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
 | Option | Effect |
 |---|---|
-| `-F datei` | Sends headers and body unchanged from the file; replaces generated message content |
+| `-F datei` | Sends headers and body unchanged from the file; replaces the generated message content |
 
-This has two consequences: `-F` overrides `-l` and `-S` because size and subject now come from the file (which must therefore contain both). `-N` remains effective, however, and recipients continue to be numbered; the header is identical in all messages because it comes from the fixed file.
+</details>
+
+Two consequences: `-F` overrides `-l` and `-S`, because the size and subject now come from the file (which is why both must be included there). `-N` remains effective, however: Recipients continue to be numbered; the header is identical in all messages because it comes from the fixed file.
 
 ## How many sessions?
 
-The most reliable way to determine the appropriate number of sessions is through measurement, using exactly the same options as for the planned main run: the same message source (the same `-F` file or the same `-l`), the same sender and the same target. Only the quantity is reduced to 2,000 per stage, and `-s` varies. A short calibration run with increasing session counts shows when additional sessions no longer help:
+The most reliable way to determine the appropriate number of sessions is through measurement, using exactly the same options as for the planned main run: the same message source (the same `-F` file or the same `-l`), same sender, same target. Only the quantity is reduced to 2,000 per stage, while `-s` varies. A short calibration run with increasing session counts shows when additional sessions no longer help:
 
 ```bash
 for s in 1 2 4 8 16 32; do
@@ -131,11 +159,28 @@ for s in 1 2 4 8 16 32; do
 done
 ```
 
-Two details about the invocation: `-c` is deliberately omitted here so that no running counter output appears between the measurement lines; the loop produces exactly one result line per stage. And the empty local part in `-t` works well with numbering on a discard domain: with the prefixed counter in Postfix 3.5, it produces purely numerical recipient addresses (`1@blackhole.example.com`, `2@…`), keeping evaluation in the logs clear.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Specifically, the following happens: the outer loop goes through session counts 1 to 32 in doubling increments. Before and after each run, `date +%s%N` records the current time as a large number: Unix seconds immediately followed by the nanosecond component. In between, `smtp-source` sends 2,000 messages (content, headers and size come from the `-F` file) through the respective number of parallel connections, which remain open thanks to `-d`; the loop waits until the invocation is fully complete. The `echo` line converts the time difference to a rate: 2,000 emails divided by the runtime in seconds, with runtime available in nanoseconds. Thus, 2,000 times 10⁹ produces the constant `2000000000000`. The Bash arithmetic `$(( ))` uses integer calculations and truncates decimal places, which is sufficiently accurate for this measurement.
+| Option | Effect |
+|---|---|
+| `date +%s%N` | Outputs Unix seconds immediately followed by the nanosecond portion as one number |
+| `-d` | Connections remain open across all messages in the stage |
+| `-N` | Recipient numbering via the per-process counter |
+| `-s "$s"` | Number of parallel sessions, 1 through 32 in each loop iteration |
+| `-m 2000` | 2,000 messages per measurement stage |
+| `-F lasttest.eml` | The same message file as in the planned main run |
+| `-f` | Sender address |
+| `-t '@blackhole.example.com'` | Base recipient address with an empty local part on a discard domain |
+| `gateway.example.com:25` | Target host and port |
 
-Three practical notes: `%N` provides nanoseconds only in GNU date (as is the case on RHEL and most Linux systems; BusyBox and macOS do not support it). The complete run sends 6 × 2,000 = 12,000 emails; they too need a controlled recipient address, and `-N` numbering starts again at the initial value in every invocation. If a `smtp-source` invocation aborts with an error message, the rate for that line is meaningless; fix the cause first, then measure again.
+</details>
+
+Two details of the invocation: `-c` is deliberately omitted here, so no running counter output appears between measurement lines; the loop produces exactly one result line per stage. The empty local part in `-t` also works well with numbering on a discard domain: With the prefixed counter in Postfix 3.5, it produces purely numeric recipient addresses (`1@blackhole.example.com`, `2@…`), which keeps log evaluation clear.
+
+Specifically, the following happens: The outer loop runs through session counts from 1 to 32 in doubling steps. Before and after each run, `date +%s%N` records the current time as one large number, namely Unix seconds immediately followed by the nanosecond portion. In between, `smtp-source` sends 2,000 messages (content, headers and size come from the `-F` file) over the respective number of parallel connections, which remain open thanks to `-d`; the loop waits until the invocation is completely finished. The `echo` line converts the time difference into a rate: 2,000 emails divided by the runtime in seconds, where the runtime is in nanoseconds. This turns 2,000 times 10⁹ into the constant `2000000000000`. The Bash arithmetic `$(( ))` performs integer calculations and truncates decimal places, which is sufficiently accurate for this measurement.
+
+Three practical notes: `%N` provides nanoseconds only with GNU date (the case on RHEL and most Linux systems; BusyBox and macOS do not support it). The complete run sends 6 × 2,000 = 12,000 emails; these also need a controlled recipient address, and `-N` numbering starts over at the initial value with every invocation. If an `smtp-source` invocation aborts with an error message, the rate on that line is meaningless; resolve the cause first, then measure again.
 
 The expected output is one line per stage. With invented but typical example values, it looks like this:
 
@@ -148,7 +193,7 @@ The expected output is one line per stage. With invented but typical example val
 32 Sessions: 80 Mails/s
 ```
 
-The interpretation: as long as the rate roughly doubles with the number of sessions, the parallel sessions are masking the wait time for responses from the target; the bottleneck is then path latency, not capacity. From the point where the curve flattens (between 8 and 16 sessions in the example), either the target system is saturated or the source has reached its limit. Choose the smallest value at which the rate no longer increases significantly—8 to 16 in the example; more sessions then only increase the load through parallelism, not throughput. The measured rate can also be used to estimate the expected duration of the main run with 50,000 emails: at 71 emails/s, approximately 12 minutes.
+The interpretation: As long as the rate roughly doubles with the session count, the parallel sessions cover the wait time for responses from the target; the bottleneck is then path latency, not capacity. From the point at which the curve flattens (between 8 and 16 sessions in the example), either the target system is saturated or the source has reached its limit. Choose the smallest value at which the rate no longer increases significantly, 8 to 16 in the example; additional sessions then increase only the load through parallelism, not throughput. For the main run, the measured rate can also be used to estimate the expected duration: the total count from `-m` divided by the rate.
 
 ## Evaluation on the receiving side
 
@@ -158,14 +203,19 @@ If a dedicated test receiver is available on the target system, `smtp-sink` also
 smtp-sink -c -d "mails/%Y%m%d-%H%M%S." 0.0.0.0:2525 200
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
 | Option | Effect |
 |---|---|
-| `-c` | Running counters instead of the full SMTP dialog |
-| `-d "mails/…"` | For the sink: dump, not connection persistence. Writes each accepted message to its own file (filename pattern via strftime), including an `X-Rcpt-Args` header containing the recipient address |
+| `-c` | Running counters instead of the full SMTP dialogue |
+| `-d "mails/…"` | For the sink: dump, not connection persistence. Writes each accepted message to a separate file (name pattern via strftime), including an `X-Rcpt-Args` header containing the recipient address |
 | `0.0.0.0:2525` | Listens on all interfaces on port 2525 |
-| `200` | Backlog: maximum length of the queue of pending connections according to listen(2) |
+| `200` | Backlog: maximum queue length of pending connections according to listen(2) |
 
-After the run, extract the received numbers and compare them with the expected set. Because the numbers have no leading zeros, both lists are padded to a fixed width before comparison so that alphabetical sorting by `comm` matches numerical sorting. The search pattern matches the Postfix 3.5 address form (number before the address); for current versions, use `test[0-9]+@` and `seq 0 49999` accordingly:
+</details>
+
+After the run, extract the received numbers and compare them with the expected set. Since the numbers have no leading zeros, both lists are padded to a fixed width before comparison so that the alphabetical sorting of `comm` matches numeric sorting. The search pattern matches the Postfix 3.5 address format (number before the address); for current versions, use `test[0-9]+@` and `seq` accordingly, starting at 0:
 
 ```bash
 grep -rhoE '[0-9]+test@example\.com' mails/ | \
@@ -173,18 +223,45 @@ grep -rhoE '[0-9]+test@example\.com' mails/ | \
   awk '{printf "%08d\n", $1}' | sort > empfangen.txt
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `grep -r` | Searches the `mails/` directory recursively |
+| `grep -h` | Suppresses file names before matches |
+| `grep -o` | Outputs only the matching address part, not the entire line |
+| `grep -E` | Extended regular expressions, here for `[0-9]+` |
+| `sort -u` | Sorts and removes duplicates (each number once) |
+| `awk '{printf "%08d\n", $1}'` | Pads each number to eight digits with leading zeros |
+| `sort` | Sorts the padded numbers for comparison with `comm` |
+
+</details>
+
 ```bash
 seq 1 50000 | awk '{printf "%08d\n", $1}' | \
   comm -23 - empfangen.txt
 ```
 
-`comm -23` outputs exactly the numbers present in the expected set but absent from the received list: the missing emails. Empty output means complete delivery. If numbers appear twice (detectable from the difference between `sort` and `sort -u`), a system along the way duplicated the message, which is also a finding.
+<details class="options-details">
+<summary>Options explained</summary>
 
-If the target is a production-like system rather than an smtp-sink, its logging takes over the role of the dump files. On an Exchange server, for example, `Get-MessageTrackingLog -Recipients` or a filter on the recipient address provides the numbers that arrived; on a Postfix system, use `grep` on `to=` and the base address over the mail log. This is precisely the advantage of the number in the address: the recipient appears in every message tracking record, while the subject may be absent there depending on the system or may need to be enabled first.
+| Option | Effect |
+|---|---|
+| `seq 1 50000` | Generates the expected set of numbers; the end value corresponds to the sent total from `-m` |
+| `comm -23` | Suppresses column 2 (only in file 2) and column 3 (in both); what remains are lines that exist only in the expected set |
+| `-` | Reads the first comparison list from the pipe rather than from a file |
+| `empfangen.txt` | Second comparison list: the numbers actually received |
 
-## When the number must be in the subject line
+</details>
 
-Some evaluations depend on the subject line, for example when the target system rewrites recipient addresses or the logs show the recipient only in masked form. The loop variant then remains: one `smtp-source` invocation per email with `-m 1` and a subject that the shell increments, distributed across multiple parallel workers with contiguous number ranges.
+`comm -23` outputs exactly the numbers present in the expected set but not in the received list: the missing emails. Empty output means complete delivery. If numbers appear twice (recognizable from the difference between `sort` and `sort -u`), a system along the route duplicated the message, which is also a finding.
+
+If the target is a production-like system rather than an smtp-sink, its logging takes the role of the dump files. On an Exchange server, for example, `Get-MessageTrackingLog -Recipients` or a filter on the recipient address provides the numbers that arrived; on a Postfix system, use `grep` on `to=` and the base address via the mail log. That is precisely the advantage of the number in the address: The recipient appears in every message tracking log, whereas the subject may be absent depending on the system or first need to be enabled.
+
+## When the number must be in the subject
+
+Some evaluations depend on the subject, for example when the target system rewrites recipient addresses or logs show the recipient only in masked form. Then the loop variant remains: one `smtp-source` invocation per email with `-m 1` and a subject incremented by the shell, distributed across several parallel workers with contiguous number ranges.
 
 ```bash
 worker() {
@@ -202,20 +279,34 @@ done
 wait
 ```
 
-The cost is a complete connection setup per email: TCP handshake, banner, `HELO`, sending, `QUIT`. This run therefore does not measure the target system's maximum throughput, but an intentionally connection-intensive scenario. Determine the number of workers analogously to the calibration run above, only using the worker loop instead of `-s`. The leading zeros in the subject line eliminate the reformatting required for reconciliation by the `-N` variant.
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-s 1` | One session per invocation; the four workers provide parallelism |
+| `-m 1` | Exactly one message per invocation, so the subject can be set per email |
+| `-l 5120` | Message size in bytes (excluding headers), 5 KB here |
+| `-S "$(printf 'Lasttest %05d' "$i")"` | Subject with the sequential number padded to five digits |
+| `-f` / `-t` | Sender and recipient address |
+| `gateway.example.com:25` | Target host and port |
+
+</details>
+
+The cost is a complete connection setup per email: TCP handshake, banner, `HELO`, sending, `QUIT`. This run therefore does not measure the target system's maximum throughput, but a deliberately connection-intensive case. Determine the number of workers analogously to the calibration run above, only with the worker loop instead of `-s`. The leading zeros in the subject eliminate the reformatting needed for comparison with the `-N` variant.
 
 ## Rules for tests against other systems
 
-As soon as the test leaves your own system, three conditions apply. First: the operator of the target system knows about it and has approved the time window; 50,000 emails look like an attack or a spam wave to any monitoring system. Second: the recipient address terminates in a controlled location—in a dedicated test mailbox, a discard rule on the target or a discard domain provided by the provider for this purpose; production addresses do not belong in a load test. Third: an abort criterion is defined before starting, such as a growing queue on the target or an error rate above a threshold, and someone monitors these values during the run.
+As soon as the test leaves your own system, three conditions apply. First: The operator of the target system is informed and has agreed to the time window; a load test looks like an attack or a spam wave to any monitoring system. Second: The recipient address terminates in a controlled location, in a dedicated test mailbox, a discard rule on the target, or a discard domain provided for this purpose by the provider; production addresses do not belong in a load test. Third: An abort criterion is defined before the start, such as a growing queue on the target or an error rate above a threshold, and someone monitors these values during the run.
 
-With these three points and the numbering, the run ultimately provides more than just a throughput number: a verifiable statement of which of the 50,000 emails arrived, which are missing and where they were last seen along the route.
+With these three points and numbering, the run ultimately provides not just a throughput figure but a verifiable statement: which emails arrived, which are missing, and where along the route they were last seen.
 
 ## Kilder
 
-1.  [Postfix: smtp-source(1)](https://www.postfix.org/smtp-source.1.html): Load generator man page; describes the `-N` behaviour of the current version (counter in the local part, plus addressing).
+1.  [Postfix: smtp-source(1)](https://www.postfix.org/smtp-source.1.html): Man page for the load generator; describes the `-N` behavior of the current version (counter on the local part, plus addressing).
 
-2.  [Postfix source code 3.5.8: smtp-source.c](https://github.com/vdukhovni/postfix/blob/v3.5.8/postfix/src/smtpstone/smtp-source.c): Documents the RHEL 8 version's prefixing of the number (`RCPT TO:<%d%s>`) with a starting value of 1; in the [current version](https://github.com/vdukhovni/postfix/blob/master/postfix/src/smtpstone/smtp-source.c), the number is instead appended to the local part, starting at 0.
+2.  [Postfix source code 3.5.8: smtp-source.c](https://github.com/vdukhovni/postfix/blob/v3.5.8/postfix/src/smtpstone/smtp-source.c): documents for the RHEL 8 version that the number is prefixed (`RCPT TO:<%d%s>`) with a starting value of 1; in the [current version](https://github.com/vdukhovni/postfix/blob/master/postfix/src/smtpstone/smtp-source.c), the number is instead appended to the local part, starting at 0.
 
-3.  [Postfix: smtp-sink(1)](https://www.postfix.org/smtp-sink.1.html): Test receiver man page with the dump options and recorded X headers.
+3.  [Postfix: smtp-sink(1)](https://www.postfix.org/smtp-sink.1.html): Man page for the test receiver with dump options and recorded X headers.
 
 4.  [GNU Coreutils: comm](https://www.gnu.org/software/coreutils/manual/html_node/comm-invocation.html): Comparison of two sorted lists, used here to reconcile expected and received numbers.

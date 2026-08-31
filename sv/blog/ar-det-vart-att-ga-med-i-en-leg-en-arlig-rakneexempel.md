@@ -1,10 +1,10 @@
 ---
-title: "Är det värt att gå med i en LEG? En ärlig räkneexempel"
-navTitle: "Är LEG värt det?"
-description: "20 procents rabatt på nätanvändningen låter som pengar. En kontrollräkning på EKZ erbjudande visar: För rena elkonsumenter är LEG i nätoperatörsmodellen i praktiken kostnadsneutral, medan det ser bättre ut för producenter. Hela beräkningen med alla siffror."
+title: "Is it worth joining an LEG? An honest example calculation"
+navTitle: "Is an LEG worth it?"
+description: "A 20 percent discount on grid usage sounds like money. Calculating the EKZ offer shows: for pure electricity consumers, the LEG in the grid operator model is virtually cost-neutral; for producers, it looks better. The complete calculation with all figures."
 date: "2026-08-20"
-kategorie: "El och energi"
-timeToRead: "8 min läsning"
+kategorie: "Electricity and energy"
+timeToRead: "8 min read"
 themen:
   - stromtarife-leg
 hauptthema: "stromtarife-leg"
@@ -18,75 +18,75 @@ translationId: "article-94132f7182e79a39"
 slug: "ar-det-vart-att-ga-med-i-en-leg-en-arlig-rakneexempel"
 aiPrompt: "Ich gebe dir die Eckdaten meiner Stromsituation (Netzbetreiber, Netztarif und Arbeitspreis in Rp./kWh, Jahresverbrauch, LEG-Abschlag 20 oder 40 Prozent, Servicegebühr des LEG-Anbieters in Rp./kWh, eigene PV ja/nein). Rechne aus: 1) Netto-Effekt pro LEG-Kilowattstunde (Abschlag minus Servicegebühr), 2) Jahreseffekt bei 20, 30 und 40 Prozent LEG-Anteil, 3) falls PV vorhanden: Vergleich LEG-Vergütung gegen Rückliefervergütung. Sag mir am Ende klar, ob sich der Beitritt finanziell lohnt. Meine Daten:"
 translationOf: lohnt-sich-leg-beitritt
-url: https://rafaelpfister.ch/sv/blog/ar-det-vart-att-ga-med-i-en-leg-en-arlig-rakneexempel
-translationSourceHash: 83abae1ce38a356c6098c289bd59a0ce45494fcaf72e256bf7ef4bbf35e17614
+translationSourceHash: 905df00aaf04860301dea5ef5e84ba3ae42fc4eb83a3125489afaf8ac46455ee
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-21T04:08:20.510Z
+translatedAt: 2026-08-30T09:32:22.435Z
 translationReview: automatic
+url: https://rafaelpfister.ch/sv/blog/ar-det-vart-att-ga-med-i-en-leg-en-arlig-rakneexempel
 ---
 
-# Är det värt att gå med i en LEG? En ärlig räkneexempel
+# Is it worth joining an LEG? An honest example calculation
 
-Bekräftelsen på medlemskapet i en lokal elektricitetsgemenskap låter lovande: ”Rabatt på nätanvändningskostnader: 20 %”. Sedan i somras är vi själva medlemmar i en kommuntäckande LEG i EKZ:s område, och innan den första fakturan kommer ville jag veta vad rabatten betyder i franc. Det korta svaret överraskade även mig: Beloppet på vår elräkning kommer att förändras med nästan exakt noll franc. Och det är inget misstag, utan avsiktligt. Det långa svaret är ändå värt det, eftersom det visar när en LEG faktiskt kan ge pengar.
+The confirmation of admission to a local electricity community sounds promising: “Discount on grid usage costs: 20%.” Since this summer, we ourselves have been members of a municipality-wide LEG in the EKZ area, and before the first bill arrives, I wanted to know what this discount means in Swiss francs. The short answer surprised me: the amount on our electricity bill will change by almost exactly zero francs. And that is not an oversight, but intentional. The long answer is still worthwhile, because it shows when an LEG does bring in money after all.
 
-Om LEG är nytt för dig: [Här står hur de fungerar.](/blog/lokale-elektrizitaetsgemeinschaft-leg-erklaert) Om elräkningen är ny för dig: [Här förklaras den post för post.](/blog/stromrechnung-verstehen-ekz)
+If LEGs are new to you: [This explains how they work.](/blog/lokale-elektrizitaetsgemeinschaft-leg-erklaert) If electricity bills are new to you: [Here they are explained item by item.](/blog/stromrechnung-verstehen-ekz)
 
-## Tre begränsningar som inte står i välkomstbrevet
+## Three caveats not mentioned in the welcome letter
 
-Rabatten på 20 procent låter som 20 procent lägre elkostnader. I själva verket gäller den:
+The 20 percent discount sounds like 20 percent lower electricity costs. In fact, it applies:
 
-1. **Endast arbetspriset för nätanvändningen.** Inte energin, inte avgifterna och inte mät- eller grundtariffen. I EKZ:s nättariff 400F är det 7.50 Rp./kWh av totalkostnader på omkring 22 Rp./kWh.
-2. **Endast LEG-andelen av förbrukningen.** Alltså de kilowattimmar som, med kvartsnoggrannhet, täcks av samtidig lokal produktion. För ett hushåll utan särskild laststyrning handlar det grovt räknat om 20 till 40 procent av årsförbrukningen, naturligtvis lite på natten och under vintern.
-3. **Med avdrag för leverantörens kostnader.** Den som inte organiserar LEG själv utan använder nätoperatörens bekvämlighetserbjudande betalar en serviceavgift per LEG-kilowattimme.
+1. **Only to the energy-based grid usage price.** Not to energy, levies, metering or the basic tariff. With the EKZ 400F grid tariff, that is 7.50 centimes/kWh out of total costs of around 22 centimes/kWh.
+2. **Only to the LEG share of consumption.** In other words, to the kilowatt-hours covered, in fifteen-minute intervals, by simultaneous local production. For a household without special load management, that is roughly 20 to 40 percent of annual consumption, naturally little at night and in winter.
+3. **Less the provider's costs.** Anyone not organising the LEG themselves but using the grid operator's convenience offer pays a service fee per LEG kilowatt-hour.
 
-Och det är punkt 3 som avgör allt.
+And everything comes down to point 3.
 
-## Beräkningen för EKZ:s erbjudande ”Gemeinsamstrom”
+## The calculation using EKZ’s “Gemeinsamstrom” offer
 
-EKZ tar ut en serviceavgift på 1.50 Rp./kWh (exkl. moms) för sin LEG-produkt, på varje LEG-kilowattimme. Rabatten på 20 procent på nättariff 400F är: 7.50 × 0.20 = **1.50 Rp./kWh**.
+EKZ charges a service fee of 1.50 centimes/kWh (excluding VAT) for its LEG product, on every LEG kilowatt-hour. The 20 percent discount on grid tariff 400F is: 7.50 × 0.20 = **1.50 centimes/kWh**.
 
-Det är ingen slump, utan produktdesign. Per LEG-kilowattimme ser beräkningen ut så här (alla värden exkl. moms, EKZ-tariffer 2026, sommar- respektive vinterkvartal):
+That is no coincidence; it is product design. Per LEG kilowatt-hour, the calculation looks like this (all figures excluding VAT, EKZ tariffs 2026, summer and winter quarter respectively):
 
-| per kWh | Grundförsörjning | som LEG-uttag |
+| per kWh | Basic supply | as LEG consumption |
 | --- | --- | --- |
-| Energi | 9.00 / 13.30 | 9.00 / 13.30 (grundförsörjningens pris) |
-| Nätanvändning 400F | 7.50 | 6.00 (minus 20 %) |
-| LEG-serviceavgift | ingen | 1.50 |
-| SDL och avgifter | 3.19 | 3.19 |
-| **Totalt** | **19.69 / 23.99** | **19.69 / 23.99** |
+| Energy | 9.00 / 13.30 | 9.00 / 13.30 (basic supply price) |
+| Grid usage 400F | 7.50 | 6.00 (minus 20%) |
+| LEG service fee | none | 1.50 |
+| Ancillary services and levies | 3.19 | 3.19 |
+| **Total** | **19.69 / 23.99** | **19.69 / 23.99** |
 
-Rabatten och avgiften tar ut varandra exakt. EKZ skriver själv att erbjudandet är en ”uppgradering till lokal solel utan merkostnader jämfört med grundförsörjningen”, och det är precis vad som menas: kostnadsneutralt, inte kostnadssänkande. Den som har standardtariffen 400ST (7.95 Rp./kWh) tjänar beräkningsmässigt 0.09 Rp. per LEG-kWh; med värmepumpstariffen 400WP (6.45 Rp./kWh) förlorar man 0.21 Rp. I franc: Vid 10'000 kWh årsförbrukning och optimistiska 30 procent LEG-andel handlar det om plus/minus några få franc **per år**. Det är avrundningsbrus, ingen avkastning.
+The discount and the fee cancel each other out exactly. EKZ itself writes that the offer is an “upgrade to local solar power at no extra cost compared with basic supply”, and that is exactly what it means: cost-neutral, not cost-reducing. Those on the standard tariff 400ST (7.95 centimes/kWh) gain, mathematically, 0.09 centimes per LEG kWh; on the heat-pump tariff 400WP (6.45 centimes/kWh), they lose 0.21 centimes. In francs: with annual consumption of 10'000 kWh and an optimistic 30 percent LEG share, we are talking about plus or minus a few francs **per year**. That is rounding noise, not a return.
 
-Så ser det också ut för oss: samma fakturabelopp som tidigare, men fakturan får nya poster (reducerad nätanvändning plus serviceavgift för LEG-andelen), och bokföringsmässigt kommer en del av uttaget nu från tak i kommunen i stället för från den allmänna leveransmixen.
+That is also how it looks for us: the same bill amount as before, except the bill has new line items (reduced grid usage plus service fee on the LEG share), and in accounting terms, part of the supply now comes from roofs in the municipality rather than from the general supply mix.
 
-## När en LEG trots allt ger ekonomisk nytta
+## When an LEG does make a financial difference
 
-Nollsumman gäller ett specifikt, om än vanligt, fall: ren konsument, kommuntäckande LEG (20-procentsnivå), nätoperatörens bekvämlighetserbjudande. Det finns tre vägar ut:
+The cost-neutral outcome applies to a specific, albeit common, case: pure consumer, municipality-wide LEG (20 percent tier), grid operator’s convenience offer. There are three ways out:
 
-**1. 40-procentsnivån.** Om alla deltagare är anslutna till samma transformatorstation gäller den dubbla rabatten: 40 procent av 7.50 Rp. är 3.00 Rp., minus 1.50 Rp. i serviceavgift ger **1.50 Rp. per LEG-kWh**. Vid 3'000 LEG-kWh per år blir det omkring 49 franc (inkl. moms). Fortfarande ingen förmögenhet, men en verklig rabatt. LEG på kvartersnivå är därför ekonomiskt mer intressanta än kommun-LEG.
+**1. The 40 percent tier.** If all participants are connected to the same transformer station, the discount doubles: 40 percent of 7.50 centimes is 3.00 centimes, minus the 1.50-centime service fee leaves **1.50 centimes per LEG kWh**. At 3'000 LEG kWh per year, that is around 49 francs (including VAT). Still not a fortune, but a genuine discount. Neighbourhood LEGs are therefore financially more attractive than municipality-wide LEGs.
 
-**2. Organisera själv.** Serviceavgiften är priset för att inte göra något själv. En självförvaltad LEG behåller hela rabatten och fastställer energipriserna internt; däremot behövs någon som hanterar avtal, fördelningsnycklar och fakturering. Från en viss storlek och med en billig faktureringstjänst kan det löna sig, men knappast för enskilda hushåll.
+**2. Organise it yourself.** The service fee is the price of doing nothing. A self-managed LEG keeps the full discount and sets energy prices internally; but it needs someone to handle contracts, allocation keys and billing. Beyond a certain size and with an affordable billing service provider, this can work out, but hardly for individual households.
 
-**3. Egen produktion.** Den verkliga vinnaren i LEG är solcellsanläggningen. EKZ ersätter LEG-producenter med anläggningar upp till 30 kWp med säsongsvis 11.97 Rp./kWh (vinterkvartal) och 9.00 Rp./kWh (sommarkvartal, båda exkl. moms). Den vanliga ersättningen för inmatning baseras däremot på det kvartalsvisa referensmarknadspriset; för anläggningar under 30 kW är endast 6.00 Rp./kWh lagstadgat garanterade, plus upp till 3.00 Rp. för ursprungsgarantier. Jämförelsen för 2026:
+**3. Own production.** The real winner of an LEG is the solar installation. EKZ pays LEG producers with up to 30 kWp seasonally 11.97 centimes/kWh (winter quarters) and 9.00 centimes/kWh (summer quarters, both excluding VAT). Normal feed-in remuneration, by contrast, is based on the quarterly reference market price; by law, installations below 30 kW are guaranteed only 6.00 centimes/kWh, plus up to 3.00 centimes for guarantees of origin. The comparison for 2026:
 
-| Ersättning för överskott, exkl. moms | Vinterkvartal | Sommarkvartal |
+| Surplus remuneration, excluding VAT | Winter quarter | Summer quarter |
 | --- | --- | --- |
-| Inmatning till EKZ (referensmarknadspris, med försäljning av HKN, begränsat) | ca 11.0 Rp./kWh | ca 9.0 Rp./kWh |
-| Försäljning till LEG (anläggning upp till 30 kWp) | 11.97 Rp./kWh | 9.00 Rp./kWh |
+| Feed-in to EKZ (reference market price, with GO sale, capped) | approx. 11.0 centimes/kWh | approx. 9.0 centimes/kWh |
+| Sale to the LEG (installation up to 30 kWp) | 11.97 centimes/kWh | 9.00 centimes/kWh |
 
-På sommaren, när det mesta överskottet uppstår, skiljer sig de båda alternativen nästan inte alls åt 2026; på vintern ligger LEG ungefär en rappen före. Den större effekten är strategisk: LEG-ersättningen är kopplad till energikomponenten i grundförsörjningen och därmed mer förutsägbar än referensmarknadspriset, som fortsätter att pressas av varje ny solcellsinstallation. Den som först planerar anläggningen får med en LEG en mer tillförlitlig avsättningskanal än med spotmarknaden.
+In summer, when most surplus arises, the two routes differ very little in 2026; in winter, the LEG is about one centime ahead. The greater effect is strategic: LEG remuneration is tied to the energy component of basic supply and is therefore more predictable than the reference market price, which continues to come under pressure with every additional solar installation. Anyone only planning their installation has a more reliable sales channel with an LEG than on the spot market.
 
-## Finns det skäl att gå ur igen?
+## Are there reasons to leave again?
 
-Ekonomiskt i nätoperatörsmodellen: nej, det finns helt enkelt inget att vinna eller förlora. I EKZ:s erbjudande gäller en månatlig returrätt utan bytesavgifter, och för återstående el är man ändå kund i grundförsörjningen. Som medlem skulle jag ändå titta på två saker varje år:
+Financially, in the grid operator model: no, there is simply nothing to gain and nothing to lose. The EKZ offer includes a monthly right to return without switching fees, and customers remain on basic supply for residual electricity anyway. As a member, I would still review two things every year:
 
-- **Förhållandet mellan rabatt och serviceavgift.** År 2026 är det avstämt till exakt noll. Om nätoperatören ändrar nättariffen eller avgiften asymmetriskt för följande år kan nollsumman bli ett litet plus eller minus. Tariffbladen för följande år publiceras alltid i slutet av augusti.
-- **Kompatibilitet med tariffbyten.** Den som vill byta till en dynamisk tariff eller en annan energiprodukt bör klargöra om det går att kombinera med LEG-uttag.
+- **The ratio between discount and service fee.** In 2026, it is calibrated to exactly zero. If the grid operator changes the grid tariff or fee asymmetrically for the following year, the cost-neutral outcome can become a small gain or loss. The tariff sheets for the following year are published at the end of August.
+- **Compatibility with tariff changes.** Anyone wanting to switch to a dynamic tariff or another energy product should clarify whether it can be combined with LEG consumption.
 
-## Slutsats
+## Conclusion
 
-Rabatten på 20 procent är riktiga pengar, men i standarderbjudandet hamnar de inte hos konsumenten utan hos leverantören, som i gengäld tar hand om hela organisationen. För rena konsumenter blir medlemskap i LEG därför ett ideellt beslut utan kostnad: lokal solel i bokföringen, bättre ersättning för producenterna i byn, ingen egen risk. För producenter och kvarterskonstellationer med 40 procents rabatt blir det även ekonomiskt intressant.
+The 20 percent discount is real money; with the standard offer, it simply does not end up with the consumer but with the provider, which takes care of the entire organisation in return. For pure consumers, joining an LEG is therefore a non-financial decision at no cost: local solar power in the accounting balance, better remuneration for producers in the village, no personal risk. For producers and neighbourhood arrangements with a 40 percent discount, it also becomes financially attractive.
 
-Den som vill räkna på sina egna siffror (annan nättariff, annan LEG-andel, egen solcellsanläggning, annan serviceavgift) kan nu använda [LEG-priskalkylatorn](/tools/leg-rechner), som gör just denna beräkning interaktivt.
+Anyone wanting to run through their own figures (different grid tariff, different LEG share, own PV, different service fee): there is now the [LEG price calculator](/tools/leg-rechner), which performs exactly this calculation interactively.
 
-*Siffror: EKZ:s tarifsamling 2026 och EKZ-produkten ”Gemeinsamstrom”, status augusti 2026, exkl. moms. Andra nätoperatörer, andra villkor; mekanismen är densamma.*
+*Figures: EKZ tariff collection 2026 and EKZ product “Gemeinsamstrom”, as of August 2026, excluding VAT. Other grid operators, other terms; the mechanism remains the same.*

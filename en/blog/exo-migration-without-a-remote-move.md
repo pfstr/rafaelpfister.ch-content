@@ -23,34 +23,34 @@ slug: "exo-migration-without-a-remote-move"
 translationId: "article-8f3c1b7a62d94e50"
 draft: false
 translationOf: exchange-mailboxen-ohne-remote-move-cloud-neu-erstellen
-url: https://rafaelpfister.ch/en/blog/exo-migration-without-a-remote-move
-translationSourceHash: 861f11b6e2f1e316ca773f049637fa2ac6ed5efdab5ec74d8c28178f3ea7e98c
+translationSourceHash: dc64d2c419e3ac0f4dd730785b3cd7f37c3f23effd2317feb4d61a46fa33401a
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-08T13:47:26.700Z
-translationReview: automatic
+translatedAt: 2026-08-31T10:18:54.153Z
+translationReview: required
+url: https://rafaelpfister.ch/en/blog/exo-migration-without-a-remote-move
 ---
 
 # EXO Migration Without a Remote Move
 
-A hybrid remote move is the standard way to move an on-premises Exchange mailbox, including its contents, to Exchange Online. Not every organization permits this migration path. If a security policy excludes remote moves, a deliberately different approach may be justifiable: The on-premises mailbox is backed up as a PST, detached from the synchronized AD user, and a new, empty mailbox is provisioned in Exchange Online for the same user.
+A hybrid remote move is the standard way to move an on-premises Exchange mailbox, including its contents, to Exchange Online. Not every organization permits this migration path. If a security policy excludes remote moves, a deliberately different approach may be justifiable: The on-premises mailbox is backed up as a PST, separated from the synchronized AD user, and a new, empty mailbox is provisioned in Exchange Online for the same user.
 
-This approach is **not a mailbox migration**. It transfers neither messages nor calendars, rules, or permissions to the cloud. The PST serves solely as a backup and is not imported in this scenario. Therefore, this process is suitable only if an empty target mailbox is acceptable from a business perspective and the loss of the active mailbox configuration has been explicitly approved.
+This approach is **not a mailbox migration**. It transfers neither messages nor calendars, rules, or permissions to the cloud. The PST serves solely as a backup and is not imported in this scenario. This process is therefore suitable only if an empty target mailbox is acceptable from a business perspective and the loss of the active mailbox configuration has been explicitly approved.
 
 ## Target State and Strict Prerequisites
 
-After cutover, the same AD user remains in place. On-premises, however, it is no longer managed as a `UserMailbox`, `SharedMailbox`, `RoomMailbox`, or `EquipmentMailbox`, but as a `RemoteMailbox`. After synchronization, this object represents the new mailbox in Exchange Online.
+After cutover, the same AD user remains in place. On-premises, however, it is no longer managed as `UserMailbox`, `SharedMailbox`, `RoomMailbox` or `EquipmentMailbox`, but as `RemoteMailbox`. After synchronization, this object represents the new mailbox in Exchange Online.
 
 The desired state is as follows:
 
-1. The on-premises mailbox is fully backed up as a PST.
+1. The on-premises mailbox has been fully backed up as a PST.
 2. The on-premises mailbox is disconnected but has not yet been permanently deleted within the configured retention period.
 3. The existing AD user is enabled as a RemoteMailbox.
 4. The primary address, aliases, and the old `LegacyExchangeDN` are retained.
 5. Entra Connect has synchronized the changes.
 6. An Exchange Online service plan is assigned for user mailboxes.
-7. Exchange Online shows a real cloud mailbox, and mail flow terminates there.
+7. Exchange Online shows an actual cloud mailbox, and mail flow ends there.
 
-The following must also be clarified before starting:
+Before starting, the following must also be clarified:
 
 - The PST share is accessible via UNC. The group `Exchange Trusted Subsystem` has read and write permissions there.
 - The executing account has the `Mailbox Import Export` management role.
@@ -64,10 +64,10 @@ The following must also be clarified before starting:
 
 A direct pipeline such as `Get-Mailbox | Disable-Mailbox` is too risky for this process. It could also include system, discovery, or otherwise unapproved mailboxes. The following process therefore uses two explicit approvals:
 
-- `Action=CUTOVER` determines which row may actually be switched over.
+- `Action=CUTOVER` determines which row may actually be switched.
 - `PstVerified=YES` confirms that the export file has been reviewed technically and organizationally.
 
-First, only the inventory is created:
+First, only the inventory is generated:
 
 ```powershell
 $CsvPath = "C:\Migration\mailboxes.csv"
@@ -94,11 +94,25 @@ Get-Mailbox -ResultSize Unlimited -RecipientTypeDetails `
     Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8
 ```
 
-The file is then reviewed and cleaned up from a business perspective. Only mailboxes that have actually been approved receive `Action=CUTOVER`. System mailboxes and special objects do not belong in this list.
+<details class="options-details">
+<summary>Options explained</summary>
 
-## Phase 1: Back Up the Primary Mailbox and Archive as PST
+| Option | Effect |
+|---|---|
+| `Get-Mailbox -ResultSize Unlimited` | Removes the default limit of 1,000 results; without this parameter, mailboxes are missing from the inventory in large environments |
+| `-RecipientTypeDetails UserMailbox,SharedMailbox,RoomMailbox,EquipmentMailbox` | Restricts the query to the four mailbox types to be switched; system and discovery mailboxes are excluded |
+| `Sort-Object PrimarySmtpAddress` | Sorts the output by the primary SMTP address so that the CSV file remains consistently ordered during business review |
+| `Export-Csv -Path` | Destination path of the CSV file |
+| `-NoTypeInformation` | Suppresses the type header `#TYPE ...`, which older PowerShell versions would otherwise write as the first line |
+| `-Encoding UTF8` | Writes the file in UTF-8 encoding so that umlauts in display names are retained correctly |
 
-`New-MailboxExportRequest` writes only to a UNC path. A unique file name is generated for each mailbox. An active online archive of the on-premises Exchange environment is exported separately:
+</details>
+
+The file is then cleaned up from a business perspective. Only mailboxes that have actually been approved receive `Action=CUTOVER`. System mailboxes and special objects do not belong on this list.
+
+## Phase 1: Back Up the Primary Mailbox and Archive as PST Files
+
+`New-MailboxExportRequest` writes only to a UNC path. A unique file name is generated for each mailbox. An active Exchange on-premises online archive is exported separately:
 
 ```powershell
 $CsvPath = "C:\Migration\mailboxes.csv"
@@ -128,7 +142,22 @@ foreach ($row in $targets) {
 }
 ```
 
-The export is approved only when **every** request has the status `Completed`:
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Import-Csv $CsvPath` | Reads the approval list; each row becomes an object with the CSV columns as properties |
+| `Where-Object Action -eq "CUTOVER"` | Processes only explicitly approved rows |
+| `New-MailboxExportRequest -Mailbox` | Source mailbox of the export (here, the identity from the CSV row) |
+| `-FilePath` | Destination path of the PST file; it must be a UNC path, as the cmdlet rejects local paths |
+| `-Name` | Unique request name; later enables targeted assignment of primary and archive exports |
+| `-BatchName` | Groups all requests of a run under a batch name; the basis for status queries and cleanup |
+| `-IsArchive` | Exports the online archive instead of the primary mailbox; therefore, there is a second request per mailbox with an active archive |
+
+</details>
+
+The export is not approved until **every** request has the status `Completed`:
 
 ```powershell
 Get-MailboxExportRequest -BatchName $BatchName |
@@ -138,6 +167,18 @@ Get-MailboxExportRequest -BatchName $BatchName |
 Get-MailboxExportRequest -BatchName $BatchName |
     Where-Object Status -ne "Completed"
 ```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Get-MailboxExportRequest -BatchName` | Lists all export requests in the specified batch |
+| `Get-MailboxExportRequestStatistics -IncludeReport` | Adds the detailed history report to the statistics, where the causes of errors for individual requests are listed |
+| `Format-Table ... -AutoSize` | Displays the specified properties in table form; `-AutoSize` adjusts column widths to the content |
+| `Where-Object Status -ne "Completed"` | Filters for all requests that have not yet completed or have failed; the output must be empty before proceeding |
+
+</details>
 
 In addition, the files' existence, size, readability, backup transfer, and access protection must be verified. Only then is `PstVerified=YES` set for the corresponding CSV row.
 
@@ -163,6 +204,18 @@ Import-Csv "C:\Migration\mailboxes.csv" |
     }
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `New-Item -ItemType Directory -Path ... -Force` | Creates the snapshot directory; `-Force` suppresses the error if it already exists |
+| `Get-Mailbox -Identity` | Retrieves the current mailbox object for the respective CSV row |
+| `Select-Object Identity,...,ServerName` | Reduces the object to the attributes required for later reconstruction (GUIDs, addresses, `LegacyExchangeDN`, database) |
+| `Export-Clixml` | Serializes the object as type-preserving CLIXML; unlike CSV, multivalued properties such as `EmailAddresses` are fully retained and can be read again using `Import-Clixml` |
+
+</details>
+
 Delegations and forwarding require separate exports. At a minimum, this information should be backed up separately:
 
 ```powershell
@@ -175,13 +228,27 @@ Get-InboxRule -Mailbox $mailbox.Identity
 Get-CalendarProcessing -Identity $mailbox.Identity -ErrorAction SilentlyContinue
 ```
 
-These configurations do not automatically transfer to the new cloud mailbox.
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Format-List ForwardingAddress,ForwardingSmtpAddress,DeliverToMailboxAndForward` | Displays the mailbox's three forwarding attributes in list format |
+| `Get-MailboxPermission -Identity` | Lists mailbox permissions such as Full Access |
+| `Get-ADPermission -Identity` | Lists AD permissions on the user object, including Send As; expects the Distinguished Name here |
+| `Get-InboxRule -Mailbox` | Lists the mailbox's server-side inbox rules |
+| `Get-CalendarProcessing -Identity` | Displays booking configuration; relevant for room and equipment mailboxes |
+| `-ErrorAction SilentlyContinue` | Suppresses the error for mailbox types without booking configuration so that the backup does not stop |
+
+</details>
+
+These configurations are not automatically transferred to the new cloud mailbox.
 
 ## Phase 3: Disconnect the On-Premises Mailbox and Enable RemoteMailbox
 
-The actual cutover is brief but consequential. `Disable-Mailbox` removes the Exchange attributes from the AD user and disconnects the on-premises mailbox. The mailbox data remains available as a disconnected mailbox until database retention expires. Immediately afterward, `Enable-RemoteMailbox` enables the same AD user for Exchange Online.
+The actual cutover is brief but consequential. `Disable-Mailbox` removes the Exchange attributes from the AD user and disconnects the on-premises mailbox. The mailbox data remains as a disconnected mailbox until database retention expires. Immediately afterward, `Enable-RemoteMailbox` enables the same AD user for Exchange Online.
 
-The following script processes only doubly approved rows. It preserves the primary SMTP address, all existing proxy addresses, and the old `LegacyExchangeDN` as an X500 address. The X500 entry prevents NDRs when replying to older messages or using old Outlook AutoComplete entries.
+The following script processes only doubly approved rows. It preserves the primary SMTP address, all existing proxy addresses, and the old `LegacyExchangeDN` as an X500 address. The X500 entry prevents NDRs when replying to older messages or using old Outlook autocomplete entries.
 
 ```powershell
 $CsvPath = "C:\Migration\mailboxes.csv"
@@ -257,7 +324,27 @@ foreach ($row in $targets) {
 }
 ```
 
-The script is intentionally not a fully autonomous migration engine. It stops the run at the first inconsistency so that an administrator can assess the cause and state. Before a production batch, the code should be validated with a small number of test mailboxes and the Exchange versions in use.
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Get-Mailbox -Identity ... -ErrorAction Stop` | Retrieves the source mailbox; `-ErrorAction Stop` makes a lookup error a terminating error instead of silently continuing |
+| `Disable-Mailbox -Identity` | Removes the Exchange attributes from the AD user and disconnects the on-premises mailbox; the data remains as a disconnected mailbox in the database |
+| `-Confirm:$false` | Suppresses the interactive prompt; approval is provided here through the CSV list, not at the prompt |
+| `Enable-RemoteMailbox -Identity` | Enables the same AD user as a RemoteMailbox for Exchange Online |
+| `-Alias` | Sets the Exchange alias back to the value from the approval list |
+| `-PrimarySmtpAddress` | Retains the previous primary SMTP address |
+| `-RemoteRoutingAddress` | Target address in the `mail.onmicrosoft.com` routing domain through which on-premises Exchange reaches the cloud mailbox |
+| `-ACLableSyncedObjectEnabled` | Marks the object as ACL-capable so that permissions such as Full Access can be evaluated in Exchange Online after synchronization |
+| `-Shared` / `-Room` / `-Equipment` | Creates the applicable special type instead of a user mailbox; the script sets exactly one switch appropriate to the source type |
+| `Set-RemoteMailbox -EmailAddressPolicyEnabled $false` | Excludes the object from the email address policy so that it does not overwrite manually configured addresses |
+| `-EmailAddresses` | Sets the complete, deduplicated address list, including old proxy addresses, the routing address, and the X500 entry |
+| `Get-RemoteMailbox -Identity` | Queries the result for verification immediately after the cutover |
+
+</details>
+
+The script is intentionally not a fully automated migration tool. It stops at the first discrepancy so that an administrator can assess the cause and state. Before a production batch, the code should be validated with a small number of test mailboxes and the Exchange versions in use.
 
 ## Phase 4: Synchronize, License, and Verify
 
@@ -267,11 +354,20 @@ After the on-premises change, a delta cycle is started on the Entra Connect serv
 Start-ADSyncSyncCycle -PolicyType Delta
 ```
 
-For user mailboxes, a valid Exchange Online service plan must then be assigned, for example through group-based licensing. Shared, room, and equipment mailboxes must be evaluated according to current Microsoft licensing terms and the required features.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Provisioning is asynchronous. Microsoft generally states less than 30 minutes for normal changes, but in individual cases up to 24 hours. During this time, upstream mail flow should hold messages in a controlled manner rather than delivering them to a target that is not yet ready.
+| Option | Effect |
+|---|---|
+| `-PolicyType Delta` | Synchronizes only objects changed since the last cycle; the alternative `Initial` would perform a complete, significantly longer run |
 
-The on-premises check must now show a RemoteMailbox:
+</details>
+
+For user mailboxes, a valid Exchange Online service plan must then be assigned, for example through group-based licensing. Shared, room, and equipment mailboxes must be evaluated according to the current Microsoft licensing terms and the required functionality.
+
+Provisioning is asynchronous. Microsoft states that normal changes usually take less than 30 minutes, but in individual cases may take up to 24 hours. During this time, the upstream mail flow should hold messages in a controlled manner instead of delivering them to a target that is not yet ready.
+
+The on-premises verification must now show a RemoteMailbox:
 
 ```powershell
 Get-RemoteMailbox -Identity user01@contoso.com |
@@ -280,7 +376,18 @@ Get-RemoteMailbox -Identity user01@contoso.com |
 Get-Mailbox -Identity user01@contoso.com -ErrorAction SilentlyContinue
 ```
 
-In Exchange Online, verify whether the former MailUser has become a real mailbox:
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Get-RemoteMailbox -Identity` | Must return the switched object as a RemoteMailbox |
+| `Format-List RecipientTypeDetails,...` | Displays the type, addresses, and routing address for verification in list format |
+| `Get-Mailbox -Identity ... -ErrorAction SilentlyContinue` | Cross-check: The command must no longer return anything because no connected mailbox exists on-premises; `-ErrorAction SilentlyContinue` suppresses the expected error message |
+
+</details>
+
+In Exchange Online, verify whether the previous MailUser has become an actual mailbox:
 
 ```powershell
 Get-EXORecipient -Identity user01@contoso.com |
@@ -290,23 +397,34 @@ Get-EXOMailbox -Identity user01@contoso.com |
     Format-List RecipientTypeDetails,PrimarySmtpAddress,ExchangeGuid
 ```
 
-The batch is considered complete only when the following tests are also successful:
+<details class="options-details">
+<summary>Options explained</summary>
 
-- Delivery from external and internal sources
-- Sending externally and internally
+| Option | Effect |
+|---|---|
+| `Get-EXORecipient -Identity` | Displays the recipient type in Exchange Online; `UserMailbox` or the special type is expected, no longer `MailUser` |
+| `Get-EXOMailbox -Identity` | Returns only actual cloud mailboxes; a result proves that provisioning is complete |
+| `Format-List ...,ExchangeGuid` | Lists the verification attributes; `ExchangeGuid` uniquely identifies the new cloud mailbox |
+
+</details>
+
+The batch is considered complete only once the following tests are also successful:
+
+- Delivery from external and internal senders
+- Sending to external and internal recipients
 - Replying to an old message to verify the X500 address
 - Signing in with Outlook and Outlook on the web
 - Delegations and Send As
 - Forwarding and transport rules
 - Room and equipment bookings
 - Applications, scanners, and SMTP relays
-- Message Trace showing delivery to the new cloud mailbox
+- Message trace confirming delivery to the new cloud mailbox
 
 ## Rollback and Cleanup
 
-The on-premises source mailbox must not be deleted with `Remove-StoreMailbox` during the validation phase. As long as it remains available as a disconnected mailbox within mailbox retention, a technical fallback option still exists. However, a rollback requires a controlled reversal of the RemoteMailbox attributes and reconnection of the on-premises mailbox; at the same time, it must be ensured that two active delivery targets do not arise.
+The on-premises source mailbox must not be deleted with `Remove-StoreMailbox` during the validation phase. As long as it exists as a disconnected mailbox within mailbox retention, a technical fallback option remains. However, rollback requires a controlled reversal of the RemoteMailbox attributes and reconnection of the on-premises mailbox; at the same time, two active delivery targets must be prevented.
 
-Before a rollback, mail flow, synchronization status, and messages already received in the cloud must therefore be backed up. Switching back is not a simple one-liner and belongs in the change as a tested runbook.
+Before a rollback, mail flow, synchronization state, and messages already received in the cloud must therefore be backed up. Switching back is not a simple one-liner and should be part of the change as a tested runbook.
 
 After successful acceptance, export requests are cleaned up, PST files are archived according to the protection and retention concept, and temporary permissions on the export share are removed:
 
@@ -315,11 +433,21 @@ Get-MailboxExportRequest -BatchName $BatchName |
     Remove-MailboxExportRequest -Confirm:$false
 ```
 
-Disconnected mailboxes should be permanently cleaned up only after the agreed rollback window has expired and in accordance with the retention concept.
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Get-MailboxExportRequest -BatchName` | Selects exactly the export requests of the completed batch |
+| `Remove-MailboxExportRequest -Confirm:$false` | Removes the requests without prompting; the PST files themselves remain unaffected |
+
+</details>
+
+The disconnected mailboxes should only be permanently cleaned up after the agreed rollback window has expired and according to the retention concept.
 
 ## Conclusion
 
-If hybrid remote moves are not permitted and no mailbox data needs to be transferred to Exchange Online, an existing synchronized AD user can be switched in a controlled manner from an on-premises mailbox to a new cloud mailbox. The critical part is not `Enable-RemoteMailbox`, but the process control around it: complete inventorying, verified PST backup, explicit approvals, preservation of proxy and X500 addresses, controlled mail flow, and a real rollback window.
+If hybrid remote moves are not permitted and no mailbox data needs to be transferred to Exchange Online, an existing synchronized AD user can be switched in a controlled manner from an on-premises mailbox to a new cloud mailbox. The critical part is not `Enable-RemoteMailbox`, but the process control around it: complete inventorying, verified PST backup, explicit approvals, retention of proxy and X500 addresses, controlled mail flow, and an actual rollback window.
 
 ## Sources
 
@@ -335,4 +463,4 @@ If hybrid remote moves are not permitted and no mailbox data needs to be transfe
 
 6. [Microsoft Learn – Delays in provisioning of a user or mailbox](https://learn.microsoft.com/en-us/troubleshoot/exchange/user-and-shared-mailboxes/delays-provision-mailbox-sync-changes): Typical duration and troubleshooting for provisioning in Exchange Online.
 
-7. [Microsoft Learn – Move mailboxes between on-premises and Exchange Online organizations](https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes): The standard hybrid remote move as a reference and distinction from the rebuild described here.
+7. [Microsoft Learn – Move mailboxes between on-premises and Exchange Online organizations](https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes): The standard hybrid remote move as a reference and distinction from the new setup described here.

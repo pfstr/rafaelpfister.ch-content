@@ -1,10 +1,10 @@
 ---
-title: "Hvem leverer egentlig e-post til tenant-en din? Aggreger innkommende IP-adresser"
-navTitle: "Innkommende IP-er"
-description: "En enkelt analyse viser hvilke systemer som faktisk leverer e-post til tenant-en din: glemte koblinger, programmer som sender direkte, og tjenesteleverandører som ingen har dokumentert. Inkludert fallgruvene ved sidelogiikk og tolkning."
+title: "Who is actually delivering mail into your tenant? Aggregating inbound IP addresses"
+navTitle: "Inbound IPs"
+description: "A single analysis shows which systems actually deliver mail into your tenant: forgotten connectors, applications sending directly, and service providers nobody documented, including the typical analysis errors involving pagination logic and interpretation."
 date: "2026-08-11"
 kategorie: "Microsoft 365 / Exchange"
-timeToRead: "12 min. lesetid"
+timeToRead: "12 min read"
 themen:
   - microsoft-365-exchange
   - smtp-mailflow
@@ -25,28 +25,28 @@ slug: "hvem-leverer-egentlig-e-post-til-tenant-en-din-aggreger-innkommende-ip-ad
 translationId: "article-5879cc0eb17ed951"
 draft: false
 translationOf: einliefernde-ip-adressen-aggregieren
-url: https://rafaelpfister.ch/no/blog/hvem-leverer-egentlig-e-post-til-tenant-en-din-aggreger-innkommende-ip-adresser
-translationSourceHash: 9dc48329a06945f705380eb3db428efb548f0c36a1fe3c4f2fb7de1185fee879
+translationSourceHash: 9209720819061360cb72bfa01ab6261e6af80e547a398c25f6802edfbe49bb6c
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-12T05:14:01.177Z
+translatedAt: 2026-08-31T10:07:20.989Z
 translationReview: automatic
+url: https://rafaelpfister.ch/no/blog/hvem-leverer-egentlig-e-post-til-tenant-en-din-aggreger-innkommende-ip-adresser
 ---
 
-# Hvem leverer egentlig e-post til tenant-en din? Aggreger innkommende IP-adresser
+# Who is actually delivering mail into your tenant? Aggregating inbound IP addresses
 
-Knapt noe e-postmiljø vet lenger fullt ut hvem som leverer e-post til det. Gjennom årene samler det seg opp koblinger fra migreringer, programmer som sender direkte, tjenesteleverandører med kontrakter som for lengst har utløpt, og testoppsett som aldri ble fjernet. Så lenge e-posten flyter, legger ingen merke til det.
+Hardly any mail environment still knows exactly who delivers mail into it. Over the years, connectors from migrations accumulate, as do applications that send directly, service providers whose contracts expired long ago, and test setups that were never dismantled. As long as mail keeps flowing, nobody notices.
 
-En enkelt analyse skaper klarhet: grupperingen av alle innkommende meldinger etter kilde-IP-adresse. Den er ferdig på to minutter, og resultatlisten er jevnlig overraskende. Denne artikkelen viser spørringen, forklarer hvordan du får den **fullstendig**, og fremfor alt hvordan du leser tallene riktig. For tolkningen er den vanskeligste delen.
+A single analysis provides clarity: grouping all incoming messages by their source IP address. It takes two minutes, and the resulting list is regularly surprising. This article shows the query, explains how to make it **complete**, and above all how to read the figures correctly. Because interpretation is the harder part.
 
-## Hvorfor det lønner seg
+## Why it is worth doing
 
-Listen besvarer fire spørsmål som ellers er krevende å avklare enkeltvis. Hvilke systemer sender i det hele tatt til tenant-en din? Går alt via veiene du har dokumentert, eller finnes det en annen inngang? Er en kobling du vil avvikle, fortsatt i bruk? Og: Sender et program direkte til tjenesten utenom gatewayen din, altså utenom filtreringen?
+The list answers four questions that would otherwise be laborious to clarify individually. Which systems send mail into your tenant at all? Does everything go through the routes you have documented, or is there a second entry point? Is a connector you want to decommission still being used? And: Is an application sending directly to the service, bypassing your gateway and therefore your filtering?
 
-Særlig det siste spørsmålet er sikkerhetsrelevant. Den som leverer direkte, omgår ikke bare filtreringen, men ofte også loggføringen du ønsker å kunne stole på i en alvorlig situasjon.
+The last question in particular is security-relevant. Anyone delivering mail directly bypasses not only filtering, but often also the logging you want to rely on in an incident.
 
-## Spørringen
+## The query
 
-I tenant-en grupperer du meldingssporingen etter `FromIP`:
+In the tenant, group message tracing by `FromIP`:
 
 ```powershell
 Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) `
@@ -57,7 +57,21 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) `
   Format-Table Count, Name -AutoSize
 ```
 
-En typisk utdata:
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-StartDate (Get-Date).AddHours(-2)` | Start of the query window, here two hours ago |
+| `-EndDate (Get-Date)` | End of the query window, the current time |
+| `-ResultSize 5000` | Maximum number of rows per call; 5000 is also the maximum value |
+| `Group-Object FromIP` | Groups messages by the delivering IP address |
+| `Sort-Object Count -Descending` | Sorts groups in descending order by message count |
+| `Format-Table Count, Name -AutoSize` | Two-column output (count, IP address) with automatic column width |
+
+</details>
+
+A typical output:
 
 ```text
 Count Name
@@ -73,13 +87,13 @@ Count Name
     3 203.0.113.9
 ```
 
-Før du trekker konklusjoner, må to ting være på plass: Listen må være fullstendig, og du må vite hva oppføringene betyr.
+Before drawing conclusions from it, two things must be right: the list must be complete, and you need to know what the entries mean.
 
-## Fallgruve 1: Listen er nesten alltid ufullstendig
+## Source of error 1: The list is almost always incomplete
 
-`Get-MessageTraceV2` leverer sidevis, maksimalt 5000 linjer per kall. Ved høyt volum dekker én side bare en brøkdel av tidsvinduet ditt. Da grupperer du over et utsnitt og holder resultatet for helheten.
+`Get-MessageTraceV2` returns results in pages, with a maximum of 5000 rows per call. With high volumes, one page covers only a fraction of your time window. You then group a subset and mistake the result for the whole.
 
-Dette kjenner du igjen på denne advarselen:
+You can recognise this by the following warning:
 
 ```text
 WARNING: There are more results, use the following command to get more.
@@ -87,11 +101,11 @@ Get-MessageTraceV2 -StartDate "2026-08-11T07:25:19Z" -EndDate "2026-08-11T09:05:
   -StartingRecipientAddress "naechster@example.com" -ResultSize 5000
 ```
 
-**Vises denne advarselen, er analysen din verdiløs.** Særlig må en manglende oppføring da ikke tolkes som fravær. En adresse med tre meldinger per dag dukker uansett ikke opp i et utsnitt.
+**If this warning appears, your analysis is worthless.** In particular, a missing entry must not be interpreted as absence. An address with three messages per day will not appear in a subset anyway.
 
-Det finnes to utveier. Den enkle: Reduser tidsvinduet til advarselen ikke lenger vises. Ved 5000 meldinger per time er det 55 minutter og ikke sju dager. For spørsmålet «hvilke systemer sender i det hele tatt» er et fullstendig, kort tidsvindu som regel helt tilstrekkelig.
+There are two ways out. The simple one: reduce the time window until the warning no longer appears. At 5000 messages per hour, that means 55 minutes rather than seven days. For the question “which systems send mail at all”, a complete short window is usually entirely sufficient.
 
-Den grundige metoden blar gjennom alle sidene og samler inn:
+The thorough approach pages through all results and collects them:
 
 ```powershell
 $start = (Get-Date).AddHours(-24)
@@ -116,23 +130,39 @@ $alle | Group-Object FromIP | Sort-Object Count -Descending |
     Format-Table Count, Name -AutoSize
 ```
 
-Regn med noen minutters kjøretid for 24 timer i et mellomstort miljø. For en engangs kartlegging er det vel anvendt tid.
+<details class="options-details">
+<summary>Options explained</summary>
 
-## Fallgruve 2: Tallene betyr ikke det de ser ut til å bety
+| Option | Effect |
+|---|---|
+| `-StartDate` / `-EndDate` | Query window, here the last 24 hours |
+| `-StartingRecipientAddress` | Continuation point for pagination: the recipient address at which the next page starts |
+| `-ResultSize 5000` | Page size; a full page signals that further results follow |
+| `Group-Object FromIP` | Groups the complete dataset by the delivering IP address |
+| `Sort-Object Count -Descending` | Sorts groups in descending order by message count |
+| `Format-Table Count, Name -AutoSize` | Outputs the count per address with automatic column width |
 
-Resultatlisten inneholder fire helt ulike typer oppføringer, og den som slår dem sammen, trekker feil konklusjoner.
+</details>
 
-**`255.255.255.255` står ikke for et system.** Denne verdien vises når det ikke fantes en innkommende SMTP-forbindelse utenfra for meldingen. Det gjelder meldinger som genereres i selve tjenesten: journalrapporter, leveringsfeilmeldinger, fraværsmeldinger og meldinger mellom postbokser i samme tenant. I nesten alle miljøer er dette den største posten, og den er helt uproblematisk. Ikke bli skremt.
+The loop retrieves further pages for as long as a page returns exactly 5000 rows, each time continuing from the last recipient address of the previous page; only the complete dataset is grouped.
 
-**Private adresser fra RFC 1918** kommer fra ditt eget nettverk. I hybridmiljøer ser du de lokale transportserverne her, fordi den interne adressen deres beholdes ved overlevering til tjenesten. Dette er de store tallene i listen og som regel den forventede hovedveien.
+For 24 hours in a medium-sized environment, expect a runtime of several minutes. For a one-off inventory, that is time well invested.
 
-**Adresser fra sikkerhets- og filtreringstjenester** gjenkjenner du på operatøren, ikke tallverdien. Skyproxyer, e-postgatewayer foran tjenesten og nettsikkerhetstjenester vises med mange nærliggende adresser og middels tall. De hører som regel hjemme der, men bør stå i driftsdokumentasjonen.
+## Source of error 2: The figures do not mean what they appear to mean
 
-**Enkeltstående offentlige adresser med lave tall** er de interessante. Det er nettopp der de glemte programmene, gamle tjenesteleverandørene og systemene ingen lenger kjenner til, skjuler seg.
+The result list contains four fundamentally different types of entries, and anyone who lumps them together will draw the wrong conclusions.
 
-## Oppløsningen: fra adresser til navn
+**`255.255.255.255` does not stand for a system.** This value appears when there was no incoming SMTP connection from outside for the message. It applies to messages generated within the service itself: journal reports, non-delivery reports, out-of-office replies, and messages between mailboxes in the same tenant. In almost every environment, this is the largest item, and it is completely unremarkable.
 
-For alt du ikke umiddelbart kan tilordne, hjelper omvendt oppslag. Det er ikke alltid satt opp og ikke alltid ærlig, men gir i de fleste tilfeller det avgjørende hintet:
+**Private RFC 1918 addresses** originate from your own network. In hybrid environments, you see the on-premises transport servers here, because their internal address is retained when they hand off to the service. These are the large figures in the list and, as a rule, the expected primary route.
+
+**Addresses of security and filtering services** can be identified by their operator, not by the numerical value. Cloud proxies, upstream mail gateways and web security services appear with many neighbouring addresses and medium figures. They usually belong there, but should be documented in the operations manual.
+
+**Individual public addresses with small figures** are the interesting ones. This is exactly where forgotten applications, former service providers and systems nobody remembers hide.
+
+## Resolution: turning addresses into names
+
+For anything you cannot immediately identify, reverse lookup helps. It is not always configured and not always reliable, but in most cases it provides the decisive clue:
 
 ```powershell
 $unbekannt = '198.51.100.77','203.0.113.9'
@@ -143,6 +173,18 @@ $unbekannt | ForEach-Object {
 } | Format-Table -AutoSize
 ```
 
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Resolve-DnsName $_ -Type PTR` | Queries the reverse record (PTR) for each IP address |
+| `-ErrorAction Stop` | Turns a missing entry into a catchable error for the `try`/`catch` block |
+| `[pscustomobject]@{ … }` | Creates an object per address with IP and resolved name for table output |
+| `Format-Table -AutoSize` | Output with automatic column width |
+
+</details>
+
 ```text
 IP            Name
 --            ----
@@ -150,7 +192,7 @@ IP            Name
 203.0.113.9   (kein PTR)
 ```
 
-Manglende PTR er ikke bevis på noe ondsinnet, men det er en god grunn til å se nærmere. Se på de tilhørende meldingene for slike adresser:
+A missing PTR is not in itself an indication of a problem, but it is a good reason to look more closely. For such addresses, inspect the associated messages:
 
 ```powershell
 Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -ResultSize 5000 |
@@ -158,11 +200,22 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-2) -EndDate (Get-Date) -Resul
   Format-Table Received, SenderAddress, RecipientAddress, Subject, Status -AutoSize
 ```
 
-Avsender og emne forteller deg som regel umiddelbart hvilket program som står bak.
+<details class="options-details">
+<summary>Options explained</summary>
 
-## Sammenligningen: Hvilken adresse tilhører hvilken kobling?
+| Option | Effect |
+|---|---|
+| `-StartDate` / `-EndDate` / `-ResultSize` | Query window and page size as in the main query |
+| `Where-Object { $_.FromIP -eq '203.0.113.9' }` | Filters client-side for the source address in question |
+| `Format-Table Received, SenderAddress, RecipientAddress, Subject, Status -AutoSize` | Shows receipt time, sender, recipient, subject and delivery status for each message |
 
-Nå kommer den egentlige innsikten. Sammenlign resultatlisten med de konfigurerte koblingene:
+</details>
+
+Sender and subject will generally tell you immediately which application is behind it.
+
+## Comparison: which address belongs to which connector?
+
+Compare your result list with the configured connectors:
 
 ```powershell
 Get-InboundConnector |
@@ -173,46 +226,58 @@ Get-InboundConnector |
         RestrictDomainsToCertificate, CloudServicesMailEnabled, TreatMessagesAsInternal
 ```
 
-Tre konstellasjoner er opplysende.
+<details class="options-details">
+<summary>Options explained</summary>
 
-**En adresse leverer, men er ikke nevnt i noen kobling.** Da kommer e-posten inn som vanlig internett-e-post. Det er tillatt, men betyr at dette programmet ikke får noen særbehandling, og at meldingene er underlagt full filtrering. Hvis noen hevder at det er konfigurert en kobling for dette systemet, stemmer det åpenbart ikke lenger.
+| Option | Effect |
+|---|---|
+| `Get-InboundConnector` | Lists all inbound connectors in the tenant; deliberately without restrictive parameters here |
+| `Format-List <Eigenschaften>` | Outputs the specified properties as a list, one per line |
+| `@{n='…'; e={…}}` | Calculated property with name (`n`) and expression (`e`) |
+| `-join ', '` | Turns the array of addresses or domains into a readable, comma-separated line |
 
-**En kobling nevner adresser som det ikke kommer noe fra.** Kandidaten for avvikling. Kontroller før du sletter om det dreier seg om sesongbaserte eller sjeldne systemer, og deaktiver først i stedet for å fjerne med en gang.
+</details>
 
-**En kobling setter `TreatMessagesAsInternal` eller `CloudServicesMailEnabled` til sann.** Her er det verdt å se nøye etter. Begge innstillingene gjør at meldinger via denne veien behandles som interne i organisasjonen. Hvis e-post fra internett kommer inn denne veien, omgår den dermed kontroller som er ment for eksterne meldinger, blant annet beskyttelsen mot forfalskede avsendere fra eget domene. For en ren hybridkobling er dette riktig; for en kobling som vilkårlige systemer leverer via, er det et funn.
+Three scenarios are revealing.
 
-## Hva du typisk finner
+**An address delivers mail but is not listed in any connector.** The mail then arrives as ordinary internet mail. That is permissible, but it means this application receives no special treatment and its messages are subject to full filtering. If someone claims a connector has been configured for this system, that is clearly no longer true.
 
-Fra praksis, uten å gjøre krav på fullstendighet: en testkobling fra en migrering som har vært aktiv i årevis. Et fagsystem som sender direkte til tjenesten, selv om alle tror det går via gatewayen. En nyhetsbrevleverandør med utløpt kontrakt som fortsatt får levere. Og jevnlig en kobling med svært åpne betingelser, som noen en gang opprettet for å løse et akutt problem.
+**A connector lists addresses from which no mail arrives.** A candidate for decommissioning. Before deleting it, check whether these are seasonal or infrequently used systems, and disable it first rather than removing it immediately.
 
-Ingen av disse funnene er dramatiske i seg selv. Sammen gir de bildet av et miljø som ingen lenger har full oversikt over, og nettopp det er den egentlige risikoen.
+**A connector sets `TreatMessagesAsInternal` or `CloudServicesMailEnabled` to true.** This warrants close attention. Both settings cause messages arriving through this route to be treated as internal to the organisation. If mail from the internet arrives through it, it bypasses checks intended for external messages, including protection against spoofed senders from your own domain. This is correct for a pure hybrid connector; for a connector through which arbitrary systems deliver mail, it is a finding.
 
-## Begrensninger ved metoden
+## What you typically find
 
-Du bør kjenne til tre begrensninger.
+From practice, without claiming completeness: a test connector from a migration that has been active for years. A line-of-business application sending directly to the service even though everyone believes it goes through the gateway. A newsletter service provider whose contract has expired but is still allowed to deliver mail. And regularly, a connector with overly broad conditions that someone once created to solve an urgent problem.
 
-Meldingssporingen går bare rundt ti dager tilbake via cmdleten. For lengre tidsrom trenger du det historiske søket, som kjører asynkront og dekker opptil 90 dager. Ellers går sjeldne systemer som sender månedlig, under radaren.
+None of these findings is dramatic on its own. Together, they paint the picture of an environment nobody fully understands any more, and that is the real risk.
 
-`FromIP` betyr ikke det samme overalt. For e-post fra internett er det adressen til serveren som leverer. For hybrid-e-post er det adressen til den lokale transportserveren din, ikke den opprinnelige avsenderen. Analysen viser altså **siste stasjon før tjenesten**, ikke opprinnelsen.
+## Limitations of the method
 
-Og tilordningen til en kobling er ikke direkte synlig i tenant-en. Du slutter deg til den via adresse, sertifikat og avsenderdomene. For en robust uttalelse om bruken av én enkelt kobling er koblingsrapporten i Exchange Admin Center under Rapporter og e-postflyt en bedre kilde, fordi den aggregeres på serversiden over lengre tidsrom.
+There are three limitations you should know.
 
-## Som tilbakevendende kontroll
+Message tracing via the cmdlet only goes back around ten days. For longer periods, you need historical search, which runs asynchronously and covers up to 90 days. Otherwise, you will miss systems that send monthly.
 
-Denne analysen egner seg godt som kvartalsrutine. Lagre resultatet og sammenlign ved neste gjennomgang. Nye adresser i listen er enten dokumenterte endringer eller noe du ønsker å vite om.
+`FromIP` does not mean the same thing everywhere. For mail from the internet, it is the address of the delivering server. For hybrid mail, it is the address of your on-premises transport server, not that of the original sender. The analysis therefore shows you the **last hop before the service**, not the origin.
 
-Når du likevel kontrollerer e-postkonfigurasjonen for domenene dine: [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) viser SPF, DKIM, DMARC og de øvrige e-poststandardene for vilkårlige domener direkte i nettleseren, også for underdomener og markedsføringsdomener som erfaringsmessig glemmes i slike kartlegginger. Og for selve spørringene leverer [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) ferdige byggeklosser for PowerShell og Unix-skall.
+And the association with a connector is not directly visible in the tenant. You infer it from the address, certificate and sender domain. For a reliable statement about the usage of an individual connector, the connector report in the Exchange Admin Center under Reports and Mail flow is the better source, because it aggregates server-side over longer periods.
 
-Hvordan du følger opp enkeltstående mistenkelige meldinger, står i [Analyser Exchange-e-postflyt: Message Tracking, SMTP-protokoller og Receive Connectors](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren).
+## As a recurring review
+
+This analysis is well suited as a quarterly routine. Save the result and compare it during the next run. New addresses in the list are either documented changes or something you need to know about.
+
+If you are reviewing your domains' mail configuration anyway: the [Mail DNS Check](https://rafaelpfister.ch/tools/mail-check) shows SPF, DKIM, DMARC and the other mail standards for any domain directly in the browser, including secondary and marketing domains that experience shows are often forgotten during such inventories. And for the queries themselves, the [Command Generator](https://rafaelpfister.ch/tools/command-builder) provides ready-made building blocks for PowerShell and Unix shells.
+
+How to investigate individual suspicious messages further is explained in [Analysing Exchange mail flow: Message Tracking, SMTP logs and Receive Connectors](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren).
 
 ## Kilder
 
-1.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Feltliste inkludert FromIP og ToIP samt sideloggikken med StartingRecipientAddress.
+1.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): field list including FromIP and ToIP, as well as pagination logic with StartingRecipientAddress.
 
-2.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): Asynkron meldingssporing over opptil 90 dager for eldre tidsrom.
+2.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): asynchronous message tracing over up to 90 days for older periods.
 
-3.  [Get-InboundConnector](https://learn.microsoft.com/en-us/powershell/module/exchange/get-inboundconnector): Parametere for innkommende koblinger, blant annet SenderIPAddresses og TreatMessagesAsInternal.
+3.  [Get-InboundConnector](https://learn.microsoft.com/en-us/powershell/module/exchange/get-inboundconnector): parameters for inbound connectors, including SenderIPAddresses and TreatMessagesAsInternal.
 
-4.  [Configure mail flow using connectors in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/use-connectors-to-configure-mail-flow): Samspillet mellom koblingstypene og når hvilken brukes.
+4.  [Configure mail flow using connectors in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/use-connectors-to-configure-mail-flow): interaction of connector types and when each applies.
 
-5.  [RFC 1918: Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918): Definerer de private adresseområdene som du må skille fra offentlige adresser i analysen.
+5.  [RFC 1918: Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918): defines the private address ranges that you need to distinguish from public addresses in the analysis.

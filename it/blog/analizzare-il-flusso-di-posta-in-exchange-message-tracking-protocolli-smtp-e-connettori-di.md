@@ -1,7 +1,7 @@
 ---
 title: "Analizzare il flusso di posta in Exchange: Message Tracking, protocolli SMTP e connettori di ricezione"
 navTitle: "Analizzare il flusso di posta"
-description: "Come determinare sistematicamente in Exchange OnPrem, Hybrid ed Exchange Online dove si è fermato un messaggio: query con output di esempio, lettura corretta del protocollo SMTP e insidie che portano regolarmente su piste false."
+description: "Come stabilire sistematicamente, in Exchange OnPrem, Hybrid ed Exchange Online, dove è finito un messaggio: query con output di esempio, come leggere correttamente il protocollo SMTP e gli aspetti che portano regolarmente a conclusioni errate."
 date: "2026-08-11"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "22 min di lettura"
@@ -27,28 +27,28 @@ slug: "analizzare-il-flusso-di-posta-in-exchange-message-tracking-protocolli-smt
 translationId: "article-ad93c41ab6cd20e6"
 draft: false
 translationOf: exchange-message-tracking-und-receive-connectoren-analysieren
-url: https://rafaelpfister.ch/it/blog/analizzare-il-flusso-di-posta-in-exchange-message-tracking-protocolli-smtp-e-connettori-di
-translationSourceHash: 646cb713e4dd97300a2cd068ee8f04953f2e80a99aec63ed11eddc46e1981f13
+translationSourceHash: da923f7fa45ee5c38ea52e96d56781f7c3806556245a5f071242e7f02473a71c
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-12T05:16:25.287Z
+translatedAt: 2026-08-31T10:10:58.725Z
 translationReview: automatic
+url: https://rafaelpfister.ch/it/blog/analizzare-il-flusso-di-posta-in-exchange-message-tracking-protocolli-smtp-e-connettori-di
 ---
 
 # Analizzare il flusso di posta in Exchange: Message Tracking, protocolli SMTP e connettori di ricezione
 
-La domanda più frequente nella gestione della posta è: un messaggio non è arrivato, dove si è fermato? Il Message Tracking risponde in modo affidabile, ma solo se sapete cosa **non** vi dice. Questo articolo descrive la procedura nell’ordine che si è dimostrato efficace, mostra l’output tipico per ogni query e indica le insidie che costano regolarmente ore perché suggeriscono conclusioni plausibili, ma errate.
+La domanda più frequente nella gestione della posta è: un messaggio non è arrivato, dove è finito? Il Message Tracking risponde in modo affidabile, ma solo se sapete cosa **non** vi dice. Questo articolo descrive il procedimento nell'ordine che si è dimostrato efficace, mostra l'output tipico di ogni query e indica le fonti di errore che fanno perdere regolarmente ore perché suggeriscono conclusioni plausibili ma errate.
 
-Tutti gli esempi utilizzano nomi generici: `SRV-MAIL01` e `SRV-MAIL02` come server di trasporto, `example.com` come dominio. Se volete comporre i comandi per il vostro ambiente invece di digitarli: il [Generatore di comandi](https://rafaelpfister.ch/tools/command-builder) contiene i comuni comandi di Message Tracking e cattura per PowerShell e shell Unix affiancati, interamente in locale nel browser.
+Tutti gli esempi utilizzano nomi generici: `SRV-MAIL01` e `SRV-MAIL02` come server di trasporto, `example.com` come dominio. Se volete comporre i comandi per il vostro ambiente anziché digitarli: il [Generatore di comandi](https://rafaelpfister.ch/tools/command-builder) contiene i comuni comandi di Message Tracking e acquisizione per PowerShell e shell Unix affiancati, interamente in locale nel browser.
 
 ## Il principio: prima localizzare, poi spiegare
 
-L’istinto è cercare subito la causa. È più efficiente determinare innanzitutto fino a che punto sia arrivato il messaggio. Questo restringe drasticamente lo spazio di ricerca in un solo passaggio, poiché saprete poi se cercare nel vostro sistema, presso il gateway a monte o presso la destinazione.
+Il riflesso è cercare subito la causa. È più efficiente determinare prima fino a che punto sia arrivato effettivamente il messaggio. Questo restringe drasticamente lo spazio di ricerca in un solo passaggio, perché saprete poi se cercare nel vostro sistema, presso il gateway a monte o presso la destinazione.
 
-L’ordine è quindi: trovare il messaggio, leggere l’ultimo evento, leggere il motivo dell’errore, stabilire se si tratta di un caso isolato o di uno schema ricorrente e solo allora ricostruire il percorso di consegna.
+L'ordine è quindi: trovare il messaggio, leggere l'ultimo evento, leggere il motivo dell'errore, stabilire se si tratta di un caso isolato o di uno schema ricorrente e solo allora ricostruire il percorso di consegna.
 
-## Passo 1: trovare il messaggio
+## Passaggio 1: trovare il messaggio
 
-Iniziate dal destinatario, perché quasi sempre lo conoscete. È importante eseguire la query su **tutti** i server di trasporto, non solo su uno.
+Iniziate dal destinatario, perché quasi sempre lo conoscete. È importante eseguire la query su **tutti** i server di trasporto, non soltanto su uno.
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
@@ -60,6 +60,20 @@ Iniziate dal destinatario, perché quasi sempre lo conoscete. È importante eseg
     Format-Table Timestamp, ServerHostname, EventId, Source, ConnectorId, MessageId `
         -AutoSize -Wrap
 ```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Server` | Server di trasporto di cui viene interrogato il log di tracking; qui entrambi i server vengono interrogati in sequenza tramite pipeline |
+| `-Start` | Limite temporale inferiore della ricerca, qui le ultime sei ore |
+| `-ResultSize Unlimited` | Rimuove il limite predefinito di 1000 voci |
+| `-Recipients` | Filtra i messaggi indirizzati a questo destinatario |
+| `Sort-Object Timestamp` | Ordina cronologicamente i risultati riuniti dei due server |
+| `-AutoSize -Wrap` | Adatta la larghezza delle colonne al contenuto e manda a capo i valori lunghi anziché troncarli |
+
+</details>
 
 Un output tipico per un messaggio transitato correttamente:
 
@@ -88,21 +102,34 @@ Se la query non trova nulla, verificate se il destinatario è stato espanso tram
         @{n='To'; e={$_.Recipients -join ','}}, MessageSubject -AutoSize -Wrap
 ```
 
-## Passo 2: leggere l’ultimo evento
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
 
-L’intera diagnosi dipende dall’**ultimo** `EventId` del messaggio. Vi indica quale spazio di ricerca affrontare successivamente.
+| Opzione | Effetto |
+|---|---|
+| `-Server` | Server di trasporto di cui viene interrogato il log di tracking |
+| `-Start` | Limite temporale inferiore della ricerca |
+| `-ResultSize Unlimited` | Rimuove il limite predefinito di 1000 voci |
+| `Where-Object` | Filtra lato client i mittenti del dominio interno, poiché `-Sender` accetta soltanto indirizzi esatti |
+| `@{n=…; e=…}` | Colonna calcolata: riunisce il campo raccolta `Recipients` in una stringa separata da virgole |
 
-| Ultimo EventId | Significato | Passo successivo |
+</details>
+
+## Passaggio 2: leggere l'ultimo evento
+
+L'intera diagnosi dipende dall'**ultimo** `EventId` del messaggio. Vi indica quale spazio di ricerca affrontare successivamente.
+
+| Ultimo EventId | Significato | Passaggio successivo |
 |---|---|---|
 | `RECEIVE`, poi nulla | Il messaggio è bloccato | Controllare le code |
-| `SEND` o `SENDEXTERNAL` | consegnato correttamente | proseguire la ricerca al prossimo hop |
-| `FAIL` | errore definitivo | leggere il motivo in `RecipientStatus` |
-| `DEFER` | tentativo in corso | controllare coda e sistema di destinazione |
-| `DROP` o `POISONMESSAGE` | scartato | regola di trasporto o agente |
-| `DELIVER` | consegnato a una casella postale locale | controllare le regole della casella |
-| `RESOLVE` | il destinatario è stato riscritto | leggere l’indirizzo di destinazione nella voce |
+| `SEND` o `SENDEXTERNAL` | Consegnato correttamente | Cercare più avanti, all'hop successivo |
+| `FAIL` | Fallito definitivamente | Leggere il motivo in `RecipientStatus` |
+| `DEFER` | È in corso un nuovo tentativo | Controllare coda e sistema di destinazione |
+| `DROP` o `POISONMESSAGE` | Scartato | Regola di trasporto o agente |
+| `DELIVER` | Consegnato a una cassetta postale locale | Controllare le regole della cassetta postale |
+| `RESOLVE` | Il destinatario è stato riscritto | Leggere l'indirizzo di destinazione nella voce |
 
-`RESOLVE` è il passaggio intermedio più significativo negli ambienti Hybrid, perché rende visibile la riscrittura verso l’indirizzo di routing cloud:
+`RESOLVE` è il passaggio intermedio più rivelatore negli ambienti Hybrid, perché rende visibile la riscrittura verso l'indirizzo di routing cloud:
 
 ```text
 EventId : RESOLVE
@@ -111,7 +138,7 @@ Sender  : absender@example.com
 To      : BENUTZER@example.mail.onmicrosoft.com
 ```
 
-Se compare l’indirizzo `onmicrosoft.com` previsto, l’oggetto destinatario è configurato correttamente e potete chiudere il caso. Se compare ancora l’indirizzo originale, nell’oggetto locale manca l’indirizzo di destinazione e Exchange tenta la consegna locale.
+Se appare l'indirizzo `onmicrosoft.com` previsto, l'oggetto destinatario è configurato correttamente e potete chiudere il caso. Se compare ancora l'indirizzo originale, manca l'indirizzo di destinazione nell'oggetto locale e Exchange tenta di consegnare localmente.
 
 Se il messaggio è bloccato, la coda di solito mostra il motivo in chiaro:
 
@@ -122,11 +149,22 @@ Get-Queue -Server SRV-MAIL01 |
         -AutoSize -Wrap
 ```
 
-## Insidia 1: il tracking è basato sul server e molte voci sono copie shadow
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
 
-Se nell’output vedete coppie di `HARECEIVE` e `HADISCARD`, spesso con l’aggiunta `ExplicitlyDiscarded`, quel server **non ha elaborato** il messaggio. Ha solo mantenuto una copia shadow nel quadro della Shadow Redundancy, mentre un altro server ha eseguito la consegna effettiva. Non appena il server primario segnala il successo, il partner elimina la propria copia.
+| Opzione | Effetto |
+|---|---|
+| `-Server` | Server di cui vengono interrogate le code di trasporto |
+| `Where-Object` | Nasconde le code vuote, mostrando solo quelle con messaggi in attesa |
+| `-AutoSize -Wrap` | Impedisce che la lunga colonna `LastError` venga troncata |
 
-Ecco come appare se avete interrogato solo il server sbagliato:
+</details>
+
+## Fonte di errore 1: il tracking è legato al server e molte voci sono copie shadow
+
+Se nell'output vedete coppie di `HARECEIVE` e `HADISCARD`, spesso con l'aggiunta `ExplicitlyDiscarded`, quel server **non ha elaborato** il messaggio. Conservava solo una copia shadow nell'ambito della Shadow Redundancy, mentre un altro server eseguiva la consegna effettiva. Non appena il server primario segnala il successo, il partner scarta la propria copia.
+
+Ecco l'aspetto se avete interrogato solo il server sbagliato:
 
 ```text
 Timestamp           EventId    SourceContext
@@ -135,13 +173,13 @@ Timestamp           EventId    SourceContext
 11.08.2026 09:48:07 HADISCARD  ExplicitlyDiscarded;1a2aae6b-f3a3-4e04-9233-7de460b92223
 ```
 
-Due righe, nessun errore, nessuna consegna. Chi ne deduce che il messaggio sia scomparso sta cercando nel posto sbagliato. L’elaborazione effettiva si trova nel tracking del server partner.
+Due righe, nessun errore, nessuna consegna. Chi ne conclude che il messaggio sia scomparso sta cercando nel posto sbagliato. L'elaborazione effettiva si trova nel tracking del server partner.
 
-In pratica ciò significa due cose. Primo, queste righe non indicano un problema, ma il normale funzionamento. Secondo, dovete obbligatoriamente interrogare tutti i server di trasporto.
+In pratica ciò significa due cose. Primo, queste righe non sono un segnale di problema, ma normale funzionamento. Secondo, dovete necessariamente interrogare tutti i server di trasporto.
 
-## Insidia 2: `Format-Table` tronca proprio le colonne decisive
+## Fonte di errore 2: `Format-Table` tronca proprio le colonne decisive
 
-Il motivo dell’errore è in `RecipientStatus`, e questo campo è lungo. In una tabella viene omesso completamente oppure troncato. Proprio questo porta a vedere `FAIL` senza il motivo e a iniziare invece a indovinare.
+Il motivo dell'errore si trova in `RecipientStatus`, e questo campo è lungo. In una tabella scompare del tutto oppure viene troncato. Proprio questo fa sì che si veda il `FAIL` ma non il motivo, iniziando quindi a indovinare.
 
 Non appena trovate un caso di errore, passate quindi a `Format-List` ed espandete i campi raccolta:
 
@@ -157,7 +195,22 @@ Get-MessageTrackingLog -Server SRV-MAIL01 `
     MessageSubject, MessageId, SourceContext
 ```
 
-Ecco la differenza. Prima la vista tabellare, che non spiega nulla:
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Server` | Server di trasporto di cui viene interrogato il log di tracking |
+| `-Start` | Limite temporale inferiore della ricerca |
+| `-ResultSize Unlimited` | Rimuove il limite predefinito di 1000 voci |
+| `-Recipients` | Filtra i messaggi indirizzati a questo destinatario |
+| `-EventId FAIL` | Solo voci con errore di consegna definitivo |
+| `Format-List` | Mostra ogni campo su una riga separata, a lunghezza intera: nulla viene troncato |
+| `@{n=…; e=…}` | Campi calcolati: espandono i campi raccolta `Recipients` e `RecipientStatus` in stringhe leggibili |
+
+</details>
+
+Ecco la differenza. Prima la visualizzazione tabellare, che non spiega nulla:
 
 ```text
 Timestamp           EventId ConnectorId
@@ -178,9 +231,9 @@ MessageSubject : Statusmeldung Nachtlauf
 MessageId      : <1897281176.1319@app01.intern.example.com>
 ```
 
-La diagnosi è quindi certa, senza dover formulare una sola ipotesi: la controparte contesta il mittente. `LED` contiene la risposta SMTP completa, `FQDN` e `IP` indicano il sistema che ha risposto e `LRT` il momento dell’ultimo tentativo.
+La diagnosi è quindi certa, senza dover formulare una sola ipotesi: il sistema remoto contesta il mittente. `LED` contiene la risposta SMTP completa, `FQDN` e `IP` indicano il sistema che ha risposto, mentre `LRT` indica l'ora dell'ultimo tentativo.
 
-## Passo 3: caso isolato o schema ricorrente?
+## Passaggio 3: caso isolato o schema ricorrente?
 
 Prima di approfondire un singolo caso, chiarite la portata. Questa singola query decide se avete a che fare con una nota marginale o con un incidente:
 
@@ -195,7 +248,21 @@ Prima di approfondire un singolo caso, chiarite la portata. Questa singola query
     Format-Table Count, Name -AutoSize
 ```
 
-Sostituite `5.1.8` con il codice di stato che state esaminando. L’output risponde alla domanda in una riga:
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Start` | Limite temporale inferiore, qui le ultime otto ore |
+| `-EventId FAIL` | Solo consegne fallite definitivamente |
+| `-ResultSize Unlimited` | Rimuove il limite predefinito di 1000 voci |
+| `Where-Object` | Filtra in base al codice di stato SMTP esaminato nel campo `RecipientStatus` |
+| `Group-Object` | Raggruppa per dominio del mittente, ovvero la parte dopo `@` |
+| `Sort-Object Count -Descending` | Il dominio più frequente in cima |
+
+</details>
+
+Sostituite `5.1.8` con il codice di stato che state esaminando. L'output risponde alla domanda in una riga:
 
 ```text
 Count Name
@@ -203,11 +270,11 @@ Count Name
     9 example-test.com
 ```
 
-Un solo dominio mittente significa: problema circoscritto, non un incidente; potete continuare a cercare con calma. Se ci fossero venti domini diversi, avreste un’interruzione in corso e tutto il resto dovrebbe aspettare. Fare questa distinzione così presto fa risparmiare, per esperienza, la maggior parte del tempo.
+Un solo dominio mittente significa: problema circoscritto, non un incidente; potete continuare a cercare con calma. Se fossero indicati venti domini diversi, avreste un'interruzione in corso e tutto il resto dovrebbe attendere. Stabilire questa distinzione così presto fa risparmiare, per esperienza, più tempo di ogni altra cosa.
 
-## Insidia 3: `ConnectorId` non rivela il vero connettore di ricezione
+## Fonte di errore 3: la `ConnectorId` non indica il vero connettore di ricezione
 
-Questa è l’insidia più costosa, perché l’output sembra attendibile. La posta consegnata da un client o da un sistema esterno sulla porta 25 raggiunge prima il **Front End Transport**. Quest’ultimo inoltra il messaggio al **Transport Service** sulla porta 2525. Il Message Tracking viene scritto solo lì; il Front End Transport non scrive un tracking proprio.
+Questa è la fonte di errore più costosa, perché l'output sembra serio. La posta consegnata da un client o da un sistema esterno sulla porta 25 raggiunge prima il **Front End Transport**. Quest'ultimo inoltra il messaggio al **Transport Service** sulla porta 2525. Il Message Tracking viene scritto solo lì; il Front End Transport non scrive un proprio tracking.
 
 La conseguenza è visibile in questa riga:
 
@@ -218,9 +285,9 @@ ClientIp       : 10.0.1.11
 ClientHostname : srv-mail01.intern.example.com
 ```
 
-`ConnectorId` indica il connettore interno sulla porta 2525 e `ClientIp` è l’indirizzo del **server proxy**, non quello dell’originatore della consegna. Il tracking semplicemente non indica quale dei connettori configurati sulla porta 25 sia stato effettivamente raggiunto da un sistema. Chi si fida di questa informazione cerca l’errore presso un connettore che non è nemmeno coinvolto.
+La `ConnectorId` indica il connettore interno sulla porta 2525 e la `ClientIp` è l'indirizzo del **server proxy**, non quello del mittente originario. Il tracking semplicemente non indica quale dei connettori configurati sulla porta 25 abbia effettivamente ricevuto un sistema. Chi crede a questa indicazione cerca l'errore in un connettore che non è stato affatto coinvolto.
 
-Esistono due modi per arrivare alla risposta. Il primo è la ricostruzione tramite configurazione:
+Ci sono due modi per ottenere la risposta. Il primo consiste nella ricostruzione tramite la configurazione:
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-ReceiveConnector -Server $_ } |
@@ -229,6 +296,17 @@ Esistono due modi per arrivare alla risposta. Il primo è la ricostruzione trami
         @{n='RemoteIPRanges'; e={$_.RemoteIPRanges -join ','}},
         PermissionGroups, AuthMechanism
 ```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Server` | Server di cui vengono elencati i connettori di ricezione |
+| `Format-List` | Lunghezze complete dei campi; `RemoteIPRanges` e `PermissionGroups` verrebbero troncati nelle tabelle |
+| `@{n=…; e=…}` | Campi calcolati: riuniscono i campi raccolta `Bindings` e `RemoteIPRanges` in stringhe separate da virgole |
+
+</details>
 
 ```text
 Identity         : SRV-MAIL01\Default Frontend SRV-MAIL01
@@ -244,13 +322,13 @@ PermissionGroups : AnonymousUsers, Custom
 AuthMechanism    : Tls
 ```
 
-Determinate l’IP sorgente del sistema che consegna e cercate il connettore il cui `RemoteIPRanges` lo contiene. Se non rientra in nessuno dei connettori limitati, resta il connettore frontend predefinito, che di norma accetta l’intero spazio di indirizzi. Anche qui usate `Format-List`, poiché `RemoteIPRanges` e `PermissionGroups` vengono regolarmente troncati nelle tabelle.
+Determinate l'IP sorgente del sistema mittente e cercate il connettore il cui `RemoteIPRanges` la contiene. Se non rientra in nessuno dei connettori limitati, resta il connettore frontend predefinito, che di solito accetta l'intero spazio di indirizzi. Usate anche qui `Format-List`, poiché `RemoteIPRanges` e `PermissionGroups` vengono regolarmente troncati nelle tabelle.
 
-Il secondo modo è il protocollo SMTP, che merita una sezione a sé.
+Il secondo modo è il protocollo SMTP, che merita una sezione dedicata.
 
-## Il protocollo SMTP: l’unico luogo con tutta la verità
+## Il protocollo SMTP: l'unica fonte completa
 
-Il protocollo del Front End Transport registra la sessione SMTP completa: quale connettore è stato raggiunto, quale IP si è connesso e cosa si sono detti client e server. È l’unica fonte che risolve l’insidia descritta sopra.
+Il protocollo del Front End Transport registra la sessione SMTP completa: quale connettore è stato contattato, quale IP si è connesso, cosa si sono detti client e server. È l'unica fonte che risolve il problema della `ConnectorId` descritto sopra.
 
 ### Attivare la registrazione
 
@@ -261,11 +339,21 @@ Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
     -ProtocolLoggingLevel Verbose
 ```
 
-Per le connessioni in uscita, procedete analogamente tramite `Set-SendConnector`. Ricordate di riportare il valore a `None` dopo l’analisi, perché la registrazione dettagliata richiede spazio su disco e genera quantità notevoli di dati con volumi elevati.
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Identity` | Il connettore da modificare nel formato `Server\Connectorname` |
+| `-ProtocolLoggingLevel Verbose` | Attiva la registrazione SMTP; `None` la disattiva nuovamente |
+
+</details>
+
+Per le connessioni in uscita, procedete analogamente tramite `Set-SendConnector`. Ricordate di riportare il valore a `None` dopo l'analisi, perché la registrazione dettagliata richiede spazio su disco e genera notevoli volumi di dati in caso di traffico elevato.
 
 ### Dove si trovano i file
 
-Exchange separa i protocolli per servizio e direzione. Non occorre codificare rigidamente i percorsi: interrogateli.
+Exchange separa i protocolli per servizio e direzione. Non è necessario codificare i percorsi: interrogateli:
 
 ```powershell
 Get-FrontendTransportService SRV-MAIL01 |
@@ -276,15 +364,27 @@ Get-TransportService SRV-MAIL01 |
     Format-List ReceiveProtocolLogPath, SendProtocolLogPath
 ```
 
-In genere si trovano sotto il percorso di installazione in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` per il Front End Transport e in `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` per il Transport Service. **Questo è il punto cruciale:** le connessioni client sulla porta 25 si trovano esclusivamente nel percorso `FrontEnd`; il percorso `Hub` contiene solo il traffico di inoltro interno sulla 2525.
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
 
-Tenete conto della conservazione. `ReceiveProtocolLogMaxAge` è spesso impostato a 30 giorni, mentre `ReceiveProtocolLogMaxDirectorySize` limita ulteriormente l’uso di spazio. Con volumi elevati, il limite di dimensione entra in vigore molto prima di quello temporale e i vostri protocolli risalgono quindi solo a pochi giorni prima.
+| Opzione | Effetto |
+|---|---|
+| `SRV-MAIL01` | Parametro posizionale `-Identity`: il server da interrogare |
+| `ReceiveProtocolLogPath`, `SendProtocolLogPath` | Percorsi di archiviazione dei protocolli per connessioni in entrata e in uscita |
+| `ReceiveProtocolLogMaxAge` | Età massima dei file di protocollo; quelli più vecchi vengono eliminati |
+| `ReceiveProtocolLogMaxDirectorySize` | Limite massimo di spazio utilizzato dalla directory dei protocolli |
+
+</details>
+
+In genere si trovano sotto il percorso di installazione in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` per il Front End Transport e in `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` per il Transport Service. **Questo è il punto essenziale:** le connessioni client sulla porta 25 si trovano esclusivamente nel percorso `FrontEnd`, mentre il percorso `Hub` contiene solo il traffico di inoltro interno sulla porta 2525.
+
+Prestate attenzione alla conservazione. `ReceiveProtocolLogMaxAge` è spesso impostato su 30 giorni, mentre `ReceiveProtocolLogMaxDirectorySize` limita ulteriormente lo spazio utilizzato. In caso di traffico elevato, il limite di dimensione entra in vigore ben prima di quello di età e i vostri protocolli finiscono per avere solo pochi giorni.
 
 ### Comprendere il formato
 
-I file sono CSV con righe di intestazione che iniziano con `#`. Le colonne più importanti sono `date-time`, `connector-id`, `session-id`, `sequence-number`, `local-endpoint`, `remote-endpoint`, `event` e `data`.
+I file sono CSV con intestazioni che iniziano con `#`. Le colonne più importanti sono `date-time`, `connector-id`, `session-id`, `sequence-number`, `local-endpoint`, `remote-endpoint`, `event` e `data`.
 
-Decisiva è la colonna `event`, un singolo carattere:
+Decisiva è la colonna `event`, costituita da un singolo carattere:
 
 | Carattere | Significato |
 |---|---|
@@ -292,9 +392,9 @@ Decisiva è la colonna `event`, un singolo carattere:
 | `-` | Connessione terminata |
 | `>` | Il server invia al client |
 | `<` | Il client invia al server |
-| `*` | Informazione del server, non traffico SMTP |
+| `*` | Informazione del server, nessun traffico SMTP |
 
-Riconoscete una sessione dalla `session-id` comune; `sequence-number` indica l’ordine all’interno della sessione. Un estratto tipico appare così:
+Riconoscete una sessione dalla stessa `session-id`; la `sequence-number` indica l'ordine all'interno della sessione. Un estratto tipico appare così:
 
 ```text
 2026-08-11T09:47:10.4Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,0,
@@ -309,11 +409,11 @@ Riconoscete una sessione dalla `session-id` comune; `sequence-number` indica l�
   10.0.1.13:25,10.0.20.22:51244,>,"250 2.1.5 Recipient OK",
 ```
 
-Qui c’è tutto ciò che mancava nel Message Tracking: il connettore **reale** (`smtp-noauth`), l’IP sorgente **reale** (`10.0.20.22`) e il nome con cui il sistema si presenta in `EHLO`.
+Qui c'è tutto ciò che mancava nel Message Tracking: il connettore **effettivo** (`smtp-noauth`), l'IP sorgente **effettivo** (`10.0.20.22`) e il nome con cui il sistema si presenta nell'`EHLO`.
 
 ### Cercare in modo mirato
 
-Per i singoli casi, un filtro testuale è molto più rapido di un’analisi a oggetti. Cercate l’indirizzo del mittente o il nome `EHLO` e fatevi restituire l’identificatore di sessione:
+Per i singoli casi, un filtro testuale è molto più rapido di un'analisi degli oggetti. Cercate l'indirizzo del mittente o il nome `EHLO` e fatevi restituire l'identificativo della sessione:
 
 ```powershell
 $pfad = (Get-FrontendTransportService SRV-MAIL01).ReceiveProtocolLogPath
@@ -321,14 +421,37 @@ Select-String -Path "$pfad\*.log" -Pattern "dienst@example-test.com" -SimpleMatc
     Select-Object -First 5 Line
 ```
 
-Con la `session-id` trovata, recuperate la sessione completa:
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Path "$pfad\*.log"` | Cerca in tutti i file di protocollo nel percorso interrogato in precedenza |
+| `-Pattern` | Il termine di ricerca, qui l'indirizzo del mittente |
+| `-SimpleMatch` | Tratta il modello come testo anziché come espressione regolare; il punto nell'indirizzo non richiede quindi escape |
+| `-First 5` | Limita l'output ai primi cinque risultati |
+
+</details>
+
+Con la `session-id` trovata recuperate la sessione completa:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
     ForEach-Object { $_.Line } | Select-Object -First 40
 ```
 
-Se volete solo sapere quali connettori ricevono effettivamente traffico, contate le connessioni stabilite. Con file di grandi dimensioni è più veloce di ordini di grandezza rispetto all’analisi di ogni riga:
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Pattern` | L'identificativo della sessione dal primo risultato |
+| `-SimpleMatch` | Ricerca letterale senza valutazione regex |
+| `-First 40` | Limita l'output alle prime 40 righe della sessione |
+
+</details>
+
+Se volete solo sapere quali connettori vedono effettivamente traffico, contate le connessioni stabilite. Con file di grandi dimensioni, questo è più veloce di ordini di grandezza rispetto al parsing di ogni riga:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
@@ -336,6 +459,18 @@ Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
     Group-Object | Sort-Object Count -Descending |
     Format-Table Count, Name -AutoSize
 ```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Pattern ',\+,'` | Espressione regolare per l'evento `+` (connessione stabilita) tra due virgole CSV; il più è sottoposto a escape |
+| `ForEach-Object { … -split ',' }` | Divide la riga trovata alle virgole e seleziona la seconda colonna, la `connector-id` |
+| `Group-Object` | Conta le connessioni stabilite per connettore |
+| `Sort-Object Count -Descending` | Il connettore più utilizzato in cima |
+
+</details>
 
 ```text
 Count Name
@@ -346,15 +481,15 @@ Count Name
 15789 SRV-MAIL01\smtp-noauth SRV-MAIL01
 ```
 
-Questa distribuzione risponde a una domanda a cui il Message Tracking non può rispondere: quali percorsi usano realmente le vostre applicazioni? Prima di modificare un connettore, è il dato più importante in assoluto.
+Questa distribuzione risponde a una domanda a cui il Message Tracking non può rispondere: quali percorsi utilizzano effettivamente le vostre applicazioni? Prima di una modifica dei connettori, questo è il dato più importante in assoluto.
 
-### Quando non è stato registrato nulla
+### Se non è stato registrato nulla
 
-Se manca qualsiasi riga nell’orario in questione, ci sono tre ragioni comuni: la registrazione era disattivata sul connettore interessato, il limite di conservazione ha già eliminato il file oppure state guardando nel percorso sbagliato, cioè nella directory `Hub` anziché in `FrontEnd`. Verificate in questo ordine.
+Se al momento in questione manca ogni riga, le cause comuni sono tre: la registrazione era disattivata sul connettore interessato, il limite di conservazione ha già eliminato il file oppure state guardando nel percorso sbagliato, cioè nella directory `Hub` anziché `FrontEnd`. Verificate in quest'ordine.
 
-## Passo 4: verificare le autorizzazioni
+## Passaggio 4: verificare le autorizzazioni
 
-Se una consegna viene rifiutata o, al contrario, è consentito più di quanto previsto, occorre verificare le autorizzazioni del connettore. Qui si cela un’insidia tecnica: `Get-ADPermission` richiede il **DistinguishedName**. Se passate la consueta identità nel formato `Server\Connectorname`, la chiamata fallisce in una sessione remota con il fuorviante messaggio che l’oggetto non può essere trovato.
+Se una consegna viene rifiutata oppure, al contrario, è consentito più di quanto previsto, dovete esaminare le autorizzazioni del connettore. C'è una particolarità tecnica: `Get-ADPermission` richiede il **DistinguishedName**. Se passate l'identità abituale nel formato `Server\Connectorname`, la chiamata fallisce in una sessione remota con il fuorviante messaggio che l'oggetto non è stato trovato.
 
 ```powershell
 $dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName
@@ -362,6 +497,17 @@ Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" |
     Where-Object { $_.ExtendedRights -like "*ms-Exch-SMTP*" } |
     Format-Table User, @{n='Rights'; e={$_.ExtendedRights}} -AutoSize
 ```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Identity $dn` | L'oggetto da controllare come DistinguishedName; il formato `Server\Connectorname` fallisce nelle sessioni remote |
+| `-User` | Limita l'output alle autorizzazioni di questo principal di sicurezza, qui l'accesso anonimo |
+| `Where-Object` | Filtra gli Extended Rights rilevanti per SMTP |
+
+</details>
 
 ```text
 User                         Rights
@@ -371,22 +517,22 @@ NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Accept-Any-Sender
 NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Accept-Authoritative-Domain-Sender
 ```
 
-L’interpretazione è più semplice di quanto sembri, se distinguete quattro diritti:
+La valutazione è più semplice di quanto sembri se distinguete quattro diritti:
 
 | Diritto | Significato |
 |---|---|
-| `ms-Exch-SMTP-Submit` | può effettuare consegne |
-| `ms-Exch-SMTP-Accept-Any-Sender` | può usare indirizzi mittente arbitrari |
-| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | può presentarsi come dominio proprio |
-| `ms-Exch-SMTP-Accept-Any-Recipient` | **può inoltrare verso domini esterni** |
+| `ms-Exch-SMTP-Submit` | può effettuare consegne in ingresso |
+| `ms-Exch-SMTP-Accept-Any-Sender` | può utilizzare qualsiasi indirizzo mittente |
+| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | può presentarsi come dominio interno |
+| `ms-Exch-SMTP-Accept-Any-Recipient` | **può inoltrare a domini esterni** |
 
-I primi tre sono il set standard necessario per le consegne anonime e la ricezione di posta Internet. Solo il quarto diritto trasforma un connettore in ingresso in un relay. Su un connettore che accetta l’intero spazio di indirizzi, si tratta di un open relay. Su un connettore con restrizione IP rigorosa, è invece il percorso usuale e previsto affinché i server applicativi possano inviare posta esterna.
+I primi tre sono il set standard necessario per la consegna anonima e la ricezione della posta Internet. Solo il quarto diritto trasforma un connettore di ingresso in un relay. Su un connettore che accetta l'intero spazio di indirizzi, diventa un open relay. Su un connettore con una restrizione IP rigorosa, rappresenta invece il normale e previsto metodo per consentire ai server applicativi di inviare all'esterno.
 
-Non confuse `Accept-Any-Sender` con `Accept-Any-Recipient`. Il primo è innocuo e necessario, il secondo è l’impostazione rilevante per la sicurezza.
+Non confuse `Accept-Any-Sender` con `Accept-Any-Recipient`. Il primo è innocuo e necessario, il secondo è l'impostazione rilevante per la sicurezza.
 
-## Passo 5: controprova con una consegna propria
+## Passaggio 5: test di controllo con una consegna propria
 
-Se l’analisi rimane ambigua, effettuate voi stessi una consegna. In questo modo controllate completamente mittente, destinatario e punto di consegna:
+Se l'analisi rimane ambigua, effettuate voi stessi una consegna. In questo modo controllate completamente mittente, destinatario e punto di consegna:
 
 ```powershell
 Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
@@ -397,33 +543,48 @@ Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
     -Encoding UTF8
 ```
 
-`Send-MailMessage` è ufficialmente deprecato, ma per scopi diagnostici resta lo strumento più rapido ed è disponibile su ogni server Windows. In caso di successo non produce output, cosa che può risultare insolita.
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
 
-Se testate un percorso TLS sulla porta 587 e la controparte presenta un certificato che non corrisponde al nome utilizzato, ad esempio perché contattate l’indirizzo IP, la chiamata si interrompe con un errore di certificato. Per il test potete sospendere la verifica nella sessione:
+| Opzione | Effetto |
+|---|---|
+| `-SmtpServer` | Host di destinazione della consegna, qui volutamente come indirizzo IP per raggiungere un endpoint specifico |
+| `-Port 25` | Porta di destinazione; 25 per consegne server-to-server non autenticate |
+| `-From` | Mittente della busta e dell'intestazione del messaggio di prova |
+| `-To` | Indirizzo del destinatario |
+| `-Subject` | Riga dell'oggetto |
+| `-Body` | Testo del messaggio |
+| `-Encoding UTF8` | Codifica dei caratteri per oggetto e testo, evita problemi con gli umlaut |
+
+</details>
+
+`Send-MailMessage` è ufficialmente deprecato, ma per scopi diagnostici resta lo strumento più rapido ed è disponibile su ogni server Windows. In caso di successo non produce alcun output, cosa che può risultare insolita.
+
+Se testate un percorso TLS sulla porta 587 e il sistema remoto presenta un certificato che non corrisponde al nome utilizzato, ad esempio perché contattate l'indirizzo IP, la chiamata si interrompe con un errore di certificato. Per il test potete sospendere la verifica nella sessione:
 
 ```powershell
 [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
 ```
 
-Questo vale solo per la sessione PowerShell corrente. Impostatelo consapevolmente e mai negli script in esecuzione operativa.
+Questo vale solo per la sessione PowerShell in corso. Impostatelo consapevolmente e mai in script eseguiti in produzione.
 
-Se il messaggio di test arriva e volete sapere cosa gli è accaduto lungo il percorso, l’[Analizzatore di intestazioni e-mail](https://rafaelpfister.ch/tools/header-analyzer) è utile: scompone le intestazioni, traccia il percorso attraverso gli hop e mostra gli esiti delle verifiche di autenticazione, interamente in locale nel browser, senza che il messaggio lasci il vostro dispositivo.
+Se il messaggio di prova arriva e volete sapere cosa gli è accaduto lungo il percorso, l'[Analizzatore di intestazioni email](https://rafaelpfister.ch/tools/header-analyzer) aiuta: scompone le intestazioni, traccia il percorso attraverso gli hop e mostra i risultati dei controlli di autenticazione, interamente in locale nel browser, senza che il messaggio lasci il vostro dispositivo.
 
 ## Exchange Online: la stessa domanda, uno strumento diverso
 
-Nel tenant valgono regole diverse, ed è qui che le procedure abituali falliscono. Considerate queste differenze:
+Nel tenant si applicano regole diverse, ed è qui che le procedure abituali falliscono. Considerate queste differenze:
 
 | | Exchange OnPrem | Exchange Online |
 |---|---|---|
 | Query | `Get-MessageTrackingLog` | `Get-MessageTraceV2` |
 | Granularità | ogni evento di trasporto | una riga per messaggio e destinatario |
-| Connettore visibile | sì (con limitazioni, vedi sopra) | **no** |
-| Riferimento al server | sì, interrogare per server | non applicabile |
+| Connettore visibile | sì, con limitazioni, vedi sopra | **no** |
+| Riferimento al server | sì, interrogare per ciascun server | non applicabile |
 | Protocollo SMTP | disponibile | **non disponibile** |
-| Conservazione | la vostra configurazione | circa 10 giorni tramite il cmdlet |
+| Conservazione | vostra configurazione | circa 10 giorni tramite il cmdlet |
 | Ritardo | quasi immediato | alcuni minuti |
 
-Le tre conseguenze pratiche più importanti: non esiste **alcuna associazione al connettore**, per cui vi affidate a `FromIP` e `ToIP`. Non esiste **alcun protocollo SMTP**, quindi la conversazione SMTP non è ricostruibile. E i dati appaiono **in ritardo**: un messaggio appena inviato non compare subito.
+Le tre conseguenze più importanti nella pratica: non esiste **alcuna associazione al connettore**, dovete aiutarvi con `FromIP` e `ToIP`. Non esiste **alcun protocollo SMTP**, quindi la conversazione SMTP non è ricostruibile. E i dati compaiono **con ritardo**, pertanto un messaggio appena inviato non appare immediatamente.
 
 ### La query di base
 
@@ -436,6 +597,18 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) `
   Format-Table Received, SenderAddress, RecipientAddress, Status, FromIP, Size -AutoSize
 ```
 
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-StartDate` | Limite temporale inferiore della query, qui le ultime quattro ore |
+| `-EndDate` | Limite temporale superiore; il cmdlet richiede entrambi i limiti |
+| `-RecipientAddress` | Filtra i messaggi indirizzati a questo destinatario |
+| `-ResultSize 1000` | Numero massimo di righe di questa pagina; il limite massimo è 5000 |
+
+</details>
+
 ```text
 Received            SenderAddress          RecipientAddress          Status    FromIP
 --------            -------------          ----------------          ------    ------
@@ -443,11 +616,11 @@ Received            SenderAddress          RecipientAddress          Status    F
 11.08.2026 09:05:24 dienst@example-test.com empfaenger@example.com   Failed    10.0.20.23
 ```
 
-I valori più importanti di `Status`: `Delivered`, `Failed`, `Pending`, `Quarantined`, `FilteredAsSpam` e `Expanded` per le liste di distribuzione espanse. `Pending` significa che i tentativi di consegna sono ancora in corso, non che qualcosa sia guasto.
+I valori più importanti di `Status` sono: `Delivered`, `Failed`, `Pending`, `Quarantined`, `FilteredAsSpam` e `Expanded` per le liste di distribuzione espanse. `Pending` significa che sono ancora in corso tentativi di consegna, non che qualcosa sia guasto.
 
 ### I dettagli di un messaggio
 
-Lo stato da solo non dice nulla sul motivo. A questo serve la vista dettagliata, che richiede l’identificatore del messaggio dalla query di base:
+Il solo stato non dice nulla sul motivo. A tale scopo vi serve la visualizzazione dettagliata, che richiede l'identificativo del messaggio dalla query di base:
 
 ```powershell
 $n = Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) -EndDate (Get-Date) `
@@ -459,11 +632,21 @@ Get-MessageTraceDetailV2 -MessageTraceId $n.MessageTraceId `
   Format-List Date, Event, Action, Detail
 ```
 
-Qui sono riportati i passaggi di elaborazione nel servizio, ad esempio applicazioni di regole, decisioni di filtro e il motivo di un rifiuto.
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-MessageTraceId` | Identificativo univoco del messaggio dalla query di base; obbligatorio |
+| `-RecipientAddress` | Destinatario di cui vengono mostrate le fasi di elaborazione; anch'esso obbligatorio, poiché un messaggio può avere più destinatari |
+
+</details>
+
+Qui sono riportate le fasi di elaborazione nel servizio, come l'applicazione di regole, le decisioni dei filtri e il motivo di un rifiuto.
 
 ### Oltre dieci giorni
 
-Il cmdlet risale a circa dieci giorni. Per periodi più vecchi esiste la ricerca storica, che viene eseguita in modo asincrono e fornisce il risultato in formato CSV, con un intervallo fino a 90 giorni:
+Il cmdlet risale a circa dieci giorni. Per periodi più vecchi esiste la ricerca storica, che viene eseguita in modo asincrono e rende disponibile il risultato come CSV, per un intervallo fino a 90 giorni:
 
 ```powershell
 Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
@@ -476,13 +659,26 @@ Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
 Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -AutoSize
 ```
 
-Prevedete tempo a sufficienza: questi lavori possono richiedere ore, a seconda del volume.
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
 
-### Insidia 4: l’assenza di risultati non prova l’assenza di traffico
+| Opzione | Effetto |
+|---|---|
+| `-ReportTitle` | Nome liberamente scegliibile del processo, con il quale il risultato potrà essere ritrovato in seguito |
+| `-StartDate`, `-EndDate` | Periodo esaminato, fino a 90 giorni indietro |
+| `-ReportType MessageTrace` | Tipo di report; `MessageTrace` fornisce la panoramica dei messaggi come CSV |
+| `-SenderAddress` | Filtra per questo indirizzo del mittente |
+| `-NotifyAddress` | Destinatario della notifica di completamento; deve essere un indirizzo di un dominio accettato del tenant |
 
-Questa è l’insidia più sottile nel tenant. `Get-MessageTraceV2` restituisce risultati a pagine, con un massimo di 5000 righe per chiamata. Con volumi elevati, una pagina può coprire solo pochi minuti anche se avete interrogato sette giorni. Se poi filtrate localmente, ad esempio per un IP sorgente, state filtrando su un estratto minuscolo.
+</details>
 
-Lo riconoscete dall’avviso che segnala ulteriori risultati:
+Pianificate il tempo necessario: questi processi possono richiedere ore, a seconda della portata.
+
+### Fonte di errore 4: l'assenza di risultati non prova l'assenza di traffico
+
+Questa è la fonte di errore più sottile nel tenant. `Get-MessageTraceV2` restituisce i risultati per pagine, al massimo 5000 righe per chiamata. In caso di traffico elevato, una pagina può coprire solo pochi minuti anche se avete interrogato sette giorni. Se poi filtrate localmente, ad esempio per un IP sorgente, state filtrando un estratto molto ristretto.
+
+Lo riconoscete dall'avviso che indica ulteriori risultati:
 
 ```text
 WARNING: There are more results, use the following command to get more.
@@ -490,30 +686,30 @@ Get-MessageTraceV2 -StartDate "2026-08-11T07:25:19Z" -EndDate "2026-08-11T09:05:
   -StartingRecipientAddress "naechster@example.com" -ResultSize 5000
 ```
 
-Se appare, la vostra analisi è **incompleta**. Se non viene restituito alcun risultato, la conclusione corretta è: non trovato nell’estratto. Non è: non esiste.
+Se appare, la vostra analisi è **incompleta**. Se non viene restituito alcun risultato, la conclusione corretta è: non trovato nell'estratto. Non è: non esiste.
 
-Esistono due soluzioni corrette. Potete ridurre la finestra temporale fino a quando una pagina la copre completamente, riconoscibile dall’assenza dell’avviso. Oppure potete procedere attraverso tutte le pagine usando le indicazioni di continuazione contenute nell’avviso. Per stabilire se qualcosa non si verifica **mai**, è comunque preferibile una verifica della configurazione: se un sistema non possiede una route verso una destinazione, non può consegnarvi nulla, indipendentemente da qualsiasi finestra di osservazione.
+Ci sono due alternative corrette. Potete ridurre la finestra temporale finché una pagina la copre interamente, riconoscibile dall'assenza dell'avviso. Oppure potete scorrere tutte le pagine utilizzando le indicazioni di continuazione contenute nell'avviso. Per stabilire se qualcosa non si verifica **mai**, un controllo della configurazione è comunque superiore: se un sistema non possiede una route verso una destinazione, non può consegnarvi nulla, indipendentemente da qualsiasi finestra di osservazione.
 
-L’analisi completa di tutti gli indirizzi che effettuano consegne è un argomento a sé, con insidie specifiche nell’interpretazione. È trattato in [Chi effettua effettivamente consegne nel vostro tenant? Aggregare gli indirizzi IP di consegna](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
+L'analisi completa di tutti gli indirizzi mittenti è un argomento a sé, con propri aspetti delicati nell'interpretazione. È trattata in [Chi consegna effettivamente nel vostro tenant? Aggregare gli indirizzi IP mittenti](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
 
-## Una procedura che si è dimostrata efficace
+## Un procedimento che si è dimostrato efficace
 
-In sintesi, questa sequenza si è dimostrata la più rapida. Cercate il messaggio su tutti i server e determinate l’ultimo evento. In caso di errore, passate immediatamente a `Format-List` e leggete la risposta SMTP completa, invece di dedurre dal tipo di evento. Poi chiarite la portata, ovvero raggruppate e contate. Solo se il caso è circoscritto ricostruite il percorso di consegna tramite configurazione dei connettori e protocollo SMTP. Infine, se necessario, eseguite una controprova con una consegna propria.
+In sintesi, questa sequenza si è dimostrata la più rapida. Cercate il messaggio su tutti i server e stabilite l'ultimo evento. In caso di errore, passate subito a `Format-List` e leggete la risposta SMTP completa, anziché dedurre dal tipo di evento. Poi chiarite la portata, quindi raggruppate e contate. Solo quando il caso è circoscritto ricostruite il percorso di consegna tramite la configurazione dei connettori e il protocollo SMTP. Infine, se necessario, verificate con una vostra consegna.
 
-I principali sprechi di tempo sono sempre gli stessi: si legge una tabella troncata invece del messaggio di errore completo, si scambiano le copie shadow per passaggi di elaborazione, si crede alla `ConnectorId` nel tracking e si considera un campione vuoto una prova. Chi conosce questi quattro aspetti arriva di norma al livello corretto in pochi minuti.
+I maggiori sprechi di tempo sono invece sempre gli stessi: si legge una tabella troncata anziché il messaggio di errore completo, si scambiano le copie shadow per fasi di elaborazione, si crede alla `ConnectorId` nel tracking e si considera un campione vuoto una prova. Chi conosce questi quattro aspetti arriva di norma al giusto livello in pochi minuti.
 
 ## Fonti
 
 1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): descrizione dei campi ed elenco completo dei tipi di evento nel Message Tracking.
 
-2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): percorsi di archiviazione, formato e conservazione dei protocolli SMTP, incluso il Front End Transport.
+2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): percorsi di archiviazione, formato e conservazione dei protocolli SMTP, incluso Front End Transport.
 
-3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): spiega gli eventi relativi alle copie shadow e alla loro eliminazione.
+3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): spiega gli eventi relativi alle copie shadow e al loro scarto.
 
-4.  [Mail routing in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-routing/mail-routing): interazione tra Front End Transport e Transport Service, base del comportamento proxy.
+4.  [Mail routing in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-routing/mail-routing): interazione tra Front End Transport e Transport Service, alla base del comportamento proxy.
 
-5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): associazioni, gruppi di autorizzazioni e meccanismi di autenticazione.
+5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): binding, gruppi di autorizzazioni e meccanismi di autenticazione.
 
-6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): successore di Get-MessageTrace, incluse logica di paginazione ed elenco dei campi.
+6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): successore di Get-MessageTrace, inclusi logica di paginazione ed elenco dei campi.
 
 7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): tracciamento asincrono dei messaggi fino a 90 giorni.

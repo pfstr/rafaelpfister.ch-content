@@ -1,7 +1,7 @@
 ---
-title: "RDP-skriveromdirigering: Skriv ut via den lokale PC-en i stedet for den eksterne datamaskinen"
-navTitle: "RDP-skriveromdirigering"
-description: "Utskriftsjobber fra RDP-økten skal havne på skriveren ved siden av brukeren, ikke på den eksterne datamaskinen. Innstillingen finnes på tre steder: i RDP-klienten, i .rdp-filen og på målsystemet. I tillegg: hvordan håndtere advarselen «Ukjent utgiver» og en sjekkliste for feilsøking."
+title: "RDP-printeromdirigering: Skriv ut via den lokale PC-en i stedet for den eksterne maskinen"
+navTitle: "RDP-printeromdirigering"
+description: "Utskriftsjobber fra RDP-økten skal havne på skriveren ved siden av brukeren, ikke på den eksterne maskinen. Innstillingen finnes på tre steder: i RDP-klienten, i .rdp-filen og på målsystemet. I tillegg beskrives håndtering av advarselen «Ukjent utgiver» og en sjekkliste for feilsøking."
 date: "2026-08-24"
 kategorie: "Windows-klient"
 timeToRead: "5 min lesetid"
@@ -15,28 +15,28 @@ slug: "rdp-skriveromdirigering-skriv-ut-via-den-lokale-pc-en-i-stedet-for-den-ek
 translationId: "article-12521248666e9809"
 draft: false
 translationOf: rdp-druckerumleitung-lokale-drucker
-url: https://rafaelpfister.ch/no/blog/rdp-skriveromdirigering-skriv-ut-via-den-lokale-pc-en-i-stedet-for-den-eksterne-datamaskinen
-translationSourceHash: a4f12f591e9dcb86f8ebdd3ff8af1008a130c3ec65424abe789ad4d6446eb4c2
+translationSourceHash: 2cb3845d308ebda202c6c33b20cbe791ddfbeeb584341876bdc340e0febf65b5
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-25T04:15:17.111Z
+translatedAt: 2026-08-30T09:30:13.729Z
 translationReview: automatic
+url: https://rafaelpfister.ch/no/blog/rdp-skriveromdirigering-skriv-ut-via-den-lokale-pc-en-i-stedet-for-den-eksterne-datamaskinen
 ---
 
-# RDP-skriveromdirigering: Skriv ut via den lokale PC-en i stedet for den eksterne datamaskinen
+# RDP-printeromdirigering: Skriv ut via den lokale PC-en i stedet for den eksterne maskinen
 
-En bruker arbeider via Remote Desktop på en ekstern datamaskin og vil skrive ut på skriveren som står ved siden av ham. Det er nettopp dette skriveromdirigering er til for: RDP-klienten registrerer de lokale skriverne i økten, utskriftsjobben går tilbake til klienten via RDP-kanalen og skrives ut der. På målsystemet vises skriveren med tillegget **(omdirigert, økt n)**. Drivere på den eksterne datamaskinen trengs vanligvis ikke: Windows bruker den universelle driveren **Remote Desktop Easy Print**; den riktige skriverdriveren må bare være installert på den lokale klienten.
+En bruker arbeider via Remote Desktop på en ekstern maskin og vil skrive ut på skriveren som står ved siden av vedkommende. Det er nettopp dette printeromdirigering er til for: RDP-klienten registrerer de lokale skriverne i økten, utskriftsjobben går tilbake til klienten via RDP-kanalen og skrives ut der. På målsystemet vises skriveren med tillegget **(omdirigert, økt n)**. Det er vanligvis ikke nødvendig med drivere på den eksterne maskinen: Windows bruker universaldriveren **Remote Desktop Easy Print**; riktig skriverdriver trenger bare å være installert på den lokale klienten.
 
-Omdirigeringen gjelder bare når forbindelsen opprettes. Etter hver endring av innstillingene må økten kobles helt fra og kobles til på nytt; det holder ikke å bare minimere RDP-vinduet.
+Om dirigeringen fungerer, avgjøres bare når forbindelsen opprettes. Etter hver endring av innstillingene må økten kobles helt fra og kobles til på nytt; det er ikke nok å bare minimere RDP-vinduet.
 
 ## Klientsiden: aktiver omdirigering
 
-Den raskeste veien går via det grafiske grensesnittet: start `mstsc`, velg **Vis alternativer**, fanen **Lokale ressurser**, huk av for **Skrivere** og lagre forbindelsen i fanen **Generelt**. De som i stedet arbeider med .rdp-filer, legger inn den aktuelle linjen direkte i filen; .rdp-filer er enkle tekstfiler og kan redigeres med et hvilket som helst redigeringsprogram:
+Den enkleste måten å aktivere printeromdirigering på er via det grafiske brukergrensesnittet: Start `mstsc`, velg **Vis alternativer**, fanen **Lokale ressurser**, kryss av for **Skrivere**, og lagre forbindelsen under fanen **Generelt**. De som arbeider med .rdp-filer, kan tilpasse linjen direkte i filen; .rdp-filer er enkle tekstfiler og kan redigeres med en hvilken som helst tekstredigerer:
 
 ```text
 redirectprinters:i:1
 ```
 
-En fallgruve ved snarveier uten .rdp-fil: Hvis forbindelsen startes med `mstsc /v:hostname`, gjelder innstillingene fra den skjulte filen `Default.rdp` i brukerens Dokumenter-mappe. Hvis linjen `redirectprinters:i:1` mangler der, vises ikke skriveren, selv om alt tilsynelatende er konfigurert riktig. Dette utdraget legger til linjen idempotent (eksisterende `0` blir til `1`, manglende linje legges til) og viser resultatet for kontroll:
+En særegenhet ved snarveier uten .rdp-fil: Hvis forbindelsen startes med `mstsc /v:hostname`, gjelder innstillingene fra den skjulte filen `Default.rdp` i brukerens Dokumenter-mappe. Hvis linjen `redirectprinters:i:1` mangler der, vises ikke skriveren, selv om alt tilsynelatende er riktig konfigurert. Dette snuttet legger til linjen idempotent (eksisterende `0` endres til `1`, manglende linje legges til) og viser resultatet for kontroll:
 
 ```powershell
 $f = "$env:USERPROFILE\Documents\Default.rdp"
@@ -53,21 +53,21 @@ if (Test-Path $f) {
 Select-String -Path $f -Pattern 'redirectprinters'
 ```
 
-To andre fallgruver på klientsiden: For det første husker Windows per måldatamaskin under `HKCU\Software\Microsoft\Terminal Server Client\LocalDevices` hvilke omdirigeringer brukeren sist tillot i sikkerhetsdialogen; dette lagrede valget overstyrer innstillingen i .rdp-filen. Sletting av nøkkelen tilbakestiller tilstanden. For det andre deaktiverer registerverdien `DisablePrinterRedirection` (DWORD, verdi 1) under `HKLM\Software\Microsoft\Terminal Server Client` skriveromdirigering fullstendig på klienten; på administrerte enheter bør du kontrollere dette før feilsøkingen begynner i økten.
+To andre feilkilder på klientsiden: For det første lagrer Windows per målmaskin under `HKCU\Software\Microsoft\Terminal Server Client\LocalDevices` hvilke omdirigeringer brukeren sist tillot i sikkerhetsdialogen; dette lagrede valget overstyrer innstillingen i .rdp-filen. Hvis nøkkelen slettes, tilbakestilles tilstanden. For det andre deaktiverer registerverdien `DisablePrinterRedirection` (DWORD, verdi 1) under `HKLM\Software\Microsoft\Terminal Server Client` printeromdirigering fullstendig på klienten; på administrerte enheter bør dette kontrolleres før feilsøkingen begynner i økten.
 
 ## Serversiden: tillat omdirigering
 
-På målsystemet er det policyen **Ikke tillat omdirigering av klientskrivere** (Datamaskinkonfigurasjon → Administrative maler → Windows-komponenter → Eksterne skrivebordstjenester → Vert for økt for eksternt skrivebord → Skriveromdirigering) som avgjør. Hvis den er satt til *Aktivert*, opprettes ingen klientskrivere, uansett hva klienten ber om. Det mest restriktive alternativet gjelder: Hvis én av sidene blokkerer omdirigeringen, finner den ikke sted.
+På målsystemet er det policyen **Ikke tillat omdirigering av klientskrivere** (Datamaskinkonfigurasjon → Administrative maler → Windows-komponenter → Remote Desktop Services → Remote Desktop Session Host → Printer Redirection) som avgjør. Hvis den er satt til *Aktivert*, opprettes ingen klients skrivere, uansett hva klienten ber om. Prinsippet om den mest restriktive innstillingen gjelder: Hvis én av sidene blokkerer omdirigering, finner den ikke sted.
 
-Uten gruppepolicy styres den samme mekanismen via registret: `fDisableCpm` under `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp` (0 = omdirigering tillatt, 1 = blokkert). I tillegg må tjenesten **Utskriftskø** kjøre på målsystemet; uten spooleren opprettes heller ikke omdirigerte skrivere.
+Uten gruppepolicy styres samme mekanisme via registeret: `fDisableCpm` under `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp` (0 = omdirigering tillatt, 1 = blokkert). I tillegg må tjenesten **Utskriftskø** kjøre på målsystemet; uten spooleren opprettes heller ikke omdirigerte skrivere.
 
-I samme GPO-kategori finnes to nyttige naboinnstillinger: **Bruk først skriverdriveren Remote Desktop Easy Print** (standard og som regel riktig valg) og **Angi klientens standardskriver som øktens standardskriver**.
+I samme GPO-kategori finnes to andre nyttige innstillinger: **Bruk først skriverdriveren for Remote Desktop Easy Print** (standard og som regel riktig valg) og **Gjør klientens standardskriver til standardskriver i økten**.
 
 ## Advarselen «Ukjent utgiver»
 
-Når du åpner en usignert .rdp-fil som ber om enhetsomdirigeringer, viser klienten en sikkerhetsadvarsel med avkrysningsbokser for de enkelte ressursene. Avkrysninger som settes eller fjernes der, gjelder bare for denne ene oppstarten av forbindelsen, men lagres i den nevnte `LocalDevices`-nøkkelen og påvirker dermed fremtidige forbindelser i det stille. De som lurer på hvorfor avkrysningen for skriveren stadig mangler til tross for korrekt .rdp-fil, finner nesten alltid årsaken der.
+Når en usignert .rdp-fil som ber om enhetsomdirigeringer åpnes, viser klienten en sikkerhetsadvarsel med avkrysningsbokser for de enkelte ressursene. Avkryssinger som settes eller fjernes der, gjelder bare for denne ene tilkoblingen, men lagres i den ovennevnte nøkkelen `LocalDevices` og påvirker dermed stille fremtidige forbindelser. Den som lurer på hvorfor avkryssingen for skriver alltid mangler til tross for korrekt .rdp-fil, finner nesten alltid årsaken der.
 
-Det finnes tre måter å håndtere advarselen på, i stigende rekkefølge av innsats. For det første: Start forbindelsen med `mstsc /v:hostname` i stedet for via .rdp-filen; uten fil blir det ingen utgiverkontroll, og innstillingene kommer fra `Default.rdp`. For det andre: Godkjenn omdirigeringene for måldatamaskinen på forhånd via registret, så faller ressursdelen av dialogen bort:
+Det finnes tre måter å håndtere advarselen på, med økende innsats. For det første: Start forbindelsen med `mstsc /v:hostname` i stedet for via .rdp-filen; uten fil utføres ingen utgiverkontroll, og innstillingene hentes fra `Default.rdp`. For det andre: Godkjenn omdirigeringene for målmaskinen på forhånd via registeret, så bortfaller ressursdelen av dialogen:
 
 ```powershell
 $key = "HKCU:\Software\Microsoft\Terminal Server Client\LocalDevices"
@@ -75,24 +75,24 @@ New-Item -Path $key -Force | Out-Null
 Set-ItemProperty -Path $key -Name "hostname-oder-ip" -Value 0xFFFFFFFF -Type DWord
 ```
 
-For det tredje, den ryddige løsningen for distribuerte .rdp-filer i virksomheten: signer filen med `rdpsign.exe` og et sertifikat, og lagre sertifikatets fingeravtrykk som en klarert utgiver via GPO. For enkeltstående arbeidsstasjoner er innsatsen sjelden verdt det, men for sentralt distribuerte forbindelsesfiler er dette den riktige løsningen.
+For det tredje, den ryddige løsningen for distribuerte .rdp-filer i bedriften: Signer filen med `rdpsign.exe` og et sertifikat, og lagre sertifikatets fingeravtrykk som en klarert utgiver via GPO. For enkeltarbeidsplasser er innsatsen sjelden verdt det, men for sentralt distribuerte forbindelsesfiler er dette riktig løsning.
 
 ## Sjekkliste for feilsøking
 
-Hvis skriveren ikke vises i økten, kontroller i denne rekkefølgen:
+Hvis skriveren ikke vises i økten, kontroller følgende i denne rekkefølgen:
 
-1. **Koblet til på nytt?** Omdirigeringen gjelder bare når forbindelsen opprettes, ikke i en eksisterende økt.
+1. **Koblet til på nytt?** Omdirigering fungerer bare når forbindelsen opprettes, ikke i en eksisterende økt.
 2. **Riktig fil?** Ved snarveier må du kontrollere hvilken .rdp-fil som faktisk åpnes; ved `mstsc /v:` er det `Default.rdp` som gjelder.
-3. **Lagret valg?** Kontroller eller slett `LocalDevices`-nøkkelen på klienten.
+3. **Lagret valg?** Kontroller eller slett nøkkelen `LocalDevices` på klienten.
 4. **Klientblokkering?** `DisablePrinterRedirection` under `HKLM\Software\Microsoft\Terminal Server Client` må ikke være satt til 1.
 5. **Serverblokkering?** Kontroller GPO-en «Ikke tillat omdirigering av klientskrivere» eller `fDisableCpm` på målsystemet.
-6. **Spooler?** Tjenesten Utskriftskø på målsystemet må kjøre.
+6. **Spooler?** Tjenesten Utskriftskø må kjøre på målsystemet.
 7. **Kontroll i økten:** `Get-Printer | Where-Object DriverName -eq "Remote Desktop Easy Print"` viser de omdirigerte skriverne med økt-ID.
 
 ## Kilder
 
-1.  [Supported RDP properties](https://learn.microsoft.com/en-us/azure/virtual-desktop/rdp-properties): Referanse over alle .rdp-egenskaper, inkludert redirectprinters med verdier og standardverdi.
+1.  [Supported RDP properties](https://learn.microsoft.com/en-us/azure/virtual-desktop/rdp-properties): Referanse for alle .rdp-egenskaper, inkludert redirectprinters med verdier og standardverdi.
 
 2.  [Configure printer redirection over the Remote Desktop Protocol](https://learn.microsoft.com/en-us/azure/virtual-desktop/redirection-configure-printers): Easy Print, GPO- og Intune-konfigurasjon, DisablePrinterRedirection og testen med Get-Printer.
 
-3.  [rdpsign](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/rdpsign): Kommandoreferanse for signering av .rdp-filer via sertifikatets fingeravtrykk.
+3.  [rdpsign](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/rdpsign): Kommandoreferanse for signering av .rdp-filer med sertifikatets fingeravtrykk.

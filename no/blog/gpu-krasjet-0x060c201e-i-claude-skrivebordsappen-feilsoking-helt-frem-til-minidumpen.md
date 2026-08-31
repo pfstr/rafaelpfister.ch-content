@@ -1,23 +1,23 @@
 ---
 title: "Claude Desktop krasjer stadig: «GPU process gone» med avslutningskode 101457950, årsak og løsning"
 navTitle: "Claude Desktop-krasj"
-description: "Claude Desktop-appen på Windows avsluttes fullstendig med «GPU process gone: exitCode 101457950» (0x060C201E), ofte etterfulgt av reparasjonsdialogen i Store-appen. Hele årsakskjeden: Code Integrity blokkerer vk_swiftshader.dll, Chromiums fallback-kjede tømmes, og den innebygde selvavslutningen lukker appen. Med umiddelbar løsning, selvdiagnose via hendelseslogg og analyse helt ned til minidumpen."
+description: "Claude Desktop-appen på Windows avsluttes helt med «GPU process gone: exitCode 101457950» (0x060C201E), ofte etterfulgt av reparasjonsdialogen i Store-appen. Hele årsakskjeden: Code Integrity blokkerer vk_swiftshader.dll, Chromiums reservekjede tømmes, og den innebygde selvavslutningen lukker appen. Med permanent løsning (bytte til den klassiske installasjonen uten MSIX), selvdiagnose via hendelsesloggen og analyse helt ned til minidumpen."
 date: "2026-08-25"
 kategorie: "Claude"
-timeToRead: "9 min å lese"
+timeToRead: "10 min lesetid"
 themen:
   - claude
 slug: "gpu-krasjet-0x060c201e-i-claude-skrivebordsappen-feilsoking-helt-frem-til-minidumpen"
 translationId: "article-0932cd50b8160b45"
 translationOf: claude-desktop-webgpu-absturz
-translationSourceHash: 61bcad89e160ee37f5abd04905ed9e425236f770f9cfcc4448716acbd3569939
+translationSourceHash: 769984b49b04b65b0b8f8a91ce3b6dd65e2eef1a4212bed32b83422f431a8559
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-27T14:36:23.091Z
+translatedAt: 2026-08-29T10:27:15.855Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/gpu-krasjet-0x060c201e-i-claude-skrivebordsappen-feilsoking-helt-frem-til-minidumpen
 ---
 
-Claude Desktop-appen på Windows avsluttes uten feilmelding, alle aktive Claude Code-økter forsvinner, og noen ganger starter appen først igjen etter «Reparer» via Windows-innstillingene. I appens logg står da denne linjen:
+Claude Desktop-appen på Windows avsluttes uten feilmelding, alle aktive Claude Code-økter forsvinner, og noen ganger starter appen deretter først igjen etter en «Reparer» via Windows-innstillingene. I apploggen står da denne linjen:
 
 ```text
 GPU process gone: {
@@ -28,24 +28,92 @@ GPU process gone: {
 }
 ```
 
-101457950 er heksadesimalt `0x060C201E`. Hvis du finner denne signaturen i loggen din, har du kommet til rett sted: Denne artikkelen dokumenterer hele årsakskjeden bak krasjet, strakstiltakene som får appen til å kjøre stabilt igjen, og selvdiagnosen som lar deg bekrefte funnet på ditt eget system på to minutter. Installasjoner fra Microsoft Store (MSIX) på alle GPU-produsenter er berørt, fra Intel-integrerte GPU-er via NVIDIA til AMD; maskinvaren er, for å si det med én gang, ikke årsaken.
+101457950 er heksadesimalt `0x060C201E`. Hvis du finner denne signaturen i loggen din, har du kommet til rett sted: Denne artikkelen dokumenterer hele årsakskjeden bak krasjet, umiddelbare tiltak som får appen til å kjøre stabilt igjen, og selvdiagnosen som lar deg bekrefte funnet på ditt eget system på to minutter. MSIX-installasjoner (fra Microsoft Store eller via MSIX-oppsett) på alle GPU-produsenter er berørt, fra Intel-integrert GPU via NVIDIA til AMD; maskinvaren er, for å avsløre så mye, ikke årsaken. Den klassiske installasjonen uten MSIX er ikke berørt, og det er nettopp løsningen.
 
-## Løsningen kort fortalt
+## Løsningen kort fortalt: Bytt til den klassiske installasjonen
 
-Den egentlige feilen ligger i appens installasjonspakke og kan bare rettes av Anthropic (fortsatt åpen per 25.08.2026, issue [#81341](https://github.com/anthropics/claude-code/issues/81341)). Inntil da gjør tre tiltak appen stabil, med det mest effektive først:
+Den egentlige feilen ligger i MSIX-installasjonspakken og kan bare rettes av Anthropic (fortsatt åpen per 27.08.2026, sak [#81341](https://github.com/anthropics/claude-code/issues/81341); også den nåværende versjonen 1.37937.3 er berørt). Den samme appen finnes imidlertid også som en klassisk installasjon uten MSIX, og den er ikke underlagt AppX-signaturkontrollen som avslutter GPU-prosessen. Byttet er dermed det eneste tiltaket som eliminerer krasjet fullstendig; det er bekreftet både i sak [#81341](https://github.com/anthropics/claude-code/issues/81341) og på systemet som er undersøkt her. Funksjonssettet er identisk, og oppdateringsfeeden leverer de samme versjonene for begge variantene.
 
-**1. Aktiver maskinvareakselerasjon.** Kontroller disse to verdiene i filen `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\config.json` og sett dem om nødvendig til `false` (avslutt appen først, og start den deretter på nytt):
+**Trinn 1: Last ned og kjør den klassiske installatøren.** Nedlastingen på [claude.com/download](https://claude.com/download) gir en Squirrel-installasjon som installerer appen under `%LOCALAPPDATA%\AnthropicClaude` (ingen administratorrettigheter kreves). På kommandolinjen:
 
-```json
-"isHardwareAccelerationDisabled": false,
-"isHardwareAccelerationAutoDisabled": false
+```powershell
+curl.exe -L -o "$env:USERPROFILE\Downloads\Claude-Setup-x64.exe" `
+  "https://storage.googleapis.com/osprey-downloads-c02f6a0d-347c-492b-a752-3e0651722e97/nest-win-x64/Claude-Setup-x64.exe"
 ```
 
-Det høres paradoksalt ut, siden deaktivert maskinvareakselerasjon vanligvis er det mer stabile valget. For denne feilen er det motsatt, og årsaken forklares lenger ned i årsakskjeden: Innstillingen avgjør om en GPU-prosesskrasj bare koster ett fallback-trinn eller hele appen.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
 
-**2. Bruk den innebygde nettleseren sparsomt.** Utløsere for krasjet er sider i appens nettleser-/forhåndsvisningsområde. De som lukker området etter bruk i stedet for å la faner stå åpne, reduserer krasjfrekvensen drastisk; denne sammenhengen er dokumentert flere ganger med tall i fellesskapstråden.
+| Alternativ | Virkning |
+|---|---|
+| `-L` | følger HTTP-videresendinger frem til den faktiske filen |
+| `-o <pfad>` | målfil; her nedlastingsmappen |
+| `<url>` | offisiell installatørkilde; identisk med målet for nedlastingsvideresendingen fra claude.ai |
 
-**3. Valgfritt: Slå av WebGPU.** Oppstart med `--disable-features=WebGPU` hindrer den vanligste utløseren fullstendig. For en Store-app endres installasjonsstien ved hver oppdatering, derfor brukes en launcher som finner den på nytt ved hver oppstart:
+</details>
+
+Kontroller signaturen etter nedlastingen (`Get-AuthenticodeSignature`, forventet: `Valid`, utsteder «Anthropic, PBC») og start filen. Installasjonsprogrammet legger først inn en eldre grunnversjon; oppdateringsmekanismen bringer den til gjeldende versjon, enten automatisk ved første oppstart eller umiddelbart med:
+
+```powershell
+& "$env:LOCALAPPDATA\AnthropicClaude\Update.exe" `
+  --update https://downloads.claude.ai/releases/win32/x64
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `--update <url>` | laster ned den nyeste versjonen fra den angitte utgivelsesfeeden og installerer den som en ny `app-<version>`-mappe |
+
+</details>
+
+**Trinn 2: Overta konfigurasjonen.** MSIX-versjonen lagrer innlogging, MCP-serverkonfigurasjon og innstillinger i den virtualiserte beholderen sin; den klassiske appen leser `%APPDATA%\Claude`. Kopier én gang (avslutt MSIX-appen først; variantene kjører uansett ikke samtidig på grunn av en felles enkeltinstanslås):
+
+```powershell
+robocopy "$env:LOCALAPPDATA\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude" `
+  "$env:APPDATA\Claude" /E /XD Cache "Code Cache" GPUCache claude-code Crashpad logs sentry
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `<quelle>` | konfigurasjonsmappe i den virtualiserte AppData-en til MSIX-pakken |
+| `<ziel>` | konfigurasjonsmappe for den klassiske installasjonen |
+| `/E` | kopierer alle undermapper, også tomme |
+| `/XD <namen>` | hopper over de angitte mappene; her cacher og kjøretidsdata som den nye appen oppretter på nytt selv |
+
+</details>
+
+Chatthistorikk går ikke tapt: Den ligger i claude.ai-kontoen, eller (for Claude Code-økter) under `%USERPROFILE%\.claude`, og er ikke knyttet til appinstallasjonen.
+
+**Trinn 3: Fjern MSIX-pakken.** Ellers vil den krasjende varianten fortsatt starte via gamle snarveier:
+
+```powershell
+Get-AppxPackage Claude | Remove-AppxPackage
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Claude` | posisjonsargumentet Name for `Get-AppxPackage`: filtrerer de installerte AppX-/MSIX-pakkene på pakkenavn (jokertegn tillatt) |
+| `Remove-AppxPackage` | fjerner pakken som overføres via pipelinen, for gjeldende brukerkonto |
+
+</details>
+
+Startmenyoppføringen «Anthropic → Claude» tilhører deretter den klassiske installasjonen; en eventuell festing på oppgavelinjen må opprettes på nytt.
+
+## Hvis du må beholde MSIX-pakken
+
+Uten bytte gjenstår bare tiltak som reduserer krasjfrekvensen uten å fjerne årsaken:
+
+**Bruk den innebygde nettleseren sparsomt.** Sider i appens nettleser-/forhåndsvisningsområde utløser krasjet. Den som lukker området etter bruk i stedet for å la faner stå åpne, reduserer krasjfrekvensen betydelig; denne sammenhengen er dokumentert med tall flere ganger i fellesskapstråden.
+
+**Slå av WebGPU.** Oppstart med `--disable-features=WebGPU` forhindrer den hyppigste utløseren. Med en MSIX-pakke endres installasjonsbanen ved hver oppdatering, derfor brukes en launcher som finner den på nytt ved hver oppstart:
 
 ```bat
 @echo off
@@ -54,20 +122,45 @@ for /f "delims=" %%i in ('powershell -NoProfile -Command ^
 start "" "%PKG%\app\Claude.exe" --disable-features=WebGPU
 ```
 
-Ulempen: Dette virker bare når appen også startes via denne launcheren. Tiltak 1 virker ved hver oppstart.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
 
-«Reparer» eller reinstallasjon av appen løser for øvrig ikke problemet, det kurerer bare følgesymptomet (mer om det nedenfor). Oppdateringer av grafikkdrivere er også bortkastet arbeid.
+| Alternativ | Virkning |
+|---|---|
+| `for /f "delims="` | behandler kommandoutdata linje for linje; tom `delims=` overtar hele linjen (inkludert mellomrom i banen) i `%%i` |
+| `-NoProfile` | starter PowerShell uten profilskript, for rask og reproduserbar oppstart |
+| `-Command` | utfører det angitte uttrykket; `(Get-AppxPackage Claude).InstallLocation` returnerer pakkens gjeldende installasjonsbane |
+| `start ""` | starter programmet frikoblet fra batch-vinduet; de tomme anførselstegnene er vindustittelen (som her er tom) |
+| `--disable-features=WebGPU` | Chromium-bryter: deaktiverer den angitte funksjonen, her WebGPU-API-et |
 
-## Selvdiagnose: bekreft funnet på ditt eget system
+</details>
 
-To kontroller er nok. Først krasjsignaturen i appens logg:
+Dette virker bare dersom appen også startes via denne launcheren.
+
+I første versjon av denne artikkelen var den første anbefalingen å aktivere maskinvareakselerasjon via `isHardwareAccelerationDisabled: false` i `config.json`. Denne anbefalingen er utdatert: I nåværende versjoner (1.37937.x) finnes flagget ikke lenger, appen starter som standard med aktiv maskinvareakselerasjon, og den krasjer likevel (detaljer i tillegget nedenfor).
+
+«Reparer» eller reinstallering av MSIX-pakken løser for øvrig ikke problemet, det behandler bare følgesymptomet (mer om dette nedenfor). Oppdateringer av grafikkdrivere er også bortkastet arbeid.
+
+## Selvdiagnose: Bekreft funnet på eget system
+
+To kontroller er nok. Først krasjsignaturen i apploggen:
 
 ```powershell
 Select-String -Path "$env:LOCALAPPDATA\Claude\Logs\main.log" `
   -Pattern 'GPU process gone'
 ```
 
-Deretter, og dette er det egentlige beviset, Windows' Code Integrity-logg:
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-Path` | filen som skal søkes i, her appens hovedlogg |
+| `-Pattern` | søkemønster (regulært uttrykk); viser alle linjer med krasjsignaturen |
+
+</details>
+
+For det andre, og dette er det egentlige beviset, Windows' CodeIntegrity-logg:
 
 ```powershell
 Get-WinEvent -FilterHashtable @{
@@ -76,7 +169,19 @@ Get-WinEvent -FilterHashtable @{
   Select-Object TimeCreated, Message
 ```
 
-På berørte systemer finner du Event 3033-oppføringer der tidsstempelet stemmer på sekundet med krasjtiden, med denne meldingen:
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-FilterHashtable` | filtrerer allerede ved henting: `LogName` angir hendelsesloggen, `Id` hendelses-ID 3033 (Code Integrity-blokkering) |
+| `-MaxEvents 30` | begrenser spørringen til de 30 nyeste treffene |
+| `Where-Object { … -match 'claude' }` | beholder bare hendelser der meldingsteksten inneholder appbanen |
+| `Select-Object TimeCreated, Message` | reduserer utdataene til tidsstempel og melding for sammenligning med krasjtidspunktene |
+
+</details>
+
+På berørte systemer finner du Event 3033-oppføringer der tidsstempelet samsvarer på sekundet med krasjtidspunktene, med denne meldingen:
 
 ```text
 Code Integrity determined that a process
@@ -85,24 +190,24 @@ attempted to load ...\app\vk_swiftshader.dll that did not meet
 the Microsoft signing level requirements.
 ```
 
-På systemet som ble undersøkt her, stemte sju av sju krasj over tre uker på sekundet med en slik hendelse, inkludert et målrettet utløst kontrollkrasj.
+På systemet som er undersøkt her, samsvarte alle syv av syv krasj over tre uker på sekundet med en slik hendelse, inkludert et målrettet utløst kontrollkrasj.
 
-## Den fullstendige årsakskjeden
+## Den komplette årsakskjeden
 
-Krasjet er siste ledd i en kjede med fire ledd, som to analyser til sammen har avdekket: Code Integrity-sporet fra fellesskaps-issue [#81698](https://github.com/anthropics/claude-code/issues/81698) og en egen minidump-analyse ([#89250](https://github.com/anthropics/claude-code/issues/89250)).
+Krasjet er siste ledd i en kjede med fire ledd, som to analyser samlet har avdekket: Code Integrity-sporet fra fellesskapssak [#81698](https://github.com/anthropics/claude-code/issues/81698) og en egen minidump-analyse ([#89250](https://github.com/anthropics/claude-code/issues/89250)).
 
-**Ledd 1: En side i den innebygde nettleseren trenger programvaregjengivelse.** En typisk utløser er et WebGPU-kall (`navigator.gpu.requestAdapter()`), synlig i vindusloggen som denne advarselen rett før krasjet:
+**Ledd 1: En side i den innebygde nettleseren trenger programvarerendering.** En typisk utløser er et WebGPU-kall (`navigator.gpu.requestAdapter()`), synlig i vindusloggen som denne advarselen rett før krasjet:
 
 ```text
 [warn] The powerPreference option is currently ignored
        when calling requestAdapter() on Windows.
 ```
 
-Hvis appen kjører uten maskinvareakselerasjon, går veien nødvendigvis via programvare-Vulkan-implementasjonen SwiftShader: GPU-prosessen forsøker å laste den medfølgende `vk_swiftshader.dll`.
+Hvis appen kjører uten maskinvareakselerasjon, må den gå via programvare-Vulkan-implementasjonen SwiftShader: GPU-prosessen forsøker å laste den medfølgende `vk_swiftshader.dll`.
 
-**Ledd 2: Windows Code Integrity blokkerer appens egen DLL.** GPU-prosessen kjører med herdepolicyen «MicrosoftSignedOnly» (kan kontrolleres med `Get-ProcessMitigation`). For at en Store-app skal kunne laste sine egne, produsentsignerte DLL-er, må MSIX-pakken inneholde en signaturkatalog `AppxMetadata\CodeIntegrity.cat`. Nettopp denne filen mangler i den leverte pakken, slik fellesskapsmedlemmer har dokumentert ved å inspisere MSIX-filen. Konsekvensen: Signaturkontrollen mislykkes, Windows logger Event 3033 og avslutter GPU-prosessen hardt. Avslutningskoden `0x060C201E` er en AppX-integritetsfeil fra Windows-loaderen, ikke en Chromium-kode; derfor finnes den ikke i noen Chromium-kilde, og derfor etterlater GPU-prosessen heller ingen krasjdump – det finnes ingen exception å dumpe.
+**Ledd 2: Windows Code Integrity blokkerer appens egen DLL.** GPU-prosessen kjører med hardeningspolicyen «MicrosoftSignedOnly» (kan kontrolleres med `Get-ProcessMitigation`). For at en Store-app skal kunne laste sine egne, produsentsignerte DLL-er, må MSIX-pakken inneholde en signaturkatalog `AppxMetadata\CodeIntegrity.cat`. Nettopp denne filen mangler i den leverte pakken, slik fellesskapsmedlemmer har dokumentert ved å inspisere MSIX-filen. Følgen er at signaturkontrollen feiler, Windows logger Event 3033 og avslutter GPU-prosessen hardt. Avslutningskoden `0x060C201E` er en AppX-integritetsfeil fra Windows-lasteren, ikke en Chromium-kode; derfor finnes den ikke i noen Chromium-kilde, og derfor etterlater GPU-prosessen heller ingen krasjdump – det finnes ingen exception å dumpe.
 
-**Ledd 3: Chromiums fallback-kjede tømmes.** Når GPU-prosessen krasjer, går Chromium tilbake ett gjengivelsestrinn: maskinvare-GL, deretter programvare-GL, deretter ren display-compositor. Først når ingen trinn gjenstår, aktiveres den innebygde selvavslutningen. I kildekoden til den medfølgende versjonen (Chromium 148.0.7778.280 i Electron 42.9.2) står det ordrett slik:
+**Ledd 3: Chromiums reservekjede tømmes.** Når GPU-prosessen krasjer, går Chromium ett renderingsnivå tilbake: maskinvare-GL, deretter programvare-GL, deretter ren skjermkompositor. Først når ingen nivåer gjenstår, utløses den innebygde selvavslutningen. I kildekoden til den medfølgende versjonen (Chromium 148.0.7778.280 i Electron 42.9.2) står det bokstavelig:
 
 ```cpp
 NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
@@ -110,41 +215,55 @@ NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
 }
 ```
 
-**Ledd 4: Hovedprosessen avslutter seg med hensikt.** Denne `LOG(FATAL)` er øyeblikket da «appen krasjer». Dette er dokumentert av en minidump fra hovedprosessen: `EXCEPTION_BREAKPOINT` (en tilsiktet `int3`, ikke en driverfeil), ikke én eneste grafikkdriver-DLL i prosessen, og i minnet i klartekst:
+**Ledd 4: Hovedprosessen avslutter seg med hensikt.** Dette `LOG(FATAL)` er øyeblikket da «appen krasjer». Dette dokumenteres av en minidump fra hovedprosessen: `EXCEPTION_BREAKPOINT` (en bevisst `int3`, ikke en driverfeil), ikke én eneste grafikkdriver-DLL i prosessen, og i klartekst i minnet:
 
 ```text
 FATAL:content\browser\gpu\gpu_data_manager_impl_private.cc:418]
 GPU process isn't usable. Goodbye.
 ```
 
-At denne dumpen i det hele tatt eksisterer, var den vanskeligste delen av analysen: Appens Sentry-integrasjon forbruker Crashpad-dumper ved neste appstart, sender dem til produsentens telemetri og sletter dem lokalt. Crashpad-mappen er derfor alltid tom for brukeren. Løsningen er en overvåker uavhengig av appens prosesstre (startet via WMI, slik at appkrasjet ikke også avslutter den), som gjennomsøker Crashpad-databasen hvert 200. millisekund etter `*.dmp` og kopierer funn umiddelbart før de slettes. Python-pakken `minidump` utfører analysen, helt uten WinDbg.
+At denne dumpen i det hele tatt eksisterer, var den vanskeligste delen av analysen: Appens Sentry-integrasjon konsumerer Crashpad-dumper ved neste appoppstart, sender dem til produsentens telemetri og sletter dem lokalt. Crashpad-mappen er derfor alltid tom for brukeren. Løsningen er en overvåker som er uavhengig av appens prosesstre (startet via WMI, slik at appkrasjet ikke også avslutter den), og som skanner Crashpad-databasen hvert 200. millisekund etter `*.dmp` og kopierer funn umiddelbart før de slettes. Python-pakken `minidump` håndterer analysen, helt uten WinDbg.
 
-## Hvorfor «deaktivere maskinvareakselerasjon» forverrer alt
+## Hvorfor «deaktiver maskinvareakselerasjon» gjør alt verre
 
-Kjeden forklarer også det mest kontraintuitive funnet. Deaktivert maskinvareakselerasjon har her to fatale effekter samtidig. For det første tvinger den fram SwiftShader-banen, altså nettopp DLL-lasteforsøket som Code Integrity blokkerer; med aktiv maskinvareakselerasjon trengs `vk_swiftshader.dll` derimot nesten aldri. For det andre starter GPU-prosessen allerede nederst i fallback-kjeden: Ett enkelt krasj er nok, og ledd 4 aktiveres. Dette forklarer også observasjonen fra fellesskapstråden om at en Code Integrity-blokkering noen ganger er uten konsekvenser og andre ganger avslutter appen: Det avhenger av hvor mange fallback-trinn nettleserprosessen fortsatt har igjen.
+Kjeden forklarer også det mest kontraintuitive funnet. Deaktivert maskinvareakselerasjon har her to fatale effekter samtidig. For det første tvinger den frem SwiftShader-banen, altså nettopp DLL-lastingsforsøket som Code Integrity blokkerer; med aktiv maskinvareakselerasjon blir `vk_swiftshader.dll` derimot nesten aldri nødvendig. For det andre starter GPU-prosessen allerede nederst i reservekjeden: Ett enkelt krasj er nok, og ledd 4 slår til. Dette forklarer også observasjonen fra fellesskapstråden om at en Code Integrity-blokkering noen ganger er uten konsekvenser og andre ganger avslutter appen: Det avhenger av hvor mange reserveledd nettleserprosessen fortsatt har igjen.
 
-Særlig uheldig er det at appen har automatisk deaktivering av maskinvareakselerasjon etter problemer (`isHardwareAccelerationAutoDisabled`). Ment som et stabilitetstiltak fører det berørte systemer rett inn i konfigurasjonen der neste krasj koster hele appen.
+Særlig uheldig: Appen hadde en automatisk deaktivering av maskinvareakselerasjon etter problemer (`isHardwareAccelerationAutoDisabled`). Ment som et stabilitetstiltak, førte det berørte systemer rett inn i konfigurasjonen der neste krasj koster hele appen.
+
+## Tillegg 27.08.2026: Maskinvareakselerasjon alene er ikke nok
+
+Den første versjonen av denne artikkelen anbefalte aktiv maskinvareakselerasjon som det mest effektive umiddelbare tiltaket, og i to dager holdt appen seg faktisk krasjfri. Så kom den automatiske oppdateringen til 1.37937.3, og med den tre krasj på én ettermiddag, hvert med den kjente Event 3033 for `vk_swiftshader.dll`. To funn følger av dette:
+
+For det første mangler den manglende signaturkatalogen også i den nåværende MSIX-pakken; grunnproblemet er uendret i 1.37937.3.
+
+For det andre beskytter aktiv maskinvareakselerasjon bare statistisk: Den forlenger reservekjeden, men forhindrer ikke at Chromium under belastning eller etter en maskinvare-GPU-prosessfeil likevel går helt ned til SwiftShader-nivået. Så snart det skjer, blokkerer Code Integrity DLL-en, og kjeden kan likevel tømmes. I tillegg har konfigurasjonsflaggene `isHardwareAccelerationDisabled`/`isHardwareAccelerationAutoDisabled` forsvunnet fra `config.json` i 1.37937.x; innstillingen kan ikke lenger låses der.
+
+Dermed gjensto bare byttet til den klassiske installasjonen beskrevet ovenfor som pålitelig løsning. Siden byttet på systemet som er undersøkt her: samme appversjon, identisk bruk inkludert nettleserområdet, ikke én eneste Event 3033 og ingen krasj.
 
 ## Følgesymptomet: reparasjonssløyfen
 
-Code Integrity-feilen har en bivirkning som mange berørte anser som et eget problem: Windows klassifiserer etter hendelsen av og til apppakken som «Modified, NeedsRemediation». Appen starter da ikke i det hele tatt før du tilbakestiller den via Innstillinger → Apper → Claude → Avanserte alternativer → «Reparer». De som altså «stadig må reparere appen», ser det samme grunnproblemet, bare ett ledd lenger ute i kjeden: Reparasjonen retter pakkestatusen, ikke årsaken; neste krasj kommer ved neste blokkerte DLL-lasteforsøk.
+Code Integrity-feilen har en bivirkning som mange berørte anser som et eget problem: Windows klassifiserer av og til apppakken etter hendelsen som «Modified, NeedsRemediation». Appen starter da ikke i det hele tatt før den tilbakestilles via Innstillinger → Apper → Claude → Avanserte alternativer → «Reparer». Den som altså «stadig må reparere appen», ser det samme grunnproblemet, bare ett ledd lenger: Reparasjonen retter pakkestatusen, ikke årsaken; neste krasj følger ved neste blokkerte DLL-lastingsforsøk.
 
 ## Status for rapportene
 
-Pakkeringsårsaken er rapportert som [#81341](https://github.com/anthropics/claude-code/issues/81341), samletråden med fellesskapsbevisene er [#81698](https://github.com/anthropics/claude-code/issues/81698), og minidump-analysen med forklaringen av fallback-kjeden er [#89250](https://github.com/anthropics/claude-code/issues/89250). Den egentlige løsningen, en fullstendig signaturkatalog i MSIX-pakken, ligger hos Anthropic. Inntil da gjelder følgende: ha maskinvareakselerasjon på, lukk nettleserområdet disiplinert, og slå ved behov av WebGPU med flagget. På systemet som ble undersøkt her, har appen vært krasjfri siden tiltak 1 ble gjennomført.
+Pakketeringsårsaken er rapportert som [#81341](https://github.com/anthropics/claude-code/issues/81341), samletråden med fellesskapsdokumentasjonen er [#81698](https://github.com/anthropics/claude-code/issues/81698), minidump-analysen med forklaringen av reservekjeden er [#89250](https://github.com/anthropics/claude-code/issues/89250), og en annen detaljert rapport, inkludert reparasjonssløyfen, er [#80444](https://github.com/anthropics/claude-code/issues/80444). Den egentlige løsningen, en fullstendig signaturkatalog i MSIX-pakken, ligger hos Anthropic og mangler fortsatt i 1.37937.3. Inntil da gjelder følgende: Bytt til den klassiske installasjonen; den som må beholde MSIX-pakken, lukker nettleserområdet konsekvent og deaktiverer WebGPU med flagg ved behov. På systemet som er undersøkt her, har appen vært krasjfri siden byttet til den klassiske installasjonen, uten én eneste ytterligere Event 3033.
 
 ## Kilder
 
-1.  [GitHub-issue #81698: GPU process crash kills entire app](https://github.com/anthropics/claude-code/issues/81698): Samletråden med fellesskapsbevisene for Code Integrity-kjeden, datapunktene på tvers av produsenter og korrelasjonen med nettleserpanelet.
+1.  [GitHub-sak #81698: GPU process crash kills entire app](https://github.com/anthropics/claude-code/issues/81698): Samletråden med fellesskapsdokumentasjon for Code Integrity-kjeden, datapunkter på tvers av produsenter og korrelasjonen med nettleserpanelet.
 
-2.  [GitHub-issue #81341: CIG + vk_swiftshader.dll kills GPU process](https://github.com/anthropics/claude-code/issues/81341): Pakkeringsårsaken; manglende CodeIntegrity-katalog i MSIX.
+2.  [GitHub-sak #81341: CIG + vk_swiftshader.dll kills GPU process](https://github.com/anthropics/claude-code/issues/81341): Pakketeringsårsaken; manglende CodeIntegrity-katalog i MSIX.
 
-3.  [GitHub-issue #89250: Minidump-analyse av appavslutningen](https://github.com/anthropics/claude-code/issues/89250): Den andre halvdelen av kjeden som beskrives her, med dump-capture-metode og løsningsforslag.
+3.  [GitHub-sak #89250: Minidump-analyse av appavslutningen](https://github.com/anthropics/claude-code/issues/89250): Den andre halvdelen av kjeden beskrevet her, med dumpfangstmetode og løsningsforslag.
 
-4.  [Chromium-kildekode: gpu_data_manager_impl_private.cc (tagg 148.0.7778.280)](https://chromium.googlesource.com/chromium/src/+/refs/tags/148.0.7778.280/content/browser/gpu/gpu_data_manager_impl_private.cc): Funksjonen IntentionallyCrashBrowserForUnusableGpuProcess og fallback-logikken.
+4.  [GitHub-sak #80444: GPU-krasj med forensikk og reparasjonssløyfe](https://github.com/anthropics/claude-code/issues/80444): Detaljert enkeltrapport med tidslinjer, analyse av hendelseslogg og funnet om at hvert krasj setter pakken i tilstanden «Modified».
 
-5.  [Electron-dokumentasjon: child-process-gone](https://www.electronjs.org/docs/latest/api/app#event-child-process-gone): Hendelsen som en Electron-app kan bruke til å overvåke GPU-prosesskrasj og iverksette egne mottiltak.
+5.  [Claude Desktop: offisiell nedlastingsside](https://claude.com/download): Kilde for den klassiske Windows-installatøren (x64 og ARM64).
 
-6.  [Python-pakken minidump](https://pypi.org/project/minidump/): Verktøy for dump-analysen (exception-record, modulliste, minnestrenger).
+6.  [Chromium-kildekode: gpu_data_manager_impl_private.cc (tagg 148.0.7778.280)](https://chromium.googlesource.com/chromium/src/+/refs/tags/148.0.7778.280/content/browser/gpu/gpu_data_manager_impl_private.cc): Funksjonen IntentionallyCrashBrowserForUnusableGpuProcess og reservelogikken.
 
-7.  [webgpureport.org](https://webgpureport.org/): WebGPU-diagnoseside; ble brukt som minimal utløser for kontrollkrasjet og for sammenligningstesten i gjeldende Chromium.
+7.  [Electron-dokumentasjon: child-process-gone](https://www.electronjs.org/docs/latest/api/app#event-child-process-gone): Hendelsen som en Electron-app kan bruke til å observere GPU-prosesskrasj og iverksette egne mottiltak.
+
+8.  [Python-pakken minidump](https://pypi.org/project/minidump/): Verktøy for dumpanalysen (exception-record, modulliste, minnestrenger).
+
+9.  [webgpureport.org](https://webgpureport.org/): WebGPU-diagnoseside; brukt som minimal utløser for kontrollkrasjet og til sammenligningstesten i nåværende Chromium.
