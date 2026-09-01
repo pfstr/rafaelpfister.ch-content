@@ -1,7 +1,7 @@
 ---
 title: "Voraussetzungen, damit Remote-PowerShell funktioniert"
 navTitle: "Remote-PowerShell"
-description: "PowerShell-Remoting scheitert selten am Befehl, sondern an den Voraussetzungen: WinRM-Dienst, Listener, Firewall, Authentisierung und die Stolperpunkte bei lokalen Konten. Was auf Ziel- und Clientseite eingerichtet sein muss, wie Sie es mit Test-WSMan prüfen, und warum Access denied meist nichts mit dem Passwort zu tun hat."
+description: "PowerShell-Remoting scheitert selten am Befehl, sondern an den Voraussetzungen: WinRM-Dienst, Listener, Firewall, Authentisierung und die Besonderheiten bei lokalen Konten. Was auf Ziel- und Clientseite eingerichtet sein muss, wie Sie es mit Test-WSMan prüfen, und warum Access denied meist nichts mit dem Passwort zu tun hat."
 date: "2026-09-01"
 kategorie: "Windows und PowerShell"
 timeToRead: "10 Min. Lesezeit"
