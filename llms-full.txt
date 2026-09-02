@@ -12,16 +12,16 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# Portweiterleitung mit netsh portproxy: interne Dienste über einen Sprunghost erreichen
+# Portweiterleitung mit netsh portproxy: interne Dienste über einen Jumphost erreichen
 
 URL: https://rafaelpfister.ch/blog/windows-portproxy-portweiterleitung
 Datum: 2026-09-02
 
-# Portweiterleitung mit netsh portproxy: interne Dienste über einen Sprunghost erreichen
+# Portweiterleitung mit netsh portproxy: interne Dienste über einen Jumphost erreichen
 
-Ein interner Dienst hört oft nur im lokalen Netz: die Weboberfläche eines NAS, ein Drucker-Panel, eine Verwaltungsseite. Wollen Sie darauf von aussen zugreifen, ohne den Dienst ins Internet zu stellen, brauchen Sie einen Weg über einen Rechner, der beide Seiten sieht. Windows bringt dafür ein eingebautes Werkzeug mit: `netsh interface portproxy` leitet eingehende TCP-Verbindungen auf ein anderes Ziel weiter. In Kombination mit einem VPN wie Tailscale oder WireGuard wird ein Rechner im Zielnetz zum Sprunghost, über den Sie den internen Dienst erreichen.
+Ein interner Dienst hört oft nur im lokalen Netz: die Weboberfläche eines NAS, ein Drucker-Panel, eine Verwaltungsseite. Wollen Sie darauf von aussen zugreifen, ohne den Dienst ins Internet zu stellen, brauchen Sie einen Weg über einen Rechner, der beide Seiten sieht. Windows bringt dafür ein eingebautes Werkzeug mit: `netsh interface portproxy` leitet eingehende TCP-Verbindungen auf ein anderes Ziel weiter. In Kombination mit einem VPN wie Tailscale oder WireGuard wird ein Rechner im Zielnetz zum Jumphost, über den Sie den internen Dienst erreichen.
 
-Ein konkretes Beispiel: Ein NAS mit der Weboberfläche auf `10.0.0.245:5000` ist nur im lokalen Netz erreichbar. Im selben Netz steht ein Windows-PC, der zusätzlich per VPN erreichbar ist. Richten Sie auf diesem PC eine Portweiterleitung von seiner VPN-Adresse auf das NAS ein, öffnen Sie die NAS-Oberfläche anschliessend im Browser über die VPN-Adresse des PCs. Der Dienst bleibt im internen Netz, nur der Sprunghost ist über das VPN erreichbar.
+Ein konkretes Beispiel: Ein NAS mit der Weboberfläche auf `10.0.0.245:5000` ist nur im lokalen Netz erreichbar. Im selben Netz steht ein Windows-PC, der zusätzlich per VPN erreichbar ist. Richten Sie auf diesem PC eine Portweiterleitung von seiner VPN-Adresse auf das NAS ein, öffnen Sie die NAS-Oberfläche anschliessend im Browser über die VPN-Adresse des PCs. Der Dienst bleibt im internen Netz, nur der Jumphost ist über das VPN erreichbar.
 
 ## Wie portproxy arbeitet
 
@@ -43,14 +43,14 @@ netsh interface portproxy add v4tov4 listenaddress=100.100.10.10 listenport=5000
 | Option | Wirkung |
 |---|---|
 | `v4tov4` | IPv4 hört, IPv4 verbindet; ebenso möglich: `v4tov6`, `v6tov4`, `v6tov6` |
-| `listenaddress` | Lokale Adresse, auf der gehört wird; hier die VPN-Adresse des Sprunghosts, damit nur über das VPN eingegangen wird |
+| `listenaddress` | Lokale Adresse, auf der gehört wird; hier die VPN-Adresse des Jumphosts, damit nur über das VPN eingegangen wird |
 | `listenport` | Lokaler Port, auf dem gehört wird |
 | `connectaddress` | Ziel-IP, an die weitergereicht wird (der interne Dienst) |
 | `connectport` | Ziel-Port am internen Dienst |
 
 </details>
 
-Die Bindung an die VPN-Adresse statt an `0.0.0.0` ist die erste Absicherung: Der Listener erscheint nur auf der VPN-Schnittstelle, nicht auf allen Netzwerkkarten des Sprunghosts. Die zweite Absicherung ist die Firewall. Öffnen Sie den Listener-Port ausschliesslich für den Adressbereich Ihres VPN, nicht für alle Adressen:
+Die Bindung an die VPN-Adresse statt an `0.0.0.0` ist die erste Absicherung: Der Listener erscheint nur auf der VPN-Schnittstelle, nicht auf allen Netzwerkkarten des Jumphosts. Die zweite Absicherung ist die Firewall. Öffnen Sie den Listener-Port ausschliesslich für den Adressbereich Ihres VPN, nicht für alle Adressen:
 
 ```powershell
 New-NetFirewallRule -DisplayName "NAS-Proxy (VPN)" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5000 -RemoteAddress 100.64.0.0/10
@@ -70,14 +70,14 @@ New-NetFirewallRule -DisplayName "NAS-Proxy (VPN)" -Direction Inbound -Action Al
 
 ## Prüfen und nutzen
 
-Prüfen Sie zuerst auf dem Sprunghost selbst, ob der interne Dienst überhaupt erreichbar ist, und lassen Sie sich die aktive Weiterleitung anzeigen:
+Prüfen Sie zuerst auf dem Jumphost selbst, ob der interne Dienst überhaupt erreichbar ist, und lassen Sie sich die aktive Weiterleitung anzeigen:
 
 ```powershell
 Test-NetConnection -ComputerName 10.0.0.245 -Port 5000
 netsh interface portproxy show v4tov4
 ```
 
-Antwortet das Ziel und steht die Regel in der Liste, testen Sie von Ihrem entfernten Gerät aus. Erreichbar ist der Dienst jetzt über Adresse und Port des Sprunghosts:
+Antwortet das Ziel und steht die Regel in der Liste, testen Sie von Ihrem entfernten Gerät aus. Erreichbar ist der Dienst jetzt über Adresse und Port des Jumphosts:
 
 ```powershell
 Test-NetConnection -ComputerName 100.100.10.10 -Port 5000
@@ -106,9 +106,9 @@ Die Regeln liegen in der Registry unter `HKLM\SYSTEM\CurrentControlSet\Services\
 
 ## Alternativen
 
-`portproxy` ist praktisch, wenn der Sprunghost ohnehin Windows ist und Sie nichts nachinstallieren wollen. Zwei Alternativen lösen dasselbe Problem mit anderen Eigenschaften.
+`portproxy` ist praktisch, wenn der Jumphost ohnehin Windows ist und Sie nichts nachinstallieren wollen. Zwei Alternativen lösen dasselbe Problem mit anderen Eigenschaften.
 
-Ein SSH-Tunnel mit lokaler Weiterleitung (`ssh -L 5000:10.0.0.245:5000 benutzer@sprunghost`) verschlüsselt die Strecke bis zum Sprunghost selbst und läuft plattformübergreifend. Er braucht einen SSH-Server auf dem Sprunghost und besteht nur, solange die SSH-Sitzung läuft.
+Ein SSH-Tunnel mit lokaler Weiterleitung (`ssh -L 5000:10.0.0.245:5000 benutzer@jumphost`) verschlüsselt die Strecke bis zum Jumphost selbst und läuft plattformübergreifend. Er braucht einen SSH-Server auf dem Jumphost und besteht nur, solange die SSH-Sitzung läuft.
 
 Ein Tailscale-Subnetz-Router (`tailscale up --advertise-routes=10.0.0.0/24`) macht das gesamte interne Subnetz für Ihre VPN-Geräte erreichbar. Dann adressieren Sie den internen Dienst direkt unter seiner echten IP, ohne Weiterleitung pro Port. Das ist der geradlinigste Weg, wenn Sie mehrere interne Geräte erreichen wollen, verlangt aber eine Freigabe der Route in der Tailscale-Verwaltung.
 
@@ -117,9 +117,9 @@ Ein Tailscale-Subnetz-Router (`tailscale up --advertise-routes=10.0.0.0/24`) mac
 Eine Portweiterleitung mit portproxy löst den Zugriff, aber sie hat klare Grenzen, die Sie vor dem Einsatz kennen sollten:
 
 - **Nur TCP.** `portproxy` leitet ausschliesslich TCP weiter. Dienste, die UDP brauchen (DNS, viele VPN- und Spielprotokolle, manche Videoübertragung), lassen sich damit nicht abbilden.
-- **Keine zusätzliche Verschlüsselung.** Die Weiterleitung kopiert Bytes unverändert. Die Vertraulichkeit der Strecke liefert allein das VPN, über das Sie den Sprunghost erreichen. Über ein unverschlüsseltes Transportnetz wäre der Verkehr ungeschützt.
-- **Zertifikatswarnung bei HTTPS über die IP.** Leiten Sie einen HTTPS-Dienst weiter und rufen ihn über die IP des Sprunghosts auf, passt das Zertifikat des Ziels nicht zur aufgerufenen Adresse. Der Browser warnt. Für einen kurzen Test ist das hinnehmbar, für den Dauerbetrieb nicht.
-- **Umleitungen und absolute Adressen.** Manche Weboberflächen leiten selbst auf ihren Hostnamen oder einen anderen Port um oder bauen absolute Links mit ihrer internen Adresse. Dann bricht der Zugriff über den Sprunghost, obwohl die Weiterleitung steht. Solche Dienste brauchen einen echten Reverse-Proxy statt eines reinen Portrelays.
+- **Keine zusätzliche Verschlüsselung.** Die Weiterleitung kopiert Bytes unverändert. Die Vertraulichkeit der Strecke liefert allein das VPN, über das Sie den Jumphost erreichen. Über ein unverschlüsseltes Transportnetz wäre der Verkehr ungeschützt.
+- **Zertifikatswarnung bei HTTPS über die IP.** Leiten Sie einen HTTPS-Dienst weiter und rufen ihn über die IP des Jumphosts auf, passt das Zertifikat des Ziels nicht zur aufgerufenen Adresse. Der Browser warnt. Für einen kurzen Test ist das hinnehmbar, für den Dauerbetrieb nicht.
+- **Umleitungen und absolute Adressen.** Manche Weboberflächen leiten selbst auf ihren Hostnamen oder einen anderen Port um oder bauen absolute Links mit ihrer internen Adresse. Dann bricht der Zugriff über den Jumphost, obwohl die Weiterleitung steht. Solche Dienste brauchen einen echten Reverse-Proxy statt eines reinen Portrelays.
 - **Bindung an eine Adresse, die beim Start existieren muss.** Bindet die Regel an eine bestimmte `listenaddress`, muss diese Adresse beim Start des Dienstes vorhanden sein. Kommt die VPN-Schnittstelle erst später hoch, kann die Bindung fehlschlagen, bis der Dienst oder die Regel neu gesetzt wird.
 - **Ein zusätzlicher Weg ins interne Netz.** Jede Weiterleitung ist ein Pfad von aussen zu einem internen Dienst. Beschränken Sie die Firewall eng auf den VPN-Bereich, binden Sie an die VPN-Adresse, und entfernen Sie die Weiterleitung, sobald Sie sie nicht mehr brauchen.
 
@@ -141,6 +141,110 @@ Eine Portweiterleitung ist ein Werkzeug für den gezielten, zeitlich begrenzten 
 2.  [New-NetFirewallRule (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule): Parameter der Firewallregel, inklusive Einschränkung auf Adressbereiche über RemoteAddress.
 
 3.  [Tailscale: Subnet routers](https://tailscale.com/kb/1019/subnets): Ein ganzes Subnetz über das VPN erreichbar machen, als Alternative zur Weiterleitung pro Port.
+
+----
+
+# Tailscale: Exit-Node und Subnetz-Routen im Vergleich, und wie sie technisch funktionieren
+
+URL: https://rafaelpfister.ch/blog/tailscale-exit-node-subnet-routes
+Datum: 2026-09-02
+
+# Tailscale: Exit-Node und Subnetz-Routen im Vergleich, und wie sie technisch funktionieren
+
+Ein Tailscale-Knoten ist zunächst nur er selbst: erreichbar über seine Tailscale-Adresse, sonst nichts. Damit ein Knoten anderen Geräten Zugang zu mehr als sich selbst verschafft, gibt es zwei Betriebsarten, die oft verwechselt werden: den **Subnetz-Router** und den **Exit-Node**. Beide erweitern die Reichweite eines Knotens, aber in unterschiedliche Richtungen. Wer den Unterschied kennt, wählt die passende Variante und vermeidet, versehentlich den gesamten Verkehr über einen fremden Rechner zu leiten.
+
+Die kurze Fassung: Ein Subnetz-Router öffnet **gezielt bestimmte IP-Bereiche** hinter dem Knoten, etwa das lokale Netz mit einem NAS und einem Drucker. Ein Exit-Node leitet den **gesamten Internetverkehr** eines Geräts über sich, so wie ein klassisches Full-Tunnel-VPN. Beide beruhen technisch auf demselben Mechanismus: dem Bewerben von Routen. Der Exit-Node ist im Grunde ein Sonderfall des Subnetz-Routers, bei dem die beworbene Route die Standardroute ist.
+
+## Subnetz-Router: gezielter Zugang zu einem Netz
+
+Ein Subnetz-Router bewirbt einen oder mehrere IP-Bereiche, die er im lokalen Netz erreicht. Andere Geräte im Tailnet, die diese Routen annehmen, erreichen darüber die Geräte im beworbenen Bereich, auch wenn dort kein Tailscale installiert ist. Das ist der Weg, um ein NAS, einen Drucker oder eine Verwaltungsoberfläche erreichbar zu machen, ohne auf jedem einzelnen Gerät einen VPN-Client einzurichten.
+
+Beworben wird der Bereich auf dem Router-Knoten:
+
+```powershell
+tailscale set --advertise-routes=192.168.1.0/24
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `--advertise-routes=<CIDR>` | Bewirbt einen oder mehrere IP-Bereiche (durch Komma getrennt), die dieser Knoten weiterleitet |
+| `--snat-subnet-routes=false` | Leitet ohne Quell-NAT weiter, damit die Zielgeräte die echte Tailscale-Quelladresse sehen; verlangt eine Rückroute im lokalen Netz |
+| `--advertise-exit-node` | Kurzform, die `0.0.0.0/0` und `::/0` bewirbt, also den Knoten als Exit-Node anbietet |
+
+</details>
+
+Der Verkehr fliesst nur, nachdem die Route in der Tailscale-Verwaltung **freigegeben** wurde. Ein reines Bewerben genügt nicht, das ist die häufigste Stolperstelle: Die Route erscheint erst nach der Freigabe in der Routing-Tabelle der annehmenden Geräte.
+
+## Exit-Node: der gesamte Verkehr über einen Knoten
+
+Ein Exit-Node bewirbt die Standardroute (`0.0.0.0/0` und `::/0`). Wählt ein Gerät diesen Exit-Node aus, läuft sein **gesamter** ausgehender Internetverkehr durch den Knoten, nicht nur der Verkehr zu einem bestimmten Netz. Das ist nützlich, um über einen Standort mit fester IP ins Internet zu gehen oder um in einem unsicheren Netz den Verkehr über einen vertrauenswürdigen Ausgang zu leiten.
+
+Der Unterschied zur Subnetz-Route ist die Auswahl auf der Client-Seite: Eine Subnetz-Route wird automatisch genutzt, sobald das Gerät die Route annimmt und ein Ziel in diesem Bereich anspricht. Ein Exit-Node dagegen muss aktiv ausgewählt werden, und dann gilt er für allen Verkehr:
+
+```powershell
+tailscale set --exit-node=100.100.10.10 --exit-node-allow-lan-access
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `--exit-node=<IP oder Name>` | Wählt einen Exit-Node; leer (`--exit-node=`) schaltet ihn wieder ab |
+| `--exit-node-allow-lan-access` | Lässt trotz aktivem Exit-Node den Zugriff auf das eigene lokale Netz zu |
+
+</details>
+
+Genau darum war es im Support-Alltag falsch, für den Zugang zu einem einzelnen NAS den Exit-Node anzuhaken: Das hätte den kompletten eigenen Verkehr über den fremden Rechner umgeleitet, statt nur den einen Bereich zu öffnen.
+
+## Gegenüberstellung
+
+| Eigenschaft | Subnetz-Router | Exit-Node |
+|---|---|---|
+| Beworbene Route | Gezielte Bereiche, z. B. `192.168.1.0/24` | Standardroute `0.0.0.0/0`, `::/0` |
+| Client-Nutzung | Automatisch für Ziele im Bereich | Muss aktiv als Exit-Node gewählt werden |
+| Umfang | Nur die beworbenen Netze | Der gesamte Internetverkehr |
+| Freigabe in der Verwaltung | Pro Subnetz | Separat als Exit-Node |
+| Typischer Zweck | Interne Dienste erreichbar machen | Ausgehenden Verkehr über einen Standort leiten |
+
+## Wie Tailscale das technisch umsetzt
+
+Beide Betriebsarten laufen auf derselben Grundlage. Es lohnt sich, die Ebenen zu trennen.
+
+**Datenebene über WireGuard.** Jeder Knoten hat ein WireGuard-Schlüsselpaar. Der eigentliche Verkehr zwischen zwei Knoten läuft direkt als verschlüsselte WireGuard-Pakete über UDP, wo möglich Peer-zu-Peer nach einem NAT-Durchstich, sonst über einen DERP-Relay-Server als Rückfallweg. Tailscale erfindet die Verschlüsselung nicht neu, sondern nutzt WireGuard als Transport.
+
+**Steuerungsebene über die Koordination.** Ein zentraler Koordinationsdienst verteilt die öffentlichen Schlüssel und eine Übersicht des Netzes (die network map), die festhält, welcher Knoten welche Adressen und Routen besitzt. Der Koordinationsdienst sieht die Metadaten (wer mit wem sprechen darf, welche Routen freigegeben sind), aber nicht den Inhalt der WireGuard-Pakete. Wenn Sie eine Route bewerben, meldet der Knoten das an die Steuerungsebene; erst mit der Freigabe wird die Route Teil der network map, die alle Knoten erhalten.
+
+**Auf dem Router-Knoten.** Damit ein Knoten Verkehr für andere Geräte weiterleitet, muss er IP-Weiterleitung aktiviert haben und die Pakete zwischen der Tailscale-Schnittstelle und dem lokalen Netz vermitteln. Standardmässig maskiert Tailscale den weitergeleiteten Verkehr mit Quell-NAT (SNAT): Die Zielgeräte im lokalen Netz sehen als Absender die lokale Adresse des Router-Knotens, nicht die Tailscale-Adresse des zugreifenden Geräts. Das ist der einfache Fall, weil die Antwortpakete so von selbst zum Router zurückfinden. Schalten Sie SNAT ab, sehen die Zielgeräte die echte Tailscale-Quelladresse, aber dann muss das lokale Netz wissen, wie es den Tailscale-Bereich zum Router zurückroutet.
+
+**Auf der Client-Seite.** Ein Gerät nutzt fremde Routen nur, wenn es sie annimmt. Auf den grafischen Clients für Windows und macOS ist das Annehmen von Subnetz-Routen voreingestellt, unter Linux wird es mit `--accept-routes` eingeschaltet. Nimmt der Client eine Route an, trägt er sie in seine Routing-Tabelle ein und zeigt auf die Tailscale-Schnittstelle. Pakete an ein Ziel in diesem Bereich werden dann in WireGuard verpackt und zum Router-Knoten geschickt. Beim Exit-Node ist es dieselbe Mechanik, nur zeigt hier die Standardroute auf den Exit-Node, weshalb aller Verkehr durch ihn läuft.
+
+**Die Freigabe.** Dass Routen erst nach der Freigabe wirken, ist ein Sicherheitsmerkmal, kein Umweg: Ein beliebiger Knoten soll nicht ungefragt Verkehr für ganze Netze an sich ziehen können. Freigeben lässt sich manuell in der Verwaltung oder automatisch über `autoApprovers` in den Zugriffsregeln (ACLs). Exit-Node und Subnetz-Routen werden dabei getrennt freigegeben.
+
+## Grenzen
+
+Beide Varianten haben Grenzen, die die Wahl beeinflussen:
+
+- **Der Router-Knoten ist ein Engpass und ein einzelner Ausfallpunkt.** Aller Verkehr für das beworbene Netz läuft über diesen einen Knoten, über seine WireGuard-Verschlüsselung und seine Anbindung. Für Ausfallsicherheit können mehrere Knoten dieselbe Route bewerben; Tailscale nutzt dann einen davon und wechselt bei Ausfall.
+- **SNAT verdeckt die Quelle.** Mit dem voreingestellten Quell-NAT erscheinen alle Zugriffe unter der Adresse des Router-Knotens. Für Protokollierung oder Zugriffsregeln auf den Zielgeräten, die die echte Quelle brauchen, müssen Sie SNAT abschalten und die Rückroute im lokalen Netz einrichten.
+- **Ein Exit-Node leitet wirklich alles.** Der gesamte Verkehr läuft über den Knoten, mit den entsprechenden Folgen für Durchsatz, Latenz und Vertraulichkeit. Der Betreiber des Exit-Nodes sieht den Verkehr an dem Punkt, an dem er das Tailnet verlässt. Nutzen Sie als Exit-Node nur Knoten, denen Sie vertrauen.
+- **Überlappende Subnetze sind ein Problem.** Bewerben zwei Standorte denselben privaten Bereich, etwa `192.168.1.0/24`, kann ein Client sie nicht auseinanderhalten. Tailscale bietet dafür eine Umschreibung über IPv6 (`4via6`), die die Bereiche eindeutig macht.
+- **Ablaufende Schlüssel legen die Weiterleitung still.** Läuft der Schlüssel des Router-Knotens ab, ist das ganze dahinterliegende Netz nicht mehr erreichbar. Für einen dauerhaften Router-Knoten deaktivieren Sie den Schlüsselablauf in der Verwaltung.
+
+Für den gezielten Zugriff auf interne Dienste ist der Subnetz-Router fast immer die richtige Wahl: Er öffnet nur, was nötig ist. Den Exit-Node nehmen Sie, wenn Sie bewusst den gesamten ausgehenden Verkehr über einen bestimmten Standort führen wollen.
+
+## Quellen
+
+1.  [Tailscale: Subnet routers](https://tailscale.com/kb/1019/subnets): Bereiche bewerben, Freigabe, SNAT-Verhalten und Hochverfügbarkeit mit mehreren Routern.
+
+2.  [Tailscale: Exit nodes](https://tailscale.com/kb/1103/exit-nodes): Standardroute bewerben, Auswahl auf dem Client und der Zugriff auf das eigene lokale Netz.
+
+3.  [Tailscale: How Tailscale works](https://tailscale.com/blog/how-tailscale-works): Zusammenspiel von WireGuard-Datenebene, Koordinationsdienst und DERP-Relays.
+
+4.  [WireGuard: Protokollüberblick](https://www.wireguard.com/protocol/): Die kryptografische Grundlage der Datenebene, die Tailscale als Transport nutzt.
 
 ----
 
