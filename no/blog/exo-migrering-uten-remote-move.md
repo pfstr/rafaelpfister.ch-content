@@ -23,51 +23,51 @@ slug: "exo-migrering-uten-remote-move"
 translationId: "article-8f3c1b7a62d94e50"
 draft: false
 translationOf: exchange-mailboxen-ohne-remote-move-cloud-neu-erstellen
-url: https://rafaelpfister.ch/no/blog/exo-migrering-uten-remote-move
-translationSourceHash: 861f11b6e2f1e316ca773f049637fa2ac6ed5efdab5ec74d8c28178f3ea7e98c
+translationSourceHash: dc64d2c419e3ac0f4dd730785b3cd7f37c3f23effd2317feb4d61a46fa33401a
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-08T13:49:11.266Z
+translatedAt: 2026-09-01T08:59:05.431Z
 translationReview: automatic
+url: https://rafaelpfister.ch/no/blog/exo-migrering-uten-remote-move
 ---
 
 # EXO-migrering uten Remote Move
 
-En Hybrid Remote Move er den vanlige metoden for å flytte en lokal Exchange-postboks med innhold til Exchange Online. Ikke alle organisasjoner tillater denne migreringsveien. Hvis en sikkerhetspolicy utelukker Remote Moves, kan en bevisst annerledes tilnærming være forsvarlig: Den lokale postboksen sikkerhetskopieres som PST, kobles fra den synkroniserte AD-brukeren, og det klargjøres en ny, tom postboks i Exchange Online for den samme brukeren.
+En Hybrid Remote Move er den vanlige måten å flytte en lokal Exchange-postboks med innhold til Exchange Online på. Ikke alle organisasjoner tillater denne migreringsveien. Dersom en sikkerhetspolicy utelukker Remote Moves, kan en bevisst annerledes tilnærming være forsvarlig: Den lokale postboksen sikkerhetskopieres som PST, kobles fra den synkroniserte AD-brukeren, og det klargjøres en ny, tom postboks i Exchange Online for samme bruker.
 
-Denne metoden er **ikke en postboksmigrering**. Den overfører verken meldinger, kalender, regler eller tillatelser til skyen. PST-filen brukes utelukkende som sikkerhetskopi og importeres ikke i dette scenariet. Fremgangsmåten egner seg derfor bare når en tom målpostboks er faglig akseptabel, og tapet av den aktive postboks-konfigurasjonen er uttrykkelig godkjent.
+Denne veien er **ikke en postboksmigrering**. Den overfører verken meldinger, kalendere, regler eller tillatelser til skyen. PST-filen brukes kun som sikkerhetskopi og importeres ikke i dette scenarioet. Fremgangsmåten egner seg derfor bare dersom en tom målpostboks er faglig akseptabel, og tapet av den aktive postboks-konfigurasjonen er uttrykkelig godkjent.
 
-## Måltilstand og strenge forutsetninger
+## Måltilstand og ufravikelige forutsetninger
 
-Etter cutover beholdes den samme AD-brukeren. Lokalt administreres den imidlertid ikke lenger som `UserMailbox`, `SharedMailbox`, `RoomMailbox` eller `EquipmentMailbox`, men som `RemoteMailbox`. Etter synkroniseringen representerer dette objektet den nye postboksen i Exchange Online.
+Etter cutover beholdes samme AD-bruker. Lokalt administreres den imidlertid ikke lenger som `UserMailbox`, `SharedMailbox`, `RoomMailbox` eller `EquipmentMailbox`, men som `RemoteMailbox`. Etter synkroniseringen representerer dette objektet den nye postboksen i Exchange Online.
 
 Ønsket tilstand ser slik ut:
 
 1. Den lokale postboksen er fullstendig sikkerhetskopiert som PST.
-2. Den lokale postboksen er frakoblet, men ennå ikke endelig slettet innenfor den konfigurerte oppbevaringsperioden.
+2. Den lokale postboksen er frakoblet, men ikke endelig slettet innenfor den konfigurerte retention-perioden.
 3. Den eksisterende AD-brukeren er aktivert som RemoteMailbox.
 4. Primæradresse, aliaser og den gamle `LegacyExchangeDN` beholdes.
 5. Entra Connect har synkronisert endringene.
-6. For brukerpostbokser er en Exchange Online-tjenesteplan tildelt.
-7. Exchange Online viser en reell skypostboks, og e-postflyten ender der.
+6. En Exchange Online-tjenesteplan er tilordnet brukerpostbokser.
+7. Exchange Online viser en ekte skypostboks, og e-postflyten ender der.
 
-Før oppstart må følgende også være avklart:
+Følgende må også være avklart før oppstart:
 
-- PST-delingsområdet er tilgjengelig via UNC. Gruppen `Exchange Trusted Subsystem` har lese- og skrivetilgang der.
-- Kontoen som utfører oppgaven, har administrasjonsrollen `Mailbox Import Export`.
-- PST-filen er bare den avtalte sikkerhetskopien; ingen senere import er planlagt.
-- Oppbevaring, Litigation Hold, eDiscovery og regulatoriske krav er vurdert separat.
-- Stedfortredere, Send-As, Send-on-Behalf, videresendinger, innboksregler, mobile enheter og applikasjonstilganger er kartlagt.
-- Under eksport og omkobling holdes innkommende meldinger kontrollert tilbake i den foranstilte gatewayen. Brukere og applikasjoner må ikke lenger skrive til kildepostboksen.
-- Retensjonen for den lokale postboksdatabasen dekker tilbakeføringsvinduet.
+- PST-delingen er tilgjengelig via UNC. Gruppen `Exchange Trusted Subsystem` har lese- og skrivetilgang der.
+- Kontoen som utfører arbeidet, har administrasjonsrollen `Mailbox Import Export`.
+- PST-filen er kun den avtalte sikkerhetskopien; ingen senere import er planlagt.
+- Oppbevaring, Litigation Hold, eDiscovery og regulatoriske krav er kontrollert separat.
+- Delegeringer, Send-As, Send-on-Behalf, videresendinger, innboksregler, mobile enheter og applikasjonstilganger er kartlagt.
+- Under eksport og omkobling holdes innkommende meldinger kontrollert tilbake i den foranliggende gatewayen. Brukere og applikasjoner må ikke lenger skrive til kildepostboksen.
+- Retention for den lokale postboksdatabasen dekker tilbakeføringsvinduet.
 
 ## Hvorfor en CSV-godkjenningsliste er uunnværlig
 
-En direkte pipeline som `Get-Mailbox | Disable-Mailbox` er for risikabel for denne prosessen. Den kan også inkludere system-, Discovery- eller andre ikke-godkjente postbokser. Den følgende prosessen arbeider derfor med to eksplisitte godkjenninger:
+En direkte pipeline som `Get-Mailbox | Disable-Mailbox` er for risikabel for denne operasjonen. Den kan også inkludere system-, Discovery- eller andre ikke-godkjente postbokser. Den følgende prosessen arbeider derfor med to eksplisitte godkjenninger:
 
-- `Action=CUTOVER` avgjør hvilken rad som faktisk kan omkobles.
+- `Action=CUTOVER` angir hvilken rad som faktisk kan omstilles.
 - `PstVerified=YES` bekrefter at eksportfilen er kontrollert teknisk og organisatorisk.
 
-Først opprettes kun inventaret:
+Først opprettes bare inventaret:
 
 ```powershell
 $CsvPath = "C:\Migration\mailboxes.csv"
@@ -94,11 +94,25 @@ Get-Mailbox -ResultSize Unlimited -RecipientTypeDetails `
     Export-Csv -Path $CsvPath -NoTypeInformation -Encoding UTF8
 ```
 
-Deretter kvalitetssikres filen faglig. Bare postbokser som faktisk er godkjent, får `Action=CUTOVER`. Systempostbokser og spesialobjekter hører ikke hjemme i denne listen.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
 
-## Fase 1: Sikre primærpostboks og arkiv som PST
+| Alternativ | Virkning |
+|---|---|
+| `Get-Mailbox -ResultSize Unlimited` | Opphever standardgrensen på 1000 resultater; uten denne parameteren mangler postbokser i inventaret i store miljøer |
+| `-RecipientTypeDetails UserMailbox,SharedMailbox,RoomMailbox,EquipmentMailbox` | Begrenser spørringen til de fire postbokstypene som skal omstilles; system- og Discovery-postbokser holdes utenfor |
+| `Sort-Object PrimarySmtpAddress` | Sorterer utdata etter den primære SMTP-adressen, slik at CSV-filen er stabilt sortert ved faglig gjennomgang |
+| `Export-Csv -Path` | Målbane for CSV-filen |
+| `-NoTypeInformation` | Undertrykker typeoverskriften `#TYPE ...`, som eldre PowerShell-versjoner ellers skriver som første linje |
+| `-Encoding UTF8` | Skriver filen UTF-8-kodet, slik at spesialtegn i visningsnavn bevares korrekt |
 
-`New-MailboxExportRequest` skriver kun til en UNC-bane. Det opprettes et unikt filnavn for hver postboks. Et aktivt nettarkiv i lokal Exchange eksporteres separat:
+</details>
+
+Filen renses deretter faglig. Bare postbokser som faktisk er godkjent, får `Action=CUTOVER`. Systempostbokser og spesialobjekter hører ikke hjemme i denne listen.
+
+## Fase 1: Sikkerhetskopier primærpostboks og arkiv som PST
+
+`New-MailboxExportRequest` skriver bare til en UNC-bane. Det opprettes et entydig filnavn for hver postboks. Et aktivt nettarkiv i lokal Exchange eksporteres separat:
 
 ```powershell
 $CsvPath = "C:\Migration\mailboxes.csv"
@@ -128,7 +142,22 @@ foreach ($row in $targets) {
 }
 ```
 
-Eksporten er først godkjent når **hver** forespørsel har statusen `Completed`:
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Import-Csv $CsvPath` | Leser inn godkjenningslisten; hver rad blir et objekt med CSV-kolonnene som egenskaper |
+| `Where-Object Action -eq "CUTOVER"` | Behandler bare eksplisitt godkjente rader |
+| `New-MailboxExportRequest -Mailbox` | Kildepostboks for eksporten (her identiteten fra CSV-raden) |
+| `-FilePath` | Målbane for PST-filen; må være en UNC-bane, lokale baner avvises av cmdleten |
+| `-Name` | Entydig navn på forespørselen; muliggjør senere målrettet tilordning av primær- og arkiveksport |
+| `-BatchName` | Samler alle forespørsler fra én kjøring under et batchnavn; grunnlag for statusspørring og opprydding |
+| `-IsArchive` | Eksporterer nettarkivet i stedet for primærpostboksen; derfor den andre forespørselen per postboks med aktivt arkiv |
+
+</details>
+
+Eksporten er først godkjent når **alle** forespørsler har status `Completed`:
 
 ```powershell
 Get-MailboxExportRequest -BatchName $BatchName |
@@ -139,9 +168,21 @@ Get-MailboxExportRequest -BatchName $BatchName |
     Where-Object Status -ne "Completed"
 ```
 
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Get-MailboxExportRequest -BatchName` | Viser alle eksportforespørsler for den angitte batchen |
+| `Get-MailboxExportRequestStatistics -IncludeReport` | Supplerer statistikken med den detaljerte historikkrapporten, som inneholder feilårsaker for enkeltforespørsler |
+| `Format-Table ... -AutoSize` | Tabellarisk visning av de angitte egenskapene; `-AutoSize` tilpasser kolonnebreddene til innholdet |
+| `Where-Object Status -ne "Completed"` | Filtrerer på alle forespørsler som ennå ikke er fullført eller som har feilet; utdata må være tomme før du fortsetter |
+
+</details>
+
 I tillegg må filenes eksistens, størrelse, lesbarhet, overføring til sikkerhetskopi og tilgangsbeskyttelse kontrolleres. Først deretter settes `PstVerified=YES` for den aktuelle CSV-raden.
 
-## Fase 2: Sikre postboksdata og Exchange-attributter
+## Fase 2: Sikkerhetskopier postboksdata og Exchange-attributter
 
 Før den første endringen opprettes et maskinlesbart øyeblikksbilde per postboks. Det er viktigere enn et skjermbilde, fordi aliaser, GUID-er og `LegacyExchangeDN` senere kan rekonstrueres nøyaktig:
 
@@ -163,7 +204,19 @@ Import-Csv "C:\Migration\mailboxes.csv" |
     }
 ```
 
-Delegasjoner og videresendinger krever egne eksporter. Minst denne informasjonen bør sikres separat:
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `New-Item -ItemType Directory -Path ... -Force` | Oppretter snapshot-katalogen; `-Force` undertrykker feilen dersom den allerede finnes |
+| `Get-Mailbox -Identity` | Henter gjeldende postboksobjekt for den aktuelle CSV-raden |
+| `Select-Object Identity,...,ServerName` | Reduserer objektet til attributtene som kreves for senere rekonstruksjon (GUID-er, adresser, `LegacyExchangeDN`, database) |
+| `Export-Clixml` | Serialiserer objektet som typebevarende CLIXML; i motsetning til CSV beholdes flerverdier som `EmailAddresses` fullstendig og kan leses inn igjen med `Import-Clixml` |
+
+</details>
+
+Delegeringer og videresendinger krever egne eksporter. Minst denne informasjonen bør sikkerhetskopieres separat:
 
 ```powershell
 $mailbox = Get-Mailbox -Identity user01@contoso.com
@@ -175,13 +228,27 @@ Get-InboxRule -Mailbox $mailbox.Identity
 Get-CalendarProcessing -Identity $mailbox.Identity -ErrorAction SilentlyContinue
 ```
 
-Disse konfigurasjonene overføres ikke automatisk til den nye skypostboksen.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
 
-## Fase 3: Koble fra lokal postboks og aktivere RemoteMailbox
+| Alternativ | Virkning |
+|---|---|
+| `Format-List ForwardingAddress,ForwardingSmtpAddress,DeliverToMailboxAndForward` | Viser postboksens tre videresendingsattributter i listevisning |
+| `Get-MailboxPermission -Identity` | Viser postbokstillatelser som Full Access |
+| `Get-ADPermission -Identity` | Viser AD-tillatelser på brukerobjektet, inkludert Send-As; forventer her Distinguished Name |
+| `Get-InboxRule -Mailbox` | Viser postboksens serverbaserte innboksregler |
+| `Get-CalendarProcessing -Identity` | Viser bestillingskonfigurasjonen; relevant for rom- og utstyrspostbokser |
+| `-ErrorAction SilentlyContinue` | Undertrykker feilen for postbokstyper uten bestillingskonfigurasjon, slik at sikkerhetskopieringen ikke avbrytes |
 
-Selve cutoveren er kort, men får store konsekvenser. `Disable-Mailbox` fjerner Exchange-attributtene fra AD-brukeren og kobler fra den lokale postboksen. Postboksdataene beholdes som en frakoblet postboks frem til databasens retensjon utløper. Rett etterpå aktiverer `Enable-RemoteMailbox` den samme AD-brukeren for Exchange Online.
+</details>
 
-Følgende skript behandler utelukkende dobbelt godkjente rader. Det bevarer den primære SMTP-adressen, alle eksisterende proxy-adresser og den gamle `LegacyExchangeDN` som en X500-adresse. X500-oppføringen forhindrer NDR-er ved svar på eldre meldinger eller ved gamle Outlook-autofullføringsoppføringer.
+Disse konfigurasjonene flyttes ikke automatisk til den nye skypostboksen.
+
+## Fase 3: Koble fra lokal postboks og aktiver RemoteMailbox
+
+Selve cutoveren er kort, men konsekvensrik. `Disable-Mailbox` fjerner Exchange-attributtene fra AD-brukeren og kobler fra den lokale postboksen. Postboksdataene beholdes som en disconnected mailbox frem til databaseretentionen utløper. Rett etterpå aktiverer `Enable-RemoteMailbox` samme AD-bruker for Exchange Online.
+
+Det følgende skriptet behandler utelukkende dobbelt godkjente rader. Det bevarer den primære SMTP-adressen, alle eksisterende proxy-adresser og den gamle `LegacyExchangeDN` som X500-adresse. X500-oppføringen forhindrer NDR-er ved svar på eldre meldinger eller gamle Outlook-autofullføringsoppføringer.
 
 ```powershell
 $CsvPath = "C:\Migration\mailboxes.csv"
@@ -257,9 +324,29 @@ foreach ($row in $targets) {
 }
 ```
 
-Skriptet er med hensikt ikke en fullt autonom migreringsmotor. Det avslutter kjøringen ved første avvik, slik at en administrator kan vurdere årsak og tilstand. Før en produksjonsbatch bør koden valideres med noen få testpostbokser og Exchange-versjonene som brukes.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
 
-## Fase 4: Synkronisere, lisensiere og verifisere
+| Alternativ | Virkning |
+|---|---|
+| `Get-Mailbox -Identity ... -ErrorAction Stop` | Henter kildepostboksen; `-ErrorAction Stop` gjør en oppslagsfeil til en avbrytende feil i stedet for å fortsette stille |
+| `Disable-Mailbox -Identity` | Fjerner Exchange-attributtene fra AD-brukeren og kobler fra den lokale postboksen; dataene beholdes som en disconnected mailbox i databasen |
+| `-Confirm:$false` | Undertrykker det interaktive spørsmålet; godkjenningen skjer her via CSV-listen, ikke i ledeteksten |
+| `Enable-RemoteMailbox -Identity` | Aktiverer samme AD-bruker som RemoteMailbox for Exchange Online |
+| `-Alias` | Setter Exchange-aliaset tilbake til verdien fra godkjenningslisten |
+| `-PrimarySmtpAddress` | Bevarer den tidligere primære SMTP-adressen |
+| `-RemoteRoutingAddress` | Måladresse i `mail.onmicrosoft.com`-rutingsdomenet, som den lokale Exchange bruker for å nå skypostboksen |
+| `-ACLableSyncedObjectEnabled` | Merker objektet som ACL-kompatibelt, slik at tillatelser som Full Access kan evalueres i Exchange Online etter synkronisering |
+| `-Shared` / `-Room` / `-Equipment` | Oppretter den aktuelle spesialtypen i stedet for en brukerpostboks; skriptet setter nøyaktig én bryter som passer kildetypen |
+| `Set-RemoteMailbox -EmailAddressPolicyEnabled $false` | Unntar objektet fra e-postadressepolicyen, slik at den ikke overskriver manuelt angitte adresser |
+| `-EmailAddresses` | Setter den komplette, dedupliserte adresselisten, inkludert gamle proxy-adresser, rutingsadresse og X500-oppføring |
+| `Get-RemoteMailbox -Identity` | Kontrollspørring av resultatet rett etter omstillingen |
+
+</details>
+
+Skriptet er bevisst ikke et helautomatisk migreringsverktøy. Det avslutter kjøringen ved den første uoverensstemmelsen, slik at en administrator kan vurdere årsak og tilstand. Før en produksjonsbatch bør koden valideres med noen få testpostbokser og Exchange-versjonene som brukes.
+
+## Fase 4: Synkroniser, lisensier og verifiser
 
 Etter den lokale endringen startes en delta-syklus på Entra Connect-serveren:
 
@@ -267,9 +354,18 @@ Etter den lokale endringen startes en delta-syklus på Entra Connect-serveren:
 Start-ADSyncSyncCycle -PolicyType Delta
 ```
 
-For brukerpostbokser må det deretter være tildelt en gyldig Exchange Online-tjenesteplan, for eksempel gjennom gruppebasert lisensiering. Delte postbokser, rompostbokser og utstyrspostbokser må vurderes ut fra gjeldende lisensvilkår fra Microsoft og nødvendige funksjoner.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
 
-Klargjøringen er asynkron. Microsoft oppgir vanligvis under 30 minutter for normale endringer, men i enkelte tilfeller opptil 24 timer. I denne perioden bør den foranstilte e-postflyten holde meldinger kontrollert tilbake i stedet for å levere dem til et mål som ennå ikke er klart.
+| Alternativ | Virkning |
+|---|---|
+| `-PolicyType Delta` | Synkroniserer bare objekter som er endret siden forrige syklus; alternativet `Initial` ville vært en fullstendig og betydelig lengre kjøring |
+
+</details>
+
+For brukerpostbokser må det deretter være tilordnet en gyldig Exchange Online-tjenesteplan, for eksempel via gruppebasert lisensiering. Delte postbokser, rom- og utstyrspostbokser må vurderes i henhold til gjeldende Microsoft-lisensvilkår og nødvendige funksjoner.
+
+Klargjøringen er asynkron. Microsoft oppgir vanligvis under 30 minutter for normale endringer, men i enkelttilfeller opptil 24 timer. I løpet av denne tiden bør den foranliggende e-postflyten holde meldinger kontrollert tilbake i stedet for å levere dem til et mål som ennå ikke er klart.
 
 Den lokale kontrollen må nå vise en RemoteMailbox:
 
@@ -280,7 +376,18 @@ Get-RemoteMailbox -Identity user01@contoso.com |
 Get-Mailbox -Identity user01@contoso.com -ErrorAction SilentlyContinue
 ```
 
-I Exchange Online kontrolleres det om den tidligere MailUser-en har blitt en reell postboks:
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Get-RemoteMailbox -Identity` | Må returnere det omstilte objektet som RemoteMailbox |
+| `Format-List RecipientTypeDetails,...` | Viser type, adresser og rutingsadresse for kontroll i listevisning |
+| `Get-Mailbox -Identity ... -ErrorAction SilentlyContinue` | Motkontroll: Kallet må ikke returnere noe, fordi det ikke lenger finnes en tilkoblet postboks lokalt; `-ErrorAction SilentlyContinue` undertrykker den forventede feilmeldingen |
+
+</details>
+
+I Exchange Online kontrolleres det om den tidligere MailUser har blitt en ekte postboks:
 
 ```powershell
 Get-EXORecipient -Identity user01@contoso.com |
@@ -290,13 +397,24 @@ Get-EXOMailbox -Identity user01@contoso.com |
     Format-List RecipientTypeDetails,PrimarySmtpAddress,ExchangeGuid
 ```
 
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Get-EXORecipient -Identity` | Viser mottakertypen i Exchange Online; forventet er `UserMailbox` eller spesialtypen, ikke lenger `MailUser` |
+| `Get-EXOMailbox -Identity` | Returnerer bare ekte skypostbokser; et treff beviser at klargjøringen er fullført |
+| `Format-List ...,ExchangeGuid` | Viser kontrollattributtene; `ExchangeGuid` identifiserer den nye skypostboksen entydig |
+
+</details>
+
 Batchen anses først som fullført når følgende tester i tillegg er vellykkede:
 
 - Levering eksternt og internt
 - Sending eksternt og internt
 - Svar på en gammel melding for å kontrollere X500-adressen
-- Pålogging med Outlook og Outlook på nettet
-- Stedfortredere og Send-As
+- Innlogging med Outlook og Outlook på nettet
+- Delegeringer og Send-As
 - Videresendinger og transportregler
 - Rom- og utstyrsbestillinger
 - Applikasjoner, skannere og SMTP-reléer
@@ -304,35 +422,45 @@ Batchen anses først som fullført når følgende tester i tillegg er vellykkede
 
 ## Tilbakeføring og opprydding
 
-Den lokale kildepostboksen må ikke slettes med `Remove-StoreMailbox` i valideringsfasen. Så lenge den finnes som en frakoblet postboks innenfor postboksretensjonen, finnes det fortsatt en teknisk tilbakeføringsmulighet. En tilbakeføring krever imidlertid en kontrollert reversering av RemoteMailbox-attributtene og ny tilkobling av den lokale postboksen; samtidig må det forhindres at to aktive leveringsmål oppstår.
+Den lokale kildepostboksen må ikke slettes med `Remove-StoreMailbox` i valideringsfasen. Så lenge den finnes som disconnected mailbox innenfor postboksretentionen, finnes det fortsatt en teknisk mulighet for tilbakeføring. En tilbakeføring krever imidlertid en kontrollert reversering av RemoteMailbox-attributtene og ny tilkobling av den lokale postboksen; samtidig må det forhindres at to aktive leveringsmål oppstår.
 
-Før en tilbakeføring må derfor e-postflyt, synkroniseringsstatus og meldinger som allerede er mottatt i skyen, sikres. Å bytte tilbake er ikke en enkel énlinjekommando og skal inngå som en testet runbook i endringen.
+Før en tilbakeføring må derfor e-postflyt, synkroniseringsstatus og meldinger som allerede er mottatt i skyen, sikres. Et tilbakebytte er ikke en enkel énløser og må inngå som et testet runbook i endringen.
 
-Etter vellykket godkjenning ryddes eksportforespørslene opp, PST-filene arkiveres i henhold til beskyttelses- og oppbevaringskonseptet, og midlertidige tillatelser på eksportdelingen fjernes:
+Etter vellykket godkjenning ryddes eksportforespørsler opp, PST-filer arkiveres i henhold til beskyttelses- og oppbevaringskonseptet, og midlertidige tillatelser på eksportdelingen fjernes:
 
 ```powershell
 Get-MailboxExportRequest -BatchName $BatchName |
     Remove-MailboxExportRequest -Confirm:$false
 ```
 
-De frakoblede postboksene bør først slettes endelig etter at det avtalte tilbakeføringsvinduet er utløpt, og i henhold til retensjonskonseptet.
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Get-MailboxExportRequest -BatchName` | Velger nøyaktig eksportforespørslene for den fullførte batchen |
+| `Remove-MailboxExportRequest -Confirm:$false` | Fjerner forespørslene uten spørsmål; selve PST-filene påvirkes ikke av dette |
+
+</details>
+
+De frakoblede postboksene bør først ryddes endelig etter at det avtalte tilbakeføringsvinduet er utløpt og i henhold til retention-konseptet.
 
 ## Konklusjon
 
-Hvis Hybrid Remote Moves ikke er tillatt og ingen postboksdata må overføres til Exchange Online, kan en eksisterende synkronisert AD-bruker kontrolleres fra en lokal postboks til en ny skypostboks. Den kritiske delen er ikke `Enable-RemoteMailbox`, men prosesskontrollen rundt den: fullstendig kartlegging, verifisert PST-sikkerhetskopi, eksplisitte godkjenninger, bevaring av proxy- og X500-adresser, kontrollert e-postflyt og et reelt tilbakeføringsvindu.
+Når Hybrid Remote Moves ikke er tillatt og ingen postboksdata må overføres til Exchange Online, kan en eksisterende synkronisert AD-bruker kontrollerte omstilles fra en lokal postboks til en ny skypostboks. Den kritiske delen er ikke `Enable-RemoteMailbox`, men prosesskontrollen rundt det: fullstendig inventarisering, verifisert PST-sikkerhetskopi, eksplisitte godkjenninger, bevaring av proxy- og X500-adresser, kontrollert e-postflyt og et reelt tilbakeføringsvindu.
 
 ## Kilder
 
-1. [Microsoft Learn – Enable-RemoteMailbox](https://learn.microsoft.com/en-us/powershell/module/exchange/enable-remotemailbox?view=exchange-ps): Aktiverer en eksisterende lokal AD-bruker for en postboks i den skybaserte tjenesten og dokumenterer parameterne for bruker-, delte, rom- og utstyrspostbokser.
+1. [Microsoft Learn – Enable-RemoteMailbox](https://learn.microsoft.com/en-us/powershell/module/exchange/enable-remotemailbox?view=exchange-ps): Aktiverer en eksisterende lokal AD-bruker for en postboks i den skybaserte tjenesten og dokumenterer bryterne for bruker-, delte, rom- og utstyrspostbokser.
 
 2. [Microsoft Learn – New-MailboxExportRequest](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/new-mailboxexportrequest?view=exchange-ps): Referanse for eksport av primære og arkiverte lokale postbokser til PST-filer.
 
 3. [Microsoft Learn – Mailbox import and export requests](https://learn.microsoft.com/en-us/exchange/mailbox-import-and-export-requests-exchange-2013-help): Forutsetninger for eksportdeling, tillatelser og Exchange Trusted Subsystem.
 
-4. [Microsoft Learn – Disable or delete a mailbox in Exchange Server](https://learn.microsoft.com/en-us/exchange/recipients/disconnected-mailboxes/disable-or-delete-mailboxes): Virkemåten til `Disable-Mailbox`, fjerning av Exchange-attributter og oppbevaring av den frakoblede postboksen.
+4. [Microsoft Learn – Disable or delete a mailbox in Exchange Server](https://learn.microsoft.com/en-us/exchange/recipients/disconnected-mailboxes/disable-or-delete-mailboxes): Virkemåte for `Disable-Mailbox`, fjerning av Exchange-attributter og oppbevaring av den frakoblede postboksen.
 
-5. [Microsoft Learn – Disconnected mailboxes](https://learn.microsoft.com/en-us/exchange/recipients/disconnected-mailboxes/disconnected-mailboxes): Koble til på nytt, gjenopprette og slette frakoblede postbokser permanent.
+5. [Microsoft Learn – Disconnected mailboxes](https://learn.microsoft.com/en-us/exchange/recipients/disconnected-mailboxes/disconnected-mailboxes): Ny tilkobling, gjenoppretting og endelig sletting av frakoblede postbokser.
 
 6. [Microsoft Learn – Delays in provisioning of a user or mailbox](https://learn.microsoft.com/en-us/troubleshoot/exchange/user-and-shared-mailboxes/delays-provision-mailbox-sync-changes): Typisk varighet og feilsøking ved klargjøring i Exchange Online.
 
-7. [Microsoft Learn – Move mailboxes between on-premises and Exchange Online organizations](https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes): Den vanlige Hybrid Remote Move som referanse og avgrensning mot nyoppsettet som beskrives her.
+7. [Microsoft Learn – Move mailboxes between on-premises and Exchange Online organizations](https://learn.microsoft.com/en-us/exchange/hybrid-deployment/move-mailboxes): Den ordinære Hybrid Remote Move som referanse og avgrensning mot nyopprettingen beskrevet her.
