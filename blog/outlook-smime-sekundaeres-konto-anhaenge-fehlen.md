@@ -1,5 +1,5 @@
 ---
-title: "New Outlook: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen"
+title: "Outlook New: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen"
 navTitle: "S/MIME im Zweitkonto"
 description: "Das neue Outlook meldet beim freigegebenen Postfach, die S/MIME-Signatur könne im sekundären Konto nicht überprüft werden, und zeigt keine Anhänge. Der Artikel erklärt den Unterschied zwischen Clear Signing und Opaque Signing, warum die Anhänge bei opak signierten Mails verschwinden, weshalb das neue Outlook S/MIME nur im Primärkonto verarbeitet und welche Auswege es gibt, inklusive Auspacken der smime.p7m mit PowerShell oder OpenSSL."
 date: "2026-09-03"
@@ -22,7 +22,7 @@ url: "https://rafaelpfister.ch/blog/outlook-smime-sekundaeres-konto-anhaenge-feh
 aiPrompt: |
   Du bist mein Messaging-Assistent. Hilf mir, das Problem "S/MIME-Signatur kann im sekundären Konto nicht überprüft werden" in Outlook einzuordnen: Prüfe anhand der Nachrichtenquelle, ob die Mail clear-signed (multipart/signed) oder opaque-signed (application/pkcs7-mime) ist, erkläre mir, warum die Anhänge fehlen, und führe mich zu einem Ausweg (Postfach als eigenes Konto, klassisches Outlook, Outlook im Web oder Auspacken der smime.p7m mit PowerShell oder OpenSSL).
 ---
-# New Outlook: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
+# Outlook New: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
 
 Im neuen Outlook für Windows erscheint beim Öffnen einer digital signierten Mail in einem freigegebenen Postfach ein roter Balken: "Das S/MIME-Zeichen kann beim Anzeigen im sekundären Konto nicht überprüft werden." Die Mail selbst wird angezeigt, die Anhänge aber nicht, obwohl der Absender welche mitgeschickt hat. Kolleginnen und Kollegen, die dasselbe Postfach als Hauptkonto nutzen, sehen die Anhänge problemlos.
 
