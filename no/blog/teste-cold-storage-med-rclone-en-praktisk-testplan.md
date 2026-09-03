@@ -1,10 +1,10 @@
 ---
-title: "Teste Cold Storage med Rclone: en praktisk testplan"
-navTitle: "Teste Rclone"
-description: "Før en tjeneste leser filene sine fra skyen via en Rclone-mount, bør du kontrollere mer enn bare katalogtilgang. Denne testplanen dekker kalde lesinger, varme lesinger, skriveoperasjoner, cacheatferd, filintegritet og feil."
+title: "Test Cold Storage with Rclone: a practical test plan"
+navTitle: "Test Rclone"
+description: "Before a service reads its files from the cloud via an Rclone mount, you should check more than just directory access. This test plan covers cold reads, warm reads, write operations, cache behaviour, file integrity and outages."
 date: "2026-07-26"
 kategorie: "Rclone"
-timeToRead: "11 min lesetid"
+timeToRead: "11 min read"
 themen:
   - rclone
   - testing
@@ -13,40 +13,74 @@ related:
   - paperless-dokumente-clouddienst-auslagern
 slug: "teste-cold-storage-med-rclone-en-praktisk-testplan"
 translationOf: "cloud-mount-testen-dummy-pdfs"
-url: "https://rafaelpfister.ch/no/blog/teste-cold-storage-med-rclone-en-praktisk-testplan"
 translationId: article-8592f808b2e93cd4
 translationModel: gpt-5.6-terra
-translatedAt: 2026-07-28T20:40:23.040Z
+translatedAt: 2026-09-03T08:23:39.236Z
 translationReview: automatic
-translationSourceHash: 4dd3058563b8e3853528cbd3cb5b216cc840923ceee9250055c3000c296232b9
+translationSourceHash: 27bc45a50d8e84fc785eaf04ec6814054e327f516587d0f9f9a101c989ce2aa1
+url: https://rafaelpfister.ch/no/blog/teste-cold-storage-med-rclone-en-praktisk-testplan
 ---
 
-En Rclone-mount er rask å sette opp. Remote-en vises som en katalog, `ls` viser filer, og den første funksjonstesten er bestått. Dette sier likevel lite om produksjonsdrift.
+An Rclone mount is quick to set up. The remote appears as a directory, `ls` shows files, and the first functional test has passed. That says little about production use.
 
-Så snart en tjeneste får tilgang til mounten, dukker det opp flere spørsmål: Hvor lang tid tar første tilgang til en fil? Hvilke tilganger håndteres av den lokale cachen? Hva skjer med en fil som ennå ikke er lastet opp, dersom Rclone krasjer? Ser en kjørende container mounten på nytt når den bygges opp igjen? Og hvordan reagerer tjenesten dersom skyen midlertidig ikke er tilgjengelig?
+As soon as a service accesses the mount, further questions arise: How long does the first access to a file take? Which accesses are served by the local cache? What happens to a file that has not yet been uploaded if Rclone crashes? Does a running container see the remounted mount again? And how does the service react if the cloud is temporarily unavailable?
 
-Denne artikkelen gir en generell testplan for dette. Du kan bruke den for et dokumentarkiv, en medieserver, en bildeadministrasjon eller enhver annen tjeneste som henter sjelden brukte filer via Rclone fra Cold Storage.
+This article provides a general test plan for this purpose. You can use it for a document archive, media server, photo management system or any other service that retrieves rarely needed files from Cold Storage via Rclone.
 
-## Fastsett først hva du vil oppnå
+## The most important rclone options
 
-Cold Storage betyr ikke automatisk det samme for alle applikasjoner. En medieserver leser som regel store filer sekvensielt. En bildeadministrasjon laster mange små forhåndsvisningsdata og hopper til ulike posisjoner. Et dokumentarkiv åpner forholdsvis små filer, men ofte bare én gang.
+For orientation, here are the Rclone options used in this test plan, translated broadly from the documentation:
 
-Noter de viktigste egenskapene ved ditt faktiske datasett før testen:
+<details class="options-details">
+<summary>Options at a glance</summary>
 
-- typisk filstørrelse samt største forekommende fil
-- antall filer per katalog
-- fullstendig lesing eller tilfeldige tilganger til enkelte områder
-- forholdet mellom lese- og skrivetilganger
-- antall samtidige brukere eller prosesser
-- endringer som skjer direkte i remote-en utenfor mounten
-- akseptabel ventetid for en kald lesing
-- maksimalt tilgjengelig plass for den lokale cachen
+| Option | Meaning |
+|---|---|
+| `--seed n` | Initial value for the random number generator in `rclone test makefiles`; the same seed produces the same file tree |
+| `--files n` | Number of test files to create |
+| `--files-per-directory n` | Average number of files per directory |
+| `--min-file-size grösse` | Smallest generated file size (suffixes such as K, M and G are allowed) |
+| `--max-file-size grösse` | Largest generated file size |
+| `--progress` | Continuous progress display during transfer |
+| `--stats dauer` | Interval at which transfer statistics are printed |
+| `--log-file datei` | Writes the log to the specified file |
+| `--log-level stufe` | Log detail level: DEBUG, INFO, NOTICE or ERROR |
+| `--one-way` | With `rclone check`, checks only whether all source files exist in the destination and are identical; additional files in the destination are not considered errors |
+| `--download` | Actually downloads the data during comparison instead of comparing hashes only |
+| `--vfs-cache-mode modus` | Cache strategy of the VFS layer; `full` buffers reads and writes locally |
+| `--cache-dir verzeichnis` | Directory for the local cache |
+| `--vfs-cache-max-size grösse` | Soft limit for the total VFS cache size |
+| `--vfs-cache-poll-interval dauer` | Interval at which Rclone checks and cleans up the cache |
+| `--vfs-write-back dauer` | Delay after closing a file before upload to the remote begins |
+| `--vfs-read-ahead grösse` | Additional amount of data read ahead beyond the requested position with `full` |
+| `--poll-interval dauer` | Interval at which Rclone polls the remote for changes (only for backends with polling support) |
+| `--dir-cache-time dauer` | Validity period for cached directory listings |
+| `--allow-other` | Allows users other than the mounting user to access the FUSE mount |
 
-Først da får du meningsfulle suksesskriterier. Å åpne én enkelt fil på 1,2 sekunder kan være helt greit for et arkiv og ubrukelig for en interaktiv applikasjon.
+</details>
 
-## Opprett et reproduserbart testdatasett
+The complete lists are available in the Rclone documentation, especially under [rclone mount](https://rclone.org/commands/rclone_mount/) and in the overview of [global flags](https://rclone.org/flags/).
 
-Rclone har allerede et egnet verktøy for dette. `rclone test makefiles` oppretter det samme filtreet hver gang med en fast seed:
+## First decide what you want to achieve
+
+Cold Storage does not automatically mean the same thing for every application. A media server usually reads large files sequentially. A photo management system loads many small preview files and jumps to different positions. A document archive opens comparatively small files, but often only once.
+
+Before testing, note the most important characteristics of your real dataset:
+
+- typical file size and largest file encountered
+- number of files per directory
+- complete reading or random access to individual regions
+- ratio between reads and writes
+- number of simultaneous users or processes
+- changes that take place directly in the remote outside the mount
+- acceptable wait time for a cold read
+- maximum available space for the local cache
+
+Only then do meaningful success criteria emerge. Opening a single file in 1.2 seconds may be perfectly acceptable for an archive and unusable for an interactive application.
+
+## Create a reproducible test dataset
+
+Rclone already includes a suitable tool. `rclone test makefiles` creates the same file tree every time with a fixed seed:
 
 ```bash
 rclone test makefiles ./testdata \
@@ -57,25 +91,49 @@ rclone test makefiles ./testdata \
   --max-file-size 32M
 ```
 
-Tilpass antall og størrelser til ditt faktiske datasett. Ikke test bare gjennomsnittsfiler. Noen svært små filer viser hvor kostbare metadata-tilganger er; noen store filer synliggjør gjennomstrømning, Read-Ahead og cacheatferd.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Legg også til filnavn som kan skape problemer i praksis:
+| Option | Effect |
+|---|---|
+| `./testdata` | Destination directory where the test tree is created |
+| `--seed 42` | Fixed initial value for the random number generator; every run creates the same dataset |
+| `--files 250` | 250 test files in total |
+| `--files-per-directory 25` | An average of 25 files per directory |
+| `--min-file-size 16K` | Smallest file: 16 KiB |
+| `--max-file-size 32M` | Largest file: 32 MiB |
+
+</details>
+
+Adapt the number and sizes to your real dataset. Do not test only average files. A few very small files show how expensive metadata accesses are; a few large files make throughput, read-ahead and cache behaviour visible.
+
+Also add file names that may cause problems in practice:
 
 ```bash
-mkdir -p "testdata/Spesialtilfeller/Underkatalog"
-printf 'Mellomrom\n' > "testdata/Spesialtilfeller/Fil med mellomrom.txt"
-printf 'Spesialtegn\n' > "testdata/Spesialtilfeller/Størrelse og endring.txt"
-printf 'Store bokstaver\n' > "testdata/Spesialtilfeller/Test.txt"
-printf 'Små bokstaver\n' > "testdata/Spesialtilfeller/test.txt"
+mkdir -p "testdata/Sonderfälle/Unterordner"
+printf 'Leerzeichen\n' > "testdata/Sonderfälle/Datei mit Leerzeichen.txt"
+printf 'Umlaute\n' > "testdata/Sonderfälle/Grösse und Änderung.txt"
+printf 'Grossschreibung\n' > "testdata/Sonderfälle/Test.txt"
+printf 'Kleinschreibung\n' > "testdata/Sonderfälle/test.txt"
 ```
 
-Den siste testen er særlig viktig dersom lokalt filsystem og skybackend behandler store og små bokstaver ulikt.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Dersom tjenesten din bare godtar bestemte formater, holder det ikke med vilkårlige binærfiler. Opprett da også syntetiske filer i nettopp disse formatene. For Paperless-ngx var dette PDF-er med et ekte tekstlag, slik at testen ikke utilsiktet måler OCR-ytelsen i stedet for lagringsstien. En bildeadministrasjon bør ha ulike bildestørrelser og formater i datasettet, mens en medieserver bør ha korte filer med forskjellige kodeker.
+| Option | Effect |
+|---|---|
+| `mkdir -p` | Also creates missing parent directories and does not report an error if the directory exists |
+| `printf '…\n' > datei` | Writes the specified text as file content; the redirection creates the file with the problematic name |
 
-## En referansemåling uten mount
+</details>
 
-Før FUSE og VFS-cache kommer inn i bildet, bør du måle backend-en direkte. Kopier datasettet med Rclone til test-remote-en og lagre en detaljert logg:
+The last test is particularly important if the local file system and cloud backend handle upper and lower case differently.
+
+If your service accepts only certain formats, arbitrary binary files are not sufficient. In that case, also create synthetic files in precisely those formats. With Paperless-ngx, these were PDFs with a real text layer so that the test would not accidentally measure OCR performance rather than the storage path. For a photo management system, include different image sizes and formats; for a media server, short files with different codecs.
+
+## A baseline measurement without a mount
+
+Before FUSE and the VFS cache come into play, you should measure the backend directly. Copy the dataset to the test remote with Rclone and save a detailed log:
 
 ```bash
 rclone copy ./testdata remote:cold-storage-test \
@@ -85,7 +143,21 @@ rclone copy ./testdata remote:cold-storage-test \
   --log-level INFO
 ```
 
-Kontroller deretter at kilde og mål stemmer overens:
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `./testdata` | Copy source: the locally generated test dataset |
+| `remote:cold-storage-test` | Destination: path in the configured remote |
+| `--progress` | Continuous progress display in the terminal |
+| `--stats 5s` | Transfer statistics every 5 seconds instead of at the default interval |
+| `--log-file rclone-copy.log` | Complete log in a file for later analysis |
+| `--log-level INFO` | Logs transfers, retries and errors without the volume of DEBUG logging |
+
+</details>
+
+Then check whether source and destination match:
 
 ```bash
 rclone check ./testdata remote:cold-storage-test \
@@ -93,13 +165,25 @@ rclone check ./testdata remote:cold-storage-test \
   --download
 ```
 
-Med `--download` leser Rclone faktisk dataene og sammenligner dem, selv om backend-en ikke tilbyr passende hasher. Dette tar lengre tid, men gir et brukbart utgangspunkt for den senere integritetstesten.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Registrer opplastingstid, overføringshastighet, antall forsøk på nytt og API-feil. Dersom den direkte tilgangen allerede er ustabil, kan mounten ikke reparere dette.
+| Option | Effect |
+|---|---|
+| `./testdata` | Reference: the local original dataset |
+| `remote:cold-storage-test` | Subject under test: the freshly uploaded dataset in the remote |
+| `--one-way` | Checks only whether all source files exist in the destination and are identical; additional files in the destination are not flagged |
+| `--download` | Downloads the data and compares contents instead of relying on hashes |
 
-## Skill test-mounten fra produksjonscachen
+</details>
 
-Bruk et eget mountpunkt og en egen cachekatalog for målingen:
+`--download` is crucial here because some backends do not provide suitable hashes. The comparison takes longer, but provides a useful baseline for the later integrity test.
+
+Record upload time, transfer rate, number of retries and API errors. If direct access is already unstable, the mount cannot fix it.
+
+## Separate the test mount from the production cache
+
+Use a dedicated mount point and a dedicated cache directory for measurement:
 
 ```bash
 rclone mount remote:cold-storage-test /mnt/rclone-test \
@@ -112,40 +196,78 @@ rclone mount remote:cold-storage-test /mnt/rclone-test \
   --log-level INFO
 ```
 
-Verdiene er et eksempel og ikke en generell anbefaling. Det avgjørende er separasjonen: En tom testcache gjør kalde lesinger reproduserbare uten at du må slette filer fra en aktiv produksjonscache.
+<details class="options-details">
+<summary>Options explained</summary>
 
-`--vfs-cache-mode full` er vanligvis den mest informative testmodusen for applikasjoner. Rclone mellomlagrer lese- og skrivetilganger lokalt og kan bedre gjengi filtilganger som ikke ville vært mulig med ren objektlagring. Den ekstra kompatibiliteten krever lokal lagringsplass.
+| Option | Effect |
+|---|---|
+| `remote:cold-storage-test` | Remote and path to mount |
+| `/mnt/rclone-test` | Mount point on the test system |
+| `--vfs-cache-mode full` | Fully buffers reads and writes in the local cache |
+| `--cache-dir /var/cache/rclone-test` | Dedicated cache directory, separate from the production cache |
+| `--vfs-cache-max-size 10G` | Soft limit of 10 GiB for the VFS cache |
+| `--vfs-cache-poll-interval 1m` | Cache checking and cleanup every minute |
+| `--allow-other` | Users other than the mounting user may also access it; required for services and containers |
+| `--log-file /var/log/rclone-test.log` | Log to a file to trace access during tests |
+| `--log-level INFO` | Medium log detail level |
 
-## Kontroller alltid fra den faktiske tjenestens perspektiv
+</details>
 
-En mount kan fungere for brukeren din, men likevel være ubrukelig for tjenesten. Vanlige årsaker er en annen bruker-ID, manglende `--allow-other`, containergrenser eller feil mount-propagation.
+The values are an example, not a general recommendation. Separation is what matters: an empty test cache makes cold reads reproducible without requiring you to delete files from an active production cache.
 
-Utfør derfor minst én fullstendig lesetilgang med samme identitet som applikasjonen senere skal kjøre under:
+`--vfs-cache-mode full` is usually the most informative test mode for applications. Rclone buffers reads and writes locally and can better emulate file accesses that would not be possible with pure object storage. The additional compatibility costs local storage space.
+
+## Always check from the perspective of the real service
+
+A mount may work for your user but still be unusable for the service. Common causes include a different user ID, missing `--allow-other`, container boundaries or incorrect mount propagation.
+
+Therefore, perform at least one complete read with the same identity under which the application will later run:
 
 ```bash
-sudo -u <tjenestebruker> sha256sum /mnt/rclone-test/sti/til/fil
+sudo -u <service-user> sha256sum /mnt/rclone-test/pfad/zur/datei
 ```
 
-Kjører tjenesten i Docker, skal testen utføres i containeren:
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-u <service-user>` | Runs the command as the specified user, not as root |
+| `/mnt/rclone-test/pfad/zur/datei` | File to read; `sha256sum` forces a complete read |
+
+</details>
+
+If the service runs in Docker, the test belongs inside the container:
 
 ```bash
 docker exec --user <uid>:<gid> <app-container> \
-  sha256sum /sti/i/container/fil
+  sha256sum /pfad/im/container/datei
 ```
 
-Enda bedre er en reell applikasjonstest. Åpne filen via tjenestens webgrensesnitt eller API. Bare slik oppdager du om applikasjonen for eksempel starter flere parallelle lesinger, hopper til slutten av filen eller forventer ekstra metadata.
+<details class="options-details">
+<summary>Options explained</summary>
 
-## Mål kalde og varme lesinger separat
-
-Med `--vfs-cache-mode full` finnes det tre nivåer mellom applikasjonen og skyen:
-
-| Nivå | Hva som ligger der |
+| Option | Effect |
 |---|---|
-| Remote | hele filen i skytjenesten |
-| VFS-cache | lokalt lagrede områder av allerede leste filer |
-| Linux-sidecache | nylig brukte data i RAM |
+| `--user <uid>:<gid>` | Runs the command in the container with this user and group ID, regardless of the image's default user |
+| `<app-container>` | Name or ID of the running application container |
+| `sha256sum /pfad/im/container/datei` | Command to run; the path is the mount from the container's perspective |
 
-For en kald lesing velger du en fil hvis innhold aldri tidligere har blitt lest via test-mounten. Ved den direkte påfølgende varme lesingen ligger filen i VFS-cachen og som regel også i RAM.
+</details>
+
+An actual application test is even better. Open the file through the service's web interface or API. Only this reveals whether the application, for example, starts several parallel reads, jumps to the end of the file or expects additional metadata.
+
+## Measure cold reads and warm reads separately
+
+With `--vfs-cache-mode full`, there are three layers between the application and the cloud:
+
+| Layer | What it contains |
+|---|---|
+| Remote | the complete file in the cloud service |
+| VFS cache | locally stored regions of files that have already been read |
+| Linux page cache | recently used data in RAM |
+
+For a cold read, choose a file whose contents have never been read through the test mount. In the immediately following warm read, it is in the VFS cache and usually also in RAM.
 
 ```bash
 measure_read() {
@@ -157,72 +279,112 @@ measure_read() {
   printf '%s: %s ms\n' "$label" "$((end - start))"
 }
 
-measure_read "/mnt/rclone-test/stor-fil.bin" "Kald lesing"
-measure_read "/mnt/rclone-test/stor-fil.bin" "Varm lesing"
+measure_read "/mnt/rclone-test/grosse-datei.bin" "Cold Read"
+measure_read "/mnt/rclone-test/grosse-datei.bin" "Warm Read"
 ```
 
-Ikke mål bare én fil. Bruk minst ti hittil uleste filer med forskjellig størrelse, og noter median, tregeste verdi og filstørrelse. Én enkelt toppverdi er ikke et beslutningsgrunnlag.
+<details class="options-details">
+<summary>Options explained</summary>
 
-En varm lesing er ikke en ren disktest, fordi kjernen kan beholde deler av filen i RAM. For de fleste Cold Storage-scenarioer er dette ikke et problem. Det avgjørende er hva en bruker opplever ved første og gjentatt åpning. Dersom du vil vurdere RAM og lokal disk separat, må du i tillegg kontrollere og dokumenterbart tømme sidecachen.
+| Option | Effect |
+|---|---|
+| `date +%s%3N` | Timestamp in milliseconds: Unix seconds immediately followed by the first three digits of the nanosecond component (GNU date) |
+| `cat "$file" > /dev/null` | Reads the file completely and discards output; only read time is measured |
+| `"$1"`, `"$2"` | Shell function arguments: file path and label for the measurement line |
 
-## Ikke test bare fullstendige lesetilganger
+</details>
 
-`cat` leser en fil fra begynnelse til slutt. Mange applikasjoner oppfører seg annerledes:
+Do not measure only one file. Use at least ten previously unread files of different sizes and record the median, slowest value and file size. A single best result is not a basis for a decision.
 
-- En videospiller leser først headere og indeks, hopper senere til en annen posisjon og fortsetter deretter sekvensielt.
-- En bildeadministrasjon leser metadata og oppretter deretter et forhåndsvisningsbilde.
-- Et arkivprogram kan først lese slutten av filen.
-- Flere workere kan få tilgang til forskjellige filer samtidig.
+A warm read is not a pure disk test because the kernel may keep parts of the file in RAM. For most Cold Storage scenarios, that is not a problem. What matters is what a user experiences when opening a file for the first time and again later. If you want to evaluate RAM and local disk separately, you must additionally control and demonstrably clear the page cache.
 
-Test disse arbeidsflytene med den faktiske applikasjonen. Observer Rclone-loggen og cachen parallelt. For store filer er det interessant hvor mye Rclone faktisk lagrer lokalt, og om `--vfs-read-ahead` passer til tilgangsmønsteret.
+## Test more than complete reads
 
-En Rclone-mount er dessuten ikke et fornuftig lagringssted for databaser eller andre filer som krever pålitelig låsing og hyppige endringer i samme fil. VFS-laget utjevner forskjeller mellom filsystem og objektlagring, men gjør ikke backend-en om til et lokalt filsystem.
+`cat` reads a file from beginning to end. Many applications behave differently:
 
-## Test skrivebanen separat
+- A video player initially reads headers and the index, later jumps to another position and then continues reading sequentially.
+- An image management system reads metadata and then generates a preview image.
+- An archive program may read the end of the file first.
+- Several workers may access different files at the same time.
 
-Dersom tjenesten din bare leser, bør du montere remote-en skrivebeskyttet når det er mulig. Må den skrive, test oppretting, overskriving, omdøping og sletting enkeltvis.
+Test these workflows with the actual application. Observe the Rclone log and cache in parallel. With large files, it is interesting how much Rclone actually stores locally and whether `--vfs-read-ahead` matches the access pattern.
 
-En skrevet fil vises ikke nødvendigvis umiddelbart i remote-en. Med aktiv VFS-cache starter opplastingen først etter at filen er lukket og `--vfs-write-back` har utløpt. Kontroller derfor begge tilstander:
+An Rclone mount is also not a sensible storage location for databases or other files that require reliable locking and frequent changes within the same file. The VFS layer compensates for differences between file systems and object storage, but does not turn the backend into a local file system.
 
-1. Applikasjonen har lukket filen uten feil.
-2. Filen kan deretter leses i remote-en via direkte Rclone-tilgang.
+## Validate the write path separately
+
+If your service only reads, mount the remote read-only whenever possible. If it must write, test creating, overwriting, renaming and deleting individually.
+
+A written file does not necessarily appear in the remote immediately. With the VFS cache enabled, upload starts only after the file has been closed and `--vfs-write-back` has elapsed. Therefore check both states:
+
+1. The application has successfully closed the file.
+2. The file can subsequently be read in the remote through direct Rclone access.
 
 ```bash
-printf 'tilbakeskriving-test\n' > /mnt/rclone-test/tilbakeskriving-test.txt
+printf 'writeback-test\n' > /mnt/rclone-test/writeback-test.txt
 
-# Etter at --vfs-write-back har utløpt:
-rclone cat remote:cold-storage-test/tilbakeskriving-test.txt
+# After --vfs-write-back has elapsed:
+rclone cat remote:cold-storage-test/writeback-test.txt
 ```
 
-Gjenta testen med en stor fil og avslutt Rclone mens opplastingen fortsatt pågår. Start deretter på nytt med samme cachekatalog og kontroller om opplastingen fortsetter. Nettopp dette tidsvinduet avgjør hvor mye data som er utsatt ved serverutfall.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Test også omdøping og sletting. Mange skybackender representerer disse operasjonene annerledes enn et lokalt filsystem. Det relevante er ikke bare om kommandoen avsluttes vellykket, men når endringen blir synlig ved direkte tilgang til remote-en og for andre klienter.
+| Option | Effect |
+|---|---|
+| `/mnt/rclone-test/writeback-test.txt` | Destination file in the mount; redirection writes via the VFS cache |
+| `remote:cold-storage-test/writeback-test.txt` | Direct access bypassing the mount: `rclone cat` reads the file from the remote and writes it to stdout |
 
-## Test endringer utenfor mounten
+</details>
 
-Filer kan endres via leverandørens webgrensesnitt, en annen Rclone-prosess eller en annen server. Mounten ser ikke alltid slike endringer umiddelbart, fordi kataloginformasjon mellomlagres.
+Repeat the test with a large file and stop Rclone while the upload is still running. Then restart it using the same cache directory and check whether the upload resumes. This exact time window determines how much data is at risk during a server failure.
 
-Opprett derfor en fil direkte i remote-en med et andre Rclone-kall:
+Also test renaming and deleting. Many cloud backends map these operations differently from a local file system. What matters is not only whether the command finishes successfully, but when the change becomes visible through direct access to the remote and to other clients.
+
+## Test changes outside the mount
+
+Files can be changed through the provider's web interface, a second Rclone process or another server. The mount does not always see such changes immediately because directory information is cached.
+
+Therefore, create a file directly in the remote with a second Rclone invocation:
 
 ```bash
-printf 'ekstern-endring\n' > ekstern-endring.txt
-rclone copyto ekstern-endring.txt \
-  remote:cold-storage-test/ekstern-endring.txt
+printf 'external-change\n' > external-change.txt
+rclone copyto external-change.txt \
+  remote:cold-storage-test/external-change.txt
 ```
 
-Mål når filen vises i mounten. Gjenta testen for endring og sletting. Resultatet avhenger av backend-en, dens støtte for polling samt `--poll-interval` og `--dir-cache-time`. Dersom applikasjonen må se aktuelle endringer umiddelbart, må denne atferden uttrykkelig inngå i akseptansekriteriene.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Med aktivert Remote Control-grensesnitt kan du forkaste katalogcachen målrettet:
+| Option | Effect |
+|---|---|
+| `external-change.txt` | Source: the locally created file |
+| `remote:cold-storage-test/external-change.txt` | Destination with the exact file name; `copyto` copies a single file under that exact name, rather than copying it into a directory like `copy` |
+
+</details>
+
+Measure when the file appears in the mount. Repeat the test for modification and deletion. The result depends on the backend, its polling support, and `--poll-interval` and `--dir-cache-time`. If the application must see current changes immediately, this behaviour must explicitly be included in the acceptance criteria.
+
+With the Remote Control interface enabled, you can specifically clear the directory cache:
 
 ```bash
 rclone rc vfs/forget
 ```
 
-Dette er nyttig for en manuell test, men erstatter ikke en egnet driftsstrategi.
+<details class="options-details">
+<summary>Options explained</summary>
 
-## Sett cachen under press
+| Option | Effect |
+|---|---|
+| `vfs/forget` | Remote Control command to execute: clears the VFS cached directory tree so that the next access queries the remote again |
 
-En nesten tom cache er det enkleste tilfellet. Sett `--vfs-cache-max-size` bevisst lavt i en andre testrunde, og les mer data enn det er plass til.
+</details>
+
+This is useful for a manual test, but is no substitute for an appropriate operating strategy.
+
+## Put the cache under pressure
+
+A nearly empty cache is the simplest case. In a second test round, deliberately set `--vfs-cache-max-size` low and read more data than it can hold.
 
 ```bash
 du -sh /var/cache/rclone-test/vfs
@@ -230,92 +392,128 @@ du -sh --apparent-size /var/cache/rclone-test/vfs
 find /var/cache/rclone-test/vfs -type f | wc -l
 ```
 
-De to størrelsene kan avvike mye fra hverandre. I full-modus bruker Rclone sparse filer: En fil viser hele sin logiske størrelse, selv om bare de leste områdene bruker lokal plass.
+<details class="options-details">
+<summary>Options explained</summary>
 
-Cachegrensen er dessuten myk. Rclone kontrollerer den i intervallet `--vfs-cache-poll-interval`, og åpne filer kan ikke fjernes. Cachen kan derfor kortvarig overskride grensen. Etter at filene er lukket og neste oppryddingsrunde er kjørt, bør den likevel reduseres igjen.
-
-Loggfør toppverdi, verdi etter opprydding og tiden dette tar. Slik kan nødvendig lokal lagringsplass dimensjoneres fornuftig.
-
-## Simuler to forskjellige feil
-
-En utilgjengelig sky og en krasjet Rclone-prosess er to forskjellige feil:
-
-| Feil | Hva du kontrollerer |
+| Option | Effect |
 |---|---|
-| Backend eller nettverk er utilgjengelig, Rclone fortsetter å kjøre | Atferd ved nye forsøk, tidsavbrudd og allerede mellomlagrede filer |
-| Rclone-prosessen avsluttes | Atferd for FUSE-mounten og gjenoppretting av mountpunktet |
+| `du -s` | Summarises disk usage in one total line instead of listing every subdirectory |
+| `du -h` | Output in human-readable units (K, M, G) |
+| `du --apparent-size` | Shows logical file size instead of actual occupied disk space |
+| `find … -type f` | Includes only regular files, not directories |
+| `wc -l` | Counts output lines, here the number of cache files |
 
-Simuler begge kun i testmiljøet. Du kan hardt avslutte en Rclone-container for det andre tilfellet:
+</details>
+
+The two sizes can differ greatly. In full mode, Rclone uses sparse files: a file shows its complete logical size even though only the read regions occupy local space.
+
+The cache limit is also soft. Rclone checks it at the interval set by `--vfs-cache-poll-interval`, and open files cannot be removed. The cache may therefore temporarily exceed the limit. However, it should decrease again after the files are closed and the next cleanup run takes place.
+
+Record the peak value, the value after cleanup and the time required. This makes it possible to size the required local storage sensibly.
+
+## Simulate two different failures
+
+An unreachable cloud and a crashed Rclone process are two different errors:
+
+| Failure | What this tests |
+|---|---|
+| Backend or network unavailable, Rclone continues running | Behaviour during retries, timeouts and for already cached files |
+| Rclone process terminated | Behaviour of the FUSE mount and restoration of the mount point |
+
+Simulate both only in the test environment. You can forcefully terminate an Rclone container for the second case:
 
 ```bash
 docker kill --signal KILL <rclone-container>
 ```
 
-Kontroller applikasjonen under feilen, ikke bare mountpunktet:
+<details class="options-details">
+<summary>Options explained</summary>
 
-- Hvilke funksjoner er fortsatt tilgjengelige?
-- Hvor lenge venter en tilgang før det vises en feil?
-- Er allerede fullstendig mellomlagrede filer fortsatt tilgjengelige?
-- Stopper applikasjonen nye skriveoperasjoner?
-- Oppstår det en forståelig feilmelding eller bare en hengende prosess?
-- Utløses overvåkingen din?
+| Option | Effect |
+|---|---|
+| `--signal KILL` | Sends SIGKILL instead of the default SIGTERM signal; the process has no opportunity for cleanup |
+| `<rclone-container>` | Name or ID of the Rclone container |
 
-En skrivetjeneste må ikke ubemerket skrive til den underliggende lokale katalogen når mounten mangler. Etter at mounten kommer tilbake, vil disse filene bli skjult. En enkel beskyttelse før hver skrivejobb er:
+</details>
+
+During the failure, check the application rather than only the mount point:
+
+- Which functions remain available?
+- How long does an access wait before an error appears?
+- Are already fully cached files still accessible?
+- Does the application stop new write operations?
+- Is there an understandable error message or merely a hanging process?
+- Does your monitoring trigger?
+
+When the mount is missing, a writing service must not silently write to the underlying local directory. These files would be obscured after the mount returns. A simple safeguard before every write job is:
 
 ```bash
 mountpoint -q /mnt/rclone-test || exit 1
 ```
 
-Etter omstart av Rclone kontrollerer du mounten på verten og fra hver konsumerende container. En gjenoppbygd mount når en allerede kjørende container bare med riktig mount-propagation. For Docker kreves vanligvis `rslave` på den konsumerende siden. Detaljene står i artikkelen [Drift Rclone-mounter pålitelig i Docker](/blog/rclone-mount-in-docker-container).
+<details class="options-details">
+<summary>Options explained</summary>
 
-## Et konkret eksempel fra Paperless-ngx
+| Option | Effect |
+|---|---|
+| `-q` | No output; the result is available only in the exit code |
+| `/mnt/rclone-test` | Path to check; exit code 0 only if a mount is actually active there |
+| `\|\| exit 1` | Stops the script if the path is not a mount point |
 
-For min Paperless-test opprettet jeg 40 PDF-er på til sammen 13,9 MB. Et dokument som ikke tidligere var åpnet, tok rundt 1,8 sekunder, mens en umiddelbart gjentatt tilgang tok 19 til 24 millisekunder. En VFS-cache begrenset til 4 MB steg kortvarig til 12,7 MiB og ble ryddet igjen ved neste kjøring.
+</details>
 
-Mens remote-en ikke var tilgjengelig, fungerte dokumentlisten, fulltekstsøk og forhåndsvisningsbilder fortsatt fordi disse dataene lå lokalt. Bare originalen kunne ikke åpnes. Etter at mounten var bygget opp igjen, kunne den kjørende Paperless-containeren få tilgang til filene på nytt uten å måtte startes på nytt.
+After restarting Rclone, check the mount on the host and from every consuming container. A remounted mount reaches an already running container only with appropriate mount propagation. For Docker, `rslave` is usually required on the consuming side. Details are in the article [Run Rclone mounts reliably in Docker](/blog/rclone-mount-in-docker-container).
 
-Disse tallene er ingen benchmark for Rclone eller Proton Drive. Atferden er det interessante: Hot Storage forble lokalt tilgjengelig, kalde lesinger var langsommere, men forutsigbare, og tjenesten gjenopprettet seg etter feilen.
+## A concrete example from Paperless-ngx
 
-## Hva testprotokollen bør inneholde
+For my Paperless test, I created 40 PDFs totalling 13.9 MB. A previously unopened document took around 1.8 seconds, while an immediately repeated access took 19 to 24 milliseconds. A VFS cache limited to 4 MB briefly grew to 12.7 MiB and was cleaned up again during the next run.
 
-Et resultat som senere kan etterprøves, inneholder minst:
+While the remote was unavailable, the document list, full-text search and preview images continued to work because that data was stored locally. Only the original could not be opened. After remounting, the running Paperless container could access the files again without having to be restarted itself.
 
-- Rclone-versjon og brukt backend
-- operativsystem, FUSE-variant og filsystem for cachekatalogen
-- fullstendig mount-kommando uten tilgangsdata
-- antall, størrelsesfordeling og struktur for testfilene
-- verdier for kalde og varme lesinger for flere filer
-- skrivetid frem til synlighet i remote-en
-- toppverdi for cache og varighet på oppryddingen
-- resultat av `rclone check --download`
-- atferd ved backend-feil og avsluttet Rclone-prosess
-- gjenopprettingstid fra applikasjonens perspektiv
-- nye forsøk, tidsavbrudd, begrensninger og autentiseringsfeil fra loggen
+These figures are not a benchmark for Rclone or Proton Drive. The behaviour is what matters: Hot Storage remained available locally, cold reads were slower but predictable, and the service recovered after the failure.
 
-Definer en grenseverdi for hvert punkt på forhånd. Da ender testen med en beslutning og ikke bare med en samling interessante tall.
+## What belongs in the test log
 
-## Når oppsettet er klart
+A result that can be understood later includes at least:
 
-En Cold Storage-mount er klar til bruk når du kan svare ja på disse spørsmålene:
+- Rclone version and backend used
+- operating system, FUSE variant and file system of the cache directory
+- complete mount command without credentials
+- number, size distribution and structure of the test files
+- cold-read and warm-read values for several files
+- write duration until visibility in the remote
+- cache peak value and cleanup duration
+- result of `rclone check --download`
+- behaviour during backend failure and Rclone process termination
+- recovery time from the application's perspective
+- retries, timeouts, throttling and authentication errors from the log
 
-- Er kalde lesinger raske nok for den tiltenkte tjenesten?
-- Akselererer cachen gjentatte tilganger som forventet?
-- Forblir det lokale plassbehovet kontrollerbart også under belastning?
-- Stemmer alle filer etter en fullstendig nedlasting?
-- Fungerer alle nødvendige filoperasjoner med den valgte backend-en?
-- Oppfører applikasjonen seg kontrollert ved skyutfall?
-- Stanses skriveoperasjoner trygt når mounten mangler?
-- Når en gjenoppbygd mount alle kjørende konsumenter?
-- Viser overvåkingen feilen før en bruker rapporterer den?
+Define a threshold for every item in advance. Then the test ends with a decision rather than just a collection of interesting figures.
 
-Dersom ett svar mangler, vet du i det minste nøyaktig hva du må jobbe videre med. Det er langt mer nyttig enn en mount som så bra ut ved første `ls` og først viser begrensningene sine i drift.
+## When the setup is ready
+
+A Cold Storage mount is ready for use when you can answer these questions with yes:
+
+- Are cold reads fast enough for the intended service?
+- Does the cache speed up repeated accesses as expected?
+- Does local storage use remain manageable even under load?
+- Do all files match after a complete download?
+- Do all required file operations work with the selected backend?
+- Does the application behave in a controlled manner during a cloud outage?
+- Are write operations safely stopped when the mount is missing?
+- Does a remounted mount reach all running consumers?
+- Does monitoring show the failure before a user reports it?
+
+If an answer is missing, you at least know exactly what you need to continue working on. That is much more helpful than a mount that looked good at the first `ls` and only reveals its limits in operation.
 
 ## Kilder
 
-1.  [Rclone test makefiles](https://rclone.org/commands/rclone_test_makefiles/): reproduserbare testfiler og katalogstrukturer med konfigurerbare størrelser.
+1.  [Rclone test makefiles](https://rclone.org/commands/rclone_test_makefiles/): reproducible test files and directory structures with configurable sizes.
 
-2.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS-cachemoduser, tilbakeskriving, sparse filer, cachegrenser og katalogcache.
+2.  [Rclone mount](https://rclone.org/commands/rclone_mount/): VFS cache modes, writeback, sparse files, cache limits and directory cache.
 
-3.  [Rclone check](https://rclone.org/commands/rclone_check/): sammenligning av kilde og mål, inkludert fullstendig kontroll med `--download`.
+3.  [Rclone check](https://rclone.org/commands/rclone_check/): comparison of source and destination, including complete verification with `--download`.
 
-4.  [Rclone Remote Control](https://rclone.org/rc/): målrettet forkasting av VFS-katalogcachen med `vfs/forget`.
+4.  [Rclone Remote Control](https://rclone.org/rc/): targeted clearing of the VFS directory cache with `vfs/forget`.
+
+5.  [Rclone Global Flags](https://rclone.org/flags/): complete reference for global options, including logging, statistics and VFS parameters.
