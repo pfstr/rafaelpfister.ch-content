@@ -12,12 +12,12 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# Outlook: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
+# New Outlook: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
 
 URL: https://rafaelpfister.ch/blog/outlook-smime-sekundaeres-konto-anhaenge-fehlen
 Datum: 2026-09-03
 
-# Outlook: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
+# New Outlook: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
 
 Im neuen Outlook für Windows erscheint beim Öffnen einer digital signierten Mail in einem freigegebenen Postfach ein roter Balken: "Das S/MIME-Zeichen kann beim Anzeigen im sekundären Konto nicht überprüft werden." Die Mail selbst wird angezeigt, die Anhänge aber nicht, obwohl der Absender welche mitgeschickt hat. Kolleginnen und Kollegen, die dasselbe Postfach als Hauptkonto nutzen, sehen die Anhänge problemlos.
 
