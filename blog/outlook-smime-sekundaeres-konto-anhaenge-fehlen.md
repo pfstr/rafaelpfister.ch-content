@@ -3,10 +3,10 @@ title: "Outlook New: S/MIME-Signatur im sekundären Konto nicht überprüfbar, A
 navTitle: "S/MIME im Zweitkonto"
 description: "Das neue Outlook meldet beim freigegebenen Postfach, die S/MIME-Signatur könne im sekundären Konto nicht überprüft werden, und zeigt keine Anhänge. Der Artikel erklärt den Unterschied zwischen Clear Signing und Opaque Signing, warum die Anhänge bei opak signierten Mails verschwinden, weshalb das neue Outlook S/MIME nur im Primärkonto verarbeitet und welche Auswege es gibt, inklusive Auspacken der smime.p7m mit PowerShell oder OpenSSL."
 date: "2026-09-03"
-kategorie: "Microsoft 365 / Exchange"
+kategorie: "Outlook"
 timeToRead: "8 Min. Lesezeit"
 themen:
-  - "microsoft-365-exchange"
+  - "outlook"
   - "e-mail-verschluesselung"
 produkte:
   - "exchange-online"

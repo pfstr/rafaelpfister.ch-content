@@ -459,6 +459,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Microsoft Entra](https://rafaelpfister.ch/blog/thema/microsoft-entra)
 - [Microsoft Teams](https://rafaelpfister.ch/blog/thema/microsoft-teams)
 - [OpenAI API](https://rafaelpfister.ch/blog/thema/openai-api)
+- [Outlook](https://rafaelpfister.ch/blog/thema/outlook)
 - [Paperless-ngx](https://rafaelpfister.ch/blog/thema/paperless-ngx)
 - [PC & Hardware](https://rafaelpfister.ch/blog/thema/pc-hardware)
 - [Proton Drive](https://rafaelpfister.ch/blog/thema/proton-drive)
