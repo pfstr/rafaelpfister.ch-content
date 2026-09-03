@@ -10,7 +10,7 @@ themen:
   - "e-mail-verschluesselung"
 produkte:
   - "exchange-online"
-  - "windows-client"
+  - "outlook"
 protokolle:
   - "verschluesselung"
   - "troubleshooting"
