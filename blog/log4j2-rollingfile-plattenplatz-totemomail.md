@@ -1,6 +1,6 @@
 ---
-title: "Wenn das Log die Platte füllt: log4j2 RollingFile richtig begrenzen, am Beispiel totemomail"
-navTitle: "log4j2 Plattenplatz"
+title: "Wenn das Log das Volume füllt: log4j2 RollingFile richtig begrenzen, am Beispiel totemomail"
+navTitle: "log4j2 Speicherplatz"
 description: "Ein volllaufendes Log-Volume legt im schlimmsten Fall das ganze Gateway lahm. Warum die Kombination aus Zeit- und Grössenrotation ohne %i eine einzelne Riesendatei erzeugt, wie strategy.max die Aufbewahrung deckelt, welche Rolle das Log-Level spielt und wo totemomail diese Werte versteckt."
 date: "2026-09-04"
 kategorie: "Totemomail"
@@ -16,9 +16,9 @@ slug: "log4j2-rollingfile-plattenplatz-totemomail"
 translationId: "article-c400eee99d90052d"
 url: "https://rafaelpfister.ch/blog/log4j2-rollingfile-plattenplatz-totemomail"
 ---
-# Wenn das Log die Platte füllt: log4j2 RollingFile richtig begrenzen, am Beispiel totemomail
+# Wenn das Log das Volume füllt: log4j2 RollingFile richtig begrenzen, am Beispiel totemomail
 
-Ein Mailgateway auf Java-Basis schreibt im DEBUG-Betrieb erstaunliche Mengen. Ein einziger Lasttag kann mehrere Gigabyte Trace-Log erzeugen, und wenn das Log-Volume klein bemessen ist, läuft es voll. Die Folge ist unangenehm: Der Java-Prozess kann nicht mehr in sein Log schreiben, der Logging-Framework fällt in einen Fehlerzustand, und selbst nachdem wieder Platz frei ist, schreibt er erst nach einem Neustart wieder mit. Bei einem Mailgateway kann eine volle Platte zudem das Spooling und die Zustellung stören. Der Auslöser ist fast immer eine Log-Rotation, die zwar konfiguriert ist, aber nicht so wirkt, wie man annimmt.
+Ein Mailgateway auf Java-Basis schreibt im DEBUG-Betrieb erstaunliche Mengen. Ein einziger Lasttag kann mehrere Gigabyte Trace-Log erzeugen, und wenn das Log-Volume klein bemessen ist, läuft es voll. Die Folge ist unangenehm: Der Java-Prozess kann nicht mehr in sein Log schreiben, der Logging-Framework fällt in einen Fehlerzustand, und selbst nachdem wieder Platz frei ist, schreibt er erst nach einem Neustart wieder mit. Bei einem Mailgateway kann ein volles Volume zudem das Spooling und die Zustellung stören. Der Auslöser ist fast immer eine Log-Rotation, die zwar konfiguriert ist, aber nicht so wirkt, wie man annimmt.
 
 Der folgende Beitrag erklärt die Rotation von log4j2 an genau dieser Stelle, allgemein und dann konkret für totemomail (das auf Apache James und log4j2 aufsetzt). Der Kern ist eine einzelne, leicht zu übersehende Angabe im Dateimuster.
 
@@ -47,7 +47,7 @@ Die vollständige Referenz steht in der log4j2-Dokumentation zum Rolling File Ap
 
 ## Die %i-Falle
 
-Genau hier liegt der Fehler, der Platten füllt. Wer nur nach Datum benennt, also `filePattern = trace.log.%d{yyyy-MM-dd}`, und gleichzeitig eine Grössen-Policy von 100 MB setzt, bekommt nicht viele 100-MB-Dateien pro Tag, sondern eine einzige, die ungebremst weiterwächst. Die Grössenrotation hat kein eigenes Ziel, in das sie das nächste Stück schreiben könnte, weil im Muster kein Zähler vorkommt. Die log4j2-Dokumentation ist an dieser Stelle deutlich:
+Genau hier liegt der Fehler, der den Speicherplatz aufbraucht. Wer nur nach Datum benennt, also `filePattern = trace.log.%d{yyyy-MM-dd}`, und gleichzeitig eine Grössen-Policy von 100 MB setzt, bekommt nicht viele 100-MB-Dateien pro Tag, sondern eine einzige, die ungebremst weiterwächst. Die Grössenrotation hat kein eigenes Ziel, in das sie das nächste Stück schreiben könnte, weil im Muster kein Zähler vorkommt. Die log4j2-Dokumentation ist an dieser Stelle deutlich:
 
 > When combined with a time-based triggering policy, the filePattern attribute of the Appender should contain an `%i` conversion pattern. Otherwise, the target file will be overwritten on each rollover.
 
@@ -106,7 +106,7 @@ Wichtig ist die Doppelnatur: Die log4j2-Logger können auf `warn` oder `error` s
 
 ## Der Neustart nach dem Volllaufen
 
-Ein Detail, das leicht übersehen wird: Nachdem die Platte einmal voll war, kehrt das Logging nicht von selbst zurück, auch wenn man Platz freiräumt. Der Datei-Appender bleibt in seinem Fehlerzustand, bis der Java-Prozess neu startet. Man erkennt das daran, dass das Gateway noch Mail annimmt und verarbeitet (der SMTP-Banner zeigt die korrekte Uhrzeit), das Trace-Log aber am Zeitpunkt des Volllaufens stehen bleibt. Ein kontrollierter Neustart der Instanz stellt das Logging wieder her und aktiviert zugleich geänderte Appender-Einstellungen wie das neue `filePattern`.
+Ein Detail, das leicht übersehen wird: Nachdem das Volume einmal voll war, kehrt das Logging nicht von selbst zurück, auch wenn man Platz freiräumt. Der Datei-Appender bleibt in seinem Fehlerzustand, bis der Java-Prozess neu startet. Man erkennt das daran, dass das Gateway noch Mail annimmt und verarbeitet (der SMTP-Banner zeigt die korrekte Uhrzeit), das Trace-Log aber am Zeitpunkt des Volllaufens stehen bleibt. Ein kontrollierter Neustart der Instanz stellt das Logging wieder her und aktiviert zugleich geänderte Appender-Einstellungen wie das neue `filePattern`.
 
 ## Diagnose in wenigen Befehlen
 
@@ -132,7 +132,7 @@ Erwartet werden `trace.log` plus indexierte Archive `trace.log.<datum>.1`, `.2` 
 
 ## Zusammenfassung
 
-Wer log4j2 mit Zeit- und Grössenrotation betreibt, braucht zwingend ein `%i` im `filePattern`, sonst wächst eine einzelne Datei ungebremst und die Grössengrenze bleibt wirkungslos. Über `strategy.max` (zusammen mit dem Index) deckelt die Anzahl der Archive den Platzverbrauch, und das Log-Level entscheidet über die Menge an der Quelle. Bei totemomail stehen diese Werte in der Management-Console unter `totemo.log4j2.*` sowie in den übergeordneten Schaltern `totemo.log.priority` und `totemo.tracking`; nach einem Volllaufen der Platte gehört ein Neustart der Instanz dazu, damit das Logging wieder schreibt.
+Wer log4j2 mit Zeit- und Grössenrotation betreibt, braucht zwingend ein `%i` im `filePattern`, sonst wächst eine einzelne Datei ungebremst und die Grössengrenze bleibt wirkungslos. Über `strategy.max` (zusammen mit dem Index) deckelt die Anzahl der Archive den Platzverbrauch, und das Log-Level entscheidet über die Menge an der Quelle. Bei totemomail stehen diese Werte in der Management-Console unter `totemo.log4j2.*` sowie in den übergeordneten Schaltern `totemo.log.priority` und `totemo.tracking`; nach einem Volllaufen des Volumes gehört ein Neustart der Instanz dazu, damit das Logging wieder schreibt.
 
 ## Quellen
 
