@@ -1,5 +1,5 @@
 ---
-title: "Exchange Online drosselt und blockiert ab September 2026 veraltete Exchange 2016 und 2019: So funktioniert das Transport-Enforcement"
+title: "Exchange Online drosselt und blockiert ab September 2026 veraltete Exchange 2016 und 2019-Server: So funktioniert das Transport-Enforcement"
 navTitle: "EXO-Enforcement 09/2026"
 description: "Ab der zweiten Septemberwoche 2026 verlangt Exchange Online von Hybrid-Servern mindestens das Oktober-2025-SU, sonst wird der Mailfluss gedrosselt und später blockiert. Hintergründe zum Transport-Enforcement seit 2023, die Eskalationsstufen mit SMTP-Codes, der Report im Admin Center, die 90-Tage-Pause per PowerShell und warum die nächste Anhebung nur noch ESU-Kunden und Exchange SE durchlässt."
 date: "2026-09-07"
@@ -23,7 +23,7 @@ url: "https://rafaelpfister.ch/blog/exchange-online-transport-enforcement-hybrid
 draft: false
 ---
 
-# Exchange Online drosselt und blockiert ab September 2026 veraltete Exchange 2016 und 2019: So funktioniert das Transport-Enforcement
+# Exchange Online drosselt und blockiert ab September 2026 veraltete Exchange 2016 und 2019-Server: So funktioniert das Transport-Enforcement
 
 Das Exchange-Team hat am 2. September 2026 angekündigt, die Mindestversion für Exchange 2016 und Exchange 2019 im Hybrid-Mailfluss anzuheben. Ab der zweiten Septemberwoche 2026 verlangt Exchange Online von Servern, die über einen Inbound Connector vom Typ `OnPremises` einliefern, mindestens den Stand des letzten öffentlichen Sicherheitsupdates vom Oktober 2025. Alles darunter wird gedrosselt und später blockiert. Kurzfazit: Wer seine Hybrid-Server seit Oktober 2025 nicht gepatcht hat, verliert in den nächsten Wochen schrittweise die Mailzustellung nach Exchange Online. Und die nächste Anhebung, die Microsoft für die kommenden Monate in Aussicht stellt, liegt oberhalb jedes öffentlich verfügbaren Updates: Dann erfüllen nur noch Kunden im kostenpflichtigen ESU-Programm oder Umgebungen mit Exchange Server Subscription Edition (SE) die Anforderung.
 
