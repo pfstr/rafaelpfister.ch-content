@@ -20,9 +20,9 @@ url: "https://rafaelpfister.ch/blog/serverloser-newsletter-cloudflare-workers-d1
 
 Bei einem gehosteten Newsletter-Dienst liegt die Empfängerliste beim Anbieter, und die Kosten steigen häufig mit der Zahl der Abonnenten. Ein eigener Server schafft mehr Kontrolle, bringt aber laufende Arbeit mit sich: Updates, Überwachung, Backups und Betrieb für ein System, das vielleicht nur einmal pro Woche versendet.
 
-Für diesen schlanken Anwendungsfall reichen HTTP-Endpunkte, eine kleine Datenbank und ein zeitgesteuerter Versandjob. Cloudflare Workers und D1 stellen genau diese Bausteine bereit. Mein offenes Template richtet sie über einen **Deploy-to-Cloudflare-Button** im eigenen Konto ein. Eine lokale Kommandozeile oder ein dauerhaft zu wartender Server ist nicht nötig. Der MIT-lizenzierte Quellcode liegt auf [GitHub](https://github.com/pfstr/newsletter-template).
+Für diesen schlanken Anwendungsfall reichen HTTP-Endpunkte, eine kleine Datenbank und ein zeitgesteuerter Versandjob. Cloudflare Workers und D1 stellen genau diese Bausteine bereit. Mein offenes Template **Ownlist** richtet sie über einen **Deploy-to-Cloudflare-Button** im eigenen Konto ein. Eine lokale Kommandozeile oder ein dauerhaft zu wartender Server ist nicht nötig. Der MIT-lizenzierte Quellcode liegt auf [GitHub](https://github.com/pfstr/ownlist).
 
-[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
+[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/ownlist)
 
 ![Das gehostete Anmeldeformular des Templates](../images/serverloser-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
 
@@ -121,13 +121,13 @@ Zu den Kosten: Workers und D1 haben grosszügige Free-Tier-Kontingente (unter an
 
 ## Ausprobieren
 
-Der Quellcode inklusive Deploy-Button liegt auf [GitHub](https://github.com/pfstr/newsletter-template); dort steht auch die vollständige Dokumentation der Konfigurationsvariablen.
+Der Quellcode inklusive Deploy-Button liegt auf [GitHub](https://github.com/pfstr/ownlist); dort steht auch die vollständige Dokumentation der Konfigurationsvariablen.
 
-[![GitHub: pfstr/newsletter-template](../images/serverloser-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
+[![GitHub: pfstr/ownlist](../images/serverloser-newsletter-cloudflare-workers-d1/github-ownlist.svg)](https://github.com/pfstr/ownlist)
 
 ## Quellen
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): Quellcode des Templates (MIT) mit Deploy-Button und Dokumentation.
+1.  [pfstr/ownlist](https://github.com/pfstr/ownlist): Quellcode des Templates (MIT) mit Deploy-Button und Dokumentation.
 
 2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatische Provisionierung von Ressourcen, Repo-Klon und CI beim Deploy.
 

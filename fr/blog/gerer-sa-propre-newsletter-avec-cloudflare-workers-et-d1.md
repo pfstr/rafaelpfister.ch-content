@@ -11,7 +11,7 @@ slug: "gerer-sa-propre-newsletter-avec-cloudflare-workers-et-d1"
 translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 translationId: article-4e7139acdb90923b
 translationReview: automatic
-translationSourceHash: ad5b78d6330d06a17259e464c0fb8bb9713b3fdf5cd6c77ac1d300d9fea2a48e
+translationSourceHash: 95c990a9358d340b59eedda9c4e5373490ec2a4fc7e7ab5acab303cbd2c4421c
 translatedAt: 2026-09-04T08:38:12.021Z
 url: https://rafaelpfister.ch/fr/blog/gerer-sa-propre-newsletter-avec-cloudflare-workers-et-d1
 translationModel: gpt-5.6-terra
@@ -21,9 +21,9 @@ translationModel: gpt-5.6-terra
 
 Avec un service de newsletter hébergé, la liste des destinataires est détenue par le fournisseur, et les coûts augmentent souvent avec le nombre d’abonnés. Un serveur propre offre davantage de contrôle, mais implique un travail continu : mises à jour, surveillance, sauvegardes et exploitation d’un système qui n’envoie peut-être qu’une fois par semaine.
 
-Pour ce cas d’usage léger, des points de terminaison HTTP, une petite base de données et une tâche d’envoi planifiée suffisent. Cloudflare Workers et D1 fournissent précisément ces composants. Mon modèle ouvert les configure dans votre propre compte via un **bouton Deploy to Cloudflare**. Ni ligne de commande locale ni serveur à maintenir durablement ne sont nécessaires. Le code source sous licence MIT se trouve sur [GitHub](https://github.com/pfstr/newsletter-template).
+Pour ce cas d’usage léger, des points de terminaison HTTP, une petite base de données et une tâche d’envoi planifiée suffisent. Cloudflare Workers et D1 fournissent précisément ces composants. Mon modèle ouvert **Ownlist** les configure dans votre propre compte via un **bouton Deploy to Cloudflare**. Ni ligne de commande locale ni serveur à maintenir durablement ne sont nécessaires. Le code source sous licence MIT se trouve sur [GitHub](https://github.com/pfstr/ownlist).
 
-[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
+[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/ownlist)
 
 ![Le formulaire d’inscription hébergé du modèle](../images/serverloser-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
 
@@ -122,13 +122,13 @@ Concernant les coûts : Workers et D1 disposent de quotas Free Tier généreux (
 
 ## Essayer
 
-Le code source, y compris le bouton de déploiement, se trouve sur [GitHub](https://github.com/pfstr/newsletter-template) ; vous y trouverez également la documentation complète des variables de configuration.
+Le code source, y compris le bouton de déploiement, se trouve sur [GitHub](https://github.com/pfstr/ownlist) ; vous y trouverez également la documentation complète des variables de configuration.
 
-[![GitHub: pfstr/newsletter-template](../images/serverloser-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
+[![GitHub: pfstr/ownlist](../images/serverloser-newsletter-cloudflare-workers-d1/github-ownlist.svg)](https://github.com/pfstr/ownlist)
 
 ## Sources
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template) : code source du modèle (MIT) avec bouton de déploiement et documentation.
+1.  [pfstr/ownlist](https://github.com/pfstr/ownlist) : code source du modèle (MIT) avec bouton de déploiement et documentation.
 
 2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/) : provisionnement automatique des ressources, clonage du dépôt et CI lors du déploiement.
 

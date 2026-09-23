@@ -11,7 +11,7 @@ slug: "gestire-una-newsletter-in-proprio-con-cloudflare-workers-e-d1"
 translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 translationId: article-4e7139acdb90923b
 translationReview: automatic
-translationSourceHash: ad5b78d6330d06a17259e464c0fb8bb9713b3fdf5cd6c77ac1d300d9fea2a48e
+translationSourceHash: 95c990a9358d340b59eedda9c4e5373490ec2a4fc7e7ab5acab303cbd2c4421c
 translatedAt: 2026-09-04T08:38:44.886Z
 url: https://rafaelpfister.ch/it/blog/gestire-una-newsletter-in-proprio-con-cloudflare-workers-e-d1
 translationModel: gpt-5.6-terra
@@ -21,9 +21,9 @@ translationModel: gpt-5.6-terra
 
 Con un servizio di newsletter ospitato, la lista dei destinatari resta presso il fornitore e i costi spesso aumentano con il numero di iscritti. Un server proprio offre maggiore controllo, ma comporta lavoro continuo: aggiornamenti, monitoraggio, backup e gestione di un sistema che magari invia solo una volta alla settimana.
 
-Per questo caso d'uso snello bastano endpoint HTTP, un piccolo database e un processo di invio pianificato. Cloudflare Workers e D1 forniscono esattamente questi componenti. Il mio template open source li configura nel proprio account tramite un **pulsante Deploy to Cloudflare**. Non sono necessari una riga di comando locale né un server da mantenere continuamente. Il codice sorgente con licenza MIT è disponibile su [GitHub](https://github.com/pfstr/newsletter-template).
+Per questo caso d'uso snello bastano endpoint HTTP, un piccolo database e un processo di invio pianificato. Cloudflare Workers e D1 forniscono esattamente questi componenti. Il mio template open source **Ownlist** li configura nel proprio account tramite un **pulsante Deploy to Cloudflare**. Non sono necessari una riga di comando locale né un server da mantenere continuamente. Il codice sorgente con licenza MIT è disponibile su [GitHub](https://github.com/pfstr/ownlist).
 
-[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
+[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/ownlist)
 
 ![Il modulo di iscrizione ospitato del template](../images/serverloser-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
 
@@ -122,13 +122,13 @@ Quanto ai costi: Workers e D1 dispongono di generose quote Free Tier (tra cui 10
 
 ## Provarlo
 
-Il codice sorgente, incluso il pulsante di deploy, è disponibile su [GitHub](https://github.com/pfstr/newsletter-template); lì si trova anche la documentazione completa delle variabili di configurazione.
+Il codice sorgente, incluso il pulsante di deploy, è disponibile su [GitHub](https://github.com/pfstr/ownlist); lì si trova anche la documentazione completa delle variabili di configurazione.
 
-[![GitHub: pfstr/newsletter-template](../images/serverloser-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
+[![GitHub: pfstr/ownlist](../images/serverloser-newsletter-cloudflare-workers-d1/github-ownlist.svg)](https://github.com/pfstr/ownlist)
 
 ## Fonti
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): codice sorgente del template (MIT) con pulsante di deploy e documentazione.
+1.  [pfstr/ownlist](https://github.com/pfstr/ownlist): codice sorgente del template (MIT) con pulsante di deploy e documentazione.
 
 2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): provisioning automatico delle risorse, clonazione del repository e CI durante il deploy.
 

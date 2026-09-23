@@ -11,7 +11,7 @@ slug: "driva-ett-eget-nyhetsbrev-med-cloudflare-workers-och-d1"
 translationOf: "serverloser-newsletter-cloudflare-workers-d1"
 translationId: article-4e7139acdb90923b
 translationReview: automatic
-translationSourceHash: ad5b78d6330d06a17259e464c0fb8bb9713b3fdf5cd6c77ac1d300d9fea2a48e
+translationSourceHash: 95c990a9358d340b59eedda9c4e5373490ec2a4fc7e7ab5acab303cbd2c4421c
 translatedAt: 2026-09-04T08:40:34.139Z
 url: https://rafaelpfister.ch/sv/blog/driva-ett-eget-nyhetsbrev-med-cloudflare-workers-och-d1
 translationModel: gpt-5.6-terra
@@ -21,9 +21,9 @@ translationModel: gpt-5.6-terra
 
 Med en hostad nyhetsbrevstjänst ligger mottagarlistan hos leverantören, och kostnaderna ökar ofta med antalet prenumeranter. En egen server ger mer kontroll, men medför löpande arbete: uppdateringar, övervakning, säkerhetskopior och drift av ett system som kanske bara skickar en gång i veckan.
 
-För detta slimmade användningsfall räcker HTTP-slutpunkter, en liten databas och ett tidsstyrt utskicksjobb. Cloudflare Workers och D1 tillhandahåller precis dessa byggstenar. Min öppna mall konfigurerar dem i ditt eget konto via en **Deploy-to-Cloudflare-knapp**. Ingen lokal kommandorad eller server som måste underhållas permanent behövs. Källkoden med MIT-licens finns på [GitHub](https://github.com/pfstr/newsletter-template).
+För detta slimmade användningsfall räcker HTTP-slutpunkter, en liten databas och ett tidsstyrt utskicksjobb. Cloudflare Workers och D1 tillhandahåller precis dessa byggstenar. Min öppna mall **Ownlist** konfigurerar dem i ditt eget konto via en **Deploy-to-Cloudflare-knapp**. Ingen lokal kommandorad eller server som måste underhållas permanent behövs. Källkoden med MIT-licens finns på [GitHub](https://github.com/pfstr/ownlist).
 
-[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/newsletter-template)
+[![Deploy to Cloudflare](../images/serverloser-newsletter-cloudflare-workers-d1/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/pfstr/ownlist)
 
 ![Mallens hostade registreringsformulär](../images/serverloser-newsletter-cloudflare-workers-d1/newsletter-template-signup.png)
 
@@ -122,13 +122,13 @@ Om kostnaderna: Workers och D1 har generösa Free Tier-kvoter (bland annat 100'0
 
 ## Prova
 
-Källkoden inklusive deploy-knapp finns på [GitHub](https://github.com/pfstr/newsletter-template); där finns också den fullständiga dokumentationen av konfigurationsvariablerna.
+Källkoden inklusive deploy-knapp finns på [GitHub](https://github.com/pfstr/ownlist); där finns också den fullständiga dokumentationen av konfigurationsvariablerna.
 
-[![GitHub: pfstr/newsletter-template](../images/serverloser-newsletter-cloudflare-workers-d1/github-newsletter-template.svg)](https://github.com/pfstr/newsletter-template)
+[![GitHub: pfstr/ownlist](../images/serverloser-newsletter-cloudflare-workers-d1/github-ownlist.svg)](https://github.com/pfstr/ownlist)
 
 ## Källor
 
-1.  [pfstr/newsletter-template](https://github.com/pfstr/newsletter-template): Mallens källkod (MIT) med deploy-knapp och dokumentation.
+1.  [pfstr/ownlist](https://github.com/pfstr/ownlist): Mallens källkod (MIT) med deploy-knapp och dokumentation.
 
 2.  [Deploy to Cloudflare buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/): automatisk provisionering av resurser, repo-kloning och CI vid deploy.
 
