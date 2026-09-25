@@ -22,7 +22,7 @@ warnung: true
 translationId: "article-38fbaa0e9095957a"
 url: "https://rafaelpfister.ch/blog/kiteworks-zero-day-abschaltung"
 aiPrompt: |
-  Du bist mein Exchange- und Mailflow-Assistent. Kiteworks (Email Protection Gateway, ehemals totemomail) empfiehlt, alle Systeme am 26.09.2026 von 04:00 bis 10:00 Uhr herunterzufahren. Hilf mir zu ermitteln, welche Connectoren, Transportregeln und MX-Einträge in meiner Umgebung Mails über das Gateway leiten, wie ich den Mailflow für die Dauer der Abschaltung umleite oder kontrolliert anhalte und wie ich den ursprünglichen Zustand danach wiederherstelle. Frage zuerst nach meinem Aufbau (Exchange Online, Exchange Server oder Hybrid, Richtung des Mailflows, Position des Gateways).
+  Du bist mein Exchange- und Mailflow-Assistent. Kiteworks empfiehlt, alle Systeme am 26.09.2026 von 04:00 bis 10:00 Uhr herunterzufahren. Hilf mir zu ermitteln, welche Connectoren, Transportregeln und MX-Einträge in meiner Umgebung Mails über das Gateway leiten, wie ich den Mailflow für die Dauer der Abschaltung umleite oder kontrolliert anhalte und wie ich den ursprünglichen Zustand danach wiederherstelle. Frage zuerst nach meinem Aufbau (Exchange Online, Exchange Server oder Hybrid, Richtung des Mailflows, Position des Gateways).
 ---
 # Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bislang bekannt ist
 
@@ -39,7 +39,7 @@ Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle K
 <p>Kiteworks received credible threat intelligence from law enforcement indicating that a threat actor may attempt to target some Kiteworks systems for customers. Out of an abundance of caution, we notified customers directly and recommended a precautionary shutdown window while we and our law enforcement partners work through the matter. We are not aware of any compromise of Kiteworks systems, and this advisory is preventative rather than a response to a confirmed breach. All known vulnerabilities are addressed in our current release, 9.5.1, and we continue to recommend customers run the latest version.</p>
 <p>totemomail is not affected by this.</p>
 </blockquote>
-<p><strong>Totemomail ist nicht betroffen.</strong></p>
+<p><strong>Totemomail ist nicht betroffen.</strong> Offen ist, ob Kiteworks EPG (Email Protection Gateway) betroffen ist.</p>
 </div>
 
 ## Was bekannt ist
