@@ -27,8 +27,12 @@ Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle K
 </div>
 
 <div class="update-hinweis">
-<p class="update-hinweis__titel">Update vom 25. September 2026</p>
-<p>Totemomail ist nicht betroffen.</p>
+<p class="update-hinweis__titel">Update vom 25. September 2026: Stellungnahme von Kiteworks</p>
+<blockquote lang="en">
+<p>Kiteworks received credible threat intelligence from law enforcement indicating that a threat actor may attempt to target some Kiteworks systems for customers. Out of an abundance of caution, we notified customers directly and recommended a precautionary shutdown window while we and our law enforcement partners work through the matter. We are not aware of any compromise of Kiteworks systems, and this advisory is preventative rather than a response to a confirmed breach. All known vulnerabilities are addressed in our current release, 9.5.1, and we continue to recommend customers run the latest version.</p>
+<p>totemomail is not affected by this.</p>
+</blockquote>
+<p><strong>Totemomail ist nicht betroffen.</strong></p>
 </div>
 
 ## Was bekannt ist
