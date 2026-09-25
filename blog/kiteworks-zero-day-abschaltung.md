@@ -1,7 +1,7 @@
 ---
 title: "Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bislang bekannt ist"
 navTitle: "Kiteworks-Abschaltung"
-description: "Kiteworks fordert seine Kunden per E-Mail auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Grund ist eine Warnung von Strafverfolgungsbehörden vor einem Zero-Day-Angriff. Hängt Kiteworks als Verschlüsselungsgateway im Mailflow, stoppt die Abschaltung den Mailverkehr, wenn er nicht vorher umgeleitet wird."
+description: "Kiteworks fordert seine Kunden per E-Mail auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Grund ist eine Warnung von Strafverfolgungsbehörden vor einem möglichen Angriff. Laut Stellungnahme von Kiteworks ist die Massnahme vorsorglich, totemomail ist nicht betroffen."
 date: "2026-09-25"
 kategorie: "Totemomail"
 timeToRead: "6 Min. Lesezeit"
@@ -33,15 +33,25 @@ Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle K
 <p>Wenn Sie Hilfe brauchen, um den Mailflow vor der Abschaltung umzuleiten und danach wieder zurückzustellen, erreichen Sie mich auch kurzfristig unter <a href="tel:+41585102208">+41 58 510 22 08</a>.</p>
 </div>
 
+<div class="update-hinweis">
+<p class="update-hinweis__titel">Update vom 25. September 2026: Stellungnahme von Kiteworks</p>
+<p>Kiteworks hat mir die folgende Stellungnahme zukommen lassen:</p>
+<blockquote lang="en">
+<p>Kiteworks received credible threat intelligence from law enforcement indicating that a threat actor may attempt to target some Kiteworks systems for customers. Out of an abundance of caution, we notified customers directly and recommended a precautionary shutdown window while we and our law enforcement partners work through the matter. We are not aware of any compromise of Kiteworks systems, and this advisory is preventative rather than a response to a confirmed breach. All known vulnerabilities are addressed in our current release, 9.5.1, and we continue to recommend customers run the latest version.</p>
+<p>totemomail is not affected by this.</p>
+</blockquote>
+<p>Zusammengefasst: Die Abschaltung ist eine Vorsichtsmassnahme. Kiteworks ist keine Kompromittierung eigener Systeme bekannt, alle bekannten Schwachstellen sind in der aktuellen Version 9.5.1 behoben, und der Hersteller empfiehlt, diese Version einzusetzen. <strong>totemomail (Kiteworks Email Protection Gateway) ist laut Kiteworks nicht betroffen.</strong></p>
+</div>
+
 ## Was bekannt ist
 
 Die Empfehlung gilt weltweit; die E-Mail nennt das Zeitfenster für alle Zeitzonen von AEST bis PDT. Kiteworks rät, die Systeme schon vor Beginn des Fensters herunterzufahren, und zwar auch dann, wenn sie nicht aus dem Internet erreichbar sind.
 
-Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Welche Behörde die Warnung ausgesprochen hat, ist ebenfalls nicht bekannt. Auf den offiziellen Kanälen von Kiteworks (Security Updates, Newsroom, GitHub-Advisories) finde ich Stand 25. September keinen Eintrag dazu. Die einzige Quelle ist die Kunden-E-Mail, die nicht öffentlich einsehbar ist.
+Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Welche Behörde die Warnung ausgesprochen hat, ist ebenfalls nicht bekannt. Auf den offiziellen Kanälen von Kiteworks (Security Updates, Newsroom, GitHub-Advisories) finde ich Stand 25. September keinen Eintrag dazu. Neben der Kunden-E-Mail, die nicht öffentlich einsehbar ist, liegt inzwischen die oben zitierte Stellungnahme vor. Sie nennt weder die betroffenen Produkte noch eine Lücke, stellt aber klar, dass totemomail nicht betroffen ist.
 
 ## Mögliche Ursachen: Theorien
 
-Solange Kiteworks keine Details veröffentlicht, bleibt die Ursache offen. Die folgenden Erklärungen sind Hypothesen, die sich aus den bekannten Eckdaten ableiten lassen; einige davon werden auch in den Kommentaren zur heise-Meldung diskutiert. Keine davon ist bestätigt.
+Solange Kiteworks keine Details veröffentlicht, bleibt die Ursache offen. Die folgenden Erklärungen sind Hypothesen, die sich aus den bekannten Eckdaten ableiten lassen; einige davon werden auch in den Kommentaren zur heise-Meldung diskutiert. Keine davon ist bestätigt. Die Stellungnahme vom 25. September macht einige weniger wahrscheinlich: Kiteworks spricht von einer vorsorglichen Massnahme, ist keine Kompromittierung bekannt und verweist darauf, dass alle bekannten Schwachstellen in Version 9.5.1 behoben sind. Von einer unbekannten Lücke ist darin nicht die Rede; der Begriff Zero-Day stammt aus der Antwort des Kundensupports gegenüber heise.
 
 Zwei Eckdaten schränken den Raum ein. Erstens nennt die Warnung ein festes Zeitfenster von sechs Stunden statt einer unbefristeten Abschaltung bis zum Patch. Zweitens sollen auch Systeme vom Netz, die nicht aus dem Internet erreichbar sind. Eine klassische, über das Internet ausnutzbare Lücke würde weder das eine noch das andere erklären: Dagegen hilft es, das System vom Internet zu trennen, und zwar so lange, bis der Patch da ist.
 
@@ -61,7 +71,7 @@ Dafür spricht, dass weder ein Advisory noch eine Mitigation genannt wird. Dageg
 
 Die Empfehlung, auch interne Systeme herunterzufahren, passt zu einem Szenario, in dem der Angriff nicht von aussen kommt, sondern auf den Appliances bereits vorbereitet ist: etwa eine Hintertür aus einer früheren Kompromittierung, die zu einem festen Zeitpunkt aktiv wird oder Kontakt zu einem Kontrollserver aufnimmt. Ein ausgeschaltetes System kann zu diesem Zeitpunkt nichts ausführen.
 
-Dafür spricht, dass die Erreichbarkeit aus dem Internet bei diesem Szenario keine Rolle spielt. Dagegen spricht, dass ein Hersteller in diesem Fall eher eine Prüfung auf Kompromittierung und eine Neuinstallation empfehlen würde als einen Neustart nach sechs Stunden.
+Dafür spricht, dass die Erreichbarkeit aus dem Internet bei diesem Szenario keine Rolle spielt. Dagegen spricht die Stellungnahme, laut der Kiteworks keine Kompromittierung bekannt ist, und dass ein Hersteller in diesem Fall eher eine Prüfung auf Kompromittierung und eine Neuinstallation empfehlen würde als einen Neustart nach sechs Stunden.
 
 ### 4. Kompromittierung auf Herstellerseite
 
