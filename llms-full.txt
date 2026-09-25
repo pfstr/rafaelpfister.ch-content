@@ -12,6 +12,306 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Kiteworks: Hersteller empfiehlt Abschaltung am 26. September, was das für den Mailflow bedeutet
+
+URL: https://rafaelpfister.ch/blog/kiteworks-zero-day-abschaltung
+Datum: 2026-09-25
+
+# Kiteworks: Hersteller empfiehlt Abschaltung am 26. September, was das für den Mailflow bedeutet
+
+Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle Kiteworks-Systeme am Samstag, 26. September, von 04:00 bis 10:00 Uhr (mitteleuropäische Zeit) herunterzufahren. Laut dem Schreiben des CISO Frank Balonis liegen dem Hersteller Hinweise von Strafverfolgungsbehörden vor, dass an diesem Wochenende ein Angriff auf Kiteworks-Systeme bevorstehen könnte. Der Kundensupport begründet die Abschaltung mit dem Schutz vor möglichen Zero-Day-Angriffen. heise online hat die Echtheit der Nachricht telefonisch beim Support bestätigt.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Notfall-Unterstützung beim Umschalten des Mailflows</p>
+<p>Wenn Sie Hilfe brauchen, um den Mailflow vor der Abschaltung umzuleiten und danach wieder zurückzustellen, erreichen Sie mich auch kurzfristig unter <a href="tel:+41585102208">+41 58 510 22 08</a>.</p>
+</div>
+
+## Was bekannt ist
+
+Die Empfehlung gilt weltweit; die E-Mail nennt das Zeitfenster für alle Zeitzonen von AEST bis PDT. Kiteworks rät, die Systeme schon vor Beginn des Fensters herunterzufahren, und zwar auch dann, wenn sie nicht aus dem Internet erreichbar sind.
+
+Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Welche Behörde die Warnung ausgesprochen hat, ist ebenfalls nicht bekannt. Auf den offiziellen Kanälen von Kiteworks (Security Updates, Newsroom, GitHub-Advisories) finde ich Stand 25. September keinen Eintrag dazu. Die einzige Quelle ist die Kunden-E-Mail, die nicht öffentlich einsehbar ist.
+
+## Folgen für den Mailflow
+
+Das Kiteworks Email Protection Gateway (ehemals totemomail) steht in vielen Umgebungen direkt im Mailflow, häufig in einer Mail-Schlaufe mit Exchange Online (Aufbau siehe [Totemomail mit Microsoft 365](/blog/totemomail-m365)). In diesem Fall lässt sich das Gateway nicht abschalten, ohne den Mailverkehr zu unterbrechen:
+
+- **Ausgehend:** Leiten ein Outbound-Connector oder Transportregeln Mails über das Gateway, stellt Exchange sie in die Warteschlange. Wie lange Exchange die Zustellung wiederholt und ab wann Verzögerungs- oder Unzustellbarkeitsmeldungen an die Absender gehen, hängt von der Umgebung ab.
+- **Eingehend:** Zeigt der MX-Eintrag auf das Gateway, wiederholen die sendenden Server die Zustellung nach ihren eigenen Regeln. Nach RFC 5321 sollten sie das über mehrere Tage tun; verlassen können Sie sich bei sechs Stunden Ausfall darauf aber nicht bei jedem Absender.
+- **Schlaufe:** Kommen eingehende Mails über Exchange Online zum Gateway und wieder zurück, betrifft die Abschaltung beide Richtungen, auch Mails, die gar nicht verschlüsselt werden müssen.
+
+## Vor der Abschaltung klären
+
+1.  Welche Connectoren, Transportregeln und MX-Einträge leiten Mails über Kiteworks, ein- und ausgehend?
+2.  Soll der Mailflow für die Dauer der Abschaltung am Gateway vorbeilaufen, oder reicht es, ihn in der Warteschlange zu halten?
+3.  Welche Mails dürfen auf keinen Fall unverschlüsselt hinausgehen? Für diese braucht es bei einer Umleitung eine Regel, die sie zurückhält, statt sie ohne Verschlüsselung zuzustellen.
+4.  Wer informiert Benutzer und Partner, die über Kiteworks sichere Mails, Dateien oder Formulare austauschen?
+5.  Wie wird der ursprüngliche Zustand nach 10:00 Uhr wiederhergestellt? Die geänderten Einstellungen vorher dokumentieren, damit sich jeder Schritt gezielt zurücknehmen lässt.
+
+Nach dem Neustart lohnt sich ein Blick auf die Protokolle der letzten Tage (Anmeldungen, Admin-Zugriffe, ungewöhnliche Downloads) und auf die Kanäle des Herstellers, bevor die Systeme wieder produktiv gehen. Sobald Kiteworks ein Advisory oder einen Patch veröffentlicht, ergänze ich diesen Artikel.
+
+## Quellen
+
+1.  [heise online: Bevorstehender Zero-Day-Angriff: KiteWorks drängt Kunden zur Serverabschaltung](https://www.heise.de/news/Bevorstehender-Zero-Day-Angriff-KiteWorks-draengt-Kunden-zur-Serverabschaltung-11466114.html): Erstmeldung mit Auszügen aus der Kunden-E-Mail und dem Zeitfenster.
+
+2.  [heise online (EN): Imminent Zero-Day Attack: KiteWorks Urges Customers to Shut Down Servers](https://www.heise.de/en/news/Imminent-Zero-Day-Attack-KiteWorks-Urges-Customers-to-Shut-Down-Servers-11466375.html): englische Fassung mit dem Originalwortlaut des CISO.
+
+3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): offizieller Kanal des Herstellers, Stand 25.09.2026 ohne Eintrag zur Warnung.
+
+4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, letzter Eintrag vom 27.05.2026.
+
+5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): offizielle Mitteilungen, Stand 25.09.2026 ohne Eintrag zur Warnung.
+
+6.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321#section-4.5.4.1): Abschnitt 4.5.4.1 zu Wiederholungsintervallen und Aufgabezeit beim Zustellversuch.
+
+----
+
+# Brave Web Discovery Project: Warum lange Wortteile in URLs Seiten ausschliessen
+
+URL: https://rafaelpfister.ch/blog/brave-wdp-lange-url-wortteile
+Datum: 2026-09-25
+
+# Brave Web Discovery Project: Warum lange Wortteile in URLs Seiten ausschliessen
+
+Claudes Websuche liefert ihre Treffer aus dem Index von Brave Search. Anthropic führt Brave Search seit März 2025 als Unterauftragsverarbeiter, und die Zitate in Claude-Antworten decken sich weitgehend mit den Brave-Ergebnissen. Wer in Claude-Antworten zitiert werden will, muss deshalb im Brave-Index stehen. Einreichungen über Google Search Console, Bing Webmaster Tools oder IndexNow erreichen Brave nicht direkt.
+
+Brave füllt seinen Index aus zwei Quellen: einem eigenen Crawler und dem Web Discovery Project (WDP). Das WDP ist eine Opt-in-Funktion im Brave-Browser, die besuchte Seiten anonymisiert an Brave meldet. Bevor der Browser eine Seite meldet, prüft er die URL mit einer Reihe von Heuristiken. Eine davon betrifft deutschsprachige Websites besonders: Enthält der Pfad einen Wortteil mit mehr als 18 Zeichen, wird die Seite nie gemeldet.
+
+## Was das Web Discovery Project meldet
+
+Das WDP sammelt zwei Arten von Daten: Suchanfragen auf Google, Bing, Brave und einigen weiteren Suchmaschinen samt Trefferliste, und Seitenaufrufe mit URL, Titel, Verweildauer und Interaktion. Nutzer-IDs gibt es keine; jede Meldung geht einzeln, verschlüsselt und zeitlich zufällig verteilt an Brave.
+
+Damit keine privaten Inhalte gemeldet werden, stuft der Browser eine Seite als privat ein, wenn
+
+- ein zweiter Abruf ohne Cookies eine deutlich andere Seite liefert (Login, Personalisierung),
+- die Domain auf eine private IP-Adresse zeigt,
+- die Seite `noindex` trägt,
+- die URL wie ein Geheim-Link aussieht (Capability-URL, etwa ein Freigabelink mit Token).
+
+Die letzte Prüfung übernimmt die Funktion `dropLongURL`. Eine als privat eingestufte URL speichert der Browser dauerhaft in einem Bloom-Filter und prüft sie nicht erneut.
+
+## Die Regel: kein Wortteil über 18 Zeichen
+
+`dropLongURL` zerlegt den Pfad an Schrägstrich, Punkt, Unterstrich, Leerzeichen, Bindestrich, Doppelpunkt, Plus und Semikolon und vergleicht jeden Teil mit dem Grenzwert `rel_part_len`:
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` ist im Quellcode auf `18` gesetzt. `return true` heisst: Die URL gilt als verdächtig. Geprüft wird die dekodierte URL: Der Browser führt Nicht-ASCII-Zeichen prozentkodiert (`%C3%BC`), das WDP wandelt sie vorher mit `cleanCurrentUrl` (`decodeURIComponent`) zurück. Gezählt werden JavaScript-Zeichen, also UTF-16-Codeeinheiten: Ein `ü` oder ein chinesisches Schriftzeichen zählt einfach, ein Zeichen ausserhalb der Unicode-Basisebene oder ein als eigenes Zeichen angehängter Akzent doppelt. Die Regel gilt in beiden Prüfmodi, dem normalen und dem strengen. Brave bezeichnet die Heuristiken im README selbst als konservativ: Viele öffentliche Seiten werden fälschlich als möglicher Geheim-Link eingestuft, was für den Zweck des WDP in Kauf genommen wird.
+
+Der Bindestrich trennt, ein zusammengeschriebenes Wort nicht. Entscheidend ist also die Länge des längsten Einzelworts im Slug, nicht die Länge des ganzen Slugs:
+
+| Slug | Längster Teil | Ergebnis |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | wird gemeldet |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | verworfen |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | verworfen |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | wird gemeldet |
+
+## Warum deutsche Slugs besonders betroffen sind
+
+Englische Fachbegriffe werden getrennt geschrieben, deutsche zusammengesetzt. Dazu kommt die Umschrift von Umlauten: Aus `ü` wird `ue`, jedes Umlautwort wird dadurch länger. `Zertifikatserneuerung` hat 21 Zeichen, `Verschlüsselungsgateway` in ASCII-Umschrift 24. In skandinavischen Sprachen ist es ähnlich: Schwedisch und Norwegisch setzen Komposita ebenfalls zusammen.
+
+Auf dieser Website sind nach einer Auswertung der Sitemap 24 von 750 URLs betroffen: drei deutsche Artikel, ein englischer und 20 schwedische oder norwegische Übersetzungen. Der englische Fall stammt aus dem Header-Feld `MessageDirectionality`, das als Wort in den Slug übernommen wurde.
+
+## Wann der Canonical hilft
+
+Scheitert die aufgerufene URL an `dropLongURL`, prüft der Browser die Canonical-URL der Seite. Besteht diese die Prüfung, meldet er die Seite unter der Canonical-URL. Das deckt den typischen Fall ab, dass eine Seite mit Tracking-Parametern aufgerufen wird, aber einen sauberen Canonical hat.
+
+Bei einem zu langen Wortteil im Slug hilft das nicht: Die Canonical-URL ist in der Regel identisch mit der aufgerufenen URL und scheitert an derselben Regel. Scheitern beide, verwirft der Browser die Seite.
+
+Ob der strenge Prüfmodus greift, hängt ebenfalls am Canonical: Er wird nur gelockert, wenn der Canonical von der aufgerufenen URL abweicht und kürzer ist. Bei einer Seite, die sich selbst als Canonical angibt, gilt der strenge Modus.
+
+## Weitere Heuristiken in dropLongURL
+
+Neben der Länge der Wortteile verwirft `dropLongURL` eine URL unter anderem bei
+
+- einem Query-String mit mehr als 30 Zeichen oder mehr als vier Parametern (im strengen Modus ab 23 Zeichen oder zwei Parametern),
+- einer Ziffernfolge mit mehr als 12 Ziffern im Pfad oder Query-String (im strengen Modus mehr als 8); Sonderzeichen werden vorher entfernt, ein Datumspfad wie `/2026/09/25/` zählt also als achtstellige Zahl,
+- Wortteilen, die ein Markov-Klassifikator als Hash einstuft,
+- Pfadsegmenten wie `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` oder `/token`,
+- einer E-Mail-Adresse in der URL.
+
+Für eine gewöhnliche Artikel-URL ohne Parameter ist davon meist nur die Wortlänge relevant.
+
+## Einordnung: Quorum und Crawler
+
+Die Regel betrifft nur den Weg über das WDP. Zwei Punkte begrenzen ihre Bedeutung:
+
+- **Quorum:** Brave kann eine Seitenmeldung erst entschlüsseln, wenn mehr als eine bestimmte Anzahl Nutzer dieselbe URL innerhalb von 30 Tagen aus verschiedenen Netzen gemeldet hat. Den Schwellenwert nennt das README nicht. Für Seiten mit wenigen Brave-Besuchern greift das WDP deshalb ohnehin kaum.
+- **Crawler:** Der Brave-Crawler arbeitet unabhängig vom WDP. Er tritt ohne eigenen User-Agent auf und folgt den robots.txt-Regeln für Googlebot. Eine URL mit langem Wortteil kann über den Crawler trotzdem in den Index gelangen.
+
+Ein langer Wortteil nimmt einer Seite damit einen der beiden Wege in den Brave-Index; über den Crawler bleibt sie erreichbar.
+
+## Eigene URLs prüfen
+
+Die folgenden Befehle lesen eine Sitemap und geben jede URL aus, deren Pfad einen Teil mit mehr als 18 Zeichen enthält. Bei einem Sitemap-Index die einzelnen Sitemaps (`sitemap-0.xml` usw.) nacheinander prüfen.
+
+Unter Linux oder macOS:
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `curl -s` | Lädt die Sitemap ohne Fortschrittsanzeige. |
+| `grep -oE '<loc>[^<]+'` | Gibt nur die `<loc>`-Einträge aus (`-o`), mit erweiterten regulären Ausdrücken (`-E`). |
+| `sed -E 's#…##'` | Entfernt `<loc>`, Schema und Hostname; übrig bleibt der Pfad. |
+| `awk -F'[/._ :+;-]'` | Zerlegt den Pfad an denselben Trennzeichen wie `dropLongURL`. |
+| `length($i) > 18` | Gibt Länge, Wortteil und Pfad aus, sobald ein Teil den Grenzwert überschreitet. |
+
+</details>
+
+Unter Windows mit PowerShell:
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Invoke-RestMethod -Uri` | Lädt die Sitemap und gibt sie direkt als XML-Objekt zurück. |
+| `$sitemap.urlset.url.loc` | Liest alle `<loc>`-Einträge aus dem XML. |
+| `([uri]$loc).AbsolutePath` | Schneidet Schema und Hostname ab und liefert den Pfad. |
+| `[uri]::UnescapeDataString()` | Dekodiert die Prozentkodierung, wie es auch das WDP vor der Prüfung tut. |
+| `-split '[/._ :+;-]'` | Zerlegt den Pfad an denselben Trennzeichen wie `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Behält nur Wortteile mit mehr als 18 Zeichen. |
+
+</details>
+
+Beide Varianten prüfen nur die Wortlänge, nicht die übrigen Heuristiken. Die Bash-Variante zählt die prozentkodierte Form und liefert deshalb nur für reine ASCII-Slugs korrekte Werte; für Slugs mit Umlauten oder anderen Schriften die PowerShell-Variante verwenden.
+
+## Slugs anpassen
+
+Für neue Artikel lässt sich die Regel beim Festlegen des Slugs einhalten: Komposita im Slug mit Bindestrich trennen (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) und aus Fachbegriffen übernommene Bezeichner kürzen.
+
+Bei bestehenden URLs ist eine Änderung abzuwägen. Jede Slug-Änderung braucht eine 301-Weiterleitung von der alten auf die neue URL, eine aktualisierte Sitemap und angepasste interne Links. Bei Seiten, die bereits gut ranken oder von aussen verlinkt sind, bringt die Umstellung wenig: Sie sind über den Crawler ohnehin im Index. Sinnvoll ist sie vor allem bei jungen Seiten, die noch in keinem Index stehen.
+
+## Messung: Wie stark sind einzelne Sprachen betroffen?
+
+Ob die Regel Sprachen unterschiedlich trifft, lässt sich messen, indem man dieselben Begriffe in verschiedenen Sprachen durch Braves Originalcode schickt. Skripte, Daten und Einzelergebnisse liegen im öffentlichen Repository [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); die Messung lässt sich dort mit fünf Befehlen reproduzieren.
+
+**Aufbau:**
+
+- **Code:** Braves Repository `web-discovery-project`, Commit `58b1b53` vom 9. September 2026. Die Funktionen `cleanCurrentUrl` und `dropLongURL` laufen unverändert in Node.js; ersetzt sind nur die Anbindungen an Browser und Speicher. Braves eigene Testfälle für `dropLongURL` liefern damit die erwarteten Ergebnisse.
+- **Begriffe:** die Liste „Vital Articles Level 3" der englischen Wikipedia, rund 1000 zentrale Artikel. Über die Sprachverknüpfungen der Wikipedia wurden die Titel derselben Artikel in 23 weiteren Sprachen abgerufen. 825 Begriffe existieren in allen 24 Sprachen. Pro Begriff ändert sich damit nur die Sprache.
+- **URLs:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, gebildet wie im Browser (prozentkodiert), dann wie im WDP zuerst durch `cleanCurrentUrl` und anschliessend durch `dropLongURL` im normalen und im strengen Modus.
+- **Ursache:** Jede verworfene URL wurde ein zweites Mal geprüft, mit abgeschalteter Längenregel. Wird sie dann gemeldet, geht die Verwerfung auf die Längenregel zurück.
+- **Statistik:** 95-%-Konfidenzintervall nach Wilson; Vergleich mit Englisch über die gepaarten Begriffe (exakter McNemar-Test).
+
+Der Kern der Auswertung:
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Ergebnis** (normaler Modus, 825 Begriffe je Sprache):
+
+| Sprache | Verworfen | 95-%-KI | davon Längenregel | p gegenüber Englisch |
+|---|---|---|---|---|
+| Englisch | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Deutsch | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Ungarisch | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Niederländisch | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finnisch | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Schwedisch | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Norwegisch | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Dänisch, Französisch, Spanisch, Portugiesisch, Türkisch, Polnisch | je 1 (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Russisch, Ukrainisch, Japanisch | je 1 (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italienisch, Griechisch, Arabisch, Hebräisch, Persisch, Hindi, Chinesisch, Koreanisch | 0 (0,0 %) | 0,0–0,5 % | – | – |
+
+Verworfen wurden zum Beispiel `Schwangerschaftsabbruch`, `Empfängnisverhütung` und `Ingenieurwissenschaften` (Deutsch), `Terhességmegszakítás` (Ungarisch), `Milieuverontreiniging` (Niederländisch) und `Tietojenkäsittelytiede` (Finnisch). Die Einzelfälle in den übrigen Sprachen betreffen fast alle denselben Begriff: Desoxyribonukleinsäure in der jeweiligen Landessprache. In keinem Fall wurde ein Begriff in der Landessprache gemeldet und auf Englisch verworfen.
+
+**Auswertung:**
+
+- Sprachen mit nicht-lateinischer Schrift werden nicht benachteiligt. Brave dekodiert die URL vor der Prüfung, ein kyrillisches oder chinesisches Zeichen zählt dadurch als ein Zeichen.
+- Sprachen, die Komposita zusammenschreiben, haben einen kleinen, aber systematischen Nachteil. Für Deutsch ist er mit p = 0,002 auch dann signifikant, wenn man berücksichtigt, dass 23 Sprachen gleichzeitig verglichen wurden (Bonferroni-Schwelle 0,0022). Ungarisch liegt knapp darüber.
+- Der gemessene Anteil gilt für Wikipedia-Titel, die meist aus einem oder zwei Wörtern bestehen. Blog-Slugs enthalten mehr Fachbegriffe; auf dieser Website sind 3 von 66 deutschen Artikel-URLs betroffen (4,5 %).
+
+**Grenzen:** Gemessen wurde die Prüfregel, nicht die tatsächliche Aufnahme in den Brave-Index. Wikipedia selbst steht vermutlich auf Braves Freigabeliste und ist real nicht betroffen; die Messung zeigt, wie die Regel eine Website ohne Freigabe mit solchen URLs behandelt. Der öffentliche Commit muss nicht der im Browser ausgelieferten Version entsprechen. Den Ausweichpfad über die Canonical-URL bildet die Messung nicht ab.
+
+## Meinung: Eine Längengrenze, die Komposita-Sprachen benachteiligt
+
+*Dieser Abschnitt gibt die Einschätzung des Autors wieder. Die Fakten dazu stehen in den Abschnitten oben.*
+
+Die 18-Zeichen-Grenze zählt Zeichen und trifft damit Sprachen, die Begriffe zusammenschreiben. Die Messung zeigt den Effekt: Bei identischen Begriffen verwirft die Regel 1,2 % der deutschen und 0 % der englischen URLs, und jede dieser deutschen Verwerfungen geht auf die Längenregel zurück. Der englische Slug `data-protection-regulation` besteht die Prüfung, `datenschutzgrundverordnung` nicht. Der Effekt ist klein, trifft aber immer dieselben Sprachen: Deutsch, Ungarisch, Niederländisch, Finnisch und die skandinavischen Sprachen. Aus meiner Sicht ist das eine Benachteiligung dieser Sprachen, auch wenn sie nicht beabsichtigt ist.
+
+### Wer die Kosten trägt
+
+Brave schreibt im README, Fehleinstufungen seien für den eigenen Zweck kein grosses Problem. Für Brave trifft das zu: Eine verworfene Seite kostet Brave eine Meldung. Für die betroffenen Websites ist es ein systematischer Nachteil, der vor allem Fachtexte trifft, weil gerade Fachbegriffe lange Komposita bilden. Weil Claudes Websuche auf dem Brave-Index aufsetzt, fehlt diesen Seiten ein Weg in den Index, aus dem Claude zitiert.
+
+Hinzu kommt eine serverseitige Freigabeliste: URL-Muster, die Brave dort aufnimmt (`allowlisted`), überspringen die Prüfung. Welche Muster das sind, ist nicht öffentlich dokumentiert. Einzelne Fachseiten können darauf keinen Einfluss nehmen.
+
+### Was für die Regel spricht
+
+Der Zweck ist berechtigt. Freigabelinks mit Token, etwa für geteilte Dokumente, sind ein reales Risiko, und ein solcher Link im Suchindex wäre ein ernster Datenschutzvorfall. Eine harte Längengrenze ist einfach, schnell und schwer zu umgehen. Sie ist auch nicht einfach durch die Hash-Erkennung ersetzbar: In einem Zusatztest mit 2000 zufälligen Tokens aus Kleinbuchstaben mit 22 Zeichen stufte Braves `isHash` nur 58 % als Hash ein, bei Tokens aus Kleinbuchstaben und Ziffern 94 %. Alle getesteten Komposita wie `schwangerschaftsabbruch` oder `datenschutzgrundverordnung` erkannte die Funktion korrekt als kein Hash. Für Geheim-Links aus reinen Kleinbuchstaben ist die Längengrenze damit der eigentliche Schutz. Zudem erreicht der Crawler betroffene Seiten weiterhin, und der gemessene Anteil ist klein.
+
+### Was Brave ändern könnte
+
+- **Wörter von Tokens unterscheiden:** Eine einfache Anhebung der Grenze für reine Buchstabenwörter würde nach dem Zusatztest Geheim-Links aus Kleinbuchstaben durchlassen. Denkbar ist eine zusätzliche Plausibilitätsprüfung nur für Wortteile zwischen 19 und etwa 30 Zeichen, etwa über die Abfolge von Vokalen und Konsonanten oder ein kleines Sprachmodell, das auf Wörtern der betroffenen Sprachen trainiert ist. Ob das zuverlässig genug ist, müsste Brave prüfen.
+- **Die Regel dokumentieren:** Die Hilfeseite zum Crawler erwähnt das WDP, aber nicht die Heuristiken. Ein Hinweis für Website-Betreiber würde genügen, damit sie ihre Slugs danach ausrichten können.
+
+Die Messung und diesen Zielkonflikt habe ich Brave als [Issue #498](https://github.com/brave/web-discovery-project/issues/498) im Repository des WDP gemeldet. Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita im Slug mit Bindestrich trennen. Dass diese Arbeit bei den Betreibern bestimmter Sprachräume liegt und nicht beim Verfahren, ist der Kern meiner Kritik.
+
+*Korrektur vom 25.09.2026: Eine frühere Fassung schlug vor, die Grenze für reine Buchstabenwörter pauschal anzuheben; der Zusatztest zur Hash-Erkennung zeigt, dass das den Schutz schwächen würde. Eine frühere Fassung dieses Abschnitts behauptete, nicht-lateinische Schriften und Diakritika würden durch die Prozentkodierung besonders stark benachteiligt, gestützt auf eine Messung mit prozentkodierten URLs. Eine unabhängige Nachprüfung hat gezeigt, dass Brave URLs vor der Prüfung mit `cleanCurrentUrl` dekodiert. Die Aussage war falsch und ist entfernt; die Messung oben verwendet den korrekten Ablauf.*
+
+## Quellen
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md): Beschreibung des WDP durch Brave, mit Nachrichtentypen, Zweitabruf ohne Cookies, Capability-URL-Heuristiken und Quorum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es): Quellcode mit `dropLongURL`, `calculateStrictness` und den Grenzwerten `rel_part_len: 18` und `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler): Offizielle Hilfeseite zum Crawler, zum fehlenden eigenen User-Agent und zur Rolle des WDP.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/): Eintrag von Brave Search in Anthropics Liste der Unterauftragsverarbeiter im März 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): Bericht mit weiteren Hinweisen, etwa dem Parameter `BraveSearchParams` in Claudes Websuche.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): Dekodierung der URL vor der Prüfung; der Kommentar in onLocationChange (Zeile 1724) beschreibt die dekodierte URL als interne Darstellung des WDP.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Begriffsliste der Messung; die Titel in den übrigen Sprachen stammen aus den Sprachverknüpfungen der Wikipedia-API.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Messskripte, Datensatz und Einzelergebnisse der Sprachmessung in diesem Artikel, einschliesslich des Zusatztests zur Hash-Erkennung (`hash-test.mjs`) und der als fehlerhaft markierten ersten Fassung.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): Rückmeldung an Brave mit den Messergebnissen und dem Zielkonflikt zwischen Längengrenze und Hash-Erkennung.
+
+----
+
 # MailHeaderAnalyzer: E-Mail-Header in PowerShell auswerten, ohne Netzwerkzugriff
 
 URL: https://rafaelpfister.ch/blog/mailheaderanalyzer-powershell-modul
@@ -13819,6 +14119,252 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Brave Web Discovery Project: Why Long Word Segments in URLs Exclude Pages
+
+URL: https://rafaelpfister.ch/en/blog/brave-web-discovery-project-why-long-word-segments-in-urls-exclude-pages
+Datum: 2026-09-25
+
+# Brave Web Discovery Project: Why Long Word Segments in URLs Exclude Pages
+
+Claude's web search delivers its results from the Brave Search index. Anthropic has listed Brave Search as a subprocesser since March 2025, and citations in Claude responses largely match Brave results. Anyone who wants to be cited in Claude responses must therefore be in the Brave index. Submissions through Google Search Console, Bing Webmaster Tools, or IndexNow do not reach Brave directly.
+
+Brave fills its index from two sources: its own crawler and the Web Discovery Project (WDP). The WDP is an opt-in feature in the Brave browser that anonymously reports visited pages to Brave. Before the browser reports a page, it checks the URL using a series of heuristics. One of them affects German-language websites in particular: If the path contains a word segment longer than 18 characters, the page is never reported.
+
+## What the Web Discovery Project reports
+
+The WDP collects two types of data: search queries on Google, Bing, Brave, and several other search engines along with their result lists, and page visits with URL, title, dwell time, and interaction. There are no user IDs; each report is sent individually, encrypted, and at randomly distributed times to Brave.
+
+To prevent private content from being reported, the browser classifies a page as private if
+
+- a second request without cookies returns a substantially different page (login, personalization),
+- the domain points to a private IP address,
+- the page carries `noindex`,
+- the URL looks like a secret link (a capability URL, such as a sharing link with a token).
+
+The last check is handled by the function `dropLongURL`. The browser permanently stores a URL classified as private in a Bloom filter and does not check it again.
+
+## The rule: no word segment over 18 characters
+
+`dropLongURL` splits the path at slashes, periods, underscores, spaces, hyphens, colons, plus signs, and semicolons, then compares each segment with the threshold `rel_part_len`:
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` is set to `18` in the source code. `return true` means: the URL is considered suspicious. The decoded URL is checked: The browser percent-encodes non-ASCII characters (`%C3%BC`), and the WDP converts them back beforehand using `cleanCurrentUrl` (`decodeURIComponent`). JavaScript characters are counted, i.e., UTF-16 code units: An `ü` or a Chinese character counts as one, while a character outside the Unicode Basic Multilingual Plane or an accent appended as a separate character counts twice. The rule applies in both check modes, normal and strict. Brave itself describes the heuristics in the README as conservative: Many public pages are falsely classified as possible secret links, which is accepted for the WDP's purpose.
+
+A hyphen separates, but a concatenated word does not. What matters is therefore the length of the longest individual word in the slug, not the length of the entire slug:
+
+| Slug | Longest segment | Result |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | is reported |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | discarded |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | discarded |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | is reported |
+
+## Why German slugs are particularly affected
+
+English technical terms are written separately, while German ones are compounded. There is also the transliteration of umlauts: `ü` becomes `ue`, making every word with an umlaut longer. `Zertifikatserneuerung` has 21 characters, `Verschlüsselungsgateway` has 24 in ASCII transliteration. Scandinavian languages are similar: Swedish and Norwegian also concatenate compounds.
+
+On this website, an analysis of the sitemap found 24 affected URLs out of 750: three German articles, one English article, and 20 Swedish or Norwegian translations. The English case comes from the header field `MessageDirectionality`, which was carried over into the slug as a word.
+
+## When the canonical URL helps
+
+If the requested URL fails `dropLongURL`, the browser checks the page's canonical URL. If it passes the check, it reports the page under the canonical URL. This covers the typical case where a page is requested with tracking parameters but has a clean canonical URL.
+
+It does not help with a word segment that is too long in the slug: The canonical URL is generally identical to the requested URL and fails the same rule. If both fail, the browser discards the page.
+
+Whether strict check mode applies also depends on the canonical URL: It is relaxed only if the canonical differs from the requested URL and is shorter. A page that identifies itself as canonical is subject to strict mode.
+
+## Further heuristics in dropLongURL
+
+In addition to word-segment length, `dropLongURL` discards a URL, among other things, when it has
+
+- a query string longer than 30 characters or with more than four parameters (in strict mode, from 23 characters or two parameters),
+- a digit sequence of more than 12 digits in the path or query string (more than 8 in strict mode); special characters are removed first, so a date path such as `/2026/09/25/` counts as an eight-digit number,
+- word segments that a Markov classifier classifies as a hash,
+- path segments such as `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` or `/token`,
+- an email address in the URL.
+
+For a typical article URL without parameters, only word length is usually relevant.
+
+## Context: quorum and crawler
+
+The rule affects only the WDP route. Two points limit its significance:
+
+- **Quorum:** Brave can decrypt a page report only after more than a certain number of users have reported the same URL within 30 days from different networks. The README does not state the threshold. For pages with few Brave visitors, the WDP therefore has little effect anyway.
+- **Crawler:** The Brave crawler operates independently of the WDP. It has no dedicated user agent and follows the robots.txt rules for Googlebot. A URL with a long word segment can still enter the index through the crawler.
+
+A long word segment thus removes one of the two routes into the Brave index; the crawler route remains available.
+
+## Check your own URLs
+
+The following commands read a sitemap and output every URL whose path contains a segment longer than 18 characters. For a sitemap index, check the individual sitemaps (`sitemap-0.xml` etc.) one after another.
+
+On Linux or macOS:
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `curl -s` | Downloads the sitemap without a progress indicator. |
+| `grep -oE '<loc>[^<]+'` | Outputs only the `<loc>` entries (`-o`), using extended regular expressions (`-E`). |
+| `sed -E 's#…##'` | Removes `<loc>`, the scheme, and hostname; the path remains. |
+| `awk -F'[/._ :+;-]'` | Splits the path at the same separators as `dropLongURL`. |
+| `length($i) > 18` | Outputs the length, word segment, and path as soon as a segment exceeds the threshold. |
+
+</details>
+
+On Windows with PowerShell:
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Invoke-RestMethod -Uri` | Downloads the sitemap and returns it directly as an XML object. |
+| `$sitemap.urlset.url.loc` | Reads all `<loc>` entries from the XML. |
+| `([uri]$loc).AbsolutePath` | Removes the scheme and hostname and returns the path. |
+| `[uri]::UnescapeDataString()` | Decodes percent encoding, just as the WDP does before checking. |
+| `-split '[/._ :+;-]'` | Splits the path at the same separators as `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Keeps only word segments longer than 18 characters. |
+
+</details>
+
+Both variants check only word length, not the other heuristics. The Bash variant counts the percent-encoded form and therefore produces correct values only for purely ASCII slugs; use the PowerShell variant for slugs with umlauts or other scripts.
+
+## Adjust slugs
+
+For new articles, the rule can be observed when defining the slug: Separate compounds in the slug with hyphens (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) and shorten identifiers taken from technical terms.
+
+For existing URLs, a change should be weighed carefully. Every slug change requires a 301 redirect from the old URL to the new one, an updated sitemap, and adjusted internal links. For pages that already rank well or have external links, the change offers little benefit: They are already in the index through the crawler. It is mainly useful for young pages that are not yet in any index.
+
+## Measurement: How much are individual languages affected?
+
+Whether the rule affects languages differently can be measured by running the same terms in different languages through Brave's original code. Scripts, data, and individual results are available in the public repository [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); the measurement can be reproduced there with five commands.
+
+**Setup:**
+
+- **Code:** Brave's repository `web-discovery-project`, commit `58b1b53` of September 9, 2026. The functions `cleanCurrentUrl` and `dropLongURL` run unchanged in Node.js; only the connections to browser and storage were replaced. Brave's own test cases for `dropLongURL` therefore produce the expected results.
+- **Terms:** the English Wikipedia list “Vital Articles Level 3,” around 1,000 key articles. Wikipedia language links were used to retrieve the titles of the same articles in 23 additional languages. 825 terms exist in all 24 languages. Thus, only the language changes for each term.
+- **URLs:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, constructed as in the browser (percent-encoded), then passed through `cleanCurrentUrl` first, as in the WDP, and then through `dropLongURL` in normal and strict mode.
+- **Cause:** Every discarded URL was checked a second time with the length rule disabled. If it was then reported, the discard was attributable to the length rule.
+- **Statistics:** 95% Wilson confidence interval; comparison with English using paired terms (exact McNemar test).
+
+The core of the analysis:
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Result** (normal mode, 825 terms per language):
+
+| Language | Discarded | 95% CI | of which length rule | p vs. English |
+|---|---|---|---|---|
+| English | 0 (0.0%) | 0.0–0.5% | – | – |
+| German | 10 (1.2%) | 0.7–2.2% | 10 | 0.002 |
+| Hungarian | 9 (1.1%) | 0.6–2.1% | 6 | 0.004 |
+| Dutch | 6 (0.7%) | 0.3–1.6% | 6 | 0.03 |
+| Finnish | 5 (0.6%) | 0.3–1.4% | 5 | 0.06 |
+| Swedish | 4 (0.5%) | 0.2–1.2% | 4 | 0.13 |
+| Norwegian | 4 (0.5%) | 0.2–1.2% | 4 | 0.13 |
+| Danish, French, Spanish, Portuguese, Turkish, Polish | 1 each (0.1%) | 0.0–0.7% | 0–1 | 1.0 |
+| Russian, Ukrainian, Japanese | 1 each (0.1%) | 0.0–0.7% | 1 | 1.0 |
+| Italian, Greek, Arabic, Hebrew, Persian, Hindi, Chinese, Korean | 0 (0.0%) | 0.0–0.5% | – | – |
+
+Examples of discarded terms include `Schwangerschaftsabbruch`, `Empfängnisverhütung` and `Ingenieurwissenschaften` (German), `Terhességmegszakítás` (Hungarian), `Milieuverontreiniging` (Dutch), and `Tietojenkäsittelytiede` (Finnish). The individual cases in the other languages almost all concern the same term: deoxyribonucleic acid in the respective local language. In no case was a term reported in the local language and discarded in English.
+
+**Analysis:**
+
+- Languages using non-Latin scripts are not disadvantaged. Brave decodes the URL before checking, so a Cyrillic or Chinese character counts as one character.
+- Languages that concatenate compounds have a small but systematic disadvantage. For German, it is significant at p = 0.002 even after accounting for the simultaneous comparison of 23 languages (Bonferroni threshold 0.0022). Hungarian is just above that threshold.
+- The measured share applies to Wikipedia titles, which usually consist of one or two words. Blog slugs contain more technical terms; on this website, 3 of 66 German article URLs are affected (4.5%).
+
+**Limitations:** The check rule was measured, not actual inclusion in the Brave index. Wikipedia itself is probably on Brave's allowlist and is not affected in practice; the measurement shows how the rule treats a website without an exception that has such URLs. The public commit may not correspond to the version delivered in the browser. The measurement does not model the fallback route through the canonical URL.
+
+## Opinion: A length limit that disadvantages compound-word languages
+
+*This section reflects the author's assessment. The relevant facts appear in the sections above.*
+
+The 18-character limit counts characters and therefore affects languages that concatenate terms. The measurement shows the effect: For identical terms, the rule discards 1.2% of German URLs and 0% of English URLs, and every one of those German discards is due to the length rule. The English slug `data-protection-regulation` passes the check, while `datenschutzgrundverordnung` does not. The effect is small, but it always affects the same languages: German, Hungarian, Dutch, Finnish, and the Scandinavian languages. In my view, this disadvantages these languages, even if it is unintentional.
+
+### Who bears the costs
+
+Brave writes in the README that false classifications are not a major problem for its own purpose. That is true for Brave: A discarded page costs Brave one report. For affected websites, it is a systematic disadvantage that primarily affects technical texts, because technical terms in particular form long compounds. Since Claude's web search is based on the Brave index, these pages lose one route into the index from which Claude cites.
+
+There is also a server-side allowlist: URL patterns that Brave includes there (`allowlisted`) skip the check. Which patterns those are is not publicly documented. Individual specialist websites have no influence over this.
+
+### What supports the rule
+
+The purpose is legitimate. Sharing links with tokens, for example for shared documents, are a real risk, and such a link in a search index would be a serious privacy incident. A hard length limit is simple, fast, and difficult to circumvent. Nor can it simply be replaced with hash detection: In an additional test with 2,000 random 22-character lowercase tokens, Brave's `isHash` classified only 58% as hashes; for tokens containing lowercase letters and digits, it classified 94%. The function correctly recognized all tested compounds such as `schwangerschaftsabbruch` or `datenschutzgrundverordnung` as not being hashes. For secret links made up solely of lowercase letters, the length limit is therefore the actual protection. In addition, the crawler can still reach affected pages, and the measured share is small.
+
+### What Brave could change
+
+- **Distinguish words from tokens:** Simply raising the limit for words consisting only of letters would, according to the additional test, let secret links made of lowercase letters through. An additional plausibility check only for word segments between 19 and about 30 characters could be conceivable, for example based on the sequence of vowels and consonants or a small language model trained on words from the affected languages. Brave would need to verify whether this is reliable enough.
+- **Document the rule:** The crawler help page mentions the WDP but not the heuristics. A note for website operators would be enough to let them adapt their slugs accordingly.
+
+I reported the measurement and this trade-off to Brave as [Issue #498](https://github.com/brave/web-discovery-project/issues/498) in the WDP repository. Until then, the only option is to adapt things on the website side: Separate compounds in the slug with hyphens. The fact that this work falls on operators in certain language regions rather than on the method itself is the core of my criticism.
+
+*Correction dated September 25, 2026: An earlier version proposed generally raising the limit for words consisting only of letters; the additional hash-detection test shows that this would weaken the protection. An earlier version of this section claimed that non-Latin scripts and diacritics were particularly disadvantaged by percent encoding, based on a measurement with percent-encoded URLs. An independent review showed that Brave decodes URLs using `cleanCurrentUrl` before checking. The claim was incorrect and has been removed; the measurement above uses the correct process.*
+
+## Sources
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md): Brave's description of the WDP, including message types, second request without cookies, capability-URL heuristics, and quorum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es): Source code containing `dropLongURL`, `calculateStrictness` and the thresholds `rel_part_len: 18` and `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler): Official crawler help page, on the lack of a dedicated user agent and the role of the WDP.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/): Entry for Brave Search in Anthropic's list of subprocessors in March 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): Report with further evidence, such as the parameter `BraveSearchParams` in Claude's web search.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): URL decoding before checking; the comment in onLocationChange (line 1724) describes the decoded URL as the WDP's internal representation.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Term list for the measurement; titles in the other languages come from Wikipedia API language links.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Measurement scripts, dataset, and individual results of the language measurement in this article, including the additional hash-detection test (`hash-test.mjs`) and the first version marked as incorrect.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): Feedback to Brave with the measurement results and the trade-off between the length limit and hash detection.
+
+----
+
 # MailHeaderAnalyzer: Analyze Email Headers in PowerShell Without Network Access
 
 URL: https://rafaelpfister.ch/en/blog/mailheaderanalyzer-analyze-email-headers-in-powershell-without-network-access
@@ -27569,6 +28115,252 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Brave Web Discovery Project : pourquoi les longues parties de mots dans les URL excluent des pages
+
+URL: https://rafaelpfister.ch/fr/blog/brave-web-discovery-project-pourquoi-les-longues-parties-de-mots-dans-les-url-excluent-des-pages
+Datum: 2026-09-25
+
+# Brave Web Discovery Project : pourquoi les longues parties de mots dans les URL excluent des pages
+
+La recherche web de Claude fournit ses résultats à partir de l’index de Brave Search. Anthropic cite Brave Search comme sous-traitant depuis mars 2025, et les citations dans les réponses de Claude correspondent largement aux résultats de Brave. Quiconque souhaite être cité dans les réponses de Claude doit donc figurer dans l’index de Brave. Les soumissions via Google Search Console, Bing Webmaster Tools ou IndexNow n’atteignent pas Brave directement.
+
+Brave alimente son index à partir de deux sources : son propre crawler et le Web Discovery Project (WDP). Le WDP est une fonction facultative du navigateur Brave qui signale anonymement à Brave les pages visitées. Avant que le navigateur ne signale une page, il vérifie l’URL à l’aide d’une série d’heuristiques. L’une d’elles concerne particulièrement les sites web germanophones : si le chemin contient une partie de mot de plus de 18 caractères, la page n’est jamais signalée.
+
+## Ce que signale le Web Discovery Project
+
+Le WDP collecte deux types de données : les requêtes de recherche sur Google, Bing, Brave et quelques autres moteurs de recherche avec leur liste de résultats, ainsi que les visites de pages avec l’URL, le titre, le temps passé et les interactions. Il n’y a pas d’identifiants utilisateur ; chaque signalement est envoyé individuellement, chiffré et réparti aléatoirement dans le temps à Brave.
+
+Afin qu’aucun contenu privé ne soit signalé, le navigateur considère une page comme privée lorsque
+
+- une seconde consultation sans cookies fournit une page nettement différente (connexion, personnalisation),
+- le domaine pointe vers une adresse IP privée,
+- la page porte `noindex`,
+- l’URL ressemble à un lien secret (URL à capacité, par exemple un lien de partage avec jeton).
+
+La dernière vérification est assurée par la fonction `dropLongURL`. Une URL considérée comme privée est enregistrée durablement par le navigateur dans un filtre de Bloom et n’est plus vérifiée.
+
+## La règle : aucune partie de mot de plus de 18 caractères
+
+`dropLongURL` découpe le chemin aux barres obliques, points, traits de soulignement, espaces, traits d’union, deux-points, signes plus et points-virgules, puis compare chaque partie à la limite `rel_part_len` :
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` est fixé dans le code source à `18`. `return true` signifie que l’URL est considérée comme suspecte. C’est l’URL décodée qui est vérifiée : le navigateur encode les caractères non ASCII en pourcentage (`%C3%BC`), le WDP les reconvertit auparavant avec `cleanCurrentUrl` (`decodeURIComponent`). Sont comptés les caractères JavaScript, donc les unités de code UTF-16 : un `ü` ou un caractère chinois compte simplement, tandis qu’un caractère hors du plan multilingue de base Unicode ou un accent ajouté comme caractère distinct compte double. La règle s’applique dans les deux modes de vérification, normal et strict. Dans le README, Brave qualifie lui-même ces heuristiques de conservatrices : de nombreuses pages publiques sont à tort classées comme de possibles liens secrets, ce qui est accepté pour l’objectif du WDP.
+
+Le trait d’union sépare, pas un mot écrit en un seul bloc. Ce qui compte est donc la longueur du mot individuel le plus long dans le slug, et non celle de l’ensemble du slug :
+
+| Slug | Partie la plus longue | Résultat |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | est signalé |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | rejeté |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | rejeté |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | est signalé |
+
+## Pourquoi les slugs allemands sont particulièrement touchés
+
+Les termes techniques anglais s’écrivent séparément, les allemands sont composés. À cela s’ajoute la transcription des umlauts : `ü` devient `ue`, ce qui allonge chaque mot contenant un umlaut. `Zertifikatserneuerung` compte 21 caractères, `Verschlüsselungsgateway` 24 en transcription ASCII. La situation est similaire dans les langues scandinaves : le suédois et le norvégien écrivent également les mots composés en un seul bloc.
+
+Sur ce site, une analyse du sitemap montre que 24 URL sur 750 sont concernées : trois articles allemands, un anglais et 20 traductions suédoises ou norvégiennes. Le cas anglais provient du champ d’en-tête `MessageDirectionality`, repris comme mot dans le slug.
+
+## Quand l’URL canonique aide
+
+Si l’URL consultée échoue à `dropLongURL`, le navigateur vérifie l’URL canonique de la page. Si celle-ci passe la vérification, il signale la page sous l’URL canonique. Cela couvre le cas typique d’une page consultée avec des paramètres de suivi, mais ayant une URL canonique propre.
+
+Pour une partie de mot trop longue dans le slug, cela n’aide pas : l’URL canonique est généralement identique à l’URL consultée et échoue à la même règle. Si les deux échouent, le navigateur rejette la page.
+
+L’application du mode de vérification strict dépend également de l’URL canonique : il n’est assoupli que lorsque l’URL canonique diffère de l’URL consultée et est plus courte. Pour une page qui se désigne elle-même comme canonique, le mode strict s’applique.
+
+## Autres heuristiques dans dropLongURL
+
+Outre la longueur des parties de mots, `dropLongURL` rejette notamment une URL en présence
+
+- d’une chaîne de requête de plus de 30 caractères ou de plus de quatre paramètres (en mode strict, dès 23 caractères ou deux paramètres),
+- d’une suite de plus de 12 chiffres dans le chemin ou la chaîne de requête (plus de 8 en mode strict) ; les caractères spéciaux sont supprimés auparavant, de sorte qu’un chemin de date comme `/2026/09/25/` compte comme un nombre à huit chiffres,
+- de parties de mots qu’un classificateur de Markov considère comme un hash,
+- de segments de chemin tels que `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` ou `/token`,
+- d’une adresse e-mail dans l’URL.
+
+Pour une URL d’article ordinaire sans paramètres, seule la longueur des mots est généralement pertinente.
+
+## Mise en contexte : quorum et crawler
+
+La règle ne concerne que le chemin via le WDP. Deux points limitent son importance :
+
+- **Quorum :** Brave ne peut déchiffrer un signalement de page que lorsqu’un nombre supérieur à un certain seuil d’utilisateurs a signalé la même URL dans les 30 jours depuis des réseaux différents. Le README ne donne pas ce seuil. Pour les pages ayant peu de visiteurs utilisant Brave, le WDP intervient donc de toute façon peu.
+- **Crawler :** Le crawler de Brave fonctionne indépendamment du WDP. Il se présente sans user-agent propre et suit les règles robots.txt applicables à Googlebot. Une URL comportant une longue partie de mot peut malgré tout entrer dans l’index via le crawler.
+
+Une longue partie de mot retire ainsi à une page l’une des deux voies vers l’index de Brave ; elle reste accessible via le crawler.
+
+## Vérifier ses propres URL
+
+Les commandes suivantes lisent un sitemap et affichent chaque URL dont le chemin contient une partie de plus de 18 caractères. Pour un index de sitemaps, vérifier les sitemaps individuels (`sitemap-0.xml` etc.) l’un après l’autre.
+
+Sous Linux ou macOS :
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `curl -s` | Télécharge le sitemap sans afficher de progression. |
+| `grep -oE '<loc>[^<]+'` | N’affiche que les entrées `<loc>` (`-o`), avec des expressions régulières étendues (`-E`). |
+| `sed -E 's#…##'` | Supprime `<loc>`, le schéma et le nom d’hôte ; il ne reste que le chemin. |
+| `awk -F'[/._ :+;-]'` | Découpe le chemin aux mêmes séparateurs que `dropLongURL`. |
+| `length($i) > 18` | Affiche la longueur, la partie de mot et le chemin dès qu’une partie dépasse la limite. |
+
+</details>
+
+Sous Windows avec PowerShell :
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `Invoke-RestMethod -Uri` | Télécharge le sitemap et le renvoie directement sous forme d’objet XML. |
+| `$sitemap.urlset.url.loc` | Lit toutes les entrées `<loc>` du XML. |
+| `([uri]$loc).AbsolutePath` | Retire le schéma et le nom d’hôte, puis renvoie le chemin. |
+| `[uri]::UnescapeDataString()` | Décode l’encodage en pourcentage, comme le fait le WDP avant la vérification. |
+| `-split '[/._ :+;-]'` | Découpe le chemin aux mêmes séparateurs que `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Ne conserve que les parties de mots de plus de 18 caractères. |
+
+</details>
+
+Les deux variantes ne vérifient que la longueur des mots, pas les autres heuristiques. La variante Bash compte la forme encodée en pourcentage et ne fournit donc des valeurs correctes que pour les slugs entièrement ASCII ; pour les slugs avec umlauts ou autres écritures, utiliser la variante PowerShell.
+
+## Adapter les slugs
+
+Pour les nouveaux articles, la règle peut être respectée lors de la définition du slug : séparer les composés dans le slug par des traits d’union (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) et raccourcir les désignations reprises de termes techniques.
+
+Pour les URL existantes, une modification doit être pesée. Chaque changement de slug nécessite une redirection 301 de l’ancienne URL vers la nouvelle, un sitemap mis à jour et des liens internes adaptés. Pour les pages déjà bien classées ou faisant l’objet de liens externes, le changement apporte peu : elles figurent de toute façon dans l’index via le crawler. Il est surtout utile pour les pages récentes qui ne figurent encore dans aucun index.
+
+## Mesure : dans quelle mesure les langues sont-elles touchées ?
+
+On peut mesurer si la règle touche les langues différemment en faisant passer les mêmes termes dans différentes langues à travers le code original de Brave. Les scripts, les données et les résultats individuels se trouvent dans le dépôt public [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung) ; la mesure peut y être reproduite avec cinq commandes.
+
+**Méthode :**
+
+- **Code :** dépôt de Brave `web-discovery-project`, commit `58b1b53` du 9 septembre 2026. Les fonctions `cleanCurrentUrl` et `dropLongURL` s’exécutent sans modification dans Node.js ; seules les connexions au navigateur et au stockage ont été remplacées. Les propres cas de test de Brave pour `dropLongURL` produisent ainsi les résultats attendus.
+- **Termes :** la liste « Vital Articles Level 3 » de Wikipédia en anglais, soit environ 1 000 articles centraux. Les liens interlangues de Wikipédia ont permis de récupérer les titres des mêmes articles dans 23 autres langues. 825 termes existent dans les 24 langues. Pour chaque terme, seule la langue change.
+- **URL :** `https://<sprache>.wikipedia.org/wiki/<Titel>`, formées comme dans le navigateur (encodées en pourcentage), puis passées comme dans le WDP d’abord par `cleanCurrentUrl`, puis par `dropLongURL` en mode normal et strict.
+- **Cause :** chaque URL rejetée a été vérifiée une seconde fois, avec la règle de longueur désactivée. Si elle est alors signalée, le rejet est dû à la règle de longueur.
+- **Statistiques :** intervalle de confiance à 95 % selon Wilson ; comparaison avec l’anglais sur les termes appariés (test exact de McNemar).
+
+Le cœur de l’analyse :
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Résultat** (mode normal, 825 termes par langue) :
+
+| Langue | Rejetés | IC à 95 % | dont règle de longueur | p par rapport à l’anglais |
+|---|---|---|---|---|
+| Anglais | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Allemand | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Hongrois | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Néerlandais | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finnois | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Suédois | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Norvégien | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Danois, français, espagnol, portugais, turc, polonais | 1 chacun (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Russe, ukrainien, japonais | 1 chacun (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italien, grec, arabe, hébreu, persan, hindi, chinois, coréen | 0 (0,0 %) | 0,0–0,5 % | – | – |
+
+Ont par exemple été rejetés `Schwangerschaftsabbruch`, `Empfängnisverhütung` et `Ingenieurwissenschaften` (allemand), `Terhességmegszakítás` (hongrois), `Milieuverontreiniging` (néerlandais) et `Tietojenkäsittelytiede` (finnois). Les cas isolés dans les autres langues concernent presque tous le même terme : l’acide désoxyribonucléique dans la langue concernée. Dans aucun cas un terme n’a été signalé dans la langue locale et rejeté en anglais.
+
+**Analyse :**
+
+- Les langues utilisant une écriture non latine ne sont pas désavantagées. Brave décode l’URL avant la vérification ; un caractère cyrillique ou chinois compte donc comme un seul caractère.
+- Les langues qui écrivent les mots composés en un seul bloc subissent un désavantage faible mais systématique. Pour l’allemand, il est significatif avec p = 0,002, même en tenant compte de la comparaison simultanée de 23 langues (seuil de Bonferroni 0,0022). Le hongrois se situe juste au-dessus.
+- La proportion mesurée s’applique aux titres de Wikipédia, qui se composent généralement d’un ou deux mots. Les slugs de blogs contiennent davantage de termes techniques ; sur ce site, 3 URL d’articles allemands sur 66 sont concernées (4,5 %).
+
+**Limites :** la règle de vérification a été mesurée, non l’inclusion effective dans l’index de Brave. Wikipédia elle-même figure probablement sur la liste d’autorisation de Brave et n’est pas réellement concernée ; la mesure montre comment la règle traite un site web sans autorisation avec de telles URL. Le commit public ne correspond pas nécessairement à la version livrée dans le navigateur. La mesure ne reproduit pas la voie de contournement via l’URL canonique.
+
+## Avis : une limite de longueur qui désavantage les langues à mots composés
+
+*Cette section présente l’évaluation de l’auteur. Les faits correspondants figurent dans les sections ci-dessus.*
+
+La limite de 18 caractères compte les caractères et touche donc les langues qui assemblent les termes. La mesure montre l’effet : pour des termes identiques, la règle rejette 1,2 % des URL allemandes et 0 % des URL anglaises, et chacun de ces rejets allemands est dû à la règle de longueur. Le slug anglais `data-protection-regulation` passe la vérification, `datenschutzgrundverordnung` non. L’effet est faible, mais touche toujours les mêmes langues : allemand, hongrois, néerlandais, finnois et langues scandinaves. À mon sens, c’est un désavantage pour ces langues, même s’il n’est pas intentionnel.
+
+### Qui supporte le coût
+
+Brave écrit dans le README que les erreurs de classification ne sont pas un grand problème pour son propre objectif. C’est vrai pour Brave : une page rejetée coûte à Brave un signalement. Pour les sites web concernés, c’est un désavantage systématique qui touche surtout les textes spécialisés, car les termes techniques forment précisément de longs composés. Comme la recherche web de Claude repose sur l’index de Brave, ces pages perdent une voie vers l’index dont Claude tire ses citations.
+
+S’ajoute une liste d’autorisation côté serveur : les modèles d’URL que Brave y inclut (`allowlisted`) ignorent la vérification. Les modèles concernés ne sont pas documentés publiquement. Les sites spécialisés isolés n’ont aucune influence là-dessus.
+
+### Ce qui plaide en faveur de la règle
+
+L’objectif est légitime. Les liens de partage avec jeton, par exemple pour des documents partagés, représentent un risque réel, et un tel lien dans l’index de recherche serait un grave incident de protection des données. Une limite de longueur stricte est simple, rapide et difficile à contourner. Elle ne peut pas non plus être simplement remplacée par la détection de hash : dans un test complémentaire avec 2 000 jetons aléatoires de 22 caractères en minuscules, `isHash` de Brave n’en a classé que 58 % comme hash ; pour les jetons composés de minuscules et de chiffres, ce taux était de 94 %. Tous les composés testés tels que `schwangerschaftsabbruch` ou `datenschutzgrundverordnung` ont été correctement reconnus par la fonction comme n’étant pas des hash. Pour les liens secrets constitués uniquement de minuscules, la limite de longueur est donc la véritable protection. De plus, le crawler continue d’atteindre les pages concernées, et la proportion mesurée est faible.
+
+### Ce que Brave pourrait changer
+
+- **Distinguer les mots des jetons :** relever simplement la limite pour les mots composés uniquement de lettres laisserait passer les liens secrets en minuscules, selon le test complémentaire. Une vérification de plausibilité supplémentaire uniquement pour les parties de mots entre 19 et environ 30 caractères serait envisageable, par exemple via la succession des voyelles et consonnes ou un petit modèle linguistique entraîné sur des mots des langues concernées. Brave devrait vérifier si cela est suffisamment fiable.
+- **Documenter la règle :** la page d’aide consacrée au crawler mentionne le WDP, mais pas les heuristiques. Une indication pour les exploitants de sites web suffirait pour qu’ils puissent adapter leurs slugs en conséquence.
+
+J’ai signalé la mesure et ce conflit d’objectifs à Brave dans l’[Issue #498](https://github.com/brave/web-discovery-project/issues/498) du dépôt du WDP. En attendant, il ne reste que l’adaptation du côté du site web : séparer les composés dans le slug par des traits d’union. Le fait que ce travail incombe aux exploitants de certaines régions linguistiques plutôt qu’au procédé lui-même est le cœur de ma critique.
+
+*Correction du 25.09.2026 : une version antérieure proposait de relever de manière générale la limite pour les mots composés uniquement de lettres ; le test complémentaire sur la détection de hash montre que cela affaiblirait la protection. Une version antérieure de cette section affirmait que les écritures non latines et les diacritiques étaient particulièrement désavantagés par l’encodage en pourcentage, sur la base d’une mesure avec des URL encodées en pourcentage. Une vérification indépendante a montré que Brave décode les URL avec `cleanCurrentUrl` avant la vérification. Cette affirmation était erronée et a été supprimée ; la mesure ci-dessus utilise le déroulement correct.*
+
+## Sources
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md) : description du WDP par Brave, avec les types de messages, la seconde consultation sans cookies, les heuristiques d’URL à capacité et le quorum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es) : code source avec `dropLongURL`, `calculateStrictness` et les seuils `rel_part_len: 18` et `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler) : page d’aide officielle sur le crawler, l’absence de user-agent propre et le rôle du WDP.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/) : ajout de Brave Search à la liste des sous-traitants d’Anthropic en mars 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/) : article apportant d’autres indices, tel que le paramètre `BraveSearchParams` dans la recherche web de Claude.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226) : décodage de l’URL avant la vérification ; le commentaire dans onLocationChange (ligne 1724) décrit l’URL décodée comme la représentation interne du WDP.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3) : liste de termes de la mesure ; les titres dans les autres langues proviennent des liens interlangues de l’API Wikipédia.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung) : scripts de mesure, jeu de données et résultats individuels de la mesure linguistique de cet article, y compris le test complémentaire de détection de hash (`hash-test.mjs`) et la première version signalée comme erronée.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498) : retour adressé à Brave avec les résultats de la mesure et le conflit d’objectifs entre limite de longueur et détection de hash.
 
 ----
 
@@ -41325,6 +42117,252 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# Brave Web Discovery Project: perché le parti di parole lunghe negli URL escludono le pagine
+
+URL: https://rafaelpfister.ch/it/blog/brave-web-discovery-project-perche-le-parti-di-parole-lunghe-negli-url-escludono-le-pagine
+Datum: 2026-09-25
+
+# Brave Web Discovery Project: perché le parti di parole lunghe negli URL escludono le pagine
+
+La ricerca web di Claude fornisce i suoi risultati dall’indice di Brave Search. Anthropic indica Brave Search come subfornitore dal marzo 2025 e le citazioni nelle risposte di Claude corrispondono in larga misura ai risultati di Brave. Chi vuole essere citato nelle risposte di Claude deve quindi figurare nell’indice di Brave. Le segnalazioni tramite Google Search Console, Bing Webmaster Tools o IndexNow non raggiungono Brave direttamente.
+
+Brave alimenta il proprio indice da due fonti: un crawler proprio e il Web Discovery Project (WDP). Il WDP è una funzione opt-in del browser Brave che segnala anonimamente a Brave le pagine visitate. Prima che il browser segnali una pagina, verifica l’URL mediante una serie di euristiche. Una di esse riguarda in particolare i siti web in lingua tedesca: se il percorso contiene una parte di parola con più di 18 caratteri, la pagina non viene mai segnalata.
+
+## Cosa segnala il Web Discovery Project
+
+Il WDP raccoglie due tipi di dati: query di ricerca su Google, Bing, Brave e alcuni altri motori di ricerca, compreso l’elenco dei risultati, e visualizzazioni di pagine con URL, titolo, tempo di permanenza e interazione. Non esistono ID utente; ogni segnalazione viene inviata singolarmente a Brave, in forma crittografata e distribuita casualmente nel tempo.
+
+Affinché non vengano segnalati contenuti privati, il browser classifica una pagina come privata se
+
+- una seconda richiesta senza cookie restituisce una pagina sensibilmente diversa (login, personalizzazione),
+- il dominio punta a un indirizzo IP privato,
+- la pagina contiene `noindex`,
+- l’URL assomiglia a un link segreto (URL capability, ad esempio un link di condivisione con token).
+
+L’ultimo controllo è eseguito dalla funzione `dropLongURL`. Un URL classificato come privato viene memorizzato in modo permanente dal browser in un filtro Bloom e non viene controllato di nuovo.
+
+## La regola: nessuna parte di parola oltre 18 caratteri
+
+`dropLongURL` divide il percorso a barre, punti, trattini bassi, spazi, trattini, due punti, segni più e punti e virgola e confronta ogni parte con il valore limite `rel_part_len`:
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` è impostato nel codice sorgente su `18`. `return true` significa: l’URL è considerato sospetto. Viene controllato l’URL decodificato: il browser codifica in percentuale i caratteri non ASCII (`%C3%BC`), il WDP li riconverte prima con `cleanCurrentUrl` (`decodeURIComponent`). Si contano i caratteri JavaScript, cioè le unità di codice UTF-16: una `ü` o un carattere cinese conta una sola volta, un carattere esterno al piano Unicode di base o un accento aggiunto come carattere separato conta due volte. La regola si applica in entrambe le modalità di controllo, quella normale e quella rigorosa. Nel README Brave definisce le euristiche stesse conservative: molte pagine pubbliche vengono erroneamente classificate come possibili link segreti, cosa che viene accettata per lo scopo del WDP.
+
+Il trattino separa, una parola scritta tutta unita no. È quindi determinante la lunghezza della parola singola più lunga nello slug, non la lunghezza dell’intero slug:
+
+| Slug | Parte più lunga | Risultato |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | viene segnalato |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | scartato |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | scartato |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | viene segnalato |
+
+## Perché gli slug tedeschi sono particolarmente colpiti
+
+I termini tecnici inglesi si scrivono separati, quelli tedeschi composti. A ciò si aggiunge la traslitterazione delle dieresi: da `ü` diventa `ue`, rendendo più lunga ogni parola con dieresi. `Zertifikatserneuerung` ha 21 caratteri, `Verschlüsselungsgateway` nella traslitterazione ASCII 24. Nelle lingue scandinave la situazione è simile: anche svedese e norvegese uniscono i composti.
+
+Su questo sito web, secondo un’analisi della sitemap, sono interessati 24 URL su 750: tre articoli tedeschi, uno inglese e 20 traduzioni svedesi o norvegesi. Il caso inglese deriva dal campo header `MessageDirectionality`, adottato come parola nello slug.
+
+## Quando il canonical aiuta
+
+Se l’URL richiamato non supera `dropLongURL`, il browser verifica l’URL canonical della pagina. Se quest’ultimo supera il controllo, segnala la pagina con l’URL canonical. Ciò copre il caso tipico in cui una pagina viene richiamata con parametri di tracciamento, ma possiede un canonical pulito.
+
+Con una parte di parola troppo lunga nello slug, questo non aiuta: l’URL canonical è generalmente identico all’URL richiamato e non supera la stessa regola. Se entrambi non superano il controllo, il browser scarta la pagina.
+
+Anche l’applicazione della modalità di controllo rigorosa dipende dal canonical: viene allentata solo se il canonical differisce dall’URL richiamato ed è più corto. Per una pagina che indica sé stessa come canonical, vale la modalità rigorosa.
+
+## Altre euristiche in dropLongURL
+
+Oltre alla lunghezza delle parti di parola, `dropLongURL` scarta un URL, tra l’altro, in caso di
+
+- una query string con più di 30 caratteri o più di quattro parametri (in modalità rigorosa da 23 caratteri o due parametri),
+- una sequenza di cifre con più di 12 cifre nel percorso o nella query string (in modalità rigorosa più di 8); prima vengono rimossi i caratteri speciali, quindi un percorso data come `/2026/09/25/` conta come un numero di otto cifre,
+- parti di parola che un classificatore Markov classifica come hash,
+- segmenti di percorso come `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` o `/token`,
+- un indirizzo e-mail nell’URL.
+
+Per un normale URL di articolo senza parametri, di solito è rilevante soltanto la lunghezza delle parole.
+
+## Inquadramento: quorum e crawler
+
+La regola riguarda soltanto il percorso tramite WDP. Due aspetti ne limitano l’importanza:
+
+- **Quorum:** Brave può decifrare una segnalazione di pagina solo quando più di un determinato numero di utenti ha segnalato lo stesso URL entro 30 giorni da reti diverse. Il README non indica la soglia. Per le pagine con pochi visitatori Brave, il WDP ha quindi comunque poca rilevanza.
+- **Crawler:** il crawler di Brave opera indipendentemente dal WDP. Non si presenta con un proprio user agent e segue le regole robots.txt per Googlebot. Un URL con una parte di parola lunga può comunque entrare nell’indice tramite il crawler.
+
+Una parte di parola lunga priva quindi una pagina di una delle due vie verso l’indice di Brave; resta raggiungibile tramite il crawler.
+
+## Verificare i propri URL
+
+I seguenti comandi leggono una sitemap e restituiscono ogni URL il cui percorso contiene una parte con più di 18 caratteri. In caso di indice sitemap, verificare una dopo l’altra le singole sitemap (`sitemap-0.xml` ecc.).
+
+Su Linux o macOS:
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `curl -s` | Scarica la sitemap senza indicatore di avanzamento. |
+| `grep -oE '<loc>[^<]+'` | Restituisce solo le voci `<loc>` (`-o`), con espressioni regolari estese (`-E`). |
+| `sed -E 's#…##'` | Rimuove `<loc>`, schema e nome host; resta il percorso. |
+| `awk -F'[/._ :+;-]'` | Divide il percorso con gli stessi separatori di `dropLongURL`. |
+| `length($i) > 18` | Restituisce lunghezza, parte di parola e percorso non appena una parte supera il valore limite. |
+
+</details>
+
+Su Windows con PowerShell:
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `Invoke-RestMethod -Uri` | Scarica la sitemap e la restituisce direttamente come oggetto XML. |
+| `$sitemap.urlset.url.loc` | Legge tutte le voci `<loc>` dall’XML. |
+| `([uri]$loc).AbsolutePath` | Rimuove schema e nome host e restituisce il percorso. |
+| `[uri]::UnescapeDataString()` | Decodifica la codifica percentuale, come fa anche il WDP prima del controllo. |
+| `-split '[/._ :+;-]'` | Divide il percorso con gli stessi separatori di `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Mantiene solo le parti di parola con più di 18 caratteri. |
+
+</details>
+
+Entrambe le varianti verificano solo la lunghezza delle parole, non le altre euristiche. La variante Bash conta la forma codificata in percentuale e pertanto fornisce valori corretti solo per slug puramente ASCII; per slug con dieresi o altri sistemi di scrittura, usare la variante PowerShell.
+
+## Adattare gli slug
+
+Per i nuovi articoli, la regola può essere rispettata quando si definisce lo slug: separare con trattini i composti nello slug (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) e abbreviare le denominazioni riprese da termini tecnici.
+
+Per gli URL esistenti, una modifica va ponderata. Ogni modifica dello slug richiede un reindirizzamento 301 dal vecchio al nuovo URL, una sitemap aggiornata e link interni adattati. Per le pagine che già si posizionano bene o ricevono link esterni, il cambiamento apporta poco: sono comunque nell’indice tramite il crawler. È sensato soprattutto per pagine recenti che non figurano ancora in alcun indice.
+
+## Misurazione: quanto sono colpite le singole lingue?
+
+Se la regola colpisca le lingue in modo diverso può essere misurato facendo passare gli stessi termini in varie lingue attraverso il codice originale di Brave. Script, dati e risultati individuali sono disponibili nel repository pubblico [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); la misurazione può essere riprodotta lì con cinque comandi.
+
+**Impostazione:**
+
+- **Codice:** repository di Brave `web-discovery-project`, commit `58b1b53` del 9 settembre 2026. Le funzioni `cleanCurrentUrl` e `dropLongURL` vengono eseguite invariate in Node.js; sono stati sostituiti solo i collegamenti al browser e alla memoria. I test di Brave per `dropLongURL` forniscono quindi i risultati attesi.
+- **Termini:** l’elenco “Vital Articles Level 3” della Wikipedia inglese, circa 1000 articoli centrali. Attraverso i collegamenti linguistici di Wikipedia sono stati recuperati i titoli degli stessi articoli in altre 23 lingue. Esistono 825 termini in tutte le 24 lingue. Per ogni termine cambia quindi solo la lingua.
+- **URL:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, creati come nel browser (codificati in percentuale), poi passati come nel WDP prima attraverso `cleanCurrentUrl` e successivamente attraverso `dropLongURL` in modalità normale e rigorosa.
+- **Causa:** ogni URL scartato è stato verificato una seconda volta, con la regola di lunghezza disattivata. Se veniva allora segnalato, lo scarto era dovuto alla regola di lunghezza.
+- **Statistica:** intervallo di confidenza al 95% secondo Wilson; confronto con l’inglese tramite termini appaiati (test esatto di McNemar).
+
+Il nucleo dell’analisi:
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Risultato** (modalità normale, 825 termini per lingua):
+
+| Lingua | Scartati | IC 95% | di cui regola di lunghezza | p rispetto all’inglese |
+|---|---|---|---|---|
+| Inglese | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Tedesco | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Ungherese | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Olandese | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finlandese | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Svedese | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Norvegese | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Danese, francese, spagnolo, portoghese, turco, polacco | 1 ciascuno (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Russo, ucraino, giapponese | 1 ciascuno (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italiano, greco, arabo, ebraico, persiano, hindi, cinese, coreano | 0 (0,0 %) | 0,0–0,5 % | – | – |
+
+Sono stati scartati, per esempio, `Schwangerschaftsabbruch`, `Empfängnisverhütung` e `Ingenieurwissenschaften` (tedesco), `Terhességmegszakítás` (ungherese), `Milieuverontreiniging` (olandese) e `Tietojenkäsittelytiede` (finlandese). I singoli casi nelle altre lingue riguardano quasi tutti lo stesso termine: acido desossiribonucleico nella rispettiva lingua nazionale. In nessun caso un termine è stato segnalato nella lingua nazionale e scartato in inglese.
+
+**Analisi:**
+
+- Le lingue con scrittura non latina non sono svantaggiate. Brave decodifica l’URL prima del controllo, per cui un carattere cirillico o cinese conta come un carattere.
+- Le lingue che scrivono i composti uniti hanno uno svantaggio piccolo ma sistematico. Per il tedesco è significativo con p = 0,002 anche considerando che vengono confrontate simultaneamente 23 lingue (soglia Bonferroni 0,0022). L’ungherese si colloca appena al di sopra.
+- La quota misurata vale per titoli Wikipedia, che solitamente sono composti da una o due parole. Gli slug dei blog contengono più termini tecnici; su questo sito sono interessati 3 dei 66 URL di articoli tedeschi (4,5 %).
+
+**Limiti:** è stata misurata la regola di controllo, non l’effettiva inclusione nell’indice di Brave. Wikipedia stessa è presumibilmente nella lista di autorizzazione di Brave e nella pratica non è interessata; la misurazione mostra come la regola tratta un sito web senza autorizzazione con tali URL. Il commit pubblico potrebbe non corrispondere alla versione distribuita nel browser. La misurazione non riproduce il percorso alternativo tramite l’URL canonical.
+
+## Opinione: un limite di lunghezza che svantaggia le lingue con composti
+
+*Questa sezione riporta la valutazione dell’autore. I fatti in merito sono riportati nelle sezioni precedenti.*
+
+Il limite di 18 caratteri conta i caratteri e colpisce quindi le lingue che uniscono i termini. La misurazione mostra l’effetto: a parità di termini, la regola scarta l’1,2 % degli URL tedeschi e lo 0 % di quelli inglesi, e ciascuno di questi scarti tedeschi è dovuto alla regola di lunghezza. Lo slug inglese `data-protection-regulation` supera il controllo, `datenschutzgrundverordnung` no. L’effetto è piccolo, ma colpisce sempre le stesse lingue: tedesco, ungherese, olandese, finlandese e lingue scandinave. A mio avviso, si tratta di uno svantaggio per queste lingue, anche se non intenzionale.
+
+### Chi sostiene i costi
+
+Brave scrive nel README che le classificazioni errate non sono un grande problema per il proprio scopo. Per Brave è vero: una pagina scartata costa a Brave una segnalazione. Per i siti web interessati è uno svantaggio sistematico, che colpisce soprattutto i testi tecnici perché proprio i termini tecnici formano composti lunghi. Poiché la ricerca web di Claude si basa sull’indice di Brave, per queste pagine viene meno una via verso l’indice da cui Claude cita.
+
+Si aggiunge una lista di autorizzazione lato server: i modelli URL che Brave vi inserisce (`allowlisted`) saltano il controllo. Non è documentato pubblicamente quali siano questi modelli. I singoli siti tecnici non possono influenzarli.
+
+### Cosa parla a favore della regola
+
+Lo scopo è legittimo. I link di condivisione con token, ad esempio per documenti condivisi, sono un rischio reale e un simile link nell’indice di ricerca costituirebbe un grave incidente di protezione dei dati. Un limite di lunghezza rigido è semplice, rapido e difficile da aggirare. Non può neppure essere semplicemente sostituito dal rilevamento degli hash: in un test aggiuntivo con 2000 token casuali di 22 caratteri composti da lettere minuscole, `isHash` di Brave ha classificato solo il 58 % come hash, mentre per token composti da lettere minuscole e cifre la percentuale era del 94 %. Tutti i composti testati come `schwangerschaftsabbruch` o `datenschutzgrundverordnung` sono stati correttamente riconosciuti dalla funzione come non hash. Per i link segreti composti solo da lettere minuscole, il limite di lunghezza è quindi la protezione effettiva. Inoltre, il crawler continua a raggiungere le pagine interessate e la quota misurata è piccola.
+
+### Cosa potrebbe cambiare Brave
+
+- **Distinguere le parole dai token:** un semplice aumento del limite per le parole composte solo da lettere lascerebbe passare, secondo il test aggiuntivo, i link segreti composti da lettere minuscole. Si potrebbe prevedere un controllo aggiuntivo di plausibilità solo per le parti di parola tra 19 e circa 30 caratteri, ad esempio mediante la sequenza di vocali e consonanti o un piccolo modello linguistico addestrato su parole delle lingue interessate. Brave dovrebbe verificare se ciò sia sufficientemente affidabile.
+- **Documentare la regola:** la pagina di aiuto sul crawler menziona il WDP, ma non le euristiche. Un avviso per i gestori di siti web basterebbe affinché possano adattare i propri slug di conseguenza.
+
+Ho segnalato a Brave questa misurazione e questo conflitto di obiettivi come [Issue #498](https://github.com/brave/web-discovery-project/issues/498) nel repository del WDP. Fino ad allora resta solo l’adattamento dal lato del sito web: separare con trattini i composti nello slug. Il fatto che questo lavoro ricada sui gestori di determinate aree linguistiche e non sul metodo è il fulcro della mia critica.
+
+*Correzione del 25.09.2026: una versione precedente proponeva di aumentare indiscriminatamente il limite per le parole composte solo da lettere; il test aggiuntivo sul rilevamento degli hash mostra che ciò indebolirebbe la protezione. Una versione precedente di questa sezione affermava che le scritture non latine e i segni diacritici sarebbero particolarmente svantaggiati dalla codifica percentuale, sulla base di una misurazione con URL codificati in percentuale. Una verifica indipendente ha mostrato che Brave decodifica gli URL prima del controllo con `cleanCurrentUrl`. L’affermazione era errata ed è stata rimossa; la misurazione sopra utilizza il flusso corretto.*
+
+## Fonti
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md): descrizione del WDP da parte di Brave, con tipi di messaggi, seconda richiesta senza cookie, euristiche per URL capability e quorum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es): codice sorgente con `dropLongURL`, `calculateStrictness` e i valori limite `rel_part_len: 18` e `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler): pagina di aiuto ufficiale sul crawler, sull’assenza di un proprio user agent e sul ruolo del WDP.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/): inserimento di Brave Search nell’elenco dei subfornitori di Anthropic nel marzo 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): articolo con ulteriori indizi, come il parametro `BraveSearchParams` nella ricerca web di Claude.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): decodifica dell’URL prima del controllo; il commento in onLocationChange (riga 1724) descrive l’URL decodificato come rappresentazione interna del WDP.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): elenco di termini della misurazione; i titoli nelle altre lingue provengono dai collegamenti linguistici dell’API di Wikipedia.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): script di misurazione, set di dati e risultati individuali della misurazione linguistica in questo articolo, incluso il test aggiuntivo sul rilevamento degli hash (`hash-test.mjs`) e la prima versione contrassegnata come errata.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): segnalazione a Brave con i risultati della misurazione e il conflitto di obiettivi tra limite di lunghezza e rilevamento degli hash.
+
+----
+
 # MailHeaderAnalyzer: analizzare le intestazioni e-mail in PowerShell senza accesso alla rete
 
 URL: https://rafaelpfister.ch/it/blog/mailheaderanalyzer-analizzare-le-intestazioni-e-mail-in-powershell-senza-accesso-alla-rete
@@ -55075,6 +56113,252 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Brave Web Discovery Project: por qué las partes largas de palabras en las URL excluyen páginas
+
+URL: https://rafaelpfister.ch/es/blog/brave-web-discovery-project-por-que-las-partes-largas-de-palabras-en-las-url-excluyen-paginas
+Datum: 2026-09-25
+
+# Brave Web Discovery Project: por qué las partes largas de palabras en las URL excluyen páginas
+
+La búsqueda web de Claude ofrece sus resultados desde el índice de Brave Search. Anthropic incluye a Brave Search como subencargado desde marzo de 2025, y las citas en las respuestas de Claude coinciden en gran medida con los resultados de Brave. Por tanto, quien quiera ser citado en respuestas de Claude debe figurar en el índice de Brave. Los envíos mediante Google Search Console, Bing Webmaster Tools o IndexNow no llegan directamente a Brave.
+
+Brave alimenta su índice a partir de dos fuentes: un rastreador propio y el Web Discovery Project (WDP). El WDP es una función opcional del navegador Brave que comunica de forma anonimizada a Brave las páginas visitadas. Antes de que el navegador comunique una página, comprueba la URL mediante una serie de heurísticas. Una de ellas afecta especialmente a los sitios web en alemán: si la ruta contiene una parte de palabra de más de 18 caracteres, la página nunca se comunica.
+
+## Lo que comunica el Web Discovery Project
+
+El WDP recopila dos tipos de datos: consultas de búsqueda en Google, Bing, Brave y algunos otros motores de búsqueda junto con la lista de resultados, y visitas a páginas con URL, título, tiempo de permanencia e interacción. No hay ID de usuario; cada comunicación se envía a Brave individualmente, cifrada y distribuida aleatoriamente en el tiempo.
+
+Para que no se comuniquen contenidos privados, el navegador clasifica una página como privada cuando
+
+- una segunda solicitud sin cookies devuelve una página claramente distinta (inicio de sesión, personalización),
+- el dominio apunta a una dirección IP privada,
+- la página lleva `noindex`,
+- la URL parece un enlace secreto (URL de capacidad, por ejemplo, un enlace compartido con token).
+
+La última comprobación la realiza la función `dropLongURL`. El navegador almacena permanentemente en un filtro Bloom una URL clasificada como privada y no vuelve a comprobarla.
+
+## La regla: ninguna parte de palabra de más de 18 caracteres
+
+`dropLongURL` divide la ruta en barras, puntos, guiones bajos, espacios, guiones, dos puntos, signos más y puntos y comas, y compara cada parte con el límite `rel_part_len`:
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` está establecido en el código fuente como `18`. `return true` significa: la URL se considera sospechosa. Se comprueba la URL decodificada: el navegador codifica porcentualmente los caracteres no ASCII (`%C3%BC`), y el WDP los convierte antes de la comprobación mediante `cleanCurrentUrl` (`decodeURIComponent`) de vuelta. Se cuentan caracteres de JavaScript, es decir, unidades de código UTF-16: una `ü` o un carácter chino cuenta una sola vez; un carácter fuera del plano básico de Unicode o un acento añadido como carácter independiente cuenta dos veces. La regla se aplica en ambos modos de comprobación, el normal y el estricto. El propio Brave describe las heurísticas en el README como conservadoras: muchas páginas públicas se clasifican erróneamente como posible enlace secreto, algo que se acepta para el propósito del WDP.
+
+El guion separa, una palabra escrita junta no. Por tanto, lo decisivo es la longitud de la palabra individual más larga en el slug, no la longitud de todo el slug:
+
+| Slug | Parte más larga | Resultado |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | se comunica |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | se descarta |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | se descarta |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | se comunica |
+
+## Por qué los slugs alemanes se ven especialmente afectados
+
+Los términos técnicos ingleses se escriben separados; los alemanes, unidos. A esto se suma la transcripción de las diéresis: `ü` se convierte en `ue`, por lo que cada palabra con diéresis se alarga. `Zertifikatserneuerung` tiene 21 caracteres; `Verschlüsselungsgateway` tiene 24 en transcripción ASCII. En las lenguas escandinavas ocurre algo similar: el sueco y el noruego también escriben juntos los compuestos.
+
+En este sitio web, según un análisis del sitemap, están afectadas 24 de 750 URL: tres artículos alemanes, uno inglés y 20 traducciones suecas o noruegas. El caso inglés procede del campo de encabezado `MessageDirectionality`, que se incorporó como palabra al slug.
+
+## Cuándo ayuda la URL canónica
+
+Si la URL solicitada falla en `dropLongURL`, el navegador comprueba la URL canónica de la página. Si esta supera la comprobación, comunica la página bajo la URL canónica. Esto cubre el caso típico de que se acceda a una página con parámetros de seguimiento, pero tenga una URL canónica limpia.
+
+No ayuda cuando hay una parte de palabra demasiado larga en el slug: por regla general, la URL canónica es idéntica a la URL solicitada y falla por la misma regla. Si ambas fallan, el navegador descarta la página.
+
+Que se aplique el modo de comprobación estricto también depende de la URL canónica: solo se relaja cuando la canónica difiere de la URL solicitada y es más corta. En una página que se indica a sí misma como canónica, se aplica el modo estricto.
+
+## Otras heurísticas en dropLongURL
+
+Además de la longitud de las partes de palabra, `dropLongURL` descarta una URL, entre otros casos, cuando tiene
+
+- una cadena de consulta de más de 30 caracteres o más de cuatro parámetros (en modo estricto, desde 23 caracteres o dos parámetros),
+- una secuencia de más de 12 dígitos en la ruta o la cadena de consulta (en modo estricto, más de 8); antes se eliminan los caracteres especiales, de modo que una ruta de fecha como `/2026/09/25/` cuenta como un número de ocho dígitos,
+- partes de palabra que un clasificador de Markov clasifica como hash,
+- segmentos de ruta como `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` o `/token`,
+- una dirección de correo electrónico en la URL.
+
+Para una URL de artículo normal sin parámetros, normalmente solo es relevante la longitud de las palabras.
+
+## Contexto: quórum y rastreador
+
+La regla solo afecta a la vía a través del WDP. Dos aspectos limitan su importancia:
+
+- **Quórum:** Brave solo puede descifrar una comunicación de página cuando más de un determinado número de usuarios ha comunicado la misma URL desde redes distintas en un plazo de 30 días. El README no indica el umbral. Por ello, el WDP apenas es relevante para páginas con pocas visitas desde Brave.
+- **Rastreador:** El rastreador de Brave funciona independientemente del WDP. No se presenta con un agente de usuario propio y sigue las reglas de robots.txt para Googlebot. Una URL con una parte de palabra larga puede llegar al índice a través del rastreador de todos modos.
+
+Así, una parte de palabra larga priva a una página de una de las dos vías hacia el índice de Brave; sigue siendo accesible a través del rastreador.
+
+## Comprobar las propias URL
+
+Los siguientes comandos leen un sitemap y muestran cada URL cuya ruta contiene una parte de más de 18 caracteres. En el caso de un índice de sitemaps, compruebe los sitemaps individuales (`sitemap-0.xml` etc.) uno tras otro.
+
+En Linux o macOS:
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `curl -s` | Descarga el sitemap sin indicador de progreso. |
+| `grep -oE '<loc>[^<]+'` | Muestra solo las entradas `<loc>` (`-o`), con expresiones regulares extendidas (`-E`). |
+| `sed -E 's#…##'` | Elimina `<loc>`, el esquema y el nombre de host; queda la ruta. |
+| `awk -F'[/._ :+;-]'` | Divide la ruta usando los mismos separadores que `dropLongURL`. |
+| `length($i) > 18` | Muestra longitud, parte de palabra y ruta en cuanto una parte supera el límite. |
+
+</details>
+
+En Windows con PowerShell:
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `Invoke-RestMethod -Uri` | Descarga el sitemap y lo devuelve directamente como objeto XML. |
+| `$sitemap.urlset.url.loc` | Lee todas las entradas `<loc>` del XML. |
+| `([uri]$loc).AbsolutePath` | Elimina el esquema y el nombre de host y devuelve la ruta. |
+| `[uri]::UnescapeDataString()` | Decodifica la codificación porcentual, tal como hace el WDP antes de la comprobación. |
+| `-split '[/._ :+;-]'` | Divide la ruta usando los mismos separadores que `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Conserva solo las partes de palabra de más de 18 caracteres. |
+
+</details>
+
+Ambas variantes comprueban solo la longitud de las palabras, no las demás heurísticas. La variante de Bash cuenta la forma codificada porcentualmente y, por tanto, solo proporciona valores correctos para slugs puramente ASCII; para slugs con diéresis u otras escrituras, use la variante de PowerShell.
+
+## Adaptar slugs
+
+Para artículos nuevos, la regla puede cumplirse al definir el slug: separar los compuestos del slug con guiones (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) y acortar las denominaciones tomadas de términos técnicos.
+
+En las URL existentes, conviene sopesar un cambio. Cada modificación del slug requiere una redirección 301 de la URL antigua a la nueva, un sitemap actualizado y enlaces internos adaptados. En páginas que ya tienen buen posicionamiento o enlaces externos, el cambio aporta poco: de todos modos están en el índice mediante el rastreador. Resulta útil sobre todo para páginas recientes que aún no figuran en ningún índice.
+
+## Medición: ¿en qué medida se ven afectados distintos idiomas?
+
+Se puede medir si la regla afecta de forma distinta a los idiomas pasando los mismos términos en varios idiomas por el código original de Brave. Los scripts, los datos y los resultados individuales están en el repositorio público [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); la medición puede reproducirse allí con cinco comandos.
+
+**Diseño:**
+
+- **Código:** repositorio de Brave `web-discovery-project`, commit `58b1b53` del 9 de septiembre de 2026. Las funciones `cleanCurrentUrl` y `dropLongURL` se ejecutan sin cambios en Node.js; solo se han sustituido las conexiones con el navegador y el almacenamiento. Los propios casos de prueba de Brave para `dropLongURL` producen así los resultados esperados.
+- **Términos:** la lista «Vital Articles Level 3» de la Wikipedia inglesa, alrededor de 1000 artículos centrales. Mediante los enlaces interlingüísticos de Wikipedia se recuperaron los títulos de los mismos artículos en otros 23 idiomas. Hay 825 términos en los 24 idiomas. Por término, por tanto, solo cambia el idioma.
+- **URL:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, formadas como en el navegador (codificadas porcentualmente), luego pasadas como en el WDP primero por `cleanCurrentUrl` y después por `dropLongURL` en modo normal y estricto.
+- **Causa:** cada URL descartada se comprobó una segunda vez, con la regla de longitud desactivada. Si entonces se comunica, el descarte se debe a la regla de longitud.
+- **Estadística:** intervalo de confianza del 95 % según Wilson; comparación con el inglés mediante los términos emparejados (prueba exacta de McNemar).
+
+El núcleo del análisis:
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Resultado** (modo normal, 825 términos por idioma):
+
+| Idioma | Descartadas | IC del 95 % | de ellas por regla de longitud | p frente al inglés |
+|---|---|---|---|---|
+| Inglés | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Alemán | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Húngaro | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Neerlandés | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finés | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Sueco | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Noruego | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Danés, francés, español, portugués, turco, polaco | 1 cada uno (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Ruso, ucraniano, japonés | 1 cada uno (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italiano, griego, árabe, hebreo, persa, hindi, chino, coreano | 0 (0,0 %) | 0,0–0,5 % | – | – |
+
+Se descartaron, por ejemplo, `Schwangerschaftsabbruch`, `Empfängnisverhütung` y `Ingenieurwissenschaften` (alemán), `Terhességmegszakítás` (húngaro), `Milieuverontreiniging` (neerlandés) y `Tietojenkäsittelytiede` (finés). Los casos individuales en los demás idiomas se refieren casi todos al mismo término: ácido desoxirribonucleico en la lengua respectiva. En ningún caso se comunicó un término en la lengua local y se descartó en inglés.
+
+**Análisis:**
+
+- Los idiomas con escrituras no latinas no se ven perjudicados. Brave decodifica la URL antes de la comprobación, por lo que un carácter cirílico o chino cuenta como un carácter.
+- Los idiomas que escriben juntos los compuestos tienen una desventaja pequeña, pero sistemática. Para el alemán, con p = 0,002, es significativa incluso si se considera que se compararon simultáneamente 23 idiomas (umbral de Bonferroni: 0,0022). El húngaro queda apenas por encima.
+- La proporción medida se aplica a títulos de Wikipedia, que normalmente constan de una o dos palabras. Los slugs de blogs contienen más términos técnicos; en este sitio web están afectadas 3 de 66 URL de artículos en alemán (4,5 %).
+
+**Limitaciones:** Se midió la regla de comprobación, no la inclusión real en el índice de Brave. Es probable que la propia Wikipedia esté en la lista de permitidos de Brave y no se vea afectada en la práctica; la medición muestra cómo trata la regla a un sitio web sin permiso con tales URL. El commit público no tiene por qué corresponder a la versión distribuida en el navegador. La medición no refleja la vía alternativa mediante la URL canónica.
+
+## Opinión: un límite de longitud que perjudica a los idiomas con palabras compuestas
+
+*Esta sección refleja la valoración del autor. Los hechos correspondientes se encuentran en las secciones anteriores.*
+
+El límite de 18 caracteres cuenta caracteres y, por tanto, afecta a los idiomas que escriben unidos los términos. La medición muestra el efecto: con términos idénticos, la regla descarta el 1,2 % de las URL alemanas y el 0 % de las inglesas, y todos esos descartes alemanes se deben a la regla de longitud. El slug inglés `data-protection-regulation` supera la comprobación; `datenschutzgrundverordnung` no. El efecto es pequeño, pero afecta siempre a los mismos idiomas: alemán, húngaro, neerlandés, finés y las lenguas escandinavas. Desde mi punto de vista, esto supone una desventaja para estos idiomas, aunque no sea intencionada.
+
+### Quién asume los costes
+
+Brave escribe en el README que las clasificaciones erróneas no son un gran problema para su propio propósito. Para Brave es cierto: una página descartada le cuesta a Brave una comunicación. Para los sitios web afectados, supone una desventaja sistemática que afecta sobre todo a los textos especializados, precisamente porque los términos técnicos forman compuestos largos. Como la búsqueda web de Claude se basa en el índice de Brave, estas páginas pierden una vía de acceso al índice del que cita Claude.
+
+Además, existe una lista de permitidos en el servidor: los patrones de URL que Brave incluye allí (`allowlisted`) omiten la comprobación. No está documentado públicamente qué patrones son. Los sitios especializados individuales no pueden influir en ello.
+
+### Qué respalda la regla
+
+El propósito es legítimo. Los enlaces compartidos con token, por ejemplo para documentos compartidos, son un riesgo real, y un enlace así en el índice de búsqueda sería un grave incidente de privacidad. Un límite de longitud estricto es sencillo, rápido y difícil de eludir. Tampoco puede sustituirse sin más por la detección de hashes: en una prueba adicional con 2000 tokens aleatorios de letras minúsculas de 22 caracteres, `isHash` de Brave clasificó solo el 58 % como hash; con tokens de letras minúsculas y dígitos, el 94 %. La función reconoció correctamente que todos los compuestos probados, como `schwangerschaftsabbruch` o `datenschutzgrundverordnung`, no eran hashes. Por tanto, para enlaces secretos formados solo por letras minúsculas, el límite de longitud es la protección real. Además, el rastreador sigue llegando a las páginas afectadas y la proporción medida es pequeña.
+
+### Qué podría cambiar Brave
+
+- **Distinguir palabras de tokens:** Una simple elevación del límite para palabras compuestas solo por letras permitiría el paso de enlaces secretos compuestos por letras minúsculas, según la prueba adicional. Podría añadirse una comprobación de plausibilidad solo para partes de palabra de entre 19 y unos 30 caracteres, por ejemplo mediante la secuencia de vocales y consonantes o un pequeño modelo lingüístico entrenado con palabras de los idiomas afectados. Brave tendría que comprobar si esto es suficientemente fiable.
+- **Documentar la regla:** La página de ayuda sobre el rastreador menciona el WDP, pero no las heurísticas. Bastaría una indicación para los operadores de sitios web, de modo que puedan adaptar sus slugs.
+
+He comunicado a Brave la medición y este conflicto de objetivos como [Issue #498](https://github.com/brave/web-discovery-project/issues/498) en el repositorio del WDP. Hasta entonces, solo queda adaptar el sitio web: separar con guiones los compuestos del slug. Que este trabajo recaiga en los operadores de determinadas áreas lingüísticas y no en el procedimiento es el núcleo de mi crítica.
+
+*Corrección del 25/09/2026: una versión anterior propuso elevar de forma general el límite para palabras compuestas solo por letras; la prueba adicional de detección de hashes muestra que esto debilitaría la protección. Una versión anterior de esta sección afirmaba que las escrituras no latinas y los diacríticos se veían especialmente perjudicados por la codificación porcentual, basándose en una medición con URL codificadas porcentualmente. Una comprobación independiente mostró que Brave decodifica las URL con `cleanCurrentUrl` antes de la comprobación. La afirmación era incorrecta y se ha eliminado; la medición anterior utiliza el proceso correcto.*
+
+## Fuentes
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md): descripción del WDP por Brave, con tipos de mensajes, segunda solicitud sin cookies, heurísticas de URL de capacidad y quórum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es): código fuente con `dropLongURL`, `calculateStrictness` y los límites `rel_part_len: 18` y `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler): página de ayuda oficial sobre el rastreador, la ausencia de un agente de usuario propio y el papel del WDP.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/): incorporación de Brave Search a la lista de subencargados de Anthropic en marzo de 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): informe con más indicios, como el parámetro `BraveSearchParams` en la búsqueda web de Claude.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): decodificación de la URL antes de la comprobación; el comentario en onLocationChange (línea 1724) describe la URL decodificada como representación interna del WDP.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): lista de términos de la medición; los títulos en los demás idiomas proceden de los enlaces interlingüísticos de la API de Wikipedia.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): scripts de medición, conjunto de datos y resultados individuales de la medición lingüística de este artículo, incluida la prueba adicional de detección de hashes (`hash-test.mjs`) y la primera versión marcada como errónea.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): comunicación a Brave con los resultados de la medición y el conflicto de objetivos entre el límite de longitud y la detección de hashes.
 
 ----
 
@@ -68831,6 +70115,252 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Brave Web Discovery Project: Varför långa orddelar i URL:er utesluter sidor
+
+URL: https://rafaelpfister.ch/sv/blog/brave-web-discovery-project-varfor-langa-orddelar-i-url-er-utesluter-sidor
+Datum: 2026-09-25
+
+# Brave Web Discovery Project: Varför långa orddelar i URL:er utesluter sidor
+
+Claudes webbsökning hämtar sina träffar från indexet i Brave Search. Anthropic har angett Brave Search som underleverantör sedan mars 2025, och citeringarna i Claude-svar överensstämmer i stor utsträckning med Brave-resultaten. Den som vill citeras i Claude-svar måste därför finnas i Braves index. Inskick via Google Search Console, Bing Webmaster Tools eller IndexNow når inte Brave direkt.
+
+Brave fyller sitt index från två källor: en egen crawler och Web Discovery Project (WDP). WDP är en opt-in-funktion i Brave-webbläsaren som anonymt rapporterar besökta sidor till Brave. Innan webbläsaren rapporterar en sida kontrollerar den URL:en med en rad heuristiker. En av dem påverkar särskilt tyskspråkiga webbplatser: Om sökvägen innehåller en orddel med fler än 18 tecken rapporteras sidan aldrig.
+
+## Vad Web Discovery Project rapporterar
+
+WDP samlar in två typer av data: sökfrågor på Google, Bing, Brave och några ytterligare sökmotorer tillsammans med träfflistan, samt sidvisningar med URL, titel, vistelsetid och interaktion. Det finns inga användar-ID:n; varje rapport skickas separat, krypterat och vid slumpmässigt fördelade tidpunkter till Brave.
+
+För att inget privat innehåll ska rapporteras klassar webbläsaren en sida som privat om
+
+- en andra hämtning utan cookies ger en tydligt annorlunda sida (inloggning, personalisering),
+- domänen pekar på en privat IP-adress,
+- sidan har `noindex` ,
+- URL:en ser ut som en hemlig länk (capability-URL, till exempel en delningslänk med token).
+
+Den sista kontrollen utförs av funktionen `dropLongURL`. En URL som klassats som privat sparar webbläsaren permanent i ett Bloom-filter och kontrollerar den inte igen.
+
+## Regeln: ingen orddel över 18 tecken
+
+`dropLongURL` delar upp sökvägen vid snedstreck, punkt, understreck, mellanslag, bindestreck, kolon, plus och semikolon och jämför varje del med gränsvärdet `rel_part_len`:
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` är satt till `18` i källkoden. `return true` betyder: URL:en betraktas som misstänkt. Den avkodade URL:en kontrolleras: Webbläsaren procentkodar icke-ASCII-tecken (`%C3%BC`), WDP omvandlar dem först tillbaka med `cleanCurrentUrl` (`decodeURIComponent`). JavaScript-tecken räknas, alltså UTF-16-kodenheter: Ett `ü` eller ett kinesiskt tecken räknas enkelt, medan ett tecken utanför Unicode-basplanet eller en accent som lagts till som eget tecken räknas dubbelt. Regeln gäller i båda kontrollägena, det normala och det strikta. Brave beskriver själva heuristikerna i README som konservativa: Många offentliga sidor klassas felaktigt som möjliga hemliga länkar, vilket accepteras för WDP:s syfte.
+
+Bindestrecket avgränsar, ett sammanskrivet ord gör det inte. Det avgörande är alltså längden på det längsta enskilda ordet i sluggen, inte längden på hela sluggen:
+
+| Slug | Längsta del | Resultat |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | rapporteras |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | förkastas |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | förkastas |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | rapporteras |
+
+## Varför tyska sluggar påverkas särskilt
+
+Engelska facktermer skrivs som separata ord, tyska skrivs sammansatt. Därtill kommer omskrivningen av omljud: `ü` blir `ue`, vilket gör varje ord med omljud längre. `Zertifikatserneuerung` har 21 tecken, `Verschlüsselungsgateway` har 24 i ASCII-omskrivning. Det är liknande i skandinaviska språk: Svenska och norska skriver också sammansättningar ihop.
+
+På denna webbplats berörs 24 av 750 URL:er enligt en analys av sitemapen: tre tyska artiklar, en engelsk och 20 svenska eller norska översättningar. Det engelska fallet kommer från header-fältet `MessageDirectionality`, som togs över som ord i sluggen.
+
+## När canonical-URL:en hjälper
+
+Om den anropade URL:en misslyckas vid `dropLongURL` kontrollerar webbläsaren sidans canonical-URL. Om den klarar kontrollen rapporterar den sidan under canonical-URL:en. Det täcker det typiska fallet där en sida anropas med spårningsparametrar men har en ren canonical-URL.
+
+Vid en för lång orddel i sluggen hjälper det inte: Canonical-URL:en är vanligen identisk med den anropade URL:en och misslyckas med samma regel. Om båda misslyckas förkastar webbläsaren sidan.
+
+Huruvida det strikta kontrolläget används beror också på canonical-URL:en: Det lättas endast om canonical-URL:en skiljer sig från den anropade URL:en och är kortare. För en sida som anger sig själv som canonical gäller det strikta läget.
+
+## Fler heuristiker i dropLongURL
+
+Utöver längden på orddelarna förkastar `dropLongURL` en URL bland annat vid
+
+- en query string med fler än 30 tecken eller fler än fyra parametrar (i strikt läge från 23 tecken eller två parametrar),
+- en sifferföljd med fler än 12 siffror i sökvägen eller query string (i strikt läge fler än 8); specialtecken tas först bort, så en datumstig som `/2026/09/25/` räknas som ett åttasiffrigt tal,
+- orddelar som en Markov-klassificerare bedömer som hash,
+- sökvägssegment som `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` eller `/token`,
+- en e-postadress i URL:en.
+
+För en vanlig artikel-URL utan parametrar är oftast bara ordlängden relevant av detta.
+
+## Bedömning: kvorum och crawler
+
+Regeln påverkar endast vägen via WDP. Två punkter begränsar dess betydelse:
+
+- **Kvorum:** Brave kan avkryptera en sidrapport först när fler än ett visst antal användare har rapporterat samma URL inom 30 dagar från olika nätverk. README anger inte tröskelvärdet. För sidor med få Brave-besökare är WDP därför ändå sällan relevant.
+- **Crawler:** Braves crawler arbetar oberoende av WDP. Den uppträder utan egen User-Agent och följer robots.txt-reglerna för Googlebot. En URL med en lång orddel kan ändå komma in i indexet via crawlern.
+
+En lång orddel tar därmed bort en av sidans två vägar in i Braves index; den förblir åtkomlig via crawlern.
+
+## Kontrollera egna URL:er
+
+Följande kommandon läser en sitemap och visar varje URL vars sökväg innehåller en del med fler än 18 tecken. För ett sitemap-index ska de enskilda sitemaparna (`sitemap-0.xml` osv.) kontrolleras efter varandra.
+
+I Linux eller macOS:
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `curl -s` | Hämtar sitemapen utan förloppsindikator. |
+| `grep -oE '<loc>[^<]+'` | Visar endast `<loc>`-poster (`-o`) med utökade reguljära uttryck (`-E`). |
+| `sed -E 's#…##'` | Tar bort `<loc>`, schema och värdnamn; endast sökvägen återstår. |
+| `awk -F'[/._ :+;-]'` | Delar upp sökvägen vid samma avgränsare som `dropLongURL`. |
+| `length($i) > 18` | Visar längd, orddel och sökväg så snart en del överskrider gränsvärdet. |
+
+</details>
+
+I Windows med PowerShell:
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `Invoke-RestMethod -Uri` | Hämtar sitemapen och returnerar den direkt som XML-objekt. |
+| `$sitemap.urlset.url.loc` | Läser alla `<loc>`-poster från XML:en. |
+| `([uri]$loc).AbsolutePath` | Tar bort schema och värdnamn och returnerar sökvägen. |
+| `[uri]::UnescapeDataString()` | Avkodar procentkodningen, på samma sätt som WDP gör före kontrollen. |
+| `-split '[/._ :+;-]'` | Delar upp sökvägen vid samma avgränsare som `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Behåller endast orddelar med fler än 18 tecken. |
+
+</details>
+
+Båda varianterna kontrollerar endast ordlängden, inte de övriga heuristikerna. Bash-varianten räknar den procentkodade formen och ger därför korrekta värden endast för rena ASCII-sluggar; använd PowerShell-varianten för sluggar med omljud eller andra skriftsystem.
+
+## Anpassa sluggar
+
+För nya artiklar kan regeln följas när sluggen fastställs: Dela sammansättningar i sluggen med bindestreck (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) och förkorta beteckningar som övertagits från facktermer.
+
+För befintliga URL:er bör en ändring vägas mot konsekvenserna. Varje slug-ändring behöver en 301-omdirigering från den gamla till den nya URL:en, en uppdaterad sitemap och anpassade interna länkar. För sidor som redan rankar bra eller länkas till externt ger ändringen liten nytta: De finns ändå i indexet via crawlern. Den är främst meningsfull för nya sidor som ännu inte finns i något index.
+
+## Mätning: Hur starkt påverkas enskilda språk?
+
+Om regeln påverkar språk olika kan mätas genom att köra samma begrepp på olika språk genom Braves originalkod. Skript, data och enskilda resultat finns i det offentliga repositoryt [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); mätningen kan reproduceras där med fem kommandon.
+
+**Upplägg:**
+
+- **Kod:** Braves repository `web-discovery-project`, commit `58b1b53` från den 9 september 2026. Funktionerna `cleanCurrentUrl` och `dropLongURL` körs oförändrade i Node.js; endast kopplingarna till webbläsare och lagring har ersatts. Braves egna testfall för `dropLongURL` ger därmed de förväntade resultaten.
+- **Begrepp:** Listan ”Vital Articles Level 3” från engelska Wikipedia, omkring 1 000 centrala artiklar. Via Wikipedias språklänkar hämtades titlarna på samma artiklar på ytterligare 23 språk. 825 begrepp finns på alla 24 språken. Per begrepp ändras därmed endast språket.
+- **URL:er:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, skapade som i webbläsaren (procentkodade), sedan som i WDP först genom `cleanCurrentUrl` och därefter genom `dropLongURL` i normalt och strikt läge.
+- **Orsak:** Varje förkastad URL kontrollerades en andra gång med längdregeln avstängd. Om den då rapporteras beror förkastandet på längdregeln.
+- **Statistik:** 95-procentigt konfidensintervall enligt Wilson; jämförelse med engelska via de parade begreppen (exakt McNemar-test).
+
+Kärnan i analysen:
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Resultat** (normalt läge, 825 begrepp per språk):
+
+| Språk | Förkastade | 95 % KI | därav längdregel | p jämfört med engelska |
+|---|---|---|---|---|
+| Engelska | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Tyska | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Ungerska | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Nederländska | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finska | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Svenska | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Norska | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Danska, franska, spanska, portugisiska, turkiska, polska | vardera 1 (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Ryska, ukrainska, japanska | vardera 1 (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italienska, grekiska, arabiska, hebreiska, persiska, hindi, kinesiska, koreanska | 0 (0,0 %) | 0,0–0,5 % | – | – |
+
+Exempel på förkastade begrepp är `Schwangerschaftsabbruch`, `Empfängnisverhütung` och `Ingenieurwissenschaften` (tyska), `Terhességmegszakítás` (ungerska), `Milieuverontreiniging` (nederländska) och `Tietojenkäsittelytiede` (finska). De enskilda fallen på de övriga språken gäller nästan alla samma begrepp: deoxiribonukleinsyra på respektive nationellt språk. I inget fall rapporterades ett begrepp på det nationella språket medan det förkastades på engelska.
+
+**Analys:**
+
+- Språk med icke-latinsk skrift missgynnas inte. Brave avkodar URL:en före kontrollen, så ett kyrilliskt eller kinesiskt tecken räknas som ett tecken.
+- Språk som skriver sammansättningar ihop har en liten men systematisk nackdel. För tyskan är den med p = 0,002 signifikant även när man tar hänsyn till att 23 språk jämförs samtidigt (Bonferroni-tröskel 0,0022). Ungerskan ligger strax över.
+- Den uppmätta andelen gäller Wikipedia-titlar, som oftast består av ett eller två ord. Bloggsluggar innehåller fler facktermer; på denna webbplats berörs 3 av 66 tyska artikel-URL:er (4,5 %).
+
+**Begränsningar:** Det som mättes var kontrollregeln, inte det faktiska upptagandet i Braves index. Wikipedia själv finns sannolikt på Braves allowlist och påverkas inte i praktiken; mätningen visar hur regeln behandlar en webbplats utan undantag med sådana URL:er. Den offentliga committen behöver inte motsvara den version som levereras i webbläsaren. Mätningen återger inte heller reservvägen via canonical-URL:en.
+
+## Åsikt: En längdgräns som missgynnar språk med sammansättningar
+
+*Detta avsnitt återger författarens bedömning. Fakta finns i avsnitten ovan.*
+
+Gränsen på 18 tecken räknar tecken och drabbar därmed språk som skriver begrepp sammansatt. Mätningen visar effekten: För identiska begrepp förkastar regeln 1,2 % av de tyska och 0 % av de engelska URL:erna, och vart och ett av dessa tyska förkastanden beror på längdregeln. Den engelska sluggen `data-protection-regulation` klarar kontrollen, `datenschutzgrundverordnung` gör det inte. Effekten är liten, men drabbar alltid samma språk: tyska, ungerska, nederländska, finska och de skandinaviska språken. Enligt min uppfattning är det ett missgynnande av dessa språk, även om det inte är avsiktligt.
+
+### Vem som bär kostnaden
+
+Brave skriver i README att felklassificeringar inte är något stort problem för deras eget syfte. För Brave stämmer det: En förkastad sida kostar Brave en rapport. För de berörda webbplatserna är det en systematisk nackdel som framför allt drabbar facktexter, eftersom just facktermer ofta bildar långa sammansättningar. Eftersom Claudes webbsökning bygger på Braves index saknar dessa sidor en väg in i det index som Claude citerar från.
+
+Därtill finns en serverbaserad allowlist: URL-mönster som Brave lägger till där (`allowlisted`) hoppar över kontrollen. Vilka mönster det gäller är inte offentligt dokumenterat. Enskilda fackwebbplatser kan inte påverka det.
+
+### Vad som talar för regeln
+
+Syftet är berättigat. Delningslänkar med token, exempelvis för delade dokument, utgör en verklig risk, och en sådan länk i sökindexet vore en allvarlig integritetsincident. En hård längdgräns är enkel, snabb och svår att kringgå. Den kan inte heller enkelt ersättas med hash-detektering: I ett tilläggstest med 2 000 slumpmässiga tokens med små bokstäver och 22 tecken klassade Braves `isHash` endast 58 % som hash, medan andelen var 94 % för tokens med små bokstäver och siffror. Alla testade sammansättningar som `schwangerschaftsabbruch` eller `datenschutzgrundverordnung` identifierade funktionen korrekt som inte hash. För hemliga länkar med enbart små bokstäver är längdgränsen därmed det egentliga skyddet. Dessutom når crawlern fortfarande berörda sidor, och den uppmätta andelen är liten.
+
+### Vad Brave skulle kunna ändra
+
+- **Skilj ord från tokens:** En enkel höjning av gränsen för ord som bara består av bokstäver skulle enligt tilläggstestet släppa igenom hemliga länkar med små bokstäver. En ytterligare rimlighetskontroll enbart för orddelar mellan 19 och ungefär 30 tecken vore tänkbar, exempelvis via följden av vokaler och konsonanter eller en liten språkmodell tränad på ord från de berörda språken. Om det är tillräckligt tillförlitligt skulle Brave behöva kontrollera.
+- **Dokumentera regeln:** Hjälpsidan om crawlern nämner WDP, men inte heuristikerna. En anvisning till webbplatsägare skulle räcka för att de ska kunna anpassa sina sluggar efter den.
+
+Jag har rapporterat mätningen och denna målkonflikt till Brave som [Issue #498](https://github.com/brave/web-discovery-project/issues/498) i WDP:s repository. Fram till dess återstår bara anpassning på webbplatsens sida: Dela sammansättningar i sluggen med bindestreck. Att detta arbete ligger hos operatörer i vissa språkområden och inte hos metoden är kärnan i min kritik.
+
+*Rättelse från 25.09.2026: En tidigare version föreslog att gränsen för ord med enbart bokstäver skulle höjas generellt; tilläggstestet av hash-detekteringen visar att det skulle försvaga skyddet. En tidigare version av detta avsnitt hävdade att icke-latinska skriftsystem och diakritiska tecken skulle missgynnas särskilt av procentkodningen, baserat på en mätning med procentkodade URL:er. En oberoende efterkontroll visade att Brave avkodar URL:er med `cleanCurrentUrl` före kontrollen. Uppgiften var felaktig och har tagits bort; mätningen ovan använder det korrekta flödet.*
+
+## Källor
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md): Braves beskrivning av WDP, med meddelandetyper, andra hämtning utan cookies, capability-URL-heuristiker och kvorum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es): Källkod med `dropLongURL`, `calculateStrictness` och gränsvärdena `rel_part_len: 18` och `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler): Officiell hjälpsida om crawlern, avsaknaden av en egen User-Agent och WDP:s roll.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/): Införandet av Brave Search i Anthropics lista över underleverantörer i mars 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): Rapport med ytterligare indikationer, exempelvis parametern `BraveSearchParams` i Claudes webbsökning.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): Avkodning av URL:en före kontrollen; kommentaren i onLocationChange (rad 1724) beskriver den avkodade URL:en som WDP:s interna representation.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Begreppslista för mätningen; titlarna på de övriga språken kommer från Wikipedias API:s språklänkar.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Mätskript, dataset och enskilda resultat från språkmätningen i denna artikel, inklusive tilläggstestet för hash-detektering (`hash-test.mjs`) och den första version som markerats som felaktig.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): Återkoppling till Brave med mätresultaten och målkonflikten mellan längdgräns och hash-detektering.
+
+----
+
 # MailHeaderAnalyzer: analysera e-posthuvuden i PowerShell utan nätverksåtkomst
 
 URL: https://rafaelpfister.ch/sv/blog/mailheaderanalyzer-analysera-e-posthuvuden-i-powershell-utan-natverksatkomst
@@ -82581,6 +84111,252 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Brave Web Discovery Project: Hvorfor lange orddeler i URL-er utelukker sider
+
+URL: https://rafaelpfister.ch/no/blog/brave-web-discovery-project-hvorfor-lange-orddeler-i-url-er-utelukker-sider
+Datum: 2026-09-25
+
+# Brave Web Discovery Project: Hvorfor lange orddeler i URL-er utelukker sider
+
+Claudes nettsøk leverer treffene sine fra indeksen til Brave Search. Anthropic har oppført Brave Search som underleverandør siden mars 2025, og siteringene i Claude-svar samsvarer i stor grad med Brave-resultatene. De som vil siteres i Claude-svar, må derfor være i Brave-indeksen. Innsendinger via Google Search Console, Bing Webmaster Tools eller IndexNow når ikke Brave direkte.
+
+Brave fyller indeksen sin fra to kilder: en egen crawler og Web Discovery Project (WDP). WDP er en opt-in-funksjon i Brave-nettleseren som anonymt rapporterer besøkte sider til Brave. Før nettleseren rapporterer en side, kontrollerer den URL-en med en rekke heuristikker. Én av dem berører spesielt tyskspråklige nettsteder: Inneholder stien en orddel med mer enn 18 tegn, rapporteres siden aldri.
+
+## Hva Web Discovery Project rapporterer
+
+WDP samler inn to typer data: søk på Google, Bing, Brave og enkelte andre søkemotorer, inkludert resultatlisten, samt sidebesøk med URL, tittel, oppholdstid og interaksjon. Det finnes ingen bruker-ID-er; hver rapport sendes enkeltvis, kryptert og med tilfeldig tidsfordeling til Brave.
+
+For at ikke privat innhold skal rapporteres, klassifiserer nettleseren en side som privat dersom
+
+- en ny henting uten informasjonskapsler leverer en betydelig annen side (innlogging, personalisering),
+- domenet peker til en privat IP-adresse,
+- siden har `noindex`,
+- URL-en ser ut som en hemmelig lenke (Capability-URL, for eksempel en delingslenke med token).
+
+Den siste kontrollen utføres av funksjonen `dropLongURL`. En URL som er klassifisert som privat, lagrer nettleseren permanent i et Bloom-filter og kontrollerer den ikke på nytt.
+
+## Regelen: ingen orddel over 18 tegn
+
+`dropLongURL` deler stien ved skråstrek, punktum, understrek, mellomrom, bindestrek, kolon, pluss og semikolon og sammenligner hver del med grenseverdien `rel_part_len`:
+
+```javascript
+var vpath = url_parts.path.split(/[\/\._ \-:\+;]/);
+for (var i = 0; i < vpath.length; i++) {
+  if (vpath[i].length > WebDiscoveryProject.rel_part_len) {
+    return true;
+  }
+}
+```
+
+`rel_part_len` er satt til `18` i kildekoden. `return true` betyr: URL-en anses som mistenkelig. Den dekodede URL-en kontrolleres: Nettleseren prosentkoder ikke-ASCII-tegn (`%C3%BC`), WDP konverterer dem først tilbake med `cleanCurrentUrl` (`decodeURIComponent`). Det telles JavaScript-tegn, altså UTF-16-kodeenheter: En `ü` eller et kinesisk skrifttegn teller enkelt, mens et tegn utenfor Unicode-basiskplanet eller en aksent som er lagt til som eget tegn teller dobbelt. Regelen gjelder i begge kontrollmoduser, den vanlige og den strenge. Brave omtaler selv heuristikkene i README som konservative: Mange offentlige sider blir feilaktig klassifisert som mulige hemmelige lenker, noe som aksepteres for WDPs formål.
+
+Bindestreken skiller, et sammenskrevet ord gjør det ikke. Det avgjørende er altså lengden på det lengste enkeltordet i slugen, ikke lengden på hele slugen:
+
+| Slug | Lengste del | Resultat |
+|---|---|---|
+| `microsoft-graph-powershell-postfach-anbindung` | `powershell` (10) | rapporteres |
+| `hin-plattformerneuerung-2026` | `plattformerneuerung` (19) | forkastes |
+| `verschluesselungsgateway-hinter-exchange-online` | `verschluesselungsgateway` (24) | forkastes |
+| `verschluesselungs-gateway-hinter-exchange-online` | `verschluesselungs` (17) | rapporteres |
+
+## Hvorfor tyske sluger er spesielt berørt
+
+Engelske faguttrykk skrives hver for seg, tyske settes sammen. I tillegg kommer omskrivingen av omlyder: `ü` blir til `ue`, og hvert ord med omlyd blir dermed lengre. `Zertifikatserneuerung` har 21 tegn, `Verschlüsselungsgateway` har 24 i ASCII-omskriving. I skandinaviske språk er det liknende: Svensk og norsk skriver også sammensetninger sammen.
+
+På dette nettstedet er 24 av 750 URL-er berørt etter en analyse av nettstedskartet: tre tyske artikler, én engelsk og 20 svenske eller norske oversettelser. Det engelske tilfellet stammer fra header-feltet `MessageDirectionality`, som ble tatt med som ord i slugen.
+
+## Når canonical hjelper
+
+Hvis den åpnede URL-en feiler på `dropLongURL`, kontrollerer nettleseren sidens canonical-URL. Består den kontrollen, rapporterer den siden under canonical-URL-en. Dette dekker det typiske tilfellet der en side åpnes med sporingsparametere, men har en ren canonical.
+
+Ved en for lang orddel i slugen hjelper dette ikke: Canonical-URL-en er som regel identisk med den åpnede URL-en og feiler på samme regel. Hvis begge feiler, forkaster nettleseren siden.
+
+Om den strenge kontrollmodusen brukes, avhenger også av canonical: Den lempes bare dersom canonical avviker fra den åpnede URL-en og er kortere. For en side som oppgir seg selv som canonical, gjelder streng modus.
+
+## Flere heuristikker i dropLongURL
+
+I tillegg til lengden på orddelene forkaster `dropLongURL` blant annet en URL ved
+
+- en query-streng med mer enn 30 tegn eller mer enn fire parametere (i streng modus fra 23 tegn eller to parametere),
+- en siffersekvens med mer enn 12 sifre i stien eller query-strengen (i streng modus mer enn 8); spesialtegn fjernes på forhånd, så en datosti som `/2026/09/25/` teller som et åttesifret tall,
+- orddeler som en Markov-klassifikator klassifiserer som hash,
+- stisegmenter som `/admin`, `/wp-admin`, `/edit`, `/share`, `/logout` eller `/token`,
+- en e-postadresse i URL-en.
+
+For en vanlig artikkel-URL uten parametere er som regel bare ordlengden relevant.
+
+## Vurdering: quorum og crawler
+
+Regelen gjelder bare veien via WDP. To punkter begrenser betydningen:
+
+- **Quorum:** Brave kan først dekryptere en siderapport når mer enn et bestemt antall brukere har rapportert samme URL innen 30 dager fra forskjellige nettverk. README oppgir ikke terskelverdien. For sider med få Brave-besøk har WDP derfor uansett liten effekt.
+- **Crawler:** Brave-crawleren arbeider uavhengig av WDP. Den opptrer uten egen user-agent og følger robots.txt-reglene for Googlebot. En URL med lang orddel kan likevel komme inn i indeksen via crawleren.
+
+En lang orddel fjerner dermed én av de to veiene inn i Brave-indeksen; siden er fortsatt tilgjengelig via crawleren.
+
+## Kontroller egne URL-er
+
+Følgende kommandoer leser et nettstedskart og skriver ut hver URL der stien inneholder en del med mer enn 18 tegn. Ved en nettstedskartindeks må de enkelte nettstedskartene (`sitemap-0.xml` osv.) kontrolleres etter hverandre.
+
+På Linux eller macOS:
+
+```bash
+curl -s https://example.com/sitemap-0.xml \
+  | grep -oE '<loc>[^<]+' \
+  | sed -E 's#<loc>https?://[^/]*##' \
+  | awk -F'[/._ :+;-]' '{
+      for (i = 1; i <= NF; i++)
+        if (length($i) > 18) { print length($i), $i, $0; break }
+    }'
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `curl -s` | Laster ned nettstedskartet uten fremdriftsvisning. |
+| `grep -oE '<loc>[^<]+'` | Skriver bare ut `<loc>`-oppføringer (`-o`), med utvidede regulære uttrykk (`-E`). |
+| `sed -E 's#…##'` | Fjerner `<loc>`, skjema og vertsnavn; bare stien gjenstår. |
+| `awk -F'[/._ :+;-]'` | Deler stien ved de samme skilletegnene som `dropLongURL`. |
+| `length($i) > 18` | Skriver ut lengde, orddel og sti så snart en del overskrider grenseverdien. |
+
+</details>
+
+På Windows med PowerShell:
+
+```powershell
+$sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
+foreach ($loc in $sitemap.urlset.url.loc) {
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
+    $zuLang = $pfad -split '[/._ :+;-]' |
+        Where-Object { $_.Length -gt 18 }
+    if ($zuLang) {
+        '{0}  ->  {1}' -f ($zuLang -join ', '), $pfad
+    }
+}
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Invoke-RestMethod -Uri` | Laster ned nettstedskartet og returnerer det direkte som XML-objekt. |
+| `$sitemap.urlset.url.loc` | Leser alle `<loc>`-oppføringer fra XML-en. |
+| `([uri]$loc).AbsolutePath` | Fjerner skjema og vertsnavn og leverer stien. |
+| `[uri]::UnescapeDataString()` | Dekoder prosentkodingen, slik WDP også gjør før kontrollen. |
+| `-split '[/._ :+;-]'` | Deler stien ved de samme skilletegnene som `dropLongURL`. |
+| `Where-Object { $_.Length -gt 18 }` | Beholder bare orddeler med mer enn 18 tegn. |
+
+</details>
+
+Begge variantene kontrollerer bare ordlengden, ikke de øvrige heuristikkene. Bash-varianten teller den prosentkodede formen og gir derfor bare korrekte verdier for rene ASCII-sluger; bruk PowerShell-varianten for sluger med omlyder eller andre skriftsystemer.
+
+## Tilpass sluger
+
+For nye artikler kan regelen overholdes når slugen fastsettes: Skill sammensetninger i slugen med bindestrek (`verschluesselungs-gateway`, `plattform-erneuerung`, `zertifikats-erneuerung`) og forkort betegnelser hentet fra faguttrykk.
+
+For eksisterende URL-er må en endring vurderes. Hver slug-endring trenger en 301-videresending fra den gamle til den nye URL-en, et oppdatert nettstedskart og tilpassede interne lenker. For sider som allerede rangerer godt eller har eksterne lenker, gir omleggingen lite: De er uansett i indeksen via crawleren. Den er først og fremst fornuftig for nye sider som ennå ikke finnes i noen indeks.
+
+## Måling: Hvor sterkt er enkelte språk berørt?
+
+Om regelen rammer språk ulikt, kan måles ved å sende de samme begrepene på forskjellige språk gjennom Braves originalkode. Skript, data og enkeltresultater finnes i det offentlige repositoriet [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); målingen kan reproduseres der med fem kommandoer.
+
+**Oppsett:**
+
+- **Kode:** Braves repositorium `web-discovery-project`, commit `58b1b53` fra 9. september 2026. Funksjonene `cleanCurrentUrl` og `dropLongURL` kjører uendret i Node.js; bare koblingene til nettleser og lagring er erstattet. Braves egne testtilfeller for `dropLongURL` gir dermed de forventede resultatene.
+- **Begreper:** Listen «Vital Articles Level 3» fra engelske Wikipedia, rundt 1000 sentrale artikler. Via Wikipedia-språklenkene ble titlene på de samme artiklene hentet på 23 andre språk. 825 begreper finnes på alle 24 språkene. For hvert begrep er dermed bare språket endret.
+- **URL-er:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, dannet som i nettleseren (prosentkodet), deretter som i WDP først gjennom `cleanCurrentUrl` og så gjennom `dropLongURL` i vanlig og streng modus.
+- **Årsak:** Hver forkastede URL ble kontrollert en gang til med lengderegelen deaktivert. Dersom den da rapporteres, skyldes forkastelsen lengderegelen.
+- **Statistikk:** 95 %-konfidensintervall etter Wilson; sammenligning med engelsk gjennom de parede begrepene (eksakt McNemar-test).
+
+Kjernen i analysen:
+
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
+
+**Resultat** (vanlig modus, 825 begreper per språk):
+
+| Språk | Forkastet | 95 %-KI | herav lengderegelen | p mot engelsk |
+|---|---|---|---|---|
+| Engelsk | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Tysk | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Ungarsk | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Nederlandsk | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finsk | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Svensk | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Norsk | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Dansk, fransk, spansk, portugisisk, tyrkisk, polsk | hver 1 (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Russisk, ukrainsk, japansk | hver 1 (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italiensk, gresk, arabisk, hebraisk, persisk, hindi, kinesisk, koreansk | 0 (0,0 %) | 0,0–0,5 % | – | – |
+
+Blant eksemplene på forkastede URL-er er `Schwangerschaftsabbruch`, `Empfängnisverhütung` og `Ingenieurwissenschaften` (tysk), `Terhességmegszakítás` (ungarsk), `Milieuverontreiniging` (nederlandsk) og `Tietojenkäsittelytiede` (finsk). Enkelttilfellene i de øvrige språkene gjelder nesten alle samme begrep: deoksyribonukleinsyre på det aktuelle landsspråket. I ingen tilfeller ble et begrep på landsspråket rapportert og forkastet på engelsk.
+
+**Analyse:**
+
+- Språk med ikke-latinsk skrift diskrimineres ikke. Brave dekoder URL-en før kontrollen, slik at et kyrillisk eller kinesisk tegn teller som ett tegn.
+- Språk som skriver sammensetninger sammen, har en liten, men systematisk ulempe. For tysk er den med p = 0,002 også signifikant når man tar hensyn til at 23 språk sammenlignes samtidig (Bonferroni-terskel 0,0022). Ungarsk ligger så vidt over.
+- Den målte andelen gjelder Wikipedia-titler, som som regel består av ett eller to ord. Blogg-sluger inneholder flere faguttrykk; på dette nettstedet er 3 av 66 tyske artikkel-URL-er berørt (4,5 %).
+
+**Begrensninger:** Det var kontrollregelen som ble målt, ikke faktisk opptak i Brave-indeksen. Wikipedia selv står trolig på Braves tillatelsesliste og er i praksis ikke berørt; målingen viser hvordan regelen behandler et nettsted uten tillatelse med slike URL-er. Den offentlige commiten behøver ikke samsvare med versjonen som leveres i nettleseren. Målingen gjengir ikke omveien via canonical-URL-en.
+
+## Mening: En lengdegrense som diskriminerer språk med sammensetninger
+
+*Dette avsnittet gjengir forfatterens vurdering. Faktaene bak står i avsnittene over.*
+
+Grensen på 18 tegn teller tegn og rammer dermed språk som skriver begreper sammen. Målingen viser effekten: For identiske begreper forkaster regelen 1,2 % av de tyske og 0 % av de engelske URL-ene, og hver av disse tyske forkastelsene skyldes lengderegelen. Den engelske slugen `data-protection-regulation` består kontrollen, mens `datenschutzgrundverordnung` ikke gjør det. Effekten er liten, men rammer alltid de samme språkene: tysk, ungarsk, nederlandsk, finsk og de skandinaviske språkene. Etter mitt syn er dette en diskriminering av disse språkene, selv om den ikke er tilsiktet.
+
+### Hvem som bærer kostnadene
+
+Brave skriver i README at feilklassifiseringer ikke er et stort problem for eget formål. For Brave stemmer det: En forkastet side koster Brave én rapport. For de berørte nettstedene er det en systematisk ulempe som særlig rammer fagtekster, fordi nettopp faguttrykk danner lange sammensetninger. Fordi Claudes nettsøk bygger på Brave-indeksen, mangler disse sidene én vei inn i indeksen Claude siterer fra.
+
+I tillegg finnes det en tillatelsesliste på serversiden: URL-mønstre som Brave godtar der (`allowlisted`), hopper over kontrollen. Hvilke mønstre dette er, er ikke offentlig dokumentert. Enkeltstående fagnettsteder kan ikke påvirke dette.
+
+### Hva som taler for regelen
+
+Formålet er legitimt. Delingslenker med token, for eksempel for delte dokumenter, er en reell risiko, og en slik lenke i søkeindeksen ville være en alvorlig personvernkrenkelse. En hard lengdegrense er enkel, rask og vanskelig å omgå. Den kan heller ikke uten videre erstattes av hash-gjenkjenning: I en tilleggstest med 2000 tilfeldige tokener med små bokstaver og 22 tegn, klassifiserte Braves `isHash` bare 58 % som hash, og 94 % for tokener med små bokstaver og sifre. Alle testede sammensetninger som `schwangerschaftsabbruch` eller `datenschutzgrundverordnung` ble korrekt gjenkjent av funksjonen som ikke-hash. For hemmelige lenker med bare små bokstaver er lengdegrensen dermed den egentlige beskyttelsen. Crawleren når dessuten fortsatt berørte sider, og den målte andelen er liten.
+
+### Hva Brave kunne endre
+
+- **Skille ord fra tokener:** En enkel heving av grensen for ord med bare bokstaver ville, ifølge tilleggstesten, slippe gjennom hemmelige lenker med små bokstaver. En ekstra plausibilitetskontroll bare for orddeler mellom 19 og omtrent 30 tegn kan være tenkelig, for eksempel basert på rekkefølgen av vokaler og konsonanter eller en liten språkmodell trent på ord i de berørte språkene. Om dette er pålitelig nok, må Brave undersøke.
+- **Dokumentere regelen:** Hjelpesiden om crawleren nevner WDP, men ikke heuristikkene. Et hint til nettstedsoperatører ville være nok til at de kan tilpasse slugene sine etter dette.
+
+Jeg har meldt målingen og denne målkonflikten til Brave som [Issue #498](https://github.com/brave/web-discovery-project/issues/498) i WDP-repositoriet. Inntil da gjenstår bare tilpasning på nettstedets side: Skill sammensetninger i slugen med bindestrek. At dette arbeidet ligger hos operatører i bestemte språkområder og ikke hos metoden, er kjernen i min kritikk.
+
+*Korrigering fra 25.09.2026: En tidligere versjon foreslo å heve grensen generelt for ord med bare bokstaver; tilleggstesten for hash-gjenkjenning viser at dette ville svekke beskyttelsen. En tidligere versjon av dette avsnittet hevdet at ikke-latinske skriftsystemer og diakritiske tegn ville diskrimineres spesielt sterkt gjennom prosentkoding, basert på en måling med prosentkodede URL-er. En uavhengig etterprøving viste at Brave dekoder URL-er med `cleanCurrentUrl` før kontrollen. Påstanden var feil og er fjernet; målingen over bruker korrekt forløp.*
+
+## Kilder
+
+1.  [brave/web-discovery-project: sources/README.md](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/README.md): Beskrivelse av WDP fra Brave, med meldingstyper, ny henting uten informasjonskapsler, Capability-URL-heuristikker og quorum.
+
+2.  [brave/web-discovery-project: web-discovery-project.es](https://github.com/brave/web-discovery-project/blob/main/modules/web-discovery-project/sources/web-discovery-project.es): Kildekode med `dropLongURL`, `calculateStrictness` og grenseverdiene `rel_part_len: 18` og `qs_len: 30`.
+
+3.  [Brave Search: Brave Search Crawler](https://search.brave.com/help/brave-search-crawler): Offisiell hjelpeside om crawleren, den manglende egne user-agenten og WDPs rolle.
+
+4.  [Simon Willison: Anthropic Trust Center: Brave Search added as a subprocessor](https://simonwillison.net/2025/Mar/21/anthropic-use-brave/): Oppføring av Brave Search i Anthropics liste over underleverandører i mars 2025.
+
+5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): Rapport med ytterligere indikasjoner, blant annet parameteren `BraveSearchParams` i Claudes nettsøk.
+
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): Dekoding av URL-en før kontrollen; kommentaren i onLocationChange (linje 1724) beskriver den dekodede URL-en som WDPs interne representasjon.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Begrepslisten for målingen; titlene på de øvrige språkene kommer fra språklenkene i Wikipedia-API-et.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Måleskript, datasett og enkeltresultater for språkmålingen i denne artikkelen, inkludert tilleggstesten for hash-gjenkjenning (`hash-test.mjs`) og den første versjonen som er merket som feilaktig.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): Tilbakemelding til Brave med måleresultatene og målkonflikten mellom lengdegrense og hash-gjenkjenning.
 
 ----
 
