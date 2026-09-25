@@ -39,7 +39,9 @@ Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle K
 
 Die Empfehlung gilt weltweit; die E-Mail nennt das Zeitfenster für alle Zeitzonen von AEST bis PDT. Kiteworks rät, die Systeme schon vor Beginn des Fensters herunterzufahren, und zwar auch dann, wenn sie nicht aus dem Internet erreichbar sind.
 
-Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Welche Behörde die Warnung ausgesprochen hat, ist ebenfalls nicht bekannt. Auf den offiziellen Kanälen von Kiteworks (Security Updates, Newsroom, GitHub-Advisories) finde ich Stand 25. September keinen Eintrag dazu. Die einzige Quelle ist die Kunden-E-Mail, die nicht öffentlich einsehbar ist.
+Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Welche Behörde die Warnung ausgesprochen hat, ist ebenfalls nicht bekannt. Auf den offiziellen Kanälen von Kiteworks (Security Updates, Newsroom, GitHub-Advisories) finde ich Stand 25. September keinen Eintrag dazu. Neben der Kunden-E-Mail, die nicht öffentlich einsehbar ist, gibt es bisher nur die oben zitierte Stellungnahme.
+
+Stand 25. September abends: Gegenüber TechCrunch hat Kiteworks-CISO Frank Balonis die Stellungnahme im selben Wortlaut abgegeben. Die Warnung ging laut TechCrunch am 25. September um 08:52 Uhr Pacific Time an die Kunden, also um 17:52 Uhr mitteleuropäischer Sommerzeit. Das BKA hat gegenüber heise eine Stellungnahme aus ermittlungstaktischen Gründen abgelehnt, das BSI hat nicht geantwortet. Das FBI wollte sich gegenüber TechCrunch nicht äussern, von der CISA lag keine Antwort vor. Ein Kunde aus dem Gesundheitswesen hat laut TechCrunch seinen Server sofort vom Netz genommen, mit spürbaren Einschränkungen im Betrieb.
 
 ## Mögliche Ursachen: Theorien
 
@@ -73,7 +75,7 @@ Dafür spricht der weltweit einheitliche Zeitpunkt, der zu einer koordinierten A
 
 ### 5. Begleitmassnahme zu einer Behördenaktion
 
-Denkbar ist schliesslich, dass die Behörden im selben Zeitraum gegen die Infrastruktur der Angreifer vorgehen und verhindern wollen, dass diese als Reaktion noch schnell zuschlagen. Das würde das kurze Fenster und die Rolle der Strafverfolgung erklären. Für diese Variante gibt es bisher keinerlei öffentliche Hinweise.
+Denkbar ist schliesslich, dass die Behörden im selben Zeitraum gegen die Infrastruktur der Angreifer vorgehen und verhindern wollen, dass diese als Reaktion noch schnell zuschlagen. Das würde das kurze Fenster und die Rolle der Strafverfolgung erklären. Dass das BKA eine Stellungnahme aus ermittlungstaktischen Gründen ablehnt, deutet auf laufende Ermittlungen hin, belegt diese Variante aber nicht.
 
 ### Kritik an der Kommunikation
 
@@ -81,7 +83,7 @@ In den heise-Kommentaren überwiegt Skepsis, und die Einwände sind sachlich nac
 
 ## Quellen
 
-1.  [heise online: Bevorstehender Zero-Day-Angriff: KiteWorks drängt Kunden zur Serverabschaltung](https://www.heise.de/news/Bevorstehender-Zero-Day-Angriff-KiteWorks-draengt-Kunden-zur-Serverabschaltung-11466114.html): Erstmeldung mit Auszügen aus der Kunden-E-Mail und dem Zeitfenster.
+1.  [heise online: Bevorstehender Zero-Day-Angriff: KiteWorks drängt Kunden zur Serverabschaltung](https://www.heise.de/news/Bevorstehender-Zero-Day-Angriff-KiteWorks-draengt-Kunden-zur-Serverabschaltung-11466114.html): Erstmeldung mit Auszügen aus der Kunden-E-Mail und dem Zeitfenster; Update vom 25.09., 17:41 Uhr, mit der Antwort des BKA.
 
 2.  [heise online (EN): Imminent Zero-Day Attack: KiteWorks Urges Customers to Shut Down Servers](https://www.heise.de/en/news/Imminent-Zero-Day-Attack-KiteWorks-Urges-Customers-to-Shut-Down-Servers-11466375.html): englische Fassung mit dem Originalwortlaut des CISO.
 
@@ -96,6 +98,8 @@ In den heise-Kommentaren überwiegt Skepsis, und die Einwände sind sachlich nac
 7.  [CISA: Exploitation of Accellion File Transfer Appliance (AA21-055A)](https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-055a): Advisory zur Ausnutzung der Accellion FTA 2020/2021 mit anschliessender Erpressung; Accellion ist der frühere Name von Kiteworks.
 
 8.  [Kiteworks: Case Study Mandiant](https://www.kiteworks.com/case-study-mandiant/): Herstellerangabe zur Zusammenarbeit mit Mandiant.
+
+9.  [TechCrunch: Kiteworks urges customers to shut down their servers amid 'imminent' threat of cyberattack](https://techcrunch.com/2026/09/25/kiteworks-urges-customers-to-shut-down-their-servers-amid-imminent-threat-of-cyberattack/): Stellungnahme des CISO, Versandzeit der Warnung, Reaktionen von FBI und CISA, Auswirkungen bei einem Kunden.
 
 ----
 
