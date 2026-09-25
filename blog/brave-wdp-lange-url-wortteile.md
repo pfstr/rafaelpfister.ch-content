@@ -162,7 +162,7 @@ Bei bestehenden URLs ist eine Änderung abzuwägen. Jede Slug-Änderung braucht 
 
 ## Messung: Wie stark sind einzelne Sprachen betroffen?
 
-Ob die Regel Sprachen unterschiedlich trifft, lässt sich messen, indem man dieselben Begriffe in verschiedenen Sprachen durch Braves Originalcode schickt.
+Ob die Regel Sprachen unterschiedlich trifft, lässt sich messen, indem man dieselben Begriffe in verschiedenen Sprachen durch Braves Originalcode schickt. Skripte, Daten und Einzelergebnisse liegen im öffentlichen Repository [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung); die Messung lässt sich dort mit fünf Befehlen reproduzieren.
 
 **Aufbau:**
 
@@ -251,3 +251,5 @@ Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita im Slug mit
 6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): Dekodierung der URL vor der Prüfung; der Kommentar in onLocationChange (Zeile 1724) beschreibt die dekodierte URL als interne Darstellung des WDP.
 
 7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Begriffsliste der Messung; die Titel in den übrigen Sprachen stammen aus den Sprachverknüpfungen der Wikipedia-API.
+
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Messskripte, Datensatz und Einzelergebnisse der Sprachmessung in diesem Artikel, einschliesslich der als fehlerhaft markierten ersten Fassung.
