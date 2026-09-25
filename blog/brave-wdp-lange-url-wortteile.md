@@ -225,16 +225,16 @@ Hinzu kommt eine serverseitige Freigabeliste: URL-Muster, die Brave dort aufnimm
 
 ### Was für die Regel spricht
 
-Der Zweck ist berechtigt. Freigabelinks mit Token, etwa für geteilte Dokumente, sind ein reales Risiko, und ein solcher Link im Suchindex wäre ein ernster Datenschutzvorfall. Eine harte Längengrenze ist einfach, schnell und schwer zu umgehen. Zudem erreicht der Crawler betroffene Seiten weiterhin, und der gemessene Anteil ist klein.
+Der Zweck ist berechtigt. Freigabelinks mit Token, etwa für geteilte Dokumente, sind ein reales Risiko, und ein solcher Link im Suchindex wäre ein ernster Datenschutzvorfall. Eine harte Längengrenze ist einfach, schnell und schwer zu umgehen. Sie ist auch nicht einfach durch die Hash-Erkennung ersetzbar: In einem Zusatztest mit 2000 zufälligen Tokens aus Kleinbuchstaben mit 22 Zeichen stufte Braves `isHash` nur 58 % als Hash ein, bei Tokens aus Kleinbuchstaben und Ziffern 94 %. Alle getesteten Komposita wie `schwangerschaftsabbruch` oder `datenschutzgrundverordnung` erkannte die Funktion korrekt als kein Hash. Für Geheim-Links aus reinen Kleinbuchstaben ist die Längengrenze damit der eigentliche Schutz. Zudem erreicht der Crawler betroffene Seiten weiterhin, und der gemessene Anteil ist klein.
 
 ### Was Brave ändern könnte
 
-- **Wörter von Tokens unterscheiden:** Ein Wortteil aus reinen Kleinbuchstaben ohne Ziffern sieht selten wie ein Token aus. Für solche Teile liesse sich die Grenze anheben, etwa auf 30 Zeichen, während Teile mit Ziffern oder gemischter Gross- und Kleinschreibung bei 18 bleiben.
+- **Wörter von Tokens unterscheiden:** Eine einfache Anhebung der Grenze für reine Buchstabenwörter würde nach dem Zusatztest Geheim-Links aus Kleinbuchstaben durchlassen. Denkbar ist eine zusätzliche Plausibilitätsprüfung nur für Wortteile zwischen 19 und etwa 30 Zeichen, etwa über die Abfolge von Vokalen und Konsonanten oder ein kleines Sprachmodell, das auf Wörtern der betroffenen Sprachen trainiert ist. Ob das zuverlässig genug ist, müsste Brave prüfen.
 - **Die Regel dokumentieren:** Die Hilfeseite zum Crawler erwähnt das WDP, aber nicht die Heuristiken. Ein Hinweis für Website-Betreiber würde genügen, damit sie ihre Slugs danach ausrichten können.
 
-Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita im Slug mit Bindestrich trennen. Dass diese Arbeit bei den Betreibern bestimmter Sprachräume liegt und nicht beim Verfahren, ist der Kern meiner Kritik.
+Die Messung und diesen Zielkonflikt habe ich Brave als [Issue #498](https://github.com/brave/web-discovery-project/issues/498) im Repository des WDP gemeldet. Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita im Slug mit Bindestrich trennen. Dass diese Arbeit bei den Betreibern bestimmter Sprachräume liegt und nicht beim Verfahren, ist der Kern meiner Kritik.
 
-*Korrektur vom 25.09.2026: Eine frühere Fassung dieses Abschnitts behauptete, nicht-lateinische Schriften und Diakritika würden durch die Prozentkodierung besonders stark benachteiligt, gestützt auf eine Messung mit prozentkodierten URLs. Eine unabhängige Nachprüfung hat gezeigt, dass Brave URLs vor der Prüfung mit `cleanCurrentUrl` dekodiert. Die Aussage war falsch und ist entfernt; die Messung oben verwendet den korrekten Ablauf.*
+*Korrektur vom 25.09.2026: Eine frühere Fassung schlug vor, die Grenze für reine Buchstabenwörter pauschal anzuheben; der Zusatztest zur Hash-Erkennung zeigt, dass das den Schutz schwächen würde. Eine frühere Fassung dieses Abschnitts behauptete, nicht-lateinische Schriften und Diakritika würden durch die Prozentkodierung besonders stark benachteiligt, gestützt auf eine Messung mit prozentkodierten URLs. Eine unabhängige Nachprüfung hat gezeigt, dass Brave URLs vor der Prüfung mit `cleanCurrentUrl` dekodiert. Die Aussage war falsch und ist entfernt; die Messung oben verwendet den korrekten Ablauf.*
 
 ## Quellen
 
@@ -252,4 +252,6 @@ Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita im Slug mit
 
 7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Begriffsliste der Messung; die Titel in den übrigen Sprachen stammen aus den Sprachverknüpfungen der Wikipedia-API.
 
-8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Messskripte, Datensatz und Einzelergebnisse der Sprachmessung in diesem Artikel, einschliesslich der als fehlerhaft markierten ersten Fassung.
+8.  [pfstr/wdp-sprachmessung](https://github.com/pfstr/wdp-sprachmessung): Messskripte, Datensatz und Einzelergebnisse der Sprachmessung in diesem Artikel, einschliesslich des Zusatztests zur Hash-Erkennung (`hash-test.mjs`) und der als fehlerhaft markierten ersten Fassung.
+
+9.  [brave/web-discovery-project#498](https://github.com/brave/web-discovery-project/issues/498): Rückmeldung an Brave mit den Messergebnissen und dem Zielkonflikt zwischen Längengrenze und Hash-Erkennung.
