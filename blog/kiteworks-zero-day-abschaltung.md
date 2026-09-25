@@ -3,19 +3,17 @@ title: "Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bisla
 navTitle: "Kiteworks-Abschaltung"
 description: "Kiteworks fordert seine Kunden per E-Mail auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Grund ist eine Warnung von Strafverfolgungsbehörden vor einem möglichen Angriff. Totemomail ist nicht betroffen."
 date: "2026-09-25"
-kategorie: "Totemomail"
+kategorie: "Kiteworks / Totemomail"
 timeToRead: "6 Min. Lesezeit"
 themen:
   - "totemomail"
-  - "smtp-mailflow"
-  - "e-mail-verschluesselung"
 produkte:
   - "totemomail"
-  - "exchange-online"
 protokolle:
   - "verschluesselung"
   - "haertung"
   - "smtp"
+hauptthema: "totemomail"
 slug: "kiteworks-zero-day-abschaltung"
 featured: "2026-09-27"
 warnung: true

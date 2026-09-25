@@ -1,10 +1,10 @@
 ---
-name: "Totemomail"
+name: "Kiteworks / Totemomail"
 slug: "totemomail"
 hub: "admin-hub"
 url: "https://rafaelpfister.ch/blog/thema/totemomail"
 ---
 
-# Totemomail
+# Kiteworks / Totemomail
 
 Totemomail und Kiteworks Email Protection Gateway: Mailrouting, Lizenzierung, LDAP-Anbindung und zuverlässiger Betrieb.

@@ -528,7 +528,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Stromtarife und LEG](https://rafaelpfister.ch/blog/thema/stromtarife-leg)
 - [Tailscale](https://rafaelpfister.ch/blog/thema/tailscale)
 - [Testing und Lasttests](https://rafaelpfister.ch/blog/thema/testing)
-- [Totemomail](https://rafaelpfister.ch/blog/thema/totemomail)
+- [Kiteworks / Totemomail](https://rafaelpfister.ch/blog/thema/totemomail)
 - [Windows-Client](https://rafaelpfister.ch/blog/thema/windows-client)
 
 ## Optional
