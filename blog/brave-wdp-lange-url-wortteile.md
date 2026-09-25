@@ -1,10 +1,10 @@
 ---
 title: "Brave Web Discovery Project: Warum lange Wortteile in URLs Seiten ausschliessen"
 navTitle: "Brave: lange URL-Teile"
-description: "Brave verwirft im Web Discovery Project jede URL, deren Pfad einen Wortteil mit mehr als 18 Zeichen enthält. Deutsche Komposita wie Verschlüsselungsgateway fallen darunter. Weil Claudes Websuche auf dem Brave-Index aufsetzt, betrifft das auch die Sichtbarkeit in Claude. Die Regel im Quellcode, weitere Heuristiken, die Rolle des Canonical, ein Prüfskript für die eigene Sitemap und eine Einschätzung, warum die Regel Sprachen ungleich behandelt."
+description: "Brave verwirft im Web Discovery Project jede URL, deren Pfad einen Wortteil mit mehr als 18 Zeichen enthält. Deutsche Komposita wie Verschlüsselungsgateway fallen darunter. Weil Claudes Websuche auf dem Brave-Index aufsetzt, betrifft das auch die Sichtbarkeit in Claude. Die Regel im Quellcode, weitere Heuristiken, die Rolle des Canonical, ein Prüfskript für die eigene Sitemap eine Messung mit 825 Begriffen in 24 Sprachen und eine Einschätzung, warum die Regel Komposita-Sprachen benachteiligt."
 date: "2026-09-25"
 kategorie: "Claude"
-timeToRead: "11 Min. Lesezeit"
+timeToRead: "13 Min. Lesezeit"
 themen:
   - "claude"
 produkte:
@@ -49,7 +49,7 @@ for (var i = 0; i < vpath.length; i++) {
 }
 ```
 
-`rel_part_len` ist im Quellcode auf `18` gesetzt. `return true` heisst: Die URL gilt als verdächtig. Die Regel gilt in beiden Prüfmodi, dem normalen und dem strengen. Brave bezeichnet die Heuristiken im README selbst als konservativ: Viele öffentliche Seiten werden fälschlich als möglicher Geheim-Link eingestuft, was für den Zweck des WDP in Kauf genommen wird.
+`rel_part_len` ist im Quellcode auf `18` gesetzt. `return true` heisst: Die URL gilt als verdächtig. Geprüft wird die dekodierte URL: Der Browser führt Nicht-ASCII-Zeichen prozentkodiert (`%C3%BC`), das WDP wandelt sie vorher mit `cleanCurrentUrl` (`decodeURIComponent`) zurück. Gezählt werden JavaScript-Zeichen, also UTF-16-Codeeinheiten: Ein `ü` oder ein chinesisches Schriftzeichen zählt einfach, ein Zeichen ausserhalb der Unicode-Basisebene oder ein als eigenes Zeichen angehängter Akzent doppelt. Die Regel gilt in beiden Prüfmodi, dem normalen und dem strengen. Brave bezeichnet die Heuristiken im README selbst als konservativ: Viele öffentliche Seiten werden fälschlich als möglicher Geheim-Link eingestuft, was für den Zweck des WDP in Kauf genommen wird.
 
 Der Bindestrich trennt, ein zusammengeschriebenes Wort nicht. Entscheidend ist also die Länge des längsten Einzelworts im Slug, nicht die Länge des ganzen Slugs:
 
@@ -129,7 +129,7 @@ Unter Windows mit PowerShell:
 ```powershell
 $sitemap = Invoke-RestMethod -Uri 'https://example.com/sitemap-0.xml'
 foreach ($loc in $sitemap.urlset.url.loc) {
-    $pfad = ([uri]$loc).AbsolutePath
+    $pfad = [uri]::UnescapeDataString(([uri]$loc).AbsolutePath)
     $zuLang = $pfad -split '[/._ :+;-]' |
         Where-Object { $_.Length -gt 18 }
     if ($zuLang) {
@@ -146,12 +146,13 @@ foreach ($loc in $sitemap.urlset.url.loc) {
 | `Invoke-RestMethod -Uri` | Lädt die Sitemap und gibt sie direkt als XML-Objekt zurück. |
 | `$sitemap.urlset.url.loc` | Liest alle `<loc>`-Einträge aus dem XML. |
 | `([uri]$loc).AbsolutePath` | Schneidet Schema und Hostname ab und liefert den Pfad. |
+| `[uri]::UnescapeDataString()` | Dekodiert die Prozentkodierung, wie es auch das WDP vor der Prüfung tut. |
 | `-split '[/._ :+;-]'` | Zerlegt den Pfad an denselben Trennzeichen wie `dropLongURL`. |
 | `Where-Object { $_.Length -gt 18 }` | Behält nur Wortteile mit mehr als 18 Zeichen. |
 
 </details>
 
-Beide Varianten prüfen nur die Wortlänge, nicht die übrigen Heuristiken.
+Beide Varianten prüfen nur die Wortlänge, nicht die übrigen Heuristiken. Die Bash-Variante zählt die prozentkodierte Form und liefert deshalb nur für reine ASCII-Slugs korrekte Werte; für Slugs mit Umlauten oder anderen Schriften die PowerShell-Variante verwenden.
 
 ## Slugs anpassen
 
@@ -159,51 +160,81 @@ Für neue Artikel lässt sich die Regel beim Festlegen des Slugs einhalten: Komp
 
 Bei bestehenden URLs ist eine Änderung abzuwägen. Jede Slug-Änderung braucht eine 301-Weiterleitung von der alten auf die neue URL, eine aktualisierte Sitemap und angepasste interne Links. Bei Seiten, die bereits gut ranken oder von aussen verlinkt sind, bringt die Umstellung wenig: Sie sind über den Crawler ohnehin im Index. Sinnvoll ist sie vor allem bei jungen Seiten, die noch in keinem Index stehen.
 
-## Meinung: Eine Längengrenze, die Sprachen ungleich behandelt
+## Messung: Wie stark sind einzelne Sprachen betroffen?
 
-*Dieser Abschnitt gibt die Einschätzung des Autors wieder. Die Fakten dazu stehen in den Abschnitten oben und in den Quellen.*
+Ob die Regel Sprachen unterschiedlich trifft, lässt sich messen, indem man dieselben Begriffe in verschiedenen Sprachen durch Braves Originalcode schickt.
 
-Die 18-Zeichen-Grenze zählt Zeichen und bewertet damit Sprachen unterschiedlich. Derselbe Inhalt wird gemeldet oder verworfen, je nachdem, in welcher Sprache der Slug geschrieben ist. Aus meiner Sicht ist das eine Benachteiligung nach Sprache, auch wenn sie nicht beabsichtigt ist.
+**Aufbau:**
 
-### Komposita
+- **Code:** Braves Repository `web-discovery-project`, Commit `58b1b53` vom 9. September 2026. Die Funktionen `cleanCurrentUrl` und `dropLongURL` laufen unverändert in Node.js; ersetzt sind nur die Anbindungen an Browser und Speicher. Braves eigene Testfälle für `dropLongURL` liefern damit die erwarteten Ergebnisse.
+- **Begriffe:** die Liste „Vital Articles Level 3" der englischen Wikipedia, rund 1000 zentrale Artikel. Über die Sprachverknüpfungen der Wikipedia wurden die Titel derselben Artikel in 23 weiteren Sprachen abgerufen. 825 Begriffe existieren in allen 24 Sprachen. Pro Begriff ändert sich damit nur die Sprache.
+- **URLs:** `https://<sprache>.wikipedia.org/wiki/<Titel>`, gebildet wie im Browser (prozentkodiert), dann wie im WDP zuerst durch `cleanCurrentUrl` und anschliessend durch `dropLongURL` im normalen und im strengen Modus.
+- **Ursache:** Jede verworfene URL wurde ein zweites Mal geprüft, mit abgeschalteter Längenregel. Wird sie dann gemeldet, geht die Verwerfung auf die Längenregel zurück.
+- **Statistik:** 95-%-Konfidenzintervall nach Wilson; Vergleich mit Englisch über die gepaarten Begriffe (exakter McNemar-Test).
 
-Der englische Slug `certificate-renewal` besteht die Prüfung, sein längster Teil hat 11 Zeichen. Das deutsche `zertifikatserneuerung` mit 21 Zeichen wird verworfen. Beide bezeichnen dasselbe. Betroffen sind alle Sprachen, die zusammengesetzte Wörter zusammenschreiben: Deutsch, Niederländisch, Schwedisch, Norwegisch, Dänisch, Finnisch, Ungarisch. Englisch und die romanischen Sprachen trennen Begriffe mit Leerzeichen, im Slug also mit Bindestrich, und sind kaum betroffen.
+Der Kern der Auswertung:
 
-### Diakritika und nicht-lateinische Schriften
+```javascript
+for (const begriff of begriffe) {
+  const kodiert = new URL(wikiUrl(sprache, begriff)).href;
+  const url = WDP.cleanCurrentUrl(kodiert);
+  const verworfen = WDP.dropLongURL(url);
+  WDP.rel_part_len = Infinity;   // Längenregel aus
+  const ohneLaenge = WDP.dropLongURL(url);
+  WDP.rel_part_len = 18;         // Originalwert
+  if (verworfen && !ohneLaenge) durchLaengenregel++;
+}
+```
 
-Noch deutlicher wird die Ungleichbehandlung bei Zeichen ausserhalb von ASCII. Browser führen URLs nach dem URL-Standard prozentkodiert: Jedes Nicht-ASCII-Zeichen wird in zwei bis vier Bytes zerlegt, jedes Byte in drei Zeichen wie `%D0`. Die Funktion `dropLongURL` prüft die kodierte Form. Ein kyrillischer Buchstabe zählt damit sechs Zeichen, ein chinesisches Schriftzeichen neun:
+**Ergebnis** (normaler Modus, 825 Begriffe je Sprache):
 
-| Wort | Sprache | Buchstaben | Zeichen in der URL | Ergebnis |
+| Sprache | Verworfen | 95-%-KI | davon Längenregel | p gegenüber Englisch |
 |---|---|---|---|---|
-| `certificate-renewal` | Englisch | 11 (längster Teil) | 11 | wird gemeldet |
-| `zertifikatserneuerung` | Deutsch | 21 | 21 | verworfen |
-| `sähköpostipalvelin` (Mailserver) | Finnisch | 18 | 28 | verworfen |
-| `levelezőszerver` (Mailserver) | Ungarisch | 15 | 20 | verworfen |
-| `почта` (Post) | Russisch | 5 | 30 | verworfen |
-| `ελληνικά` (Griechisch) | Griechisch | 8 | 48 | verworfen |
-| `بريد` (Post) | Arabisch | 4 | 24 | verworfen |
-| `メール` (Mail) | Japanisch | 3 | 27 | verworfen |
-| `电子邮件` (E-Mail) | Chinesisch | 4 | 36 | verworfen |
+| Englisch | 0 (0,0 %) | 0,0–0,5 % | – | – |
+| Deutsch | 10 (1,2 %) | 0,7–2,2 % | 10 | 0,002 |
+| Ungarisch | 9 (1,1 %) | 0,6–2,1 % | 6 | 0,004 |
+| Niederländisch | 6 (0,7 %) | 0,3–1,6 % | 6 | 0,03 |
+| Finnisch | 5 (0,6 %) | 0,3–1,4 % | 5 | 0,06 |
+| Schwedisch | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Norwegisch | 4 (0,5 %) | 0,2–1,2 % | 4 | 0,13 |
+| Dänisch, Französisch, Spanisch, Portugiesisch, Türkisch, Polnisch | je 1 (0,1 %) | 0,0–0,7 % | 0–1 | 1,0 |
+| Russisch, Ukrainisch, Japanisch | je 1 (0,1 %) | 0,0–0,7 % | 1 | 1,0 |
+| Italienisch, Griechisch, Arabisch, Hebräisch, Persisch, Hindi, Chinesisch, Koreanisch | 0 (0,0 %) | 0,0–0,5 % | – | – |
 
-Ein Wort in kyrillischer, griechischer oder arabischer Schrift darf also höchstens drei Buchstaben haben, ein chinesisches oder japanisches höchstens zwei Schriftzeichen. Websites in diesen Sprachen gelangen über das WDP praktisch nur mit lateinisch transliterierten Slugs in den Brave-Index.
+Verworfen wurden zum Beispiel `Schwangerschaftsabbruch`, `Empfängnisverhütung` und `Ingenieurwissenschaften` (Deutsch), `Terhességmegszakítás` (Ungarisch), `Milieuverontreiniging` (Niederländisch) und `Tietojenkäsittelytiede` (Finnisch). Die Einzelfälle in den übrigen Sprachen betreffen fast alle denselben Begriff: Desoxyribonukleinsäure in der jeweiligen Landessprache. In keinem Fall wurde ein Begriff in der Landessprache gemeldet und auf Englisch verworfen.
+
+**Auswertung:**
+
+- Sprachen mit nicht-lateinischer Schrift werden nicht benachteiligt. Brave dekodiert die URL vor der Prüfung, ein kyrillisches oder chinesisches Zeichen zählt dadurch als ein Zeichen.
+- Sprachen, die Komposita zusammenschreiben, haben einen kleinen, aber systematischen Nachteil. Für Deutsch ist er mit p = 0,002 auch dann signifikant, wenn man berücksichtigt, dass 23 Sprachen gleichzeitig verglichen wurden (Bonferroni-Schwelle 0,0022). Ungarisch liegt knapp darüber.
+- Der gemessene Anteil gilt für Wikipedia-Titel, die meist aus einem oder zwei Wörtern bestehen. Blog-Slugs enthalten mehr Fachbegriffe; auf dieser Website sind 3 von 66 deutschen Artikel-URLs betroffen (4,5 %).
+
+**Grenzen:** Gemessen wurde die Prüfregel, nicht die tatsächliche Aufnahme in den Brave-Index. Wikipedia selbst steht vermutlich auf Braves Freigabeliste und ist real nicht betroffen; die Messung zeigt, wie die Regel eine Website ohne Freigabe mit solchen URLs behandelt. Der öffentliche Commit muss nicht der im Browser ausgelieferten Version entsprechen. Den Ausweichpfad über die Canonical-URL bildet die Messung nicht ab.
+
+## Meinung: Eine Längengrenze, die Komposita-Sprachen benachteiligt
+
+*Dieser Abschnitt gibt die Einschätzung des Autors wieder. Die Fakten dazu stehen in den Abschnitten oben.*
+
+Die 18-Zeichen-Grenze zählt Zeichen und trifft damit Sprachen, die Begriffe zusammenschreiben. Die Messung zeigt den Effekt: Bei identischen Begriffen verwirft die Regel 1,2 % der deutschen und 0 % der englischen URLs, und jede dieser deutschen Verwerfungen geht auf die Längenregel zurück. Der englische Slug `data-protection-regulation` besteht die Prüfung, `datenschutzgrundverordnung` nicht. Der Effekt ist klein, trifft aber immer dieselben Sprachen: Deutsch, Ungarisch, Niederländisch, Finnisch und die skandinavischen Sprachen. Aus meiner Sicht ist das eine Benachteiligung dieser Sprachen, auch wenn sie nicht beabsichtigt ist.
 
 ### Wer die Kosten trägt
 
-Brave schreibt im README, Fehleinstufungen seien für den eigenen Zweck kein grosses Problem. Für Brave trifft das zu: Eine verworfene Seite kostet Brave eine Meldung. Für die betroffenen Websites ist es ein systematischer Nachteil, der immer dieselben Sprachen trifft. Weil Claudes Websuche auf dem Brave-Index aufsetzt, setzt sich die Ungleichbehandlung in KI-Antworten fort: Inhalte in diesen Sprachen haben einen Weg weniger in den Index, aus dem Claude zitiert.
+Brave schreibt im README, Fehleinstufungen seien für den eigenen Zweck kein grosses Problem. Für Brave trifft das zu: Eine verworfene Seite kostet Brave eine Meldung. Für die betroffenen Websites ist es ein systematischer Nachteil, der vor allem Fachtexte trifft, weil gerade Fachbegriffe lange Komposita bilden. Weil Claudes Websuche auf dem Brave-Index aufsetzt, fehlt diesen Seiten ein Weg in den Index, aus dem Claude zitiert.
 
 Hinzu kommt eine serverseitige Freigabeliste: URL-Muster, die Brave dort aufnimmt (`allowlisted`), überspringen die Prüfung. Welche Muster das sind, ist nicht öffentlich dokumentiert. Einzelne Fachseiten können darauf keinen Einfluss nehmen.
 
 ### Was für die Regel spricht
 
-Der Zweck ist berechtigt. Freigabelinks mit Token, etwa für geteilte Dokumente, sind ein reales Risiko, und ein solcher Link im Suchindex wäre ein ernster Datenschutzvorfall. Eine harte Längengrenze ist einfach, schnell und schwer zu umgehen. Zudem erreicht der Crawler betroffene Seiten weiterhin.
+Der Zweck ist berechtigt. Freigabelinks mit Token, etwa für geteilte Dokumente, sind ein reales Risiko, und ein solcher Link im Suchindex wäre ein ernster Datenschutzvorfall. Eine harte Längengrenze ist einfach, schnell und schwer zu umgehen. Zudem erreicht der Crawler betroffene Seiten weiterhin, und der gemessene Anteil ist klein.
 
 ### Was Brave ändern könnte
 
-- **Nach dem Dekodieren zählen:** Die Grenze auf die dekodierten Zeichen statt auf die Prozentkodierung anzuwenden, würde die Benachteiligung nicht-lateinischer Schriften und von Diakritika weitgehend beheben.
-- **Den vorhandenen Klassifikator nutzen:** Der Code enthält bereits einen Markov-Klassifikator, der zufällig aussehende Zeichenketten als Hash erkennt. Ein Token ist meist zufällig, ein langes Wort einer natürlichen Sprache nicht. Für Wortteile, die der Klassifikator als natürliche Sprache einstuft, liesse sich die Grenze anheben. Ob der Klassifikator dafür in allen Sprachen zuverlässig genug ist, müsste Brave prüfen.
+- **Wörter von Tokens unterscheiden:** Ein Wortteil aus reinen Kleinbuchstaben ohne Ziffern sieht selten wie ein Token aus. Für solche Teile liesse sich die Grenze anheben, etwa auf 30 Zeichen, während Teile mit Ziffern oder gemischter Gross- und Kleinschreibung bei 18 bleiben.
 - **Die Regel dokumentieren:** Die Hilfeseite zum Crawler erwähnt das WDP, aber nicht die Heuristiken. Ein Hinweis für Website-Betreiber würde genügen, damit sie ihre Slugs danach ausrichten können.
 
-Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita trennen, Slugs transliterieren. Dass diese Arbeit bei den Betreibern bestimmter Sprachräume liegt und nicht beim Verfahren, ist der Kern meiner Kritik.
+Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita im Slug mit Bindestrich trennen. Dass diese Arbeit bei den Betreibern bestimmter Sprachräume liegt und nicht beim Verfahren, ist der Kern meiner Kritik.
+
+*Korrektur vom 25.09.2026: Eine frühere Fassung dieses Abschnitts behauptete, nicht-lateinische Schriften und Diakritika würden durch die Prozentkodierung besonders stark benachteiligt, gestützt auf eine Messung mit prozentkodierten URLs. Eine unabhängige Nachprüfung hat gezeigt, dass Brave URLs vor der Prüfung mit `cleanCurrentUrl` dekodiert. Die Aussage war falsch und ist entfernt; die Messung oben verwendet den korrekten Ablauf.*
 
 ## Quellen
 
@@ -217,4 +248,6 @@ Bis dahin bleibt nur die Anpassung auf Seiten der Website: Komposita trennen, Sl
 
 5.  [TechCrunch: Anthropic appears to be using Brave to power web searches for its Claude chatbot](https://techcrunch.com/2025/03/21/anthropic-appears-to-be-using-brave-to-power-web-searches-for-its-claude-chatbot/): Bericht mit weiteren Hinweisen, etwa dem Parameter `BraveSearchParams` in Claudes Websuche.
 
-6.  [WHATWG: URL Standard, Percent-encoded bytes](https://url.spec.whatwg.org/#percent-encoded-bytes): Regeln, nach denen Browser Nicht-ASCII-Zeichen im Pfad als UTF-8-Bytes prozentkodieren.
+6.  [brave/web-discovery-project: cleanCurrentUrl](https://github.com/brave/web-discovery-project/blob/58b1b53f046e955d9d577ac531d7d6b4d18a6016/modules/web-discovery-project/sources/web-discovery-project.es#L2226): Dekodierung der URL vor der Prüfung; der Kommentar in onLocationChange (Zeile 1724) beschreibt die dekodierte URL als interne Darstellung des WDP.
+
+7.  [Wikipedia: Vital articles/Level 3](https://en.wikipedia.org/wiki/Wikipedia:Vital_articles/Level_3): Begriffsliste der Messung; die Titel in den übrigen Sprachen stammen aus den Sprachverknüpfungen der Wikipedia-API.
