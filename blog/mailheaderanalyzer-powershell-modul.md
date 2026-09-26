@@ -28,7 +28,7 @@ url: "https://rafaelpfister.ch/blog/mailheaderanalyzer-powershell-modul"
 
 # MailHeaderAnalyzer: E-Mail-Header in PowerShell auswerten, ohne Netzwerkzugriff
 
-MailHeaderAnalyzer ist ein PowerShell-Modul mit zwei Cmdlets. `Get-MailHeaderAnalysis` wertet den Header einer E-Mail aus: Zustellkette mit Verzögerungen und TLS-Angaben, SPF-, DKIM-, DMARC- und ARC-Ergebnisse samt Prüfung, ob diese Ergebnisse vom empfangenden Server stammen, DMARC-Alignment, die Hybrid-Klassifizierung von Exchange Online, die Bewertungen von Microsoft Defender, SpamAssassin und Rspamd sowie Auffälligkeiten wie doppelte `From`-Zeilen oder Unicode-Steuerzeichen. `ConvertTo-MailHeaderReport` erzeugt daraus einen Bericht für Tickets. Das Modul arbeitet vollständig offline: keine DNS-Abfragen, keine HTTP-Verbindungen. Es ist die Kommandozeilen-Fassung des [Header-Analyzers auf dieser Website](/tools/header-analyzer) und verwendet dieselbe Auswertungslogik.
+MailHeaderAnalyzer ist ein PowerShell-Modul mit zwei Cmdlets. `Get-MailHeaderAnalysis` wertet den Header einer E-Mail aus: Zustellkette mit Verzögerungen und TLS-Angaben, SPF-, DKIM-, DMARC- und ARC-Ergebnisse samt Herkunftsprüfung gegen die authserv-id Ihres Gateways, DMARC-Alignment, die Hybrid-Klassifizierung von Exchange Online, die Bewertungen von Microsoft Defender, SpamAssassin und Rspamd sowie Auffälligkeiten wie doppelte `From`-Zeilen oder Unicode-Steuerzeichen. `ConvertTo-MailHeaderReport` erzeugt daraus einen Bericht für Tickets. Das Modul arbeitet vollständig offline: keine DNS-Abfragen, keine HTTP-Verbindungen. Es ist die Kommandozeilen-Fassung des [Header-Analyzers auf dieser Website](/tools/header-analyzer) und verwendet dieselbe Auswertungslogik.
 
 | | |
 |---|---|
@@ -44,6 +44,7 @@ MailHeaderAnalyzer ist ein PowerShell-Modul mit zwei Cmdlets. `Get-MailHeaderAna
 | `Get-MailHeaderAnalysis` | `-Header` | `String[]` | Ja (Parametersatz Text) | Ja, nach Wert | Der Header als Text. Zeilen aus der Pipeline werden zu einem Header zusammengesetzt |
 | `Get-MailHeaderAnalysis` | `-Path` | `String[]` | Ja (Parametersatz Path) | Ja, nach Eigenschaftsname | Datei mit dem Header oder vollständige `.eml`-Nachricht; nimmt Objekte von `Get-ChildItem` entgegen |
 | `Get-MailHeaderAnalysis` | `-FromClipboard` | `Switch` | Ja (Parametersatz Clipboard) | Nein | Liest den Header aus der Zwischenablage (nur Windows) |
+| `Get-MailHeaderAnalysis` | `-TrustedAuthServId` | `String[]` | Nein | Nein | authserv-id(s) Ihres Eingangs-Gateways; nur Prüfzeilen mit einer dieser IDs gelten als belegt |
 | `ConvertTo-MailHeaderReport` | `-Analysis` | `MailHeaderAnalyzer.Analysis` | Ja | Ja, nach Wert | Das Ergebnisobjekt von `Get-MailHeaderAnalysis` |
 | `ConvertTo-MailHeaderReport` | `-Format` | `String` | Nein | Nein | `Markdown` (Standard) oder `Text` |
 
@@ -73,6 +74,7 @@ Wertet den Header einer E-Mail aus und gibt ein Analyseobjekt zurück.
 ```powershell
 Get-MailHeaderAnalysis
     [-Header] <String[]>
+    [-TrustedAuthServId <String[]>]
     [<CommonParameters>]
 ```
 
@@ -81,6 +83,7 @@ Get-MailHeaderAnalysis
 ```powershell
 Get-MailHeaderAnalysis
     -Path <String[]>
+    [-TrustedAuthServId <String[]>]
     [<CommonParameters>]
 ```
 
@@ -89,14 +92,15 @@ Get-MailHeaderAnalysis
 ```powershell
 Get-MailHeaderAnalysis
     -FromClipboard
+    [-TrustedAuthServId <String[]>]
     [<CommonParameters>]
 ```
 
 ### Beschreibung
 
-Das Cmdlet zerlegt den Rohheader in Felder, entfaltet RFC-5322-Faltungen und dekodiert RFC-2047-Werte in Betreff und Adressen. Aus den `Received`-Zeilen bildet es die Zustellkette in chronologischer Reihenfolge, berechnet die Verzögerung je Station und liest TLS-Version, Cipher und Protokollklasse nach RFC 3848. Aus `Authentication-Results`, `Received-SPF`, `DKIM-Signature` und der ARC-Kette ermittelt es die Authentifizierungsergebnisse und prüft, ob die Prüfzeile tatsächlich von einer Station der Zustellkette stammt (RFC 8601, Abschnitt 5). Dazu kommen das DMARC-Alignment, die Hybrid-Klassifizierung von Exchange Online, die Bewertungen der Spamfilter und eine Liste von Auffälligkeiten.
+Das Cmdlet zerlegt den Rohheader in Felder, entfaltet RFC-5322-Faltungen und dekodiert RFC-2047-Werte in Betreff und Adressen. Aus den `Received`-Zeilen bildet es die Zustellkette in chronologischer Reihenfolge, berechnet die Verzögerung je Station und liest TLS-Version, Cipher und Protokollklasse nach RFC 3848. Aus `Authentication-Results`, `Received-SPF`, `DKIM-Signature` und der ARC-Kette ermittelt es die Authentifizierungsergebnisse und ordnet jeder Prüfzeile eine Herkunft zu (RFC 8601, Abschnitt 5): belegt, wenn ihre authserv-id in `-TrustedAuthServId` steht, sonst nur plausibel oder unbelegt, siehe [AuthTrust](#authtrust-herkunft-der-prüfergebnisse). Dazu kommen das DMARC-Alignment, die Hybrid-Klassifizierung von Exchange Online, die Bewertungen der Spamfilter und eine Liste von Auffälligkeiten.
 
-Das Cmdlet führt keine DNS-Abfragen durch und öffnet keine Netzwerkverbindung. `Spf`, `Dkim` und `Dmarc` sind deshalb immer das Urteil des empfangenden Servers, ergänzt um die Prüfung, ob dieses Urteil von ihm stammt. DKIM-Signaturen werden nicht kryptografisch nachgerechnet.
+Das Cmdlet führt keine DNS-Abfragen durch und öffnet keine Netzwerkverbindung. `Spf`, `Dkim`, `Dmarc` und `Arc` sind deshalb immer das Urteil des empfangenden Servers. DKIM- und ARC-Signaturen werden nicht kryptografisch nachgerechnet; für die ARC-Kette prüft das Cmdlet nur den Aufbau (`ArcStructure`).
 
 Eingaben werden tolerant gelesen: Eine Leerzeile beendet den Header, ein folgender Nachrichtentext wird ignoriert. Zeilen ohne Feldnamen und ohne führendes Leerzeichen, wie sie beim Kopieren aus Client-Dialogen entstehen, gehören zum vorhergehenden Feld. Eine mbox-Trennzeile `From ...` vor dem ersten Feld wird übersprungen, eine Byte Order Mark entfernt. Ausgewertet werden höchstens 200 `Received`-Zeilen, gezählt von der Zustellung her.
 
@@ -179,12 +183,23 @@ Wertet alle Nachrichten eines Ordners aus und schreibt eine CSV-Datei mit einer 
 
 ```powershell
 Get-ChildItem .\export\*.eml |
-    Get-MailHeaderAnalysis |
-    Where-Object AuthTrust -eq 'Unmatched' |
-    Select-Object Source, AuthServId, DeliveredBy
+    Get-MailHeaderAnalysis -TrustedAuthServId 'mx.example.org' |
+    Where-Object AuthTrust -ne 'Trusted' |
+    Select-Object Source, AuthTrust, AuthServId, DeliveredBy
 ```
 
-Listet Nachrichten, deren `Authentication-Results`-Zeile nicht vom zustellenden System stammt. Bei Phishing-Analysen ist das ein schneller erster Filter.
+Listet Nachrichten, deren Prüfergebnisse nicht vom eigenen Eingangs-Gateway `mx.example.org` stammen. Bei Phishing-Analysen ist das ein erster Filter. Ohne `-TrustedAuthServId` lässt sich nur nach `Unmatched` filtern; eine Fälschung, die zusätzlich eine passende `Received`-Zeile mitbringt, erscheint dann als `Matched` und fällt durch den Filter.
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-TrustedAuthServId 'mx.example.org'` | authserv-id, die Ihr Gateway in `Authentication-Results` schreibt; exakter Vergleich, ohne Subdomains |
+| `Where-Object AuthTrust -ne 'Trusted'` | Behält alle Nachrichten, deren massgebende Prüfzeile keine vertrauenswürdige authserv-id trägt |
+| `Select-Object Source, AuthTrust, AuthServId, DeliveredBy` | Datei, Herkunftsstufe, authserv-id der Prüfzeile und zustellende Station |
+
+</details>
 
 #### Beispiel 7
 
@@ -257,6 +272,31 @@ Liest den Header mit `Get-Clipboard -Raw` aus der Zwischenablage. Der Parameter 
 |---|---|
 | Position | Benannt |
 | Pflicht | Ja |
+| Wert aus Pipeline | Nein |
+| Wert aus Pipeline nach Eigenschaftsname | Nein |
+
+#### -TrustedAuthServId
+
+Die authserv-id oder die authserv-ids, die Ihr Eingangs-Gateway in `Authentication-Results` schreibt, zum Beispiel `mx.example.org`. Das Cmdlet vergleicht exakt, ohne Gross-/Kleinschreibung und ohne Subdomains. Prüfzeilen mit einer dieser IDs erhalten `AuthTrust = Trusted`, und nur sie fliessen dann in `Spf`, `Dkim`, `Dmarc` und `Arc` ein. Dasselbe gilt für den `receiver=` einer `Received-SPF`-Zeile.
+
+Das Ergebnis ist nur so belastbar wie das Gateway: Es muss eingehende `Authentication-Results`-Zeilen entfernen, die seine eigene authserv-id beanspruchen (RFC 8601, Abschnitt 5). Ob es das tut, lässt sich aus einem Header nicht ablesen. Widersprechen sich zwei Zeilen mit vertrauenswürdiger ID, meldet das Cmdlet `AuthTrustedConflict`.
+
+Für eine ganze Sitzung lässt sich der Wert als Standard hinterlegen, etwa im PowerShell-Profil:
+
+```powershell
+$PSDefaultParameterValues['Get-MailHeaderAnalysis:TrustedAuthServId'] = 'mx.example.org'
+```
+
+| Parametereigenschaft | Wert |
+|---|---|
+| Typ | `String[]` |
+| Standardwert | Kein |
+| Platzhalter unterstützt | Nein |
+
+| Parametersatz (alle) | Wert |
+|---|---|
+| Position | Benannt |
+| Pflicht | Nein |
 | Wert aus Pipeline | Nein |
 | Wert aus Pipeline nach Eigenschaftsname | Nein |
 
@@ -406,9 +446,9 @@ Das Ausgabeformat. Gültige Werte:
 | `Date` | DateTime (UTC) | Wert des `Date`-Felds |
 | `MessageId` | String | `Message-ID` |
 | `MailFromDomain` | String | Envelope-Absenderdomain aus `smtp.mailfrom` der SPF-Prüfung, sonst aus `Return-Path` |
-| `Spf`, `Dkim`, `Dmarc`, `Arc`, `CompAuth` | String | Ergebnis laut massgebender `Authentication-Results`-Zeile (`pass`, `fail`, `none`, `softfail` und weitere); `$null`, wenn nicht geprüft |
+| `Spf`, `Dkim`, `Dmarc`, `Arc`, `CompAuth` | String | Ergebnis laut massgebender `Authentication-Results`-Zeile (`pass`, `fail`, `none`, `softfail` und weitere); `$null`, wenn nicht geprüft. `Arc` ist das Urteil des Empfängers über die ARC-Kette |
 | `CompAuthReason`, `CompAuthReasonMeaning` | String | Reason-Code der zusammengesetzten Authentifizierung von Microsoft 365 und seine Bedeutung |
-| `AuthTrust` | String | `Matched`, `Unmatched`, `Absent` oder `None`, siehe [AuthTrust](#authtrust-herkunft-der-prüfergebnisse) |
+| `AuthTrust` | String | `Trusted`, `Matched`, `Unmatched`, `Absent` oder `None`, siehe [AuthTrust](#authtrust-herkunft-der-prüfergebnisse) |
 | `AuthServId` | String | authserv-id der massgebenden Prüfzeile |
 | `AuthenticationResults` | Objekt[] | Alle `Authentication-Results`-Zeilen mit `AuthServId`, `Methods`, `Trust`, `Raw` |
 | `ReceivedSpf` | Objekt | Die `Received-SPF`-Zeile mit `Result` und `Properties` |
@@ -417,7 +457,8 @@ Das Ausgabeformat. Gültige Werte:
 | `HopCount`, `TotalDuration`, `SlowestHopIndex`, `HasClockSkew` | Int, TimeSpan, Int, Bool | Kennzahlen der Kette |
 | `DeliveredBy` | String | `by`-Host der jüngsten `Received`-Zeile, also die zustellende Station |
 | `DkimSignatures` | Objekt[] | Je Signatur `Domain`, `Selector`, `Algorithm`, `Canonicalization`, `SignedHeaders`, `BodyLength`, `Timestamp`, `Expires`, `ReceiverResult`, `Tags` |
-| `ArcChain`, `ArcValid` | Objekt[], Bool | ARC-Instanzen mit `Instance`, `SealDomain`, `ChainValidation`, `Methods`; `ArcValid` ist `$null` ohne ARC-Kette |
+| `ArcChain` | Objekt[] | ARC-Instanzen mit `Instance`, `SealDomain`, `ChainValidation`, `Methods` |
+| `ArcStructure`, `ArcStructureIssues` | String, String[] | Aufbau der ARC-Kette: `Consistent`, `Inconsistent` oder `$null` ohne ARC-Header, dazu die gefundenen Abweichungen. Reine Strukturprüfung, keine Signaturprüfung, siehe [ARC-Kette](#arc-kette-aufbau-und-urteil) |
 | `Exchange` | Objekt | Hybrid-Klassifizierung von Exchange Online, siehe [Exchange-Objekt](#mailheaderanalyzerexchangeclassification); `$null` ohne entsprechende Header |
 | `Spam` | Objekt | Bewertungen der Spamfilter, siehe [Spam-Objekt](#mailheaderanalyzerspamassessment); `$null` ohne entsprechende Header |
 | `List` | Objekt | `ListId`, `Unsubscribe`, `OneClick` (RFC 8058); `$null` ohne Listen-Header |
@@ -445,16 +486,25 @@ Jeder Eintrag in `Hops` entspricht einer `Received`-Zeile. Die Reihenfolge ist c
 
 ### AuthTrust: Herkunft der Prüfergebnisse
 
-Eine `Authentication-Results`-Zeile kann jeder Absender selbst in eine Nachricht schreiben. Nach RFC 8601, Abschnitt 5, ist nur die Zeile der empfangenden Organisation massgebend, und deren authserv-id muss sich einer Station der Zustellkette zuordnen lassen. Das Cmdlet vergleicht die authserv-id jeder Zeile mit den `by`-Hosts der `Received`-Kette (gleiche Domain oder Subdomain, immer an der Punktgrenze, kein Teilstring).
+Eine `Authentication-Results`-Zeile kann jeder Absender selbst in eine Nachricht schreiben, ebenso eine passende `Received`-Zeile. Aus dem Header allein lässt sich deshalb nicht belegen, wer eine Prüfzeile geschrieben hat. Nach RFC 8601, Abschnitt 5, ist nur die Zeile massgebend, deren authserv-id die empfangende Organisation als ihre eigene kennt, und das Eingangs-Gateway muss eingehende Zeilen mit dieser ID entfernen. Das Cmdlet bildet diese Regel mit `-TrustedAuthServId` ab. Ohne diesen Parameter vergleicht es die authserv-id nur mit den `by`-Hosts der `Received`-Kette (gleiche Domain oder Subdomain, immer an der Punktgrenze, kein Teilstring); das ist eine Plausibilitätsprüfung.
 
 | Wert | Bedeutung |
 |---|---|
-| `Matched` | Die authserv-id kommt als `by`-Host in der Kette vor. Nur solche Zeilen fliessen in `Spf`, `Dkim`, `Dmarc` ein, sobald mindestens eine existiert |
-| `Unmatched` | Die authserv-id kommt in der Kette nicht vor. Die Ergebnisse werden angezeigt, gelten aber als unbelegte Behauptung; das Finding `AuthUnverified` weist darauf hin |
+| `Trusted` | Die authserv-id steht in `-TrustedAuthServId`. Sobald eine solche Zeile existiert, fliessen nur Zeilen dieser Stufe in `Spf`, `Dkim`, `Dmarc` und `Arc` ein. Belastbar, sofern das Gateway fremde Zeilen mit dieser ID entfernt |
+| `Matched` | Die authserv-id kommt als `by`-Host in der Kette vor. Plausibel, aber kein Beleg: Eine Fälschung kann die passende `Received`-Zeile mitliefern. Ohne `-TrustedAuthServId` weist das Finding `AuthPlausibleOnly` darauf hin. Zeilen dieser Stufe zählen, wenn keine `Trusted`-Zeile vorhanden ist |
+| `Unmatched` | Die authserv-id ist weder vertrauenswürdig noch in der Kette zu finden. Die Ergebnisse werden angezeigt, gelten aber als unbelegte Behauptung; das Finding `AuthUnverified` weist darauf hin |
 | `Absent` | Die Zeile trägt keine authserv-id. Microsoft 365 schreibt seine Prüfzeile in dieser Form, sie beginnt direkt mit `spf=` |
 | `None` | Keine Prüfzeile vorhanden |
 
 Enthält der Header Prüfzeilen mehrerer Herkünfte, meldet das Finding `AuthMixedOrigins` den Sachverhalt. Fehlt eine Prüfzeile, aber eine `Received-SPF`-Zeile ist vorhanden, wird deren Ergebnis als `Spf` übernommen und mit `ReceivedSpfOnly` gekennzeichnet.
+
+Mit `-TrustedAuthServId` kommen zwei Findings hinzu: `AuthNotTrusted`, wenn keine Prüfzeile eine vertrauenswürdige ID trägt, und `AuthTrustedConflict`, wenn zwei solche Zeilen für `spf`, `dmarc`, `arc` oder `compauth` unterschiedliche Ergebnisse melden. Der zweite Fall bedeutet, dass mindestens eine Zeile nicht vom Gateway stammt und das Gateway sie nicht entfernt hat. Das Cmdlet übernimmt in diesem Fall die oberste Zeile; welche der beiden echt ist, lässt sich aus dem Header nicht entscheiden. DKIM ist von diesem Vergleich ausgenommen, da mehrere Signaturen legitim unterschiedliche Ergebnisse haben.
+
+### ARC-Kette: Aufbau und Urteil
+
+Für ARC liefert das Cmdlet zwei getrennte Angaben. `Arc` ist das Ergebnis `arc=` aus der massgebenden Prüfzeile, also das Urteil des Empfängers, der die Signaturen der Kette geprüft hat. `ArcStructure` ist die eigene Prüfung des Moduls und betrifft nur den Aufbau nach RFC 8617: fortlaufende Instanznummern `i=1` bis `i=n` (höchstens 50), je Instanz genau ein `ARC-Seal`, eine `ARC-Message-Signature` und eine `ARC-Authentication-Results`, dazu `cv=none` bei Instanz 1 und `cv=pass` bei allen weiteren. Signaturen rechnet das Modul nicht nach; `Consistent` sagt deshalb nichts darüber, ob die Kette echt ist. Abweichungen stehen in `ArcStructureIssues` und im Finding `ArcStructureInconsistent`.
+
+Die Angaben in `ARC-Authentication-Results` sind Aussagen der jeweiligen Weiterleitung. Das Finding `DkimBrokenAfterForward` stuft einen DKIM-Fehler deshalb nur dann als Folge einer Weiterleitung ein, wenn der Empfänger selbst `arc=pass` meldet und eine frühere Instanz ein DKIM-`pass` für dieselbe Domain festgehalten hat.
 
 ### DMARC-Alignment
 
@@ -504,19 +554,23 @@ Auffälligkeiten liefert das Cmdlet als Objekte in `Findings`, jeweils mit `Seve
 | `DuplicateField` | Warning | Ein Feld, das RFC 5322 auf eine Instanz begrenzt (`From`, `Subject`, `Date`, `Message-ID` und weitere), kommt mehrfach vor. Mailclients und Filter wählen unter Umständen verschiedene Instanzen; ein bekanntes Muster bei Fälschungen |
 | `BidiControls` | Warning | Unicode-Steuerzeichen für die Schreibrichtung in einem Feld. Sie kehren die Leserichtung um, `fdp.exe` erscheint dann als `exe.pdf`. Das Modul zeigt sie als `<U+202E>` |
 | `HopOverflow` | Warning | Mehr als 200 `Received`-Zeilen; die überzähligen wurden nicht ausgewertet |
-| `AuthUnverified` | Warning | Die Prüfergebnisse tragen eine authserv-id, die in der Zustellkette nicht vorkommt |
+| `AuthPlausibleOnly` | Info | Die authserv-id kommt in der Zustellkette vor, `-TrustedAuthServId` wurde nicht angegeben: plausibel, kein Beleg |
+| `AuthNotTrusted` | Warning | `-TrustedAuthServId` wurde angegeben, aber keine Prüfzeile trägt eine dieser IDs |
+| `AuthTrustedConflict` | Warning | Zwei Prüfzeilen mit vertrauenswürdiger ID melden für dieselbe Methode unterschiedliche Ergebnisse; das Gateway entfernt fremde Zeilen offenbar nicht |
+| `AuthUnverified` | Warning | Die Prüfergebnisse tragen eine authserv-id, die weder vertrauenswürdig ist noch in der Zustellkette vorkommt |
 | `AuthMixedOrigins` | Warning | Prüfzeilen mehrerer Herkünfte vorhanden |
 | `ReceivedSpfForeign` | Warning | Der `receiver=` der `Received-SPF`-Zeile kommt in der Kette nicht vor |
 | `ReceivedSpfOnly` | Info | Das SPF-Ergebnis stammt nur aus `Received-SPF`, nicht aus einer Prüfzeile |
 | `NoAuthResults` | Info | Keine Prüfergebnisse im Header |
 | `DmarcFail` | Fail | DMARC laut Empfangsserver nicht bestanden |
 | `SpfNotPass` | Warning | SPF-Ergebnis `fail`, `softfail`, `permerror` oder `temperror` |
-| `DkimNotPass` | Warning | DKIM-Ergebnis `fail`, `permerror` oder `temperror` ohne ARC-Zeugen |
-| `DkimBrokenAfterForward` | Info | DKIM beim Empfänger nicht bestanden, aber ein ARC-Siegel derselben Domain bezeugt eine zuvor gültige Signatur: typisch für Weiterleitungen und Mailinglisten |
+| `DkimNotPass` | Warning | DKIM-Ergebnis `fail`, `permerror` oder `temperror`, ohne dass der Empfänger die ARC-Kette bestätigt |
+| `DkimBrokenAfterForward` | Info | DKIM beim Empfänger nicht bestanden, der Empfänger meldet aber `arc=pass`, und eine frühere ARC-Instanz hat ein DKIM-`pass` für dieselbe Domain festgehalten: typisch für Weiterleitungen und Mailinglisten |
 | `DkimWeakHash` | Warning | Signatur mit `rsa-sha1` (RFC 8301 stuft SHA-1 als veraltet ein) |
 | `DkimBodyLength` | Warning | `l=`-Tag begrenzt die signierte Länge des Nachrichtentexts; angehängter Inhalt ist nicht abgedeckt |
 | `DkimExpired` | Warning | `x=`-Zeitpunkt liegt in der Vergangenheit |
 | `DkimFromUnsigned` | Warning | Das `From`-Feld ist nicht in `h=` enthalten, obwohl RFC 6376 es verlangt |
+| `ArcStructureInconsistent` | Warning | Die ARC-Header bilden keine formal vollständige Kette (Lücken, fehlende oder doppelte Header, falsche `cv=`-Folge); reine Strukturprüfung |
 | `ClockSkew` | Info | Ein Hop trägt einen früheren Zeitstempel als sein Vorgänger; die Verzögerungen sind nur Näherungswerte |
 | `ReplyToMismatch` | Info | `Reply-To`-Domain weicht von der `From`-Domain ab; bei Newslettern üblich, bei Phishing ein Muster |
 | `SpfNotAligned` | Info | Envelope-Absenderdomain und `From`-Domain gehören zu verschiedenen Organisationen; SPF trägt dann nicht zu DMARC bei |
@@ -530,7 +584,8 @@ Auffälligkeiten liefert das Cmdlet als Objekte in `Findings`, jeweils mit `Seve
 
 Das Modul liest, was im Header steht, und leitet daraus ab, was sich ohne externe Abfrage belegen lässt. Daraus folgen einige Grenzen:
 
-- **Keine kryptografische Prüfung.** DKIM-Signaturen werden nicht nachgerechnet und DNS-Einträge nicht abgefragt. `Spf`, `Dkim` und `Dmarc` sind immer das Urteil des empfangenden Servers, ergänzt um die Prüfung, ob dieses Urteil überhaupt von ihm stammt.
+- **Keine kryptografische Prüfung.** DKIM- und ARC-Signaturen werden nicht nachgerechnet und DNS-Einträge nicht abgefragt. `Spf`, `Dkim`, `Dmarc` und `Arc` sind immer das Urteil des empfangenden Servers; `ArcStructure` prüft nur den Aufbau der Kette.
+- **Herkunft nur mit Gateway-Kenntnis belegbar.** Ohne `-TrustedAuthServId` ist `AuthTrust` eine Plausibilitätsprüfung. Mit dem Parameter hängt die Aussage davon ab, dass das Gateway fremde Prüfzeilen mit seiner authserv-id entfernt; das Modul kann das nicht überprüfen.
 - **Nur die letzte `Received`-Zeile ist belegt.** Alle Zeilen darunter hat der Absender mitgeliefert und kann sie beliebig gestaltet haben. `Attested` markiert diesen Unterschied; die Verzögerungen früherer Hops beruhen auf den Angaben dieser Zeilen.
 - **Organisationsdomänen heuristisch.** Für das Relaxed-Alignment nutzt das Modul eine kurze Liste mehrteiliger Endungen, keine vollständige Public Suffix List.
 - **AuthMechanism nur teilweise dokumentiert.** Ausser dem Wert 10 hat Microsoft die Codes nicht veröffentlicht; das Modul erfindet keine Bedeutungen.
@@ -543,6 +598,8 @@ Ein vollständiger Header enthält interne Hostnamen, IP-Adressen, Absender, Emp
 ## Quellcode und Versionen
 
 Der Quellcode steht unter MIT-Lizenz auf [GitHub](https://github.com/pfstr/MailHeaderAnalyzer). Die Auswertungslogik ist eine Portierung der Bibliothek, die auch der Header-Analyzer auf dieser Website verwendet; beide teilen sich die Testfälle. Die Continuous Integration prüft jede Änderung mit PSScriptAnalyzer und Pester auf Windows PowerShell 5.1, PowerShell 7 unter Windows, Ubuntu und macOS. Veröffentlichungen in der PowerShell Gallery erfolgen automatisch aus versionierten Tags; die Änderungen je Version stehen im [Changelog](https://github.com/pfstr/MailHeaderAnalyzer/blob/main/CHANGELOG.md).
+
+Version 0.2.0 vom 26. September 2026 hat das Herkunftsmodell nach einem Review-Hinweis von @saltyslugga verschärft: Parameter `-TrustedAuthServId`, Stufe `Trusted`, `Matched` nur noch als Plausibilität. Die Eigenschaft `ArcValid` ist entfallen und durch `ArcStructure` und `ArcStructureIssues` ersetzt; Skripte, die `ArcValid` auswerten, müssen angepasst werden.
 
 Fehler und Erweiterungswünsche nehme ich als [Issue auf GitHub](https://github.com/pfstr/MailHeaderAnalyzer/issues) entgegen. Testheader für Fehlerberichte bitte vorher anonymisieren; die mitgelieferten Testfälle verwenden ausschliesslich Beispieldomänen nach RFC 2606 und Adressen nach RFC 5737.
 
@@ -566,7 +623,7 @@ Fehler und Erweiterungswünsche nehme ich als [Issue auf GitHub](https://github.
 
 9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Strict und Relaxed Alignment.
 
-10.  [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617): `ARC-Seal`, `ARC-Authentication-Results` und die `cv=`-Kettenprüfung.
+10.  [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617): Aufbau der Kette aus `ARC-Seal`, `ARC-Message-Signature` und `ARC-Authentication-Results`, Instanznummern und `cv=`-Werte.
 
 11.  [Microsoft Learn: Anti-spam message headers in Microsoft 365](https://learn.microsoft.com/en-us/defender-office-365/message-headers-eop-mdo): Bedeutung von SCL, BCL, CAT, SFV, IPV und der `compauth`-Reason-Codes.
 
