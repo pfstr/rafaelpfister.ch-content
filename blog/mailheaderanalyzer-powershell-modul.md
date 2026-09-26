@@ -279,7 +279,7 @@ Liest den Header mit `Get-Clipboard -Raw` aus der Zwischenablage. Der Parameter 
 
 Die authserv-id oder die authserv-ids, die Ihr Eingangs-Gateway in `Authentication-Results` schreibt, zum Beispiel `mx.example.org`. Das Cmdlet vergleicht exakt, ohne Gross-/Kleinschreibung und ohne Subdomains. Prüfzeilen mit einer dieser IDs erhalten `AuthTrust = Trusted`, und nur sie fliessen dann in `Spf`, `Dkim`, `Dmarc` und `Arc` ein. Dasselbe gilt für den `receiver=` einer `Received-SPF`-Zeile.
 
-Das Ergebnis ist nur so belastbar wie das Gateway: Es muss eingehende `Authentication-Results`-Zeilen entfernen, die seine eigene authserv-id beanspruchen (RFC 8601, Abschnitt 5). Ob es das tut, lässt sich aus einem Header nicht ablesen. Widersprechen sich zwei Zeilen mit vertrauenswürdiger ID, meldet das Cmdlet `AuthTrustedConflict`.
+Das Ergebnis ist nur so belastbar wie das Gateway: Es muss eingehende `Authentication-Results`-Zeilen entfernen, die seine eigene authserv-id beanspruchen (RFC 8601, Abschnitt 5). Ob es das tut, lässt sich aus einem Header nicht ablesen. Widersprechen sich zwei Zeilen mit vertrauenswürdiger ID, meldet das Cmdlet `AuthTrustedConflict`. Microsoft 365 schreibt keine authserv-id in seine Prüfzeile; nimmt Exchange Online Ihre Mail entgegen, lassen Sie den Parameter weg.
 
 Für eine ganze Sitzung lässt sich der Wert als Standard hinterlegen, etwa im PowerShell-Profil:
 
