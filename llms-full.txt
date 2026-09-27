@@ -14318,14 +14318,14 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
-# Kiteworks: Manufacturer Recommends Shutdown on September 26 – What Is Known So Far
+# Kiteworks: Vendor Recommends Shutdown on September 26 – What Is Known So Far
 
-URL: https://rafaelpfister.ch/en/blog/kiteworks-manufacturer-recommends-shutdown-on-september-26-what-is-known-so-far
+URL: https://rafaelpfister.ch/en/blog/kiteworks-vendor-recommends-shutdown-on-september-26-what-is-known-so-far
 Datum: 2026-09-25
 
-# Kiteworks: Manufacturer Recommends Shutdown on September 26 – What Is Known So Far
+# Kiteworks: Vendor Recommends Shutdown on September 26 – What Is Known So Far
 
-On September 25, 2026, Kiteworks emailed its customers asking them to shut down all Kiteworks systems on Saturday, September 26, from 4:00 a.m. to 10:00 a.m. (Central European Time). According to the letter from CISO Frank Balonis, the manufacturer has received information from law enforcement agencies suggesting that an attack on Kiteworks systems may be imminent this weekend. Customer support cites protection against potential zero-day attacks as the reason for the shutdown. heise online confirmed the authenticity of the message by phone with support.
+On September 25, 2026, Kiteworks emailed its customers asking them to shut down all Kiteworks systems on Saturday, September 26, from 4:00 a.m. to 10:00 a.m. (Central European Time). According to the letter from CISO Frank Balonis, the vendor has received information from law enforcement agencies suggesting that an attack on Kiteworks systems may be imminent this weekend. Customer support cites protection against potential zero-day attacks as the reason for the shutdown. heise online confirmed the authenticity of the message by phone with support.
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Emergency support for switching mail flow</p>
@@ -14364,7 +14364,7 @@ All times are in Central European Summer Time (CEST). Where no time is given, no
 <li class="timeline__item">
 <p class="timeline__zeit">Fri, September 25</p>
 <p class="timeline__titel">Statement and press release</p>
-<p>Kiteworks describes the shutdown as a precautionary measure, with no known compromise. The press release names “federal intelligence authorities” as the source and lists the unaffected subsidiaries, including totemo. The manufacturer is shutting down Kiteworks-hosted instances itself.</p>
+<p>Kiteworks describes the shutdown as a precautionary measure, with no known compromise. The press release names “federal intelligence authorities” as the source and lists the unaffected subsidiaries, including totemo. The vendor is shutting down Kiteworks-hosted instances itself.</p>
 </li>
 <li class="timeline__item timeline__item--fenster">
 <p class="timeline__zeit">Sat, September 26, 4:00 a.m. to 10:00 a.m.</p>
@@ -14386,7 +14386,7 @@ Almost everything else remains unclear: There is no public security advisory, no
 
 Kiteworks CISO Frank Balonis gave TechCrunch the same statement verbatim. The BKA declined to comment to heise for investigative reasons, while the BSI did not respond. The FBI declined to comment to TechCrunch, and there was no response from CISA. According to TechCrunch, a customer in the healthcare sector immediately took its server offline, causing noticeable operational restrictions.
 
-The press release differs from the customer email on one point: It refers to a nine-hour shutdown window, while the customer advisory refers to six hours. According to the press release, the recommendation applies only to self-operated installations (on-premises, AWS, Azure). According to the manufacturer, its subsidiaries Zivver, DRACOON, totemo, ownCloud, WAMNET, Maytech, Bonfy.ai, and 123FormBuilder are not affected.
+The press release differs from the customer email on one point: It refers to a nine-hour shutdown window, while the customer advisory refers to six hours. According to the press release, the recommendation applies only to self-operated installations (on-premises, AWS, Azure). According to the vendor, its subsidiaries Zivver, DRACOON, totemo, ownCloud, WAMNET, Maytech, Bonfy.ai, and 123FormBuilder are not affected.
 
 ## The customer advisory
 
@@ -14430,11 +14430,11 @@ Three facts narrow down the possibilities. First, the warning names a fixed time
 
 Law enforcement agencies occasionally learn the timing of a planned campaign in advance, for example from monitored communications of an attacker group or seized infrastructure. Mass exploitation of file-transfer products typically takes place within a brief, coordinated window, often on weekends or holidays when fewer staff are on duty. Kiteworks is the successor to Accellion, whose File Transfer Appliance was attacked in exactly this way in 2020 and 2021: Data was exfiltrated through several vulnerabilities, after which the affected organizations were extorted.
 
-The narrowly defined weekend window supports this theory. Countering it is an objection raised by several commenters on heise: The warning was sent to all customers, so the attackers are likely to know about it and can simply postpone the attack. However, postponement would give the manufacturer time to prepare a patch.
+The narrowly defined weekend window supports this theory. Countering it is an objection raised by several commenters on heise: The warning was sent to all customers, so the attackers are likely to know about it and can simply postpone the attack. However, postponement would give the vendor time to prepare a patch.
 
-### 2. The manufacturer does not yet know the vulnerability itself
+### 2. The vendor does not yet know the vulnerability itself
 
-It is also possible that Kiteworks has no technical details beyond the authorities’ tip, meaning it knows neither the affected component nor a patch or configuration change it can recommend. In that case, shutting down is the only measure that works without knowledge of the vulnerability, and the fixed end time is a compromise that customers are more likely to accept. In the heise comments, there is speculation that the manufacturer might leave individual systems online as decoys during the window to observe the attack. There is no evidence for this.
+It is also possible that Kiteworks has no technical details beyond the authorities’ tip, meaning it knows neither the affected component nor a patch or configuration change it can recommend. In that case, shutting down is the only measure that works without knowledge of the vulnerability, and the fixed end time is a compromise that customers are more likely to accept. In the heise comments, there is speculation that the vendor might leave individual systems online as decoys during the window to observe the attack. There is no evidence for this.
 
 This is supported by the fact that neither an advisory nor a mitigation is named. Countering it is that Kiteworks says it is working with Mandiant, and when warned by authorities, indicators are usually available at least.
 
@@ -14442,13 +14442,13 @@ This is supported by the fact that neither an advisory nor a mitigation is named
 
 The recommendation to shut down internal systems as well fits a scenario in which the attack does not come from outside but has already been prepared on the appliances: for example, a backdoor from an earlier compromise that activates at a fixed time or contacts a command-and-control server. A powered-off system cannot execute anything at that time.
 
-This is supported by the fact that internet accessibility plays no role in this scenario. Countering it is that, in this case, a manufacturer would more likely recommend checking for compromise and reinstalling rather than restarting after six hours.
+This is supported by the fact that internet accessibility plays no role in this scenario. Countering it is that, in this case, a vendor would more likely recommend checking for compromise and reinstalling rather than restarting after six hours.
 
-### 4. Compromise on the manufacturer side
+### 4. Compromise on the vendor side
 
-Another path that reaches internal systems is connections established by the appliance to the manufacturer, for example for updates, license verification, or remote maintenance. If such a channel is compromised, a firewall does not protect against incoming traffic. In this scenario, the shutdown would give the manufacturer a window to clean up its own infrastructure, replace keys or certificates, and allow connections again only afterward.
+Another path that reaches internal systems is connections established by the appliance to the vendor, for example for updates, license verification, or remote maintenance. If such a channel is compromised, a firewall does not protect against incoming traffic. In this scenario, the shutdown would give the vendor a window to clean up its own infrastructure, replace keys or certificates, and allow connections again only afterward.
 
-The globally uniform timing supports this theory, as it fits a coordinated action on the manufacturer side. Countering it is that the manufacturer would more likely recommend blocking outbound connections rather than shutting down the systems entirely.
+The globally uniform timing supports this theory, as it fits a coordinated action on the vendor side. Countering it is that the vendor would more likely recommend blocking outbound connections rather than shutting down the systems entirely.
 
 ### 5. An accompanying measure for a law enforcement operation
 
@@ -14456,7 +14456,7 @@ Finally, it is conceivable that authorities are taking action against the attack
 
 ### Criticism of the communication
 
-Skepticism prevails in the heise comments, and the objections are factually understandable: Without details about the vulnerability, it is impossible to assess whether disconnecting from the internet using a firewall would have been sufficient. A time window without an announced patch leaves open what applies after 10:00 a.m. And a warning sent only by email to customers does not reach all operators, such as those at partners, service providers, or after personnel changes. Regardless of which theory is correct, anyone operating Kiteworks should review the logs after bringing systems back online and monitor the manufacturer’s channels until an advisory is available.
+Skepticism prevails in the heise comments, and the objections are factually understandable: Without details about the vulnerability, it is impossible to assess whether disconnecting from the internet using a firewall would have been sufficient. A time window without an announced patch leaves open what applies after 10:00 a.m. And a warning sent only by email to customers does not reach all operators, such as those at partners, service providers, or after personnel changes. Regardless of which theory is correct, anyone operating Kiteworks should review the logs after bringing systems back online and monitor the vendor’s channels until an advisory is available.
 
 ## Sources
 
@@ -14464,9 +14464,9 @@ Skepticism prevails in the heise comments, and the objections are factually unde
 
 2.  [heise online (EN): Imminent Zero-Day Attack: KiteWorks Urges Customers to Shut Down Servers](https://www.heise.de/en/news/Imminent-Zero-Day-Attack-KiteWorks-Urges-Customers-to-Shut-Down-Servers-11466375.html): English version with the CISO’s original wording.
 
-3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): Official manufacturer channel, with no entry on the warning as of September 26, 2026.
+3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): Official vendor channel, with no entry on the warning as of September 26, 2026.
 
-4.  [Kiteworks: Security Advisories on GitHub](https://github.com/kiteworks/security-advisories/security): Manufacturer’s advisory list, with the latest entry dated May 27, 2026.
+4.  [Kiteworks: Security Advisories on GitHub](https://github.com/kiteworks/security-advisories/security): Vendor’s advisory list, with the latest entry dated May 27, 2026.
 
 5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): Official announcements, including the shutdown press release since September 25, 2026.
 
@@ -14474,7 +14474,7 @@ Skepticism prevails in the heise comments, and the objections are factually unde
 
 7.  [CISA: Exploitation of Accellion File Transfer Appliance (AA21-055A)](https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-055a): Advisory on exploitation of the Accellion FTA in 2020/2021 followed by extortion; Accellion is the former name of Kiteworks.
 
-8.  [Kiteworks: Case Study Mandiant](https://www.kiteworks.com/case-study-mandiant/): Manufacturer statement on its cooperation with Mandiant.
+8.  [Kiteworks: Case Study Mandiant](https://www.kiteworks.com/case-study-mandiant/): Vendor statement on its cooperation with Mandiant.
 
 9.  [TechCrunch: Kiteworks urges customers to shut down their servers amid 'imminent' threat of cyberattack](https://techcrunch.com/2026/09/25/kiteworks-urges-customers-to-shut-down-their-servers-amid-imminent-threat-of-cyberattack/): CISO statement, warning delivery time, responses from the FBI and CISA, and impact on one customer.
 
