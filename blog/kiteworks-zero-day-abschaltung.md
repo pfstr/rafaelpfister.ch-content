@@ -16,7 +16,6 @@ protokolle:
 hauptthema: "totemomail"
 slug: "kiteworks-zero-day-abschaltung"
 featured: "2026-09-27"
-warnung: true
 translationId: "article-38fbaa0e9095957a"
 url: "https://rafaelpfister.ch/blog/kiteworks-zero-day-abschaltung"
 aiPrompt: |
