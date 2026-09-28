@@ -134,7 +134,7 @@ There is a point at which further digging no longer creates value: when the fix 
 
 In the example above, after three tests it was established that the sender domain was the trigger, that everything else in the mail path worked, and that there was no broader problem. Why the cloud service made that exact internal decision remained open. That did not matter for the correction, because it belonged in the sending application.
 
-Therefore, consciously separate two questions. What do I need to change to make it work? And why does the system behave this way? You must answer the first; you may hand the second to the manufacturer. A support case with three controlled tests, timestamps, message IDs, and a working counterexample is far more valuable than a description of the symptom anyway.
+Therefore, consciously separate two questions. What do I need to change to make it work? And why does the system behave this way? You must answer the first; you may hand the second to the vendor. A support case with three controlled tests, timestamps, message IDs, and a working counterexample is far more valuable than a description of the symptom anyway.
 
 Incidentally, this is also the point at which science and operations can be cleanly separated. Science may not abandon the question of the mechanism. Operations must prioritize it.
 

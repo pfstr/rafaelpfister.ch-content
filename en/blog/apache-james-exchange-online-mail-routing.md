@@ -56,7 +56,7 @@ In addition to the standard queues, the following example also contains optional
 
 > If you need support connecting the HIN mail gateway or migrating to the new HIN Stargate solution, you can find the relevant experts at [adeptio](https://adeptio.ch/).  
 >   
-> **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct contacts at the manufacturer.  
+> **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct contacts at the vendor.  
 > [➜ Book an appointment today.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
 
 ```text

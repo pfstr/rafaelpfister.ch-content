@@ -64,7 +64,7 @@ In cluster operation, an existing CARP IP previously blocked the IP settings of 
 
 ## Relation to the Login Outage in 15.0.5
 
-When updating a cluster to 15.0.5, login could fail on both nodes. The symptoms and recovery are described in the article on [login outage after the 15.0.5 update](/blog/hin-update-issue-version-15.0.5). The manufacturer was already aware of the problem at the time and announced a fix for a subsequent version.
+When updating a cluster to 15.0.5, login could fail on both nodes. The symptoms and recovery are described in the article on [login outage after the 15.0.5 update](/blog/hin-update-issue-version-15.0.5). The vendor was already aware of the problem at the time and announced a fix for a subsequent version.
 
 The 15.0.6 release notes now contain exactly one entry that matches this issue: “prevent password rehashing when cluster members use different firmware versions.” During a cluster update, the nodes inevitably run temporarily on different firmware versions. If one node recalculates password hashes during this phase and replicates them to the cluster, the hashes no longer match on the other version, and login fails on both nodes, exactly as in the outage observed at the time. The release notes do not explicitly mention the login outage, but the entry precisely covers the configuration that triggered it. The cause is therefore addressed in 15.0.6; the emergency procedure required in 15.0.5 involving cluster dissolution should no longer be necessary for future updates.
 
@@ -74,7 +74,7 @@ In the mail log, date sorting was corrected, which had previously sorted alphabe
 
 ## Assessment
 
-The two RuleEngine errors addressed by the hotfix suggest skipping 15.0.6 and deploying 15.0.6.1 directly. For clusters, create snapshots of both nodes before updating and follow the update order in the manufacturer documentation. The login outage in 15.0.5 showed why this preparation is not merely a formality.
+The two RuleEngine errors addressed by the hotfix suggest skipping 15.0.6 and deploying 15.0.6.1 directly. For clusters, create snapshots of both nodes before updating and follow the update order in the vendor documentation. The login outage in 15.0.5 showed why this preparation is not merely a formality.
 
 ## Sources
 

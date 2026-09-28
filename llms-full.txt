@@ -27,8 +27,12 @@ Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle K
 </div>
 
 <div class="update-hinweis">
-<p class="update-hinweis__titel">Update vom 27. September 2026: Stand nach dem Abschaltfenster</p>
-<p>Das Abschaltfenster ist vorbei. Kiteworks hat bis Sonntag, 27. September, keine Folgemeldung veröffentlicht: keine CVE-Nummer, keine neue Version über 9.5.1 hinaus, keine Indikatoren für eine Kompromittierung, keine Entwarnung und keine Angabe, ob ein Angriff stattgefunden hat oder versucht wurde. Pressemitteilung, Security-Updates-Seite und GitHub-Advisories sind unverändert. Die CISA wollte sich gegenüber TechCrunch nicht öffentlich äussern. Die Empfehlung des Herstellers bleibt, Version 9.5.1 einzusetzen.</p>
+<p class="update-hinweis__titel">Update vom 28. September 2026: Kiteworks hebt die Abschaltempfehlung auf</p>
+<p>Kiteworks hat die Pressemitteilung um einen Hinweis ergänzt: Seit dem 27. September gilt die Empfehlung zur Abschaltung für alle Kunden nicht mehr.</p>
+<blockquote lang="en">
+<p>As of September 27th, the shutdown recommendation is now lifted for all customers. If you have not already restarted, you may bring your Kiteworks system back online. Customers with self-hosted Advanced Forms should contact Customer Support for assistance. All systems Kiteworks hosts on customers’ behalf have been brought back up and are operating normally.</p>
+</blockquote>
+<p>Wer seine Systeme noch nicht wieder hochgefahren hat, kann dies jetzt tun. Wer Advanced Forms selbst betreibt, soll sich vor dem Neustart an den Kiteworks-Support wenden. Die von Kiteworks gehosteten Instanzen laufen wieder. Weiterhin gibt es keine CVE-Nummer, keine neue Version über 9.5.1 hinaus, keine Indikatoren für eine Kompromittierung und keine Angabe, ob ein Angriff versucht wurde oder was hinter der Warnung stand. Security-Updates-Seite und GitHub-Advisories sind unverändert.</p>
 </div>
 
 <div class="update-hinweis">
@@ -73,12 +77,17 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 <li class="timeline__item">
 <p class="timeline__zeit">Sa, 26. September, 10:00</p>
 <p class="timeline__titel">Ende des Fensters</p>
-<p>Die Systeme dürfen laut Advisory wieder hochgefahren werden. Eine Bestätigung des Herstellers, dass die Gefahr vorüber ist, folgt nicht.</p>
+<p>Das in der Kunden-E-Mail genannte Fenster endet. Die formelle Aufhebung der Empfehlung folgt am 27. September.</p>
+</li>
+<li class="timeline__item">
+<p class="timeline__zeit">So, 27. September</p>
+<p class="timeline__titel">Empfehlung aufgehoben</p>
+<p>Kiteworks ergänzt die Pressemitteilung: Die Abschaltempfehlung ist für alle Kunden aufgehoben, die Systeme dürfen wieder laufen. Die gehosteten Instanzen sind wieder in Betrieb. Kunden mit selbst betriebenen Advanced Forms sollen sich an den Support wenden.</p>
 </li>
 <li class="timeline__item timeline__item--offen">
-<p class="timeline__zeit">Stand So, 27. September</p>
+<p class="timeline__zeit">Stand Mo, 28. September</p>
 <p class="timeline__titel">Weiterhin offen</p>
-<p>Keine Folgemeldung von Kiteworks: kein öffentliches Advisory, keine CVE-Nummer, keine neue Version, keine Indikatoren, keine Angaben zur Lücke und keine Berichte über einen erfolgten oder versuchten Angriff.</p>
+<p>Kein öffentliches Advisory, keine CVE-Nummer, keine neue Version, keine Indikatoren, keine Angaben zur Lücke und keine Berichte über einen erfolgten oder versuchten Angriff.</p>
 </li>
 </ol>
 
@@ -86,7 +95,7 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 
 Die Empfehlung gilt weltweit; die E-Mail nennt das Zeitfenster für alle Zeitzonen von AEST bis PDT. Kiteworks rät, die Systeme schon vor Beginn des Fensters herunterzufahren, und zwar auch dann, wenn sie nicht aus dem Internet erreichbar sind.
 
-Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Die Pressemitteilung nennt als Quelle „federal intelligence authorities“, vermutlich also US-Bundesbehörden; welche, ist nicht bekannt. Unter Security Updates und in den GitHub-Advisories von Kiteworks gibt es Stand 27. September keinen Eintrag; der letzte GitHub-Eintrag stammt vom 27. Mai 2026. Öffentlich sind die oben zitierte Stellungnahme und die Pressemitteilung vom 25. September.
+Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Die Pressemitteilung nennt als Quelle „federal intelligence authorities“, vermutlich also US-Bundesbehörden; welche, ist nicht bekannt. Unter Security Updates und in den GitHub-Advisories von Kiteworks gibt es Stand 28. September keinen Eintrag; der letzte GitHub-Eintrag stammt vom 27. Mai 2026. Öffentlich sind die oben zitierte Stellungnahme und die Pressemitteilung vom 25. September.
 
 Gegenüber TechCrunch hat Kiteworks-CISO Frank Balonis die Stellungnahme im selben Wortlaut abgegeben. Das BKA hat gegenüber heise eine Stellungnahme aus ermittlungstaktischen Gründen abgelehnt, das BSI hat nicht geantwortet. Das FBI wollte sich gegenüber TechCrunch nicht äussern, ein Sprecher der CISA wollte sich nicht öffentlich äussern. Ein Kunde aus dem Gesundheitswesen hat laut TechCrunch seinen Server sofort vom Netz genommen, mit spürbaren Einschränkungen im Betrieb: Ärzte konnten ihre Patienten zeitweise nur verzögert erreichen. Laut einem von TechCrunch zitierten Sicherheitsforscher sind mindestens 1000 Kiteworks-Systeme aus dem Internet erreichbar; BornCity spricht von mehr als 1000 Organisationen, die die Warnung erhalten haben.
 
@@ -164,7 +173,7 @@ In den heise-Kommentaren überwiegt Skepsis, und die Einwände sind sachlich nac
 
 ## Nach dem Fenster: Was Betreiber jetzt tun können
 
-Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details veröffentlicht hat, lässt sich nicht beurteilen, ob die Gefahr mit dem Ende des Fensters vorüber ist. Unabhängig davon sind folgende Schritte sinnvoll:
+Kiteworks hat die Abschaltempfehlung am 27. September aufgehoben, aber keine technischen Details veröffentlicht. Ob und wie die Gefahr beseitigt wurde, lässt sich daher nicht beurteilen. Beim Wiederhochfahren und danach sind folgende Schritte sinnvoll:
 
 1.  **Version prüfen:** Läuft auf allen Knoten Version 9.5.1? Laut Hersteller sind darin alle bekannten Schwachstellen behoben.
 
@@ -174,7 +183,9 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 
 4.  **Erreichbarkeit einschränken:** Wo möglich, den Zugriff aus dem Internet auf die Administrationsoberfläche sperren und nur benötigte Dienste freigeben.
 
-5.  **Kanäle beobachten:** Security Updates, GitHub-Advisories, Newsroom und Kunden-E-Mails von Kiteworks, bis ein Advisory oder eine Entwarnung vorliegt.
+5.  **Advanced Forms:** Wer das Modul selbst betreibt, klärt den Neustart vorher mit dem Kiteworks-Support.
+
+6.  **Kanäle beobachten:** Security Updates, GitHub-Advisories, Newsroom und Kunden-E-Mails von Kiteworks, bis ein Advisory mit technischen Details vorliegt.
 
 ## Quellen
 
@@ -182,11 +193,11 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 
 2.  [heise online (EN): Imminent Zero-Day Attack: KiteWorks Urges Customers to Shut Down Servers](https://www.heise.de/en/news/Imminent-Zero-Day-Attack-KiteWorks-Urges-Customers-to-Shut-Down-Servers-11466375.html): englische Fassung mit dem Originalwortlaut des CISO.
 
-3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): offizieller Kanal des Herstellers, Stand 27.09.2026 ohne Eintrag zur Warnung.
+3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): offizieller Kanal des Herstellers, Stand 28.09.2026 ohne Eintrag zur Warnung.
 
-4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, Stand 27.09.2026 letzter Eintrag vom 27.05.2026.
+4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, Stand 28.09.2026 letzter Eintrag vom 27.05.2026.
 
-5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): offizielle Mitteilungen, seit 25.09.2026 mit der Pressemitteilung zur Abschaltung; Stand 27.09.2026 ohne Folgemeldung.
+5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): offizielle Mitteilungen, seit 25.09.2026 mit der Pressemitteilung zur Abschaltung.
 
 6.  [heise-Forum: Kommentare zur Meldung](https://www.heise.de/forum/heise-online/Kommentare/Server-am-Samstagmorgen-herunterfahren-Kiteworks-warnt-Admins-vor-Zero-Day/forum-591001/comment/): Leserdiskussion mit den Einwänden zum festen Zeitfenster und zur Abschaltung interner Systeme sowie der Köder-These.
 
@@ -196,7 +207,7 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 
 9.  [TechCrunch: Kiteworks urges customers to shut down their servers amid 'imminent' threat of cyberattack](https://techcrunch.com/2026/09/25/kiteworks-urges-customers-to-shut-down-their-servers-amid-imminent-threat-of-cyberattack/): Stellungnahme des CISO, Versandzeit der Warnung, Reaktionen von FBI und CISA (Nachtrag), Auswirkungen bei einem Kunden, Zahl der aus dem Internet erreichbaren Systeme.
 
-10.  [Kiteworks: Precautionary Shutdown Advisory (Pressemitteilung)](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): offizielle Mitteilung vom 25.09.2026 mit Angaben zu gehosteten Instanzen, Version 9.5.1 und den nicht betroffenen Tochterfirmen.
+10.  [Kiteworks: Precautionary Shutdown Advisory (Pressemitteilung)](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): offizielle Mitteilung vom 25.09.2026 mit Angaben zu gehosteten Instanzen, Version 9.5.1 und den nicht betroffenen Tochterfirmen; ergänzt um den Hinweis vom 27.09.2026, dass die Abschaltempfehlung aufgehoben ist.
 
 11.  [BleepingComputer: Kiteworks urges 6-hour server shutdown over potential zero-day attacks](https://www.bleepingcomputer.com/news/security/kiteworks-urges-6-hour-server-shutdown-over-potential-zero-day-attacks/): Zeitfenster nach Regionen und Einordnung früherer Angriffe auf Dateiaustausch-Produkte.
 
@@ -205,6 +216,8 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 13.  [BornCity: Kiteworks: Mehr als 1.000 Organisationen sollen Server abschalten](https://borncity.com/news/kiteworks-mehr-als-1-000-organisationen-sollen-server-abschalten/): Zahl der benachrichtigten Organisationen und Branchen im deutschsprachigen Raum.
 
 14.  [The Record: Kiteworks urges customers to stop using platform after warning from federal intelligence agencies](https://therecord.media/kiteworks-urges-customers-to-stop-using-systems-incident): Einordnung der Accellion-Angriffe durch Clop 2020/2021 und Zitat von watchTowr.
+
+15.  [Cyber Daily: Kiteworks warns customers to enact a „precautionary shutdown“ in wake of attack intelligence](https://www.cyberdaily.au/security/14241-kiteworks-warns-customers-to-enact-a-precautionary-shutdown-in-wake-of-attack-intelligence): Bericht vom 28.09.2026 über die Aufhebung der Empfehlung und den Betrieb der gehosteten Instanzen.
 
 ----
 
@@ -21231,7 +21244,7 @@ There is a point at which further digging no longer creates value: when the fix 
 
 In the example above, after three tests it was established that the sender domain was the trigger, that everything else in the mail path worked, and that there was no broader problem. Why the cloud service made that exact internal decision remained open. That did not matter for the correction, because it belonged in the sending application.
 
-Therefore, consciously separate two questions. What do I need to change to make it work? And why does the system behave this way? You must answer the first; you may hand the second to the manufacturer. A support case with three controlled tests, timestamps, message IDs, and a working counterexample is far more valuable than a description of the symptom anyway.
+Therefore, consciously separate two questions. What do I need to change to make it work? And why does the system behave this way? You must answer the first; you may hand the second to the vendor. A support case with three controlled tests, timestamps, message IDs, and a working counterexample is far more valuable than a description of the symptom anyway.
 
 Incidentally, this is also the point at which science and operations can be cleanly separated. Science may not abandon the question of the mechanism. Operations must prioritize it.
 
@@ -24569,7 +24582,7 @@ In cluster operation, an existing CARP IP previously blocked the IP settings of 
 
 ## Relation to the Login Outage in 15.0.5
 
-When updating a cluster to 15.0.5, login could fail on both nodes. The symptoms and recovery are described in the article on [login outage after the 15.0.5 update](/blog/hin-update-issue-version-15.0.5). The manufacturer was already aware of the problem at the time and announced a fix for a subsequent version.
+When updating a cluster to 15.0.5, login could fail on both nodes. The symptoms and recovery are described in the article on [login outage after the 15.0.5 update](/blog/hin-update-issue-version-15.0.5). The vendor was already aware of the problem at the time and announced a fix for a subsequent version.
 
 The 15.0.6 release notes now contain exactly one entry that matches this issue: “prevent password rehashing when cluster members use different firmware versions.” During a cluster update, the nodes inevitably run temporarily on different firmware versions. If one node recalculates password hashes during this phase and replicates them to the cluster, the hashes no longer match on the other version, and login fails on both nodes, exactly as in the outage observed at the time. The release notes do not explicitly mention the login outage, but the entry precisely covers the configuration that triggered it. The cause is therefore addressed in 15.0.6; the emergency procedure required in 15.0.5 involving cluster dissolution should no longer be necessary for future updates.
 
@@ -24579,7 +24592,7 @@ In the mail log, date sorting was corrected, which had previously sorted alphabe
 
 ## Assessment
 
-The two RuleEngine errors addressed by the hotfix suggest skipping 15.0.6 and deploying 15.0.6.1 directly. For clusters, create snapshots of both nodes before updating and follow the update order in the manufacturer documentation. The login outage in 15.0.5 showed why this preparation is not merely a formality.
+The two RuleEngine errors addressed by the hotfix suggest skipping 15.0.6 and deploying 15.0.6.1 directly. For clusters, create snapshots of both nodes before updating and follow the update order in the vendor documentation. The login outage in 15.0.5 showed why this preparation is not merely a formality.
 
 ## Sources
 
@@ -28281,7 +28294,7 @@ Datum: 2026-06-19
 
 # HIN Mailgateway 15.0.5: Fixing Login Failures After a Cluster Update
 
-When updating an HIN Mailgateway from 14.1.4.2 to 15.0.5, an error in cluster replication can cause login failures on both appliances. Standalone systems are not affected. The manufacturer is aware of the issue and plans a fix for a future version.
+When updating an HIN Mailgateway from 14.1.4.2 to 15.0.5, an error in cluster replication can cause login failures on both appliances. Standalone systems are not affected. The vendor is aware of the issue and plans a fix for a future version.
 
 **Update from July 29, 2026:** The announced fix is now available. Patch release 15.0.6 suppresses password rehashing when cluster members run different firmware versions. This is exactly the scenario that triggered the failure described here. Context is available in the article on [SEPPmail 15.0.6 and 15.0.6.1](/blog/seppmail-releases-15-0-6-und-15-0-6-1); the following recovery procedure remains relevant for clusters that are still being updated to 15.0.5.
 
@@ -28302,7 +28315,7 @@ The following steps modify the cluster configuration. Current backups and the cl
 
 5. Update the first node to version 15.0.5 and then shut it down.
 6. Start the second node and repeat the same steps there.
-7. Only once both systems work individually and have the same version, rebuild the cluster according to the manufacturer’s documentation.
+7. Only once both systems work individually and have the same version, rebuild the cluster according to the vendor’s documentation.
 
 This procedure prevents a faulty configuration from being replicated between the nodes again during the update.
 
@@ -28359,7 +28372,7 @@ In addition to the standard queues, the following example also contains optional
 
 > If you need support connecting the HIN mail gateway or migrating to the new HIN Stargate solution, you can find the relevant experts at [adeptio](https://adeptio.ch/).  
 >   
-> **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct contacts at the manufacturer.  
+> **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct contacts at the vendor.  
 > [➜ Book an appointment today.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
 
 ```text

@@ -1,7 +1,7 @@
 ---
 title: "Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bislang bekannt ist"
 navTitle: "Kiteworks-Abschaltung"
-description: "Kiteworks fordert seine Kunden per E-Mail auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Grund ist eine Warnung von Strafverfolgungsbehörden vor einem möglichen Angriff. Stand 27.09.: keine CVE, kein neuer Patch, keine Entwarnung. Totemomail ist nicht betroffen."
+description: "Kiteworks fordert seine Kunden per E-Mail auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Grund ist eine Warnung von Strafverfolgungsbehörden vor einem möglichen Angriff. Seit 27.09. ist die Empfehlung aufgehoben; eine CVE oder einen neuen Patch gibt es nicht. Totemomail ist nicht betroffen."
 date: "2026-09-25"
 kategorie: "Kiteworks / Totemomail"
 timeToRead: "9 Min. Lesezeit"
@@ -15,7 +15,7 @@ protokolle:
   - "smtp"
 hauptthema: "totemomail"
 slug: "kiteworks-zero-day-abschaltung"
-featured: "2026-09-27"
+featured: "2026-09-28"
 translationId: "article-38fbaa0e9095957a"
 url: "https://rafaelpfister.ch/blog/kiteworks-zero-day-abschaltung"
 aiPrompt: |
@@ -31,8 +31,12 @@ Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle K
 </div>
 
 <div class="update-hinweis">
-<p class="update-hinweis__titel">Update vom 27. September 2026: Stand nach dem Abschaltfenster</p>
-<p>Das Abschaltfenster ist vorbei. Kiteworks hat bis Sonntag, 27. September, keine Folgemeldung veröffentlicht: keine CVE-Nummer, keine neue Version über 9.5.1 hinaus, keine Indikatoren für eine Kompromittierung, keine Entwarnung und keine Angabe, ob ein Angriff stattgefunden hat oder versucht wurde. Pressemitteilung, Security-Updates-Seite und GitHub-Advisories sind unverändert. Die CISA wollte sich gegenüber TechCrunch nicht öffentlich äussern. Die Empfehlung des Herstellers bleibt, Version 9.5.1 einzusetzen.</p>
+<p class="update-hinweis__titel">Update vom 28. September 2026: Kiteworks hebt die Abschaltempfehlung auf</p>
+<p>Kiteworks hat die Pressemitteilung um einen Hinweis ergänzt: Seit dem 27. September gilt die Empfehlung zur Abschaltung für alle Kunden nicht mehr.</p>
+<blockquote lang="en">
+<p>As of September 27th, the shutdown recommendation is now lifted for all customers. If you have not already restarted, you may bring your Kiteworks system back online. Customers with self-hosted Advanced Forms should contact Customer Support for assistance. All systems Kiteworks hosts on customers’ behalf have been brought back up and are operating normally.</p>
+</blockquote>
+<p>Wer seine Systeme noch nicht wieder hochgefahren hat, kann dies jetzt tun. Wer Advanced Forms selbst betreibt, soll sich vor dem Neustart an den Kiteworks-Support wenden. Die von Kiteworks gehosteten Instanzen laufen wieder. Weiterhin gibt es keine CVE-Nummer, keine neue Version über 9.5.1 hinaus, keine Indikatoren für eine Kompromittierung und keine Angabe, ob ein Angriff versucht wurde oder was hinter der Warnung stand. Security-Updates-Seite und GitHub-Advisories sind unverändert.</p>
 </div>
 
 <div class="update-hinweis">
@@ -77,12 +81,17 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 <li class="timeline__item">
 <p class="timeline__zeit">Sa, 26. September, 10:00</p>
 <p class="timeline__titel">Ende des Fensters</p>
-<p>Die Systeme dürfen laut Advisory wieder hochgefahren werden. Eine Bestätigung des Herstellers, dass die Gefahr vorüber ist, folgt nicht.</p>
+<p>Das in der Kunden-E-Mail genannte Fenster endet. Die formelle Aufhebung der Empfehlung folgt am 27. September.</p>
+</li>
+<li class="timeline__item">
+<p class="timeline__zeit">So, 27. September</p>
+<p class="timeline__titel">Empfehlung aufgehoben</p>
+<p>Kiteworks ergänzt die Pressemitteilung: Die Abschaltempfehlung ist für alle Kunden aufgehoben, die Systeme dürfen wieder laufen. Die gehosteten Instanzen sind wieder in Betrieb. Kunden mit selbst betriebenen Advanced Forms sollen sich an den Support wenden.</p>
 </li>
 <li class="timeline__item timeline__item--offen">
-<p class="timeline__zeit">Stand So, 27. September</p>
+<p class="timeline__zeit">Stand Mo, 28. September</p>
 <p class="timeline__titel">Weiterhin offen</p>
-<p>Keine Folgemeldung von Kiteworks: kein öffentliches Advisory, keine CVE-Nummer, keine neue Version, keine Indikatoren, keine Angaben zur Lücke und keine Berichte über einen erfolgten oder versuchten Angriff.</p>
+<p>Kein öffentliches Advisory, keine CVE-Nummer, keine neue Version, keine Indikatoren, keine Angaben zur Lücke und keine Berichte über einen erfolgten oder versuchten Angriff.</p>
 </li>
 </ol>
 
@@ -90,7 +99,7 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 
 Die Empfehlung gilt weltweit; die E-Mail nennt das Zeitfenster für alle Zeitzonen von AEST bis PDT. Kiteworks rät, die Systeme schon vor Beginn des Fensters herunterzufahren, und zwar auch dann, wenn sie nicht aus dem Internet erreichbar sind.
 
-Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Die Pressemitteilung nennt als Quelle „federal intelligence authorities“, vermutlich also US-Bundesbehörden; welche, ist nicht bekannt. Unter Security Updates und in den GitHub-Advisories von Kiteworks gibt es Stand 27. September keinen Eintrag; der letzte GitHub-Eintrag stammt vom 27. Mai 2026. Öffentlich sind die oben zitierte Stellungnahme und die Pressemitteilung vom 25. September.
+Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Die Pressemitteilung nennt als Quelle „federal intelligence authorities“, vermutlich also US-Bundesbehörden; welche, ist nicht bekannt. Unter Security Updates und in den GitHub-Advisories von Kiteworks gibt es Stand 28. September keinen Eintrag; der letzte GitHub-Eintrag stammt vom 27. Mai 2026. Öffentlich sind die oben zitierte Stellungnahme und die Pressemitteilung vom 25. September.
 
 Gegenüber TechCrunch hat Kiteworks-CISO Frank Balonis die Stellungnahme im selben Wortlaut abgegeben. Das BKA hat gegenüber heise eine Stellungnahme aus ermittlungstaktischen Gründen abgelehnt, das BSI hat nicht geantwortet. Das FBI wollte sich gegenüber TechCrunch nicht äussern, ein Sprecher der CISA wollte sich nicht öffentlich äussern. Ein Kunde aus dem Gesundheitswesen hat laut TechCrunch seinen Server sofort vom Netz genommen, mit spürbaren Einschränkungen im Betrieb: Ärzte konnten ihre Patienten zeitweise nur verzögert erreichen. Laut einem von TechCrunch zitierten Sicherheitsforscher sind mindestens 1000 Kiteworks-Systeme aus dem Internet erreichbar; BornCity spricht von mehr als 1000 Organisationen, die die Warnung erhalten haben.
 
@@ -168,7 +177,7 @@ In den heise-Kommentaren überwiegt Skepsis, und die Einwände sind sachlich nac
 
 ## Nach dem Fenster: Was Betreiber jetzt tun können
 
-Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details veröffentlicht hat, lässt sich nicht beurteilen, ob die Gefahr mit dem Ende des Fensters vorüber ist. Unabhängig davon sind folgende Schritte sinnvoll:
+Kiteworks hat die Abschaltempfehlung am 27. September aufgehoben, aber keine technischen Details veröffentlicht. Ob und wie die Gefahr beseitigt wurde, lässt sich daher nicht beurteilen. Beim Wiederhochfahren und danach sind folgende Schritte sinnvoll:
 
 1.  **Version prüfen:** Läuft auf allen Knoten Version 9.5.1? Laut Hersteller sind darin alle bekannten Schwachstellen behoben.
 
@@ -178,7 +187,9 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 
 4.  **Erreichbarkeit einschränken:** Wo möglich, den Zugriff aus dem Internet auf die Administrationsoberfläche sperren und nur benötigte Dienste freigeben.
 
-5.  **Kanäle beobachten:** Security Updates, GitHub-Advisories, Newsroom und Kunden-E-Mails von Kiteworks, bis ein Advisory oder eine Entwarnung vorliegt.
+5.  **Advanced Forms:** Wer das Modul selbst betreibt, klärt den Neustart vorher mit dem Kiteworks-Support.
+
+6.  **Kanäle beobachten:** Security Updates, GitHub-Advisories, Newsroom und Kunden-E-Mails von Kiteworks, bis ein Advisory mit technischen Details vorliegt.
 
 ## Quellen
 
@@ -186,11 +197,11 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 
 2.  [heise online (EN): Imminent Zero-Day Attack: KiteWorks Urges Customers to Shut Down Servers](https://www.heise.de/en/news/Imminent-Zero-Day-Attack-KiteWorks-Urges-Customers-to-Shut-Down-Servers-11466375.html): englische Fassung mit dem Originalwortlaut des CISO.
 
-3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): offizieller Kanal des Herstellers, Stand 27.09.2026 ohne Eintrag zur Warnung.
+3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): offizieller Kanal des Herstellers, Stand 28.09.2026 ohne Eintrag zur Warnung.
 
-4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, Stand 27.09.2026 letzter Eintrag vom 27.05.2026.
+4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, Stand 28.09.2026 letzter Eintrag vom 27.05.2026.
 
-5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): offizielle Mitteilungen, seit 25.09.2026 mit der Pressemitteilung zur Abschaltung; Stand 27.09.2026 ohne Folgemeldung.
+5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): offizielle Mitteilungen, seit 25.09.2026 mit der Pressemitteilung zur Abschaltung.
 
 6.  [heise-Forum: Kommentare zur Meldung](https://www.heise.de/forum/heise-online/Kommentare/Server-am-Samstagmorgen-herunterfahren-Kiteworks-warnt-Admins-vor-Zero-Day/forum-591001/comment/): Leserdiskussion mit den Einwänden zum festen Zeitfenster und zur Abschaltung interner Systeme sowie der Köder-These.
 
@@ -200,7 +211,7 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 
 9.  [TechCrunch: Kiteworks urges customers to shut down their servers amid 'imminent' threat of cyberattack](https://techcrunch.com/2026/09/25/kiteworks-urges-customers-to-shut-down-their-servers-amid-imminent-threat-of-cyberattack/): Stellungnahme des CISO, Versandzeit der Warnung, Reaktionen von FBI und CISA (Nachtrag), Auswirkungen bei einem Kunden, Zahl der aus dem Internet erreichbaren Systeme.
 
-10.  [Kiteworks: Precautionary Shutdown Advisory (Pressemitteilung)](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): offizielle Mitteilung vom 25.09.2026 mit Angaben zu gehosteten Instanzen, Version 9.5.1 und den nicht betroffenen Tochterfirmen.
+10.  [Kiteworks: Precautionary Shutdown Advisory (Pressemitteilung)](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): offizielle Mitteilung vom 25.09.2026 mit Angaben zu gehosteten Instanzen, Version 9.5.1 und den nicht betroffenen Tochterfirmen; ergänzt um den Hinweis vom 27.09.2026, dass die Abschaltempfehlung aufgehoben ist.
 
 11.  [BleepingComputer: Kiteworks urges 6-hour server shutdown over potential zero-day attacks](https://www.bleepingcomputer.com/news/security/kiteworks-urges-6-hour-server-shutdown-over-potential-zero-day-attacks/): Zeitfenster nach Regionen und Einordnung früherer Angriffe auf Dateiaustausch-Produkte.
 
@@ -209,3 +220,5 @@ Da Kiteworks bis 27. September weder eine Entwarnung noch technische Details ver
 13.  [BornCity: Kiteworks: Mehr als 1.000 Organisationen sollen Server abschalten](https://borncity.com/news/kiteworks-mehr-als-1-000-organisationen-sollen-server-abschalten/): Zahl der benachrichtigten Organisationen und Branchen im deutschsprachigen Raum.
 
 14.  [The Record: Kiteworks urges customers to stop using platform after warning from federal intelligence agencies](https://therecord.media/kiteworks-urges-customers-to-stop-using-systems-incident): Einordnung der Accellion-Angriffe durch Clop 2020/2021 und Zitat von watchTowr.
+
+15.  [Cyber Daily: Kiteworks warns customers to enact a „precautionary shutdown“ in wake of attack intelligence](https://www.cyberdaily.au/security/14241-kiteworks-warns-customers-to-enact-a-precautionary-shutdown-in-wake-of-attack-intelligence): Bericht vom 28.09.2026 über die Aufhebung der Empfehlung und den Betrieb der gehosteten Instanzen.
