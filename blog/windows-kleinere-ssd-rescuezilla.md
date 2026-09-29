@@ -17,7 +17,7 @@ url: "https://rafaelpfister.ch/blog/windows-kleinere-ssd-rescuezilla"
 translationId: "article-6947213279383f27"
 ---
 
-Rescuezilla ist ein kostenloses Live-System zum Sichern und Wiederherstellen ganzer Datenträger, kompatibel zum Image-Format von Clonezilla. Solange die Zieldisk gleich gross oder grösser ist, reichen Backup und Restore. Ist sie kleiner, bricht der Restore ab, obwohl die belegten Daten darauf Platz hätten. Dieser Artikel dokumentiert den Umzug eines Windows-11-Systems von einer 1-TB-NVMe (C: mit 930 GB, davon rund 350 GB belegt) auf eine 512-GB-NVMe, inklusive der Fehlermeldungen, die unterwegs auftreten.
+Rescuezilla ist ein kostenloses Live-System zum Sichern und Wiederherstellen ganzer Datenträger, kompatibel zum Image-Format von Clonezilla (Vorstellung des Tools und Grundablauf: [Rescuezilla: Windows auf eine neue SSD migrieren](/blog/rescuezilla-windows-migration)). Solange die Zieldisk gleich gross oder grösser ist, reichen Backup und Restore. Ist sie kleiner, bricht der Restore ab, obwohl die belegten Daten darauf Platz hätten. Dieser Artikel dokumentiert den Umzug eines Windows-11-Systems von einer 1-TB-NVMe (C: mit 930 GB, davon rund 350 GB belegt) auf eine 512-GB-NVMe, inklusive der Fehlermeldungen, die unterwegs auftreten.
 
 ## Warum der Restore auf die kleinere Disk scheitert
 
