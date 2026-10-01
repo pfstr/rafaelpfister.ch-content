@@ -14783,6 +14783,458 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Rescuezilla: Migrate Windows to a New SSD, with an Introduction to the Tool
+
+URL: https://rafaelpfister.ch/en/blog/rescuezilla-migrate-windows-to-a-new-ssd-with-an-introduction-to-the-tool
+Datum: 2026-09-29
+
+Anyone who wants to move a Windows installation to a new SSD or a new computer without reinstalling Windows needs a tool that backs up and restores the entire drive with all its partitions. Rescuezilla is such a tool: free, open source, and with a graphical interface that can be used without Linux knowledge. This article introduces the tool and describes migration to an SSD of equal or greater size. There is a separate guide for a smaller target SSD: [Move Windows to a smaller SSD with Rescuezilla](/blog/windows-kleinere-ssd-rescuezilla).
+
+## What Rescuezilla is
+
+Rescuezilla is an Ubuntu-based live system that starts from a USB drive. It runs independently of the installed operating system and can therefore back up volumes that Windows locks while it is running. The project was created in 2019 as a fork of Redo Backup and Recovery, which had not been maintained for seven years at that point. Since version 2.0 (2020), Rescuezilla has written images in Clonezilla format: a backup created with Rescuezilla can be restored with Clonezilla and vice versa. It is licensed under GPL-3.0. The current version is 2.6.2 from May 2026, based on Ubuntu 26.04 LTS with Partclone 0.3.47.
+
+Partclone does the actual work. It supports common file systems (NTFS, FAT, ext4, and others) and reads only used blocks. A 1 TB partition with 350 GB of data therefore produces an image of around 215 GB (gzip-compressed), rather than 1 TB. Rescuezilla backs up partitions without a recognized file system, such as the Microsoft Reserved Partition, block by block with `dd`; these files have the `.dd-ptcl-img` extension in the image.
+
+<details class="options-details">
+<summary>Features at a glance</summary>
+
+| Feature | Purpose |
+|---|---|
+| Backup | backs up selected partitions on a drive, including the partition table, as an image to a local drive or network share (SMB, SSH) |
+| Restore | restores an image to a drive, optionally overwriting the partition table |
+| Verify Image | checks whether an existing image is complete and readable |
+| Clone | copies one drive directly to another, without intermediate storage |
+| Image Explorer (beta) | mounts an image read-only to retrieve individual files |
+| VM images | reads VDI, VMDK, VHDX, QCOW2, and raw images in addition to Clonezilla images |
+| Additional tools | GParted, file manager, web browser, and tools for recovering deleted files on the live desktop |
+| CLI | experimental command line (since 2.5) for Backup, Verify, Restore, and Clone |
+
+</details>
+
+One limitation is important for migrations: Rescuezilla does not shrink partitions. The target drive must extend at least to the end of the last backed-up partition. If it is smaller, preparation with GParted is required, as described in the guide linked above.
+
+## Image or clone
+
+Rescuezilla offers two ways to migrate. With **cloning**, the source and target drives are connected at the same time, and Rescuezilla copies directly. This saves time and a third drive, but requires both drives to be connected to the computer or an adapter at the same time. With **imaging**, an image is first created on an external drive and then restored to the new drive. This takes longer, but has one advantage: the image remains as a complete backup of the old state, even if something goes wrong during restoration. An image is therefore the safer choice for a migration, and this article describes that option.
+
+## Requirements
+
+1.  **USB drive** for Rescuezilla. Its contents will be erased when writing the boot image.
+
+2.  **External drive** for the image, with free space approximately equal to the amount of used data. Both exFAT and NTFS work.
+
+3.  **Target drive**, at least as large as the source drive. If it is smaller, first work through the guide for smaller SSDs.
+
+4.  **BitLocker recovery key**, if C: is encrypted. Available at aka.ms/myrecoverykey or in the Entra portal for managed devices.
+
+## Step 1: Prepare Windows
+
+Check three items before backing up in a PowerShell session with administrator rights.
+
+**BitLocker.** Partclone cannot read a BitLocker volume as NTFS. Rescuezilla then backs it up block by block like any partition without a recognized file system, and the image becomes as large as the entire partition. For a migration, it is advisable to turn off BitLocker beforehand and turn it back on after the move:
+
+```powershell
+manage-bde -status C:
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-status` | shows the volume's encryption level and protection status |
+| `-off` | fully decrypts the volume; continues running in the background |
+| `C:` | positional argument: the affected volume |
+
+</details>
+
+Wait until `manage-bde -status C:` shows the value `Fully Decrypted`. On devices managed through Intune, a policy may turn BitLocker back on; therefore, check the status again immediately before restarting.
+
+**Hibernation and Fast Startup.** With Fast Startup enabled, Windows does not shut down completely, and NTFS is considered still in use. Partclone then aborts. One command disables both:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `/h off` | short form of `/hibernate off`: disables hibernation and Fast Startup, and removes `hiberfil.sys` |
+
+</details>
+
+**File system state.** If the dirty bit is set, Partclone aborts with the message that the volume is “scheduled for a check or it was shutdown uncleanly.” Check it beforehand:
+
+```powershell
+fsutil dirty query C:
+```
+
+If the command reports `is Dirty`, schedule a check for the next startup with `chkdsk C: /f`, restart, and check again.
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `dirty query C:` | fsutil: checks whether the volume's dirty bit is set |
+| `/f` | chkdsk: fixes errors; on the system volume, it schedules the check for the next startup |
+
+</details>
+
+## Step 2: Create and boot the USB drive
+
+Download the ISO image from the project's GitHub release page. The standard variant includes the Ubuntu codename in its filename; for 2.6.2, it is `rescuezilla-2.6.2-64bit.resolute.iso`. Write it to the USB drive with an image writer such as balenaEtcher; the project page recommends this program for Windows, macOS, and Linux.
+
+Windows itself can initiate booting from the USB drive:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `/r` | restarts instead of shutting down |
+| `/o` | starts into advanced startup options; only together with `/r` |
+| `/t 0` | delay in seconds before execution |
+
+</details>
+
+In the advanced startup options, select “Use a device” and the USB drive. Alternatively, the firmware boot menu opens when powering on (F8, F11, or F12, depending on the vendor). Rescuezilla starts with Secure Boot enabled; it does not need to be disabled. If the screen remains black after selecting the language, use “Graphical Fallback Mode” in the USB drive's boot menu.
+
+## Step 3: Create a backup
+
+Rescuezilla starts automatically on the desktop. The wizard guides you through the backup in numbered steps:
+
+1.  Select **Backup**.
+
+2.  *Step 1: Select Drive To Backup*: select the system drive. The model and size help distinguish drives; device names (`nvme0n1`, `sda`) may differ between two boots.
+
+3.  *Step 2: Select Partitions to Save*: leave all partitions checked. A bootable restore requires the EFI system partition, Microsoft Reserved Partition, C:, and the recovery partition.
+
+4.  *Step 3: Select Destination Drive*: the external drive (Local) or a network share (Network).
+
+5.  *Step 4: Select Destination Folder*: the destination folder on the drive. Rescuezilla creates a subfolder with a timestamp in it.
+
+6.  *Step 5: Name Your Backup*: optionally enter a description; it will later appear in the image list.
+
+7.  *Step 6: Customize Compression Settings*: the default gzip setting is suitable in most cases.
+
+8.  *Step 7: Confirm Backup Configuration*: review the settings and start.
+
+For 350 GB of data on an NVMe SSD, backing up to an external USB SSD took around 20 minutes. At the end, Rescuezilla reports whether each partition was backed up successfully. If a partition shows an error, the image is incomplete even if the folder exists.
+
+## Step 4: Verify the image
+
+Verify the image before restoring it. **Verify Image** in the main menu reads all parts and checks that they are complete and readable. In the image list, the **Partitions** column shows the backed-up partitions and their sizes; a yellow warning triangle marks images with missing partitions.
+
+The image folder can also be viewed in Windows. The most important files are:
+
+| File | Contents |
+|---|---|
+| `nvme0n1-pt.parted` | partition table in text form, with the start and end of each partition in sectors |
+| `nvme0n1-gpt-1st`, `nvme0n1-gpt-2nd` | binary copies of the primary and backup GPT |
+| `nvme0n1p3.ntfs-ptcl-img.gz.aa`, `.ab`, … | Partclone image of C:, gzip-compressed and split into 4 GB parts |
+| `nvme0n1p2.dd-ptcl-img.gz.aa` | block-by-block copy of a partition without a recognized file system |
+| `clonezilla-img` | backup log with the result for each partition |
+| `Info-*.txt` | hardware and SMART information for the source system at the time of the backup |
+
+From `nvme0n1-pt.parted`, you can determine whether the image fits on the target drive: the last sector of the final partition plus one, multiplied by 512 bytes, must be smaller than the target drive's size in bytes.
+
+## Step 5: Restore to the new SSD
+
+Install the new SSD and start Rescuezilla again.
+
+1.  Select **Restore**.
+
+2.  *Step 1: Select Image Location*: the external drive containing the image.
+
+3.  *Step 2: Select Backup Image*: select the image based on its date and partition sizes.
+
+4.  *Step 3: Select Drive To Restore*: the new SSD. Check the model and size twice: all data on this drive will be overwritten.
+
+5.  *Step 4: Select Partitions to Restore*: leave all partitions checked, as well as **Overwrite partition table**.
+
+6.  *Step 5: Confirm Restore Configuration*: review and start.
+
+The restore takes about as long as the backup. Then shut down and remove the USB drive.
+
+## Step 6: Boot from the new drive
+
+The easiest option is to disconnect the old drive before the first boot. If both drives are connected, they have the same partition and volume IDs, and the firmware may select the old one to boot. If the old drive will continue to be used, format it only after verifying the new system.
+
+If the new SSD is larger than the old one, the additional space appears as unallocated space at the end. However, C: cannot be extended directly in Disk Management because the recovery partition is between C: and the free space. With GParted on the Rescuezilla USB drive, first move the recovery partition to the end (Resize/Move, set **Free space following** to 0), then expand C: into all the free space. Windows RE finds its partition again afterward because it retains its partition number; `reagentc /info` shows the status.
+
+If the computer also changes during the migration, Windows generally starts without adjustments and installs missing drivers afterward. Activation happens through the digital license; after a motherboard change, it may require signing in with the Microsoft account and using the activation troubleshooter.
+
+## Follow-up steps
+
+On the new drive, re-enable what was disabled for the migration. `powercfg /h on` enables hibernation again. Enable BitLocker through Settings → Privacy & security → Device encryption or with `manage-bde -on C:`; then check with `manage-bde -protectors -get C:` that a recovery key exists and is backed up.
+
+Keep the image on the external drive until Windows has run on the new drive without issues for a few days and all data has been checked. It can then be deleted or archived as a backup of the original state.
+
+## Sources
+
+1.  [Rescuezilla](https://rescuezilla.com/): project page with feature overview, download, and FAQ.
+
+2.  [Rescuezilla on GitHub](https://github.com/rescuezilla/rescuezilla): source code, project history, and feature list in the README.
+
+3.  [Rescuezilla Releases](https://github.com/rescuezilla/rescuezilla/releases/latest): current version with release notes, compatibility list, and ISO variants.
+
+4.  [Rescuezilla Changelog](https://raw.githubusercontent.com/rescuezilla/rescuezilla/master/CHANGELOG.md): introduction of CLI, Verify Image, and Clone, plus the update to the Secure Boot shim.
+
+5.  [Rescuezilla Wiki: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): official process for target drives smaller than the original.
+
+6.  [Partclone](https://partclone.org/): tool used by Rescuezilla and Clonezilla for file-system-aware backups.
+
+7.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): moving and enlarging partitions.
+
+8.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): checking BitLocker status.
+
+9.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): decrypting a volume.
+
+10.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): option `/hibernate` and its effect on Fast Startup.
+
+11.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): checking the dirty bit.
+
+12.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): checking and repairing NTFS volumes.
+
+13.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parameter `/o` for starting in advanced startup options.
+
+14.  [Microsoft Support: Reactivating Windows after a hardware change](https://support.microsoft.com/en-us/windows/reactivating-windows-after-a-hardware-change-2c0e962a-f04c-145b-6ead-fb3fc72b6665): activation through the digital license after a motherboard change.
+
+----
+
+# Moving Windows to a Smaller SSD with Rescuezilla: From 1 TB to 512 GB
+
+URL: https://rafaelpfister.ch/en/blog/moving-windows-to-a-smaller-ssd-with-rescuezilla-from-1-tb-to-512-gb
+Datum: 2026-09-29
+
+Rescuezilla is a free live system for backing up and restoring entire drives, compatible with Clonezilla's image format (tool overview and basic process: [Rescuezilla: Migrate Windows to a New SSD](/blog/rescuezilla-windows-migration)). As long as the target disk is the same size or larger, a backup and restore are sufficient. If it is smaller, the restore fails even though the used data would fit. This article documents moving a Windows 11 system from a 1 TB NVMe (C: with 930 GB, of which around 350 GB is used) to a 512 GB NVMe, including the error messages that occur along the way.
+
+## Why the restore to the smaller disk fails
+
+Rescuezilla backs up each partition individually with Partclone and also saves the partition table. During restoration, it writes this table unchanged to the target disk. Rescuezilla cannot shrink a partition. Before starting, it therefore checks whether the final partition fits entirely on the target disk and otherwise stops with this message:
+
+```text
+The source partition table's final partition (/dev/nvme0n1p4:
+1000203091968 bytes) must refer to a region completely within
+the destination disk (512110190592 bytes).
+```
+
+A typical Windows installation has four partitions: the EFI system partition (200 MB), the Microsoft reserved partition (16 MB), C:, and the recovery partition with Windows RE (904 MiB here). Windows places the recovery partition at the end of the disk. Therefore, shrinking C: is not enough: the recovery partition must also be moved forward, directly behind C:.
+
+The process described by the Rescuezilla wiki for this case is: shrink the source disk with GParted, create a new image, and restore that image. An image created earlier from the unchanged disk remains as a backup until the new system is running.
+
+## Step 1: Calculate the target size
+
+An SSD sold as 512 GB has 512'110'190'592 bytes, which is 476.9 GiB (Rescuezilla displays this value as well). EFI, MSR, and the recovery partition take up a good 1.1 GiB in total. That leaves just under 475 GiB for C:. With some reserve, **470 GiB = 481'280 MiB** is a sensible target value. The approximately 6 GB left free at the end of the new SSD are insignificant.
+
+The used data must be below this value. This command in an elevated PowerShell shows how far Windows could shrink a volume:
+
+```powershell
+$s = Get-PartitionSupportedSize -DriveLetter C
+"{0:N1} GB" -f ($s.SizeMin / 1GB)
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-DriveLetter C` | Volume whose possible sizes are queried |
+| `SizeMin` | Smallest size to which Windows itself could shrink the volume |
+| `"{0:N1} GB" -f` | Formats the byte value as gigabytes with one decimal place |
+
+</details>
+
+If `SizeMin` is significantly above the amount of used data, unmovable files (page file, restore points, MFT) are preventing shrinking with Windows built-in tools. GParted moves this data when shrinking, so that limit does not apply there.
+
+## Step 2: Disable BitLocker and hibernation
+
+GParted can neither read nor shrink a BitLocker-encrypted volume, and Partclone cannot back it up as NTFS. Check the status in an elevated PowerShell:
+
+```powershell
+manage-bde -status C:
+```
+
+If it does not say `Fully Decrypted`, disable BitLocker and wait for decryption to finish:
+
+```powershell
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-status` | Shows the volume's encryption percentage, method, and protection status |
+| `-off` | Fully decrypts the volume and removes key protectors |
+| `C:` | Positional argument: the affected volume |
+
+</details>
+
+Decryption runs in the background and may take an hour or longer depending on the amount of data. On devices managed through Intune, a policy may re-enable BitLocker after a short time. Therefore, check the status again immediately before starting GParted.
+
+Hibernation must also be disabled. With Fast Startup enabled, Windows does not fully shut down but saves the kernel state in `hiberfil.sys`. NTFS is then considered still in use, and GParted refuses any changes. One command disables both hibernation and Fast Startup and deletes `hiberfil.sys`:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `/h off` | Short form of `/hibernate off`: disables hibernation and Fast Startup; `hiberfil.sys` is removed |
+
+</details>
+
+## Step 3: Boot Rescuezilla
+
+Windows can direct the next startup straight to the startup menu with advanced options. There, select “Use a device” and the USB drive with Rescuezilla:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `/r` | Restarts instead of shutting down |
+| `/o` | Starts in advanced startup options (Windows RE); only together with `/r` |
+| `/t 0` | Wait time in seconds before execution |
+
+</details>
+
+Alternatively, the firmware boot menu opens during power-on; on ASRock boards, use F11. If “Use a device” is missing, `shutdown /r /fw /t 0` takes you directly to UEFI Setup, where you can select the boot drive for the next startup.
+
+## Step 4: Shrink C: and move the recovery partition
+
+On the Rescuezilla desktop, start **Partition Editor** (GParted), not Rescuezilla itself.
+
+1.  Select the source disk in the upper-right corner. Pay attention to its size (931.51 GiB here) so you do not accidentally edit the external backup disk or a second internal disk.
+
+2.  Right-click the NTFS partition with C: → **Resize/Move**. Enter the target value in the **New size (MiB)** field, here `481280`, and confirm with the Tab key. Leave **Free space preceding** unchanged. Apply with **Resize/Move**.
+
+3.  Below C:, there is now a line `unallocated`, followed by the recovery partition (NTFS, around 900 MiB, flags `hidden, diag`). Right-click the recovery partition → **Resize/Move**.
+
+4.  Delete the value in **Free space preceding (MiB)**, enter `0`, and confirm with Tab. **New size** stays the same; **Free space following** changes to the entire free area. If `1` appears after pressing Tab instead of `0`, that is alignment to whole MiB and is fine. Apply with **Resize/Move**.
+
+5.  Confirm the warning that moving may prevent booting with OK. It applies to partitions with bootloaders; Windows boots from the EFI system partition, which remains unchanged.
+
+6.  The order is now: EFI, MSR, C:, recovery partition, `unallocated`. At this point, changes are only queued. Only clicking the green check mark (**Apply All Operations**) performs them.
+
+Windows RE finds its partition again after it is moved because it retains its partition number. `reagentc /info` still shows `Enabled` afterward, with the path `harddisk0\partition4\Recovery\WindowsRE`.
+
+The Rescuezilla guide shrinks only the last partition. That is sufficient if C: is the last partition. In a standard Windows 10 or 11 installation, the recovery partition is behind it, making the move mandatory.
+
+## Step 5: Remove the dirty flag
+
+The next backup fails at C: after shrinking with this message:
+
+```text
+ntfsclone-ng.c: NTFS Volume '/dev/nvme0n1p3' is scheduled for a check
+or it was shutdown uncleanly. Please boot Windows or fix it by fsck.
+```
+
+The cause is intentional: `ntfsresize`, which GParted uses for NTFS, marks the file system for checking before every size change and leaves that mark in place. According to the man page, Windows should run `chkdsk` at the next startup. In the case described, however, the flag remained set after a normal Windows startup, and `Get-Volume C` reported `Full Repair Needed`. Check the status in an elevated PowerShell:
+
+```powershell
+fsutil dirty query C:
+```
+
+If the command reports `Volume - C: is Dirty`, have the check run at the next startup:
+
+```powershell
+chkdsk C: /f
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `dirty query C:` | fsutil: checks whether the volume's dirty bit is set |
+| `C:` | chkdsk: the volume to check |
+| `/f` | Fixes errors found; on the system volume, schedules the check for the next startup |
+
+</details>
+
+Answer the question asking whether the check should be performed at the next restart with Y and restart Windows normally. Afterward, `fsutil dirty query C:` must show the message `is NOT Dirty`, and `Get-Volume C` must again report `Healthy`. Only then start Rescuezilla again.
+
+## Step 6: Create and check the new image
+
+Now use Rescuezilla to create a new image of the shrunken disk. The image size remains virtually the same as the first backup (around 214 GB here), because Partclone backs up only used blocks. Rescuezilla places each backup in its own timestamped folder, such as `2026-09-29-1343-img-rescuezilla`.
+
+All images then appear side by side in the image selection list. The **Partitions** column shows their sizes: the image from before shrinking contains `ntfs 930.4GB`, while the new one contains `ntfs 470GB`. A failed backup attempt appears with a yellow warning triangle; it contains the old partition table and triggers exactly the error message from the first section during restoration. Delete such folders so they are not selected accidentally.
+
+You can also determine in advance whether an image fits the target disk by looking at the `<disk>-pt.parted` file in the image folder. It contains the backed-up partition table in 512-byte sectors:
+
+```text
+Number  Start       End         Size        File system  Name
+ 1      2048s       411647s     409600s     fat32        EFI system partition
+ 2      411648s     444415s     32768s                   Microsoft reserved partition
+ 3      444416s     986105855s  985661440s  ntfs         Basic data partition
+ 4      986105856s  987957247s  1851392s    ntfs
+```
+
+The end of the final partition (987'957'247 + 1 sectors × 512 bytes = 505.8 GB) is below the target disk's 512.1 GB. The image fits.
+
+## Step 7: Restore to the new SSD
+
+1.  In Rescuezilla, select **Restore**, the drive containing the images, and then the **new** image (without a warning triangle and with the shrunken C: partition).
+
+2.  Select the new SSD as the target. Check the model and size twice: restoration completely overwrites the target disk.
+
+3.  Keep all partitions selected, as well as **Overwrite partition table**, and start the restore.
+
+4.  Then boot from the new SSD. The easiest option is to disconnect the old disk first; otherwise, select the new SSD in the firmware boot menu.
+
+## Follow-up tasks
+
+On the new drive, re-enable what was disabled for the migration. `powercfg /h on` enables hibernation again. Enable BitLocker through Settings → Privacy & security → Device encryption or with `manage-bde -on C:`; then verify with `manage-bde -protectors -get C:` that the recovery key has been backed up. If Secure Boot was disabled in UEFI to boot Rescuezilla, enable it again; while it is disabled, BitLocker logs event 810 at every startup.
+
+You can delete the image of the unchanged 1 TB disk once Windows boots cleanly from the new SSD and all data is complete.
+
+## Sources
+
+1.  [Rescuezilla Wiki: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): official procedure with GParted and the reason for the restoration limitation.
+
+2.  [Rescuezilla](https://rescuezilla.com/): project page with the live system download.
+
+3.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): using Resize/Move, MiB alignment, and performing queued operations.
+
+4.  [ntfsresize(8), Ubuntu Manpage](https://manpages.ubuntu.com/manpages/noble/man8/ntfsresize.8.html): the tool behind NTFS shrinking in GParted; describes the deliberately set check marker.
+
+5.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): `/f` parameter and scheduling the check on the system volume.
+
+6.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): querying and meaning of the dirty bit.
+
+7.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): BitLocker status query.
+
+8.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): decrypting a volume.
+
+9.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): `/hibernate` option and its effect on Fast Startup.
+
+10.  [Microsoft Learn: Get-PartitionSupportedSize](https://learn.microsoft.com/en-us/powershell/module/storage/get-partitionsupportedsize): minimum and maximum partition sizes from Windows' perspective.
+
+11.  [Microsoft Learn: REAgentC command-line options](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/reagentc-command-line-options): checking the status and location of Windows RE.
+
+12.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): `/o` and `/fw` parameters for booting into advanced options or UEFI, respectively.
+
+----
+
 # Kiteworks: Vendor Recommends Shutdown on September 26—What Is Known So Far
 
 URL: https://rafaelpfister.ch/en/blog/kiteworks-vendor-recommends-shutdown-on-september-26-what-is-known-so-far
@@ -29045,6 +29497,458 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Rescuezilla : migrer Windows vers un nouveau SSD, avec présentation de l’outil
+
+URL: https://rafaelpfister.ch/fr/blog/rescuezilla-migrer-windows-vers-un-nouveau-ssd-avec-presentation-de-l-outil
+Datum: 2026-09-29
+
+Pour transférer une installation Windows vers un nouveau SSD ou un nouvel ordinateur sans réinstaller Windows, il faut un outil capable de sauvegarder et de restaurer l’intégralité du disque avec toutes ses partitions. Rescuezilla est un tel outil : gratuit, open source et doté d’une interface graphique utilisable sans connaissances de Linux. Cet article présente l’outil et décrit la migration vers un SSD de même taille ou plus grand. Un guide distinct est disponible pour un SSD cible plus petit : [Migrer Windows vers un SSD plus petit avec Rescuezilla](/blog/windows-kleinere-ssd-rescuezilla).
+
+## Qu’est-ce que Rescuezilla ?
+
+Rescuezilla est un système live basé sur Ubuntu, qui démarre depuis une clé USB. Il fonctionne indépendamment du système d’exploitation installé et sauvegarde donc aussi les volumes que Windows verrouille pendant son fonctionnement. Le projet est né en 2019 sous la forme d’un fork de Redo Backup and Recovery, qui n’était alors plus maintenu depuis sept ans. Depuis la version 2.0 (2020), Rescuezilla écrit des images au format Clonezilla : une sauvegarde créée avec Rescuezilla peut être restaurée avec Clonezilla, et inversement. La licence est GPL-3.0. La version actuelle est la 2.6.2 de mai 2026, basée sur Ubuntu 26.04 LTS avec Partclone 0.3.47.
+
+Partclone effectue le travail proprement dit. Il connaît les systèmes de fichiers courants (NTFS, FAT, ext4 et autres) et ne lit que les blocs occupés. Une partition de 1 To contenant 350 Go de données produit ainsi une image d’environ 215 Go (compressée avec gzip), et non de 1 To. Les partitions sans système de fichiers reconnu, comme la partition réservée Microsoft, sont sauvegardées bloc par bloc par Rescuezilla avec `dd`; ces fichiers portent l’extension `.dd-ptcl-img` dans l’image.
+
+<details class="options-details">
+<summary>Fonctions en un coup d’œil</summary>
+
+| Fonction | Objectif |
+|---|---|
+| Backup | sauvegarde les partitions sélectionnées d’un disque, y compris la table de partitions, sous forme d’image sur un lecteur local ou un partage réseau (SMB, SSH) |
+| Restore | restaure une image sur un disque, avec ou sans écrasement de la table de partitions |
+| Verify Image | vérifie qu’une image existante est complète et lisible |
+| Clone | copie directement un disque vers un second, sans stockage intermédiaire |
+| Image Explorer (beta) | monte une image en lecture seule pour récupérer des fichiers individuels |
+| Images de VM | lit, en plus des images Clonezilla, les images VDI, VMDK, VHDX, QCOW2 et Raw |
+| Outils supplémentaires | GParted, gestionnaire de fichiers, navigateur web et outils de récupération de fichiers supprimés sur le bureau live |
+| CLI | ligne de commande expérimentale (depuis la version 2.5) pour Backup, Verify, Restore et Clone |
+
+</details>
+
+Une limitation est importante pour les migrations : Rescuezilla ne réduit pas les partitions. Le disque cible doit atteindre au minimum la fin de la dernière partition sauvegardée. S’il est plus petit, une préparation avec GParted est nécessaire, comme décrit dans le guide lié ci-dessus.
+
+## Image ou clonage
+
+Rescuezilla offre deux méthodes de migration. Avec le **clonage**, les disques source et cible sont connectés simultanément, et Rescuezilla copie directement. Cela économise du temps et un troisième support, mais suppose que les deux disques soient connectés simultanément à l’ordinateur ou à un adaptateur. Avec l’**imagerie**, une image est d’abord créée sur un lecteur externe, puis restaurée sur le nouveau disque. Cela prend plus de temps, mais présente un avantage : l’image demeure une sauvegarde complète de l’ancien état, même si quelque chose se passe mal lors de la restauration. Pour une migration, l’image est donc le choix le plus sûr, et c’est cette méthode que décrit l’article.
+
+## Prérequis
+
+1.  **Clé USB** pour Rescuezilla. Son contenu sera effacé lors de l’écriture de l’image de démarrage.
+
+2.  **Lecteur externe** pour l’image, avec un espace libre correspondant approximativement à la taille des données occupées. exFAT et NTFS fonctionnent tous deux.
+
+3.  **Disque cible**, au moins aussi grand que le disque source. S’il est plus petit, commencez par suivre le guide pour les SSD plus petits.
+
+4.  **Clé de récupération BitLocker**, si C: est chiffré. Elle est accessible sur aka.ms/myrecoverykey ou dans le portail Entra pour les appareils gérés.
+
+## Étape 1 : préparer Windows
+
+Avant la sauvegarde, vérifiez trois points dans une PowerShell exécutée avec des droits d’administrateur.
+
+**BitLocker.** Partclone ne peut pas lire un volume BitLocker comme un volume NTFS. Rescuezilla le sauvegarde alors bloc par bloc, comme toute partition sans système de fichiers reconnu ; l’image a alors la taille de toute la partition. Pour une migration, il est recommandé de désactiver BitLocker au préalable et de le réactiver après le transfert :
+
+```powershell
+manage-bde -status C:
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-status` | affiche le niveau de chiffrement et l’état de protection du volume |
+| `-off` | déchiffre entièrement le volume ; continue en arrière-plan |
+| `C:` | argument positionnel : le volume concerné |
+
+</details>
+
+Attendez que `manage-bde -status C:` affiche la valeur `Fully Decrypted`. Sur les appareils gérés via Intune, une stratégie peut réactiver BitLocker ; vérifiez donc à nouveau l’état juste avant le redémarrage.
+
+**Mise en veille prolongée et démarrage rapide.** Lorsque le démarrage rapide est activé, Windows ne s’arrête pas complètement et NTFS est considéré comme toujours utilisé. Partclone s’interrompt alors. Une seule commande désactive les deux :
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `/h off` | forme abrégée de `/hibernate off`: désactive la mise en veille prolongée et le démarrage rapide, `hiberfil.sys` est supprimé |
+
+</details>
+
+**État du système de fichiers.** Si le Dirty Bit est défini, Partclone s’interrompt avec le message indiquant que le volume est « scheduled for a check or it was shutdown uncleanly ». Vérifiez-le au préalable :
+
+```powershell
+fsutil dirty query C:
+```
+
+Si la commande indique `is Dirty`, planifiez une vérification pour le prochain démarrage avec `chkdsk C: /f`, redémarrez puis vérifiez à nouveau.
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `dirty query C:` | fsutil : vérifie si le Dirty Bit du volume est défini |
+| `/f` | chkdsk : corrige les erreurs ; sur le volume système, la vérification est planifiée au prochain démarrage |
+
+</details>
+
+## Étape 2 : créer et démarrer la clé USB amorçable
+
+Téléchargez l’image ISO depuis la page GitHub des releases du projet. La variante standard porte le nom de code Ubuntu dans son nom de fichier, pour la version 2.6.2 `rescuezilla-2.6.2-64bit.resolute.iso`. Écrivez-la sur la clé USB avec un utilitaire d’écriture d’images tel que balenaEtcher ; la page du projet recommande ce programme pour Windows, macOS et Linux.
+
+Windows permet lui-même de lancer le démarrage depuis la clé :
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `/r` | redémarre au lieu d’éteindre |
+| `/o` | démarre dans les options de démarrage avancées ; uniquement avec `/r` |
+| `/t 0` | délai en secondes avant l’exécution |
+
+</details>
+
+Dans les options de démarrage avancées, sélectionnez « Utiliser un périphérique » puis la clé USB. Vous pouvez également ouvrir le menu de démarrage du firmware à la mise sous tension (selon le fabricant : F8, F11 ou F12). Rescuezilla démarre avec Secure Boot activé ; il n’est pas nécessaire de le désactiver. Si l’écran reste noir après la sélection de la langue, l’entrée « Graphical Fallback Mode » du menu de démarrage de la clé peut aider.
+
+## Étape 3 : créer la sauvegarde
+
+Rescuezilla démarre automatiquement sur le bureau. L’assistant guide la sauvegarde en étapes numérotées :
+
+1.  Sélectionnez **Backup**.
+
+2.  *Step 1: Select Drive To Backup* : sélectionnez le disque système. Le modèle et la taille aident à les distinguer ; les noms de périphériques (`nvme0n1`, `sda`) peuvent changer entre deux démarrages.
+
+3.  *Step 2: Select Partitions to Save* : laissez toutes les partitions cochées. Une restauration amorçable nécessite la partition système EFI, la partition réservée Microsoft, C: et la partition de récupération.
+
+4.  *Step 3: Select Destination Drive* : le lecteur externe (Local) ou un partage réseau (Network).
+
+5.  *Step 4: Select Destination Folder* : le dossier de destination sur le lecteur. Rescuezilla y crée un sous-dossier horodaté.
+
+6.  *Step 5: Name Your Backup* : ajoutez éventuellement une description ; elle apparaîtra plus tard dans la liste des images.
+
+7.  *Step 6: Customize Compression Settings* : le réglage gzip par défaut convient dans la plupart des cas.
+
+8.  *Step 7: Confirm Backup Configuration* : vérifiez les informations et démarrez.
+
+Pour 350 Go de données sur un SSD NVMe, la sauvegarde vers un SSD USB externe a duré environ 20 minutes. À la fin, Rescuezilla indique pour chaque partition si elle a été sauvegardée avec succès. Si une erreur est indiquée pour une partition, l’image est incomplète, même si le dossier existe.
+
+## Étape 4 : vérifier l’image
+
+Vérifiez l’image avant la restauration. **Verify Image** dans le menu principal lit toutes les parties et vérifie qu’elles sont complètes et lisibles. Dans la liste des images, la colonne **Partitions** indique les partitions sauvegardées avec leur taille ; un triangle d’avertissement jaune signale les images dont des partitions sont manquantes.
+
+Le dossier de l’image peut également être consulté sous Windows. Les fichiers les plus importants :
+
+| Fichier | Contenu |
+|---|---|
+| `nvme0n1-pt.parted` | table de partitions au format texte, avec le début et la fin de chaque partition en secteurs |
+| `nvme0n1-gpt-1st`, `nvme0n1-gpt-2nd` | copies binaires de la GPT principale et de sauvegarde |
+| `nvme0n1p3.ntfs-ptcl-img.gz.aa`, `.ab`, … | image Partclone de C:, compressée avec gzip et découpée en parties de 4 Go |
+| `nvme0n1p2.dd-ptcl-img.gz.aa` | copie bloc par bloc d’une partition sans système de fichiers reconnu |
+| `clonezilla-img` | journal de la sauvegarde avec le résultat pour chaque partition |
+| `Info-*.txt` | informations matérielles et SMART du système source au moment de la sauvegarde |
+
+`nvme0n1-pt.parted` permet de déterminer si l’image tient sur le disque cible : le secteur final de la dernière partition plus un, multiplié par 512 octets, doit être inférieur à la taille du disque cible en octets.
+
+## Étape 5 : restaurer sur le nouveau SSD
+
+Installez le nouveau SSD puis démarrez à nouveau Rescuezilla.
+
+1.  Sélectionnez **Restore**.
+
+2.  *Step 1: Select Image Location* : le lecteur externe contenant l’image.
+
+3.  *Step 2: Select Backup Image* : sélectionnez l’image à l’aide de la date et de la taille des partitions.
+
+4.  *Step 3: Select Drive To Restore* : le nouveau SSD. Vérifiez deux fois le modèle et la taille : toutes les données présentes sur ce lecteur seront écrasées.
+
+5.  *Step 4: Select Partitions to Restore* : laissez toutes les partitions cochées, ainsi que **Overwrite partition table**.
+
+6.  *Step 5: Confirm Restore Configuration* : vérifiez et démarrez.
+
+La restauration dure environ aussi longtemps que la sauvegarde. Éteignez ensuite l’ordinateur et retirez la clé.
+
+## Étape 6 : démarrer depuis le nouveau lecteur
+
+Le plus simple est de déconnecter l’ancien disque avant le premier démarrage. Si les deux disques sont connectés, ils portent les mêmes ID de partition et de volume, et le firmware peut démarrer sur l’ancien. Si l’ancien disque doit continuer à être utilisé, formatez-le uniquement après avoir vérifié le nouveau système.
+
+Si le nouveau SSD est plus grand que l’ancien, l’espace supplémentaire se trouve sous forme de zone non allouée à la fin. Il n’est toutefois pas possible d’étendre directement C: dans la Gestion des disques, car la partition de récupération se trouve entre C: et l’espace libre. Avec GParted sur la clé Rescuezilla, déplacez d’abord la partition de récupération à la fin (Resize/Move, **Free space following** à 0), puis agrandissez C: sur tout l’espace libre. Windows RE retrouve ensuite sa partition, car celle-ci conserve son numéro de partition ; `reagentc /info` affiche l’état.
+
+Si l’ordinateur change également lors de la migration, Windows démarre généralement sans ajustements et installe ensuite les pilotes manquants. L’activation s’effectue via la licence numérique ; en cas de changement de carte mère, elle peut nécessiter une connexion au compte Microsoft via l’utilitaire de résolution des problèmes d’activation.
+
+## Étapes finales
+
+Sur le nouveau lecteur, réactivez ce qui a été désactivé pour la migration. La mise en veille prolongée est activée par `powercfg /h on`. Activez BitLocker via Paramètres → Confidentialité et sécurité → Chiffrement de l’appareil ou avec `manage-bde -on C:`; vérifiez ensuite avec `manage-bde -protectors -get C:` qu’une clé de récupération est présente et sauvegardée.
+
+Conservez l’image sur le lecteur externe jusqu’à ce que Windows ait fonctionné quelques jours sans anomalie sur le nouveau lecteur et que toutes les données aient été vérifiées. Elle peut ensuite être supprimée ou archivée comme sauvegarde de l’état de livraison.
+
+## Sources
+
+1.  [Rescuezilla](https://rescuezilla.com/): page du projet avec aperçu des fonctions, téléchargement et FAQ.
+
+2.  [Rescuezilla sur GitHub](https://github.com/rescuezilla/rescuezilla): code source, historique du projet et liste des fonctions dans le README.
+
+3.  [Rescuezilla Releases](https://github.com/rescuezilla/rescuezilla/releases/latest): version actuelle avec notes de publication, liste de compatibilité et variantes ISO.
+
+4.  [Rescuezilla Changelog](https://raw.githubusercontent.com/rescuezilla/rescuezilla/master/CHANGELOG.md): introduction de CLI, Verify Image et Clone, ainsi que mise à jour du shim Secure Boot.
+
+5.  [Rescuezilla Wiki: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): procédure officielle pour les disques cibles plus petits que l’original.
+
+6.  [Partclone](https://partclone.org/): outil utilisé par Rescuezilla et Clonezilla pour les sauvegardes tenant compte du système de fichiers.
+
+7.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): déplacement et agrandissement des partitions.
+
+8.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): consultation de l’état de BitLocker.
+
+9.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): déchiffrement d’un volume.
+
+10.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): option `/hibernate` et son influence sur le démarrage rapide.
+
+11.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): interrogation du Dirty Bit.
+
+12.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): vérification et réparation des volumes NTFS.
+
+13.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): paramètre `/o` pour démarrer dans les options de démarrage avancées.
+
+14.  [Microsoft Support: Reactivating Windows after a hardware change](https://support.microsoft.com/en-us/windows/reactivating-windows-after-a-hardware-change-2c0e962a-f04c-145b-6ead-fb3fc72b6665): activation par licence numérique après un changement de carte mère.
+
+----
+
+# Migrer Windows vers un SSD plus petit avec Rescuezilla : de 1 To à 512 Go
+
+URL: https://rafaelpfister.ch/fr/blog/migrer-windows-vers-un-ssd-plus-petit-avec-rescuezilla-de-1-to-a-512-go
+Datum: 2026-09-29
+
+Rescuezilla est un système live gratuit permettant de sauvegarder et de restaurer des disques entiers, compatible avec le format d’image de Clonezilla (présentation de l’outil et procédure de base : [Rescuezilla : migrer Windows vers un nouveau SSD](/blog/rescuezilla-windows-migration)). Tant que le disque cible est de taille égale ou supérieure, une sauvegarde et une restauration suffisent. S’il est plus petit, la restauration échoue, même si les données utilisées y tiendraient. Cet article documente la migration d’un système Windows 11 d’un NVMe de 1 To (C: de 930 Go, dont environ 350 Go utilisés) vers un NVMe de 512 Go, y compris les messages d’erreur rencontrés en cours de route.
+
+## Pourquoi la restauration échoue sur un disque plus petit
+
+Rescuezilla sauvegarde chaque partition séparément avec Partclone et enregistre également la table de partitions. Lors de la restauration, il écrit cette table sans la modifier sur le disque cible. Rescuezilla ne peut pas réduire une partition. Avant de commencer, il vérifie donc que la dernière partition se trouve entièrement sur le disque cible ; dans le cas contraire, il s’interrompt avec ce message :
+
+```text
+The source partition table's final partition (/dev/nvme0n1p4:
+1000203091968 bytes) must refer to a region completely within
+the destination disk (512110190592 bytes).
+```
+
+Une installation Windows typique comporte quatre partitions : la partition système EFI (200 Mo), la partition réservée Microsoft (16 Mo), C: et la partition de récupération avec Windows RE (ici 904 Mio). Windows place la partition de récupération à la fin du disque. Il ne suffit donc pas de réduire C: : la partition de récupération doit aussi être déplacée vers l’avant, directement derrière C:.
+
+La procédure décrite par le wiki de Rescuezilla pour ce cas est la suivante : réduire le disque source avec GParted, créer une nouvelle image, puis restaurer cette image. Une image créée auparavant du disque non modifié reste conservée comme sauvegarde jusqu’à ce que le nouveau système fonctionne.
+
+## Étape 1 : calculer la taille cible
+
+Un SSD vendu comme ayant 512 Go possède 512'110'190'592 octets, soit 476,9 Gio (Rescuezilla affiche également cette valeur). Il faut en déduire EFI, MSR et la partition de récupération, soit un peu plus de 1,1 Gio au total. Il reste donc un peu moins de 475 Gio pour C:. Avec une petite marge, **470 Gio = 481'280 Mio** est une valeur cible judicieuse. Les quelque 6 Go qui resteront libres à la fin du nouveau SSD sont négligeables.
+
+Les données utilisées doivent être inférieures à cette valeur. Cette commande, exécutée dans PowerShell avec des droits d’administrateur, indique jusqu’à quelle taille Windows pourrait réduire un volume :
+
+```powershell
+$s = Get-PartitionSupportedSize -DriveLetter C
+"{0:N1} GB" -f ($s.SizeMin / 1GB)
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-DriveLetter C` | Volume dont les tailles possibles sont interrogées |
+| `SizeMin` | Taille minimale à laquelle Windows pourrait lui-même réduire le volume |
+| `"{0:N1} GB" -f` | Formate la valeur en octets en gigaoctets avec une décimale |
+
+</details>
+
+Si `SizeMin` est nettement supérieur à la quantité de données utilisée, des fichiers non déplaçables (fichier d’échange, points de restauration, MFT) empêchent la réduction avec les outils intégrés à Windows. GParted déplace ces données lors de la réduction ; cette limite ne s’y applique pas.
+
+## Étape 2 : désactiver BitLocker et l’hibernation
+
+GParted ne peut ni lire ni réduire un volume chiffré avec BitLocker, et Partclone ne peut pas le sauvegarder comme NTFS. Vérifiez l’état dans PowerShell avec des droits d’administrateur :
+
+```powershell
+manage-bde -status C:
+```
+
+Si `Fully Decrypted` n’y figure pas, désactivez BitLocker et attendez que le déchiffrement soit terminé :
+
+```powershell
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-status` | Affiche le niveau de chiffrement, la méthode et l’état de protection du volume |
+| `-off` | Déchiffre entièrement le volume et supprime les protecteurs de clé |
+| `C:` | Argument positionnel : le volume concerné |
+
+</details>
+
+Le déchiffrement s’effectue en arrière-plan et peut prendre une heure ou plus selon la quantité de données. Sur les appareils gérés par Intune, une stratégie peut réactiver BitLocker peu après. Vérifiez donc à nouveau l’état juste avant de démarrer GParted.
+
+L’hibernation doit également être désactivée. Lorsque le démarrage rapide est actif, Windows ne s’arrête pas complètement, mais enregistre l’état du noyau dans `hiberfil.sys`. NTFS est alors considéré comme encore utilisé, et GParted refuse toute modification. Une commande désactive simultanément l’hibernation et le démarrage rapide, et supprime `hiberfil.sys` :
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `/h off` | Forme courte de `/hibernate off`: désactive l’hibernation et le démarrage rapide, `hiberfil.sys` est supprimé |
+
+</details>
+
+## Étape 3 : démarrer Rescuezilla
+
+Windows peut diriger le prochain démarrage directement vers le menu de démarrage avec les options avancées. Sélectionnez-y « Utiliser un périphérique », puis la clé USB contenant Rescuezilla :
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `/r` | Redémarre au lieu d’arrêter l’ordinateur |
+| `/o` | Démarre dans les options de démarrage avancées (Windows RE) ; uniquement avec `/r` |
+| `/t 0` | Délai en secondes avant l’exécution |
+
+</details>
+
+Sinon, le menu de démarrage du firmware s’ouvre lors de la mise sous tension, avec F11 sur les cartes ASRock. Si « Utiliser un périphérique » est absent, `shutdown /r /fw /t 0` mène directement à la configuration UEFI, où il est possible de sélectionner le disque de démarrage pour le prochain démarrage.
+
+## Étape 4 : réduire C: et déplacer la partition de récupération
+
+Sur le bureau de Rescuezilla, lancez **Partition Editor** (GParted), et non Rescuezilla lui-même.
+
+1.  Sélectionnez le disque source en haut à droite. Vérifiez sa taille (ici 931.51 Gio) afin de ne pas modifier par erreur le disque de sauvegarde externe ou un second disque interne.
+
+2.  Faites un clic droit sur la partition NTFS contenant C: → **Resize/Move**. Saisissez la valeur cible dans le champ **New size (MiB)**, ici `481280`, et validez avec la touche Tab. **Free space preceding** reste inchangé. Confirmez avec **Resize/Move**.
+
+3.  Sous C: apparaît maintenant une ligne `unallocated`, puis la partition de récupération (NTFS, environ 900 Mio, indicateurs `hidden, diag`). Faites un clic droit sur la partition de récupération → **Resize/Move**.
+
+4.  Dans le champ **Free space preceding (MiB)**, effacez la valeur, saisissez `0` et validez avec Tab. **New size** reste identique ; **Free space following** passe à l’ensemble de l’espace libre. Si `1` apparaît après avoir appuyé sur Tab au lieu de `0`, cela correspond à l’alignement sur des Mio entiers et est normal. Confirmez avec **Resize/Move**.
+
+5.  Confirmez avec OK l’avertissement indiquant que le déplacement pourrait empêcher le démarrage. Il concerne les partitions contenant un chargeur de démarrage ; Windows démarre depuis la partition système EFI, qui reste inchangée.
+
+6.  L’ordre est désormais : EFI, MSR, C:, partition de récupération, `unallocated`. Jusqu’ici, les opérations sont seulement mises en attente. Ce n’est qu’un clic sur la coche verte (**Apply All Operations**) qui applique les modifications.
+
+Windows RE retrouve sa partition après le déplacement, car elle conserve son numéro de partition. `reagentc /info` affiche toujours ensuite `Enabled` avec le chemin `harddisk0\partition4\Recovery\WindowsRE`.
+
+Le guide de Rescuezilla ne réduit que la dernière partition. Cela suffit lorsque C: est la dernière partition. Dans une installation standard de Windows 10 ou 11, la partition de récupération se trouve après elle ; son déplacement est alors obligatoire.
+
+## Étape 5 : supprimer le dirty flag
+
+La sauvegarde suivante échoue sur C: après la réduction avec le message suivant :
+
+```text
+ntfsclone-ng.c: NTFS Volume '/dev/nvme0n1p3' is scheduled for a check
+or it was shutdown uncleanly. Please boot Windows or fix it by fsck.
+```
+
+La cause est intentionnelle : `ntfsresize`, utilisé par GParted pour NTFS, marque le système de fichiers pour vérification avant chaque modification de taille et laisse ce marquage en place. Selon la page de manuel, Windows doit exécuter `chkdsk` au prochain démarrage. Dans le cas décrit, le flag restait toutefois actif après un démarrage normal de Windows, et `Get-Volume C` indiquait `Full Repair Needed`. Vérifiez l’état dans PowerShell avec des droits d’administrateur :
+
+```powershell
+fsutil dirty query C:
+```
+
+Si la commande indique `Volume - C: is Dirty`, faites exécuter la vérification au prochain démarrage :
+
+```powershell
+chkdsk C: /f
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `dirty query C:` | fsutil : vérifie si le dirty bit du volume est défini |
+| `C:` | chkdsk : volume à vérifier |
+| `/f` | Corrige les erreurs trouvées ; sur le volume système, la vérification est planifiée pour le prochain démarrage |
+
+</details>
+
+Répondez J à la question demandant si la vérification doit être exécutée au prochain redémarrage, puis redémarrez Windows normalement. Ensuite, `fsutil dirty query C:` doit afficher le message `is NOT Dirty`, et `Get-Volume C` doit à nouveau indiquer `Healthy`. Ne redémarrez Rescuezilla qu’à ce moment-là.
+
+## Étape 6 : créer et vérifier la nouvelle image
+
+Créez maintenant avec Rescuezilla une nouvelle image du disque réduit. La taille de l’image reste pratiquement identique à celle de la première sauvegarde (ici environ 214 Go), car Partclone ne sauvegarde que les blocs utilisés. Rescuezilla place chaque sauvegarde dans son propre dossier horodaté, par exemple `2026-09-29-1343-img-rescuezilla`.
+
+Tous les images apparaissent ensuite côte à côte dans la liste de sélection des images. La colonne **Partitions** indique les tailles : l’image créée avant la réduction contient `ntfs 930.4GB`, la nouvelle contient `ntfs 470GB`. Une tentative de sauvegarde interrompue apparaît avec un triangle d’avertissement jaune ; elle contient l’ancienne table de partitions et déclenche à la restauration exactement le message d’erreur de la première section. Supprimez de tels dossiers afin de ne pas les sélectionner par erreur.
+
+Vous pouvez aussi vérifier au préalable si une image tient sur le disque cible dans le fichier `<disk>-pt.parted` du dossier d’image. Il contient la table de partitions sauvegardée en secteurs de 512 octets :
+
+```text
+Number  Start       End         Size        File system  Name
+ 1      2048s       411647s     409600s     fat32        EFI system partition
+ 2      411648s     444415s     32768s                   Microsoft reserved partition
+ 3      444416s     986105855s  985661440s  ntfs         Basic data partition
+ 4      986105856s  987957247s  1851392s    ntfs
+```
+
+La fin de la dernière partition (987'957'247 + 1 secteurs × 512 octets = 505,8 Go) est inférieure aux 512,1 Go du disque cible. L’image convient.
+
+## Étape 7 : restaurer sur le nouveau SSD
+
+1.  Dans Rescuezilla, sélectionnez **Restore**, le disque contenant les images, puis la **nouvelle** image (sans triangle d’avertissement, avec la partition C: réduite).
+
+2.  Sélectionnez le nouveau SSD comme cible. Vérifiez deux fois le modèle et la taille : la restauration écrase entièrement le disque cible.
+
+3.  Laissez toutes les partitions cochées, ainsi que **Overwrite partition table**, puis démarrez la restauration.
+
+4.  Démarrez ensuite depuis le nouveau SSD. Le plus simple est de débrancher auparavant l’ancien disque ; sinon, sélectionnez le nouveau SSD dans le menu de démarrage du firmware.
+
+## Opérations finales
+
+Sur le nouveau disque, réactivez ce qui a été désactivé pour la migration. `powercfg /h on` réactive l’hibernation. Activez BitLocker via Paramètres → Confidentialité et sécurité → Chiffrement de l’appareil, ou avec `manage-bde -on C:` ; vérifiez ensuite avec `manage-bde -protectors -get C:` que la clé de récupération est sauvegardée. Si Secure Boot a été désactivé dans l’UEFI pour démarrer Rescuezilla, réactivez-le ; tant qu’il est désactivé, BitLocker consigne l’événement 810 à chaque démarrage.
+
+Vous pouvez supprimer l’image du disque de 1 To non modifié dès que Windows démarre correctement depuis le nouveau SSD et que les données sont complètes.
+
+## Sources
+
+1.  [Wiki Rescuezilla : restauration sur un disque plus petit](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): procédure officielle avec GParted, raison de la restriction lors de la restauration.
+
+2.  [Rescuezilla](https://rescuezilla.com/): page du projet avec le téléchargement du système live.
+
+3.  [Manuel GParted](https://gparted.org/display-doc.php?name=help-manual): utilisation de Resize/Move, alignement sur les Mio et exécution des opérations mises en attente.
+
+4.  [ntfsresize(8), page de manuel Ubuntu](https://manpages.ubuntu.com/manpages/noble/man8/ntfsresize.8.html): outil utilisé pour la réduction NTFS dans GParted ; décrit le marquage de vérification défini intentionnellement.
+
+5.  [Microsoft Learn : chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): paramètre `/f` et planification de la vérification sur le volume système.
+
+6.  [Microsoft Learn : fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): interrogation et signification du dirty bit.
+
+7.  [Microsoft Learn : manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): interrogation de l’état de BitLocker.
+
+8.  [Microsoft Learn : manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): déchiffrement d’un volume.
+
+9.  [Microsoft Learn : options de ligne de commande Powercfg](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): option `/hibernate` et son influence sur le démarrage rapide.
+
+10.  [Microsoft Learn : Get-PartitionSupportedSize](https://learn.microsoft.com/en-us/powershell/module/storage/get-partitionsupportedsize): taille minimale et maximale de partition du point de vue de Windows.
+
+11.  [Microsoft Learn : options de ligne de commande REAgentC](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/reagentc-command-line-options): vérification de l’état et de l’emplacement de Windows RE.
+
+12.  [Microsoft Learn : shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): paramètres `/o` et `/fw` pour démarrer respectivement dans les options avancées ou dans l’UEFI.
 
 ----
 
@@ -43313,6 +44217,458 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# Rescuezilla: migrare Windows su un nuovo SSD, con presentazione dello strumento
+
+URL: https://rafaelpfister.ch/it/blog/rescuezilla-migrare-windows-su-un-nuovo-ssd-con-presentazione-dello-strumento
+Datum: 2026-09-29
+
+Chi desidera trasferire un’installazione Windows su un nuovo SSD o su un nuovo computer senza reinstallare Windows ha bisogno di uno strumento che esegua il backup e il ripristino dell’intero disco con tutte le partizioni. Rescuezilla è uno di questi strumenti: gratuito, open source e dotato di un’interfaccia grafica utilizzabile anche senza conoscenze di Linux. Questo articolo presenta lo strumento e descrive la migrazione su un SSD di pari dimensioni o più grande. Per un SSD di destinazione più piccolo è disponibile una guida separata: [Migrare Windows su un SSD più piccolo con Rescuezilla](/blog/windows-kleinere-ssd-rescuezilla).
+
+## Che cos’è Rescuezilla
+
+Rescuezilla è un sistema live basato su Ubuntu che si avvia da una chiavetta USB. Funziona indipendentemente dal sistema operativo installato e può quindi eseguire il backup anche di volumi che Windows blocca durante il funzionamento. Il progetto è nato nel 2019 come fork di Redo Backup and Recovery, che a quel momento non veniva più mantenuto da sette anni. Dalla versione 2.0 (2020), Rescuezilla scrive immagini nel formato di Clonezilla: un backup creato con Rescuezilla può essere ripristinato con Clonezilla e viceversa. La licenza è GPL-3.0. La versione attuale è la 2.6.2 di maggio 2026, basata su Ubuntu 26.04 LTS con Partclone 0.3.47.
+
+Il lavoro effettivo viene svolto da Partclone. Supporta i comuni file system (NTFS, FAT, ext4 e altri) e legge soltanto i blocchi occupati. Una partizione da 1 TB con 350 GB di dati genera quindi un’immagine di circa 215 GB (compressa con gzip), non di 1 TB. Le partizioni senza un file system riconosciuto, come la partizione riservata Microsoft, vengono salvate da Rescuezilla blocco per blocco con `dd`; nell’immagine questi file hanno l’estensione `.dd-ptcl-img`.
+
+<details class="options-details">
+<summary>Panoramica delle funzioni</summary>
+
+| Funzione | Scopo |
+|---|---|
+| Backup | salva le partizioni selezionate di un disco, inclusa la tabella delle partizioni, come immagine su un’unità locale o una condivisione di rete (SMB, SSH) |
+| Restore | ripristina un’immagine su un disco, con la possibilità di sovrascrivere la tabella delle partizioni |
+| Verify Image | verifica se un’immagine esistente è completa e leggibile |
+| Clone | copia direttamente un disco su un secondo, senza archiviazione intermedia |
+| Image Explorer (beta) | monta un’immagine in sola lettura per recuperare singoli file |
+| Immagini di VM | legge, oltre alle immagini Clonezilla, anche immagini VDI, VMDK, VHDX, QCOW2 e Raw |
+| Strumenti aggiuntivi | GParted, gestore file, browser web e strumenti per recuperare file eliminati sul desktop live |
+| CLI | riga di comando sperimentale (dalla versione 2.5) per Backup, Verify, Restore e Clone |
+
+</details>
+
+Una limitazione è importante per le migrazioni: Rescuezilla non ridimensiona le partizioni. Il disco di destinazione deve arrivare almeno fino alla fine dell’ultima partizione salvata. Se è più piccolo, è necessario prepararlo con GParted, come descritto nella guida collegata sopra.
+
+## Immagine o clonazione
+
+Rescuezilla offre due metodi per una migrazione. Con la **clonazione**, il disco di origine e quello di destinazione sono collegati contemporaneamente e Rescuezilla copia direttamente. Questo consente di risparmiare tempo e un terzo supporto dati, ma richiede che entrambi i dischi siano collegati contemporaneamente al computer o a un adattatore. Con l’**imaging**, viene prima creata un’immagine su un’unità esterna, che viene poi ripristinata sul nuovo disco. Richiede più tempo, ma ha un vantaggio: l’immagine rimane come backup completo dello stato precedente, anche se qualcosa dovesse andare storto durante il ripristino. Per una migrazione, l’immagine è quindi la scelta più sicura; è questa la variante descritta nell’articolo.
+
+## Requisiti
+
+1.  **Chiavetta USB** per Rescuezilla. Il suo contenuto verrà eliminato durante la scrittura dell’immagine di avvio.
+
+2.  **Unità esterna** per l’immagine, con spazio libero pari approssimativamente alle dimensioni dei dati occupati. Sia exFAT sia NTFS funzionano.
+
+3.  **Disco di destinazione**, almeno grande quanto il disco di origine. Se è più piccolo, seguire prima la guida per SSD più piccoli.
+
+4.  **Chiave di ripristino BitLocker**, se C: è crittografato. Disponibile su aka.ms/myrecoverykey o nel portale Entra per i dispositivi gestiti.
+
+## Passaggio 1: preparare Windows
+
+Prima del backup, controllare tre punti in una PowerShell con diritti di amministratore.
+
+**BitLocker.** Partclone non può leggere un volume BitLocker come NTFS. Rescuezilla lo salva quindi blocco per blocco, come qualsiasi partizione senza file system riconosciuto, e l’immagine risulterà grande quanto l’intera partizione. Per una migrazione, si consiglia di disattivare prima BitLocker e di riattivarlo dopo il trasferimento:
+
+```powershell
+manage-bde -status C:
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-status` | mostra il livello di crittografia e lo stato di protezione del volume |
+| `-off` | decrittografa completamente il volume; continua a essere eseguito in background |
+| `C:` | argomento posizionale: il volume interessato |
+
+</details>
+
+Attendere finché `manage-bde -status C:` non mostra il valore `Fully Decrypted`. Sui dispositivi gestiti tramite Intune, un criterio può riattivare BitLocker; controllare quindi nuovamente lo stato subito prima del riavvio.
+
+**Ibernazione e avvio rapido.** Con l’avvio rapido attivo, Windows non si spegne completamente e NTFS risulta ancora in uso. In questo caso Partclone si interrompe. Un comando disattiva entrambi:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `/h off` | forma breve di `/hibernate off`: disattiva l’ibernazione e l’avvio rapido, `hiberfil.sys` viene rimosso |
+
+</details>
+
+**Stato del file system.** Se il dirty bit è impostato, Partclone si interrompe con il messaggio che il volume è “scheduled for a check or it was shutdown uncleanly”. Verificare prima:
+
+```powershell
+fsutil dirty query C:
+```
+
+Se il comando segnala `is Dirty`, pianificare un controllo per il successivo avvio con `chkdsk C: /f`, riavviare e verificare nuovamente.
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `dirty query C:` | fsutil: verifica se il dirty bit del volume è impostato |
+| `/f` | chkdsk: corregge gli errori; sul volume di sistema, il controllo viene pianificato per il successivo avvio |
+
+</details>
+
+## Passaggio 2: creare e avviare la chiavetta di avvio
+
+Scaricare l’immagine ISO dalla pagina delle release del progetto su GitHub. La variante standard riporta il nome in codice di Ubuntu nel nome del file; per la versione 2.6.2 è `rescuezilla-2.6.2-64bit.resolute.iso`. Scriverla sulla chiavetta USB con un programma di scrittura immagini come balenaEtcher; la pagina del progetto raccomanda questo programma per Windows, macOS e Linux.
+
+Windows stesso consente di avviare dalla chiavetta:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `/r` | riavvia invece di spegnere |
+| `/o` | avvia nelle opzioni di avvio avanzate; solo insieme a `/r` |
+| `/t 0` | tempo di attesa in secondi prima dell’esecuzione |
+
+</details>
+
+Nelle opzioni di avvio avanzate, selezionare “Usa un dispositivo” e la chiavetta USB. In alternativa, all’accensione si apre il menu di avvio del firmware (a seconda del produttore F8, F11 o F12). Rescuezilla si avvia con Secure Boot attivato; non è necessario disattivarlo. Se lo schermo resta nero dopo la selezione della lingua, usare la voce “Graphical Fallback Mode” nel menu di avvio della chiavetta.
+
+## Passaggio 3: creare il backup
+
+Rescuezilla si avvia automaticamente sul desktop. La procedura guidata conduce attraverso il backup in passaggi numerati:
+
+1.  Selezionare **Backup**.
+
+2.  *Step 1: Select Drive To Backup*: selezionare il disco di sistema. Modello e dimensioni aiutano a distinguerli; i nomi dei dispositivi (`nvme0n1`, `sda`) possono cambiare tra due avvii.
+
+3.  *Step 2: Select Partitions to Save*: lasciare selezionate tutte le partizioni. Per un ripristino avviabile servono la partizione di sistema EFI, la partizione riservata Microsoft, C: e la partizione di ripristino.
+
+4.  *Step 3: Select Destination Drive*: l’unità esterna (Local) o una condivisione di rete (Network).
+
+5.  *Step 4: Select Destination Folder*: la cartella di destinazione sull’unità. Rescuezilla vi crea una sottocartella con data e ora.
+
+6.  *Step 5: Name Your Backup*: facoltativamente, inserire una descrizione; verrà visualizzata successivamente nell’elenco delle immagini.
+
+7.  *Step 6: Customize Compression Settings*: l’impostazione predefinita gzip è adatta nella maggior parte dei casi.
+
+8.  *Step 7: Confirm Backup Configuration*: controllare le informazioni e avviare.
+
+Per 350 GB di dati su un SSD NVMe, il backup su un SSD USB esterno ha richiesto circa 20 minuti. Al termine, Rescuezilla indica per ogni partizione se il backup è stato eseguito correttamente. Se per una partizione viene visualizzato un errore, l’immagine è incompleta, anche se la cartella esiste.
+
+## Passaggio 4: verificare l’immagine
+
+Prima del ripristino, verificare l’immagine. **Verify Image** nel menu principale legge tutte le parti e controlla che siano complete e leggibili. Nell’elenco delle immagini, la colonna **Partitions** mostra le partizioni salvate con le relative dimensioni; un triangolo di avviso giallo contrassegna le immagini con partizioni mancanti.
+
+La cartella dell’immagine può essere esaminata anche in Windows. I file più importanti:
+
+| File | Contenuto |
+|---|---|
+| `nvme0n1-pt.parted` | tabella delle partizioni in formato testo, con inizio e fine di ogni partizione in settori |
+| `nvme0n1-gpt-1st`, `nvme0n1-gpt-2nd` | copie binarie della GPT primaria e di backup |
+| `nvme0n1p3.ntfs-ptcl-img.gz.aa`, `.ab`, … | immagine Partclone di C:, compressa con gzip e suddivisa in parti da 4 GB |
+| `nvme0n1p2.dd-ptcl-img.gz.aa` | copia blocco per blocco di una partizione senza file system riconosciuto |
+| `clonezilla-img` | registro del backup con il risultato per ogni partizione |
+| `Info-*.txt` | dati hardware e SMART del sistema di origine al momento del backup |
+
+Da `nvme0n1-pt.parted` si può verificare se l’immagine entra nel disco di destinazione: il settore finale dell’ultima partizione più uno, moltiplicato per 512 byte, deve essere inferiore alle dimensioni del disco di destinazione in byte.
+
+## Passaggio 5: ripristino sul nuovo SSD
+
+Installare il nuovo SSD e avviare nuovamente Rescuezilla.
+
+1.  Selezionare **Restore**.
+
+2.  *Step 1: Select Image Location*: l’unità esterna con l’immagine.
+
+3.  *Step 2: Select Backup Image*: selezionare l’immagine in base alla data e alle dimensioni delle partizioni.
+
+4.  *Step 3: Select Drive To Restore*: il nuovo SSD. Controllare due volte modello e dimensioni: tutti i dati su questa unità verranno sovrascritti.
+
+5.  *Step 4: Select Partitions to Restore*: lasciare selezionate tutte le partizioni e anche **Overwrite partition table**.
+
+6.  *Step 5: Confirm Restore Configuration*: controllare e avviare.
+
+Il ripristino richiede all’incirca lo stesso tempo del backup. Al termine, spegnere il computer e rimuovere la chiavetta.
+
+## Passaggio 6: avviare dal nuovo disco
+
+La soluzione più semplice è scollegare il vecchio disco prima del primo avvio. Se entrambi i dischi sono collegati, hanno gli stessi ID di partizione e volume e il firmware potrebbe scegliere il vecchio per l’avvio. Se il vecchio disco deve continuare a essere utilizzato, formattarlo solo dopo aver verificato il nuovo sistema.
+
+Se il nuovo SSD è più grande di quello vecchio, lo spazio aggiuntivo si trova come area non allocata alla fine. Tuttavia, non è possibile espandere direttamente C: in Gestione disco, perché la partizione di ripristino si trova tra C: e lo spazio libero. Con GParted sulla chiavetta Rescuezilla, spostare prima la partizione di ripristino alla fine (Resize/Move, **Free space following** su 0), quindi espandere C: sull’intera area libera. Windows RE ritroverà poi la sua partizione poiché mantiene il suo numero di partizione; `reagentc /info` mostra lo stato.
+
+Se con la migrazione cambia anche il computer, Windows in genere si avvia senza modifiche e installa successivamente i driver mancanti. L’attivazione avviene tramite la licenza digitale; in caso di sostituzione della scheda madre, eventualmente solo dopo aver effettuato l’accesso con l’account Microsoft tramite lo strumento di risoluzione dei problemi di attivazione.
+
+## Operazioni finali
+
+Sul nuovo disco, riattivare ciò che è stato disattivato per la migrazione. L’ibernazione viene attivata con `powercfg /h on`. BitLocker si attiva tramite Impostazioni → Privacy e sicurezza → Crittografia dispositivo oppure con `manage-bde -on C:`; quindi controllare con `manage-bde -protectors -get C:` che sia presente e salvata una chiave di ripristino.
+
+Conservare l’immagine sull’unità esterna finché Windows non ha funzionato per alcuni giorni senza anomalie sul nuovo disco e tutti i dati non sono stati controllati. Successivamente può essere eliminata o archiviata come backup dello stato di consegna.
+
+## Fonti
+
+1.  [Rescuezilla](https://rescuezilla.com/): pagina del progetto con panoramica delle funzioni, download e FAQ.
+
+2.  [Rescuezilla su GitHub](https://github.com/rescuezilla/rescuezilla): codice sorgente, storia del progetto ed elenco delle funzioni nel README.
+
+3.  [Release di Rescuezilla](https://github.com/rescuezilla/rescuezilla/releases/latest): versione attuale con note di rilascio, elenco di compatibilità e varianti ISO.
+
+4.  [Changelog di Rescuezilla](https://raw.githubusercontent.com/rescuezilla/rescuezilla/master/CHANGELOG.md): introduzione di CLI, Verify Image e Clone, nonché aggiornamento dello shim Secure Boot.
+
+5.  [Wiki di Rescuezilla: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): procedura ufficiale per dischi di destinazione più piccoli dell’originale.
+
+6.  [Partclone](https://partclone.org/): strumento utilizzato da Rescuezilla e Clonezilla per backup consapevoli del file system.
+
+7.  [Manuale di GParted](https://gparted.org/display-doc.php?name=help-manual): spostamento e ridimensionamento delle partizioni.
+
+8.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): verifica dello stato di BitLocker.
+
+9.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): decrittografia di un volume.
+
+10.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): opzione `/hibernate` e relativo effetto sull’avvio rapido.
+
+11.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): verifica del dirty bit.
+
+12.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): controllo e riparazione dei volumi NTFS.
+
+13.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parametro `/o` per l’avvio nelle opzioni di avvio avanzate.
+
+14.  [Microsoft Support: Reactivating Windows after a hardware change](https://support.microsoft.com/en-us/windows/reactivating-windows-after-a-hardware-change-2c0e962a-f04c-145b-6ead-fb3fc72b6665): attivazione tramite licenza digitale dopo la sostituzione della scheda madre.
+
+----
+
+# Migrare Windows su un SSD più piccolo con Rescuezilla: da 1 TB a 512 GB
+
+URL: https://rafaelpfister.ch/it/blog/migrare-windows-su-un-ssd-piu-piccolo-con-rescuezilla-da-1-tb-a-512-gb
+Datum: 2026-09-29
+
+Rescuezilla è un sistema live gratuito per il backup e il ripristino di interi supporti dati, compatibile con il formato di immagine di Clonezilla (presentazione dello strumento e procedura di base: [Rescuezilla: migrare Windows su un nuovo SSD](/blog/rescuezilla-windows-migration)). Finché il disco di destinazione è uguale o più grande, sono sufficienti backup e ripristino. Se è più piccolo, il ripristino si interrompe anche se i dati occupati vi entrerebbero. Questo articolo documenta la migrazione di un sistema Windows 11 da un NVMe da 1 TB (C: con 930 GB, di cui circa 350 GB occupati) a un NVMe da 512 GB, incluse le schermate di errore che si presentano durante il percorso.
+
+## Perché il ripristino su un disco più piccolo fallisce
+
+Rescuezilla esegue il backup di ogni partizione separatamente con Partclone e salva inoltre la tabella delle partizioni. Durante il ripristino scrive questa tabella invariata sul disco di destinazione. Rescuezilla non può ridurre una partizione. Prima di avviare l'operazione verifica quindi che l'ultima partizione sia interamente sul disco di destinazione e, in caso contrario, si interrompe con questo messaggio:
+
+```text
+The source partition table's final partition (/dev/nvme0n1p4:
+1000203091968 bytes) must refer to a region completely within
+the destination disk (512110190592 bytes).
+```
+
+Una tipica installazione di Windows ha quattro partizioni: la partizione di sistema EFI (200 MB), la partizione riservata Microsoft (16 MB), C: e la partizione di ripristino con Windows RE (qui 904 MiB). Windows colloca la partizione di ripristino alla fine del disco. Non basta quindi ridurre C:: anche la partizione di ripristino deve essere spostata in avanti, direttamente dietro C:.
+
+La procedura descritta dal wiki di Rescuezilla per questo caso è: ridurre il disco di origine con GParted, creare una nuova immagine, ripristinare questa immagine. Un'immagine creata in precedenza del disco non modificato viene conservata come backup finché il nuovo sistema non è operativo.
+
+## Passaggio 1: calcolare la dimensione di destinazione
+
+Un SSD venduto come 512 GB ha 512'110'190'592 byte, ovvero 476,9 GiB (Rescuezilla mostra anch'esso questo valore). Da questo valore vanno sottratte EFI, MSR e la partizione di ripristino, per un totale di poco più di 1,1 GiB. Per C: rimangono quindi poco meno di 475 GiB. Con un po' di margine, **470 GiB = 481'280 MiB** è un valore di destinazione sensato. I circa 6 GB che resteranno liberi alla fine sul nuovo SSD non sono rilevanti.
+
+I dati occupati devono rimanere sotto questo valore. Il comando seguente, eseguito in PowerShell con diritti di amministratore, indica di quanto Windows potrebbe ridurre un volume:
+
+```powershell
+$s = Get-PartitionSupportedSize -DriveLetter C
+"{0:N1} GB" -f ($s.SizeMin / 1GB)
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-DriveLetter C` | Volume di cui vengono richieste le possibili dimensioni |
+| `SizeMin` | Dimensione minima alla quale Windows potrebbe ridurre autonomamente il volume |
+| `"{0:N1} GB" -f` | Formatta il valore in byte come gigabyte con una cifra decimale |
+
+</details>
+
+Se `SizeMin` è nettamente superiore alla quantità di dati occupati, file non spostabili (file di paging, punti di ripristino, MFT) impediscono la riduzione con gli strumenti integrati di Windows. GParted sposta anche questi dati durante la riduzione, perciò tale limite non si applica.
+
+## Passaggio 2: disattivare BitLocker e l'ibernazione
+
+GParted non può né leggere né ridurre un volume crittografato con BitLocker, e Partclone non può eseguirne il backup come NTFS. Verificate lo stato in PowerShell con diritti di amministratore:
+
+```powershell
+manage-bde -status C:
+```
+
+Se non compare `Fully Decrypted`, disattivate BitLocker e attendete il completamento della decrittazione:
+
+```powershell
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-status` | Mostra il livello e il metodo di crittografia, nonché lo stato di protezione del volume |
+| `-off` | Decritta completamente il volume e rimuove i dispositivi di protezione delle chiavi |
+| `C:` | Argomento posizionale: il volume interessato |
+
+</details>
+
+La decrittazione avviene in background e, a seconda della quantità di dati, può richiedere un'ora o più. Nei dispositivi gestiti tramite Intune, un criterio potrebbe riattivare BitLocker dopo breve tempo. Verificate quindi nuovamente lo stato immediatamente prima di avviare GParted.
+
+Inoltre, l'ibernazione deve essere disattivata. Con l'avvio rapido attivo, Windows non viene arrestato completamente, ma salva lo stato del kernel in `hiberfil.sys`. NTFS risulta quindi ancora in uso e GParted rifiuta qualsiasi modifica. Un comando disattiva insieme l'ibernazione e l'avvio rapido e cancella `hiberfil.sys`:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `/h off` | Forma abbreviata di `/hibernate off`: disattiva l'ibernazione e l'avvio rapido, `hiberfil.sys` viene rimosso |
+
+</details>
+
+## Passaggio 3: avviare Rescuezilla
+
+Windows può indirizzare il successivo avvio direttamente al menu di avvio con le opzioni avanzate. Qui selezionate «Usa un dispositivo» e la chiavetta USB con Rescuezilla:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `/r` | Riavvia anziché arrestare il sistema |
+| `/o` | Avvia nelle opzioni di avvio avanzate (Windows RE); solo insieme a `/r` |
+| `/t 0` | Tempo di attesa in secondi prima dell'esecuzione |
+
+</details>
+
+In alternativa, all'accensione si apre il menu di avvio del firmware, sui sistemi ASRock con F11. Se manca «Usa un dispositivo», `shutdown /r /fw /t 0` porta direttamente alla configurazione UEFI, dove è possibile selezionare l'unità di avvio per il prossimo avvio.
+
+## Passaggio 4: ridurre C: e spostare la partizione di ripristino
+
+Sul desktop di Rescuezilla avviate **Partition Editor** (GParted), non Rescuezilla stesso.
+
+1.  In alto a destra selezionate il disco di origine. Fate attenzione alle dimensioni (qui 931.51 GiB), per non modificare accidentalmente il disco di backup esterno o un secondo disco interno.
+
+2.  Fate clic con il tasto destro sulla partizione NTFS con C: → **Resize/Move**. Nel campo **New size (MiB)** inserite il valore di destinazione, qui `481280`, e confermate con il tasto Tab. **Free space preceding** resta invariato. Confermate con **Resize/Move**.
+
+3.  Sotto C: compare ora una riga `unallocated`, seguita dalla partizione di ripristino (NTFS, circa 900 MiB, flag `hidden, diag`). Fate clic con il tasto destro sulla partizione di ripristino → **Resize/Move**.
+
+4.  Nel campo **Free space preceding (MiB)** eliminate il valore, inserite `0` e confermate con Tab. **New size** rimane invariato, **Free space following** passa all'intera area libera. Se dopo Tab compare `1` anziché `0`, si tratta dell'allineamento a MiB interi ed è normale. Confermate con **Resize/Move**.
+
+5.  Confermate con OK l'avviso che lo spostamento potrebbe impedire l'avvio. Riguarda le partizioni con bootloader; Windows si avvia dalla partizione di sistema EFI, che rimane invariata.
+
+6.  L'ordine è ora: EFI, MSR, C:, partizione di ripristino, `unallocated`. Fino a questo punto le modifiche sono soltanto pianificate. Solo un clic sul segno di spunta verde (**Apply All Operations**) le esegue.
+
+Windows RE ritrova la propria partizione dopo lo spostamento perché mantiene il suo numero di partizione. `reagentc /info` continua quindi a mostrare `Enabled` con il percorso `harddisk0\partition4\Recovery\WindowsRE`.
+
+La guida di Rescuezilla riduce soltanto l'ultima partizione. Questo è sufficiente se C: è l'ultima partizione. In un'installazione standard di Windows 10 o 11, la partizione di ripristino si trova dopo di essa e il suo spostamento è obbligatorio.
+
+## Passaggio 5: rimuovere il dirty flag
+
+Dopo la riduzione, il backup successivo si interrompe su C: con questo messaggio:
+
+```text
+ntfsclone-ng.c: NTFS Volume '/dev/nvme0n1p3' is scheduled for a check
+or it was shutdown uncleanly. Please boot Windows or fix it by fsck.
+```
+
+La causa è intenzionale: `ntfsresize`, usato da GParted per NTFS, contrassegna il file system per il controllo prima di ogni modifica delle dimensioni e lascia tale contrassegno. Secondo la pagina man, Windows dovrebbe eseguire `chkdsk` al successivo avvio. Nel caso descritto, tuttavia, il flag rimaneva impostato anche dopo un normale avvio di Windows e `Get-Volume C` segnalava `Full Repair Needed`. Potete verificare lo stato in PowerShell con diritti di amministratore:
+
+```powershell
+fsutil dirty query C:
+```
+
+Se il comando segnala `Volume - C: is Dirty`, programmate il controllo al successivo avvio:
+
+```powershell
+chkdsk C: /f
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `dirty query C:` | fsutil: verifica se il dirty bit del volume è impostato |
+| `C:` | chkdsk: il volume da controllare |
+| `/f` | Corregge gli errori trovati; sul volume di sistema il controllo viene programmato per il successivo avvio |
+
+</details>
+
+Rispondete J alla domanda se il controllo debba essere eseguito al prossimo riavvio e riavviate Windows normalmente. Dopodiché `fsutil dirty query C:` deve mostrare il messaggio `is NOT Dirty` e `Get-Volume C` deve segnalare nuovamente `Healthy`. Solo allora avviate di nuovo Rescuezilla.
+
+## Passaggio 6: creare e verificare una nuova immagine
+
+Ora create con Rescuezilla una nuova immagine del disco ridotto. La dimensione dell'immagine rimane praticamente uguale a quella del primo backup (qui circa 214 GB), poiché Partclone salva soltanto i blocchi occupati. Rescuezilla salva ogni backup in una propria cartella con marca temporale, ad esempio `2026-09-29-1343-img-rescuezilla`.
+
+Nell'elenco per la selezione delle immagini, tutte le immagini vengono quindi visualizzate una accanto all'altra. La colonna **Partitions** mostra le dimensioni: l'immagine precedente alla riduzione contiene `ntfs 930.4GB`, quella nuova `ntfs 470GB`. Un tentativo di backup interrotto appare con un triangolo di avviso giallo; contiene la vecchia tabella delle partizioni e durante il ripristino causa esattamente il messaggio di errore della prima sezione. Eliminate tali cartelle per non selezionarle accidentalmente.
+
+Potete anche verificare in anticipo se un'immagine entra nel disco di destinazione consultando il file `<disk>-pt.parted` nella cartella dell'immagine. Contiene la tabella delle partizioni salvata in settori da 512 byte:
+
+```text
+Number  Start       End         Size        File system  Name
+ 1      2048s       411647s     409600s     fat32        EFI system partition
+ 2      411648s     444415s     32768s                   Microsoft reserved partition
+ 3      444416s     986105855s  985661440s  ntfs         Basic data partition
+ 4      986105856s  987957247s  1851392s    ntfs
+```
+
+La fine dell'ultima partizione (987'957'247 + 1 settori × 512 byte = 505,8 GB) è inferiore ai 512,1 GB del disco di destinazione. L'immagine è adatta.
+
+## Passaggio 7: ripristinare sul nuovo SSD
+
+1.  In Rescuezilla selezionate **Restore**, l'unità con le immagini e poi l'immagine **nuova** (senza triangolo di avviso, con la partizione C: ridotta).
+
+2.  Selezionate il nuovo SSD come destinazione. Verificate due volte modello e dimensioni: il ripristino sovrascrive completamente il disco di destinazione.
+
+3.  Lasciate selezionate tutte le partizioni, così come **Overwrite partition table**, e avviate il ripristino.
+
+4.  Quindi avviate dal nuovo SSD. Il modo più semplice è scollegare prima il vecchio disco; altrimenti selezionate il nuovo SSD nel menu di avvio del firmware.
+
+## Operazioni finali
+
+Sul nuovo disco riattivate ciò che è stato disattivato per la migrazione. L'ibernazione si riattiva con `powercfg /h on`. Potete attivare BitLocker tramite Impostazioni → Privacy e sicurezza → Crittografia dispositivo oppure con `manage-bde -on C:`; verificate poi con `manage-bde -protectors -get C:` che la chiave di ripristino sia stata salvata. Se Secure Boot è stato disattivato nell'UEFI per avviare Rescuezilla, riattivatelo; finché è disattivato, BitLocker registra l'evento 810 a ogni avvio.
+
+Potete eliminare l'immagine del disco da 1 TB non modificato non appena Windows si avvia correttamente dal nuovo SSD e i dati sono completi.
+
+## Fonti
+
+1.  [Rescuezilla Wiki: ripristino su un disco più piccolo](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): procedura ufficiale con GParted, motivo della limitazione durante il ripristino.
+
+2.  [Rescuezilla](https://rescuezilla.com/): pagina del progetto con il download del sistema live.
+
+3.  [Manuale di GParted](https://gparted.org/display-doc.php?name=help-manual): utilizzo di Resize/Move, allineamento a MiB ed esecuzione delle operazioni pianificate.
+
+4.  [ntfsresize(8), pagina man di Ubuntu](https://manpages.ubuntu.com/manpages/noble/man8/ntfsresize.8.html): strumento alla base della riduzione NTFS in GParted; descrive il contrassegno di controllo impostato intenzionalmente.
+
+5.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): parametro `/f` e pianificazione del controllo sul volume di sistema.
+
+6.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): verifica e significato del dirty bit.
+
+7.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): verifica dello stato di BitLocker.
+
+8.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): decrittazione di un volume.
+
+9.  [Microsoft Learn: opzioni della riga di comando Powercfg](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): opzione `/hibernate` e relativo impatto sull'avvio rapido.
+
+10.  [Microsoft Learn: Get-PartitionSupportedSize](https://learn.microsoft.com/en-us/powershell/module/storage/get-partitionsupportedsize): dimensioni minime e massime della partizione dal punto di vista di Windows.
+
+11.  [Microsoft Learn: opzioni della riga di comando REAgentC](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/reagentc-command-line-options): verifica dello stato e del percorso di Windows RE.
+
+12.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parametri `/o` e `/fw` per l'avvio nelle opzioni avanzate o nell'UEFI.
+
+----
+
 # Kiteworks: il produttore raccomanda lo spegnimento il 26 settembre - Cosa si sa finora
 
 URL: https://rafaelpfister.ch/it/blog/kiteworks-il-produttore-raccomanda-lo-spegnimento-il-26-settembre-cosa-si-sa-finora
@@ -57575,6 +58931,458 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Rescuezilla: migrar Windows a una nueva SSD, con presentación de la herramienta
+
+URL: https://rafaelpfister.ch/es/blog/rescuezilla-migrar-windows-a-una-nueva-ssd-con-presentacion-de-la-herramienta
+Datum: 2026-09-29
+
+Quien quiera trasladar una instalación de Windows a una nueva SSD o a un equipo nuevo sin reinstalar Windows necesita una herramienta que haga una copia de seguridad y restaure todo el disco con todas sus particiones. Rescuezilla es una de esas herramientas: gratuita, de código abierto y con una interfaz gráfica que puede utilizarse incluso sin conocimientos de Linux. Este artículo presenta la herramienta y describe la migración a una SSD del mismo tamaño o mayor. Para una SSD de destino más pequeña hay una guía específica: [Migrar Windows a una SSD más pequeña con Rescuezilla](/blog/windows-kleinere-ssd-rescuezilla).
+
+## Qué es Rescuezilla
+
+Rescuezilla es un sistema Live basado en Ubuntu que se inicia desde una memoria USB. Funciona independientemente del sistema operativo instalado y, por ello, también realiza copias de seguridad de volúmenes que Windows bloquea mientras está en ejecución. El proyecto surgió en 2019 como un fork de Redo Backup and Recovery, que en aquel momento llevaba siete años sin mantenimiento. Desde la versión 2.0 (2020), Rescuezilla escribe imágenes en formato Clonezilla: una copia de seguridad creada con Rescuezilla puede restaurarse con Clonezilla y viceversa. La licencia es GPL-3.0. La versión actual es la 2.6.2 de mayo de 2026, basada en Ubuntu 26.04 LTS con Partclone 0.3.47.
+
+El trabajo propiamente dicho lo realiza Partclone. Reconoce los sistemas de archivos habituales (NTFS, FAT, ext4 y otros) y lee únicamente los bloques ocupados. Por ello, una partición de 1 TB con 350 GB de datos produce una imagen de unos 215 GB (comprimida con gzip), no de 1 TB. Las particiones sin un sistema de archivos reconocido, como la partición reservada de Microsoft, Rescuezilla las guarda bloque a bloque con `dd`; estos archivos tienen en la imagen la extensión `.dd-ptcl-img`.
+
+<details class="options-details">
+<summary>Funciones principales</summary>
+
+| Función | Finalidad |
+|---|---|
+| Backup | guarda las particiones seleccionadas de un disco, incluida la tabla de particiones, como imagen en una unidad local o recurso compartido de red (SMB, SSH) |
+| Restore | restaura una imagen en un disco, opcionalmente sobrescribiendo la tabla de particiones |
+| Verify Image | comprueba que una imagen existente esté completa y se pueda leer |
+| Clone | copia un disco directamente a un segundo disco, sin almacenamiento intermedio |
+| Image Explorer (beta) | monta una imagen en modo de solo lectura para extraer archivos individuales |
+| Imágenes de VM | además de imágenes de Clonezilla, lee VDI, VMDK, VHDX, QCOW2 e imágenes Raw |
+| Herramientas adicionales | GParted, gestor de archivos, navegador web y herramientas para recuperar archivos eliminados en el escritorio Live |
+| CLI | línea de comandos experimental (desde la 2.5) para Backup, Verify, Restore y Clone |
+
+</details>
+
+Una limitación es importante para las migraciones: Rescuezilla no reduce particiones. El disco de destino debe llegar, como mínimo, hasta el final de la última partición guardada. Si es más pequeño, se requiere un trabajo previo con GParted, descrito en la guía enlazada anteriormente.
+
+## Imagen o clon
+
+Rescuezilla ofrece dos opciones para una migración. Con el **clonado**, los discos de origen y destino están conectados al mismo tiempo y Rescuezilla copia directamente. Esto ahorra tiempo y un tercer soporte de almacenamiento, pero exige que ambos discos estén conectados simultáneamente al equipo o a un adaptador. Con la **creación de imágenes**, primero se genera una imagen en una unidad externa, que después se restaura en el nuevo disco. Tarda más, pero tiene una ventaja: la imagen permanece como copia de seguridad completa del estado anterior, incluso si algo sale mal durante la restauración. Por ello, para una migración la imagen es la opción más segura, y es la variante que describe este artículo.
+
+## Requisitos
+
+1.  **Memoria USB** para Rescuezilla. Su contenido se borrará al escribir la imagen de arranque.
+
+2.  **Unidad externa** para la imagen, con espacio libre aproximadamente igual al tamaño de los datos ocupados. Tanto exFAT como NTFS funcionan.
+
+3.  **Disco de destino**, al menos tan grande como el disco de origen. Si es más pequeño, siga primero la guía para SSD más pequeñas.
+
+4.  **Clave de recuperación de BitLocker**, si C: está cifrado. Disponible en aka.ms/myrecoverykey o en el portal Entra para dispositivos administrados.
+
+## Paso 1: Preparar Windows
+
+Antes de la copia de seguridad, compruebe tres puntos en una PowerShell con derechos de administrador.
+
+**BitLocker.** Partclone no puede leer un volumen BitLocker como NTFS. Entonces Rescuezilla lo guarda bloque a bloque, como cualquier partición sin sistema de archivos reconocido, y la imagen tendrá el tamaño de toda la partición. Para una migración, es recomendable desactivar BitLocker antes y volver a activarlo después del traslado:
+
+```powershell
+manage-bde -status C:
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-status` | muestra el grado de cifrado y el estado de protección del volumen |
+| `-off` | descifra el volumen por completo; continúa ejecutándose en segundo plano |
+| `C:` | argumento posicional: el volumen afectado |
+
+</details>
+
+Espere hasta que `manage-bde -status C:` muestre el valor `Fully Decrypted`. En dispositivos administrados mediante Intune, una directiva puede volver a activar BitLocker; por ello, compruebe de nuevo el estado justo antes de reiniciar.
+
+**Hibernación e inicio rápido.** Con el inicio rápido activado, Windows no se apaga por completo y NTFS se considera todavía en uso. En ese caso, Partclone se interrumpe. Un comando desactiva ambos:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `/h off` | forma abreviada de `/hibernate off`: desactiva la hibernación y el inicio rápido, se elimina `hiberfil.sys` |
+
+</details>
+
+**Estado del sistema de archivos.** Si está establecido el bit de datos pendientes, Partclone se interrumpe con el mensaje de que el volumen está «scheduled for a check or it was shutdown uncleanly». Compruébelo previamente:
+
+```powershell
+fsutil dirty query C:
+```
+
+Si el comando informa `is Dirty`, programe una comprobación para el siguiente inicio con `chkdsk C: /f`, reinicie y vuelva a comprobarlo.
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `dirty query C:` | fsutil: consulta si está establecido el bit de datos pendientes del volumen |
+| `/f` | chkdsk: corrige errores; en el volumen del sistema, programa la comprobación para el siguiente inicio |
+
+</details>
+
+## Paso 2: Crear e iniciar la memoria USB de arranque
+
+Descargue la imagen ISO desde la página de lanzamientos de GitHub del proyecto. La variante estándar lleva el nombre en clave de Ubuntu en el nombre de archivo; en la 2.6.2 es `rescuezilla-2.6.2-64bit.resolute.iso`. Escríbala en la memoria USB con un programa de escritura de imágenes como balenaEtcher; la página del proyecto recomienda este programa para Windows, macOS y Linux.
+
+El propio Windows inicia el arranque desde la memoria USB:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `/r` | reinicia en lugar de apagar |
+| `/o` | inicia las opciones de arranque avanzadas; solo junto con `/r` |
+| `/t 0` | tiempo de espera en segundos hasta la ejecución |
+
+</details>
+
+En las opciones de arranque avanzadas, seleccione «Usar un dispositivo» y la memoria USB. Como alternativa, al encender se abre el menú de arranque del firmware (según el fabricante, F8, F11 o F12). Rescuezilla se inicia con Secure Boot activado; no es necesario desactivarlo. Si la pantalla permanece negra después de seleccionar el idioma, use la entrada «Graphical Fallback Mode» en el menú de arranque de la memoria USB.
+
+## Paso 3: Crear la copia de seguridad
+
+Rescuezilla se inicia automáticamente en el escritorio. El asistente guía por la copia de seguridad en pasos numerados:
+
+1.  Seleccione **Backup**.
+
+2.  *Step 1: Select Drive To Backup*: seleccione el disco del sistema. El modelo y el tamaño ayudan a distinguirlos; los nombres de dispositivo (`nvme0n1`, `sda`) pueden variar entre dos arranques.
+
+3.  *Step 2: Select Partitions to Save*: deje marcadas todas las particiones. Para una restauración arrancable, necesita la partición de sistema EFI, la partición reservada de Microsoft, C: y la partición de recuperación.
+
+4.  *Step 3: Select Destination Drive*: la unidad externa (Local) o un recurso compartido de red (Network).
+
+5.  *Step 4: Select Destination Folder*: la carpeta de destino en la unidad. Rescuezilla crea en ella una subcarpeta con marca de tiempo.
+
+6.  *Step 5: Name Your Backup*: opcionalmente, una descripción; aparecerá después en la lista de imágenes.
+
+7.  *Step 6: Customize Compression Settings*: la configuración predeterminada gzip es adecuada en la mayoría de los casos.
+
+8.  *Step 7: Confirm Backup Configuration*: revise los datos e inicie el proceso.
+
+Para 350 GB de datos en una SSD NVMe, la copia de seguridad en una SSD USB externa tardó unos 20 minutos. Al final, Rescuezilla informa para cada partición si se guardó correctamente. Si aparece un error en una partición, la imagen está incompleta, aunque la carpeta exista.
+
+## Paso 4: Comprobar la imagen
+
+Compruebe la imagen antes de restaurarla. **Verify Image** en el menú principal lee todas las partes y verifica que estén completas y se puedan leer. En la lista de imágenes, la columna **Partitions** muestra las particiones guardadas con su tamaño; un triángulo amarillo de advertencia marca imágenes con particiones ausentes.
+
+La carpeta de la imagen también puede examinarse en Windows. Los archivos más importantes:
+
+| Archivo | Contenido |
+|---|---|
+| `nvme0n1-pt.parted` | tabla de particiones en formato de texto, con el inicio y el final de cada partición en sectores |
+| `nvme0n1-gpt-1st`, `nvme0n1-gpt-2nd` | copias binarias de la GPT primaria y de respaldo |
+| `nvme0n1p3.ntfs-ptcl-img.gz.aa`, `.ab`, … | imagen Partclone de C:, comprimida con gzip y dividida en partes de 4 GB |
+| `nvme0n1p2.dd-ptcl-img.gz.aa` | copia bloque a bloque de una partición sin sistema de archivos reconocido |
+| `clonezilla-img` | registro de la copia de seguridad con el resultado de cada partición |
+| `Info-*.txt` | información de hardware y SMART del sistema de origen en el momento de la copia de seguridad |
+
+A partir de `nvme0n1-pt.parted` se puede determinar si la imagen cabe en el disco de destino: el sector final de la última partición más uno, multiplicado por 512 bytes, debe ser menor que el tamaño del disco de destino en bytes.
+
+## Paso 5: Restaurar en la nueva SSD
+
+Instale la nueva SSD e inicie Rescuezilla de nuevo.
+
+1.  Seleccione **Restore**.
+
+2.  *Step 1: Select Image Location*: la unidad externa con la imagen.
+
+3.  *Step 2: Select Backup Image*: seleccione la imagen según la fecha y los tamaños de partición.
+
+4.  *Step 3: Select Drive To Restore*: la nueva SSD. Compruebe dos veces el modelo y el tamaño: se sobrescribirán todos los datos de esta unidad.
+
+5.  *Step 4: Select Partitions to Restore*: deje marcadas todas las particiones, así como **Overwrite partition table**.
+
+6.  *Step 5: Confirm Restore Configuration*: compruebe e inicie el proceso.
+
+La restauración tarda aproximadamente lo mismo que la copia de seguridad. Después, apague el equipo y retire la memoria USB.
+
+## Paso 6: Iniciar desde la nueva unidad
+
+Lo más sencillo es desconectar el disco antiguo antes del primer inicio. Si ambos discos están conectados, tendrán los mismos ID de partición y volumen, y el firmware podría elegir el antiguo para arrancar. Si va a seguir utilizando el disco antiguo, formatéelo solo después de comprobar el nuevo sistema.
+
+Si la nueva SSD es mayor que la antigua, el espacio adicional queda como área sin asignar al final. Sin embargo, no se puede ampliar C: directamente en Administración de discos porque la partición de recuperación está entre C: y el espacio libre. Con GParted en la memoria USB de Rescuezilla, primero mueva la partición de recuperación al final (Resize/Move, **Free space following** a 0) y después amplíe C: a todo el espacio libre. Windows RE volverá a encontrar su partición porque conserva su número de partición; `reagentc /info` muestra el estado.
+
+Si con la migración también cambia de equipo, Windows suele iniciarse sin ajustes e instala después los controladores que faltan. La activación se realiza mediante la licencia digital; tras cambiar la placa base, quizá solo después de iniciar sesión con la cuenta de Microsoft mediante el solucionador de problemas de activación.
+
+## Tareas posteriores
+
+En la nueva unidad, vuelva a activar lo que se desactivó para la migración. `powercfg /h on` activa la hibernación. Active BitLocker mediante Configuración → Privacidad y seguridad → Cifrado de dispositivo o con `manage-bde -on C:`; después, compruebe con `manage-bde -protectors -get C:` que existe una clave de recuperación y que está guardada.
+
+Conserve la imagen en la unidad externa hasta que Windows haya funcionado varios días sin anomalías en la nueva unidad y haya comprobado todos los datos. Después puede eliminarla o archivarla como copia de seguridad del estado de entrega.
+
+## Fuentes
+
+1.  [Rescuezilla](https://rescuezilla.com/): página del proyecto con resumen de funciones, descarga y preguntas frecuentes.
+
+2.  [Rescuezilla en GitHub](https://github.com/rescuezilla/rescuezilla): código fuente, historia del proyecto y lista de funciones en el README.
+
+3.  [Lanzamientos de Rescuezilla](https://github.com/rescuezilla/rescuezilla/releases/latest): versión actual con notas de lanzamiento, lista de compatibilidad y variantes ISO.
+
+4.  [Registro de cambios de Rescuezilla](https://raw.githubusercontent.com/rescuezilla/rescuezilla/master/CHANGELOG.md): introducción de CLI, Verify Image y Clone, así como la actualización del shim de Secure Boot.
+
+5.  [Wiki de Rescuezilla: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): procedimiento oficial para discos de destino más pequeños que el original.
+
+6.  [Partclone](https://partclone.org/): herramienta que Rescuezilla y Clonezilla usan para copias de seguridad conscientes del sistema de archivos.
+
+7.  [Manual de GParted](https://gparted.org/display-doc.php?name=help-manual): mover y ampliar particiones.
+
+8.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): consulta del estado de BitLocker.
+
+9.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): descifrado de un volumen.
+
+10.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): opción `/hibernate` y su efecto en el inicio rápido.
+
+11.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): consulta del bit de datos pendientes.
+
+12.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): comprobación y reparación de volúmenes NTFS.
+
+13.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parámetro `/o` para iniciar las opciones de arranque avanzadas.
+
+14.  [Microsoft Support: Reactivating Windows after a hardware change](https://support.microsoft.com/en-us/windows/reactivating-windows-after-a-hardware-change-2c0e962a-f04c-145b-6ead-fb3fc72b6665): activación mediante la licencia digital tras un cambio de placa base.
+
+----
+
+# Migrar Windows a una SSD más pequeña con Rescuezilla: de 1 TB a 512 GB
+
+URL: https://rafaelpfister.ch/es/blog/migrar-windows-a-una-ssd-mas-pequena-con-rescuezilla-de-1-tb-a-512-gb
+Datum: 2026-09-29
+
+Rescuezilla es un sistema Live gratuito para realizar copias de seguridad y restaurar unidades completas, compatible con el formato de imagen de Clonezilla (presentación de la herramienta y procedimiento básico: [Rescuezilla: migrar Windows a una SSD nueva](/blog/rescuezilla-windows-migration)). Mientras el disco de destino tenga el mismo tamaño o sea mayor, basta con hacer una copia de seguridad y restaurarla. Si es más pequeño, la restauración se cancela aunque los datos ocupados cabrían en él. Este artículo documenta la migración de un sistema Windows 11 desde una NVMe de 1 TB (C: con 930 GB, de los cuales unos 350 GB están ocupados) a una NVMe de 512 GB, incluidos los mensajes de error que aparecen durante el proceso.
+
+## Por qué falla la restauración en el disco más pequeño
+
+Rescuezilla realiza una copia de cada partición por separado con Partclone y también guarda la tabla de particiones. Durante la restauración, escribe esta tabla sin modificar en el disco de destino. Rescuezilla no puede reducir una partición. Por ello, antes de empezar comprueba si la última partición se encuentra íntegramente en el disco de destino y, de no ser así, se cancela con este mensaje:
+
+```text
+The source partition table's final partition (/dev/nvme0n1p4:
+1000203091968 bytes) must refer to a region completely within
+the destination disk (512110190592 bytes).
+```
+
+Una instalación típica de Windows tiene cuatro particiones: la partición del sistema EFI (200 MB), la partición reservada de Microsoft (16 MB), C: y la partición de recuperación con Windows RE (aquí, 904 MiB). Windows coloca la partición de recuperación al final del disco. Por tanto, no basta con reducir C:: también debe desplazarse hacia delante la partición de recuperación, directamente detrás de C:.
+
+El procedimiento que describe la wiki de Rescuezilla para este caso es: reducir el disco de origen con GParted, crear una nueva imagen y restaurar esa imagen. Una imagen creada previamente del disco sin modificar se conserva como copia de seguridad hasta que el nuevo sistema funcione.
+
+## Paso 1: calcular el tamaño de destino
+
+Una SSD vendida como de 512 GB tiene 512'110'190'592 bytes, es decir, 476,9 GiB (Rescuezilla también muestra este valor). De ahí hay que restar las particiones EFI, MSR y de recuperación, que suman algo más de 1,1 GiB. Para C: quedan por tanto apenas 475 GiB. Con algo de margen, **470 GiB = 481'280 MiB** es un valor de destino razonable. Los aproximadamente 6 GB que quedarán libres al final de la nueva SSD no son relevantes.
+
+Los datos ocupados deben estar por debajo de este valor. Este comando, ejecutado en PowerShell con derechos de administrador, muestra hasta qué punto Windows podría reducir un volumen:
+
+```powershell
+$s = Get-PartitionSupportedSize -DriveLetter C
+"{0:N1} GB" -f ($s.SizeMin / 1GB)
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-DriveLetter C` | Volumen cuyas posibles dimensiones se consultan |
+| `SizeMin` | Tamaño mínimo al que Windows podría reducir por sí mismo el volumen |
+| `"{0:N1} GB" -f` | Da formato al valor en bytes como gigabytes con un decimal |
+
+</details>
+
+Si `SizeMin` está claramente por encima de la cantidad de datos ocupados, hay archivos inamovibles (archivo de paginación, puntos de restauración, MFT) que impiden la reducción mediante las herramientas integradas de Windows. GParted mueve estos datos al reducir la partición, por lo que ese límite no se aplica allí.
+
+## Paso 2: desactivar BitLocker y la hibernación
+
+GParted no puede leer ni reducir un volumen cifrado con BitLocker, y Partclone no puede respaldarlo como NTFS. Compruebe el estado en PowerShell con derechos de administrador:
+
+```powershell
+manage-bde -status C:
+```
+
+Si no aparece `Fully Decrypted`, desactive BitLocker y espere a que finalice el descifrado:
+
+```powershell
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-status` | Muestra el nivel de cifrado, el método y el estado de protección del volumen |
+| `-off` | Descifra completamente el volumen y elimina los protectores de claves |
+| `C:` | Argumento posicional: el volumen afectado |
+
+</details>
+
+El descifrado se ejecuta en segundo plano y, según la cantidad de datos, puede tardar una hora o más. En dispositivos administrados mediante Intune, una directiva puede volver a activar BitLocker poco después. Por ello, compruebe de nuevo el estado inmediatamente antes de iniciar GParted.
+
+Además, la hibernación debe estar desactivada. Con el inicio rápido activo, Windows no se apaga por completo, sino que guarda el estado del kernel en `hiberfil.sys`. Entonces NTFS se considera aún en uso y GParted rechaza cualquier modificación. Un comando desactiva conjuntamente la hibernación y el inicio rápido, y elimina `hiberfil.sys`:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `/h off` | Forma abreviada de `/hibernate off`: desactiva la hibernación y el inicio rápido; se elimina `hiberfil.sys` |
+
+</details>
+
+## Paso 3: iniciar Rescuezilla
+
+Windows puede dirigir el siguiente inicio directamente al menú de arranque con las opciones avanzadas. Allí seleccione «Usar un dispositivo» y la memoria USB con Rescuezilla:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `/r` | Reinicia en lugar de apagar |
+| `/o` | Inicia en las opciones de arranque avanzadas (Windows RE); solo junto con `/r` |
+| `/t 0` | Tiempo de espera en segundos hasta la ejecución |
+
+</details>
+
+Como alternativa, al encender se abre el menú de arranque del firmware; en placas ASRock, con F11. Si no aparece «Usar un dispositivo», `shutdown /r /fw /t 0` lleva directamente a la configuración UEFI, donde puede seleccionarse la unidad de arranque para el siguiente inicio.
+
+## Paso 4: reducir C: y mover la partición de recuperación
+
+En el escritorio de Rescuezilla, inicie **Partition Editor** (GParted), no Rescuezilla.
+
+1.  Seleccione el disco de origen arriba a la derecha. Preste atención al tamaño (aquí, 931.51 GiB) para no editar por error el disco externo de copia de seguridad o un segundo disco interno.
+
+2.  Haga clic con el botón derecho en la partición NTFS con C: → **Resize/Move**. Introduzca el valor de destino en el campo **New size (MiB)**, aquí `481280`, y confirme con la tecla Tab. **Free space preceding** se mantiene sin cambios. Confirme con **Resize/Move**.
+
+3.  Debajo de C: aparece ahora una línea `unallocated`, y debajo la partición de recuperación (NTFS, unos 900 MiB, indicadores `hidden, diag`). Haga clic con el botón derecho en la partición de recuperación → **Resize/Move**.
+
+4.  Borre el valor del campo **Free space preceding (MiB)**, introduzca `0` y confirme con Tab. **New size** permanece igual; **Free space following** pasa a abarcar todo el espacio libre. Si tras pulsar Tab aparece `1` en lugar de `0`, se debe a la alineación a MiB enteros y es correcto. Confirme con **Resize/Move**.
+
+5.  Confirme con OK una advertencia que indica que el desplazamiento podría impedir el arranque. Se refiere a particiones con cargador de arranque; Windows arranca desde la partición del sistema EFI, que permanece sin cambios.
+
+6.  El orden ahora es: EFI, MSR, C:, partición de recuperación, `unallocated`. Hasta aquí, las operaciones solo están programadas. Solo al hacer clic en la marca verde (**Apply All Operations**) se ejecutan los cambios.
+
+Windows RE vuelve a encontrar su partición después de desplazarla porque conserva su número de partición. `reagentc /info` sigue mostrando `Enabled` con la ruta `harddisk0\partition4\Recovery\WindowsRE`.
+
+La guía de Rescuezilla reduce únicamente la última partición. Esto basta si C: es la última partición. En una instalación estándar de Windows 10 u 11, la partición de recuperación está detrás, por lo que moverla es obligatorio.
+
+## Paso 5: eliminar el indicador Dirty
+
+Tras la reducción, la siguiente copia de seguridad se cancela en C: con este mensaje:
+
+```text
+ntfsclone-ng.c: NTFS Volume '/dev/nvme0n1p3' is scheduled for a check
+or it was shutdown uncleanly. Please boot Windows or fix it by fsck.
+```
+
+La causa es intencionada: `ntfsresize`, que GParted utiliza para NTFS, marca el sistema de archivos para comprobación antes de cada cambio de tamaño y deja esa marca activa. Según la página del manual, Windows debe ejecutar `chkdsk` en el siguiente inicio. Sin embargo, en el caso descrito, el indicador seguía activo tras un inicio normal de Windows y `Get-Volume C` informaba `Full Repair Needed`. Puede comprobar el estado en PowerShell con derechos de administrador:
+
+```powershell
+fsutil dirty query C:
+```
+
+Si el comando informa `Volume - C: is Dirty`, ejecute la comprobación en el siguiente inicio:
+
+```powershell
+chkdsk C: /f
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `dirty query C:` | fsutil: consulta si está establecido el bit Dirty del volumen |
+| `C:` | chkdsk: el volumen que se debe comprobar |
+| `/f` | Corrige los errores encontrados; en el volumen del sistema, programa la comprobación para el siguiente inicio |
+
+</details>
+
+Responda S a la pregunta de si se debe ejecutar la comprobación en el próximo reinicio y reinicie Windows normalmente. Después, `fsutil dirty query C:` debe mostrar el mensaje `is NOT Dirty`, y `Get-Volume C` debe volver a informar `Healthy`. Solo entonces inicie Rescuezilla de nuevo.
+
+## Paso 6: crear y comprobar la nueva imagen
+
+Ahora cree con Rescuezilla una nueva imagen del disco reducido. El tamaño de la imagen será prácticamente el mismo que el de la primera copia de seguridad (aquí, unos 214 GB), ya que Partclone solo guarda bloques ocupados. Rescuezilla guarda cada copia de seguridad en su propia carpeta con marca de tiempo, por ejemplo `2026-09-29-1343-img-rescuezilla`.
+
+En la lista de selección de imágenes aparecerán todas las imágenes una junto a otra. La columna **Partitions** muestra los tamaños: la imagen anterior a la reducción contiene `ntfs 930.4GB`, la nueva `ntfs 470GB`. Un intento de copia de seguridad cancelado aparece con un triángulo de advertencia amarillo; contiene la tabla de particiones antigua y provoca durante la restauración exactamente el mensaje de error de la primera sección. Elimine esas carpetas para no seleccionarlas por error.
+
+También puede comprobarse de antemano si una imagen cabe en el disco de destino consultando el archivo `<disk>-pt.parted` de la carpeta de la imagen. Contiene la tabla de particiones guardada en sectores de 512 bytes:
+
+```text
+Number  Start       End         Size        File system  Name
+ 1      2048s       411647s     409600s     fat32        EFI system partition
+ 2      411648s     444415s     32768s                   Microsoft reserved partition
+ 3      444416s     986105855s  985661440s  ntfs         Basic data partition
+ 4      986105856s  987957247s  1851392s    ntfs
+```
+
+El final de la última partición (987'957'247 + 1 sectores × 512 bytes = 505,8 GB) está por debajo de los 512,1 GB del disco de destino. La imagen cabe.
+
+## Paso 7: restaurar en la nueva SSD
+
+1.  En Rescuezilla, seleccione **Restore**, la unidad con las imágenes y, a continuación, la imagen **nueva** (sin triángulo de advertencia y con la partición C: reducida).
+
+2.  Seleccione la nueva SSD como destino. Compruebe dos veces el modelo y el tamaño: la restauración sobrescribe por completo el disco de destino.
+
+3.  Deje marcadas todas las particiones, así como **Overwrite partition table**, e inicie la restauración.
+
+4.  A continuación, arranque desde la nueva SSD. Lo más sencillo es desconectar antes el disco antiguo; de lo contrario, seleccione la nueva SSD en el menú de arranque del firmware.
+
+## Tareas posteriores
+
+En la nueva unidad, vuelva a activar lo que se desactivó para la migración. `powercfg /h on` activa la hibernación. Active BitLocker mediante Configuración → Privacidad y seguridad → Cifrado de dispositivo o con `manage-bde -on C:`; después, compruebe con `manage-bde -protectors -get C:` que la clave de recuperación esté guardada. Si se desactivó Secure Boot en UEFI para iniciar Rescuezilla, vuelva a activarlo; mientras esté desactivado, BitLocker registra el evento 810 en cada inicio.
+
+Puede eliminar la imagen del disco de 1 TB sin modificar cuando Windows arranque correctamente desde la nueva SSD y todos los datos estén completos.
+
+## Fuentes
+
+1.  [Wiki de Rescuezilla: restaurar en un disco más pequeño](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): procedimiento oficial con GParted y motivo de la limitación durante la restauración.
+
+2.  [Rescuezilla](https://rescuezilla.com/): página del proyecto con la descarga del sistema Live.
+
+3.  [Manual de GParted](https://gparted.org/display-doc.php?name=help-manual): uso de Resize/Move, alineación a MiB y ejecución de operaciones programadas.
+
+4.  [ntfsresize(8), página del manual de Ubuntu](https://manpages.ubuntu.com/manpages/noble/man8/ntfsresize.8.html): herramienta detrás de la reducción NTFS en GParted; describe la marca de comprobación establecida intencionadamente.
+
+5.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): parámetro `/f` y programación de la comprobación en el volumen del sistema.
+
+6.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): consulta y significado del bit Dirty.
+
+7.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): consulta del estado de BitLocker.
+
+8.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): descifrado de un volumen.
+
+9.  [Microsoft Learn: opciones de línea de comandos de Powercfg](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): opción `/hibernate` y su efecto en el inicio rápido.
+
+10.  [Microsoft Learn: Get-PartitionSupportedSize](https://learn.microsoft.com/en-us/powershell/module/storage/get-partitionsupportedsize): tamaño mínimo y máximo de partición desde la perspectiva de Windows.
+
+11.  [Microsoft Learn: opciones de línea de comandos de REAgentC](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/reagentc-command-line-options): comprobar el estado y la ubicación de Windows RE.
+
+12.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parámetros `/o` y `/fw` para iniciar las opciones avanzadas o UEFI, respectivamente.
 
 ----
 
@@ -71843,6 +73651,458 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Rescuezilla: migrera Windows till en ny SSD – med en introduktion till verktyget
+
+URL: https://rafaelpfister.ch/sv/blog/rescuezilla-migrera-windows-till-en-ny-ssd-med-en-introduktion-till-verktyget
+Datum: 2026-09-29
+
+Den som vill flytta en Windows-installation till en ny SSD eller en ny dator utan att installera om Windows behöver ett verktyg som säkerhetskopierar och återställer hela disken med alla partitioner. Rescuezilla är ett sådant verktyg: kostnadsfritt, med öppen källkod och med ett grafiskt gränssnitt som går att använda även utan Linux-kunskaper. Den här artikeln presenterar verktyget och beskriver migreringen till en SSD som är lika stor eller större. För en mindre mål-SSD finns en separat guide: [Flytta Windows till en mindre SSD med Rescuezilla](/blog/windows-kleinere-ssd-rescuezilla).
+
+## Vad Rescuezilla är
+
+Rescuezilla är ett livesystem baserat på Ubuntu som startas från ett USB-minne. Det körs oberoende av det installerade operativsystemet och säkerhetskopierar därför även volymer som Windows låser under drift. Projektet uppstod 2019 som en fork av Redo Backup and Recovery, som då inte hade underhållits på sju år. Sedan version 2.0 (2020) skriver Rescuezilla avbildningar i Clonezilla-format: En säkerhetskopia skapad med Rescuezilla kan återställas med Clonezilla och vice versa. Licensen är GPL-3.0. Den aktuella versionen är 2.6.2 från maj 2026, baserad på Ubuntu 26.04 LTS med Partclone 0.3.47.
+
+Partclone utför själva arbetet. Det känner till de vanliga filsystemen (NTFS, FAT, ext4 och fler) och läser bara använda block. En partition på 1 TB med 350 GB data ger därför en avbildning på omkring 215 GB (gzip-komprimerad), inte 1 TB. Partitioner utan igenkänt filsystem, exempelvis den Microsoft-reserverade partitionen, säkerhetskopieras blockvis av Rescuezilla med `dd`; dessa filer har filändelsen `.dd-ptcl-img` i avbildningen.
+
+<details class="options-details">
+<summary>Funktioner i korthet</summary>
+
+| Funktion | Syfte |
+|---|---|
+| Backup | säkerhetskopierar valda partitioner på en disk, inklusive partitionstabellen, som en avbildning till en lokal enhet eller nätverksresurs (SMB, SSH) |
+| Restore | återställer en avbildning till en disk, valfritt med överskrivning av partitionstabellen |
+| Verify Image | kontrollerar om en befintlig avbildning är komplett och läsbar |
+| Clone | kopierar en disk direkt till en annan, utan mellanlagring |
+| Image Explorer (beta) | monterar en avbildning skrivskyddat för att hämta ut enskilda filer |
+| VM-Images | läser, utöver Clonezilla-avbildningar, även VDI, VMDK, VHDX, QCOW2 och Raw-avbildningar |
+| Extra verktyg | GParted, filhanterare, webbläsare och verktyg för att återställa raderade filer på live-skrivbordet |
+| CLI | experimentell kommandorad (sedan 2.5) för Backup, Verify, Restore och Clone |
+
+</details>
+
+En begränsning är viktig vid migreringar: Rescuezilla förminskar inte partitioner. Måldisken måste minst räcka till slutet av den sista säkerhetskopierade partitionen. Om den är mindre krävs förarbete med GParted, vilket beskrivs i den länkade guiden ovan.
+
+## Avbildning eller klon
+
+Rescuezilla erbjuder två sätt att migrera. Vid **kloning** är käll- och måldisken anslutna samtidigt och Rescuezilla kopierar direkt. Det sparar tid och en tredje datalagringsenhet, men förutsätter att båda diskarna är anslutna samtidigt till datorn eller en adapter. Vid **imaging** skapas först en avbildning på en extern enhet, som sedan återställs till den nya disken. Det tar längre tid men har en fördel: avbildningen finns kvar som en fullständig säkerhetskopia av det tidigare läget, även om något går fel vid återställningen. För en migrering är avbildningen därför det säkrare valet, och det är denna variant som artikeln beskriver.
+
+## Förutsättningar
+
+1.  **USB-minne** för Rescuezilla. Dess innehåll raderas när startavbildningen skrivs.
+
+2.  **Extern enhet** för avbildningen, med ledigt utrymme ungefär motsvarande mängden använda data. Både exFAT och NTFS fungerar.
+
+3.  **Måldisk**, minst lika stor som källdisken. Om den är mindre ska du först gå igenom guiden för mindre SSD-enheter.
+
+4.  **BitLocker-återställningsnyckel**, om C: är krypterad. Den kan hämtas på aka.ms/myrecoverykey eller i Entra-portalen för hanterade enheter.
+
+## Steg 1: Förbered Windows
+
+Kontrollera tre punkter före säkerhetskopieringen i en PowerShell med administratörsbehörighet.
+
+**BitLocker.** Partclone kan inte läsa en BitLocker-volym som NTFS. Rescuezilla säkerhetskopierar då den blockvis, som alla partitioner utan igenkänt filsystem, och avbildningen blir lika stor som hela partitionen. Vid en migrering rekommenderas att du stänger av BitLocker först och aktiverar det igen efter flytten:
+
+```powershell
+manage-bde -status C:
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Förklarade alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-status` | visar volymens krypteringsgrad och skyddsstatus |
+| `-off` | dekrypterar volymen helt; fortsätter i bakgrunden |
+| `C:` | positionsargument: den berörda volymen |
+
+</details>
+
+Vänta tills `manage-bde -status C:` visar värdet `Fully Decrypted`. På enheter som hanteras via Intune kan en princip aktivera BitLocker på nytt; kontrollera därför statusen igen precis före omstarten.
+
+**Viloläge och snabbstart.** När snabbstart är aktiverad stängs Windows inte av helt, och NTFS betraktas fortfarande som i användning. Partclone avbryter då. Ett kommando inaktiverar båda:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Förklarade alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `/h off` | kortform av `/hibernate off`: inaktiverar viloläge och snabbstart, `hiberfil.sys` tas bort |
+
+</details>
+
+**Filsystemets tillstånd.** Om Dirty Bit är satt avbryter Partclone med meddelandet att volymen är ”scheduled for a check or it was shutdown uncleanly”. Kontrollera i förväg:
+
+```powershell
+fsutil dirty query C:
+```
+
+Om kommandot rapporterar `is Dirty`, schemalägger du en kontroll vid nästa start med `chkdsk C: /f`, startar om och kontrollerar igen.
+
+<details class="options-details">
+<summary>Förklarade alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `dirty query C:` | fsutil: frågar om volymens Dirty Bit är satt |
+| `/f` | chkdsk: åtgärdar fel; på systemvolymen schemaläggs kontrollen till nästa start |
+
+</details>
+
+## Steg 2: Skapa och starta USB-minnet
+
+Hämta ISO-avbildningen från projektets GitHub-releasesida. Standardvarianten har Ubuntu-kodnamnet i filnamnet, vid 2.6.2 `rescuezilla-2.6.2-64bit.resolute.iso`. Skriv den till USB-minnet med ett avbildningsskrivprogram som balenaEtcher; projektsidan rekommenderar detta program för Windows, macOS och Linux.
+
+Windows kan själv initiera start från minnet:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Förklarade alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `/r` | startar om i stället för att stänga av |
+| `/o` | startar i de avancerade startalternativen; endast tillsammans med `/r` |
+| `/t 0` | väntetid i sekunder före körning |
+
+</details>
+
+I de avancerade startalternativen väljer du ”Använd en enhet” och USB-minnet. Alternativt öppnas firmwarets startmeny när datorn slås på (beroende på tillverkare F8, F11 eller F12). Rescuezilla startar med Secure Boot aktiverat; det behöver inte stängas av. Om skärmen förblir svart efter språkvalet hjälper alternativet ”Graphical Fallback Mode” i USB-minnets startmeny.
+
+## Steg 3: Skapa en säkerhetskopia
+
+Rescuezilla startar automatiskt på skrivbordet. Guiden leder genom säkerhetskopieringen i numrerade steg:
+
+1.  Välj **Backup**.
+
+2.  *Step 1: Select Drive To Backup*: välj systemdisken. Modell och storlek hjälper vid identifieringen; enhetsnamnen (`nvme0n1`, `sda`) kan skilja sig mellan två starter.
+
+3.  *Step 2: Select Partitions to Save*: låt alla partitioner vara markerade. För en startbar återställning behövs EFI-systempartitionen, den Microsoft-reserverade partitionen, C: och återställningspartitionen.
+
+4.  *Step 3: Select Destination Drive*: den externa enheten (Local) eller en nätverksresurs (Network).
+
+5.  *Step 4: Select Destination Folder*: målmappen på enheten. Rescuezilla skapar en undermapp med tidsstämpel i den.
+
+6.  *Step 5: Name Your Backup*: valfritt en beskrivning; den visas senare i avbildningslistan.
+
+7.  *Step 6: Customize Compression Settings*: Standardinställningen gzip passar i de flesta fall.
+
+8.  *Step 7: Confirm Backup Configuration*: kontrollera uppgifterna och starta.
+
+För 350 GB data på en NVMe-SSD tog säkerhetskopieringen till en extern USB-SSD omkring 20 minuter. I slutet meddelar Rescuezilla för varje partition om den säkerhetskopierades korrekt. Om en partition visar ett fel är avbildningen ofullständig, även om mappen finns.
+
+## Steg 4: Kontrollera avbildningen
+
+Kontrollera avbildningen före återställningen. **Verify Image** i huvudmenyn läser alla delar och kontrollerar att de är kompletta och läsbara. I avbildningslistan visar kolumnen **Partitions** de säkerhetskopierade partitionerna med storlek; en gul varningstriangel markerar avbildningar med saknade partitioner.
+
+Avbildningsmappen kan även granskas i Windows. De viktigaste filerna:
+
+| Fil | Innehåll |
+|---|---|
+| `nvme0n1-pt.parted` | partitionstabell i textformat, med början och slut för varje partition i sektorer |
+| `nvme0n1-gpt-1st`, `nvme0n1-gpt-2nd` | binära kopior av den primära GPT:n och backup-GPT:n |
+| `nvme0n1p3.ntfs-ptcl-img.gz.aa`, `.ab`, … | Partclone-avbildning av C:, gzip-komprimerad och uppdelad i delar om 4 GB |
+| `nvme0n1p2.dd-ptcl-img.gz.aa` | blockvis kopia av en partition utan igenkänt filsystem |
+| `clonezilla-img` | logg över säkerhetskopieringen med resultat för varje partition |
+| `Info-*.txt` | hårdvaru- och SMART-information om källsystemet vid tidpunkten för säkerhetskopieringen |
+
+Av `nvme0n1-pt.parted` går det att utläsa om avbildningen ryms på måldisken: slutsektorn för den sista partitionen plus ett, multiplicerat med 512 byte, måste vara mindre än måldiskens storlek i byte.
+
+## Steg 5: Återställ till den nya SSD:n
+
+Installera den nya SSD:n och starta Rescuezilla igen.
+
+1.  Välj **Restore**.
+
+2.  *Step 1: Select Image Location*: den externa enheten med avbildningen.
+
+3.  *Step 2: Select Backup Image*: välj avbildningen utifrån datum och partitionsstorlekar.
+
+4.  *Step 3: Select Drive To Restore*: den nya SSD:n. Kontrollera modell och storlek två gånger: Alla data på denna enhet skrivs över.
+
+5.  *Step 4: Select Partitions to Restore*: låt alla partitioner vara markerade, liksom **Overwrite partition table**.
+
+6.  *Step 5: Confirm Restore Configuration*: kontrollera och starta.
+
+Återställningen tar ungefär lika lång tid som säkerhetskopieringen. Stäng sedan av och ta bort USB-minnet.
+
+## Steg 6: Starta från den nya enheten
+
+Det enklaste är att koppla ur den gamla disken före första starten. Om båda diskarna är anslutna har de samma partitions- och volym-ID:n, och firmwaret kan välja den gamla för start. Om den gamla disken ska fortsätta användas ska du formatera den först efter att det nya systemet har kontrollerats.
+
+Om den nya SSD:n är större än den gamla ligger det extra lagringsutrymmet som oallokerat utrymme i slutet. C: kan dock inte utökas direkt i Diskhantering, eftersom återställningspartitionen ligger mellan C: och det lediga utrymmet. Med GParted på Rescuezilla-minnet flyttar du först återställningspartitionen till slutet (Resize/Move, **Free space following** till 0) och utökar sedan C: till hela det lediga utrymmet. Windows RE hittar sedan sin partition igen eftersom den behåller sitt partitionsnummer; `reagentc /info` visar statusen.
+
+Om datorn också byts vid migreringen startar Windows i regel utan anpassningar och installerar saknade drivrutiner efteråt. Aktiveringen sker via den digitala licensen, och vid byte av moderkort möjligen först efter inloggning med Microsoft-kontot via aktiveringsfelsökaren.
+
+## Efterarbete
+
+På den nya enheten aktiverar du åter det som inaktiverades för migreringen. Viloläget aktiveras med `powercfg /h on`. BitLocker aktiverar du via Inställningar → Sekretess och säkerhet → Enhetskryptering eller med `manage-bde -on C:`; kontrollera sedan med `manage-bde -protectors -get C:` att en återställningsnyckel finns och har sparats.
+
+Behåll avbildningen på den externa enheten tills Windows har fungerat utan problem på den nya enheten i några dagar och alla data har kontrollerats. Därefter kan den raderas eller arkiveras som en säkerhetskopia av leveransskicket.
+
+## Källor
+
+1.  [Rescuezilla](https://rescuezilla.com/): projektsida med funktionsöversikt, nedladdning och FAQ.
+
+2.  [Rescuezilla på GitHub](https://github.com/rescuezilla/rescuezilla): källkod, projekthistorik och funktionslista i README.
+
+3.  [Rescuezilla Releases](https://github.com/rescuezilla/rescuezilla/releases/latest): aktuell version med versionsinformation, kompatibilitetslista och ISO-varianter.
+
+4.  [Rescuezilla Changelog](https://raw.githubusercontent.com/rescuezilla/rescuezilla/master/CHANGELOG.md): införande av CLI, Verify Image och Clone samt uppdateringen av Secure Boot-shim.
+
+5.  [Rescuezilla Wiki: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): officiellt förfarande för måldiskar som är mindre än originalet.
+
+6.  [Partclone](https://partclone.org/): verktyget som Rescuezilla och Clonezilla använder för filsystemsanpassad säkerhetskopiering.
+
+7.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): flyttning och utökning av partitioner.
+
+8.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): statuskontroll för BitLocker.
+
+9.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): dekryptering av en volym.
+
+10.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): alternativet `/hibernate` och dess påverkan på snabbstart.
+
+11.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): kontroll av Dirty Bit.
+
+12.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): kontroll och reparation av NTFS-volymer.
+
+13.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parametern `/o` för start i de avancerade startalternativen.
+
+14.  [Microsoft Support: Reactivating Windows after a hardware change](https://support.microsoft.com/en-us/windows/reactivating-windows-after-a-hardware-change-2c0e962a-f04c-145b-6ead-fb3fc72b6665): aktivering via den digitala licensen efter byte av moderkort.
+
+----
+
+# Flytta Windows till en mindre SSD med Rescuezilla: från 1 TB till 512 GB
+
+URL: https://rafaelpfister.ch/sv/blog/flytta-windows-till-en-mindre-ssd-med-rescuezilla-fran-1-tb-till-512-gb
+Datum: 2026-09-29
+
+Rescuezilla är ett kostnadsfritt livesystem för säkerhetskopiering och återställning av hela diskar, kompatibelt med Clonezillas avbildningsformat (presentation av verktyget och grundläggande arbetsflöde: [Rescuezilla: Migrera Windows till en ny SSD](/blog/rescuezilla-windows-migration)). Så länge måldisken är lika stor eller större räcker säkerhetskopiering och återställning. Är den mindre avbryts återställningen, även om de använda data skulle få plats. Den här artikeln dokumenterar flytten av ett Windows 11-system från en NVMe på 1 TB (C: med 930 GB, varav omkring 350 GB används) till en NVMe på 512 GB, inklusive felmeddelandena som uppstår på vägen.
+
+## Varför återställningen till den mindre disken misslyckas
+
+Rescuezilla säkerhetskopierar varje partition separat med Partclone och sparar dessutom partitionstabellen. Vid återställningen skriver programmet denna tabell oförändrad till måldisken. Rescuezilla kan inte krympa en partition. Innan start kontrollerar programmet därför om den sista partitionen ryms helt på måldisken och avbryter annars med följande meddelande:
+
+```text
+The source partition table's final partition (/dev/nvme0n1p4:
+1000203091968 bytes) must refer to a region completely within
+the destination disk (512110190592 bytes).
+```
+
+En typisk Windows-installation har fyra partitioner: EFI-systempartitionen (200 MB), den Microsoft-reserverade partitionen (16 MB), C: och återställningspartitionen med Windows RE (här 904 MiB). Windows placerar återställningspartitionen i slutet av disken. Det räcker alltså inte att krympa C:: även återställningspartitionen måste flyttas fram, direkt efter C:.
+
+Arbetsflödet som Rescuezilla-wikin beskriver för detta fall är: krymp källdisken med GParted, skapa en ny avbildning och återställ denna avbildning. En tidigare skapad avbildning av den oförändrade disken behålls som säkerhetskopia tills det nya systemet fungerar.
+
+## Steg 1: Beräkna målstorleken
+
+En SSD som säljs som 512 GB har 512'110'190'592 byte, vilket motsvarar 476,9 GiB (Rescuezilla visar också detta värde). EFI, MSR och återställningspartitionen tar tillsammans drygt 1,1 GiB. För C: återstår därmed knappt 475 GiB. Med lite marginal är **470 GiB = 481'280 MiB** ett lämpligt målvärde. De cirka 6 GB som lämnas lediga i slutet av den nya SSD:n spelar ingen roll.
+
+De använda data måste understiga detta värde. Följande kommando i PowerShell med administratörsbehörighet visar hur långt Windows skulle kunna krympa en volym:
+
+```powershell
+$s = Get-PartitionSupportedSize -DriveLetter C
+"{0:N1} GB" -f ($s.SizeMin / 1GB)
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `-DriveLetter C` | Volym vars möjliga storlekar efterfrågas |
+| `SizeMin` | Minsta storlek som Windows självt skulle kunna krympa volymen till |
+| `"{0:N1} GB" -f` | Formaterar bytevärdet som gigabyte med en decimal |
+
+</details>
+
+Om `SizeMin` ligger betydligt över mängden använda data blockerar orubbliga filer (växlingsfil, återställningspunkter, MFT) krympningen med Windows inbyggda verktyg. GParted flyttar med dessa data vid krympningen, så den gränsen gäller inte där.
+
+## Steg 2: Stäng av BitLocker och viloläge
+
+GParted kan varken läsa eller krympa en BitLocker-krypterad volym, och Partclone kan inte säkerhetskopiera den som NTFS. Kontrollera statusen i PowerShell med administratörsbehörighet:
+
+```powershell
+manage-bde -status C:
+```
+
+Om det inte står `Fully Decrypted`, stänger du av BitLocker och väntar tills dekrypteringen är klar:
+
+```powershell
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `-status` | Visar volymens krypteringsgrad, metod och skyddsstatus |
+| `-off` | Dekrypterar volymen helt och tar bort nyckelskydden |
+| `C:` | Positionsargument: den berörda volymen |
+
+</details>
+
+Dekrypteringen körs i bakgrunden och kan, beroende på datamängd, ta en timme eller längre. På enheter som hanteras via Intune kan en princip slå på BitLocker igen efter kort tid. Kontrollera därför statusen ytterligare en gång direkt innan du startar GParted.
+
+Dessutom måste viloläget vara avstängt. Med snabbstart aktiverad stängs Windows inte av helt, utan sparar kärnans tillstånd i `hiberfil.sys`. NTFS betraktas då fortfarande som i bruk, och GParted vägrar göra ändringar. Ett kommando stänger av både viloläge och snabbstart samt raderar `hiberfil.sys`:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `/h off` | Kortform av `/hibernate off`: inaktiverar viloläge och snabbstart, `hiberfil.sys` tas bort |
+
+</details>
+
+## Steg 3: Starta Rescuezilla
+
+Windows kan styra nästa start direkt till startmenyn med avancerade alternativ. Där väljer du ”Använd en enhet” och USB-minnet med Rescuezilla:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `/r` | Startar om i stället för att stänga av |
+| `/o` | Startar i avancerade startalternativ (Windows RE); endast tillsammans med `/r` |
+| `/t 0` | Väntetid i sekunder före körning |
+
+</details>
+
+Alternativt öppnas firmwarets startmeny när datorn slås på, på ASRock-kort med F11. Om ”Använd en enhet” saknas leder `shutdown /r /fw /t 0` direkt till UEFI-inställningarna, där startenheten för nästa start kan väljas.
+
+## Steg 4: Krymp C: och flytta återställningspartitionen
+
+Starta **Partition Editor** (GParted) på Rescuezilla-skrivbordet, inte Rescuezilla självt.
+
+1.  Välj källdisken uppe till höger. Kontrollera storleken (här 931.51 GiB), så att du inte av misstag redigerar den externa säkerhetskopieringsdisken eller en andra intern disk.
+
+2.  Högerklicka på NTFS-partitionen med C: → **Resize/Move**. Ange målvärdet i fältet **New size (MiB)**, här `481280`, och bekräfta med tabbtangenten. **Free space preceding** förblir oförändrat. Bekräfta med **Resize/Move**.
+
+3.  Under C: visas nu en rad `unallocated`, under den återställningspartitionen (NTFS, omkring 900 MiB, flaggor `hidden, diag`). Högerklicka på återställningspartitionen → **Resize/Move**.
+
+4.  Radera värdet i fältet **Free space preceding (MiB)**, ange `0` och bekräfta med tabbtangenten. **New size** förblir samma, **Free space following** hoppar till hela det lediga området. Om `1` visas efter att du tryckt på Tab i stället för `0`, beror det på justeringen till hela MiB och är i sin ordning. Bekräfta med **Resize/Move**.
+
+5.  Bekräfta en varning om att flytten kan förhindra uppstart med OK. Den gäller partitioner med startladdare; Windows startar från EFI-systempartitionen, som lämnas oförändrad.
+
+6.  Ordningen är nu: EFI, MSR, C:, återställningspartition, `unallocated`. Hittills är ändringarna bara schemalagda. Först ett klick på den gröna bocken (**Apply All Operations**) genomför ändringarna.
+
+Windows RE hittar sin partition igen efter flytten eftersom den behåller sitt partitionsnummer. `reagentc /info` visar därefter fortfarande `Enabled` med sökvägen `harddisk0\partition4\Recovery\WindowsRE`.
+
+Rescuezilla-guiden krymper bara den sista partitionen. Det räcker om C: är den sista partitionen. I en standardinstallation av Windows 10 eller 11 ligger återställningspartitionen efter den, och då är flytten obligatorisk.
+
+## Steg 5: Ta bort Dirty-flaggan
+
+Nästa säkerhetskopiering avbryts efter krympningen vid C: med följande meddelande:
+
+```text
+ntfsclone-ng.c: NTFS Volume '/dev/nvme0n1p3' is scheduled for a check
+or it was shutdown uncleanly. Please boot Windows or fix it by fsck.
+```
+
+Orsaken är avsiktlig: `ntfsresize`, som GParted använder för NTFS, markerar filsystemet för kontroll före varje storleksändring och lämnar kvar markeringen. Enligt manualsidan ska Windows köra `chkdsk` vid nästa start. I det beskrivna fallet var flaggan dock fortfarande satt efter en normal Windows-start, och `Get-Volume C` rapporterade `Full Repair Needed`. Du kontrollerar tillståndet i PowerShell med administratörsbehörighet:
+
+```powershell
+fsutil dirty query C:
+```
+
+Om kommandot rapporterar `Volume - C: is Dirty`, låter du kontrollen köras vid nästa start:
+
+```powershell
+chkdsk C: /f
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `dirty query C:` | fsutil: frågar om volymens Dirty-bit är satt |
+| `C:` | chkdsk: volymen som ska kontrolleras |
+| `/f` | Åtgärdar hittade fel; för systemvolymen schemaläggs kontrollen till nästa start |
+
+</details>
+
+Svara J på frågan om kontrollen ska utföras vid nästa omstart och starta om Windows normalt. Därefter måste `fsutil dirty query C:` visa meddelandet `is NOT Dirty`, och `Get-Volume C` rapporterar åter `Healthy`. Först då startar du Rescuezilla igen.
+
+## Steg 6: Skapa och kontrollera en ny avbildning
+
+Använd nu Rescuezilla för att skapa en ny avbildning av den krympta disken. Avbildningens storlek förblir i praktiken densamma som vid den första säkerhetskopieringen (här omkring 214 GB), eftersom Partclone bara säkerhetskopierar använda block. Rescuezilla placerar varje säkerhetskopia i en egen mapp med tidsstämpel, exempelvis `2026-09-29-1343-img-rescuezilla`.
+
+I listan för val av avbildning visas sedan alla avbildningar bredvid varandra. Kolumnen **Partitions** visar storlekarna: avbildningen före krympningen innehåller `ntfs 930.4GB`, den nya `ntfs 470GB`. Ett avbrutet säkerhetskopieringsförsök visas med en gul varningstriangel; det innehåller den gamla partitionstabellen och utlöser vid återställning exakt felmeddelandet från första avsnittet. Radera sådana mappar så att de inte väljs av misstag.
+
+Du kan också i förväg kontrollera om en avbildning ryms på måldisken i filen `<disk>-pt.parted` i avbildningsmappen. Den innehåller den säkerhetskopierade partitionstabellen i sektorer om 512 byte:
+
+```text
+Number  Start       End         Size        File system  Name
+ 1      2048s       411647s     409600s     fat32        EFI system partition
+ 2      411648s     444415s     32768s                   Microsoft reserved partition
+ 3      444416s     986105855s  985661440s  ntfs         Basic data partition
+ 4      986105856s  987957247s  1851392s    ntfs
+```
+
+Slutet på den sista partitionen (987'957'247 + 1 sektorer × 512 byte = 505,8 GB) ligger under måldiskens 512,1 GB. Avbildningen passar.
+
+## Steg 7: Återställ till den nya SSD:n
+
+1.  Välj **Restore** i Rescuezilla, sedan enheten med avbildningarna och därefter den **nya** avbildningen (utan varningstriangel, med den krympta C:-partitionen).
+
+2.  Välj den nya SSD:n som mål. Kontrollera modell och storlek två gånger: återställningen skriver över måldisken helt.
+
+3.  Låt alla partitioner vara markerade, liksom **Overwrite partition table**, och starta återställningen.
+
+4.  Starta sedan från den nya SSD:n. Enklast är att koppla bort den gamla disken först; annars väljer du den nya SSD:n i firmwarets startmeny.
+
+## Efterarbete
+
+På den nya enheten aktiverar du igen det som inaktiverades för flytten. Viloläget aktiveras med `powercfg /h on`. Du aktiverar BitLocker via Inställningar → Sekretess och säkerhet → Enhetskryptering eller med `manage-bde -on C:`; kontrollera därefter med `manage-bde -protectors -get C:` att återställningsnyckeln är sparad. Om Secure Boot inaktiverades i UEFI för att starta Rescuezilla ska du aktivera det igen; så länge det är avstängt loggar BitLocker händelse 810 vid varje start.
+
+Du kan radera avbildningen av den oförändrade disken på 1 TB så snart Windows startar korrekt från den nya SSD:n och alla data finns där.
+
+## Källor
+
+1.  [Rescuezilla Wiki: Återställa till en mindre disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): officiellt arbetsflöde med GParted och orsaken till begränsningen vid återställning.
+
+2.  [Rescuezilla](https://rescuezilla.com/): projektsida med nedladdning av livesystemet.
+
+3.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): hantering av Resize/Move, justering till MiB och genomförande av schemalagda åtgärder.
+
+4.  [ntfsresize(8), Ubuntu Manpage](https://manpages.ubuntu.com/manpages/noble/man8/ntfsresize.8.html): verktyget bakom NTFS-krympning i GParted; beskriver den avsiktligt satta kontrollmarkeringen.
+
+5.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): parametern `/f` och schemaläggning av kontrollen på systemvolymen.
+
+6.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): kontroll och betydelse av Dirty-biten.
+
+7.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): statuskontroll för BitLocker.
+
+8.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): dekryptering av en volym.
+
+9.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): alternativet `/hibernate` och dess påverkan på snabbstart.
+
+10.  [Microsoft Learn: Get-PartitionSupportedSize](https://learn.microsoft.com/en-us/powershell/module/storage/get-partitionsupportedsize): minsta och största partitionsstorlek ur Windows perspektiv.
+
+11.  [Microsoft Learn: REAgentC command-line options](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/reagentc-command-line-options): kontrollera status och lagringsplats för Windows RE.
+
+12.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parametrarna `/o` och `/fw` för start i avancerade alternativ respektive UEFI.
+
+----
+
 # Kiteworks: Tillverkaren rekommenderar avstängning den 26 september – vad som hittills är känt
 
 URL: https://rafaelpfister.ch/sv/blog/kiteworks-tillverkaren-rekommenderar-avstangning-den-26-september-vad-som-hittills-ar-kant
@@ -86105,6 +88365,458 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Rescuezilla: Migrer Windows til en ny SSD, med introduksjon til verktøyet
+
+URL: https://rafaelpfister.ch/no/blog/rescuezilla-migrer-windows-til-en-ny-ssd-med-introduksjon-til-verktoyet
+Datum: 2026-09-29
+
+Hvis du vil flytte en Windows-installasjon til en ny SSD eller en ny datamaskin uten å installere Windows på nytt, trenger du et verktøy som sikkerhetskopierer og gjenoppretter hele disken med alle partisjoner. Rescuezilla er et slikt verktøy: gratis, åpen kildekode og med et grafisk grensesnitt som kan brukes også uten Linux-kunnskaper. Denne artikkelen presenterer verktøyet og beskriver migreringen til en SSD som er like stor eller større. For en mindre mål-SSD finnes det en egen veiledning: [Flytt Windows med Rescuezilla til en mindre SSD](/blog/windows-kleinere-ssd-rescuezilla).
+
+## Hva Rescuezilla er
+
+Rescuezilla er et live-system basert på Ubuntu som startes fra en USB-minnepinne. Det kjører uavhengig av det installerte operativsystemet og sikkerhetskopierer derfor også volumer som Windows låser under drift. Prosjektet oppstod i 2019 som en fork av Redo Backup and Recovery, som på det tidspunktet ikke hadde blitt vedlikeholdt på sju år. Siden versjon 2.0 (2020) skriver Rescuezilla images i Clonezilla-format: En sikkerhetskopi opprettet med Rescuezilla kan gjenopprettes med Clonezilla og omvendt. Lisensen er GPL-3.0. Den nyeste versjonen er 2.6.2 fra mai 2026, basert på Ubuntu 26.04 LTS med Partclone 0.3.47.
+
+Selve arbeidet utføres av Partclone. Det kjenner de vanlige filsystemene (NTFS, FAT, ext4 og flere) og leser bare de opptatte blokkene. En partisjon på 1 TB med 350 GB data gir derfor et image på rundt 215 GB (gzip-komprimert), ikke 1 TB. Partisjoner uten gjenkjent filsystem, som den Microsoft-reserverte partisjonen, sikkerhetskopierer Rescuezilla blokk for blokk med `dd`; disse filene har endelsen `.dd-ptcl-img` i imaget.
+
+<details class="options-details">
+<summary>Funksjoner i oversikt</summary>
+
+| Funksjon | Formål |
+|---|---|
+| Backup | sikkerhetskopierer valgte partisjoner på en disk, inkludert partisjonstabellen, som et image til en lokal stasjon eller en nettverksressurs (SMB, SSH) |
+| Restore | gjenoppretter et image til en disk, valgfritt med overskriving av partisjonstabellen |
+| Verify Image | kontrollerer om et eksisterende image er komplett og lesbart |
+| Clone | kopierer en disk direkte til en annen, uten mellomlagring |
+| Image Explorer (beta) | monterer et image skrivebeskyttet for å hente ut enkeltfiler |
+| VM-images | leser, i tillegg til Clonezilla-images, også VDI-, VMDK-, VHDX-, QCOW2- og Raw-images |
+| Tilleggsverktøy | GParted, filbehandler, nettleser og verktøy for gjenoppretting av slettede filer på live-skrivebordet |
+| CLI | eksperimentell kommandolinje (siden 2.5) for Backup, Verify, Restore og Clone |
+
+</details>
+
+En begrensning er viktig ved migreringer: Rescuezilla krymper ikke partisjoner. Måldisken må minst rekke til slutten av den siste sikkerhetskopierte partisjonen. Hvis den er mindre, kreves det forarbeid med GParted, beskrevet i veiledningen det er lenket til ovenfor.
+
+## Image eller klone
+
+Rescuezilla tilbyr to fremgangsmåter for en migrering. Ved **kloning** er kilde- og måldisken tilkoblet samtidig, og Rescuezilla kopierer direkte. Det sparer tid og en tredje datadisk, men forutsetter at begge diskene er koblet til datamaskinen eller en adapter samtidig. Ved **imaging** opprettes først et image på en ekstern stasjon, som deretter gjenopprettes til den nye disken. Dette tar lengre tid, men har en fordel: Imaget beholdes som en fullstendig sikkerhetskopi av den gamle tilstanden, også hvis noe går galt under gjenopprettingen. For en migrering er imaget derfor det tryggere valget, og det er denne varianten artikkelen beskriver.
+
+## Forutsetninger
+
+1.  **USB-minnepinne** for Rescuezilla. Innholdet slettes når oppstartsavbildningen skrives.
+
+2.  **Ekstern stasjon** for imaget, med ledig plass omtrent tilsvarende størrelsen på de opptatte dataene. Både exFAT og NTFS fungerer.
+
+3.  **Måldisk**, minst like stor som kildedisken. Hvis den er mindre, må du først gå gjennom veiledningen for mindre SSD-er.
+
+4.  **BitLocker-gjenopprettingsnøkkel**, dersom C: er kryptert. Den kan hentes på aka.ms/myrecoverykey eller i Entra-portalen for administrerte enheter.
+
+## Trinn 1: Klargjør Windows
+
+Kontroller tre punkter før sikkerhetskopieringen i en PowerShell med administratorrettigheter.
+
+**BitLocker.** Partclone kan ikke lese et BitLocker-volum som NTFS. Rescuezilla sikkerhetskopierer det da blokk for blokk, som enhver partisjon uten gjenkjent filsystem, og imaget blir like stort som hele partisjonen. Ved migrering anbefales det å slå av BitLocker på forhånd og slå det på igjen etter flyttingen:
+
+```powershell
+manage-bde -status C:
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-status` | viser krypteringsgrad og beskyttelsesstatus for volumet |
+| `-off` | dekrypterer volumet fullstendig; fortsetter å kjøre i bakgrunnen |
+| `C:` | posisjonsargument: det berørte volumet |
+
+</details>
+
+Vent til `manage-bde -status C:` viser verdien `Fully Decrypted`. På enheter som administreres via Intune, kan en policy slå på BitLocker igjen. Kontroller derfor statusen en gang til rett før omstart.
+
+**Dvalemodus og hurtigstart.** Med hurtigstart aktivert slår ikke Windows seg helt av, og NTFS anses fortsatt som i bruk. Da avbryter Partclone. Én kommando deaktiverer begge:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `/h off` | kortform av `/hibernate off`: deaktiverer dvalemodus og hurtigstart, `hiberfil.sys` fjernes |
+
+</details>
+
+**Filsystemtilstand.** Hvis dirty-biten er satt, avbryter Partclone med meldingen om at volumet er «scheduled for a check or it was shutdown uncleanly». Kontroller på forhånd:
+
+```powershell
+fsutil dirty query C:
+```
+
+Hvis kommandoen rapporterer `is Dirty`, planlegger du en kontroll ved neste oppstart med `chkdsk C: /f`, starter på nytt og kontrollerer igjen.
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `dirty query C:` | fsutil: spør om volumets dirty-bit er satt |
+| `/f` | chkdsk: retter feil; på systemvolumet planlegges kontrollen til neste oppstart |
+
+</details>
+
+## Trinn 2: Opprett og start oppstartsminnepinnen
+
+Last ned ISO-imaget fra prosjektets GitHub-utgivelsesside. Standardvarianten har Ubuntu-kodenavnet i filnavnet, i 2.6.2 `rescuezilla-2.6.2-64bit.resolute.iso`. Skriv det til USB-minnepinnen med en image-skriver som balenaEtcher; prosjektsiden anbefaler dette programmet for Windows, macOS og Linux.
+
+Windows kan selv styre oppstarten fra minnepinnen:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `/r` | omstart i stedet for avslåing |
+| `/o` | starter i de avanserte oppstartsalternativene; kun sammen med `/r` |
+| `/t 0` | ventetid i sekunder før utførelse |
+
+</details>
+
+I de avanserte oppstartsalternativene velger du «Bruk en enhet» og USB-minnepinnen. Alternativt åpnes fastvarens oppstartsmeny når maskinen slås på (avhengig av produsent F8, F11 eller F12). Rescuezilla starter med Secure Boot aktivert; det trenger ikke å deaktiveres. Hvis skjermen forblir svart etter språkvalget, kan valget «Graphical Fallback Mode» i minnepinnens oppstartsmeny hjelpe.
+
+## Trinn 3: Opprett sikkerhetskopi
+
+Rescuezilla starter automatisk på skrivebordet. Veiviseren leder deg gjennom sikkerhetskopieringen i nummererte trinn:
+
+1.  Velg **Backup**.
+
+2.  *Step 1: Select Drive To Backup*: velg systemdisken. Modell og størrelse hjelper med å skille dem fra hverandre; enhetsnavnene (`nvme0n1`, `sda`) kan variere mellom to oppstarter.
+
+3.  *Step 2: Select Partitions to Save*: la alle partisjonene være avkrysset. En oppstartbar gjenoppretting krever EFI-systempartisjonen, den Microsoft-reserverte partisjonen, C: og gjenopprettingspartisjonen.
+
+4.  *Step 3: Select Destination Drive*: den eksterne stasjonen (Local) eller en nettverksressurs (Network).
+
+5.  *Step 4: Select Destination Folder*: målmappen på stasjonen. Rescuezilla oppretter en undermappe med tidsstempel der.
+
+6.  *Step 5: Name Your Backup*: valgfri beskrivelse; den vises senere i imagelisten.
+
+7.  *Step 6: Customize Compression Settings*: Standardinnstillingen gzip passer i de fleste tilfeller.
+
+8.  *Step 7: Confirm Backup Configuration*: kontroller opplysningene og start.
+
+For 350 GB data på en NVMe-SSD tok sikkerhetskopieringen til en ekstern USB-SSD rundt 20 minutter. Til slutt rapporterer Rescuezilla for hver partisjon om den ble sikkerhetskopiert. Hvis en partisjon viser en feil, er imaget ufullstendig, selv om mappen finnes.
+
+## Trinn 4: Kontroller imaget
+
+Kontroller imaget før gjenopprettingen. **Verify Image** i hovedmenyen leser alle deler og kontrollerer at de er komplette og lesbare. I imagelisten viser kolonnen **Partitions** de sikkerhetskopierte partisjonene med størrelse; en gul varseltrekant markerer images med manglende partisjoner.
+
+Imagemappen kan også vises i Windows. De viktigste filene:
+
+| Fil | Innhold |
+|---|---|
+| `nvme0n1-pt.parted` | partisjonstabell i tekstformat, med start og slutt for hver partisjon i sektorer |
+| `nvme0n1-gpt-1st`, `nvme0n1-gpt-2nd` | binære kopier av primær- og reserve-GPT-en |
+| `nvme0n1p3.ntfs-ptcl-img.gz.aa`, `.ab`, … | Partclone-image av C:, gzip-komprimert, delt opp i deler på 4 GB |
+| `nvme0n1p2.dd-ptcl-img.gz.aa` | blokkvis kopi av en partisjon uten gjenkjent filsystem |
+| `clonezilla-img` | logg over sikkerhetskopieringen med resultat for hver partisjon |
+| `Info-*.txt` | maskinvare- og SMART-opplysninger om kildesystemet på tidspunktet for sikkerhetskopieringen |
+
+Fra `nvme0n1-pt.parted` kan du se om imaget passer på måldisken: Sluttsektoren til den siste partisjonen pluss én, ganget med 512 byte, må være mindre enn størrelsen på måldisken i byte.
+
+## Trinn 5: Gjenopprett til den nye SSD-en
+
+Monter den nye SSD-en og start Rescuezilla igjen.
+
+1.  Velg **Restore**.
+
+2.  *Step 1: Select Image Location*: den eksterne stasjonen med imaget.
+
+3.  *Step 2: Select Backup Image*: velg imaget ut fra dato og partisjonsstørrelser.
+
+4.  *Step 3: Select Drive To Restore*: den nye SSD-en. Kontroller modell og størrelse to ganger: Alle data på denne stasjonen overskrives.
+
+5.  *Step 4: Select Partitions to Restore*: la alle partisjonene være avkrysset, samt **Overwrite partition table**.
+
+6.  *Step 5: Confirm Restore Configuration*: kontroller og start.
+
+Gjenopprettingen tar omtrent like lang tid som sikkerhetskopieringen. Slå deretter av maskinen og fjern minnepinnen.
+
+## Trinn 6: Start fra den nye stasjonen
+
+Det enkleste er å koble fra den gamle disken før første oppstart. Hvis begge diskene er tilkoblet, har de samme partisjons- og volum-ID-er, og fastvaren kan velge den gamle for oppstart. Hvis den gamle disken skal brukes videre, må du ikke formatere den før det nye systemet er kontrollert.
+
+Hvis den nye SSD-en er større enn den gamle, ligger den ekstra lagringsplassen som et ikke-allokert område på slutten. C: kan imidlertid ikke utvides direkte i Diskbehandling, fordi gjenopprettingspartisjonen ligger mellom C: og det ledige området. Med GParted på Rescuezilla-minnepinnen flytter du først gjenopprettingspartisjonen til slutten (Resize/Move, **Free space following** til 0) og utvider deretter C: til hele det ledige området. Windows RE finner deretter partisjonen igjen fordi den beholder partisjonsnummeret; `reagentc /info` viser statusen.
+
+Hvis datamaskinen også byttes ved migreringen, starter Windows som regel uten tilpasninger og installerer manglende drivere etterpå. Aktiveringen skjer via den digitale lisensen; ved bytte av hovedkort eventuelt først etter innlogging med Microsoft-kontoen gjennom aktiveringsfeilsøkingen.
+
+## Etterarbeid
+
+På den nye stasjonen aktiverer du igjen det som ble deaktivert for migreringen. Dvalemodus aktiveres med `powercfg /h on`. Du aktiverer BitLocker via Innstillinger → Personvern og sikkerhet → Enhetskryptering eller med `manage-bde -on C:`; kontroller deretter med `manage-bde -protectors -get C:` at en gjenopprettingsnøkkel finnes og er lagret.
+
+Behold imaget på den eksterne stasjonen til Windows har kjørt uten problemer på den nye stasjonen i noen dager og alle data er kontrollert. Deretter kan det slettes eller arkiveres som en sikkerhetskopi av leveringstilstanden.
+
+## Kilder
+
+1.  [Rescuezilla](https://rescuezilla.com/): prosjektside med funksjonsoversikt, nedlasting og FAQ.
+
+2.  [Rescuezilla på GitHub](https://github.com/rescuezilla/rescuezilla): kildekode, prosjekthistorikk og funksjonsliste i README.
+
+3.  [Rescuezilla Releases](https://github.com/rescuezilla/rescuezilla/releases/latest): nyeste versjon med utgivelsesnotater, kompatibilitetsliste og ISO-varianter.
+
+4.  [Rescuezilla Changelog](https://raw.githubusercontent.com/rescuezilla/rescuezilla/master/CHANGELOG.md): innføring av CLI, Verify Image og Clone samt oppdateringen av Secure Boot-shim-en.
+
+5.  [Rescuezilla Wiki: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): offisiell fremgangsmåte for måldisker som er mindre enn originalen.
+
+6.  [Partclone](https://partclone.org/): verktøyet som Rescuezilla og Clonezilla bruker til filsystembevisst sikkerhetskopiering.
+
+7.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): flytting og utvidelse av partisjoner.
+
+8.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): statuskontroll av BitLocker.
+
+9.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): dekryptering av et volum.
+
+10.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): alternativet `/hibernate` og påvirkningen på hurtigstart.
+
+11.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): kontroll av dirty-biten.
+
+12.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): kontroll og reparasjon av NTFS-volumer.
+
+13.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parameteren `/o` for oppstart i de avanserte oppstartsalternativene.
+
+14.  [Microsoft Support: Reactivating Windows after a hardware change](https://support.microsoft.com/en-us/windows/reactivating-windows-after-a-hardware-change-2c0e962a-f04c-145b-6ead-fb3fc72b6665): aktivering via digital lisens etter bytte av hovedkort.
+
+----
+
+# Flytt Windows til en mindre SSD med Rescuezilla: fra 1 TB til 512 GB
+
+URL: https://rafaelpfister.ch/no/blog/flytt-windows-til-en-mindre-ssd-med-rescuezilla-fra-1-tb-til-512-gb
+Datum: 2026-09-29
+
+Rescuezilla er et gratis live-system for sikkerhetskopiering og gjenoppretting av hele datalagringsenheter, kompatibelt med imageformatet til Clonezilla (presentasjon av verktøyet og grunnleggende fremgangsmåte: [Rescuezilla: Migrer Windows til en ny SSD](/blog/rescuezilla-windows-migration)). Så lenge måldisken er like stor eller større, er sikkerhetskopiering og gjenoppretting tilstrekkelig. Er den mindre, avbrytes gjenopprettingen selv om de brukte dataene ville fått plass på den. Denne artikkelen dokumenterer flyttingen av et Windows 11-system fra en 1 TB NVMe (C: med 930 GB, hvorav rundt 350 GB er brukt) til en 512 GB NVMe, inkludert feilmeldingene som oppstår underveis.
+
+## Hvorfor gjenopprettingen til den mindre disken mislykkes
+
+Rescuezilla sikkerhetskopierer hver partisjon separat med Partclone og lagrer i tillegg partisjonstabellen. Ved gjenoppretting skriver det denne tabellen uendret til måldisken. Rescuezilla kan ikke krympe en partisjon. Før oppstart kontrollerer det derfor om den siste partisjonen ligger helt på måldisken, og avbryter ellers med denne meldingen:
+
+```text
+The source partition table's final partition (/dev/nvme0n1p4:
+1000203091968 bytes) must refer to a region completely within
+the destination disk (512110190592 bytes).
+```
+
+En typisk Windows-installasjon har fire partisjoner: EFI-systempartisjonen (200 MB), den Microsoft-reserverte partisjonen (16 MB), C: og gjenopprettingspartisjonen med Windows RE (her 904 MiB). Windows plasserer gjenopprettingspartisjonen på slutten av disken. Det er derfor ikke nok å krympe C:: Gjenopprettingspartisjonen må også flyttes fremover, rett bak C:.
+
+Fremgangsmåten som Rescuezilla-wikien beskriver for dette tilfellet, er: Krymp kildedisken med GParted, opprett et nytt image, og gjenopprett dette imaget. Et tidligere opprettet image av den uendrede disken beholdes som sikkerhetskopi til det nye systemet kjører.
+
+## Trinn 1: Beregn målstørrelsen
+
+En SSD som selges som 512 GB, har 512'110'190'592 byte, som er 476,9 GiB (Rescuezilla viser også denne verdien). EFI, MSR og gjenopprettingspartisjonen trekker fra til sammen godt 1,1 GiB. For C: gjenstår dermed knapt 475 GiB. Med litt reserve er **470 GiB = 481'280 MiB** en fornuftig målverdi. De rundt 6 GB som blir ledige på slutten av den nye SSD-en, har ingen betydning.
+
+De brukte dataene må være under denne verdien. Denne kommandoen i PowerShell med administratorrettigheter viser hvor langt Windows selv kan krympe et volum:
+
+```powershell
+$s = Get-PartitionSupportedSize -DriveLetter C
+"{0:N1} GB" -f ($s.SizeMin / 1GB)
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-DriveLetter C` | Volumet det skal hentes informasjon om mulige størrelser for |
+| `SizeMin` | Minste størrelse Windows selv kan krympe volumet til |
+| `"{0:N1} GB" -f` | Formaterer byteverdien som gigabyte med én desimal |
+
+</details>
+
+Ligger `SizeMin` betydelig over mengden brukte data, blokkerer uflyttbare filer (sidevekslingsfil, gjenopprettingspunkter, MFT) krympingen med Windows' innebygde verktøy. GParted flytter disse dataene ved krymping, så grensen gjelder ikke der.
+
+## Trinn 2: Slå av BitLocker og dvalemodus
+
+GParted kan verken lese eller krympe et BitLocker-kryptert volum, og Partclone kan ikke sikkerhetskopiere det som NTFS. Kontroller statusen i PowerShell med administratorrettigheter:
+
+```powershell
+manage-bde -status C:
+```
+
+Hvis det ikke står `Fully Decrypted`, slår du av BitLocker og venter til dekrypteringen er fullført:
+
+```powershell
+manage-bde -off C:
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-status` | Viser krypteringsgrad, metode og beskyttelsesstatus for volumet |
+| `-off` | Dekrypterer volumet fullstendig og fjerner nøkkelbeskyttelsen |
+| `C:` | Posisjonsargument: det berørte volumet |
+
+</details>
+
+Dekrypteringen kjører i bakgrunnen og kan ta en time eller mer, avhengig av datamengden. På enheter som administreres via Intune, kan en policy slå på BitLocker igjen etter kort tid. Kontroller derfor statusen en gang til umiddelbart før du starter GParted.
+
+I tillegg må dvalemodus være slått av. Med hurtigstart aktivert slår ikke Windows seg helt av, men lagrer kjernetilstanden i `hiberfil.sys`. NTFS anses da fortsatt som i bruk, og GParted nekter alle endringer. Én kommando slår av både dvalemodus og hurtigstart og sletter `hiberfil.sys`:
+
+```powershell
+powercfg /h off
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `/h off` | Kortform av `/hibernate off`: deaktiverer dvalemodus og hurtigstart, `hiberfil.sys` fjernes |
+
+</details>
+
+## Trinn 3: Start Rescuezilla
+
+Windows kan styre neste oppstart direkte til oppstartsmenyen med avanserte alternativer. Der velger du «Bruk en enhet» og USB-pinnen med Rescuezilla:
+
+```powershell
+shutdown /r /o /t 0
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `/r` | Omstart i stedet for avslutning |
+| `/o` | Starter i avanserte oppstartsalternativer (Windows RE); bare sammen med `/r` |
+| `/t 0` | Ventetid i sekunder før utførelse |
+
+</details>
+
+Alternativt åpnes fastvarens oppstartsmeny når maskinen slås på, på ASRock-hovedkort med F11. Hvis «Bruk en enhet» mangler, går `shutdown /r /fw /t 0` direkte til UEFI-oppsettet, der oppstartsstasjonen kan velges for neste oppstart.
+
+## Trinn 4: Krymp C: og flytt gjenopprettingspartisjonen
+
+Start **Partition Editor** (GParted) på Rescuezilla-skrivebordet, ikke Rescuezilla selv.
+
+1.  Velg kildedisken øverst til høyre. Se nøye på størrelsen (her 931.51 GiB), slik at du ikke ved en feil redigerer den eksterne sikkerhetskopidisken eller en annen intern disk.
+
+2.  Høyreklikk på NTFS-partisjonen med C: → **Resize/Move**. Angi målverdien i feltet **New size (MiB)**, her `481280`, og bekreft med Tab-tasten. **Free space preceding** forblir uendret. Bekreft med **Resize/Move**.
+
+3.  Under C: står det nå en linje med `unallocated`, og under den ligger gjenopprettingspartisjonen (NTFS, rundt 900 MiB, flagg `hidden, diag`). Høyreklikk på gjenopprettingspartisjonen → **Resize/Move**.
+
+4.  Slett verdien i feltet **Free space preceding (MiB)**, skriv inn `0` og bekreft med Tab. **New size** forblir den samme, mens **Free space following** hopper til hele det ledige området. Hvis det står `1` i stedet for `0` etter Tab, skyldes det justering til hele MiB og er i orden. Bekreft med **Resize/Move**.
+
+5.  Bekreft en advarsel om at flyttingen kan hindre oppstart, med OK. Den gjelder partisjoner med oppstartslaster; Windows starter fra EFI-systempartisjonen, som forblir uendret.
+
+6.  Rekkefølgen er nå: EFI, MSR, C:, gjenopprettingspartisjon, `unallocated`. Så langt er endringene bare planlagt. Først et klikk på den grønne haken (**Apply All Operations**) utfører dem.
+
+Windows RE finner partisjonen sin igjen etter flyttingen fordi den beholder partisjonsnummeret. `reagentc /info` viser fortsatt `Enabled` med banen `harddisk0\partition4\Recovery\WindowsRE` etterpå.
+
+Rescuezilla-veiledningen krymper bare den siste partisjonen. Det er nok dersom C: er den siste partisjonen. I en standardinstallasjon av Windows 10 eller 11 ligger gjenopprettingspartisjonen etter den, og da er flytting obligatorisk.
+
+## Trinn 5: Fjern Dirty-flagget
+
+Neste sikkerhetskopiering avbrytes ved C: etter krympingen med denne meldingen:
+
+```text
+ntfsclone-ng.c: NTFS Volume '/dev/nvme0n1p3' is scheduled for a check
+or it was shutdown uncleanly. Please boot Windows or fix it by fsck.
+```
+
+Årsaken er tilsiktet: `ntfsresize`, som GParted bruker for NTFS, markerer filsystemet for kontroll før hver størrelsesendring og lar denne markeringen stå. Ifølge man-siden skal Windows kjøre `chkdsk` ved neste oppstart. I det beskrevne tilfellet var flagget fortsatt satt etter en vanlig Windows-oppstart, og `Get-Volume C` rapporterte `Full Repair Needed`. Du kan kontrollere tilstanden i PowerShell med administratorrettigheter:
+
+```powershell
+fsutil dirty query C:
+```
+
+Hvis kommandoen rapporterer `Volume - C: is Dirty`, lar du kontrollen kjøre ved neste oppstart:
+
+```powershell
+chkdsk C: /f
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `dirty query C:` | fsutil: spør om volumets Dirty-bit er satt |
+| `C:` | chkdsk: volumet som skal kontrolleres |
+| `/f` | Retter funne feil; på systemvolumet planlegges kontrollen til neste oppstart |
+
+</details>
+
+Svar J på spørsmålet om kontrollen skal utføres ved neste omstart, og start Windows normalt på nytt. Etterpå må `fsutil dirty query C:` vise meldingen `is NOT Dirty`, og `Get-Volume C` rapporterer igjen `Healthy`. Først da starter du Rescuezilla på nytt.
+
+## Trinn 6: Opprett og kontroller et nytt image
+
+Bruk nå Rescuezilla til å opprette et nytt image av den krympede disken. Imagestørrelsen blir praktisk talt den samme som ved første sikkerhetskopiering (her rundt 214 GB), fordi Partclone bare sikkerhetskopierer brukte blokker. Rescuezilla lagrer hver sikkerhetskopi i sin egen mappe med tidsstempel, for eksempel `2026-09-29-1343-img-rescuezilla`.
+
+I listen for imagevalg står deretter alle imagene ved siden av hverandre. Kolonnen **Partitions** viser størrelsene: Imagets før krympingen inneholder `ntfs 930.4GB`, det nye `ntfs 470GB`. Et avbrutt sikkerhetskopieringsforsøk vises med en gul varseltrekant; det inneholder den gamle partisjonstabellen og utløser ved gjenoppretting nøyaktig feilmeldingen fra første avsnitt. Slett slike mapper så de ikke velges ved en feil.
+
+Du kan også på forhånd se om et image passer på måldisken i filen `<disk>-pt.parted` i imagemappen. Den inneholder den sikkerhetskopierte partisjonstabellen i sektorer på 512 byte:
+
+```text
+Number  Start       End         Size        File system  Name
+ 1      2048s       411647s     409600s     fat32        EFI system partition
+ 2      411648s     444415s     32768s                   Microsoft reserved partition
+ 3      444416s     986105855s  985661440s  ntfs         Basic data partition
+ 4      986105856s  987957247s  1851392s    ntfs
+```
+
+Slutten av den siste partisjonen (987'957'247 + 1 sektorer × 512 byte = 505,8 GB) ligger under måldiskens 512,1 GB. Imaget passer.
+
+## Trinn 7: Gjenopprett til den nye SSD-en
+
+1.  Velg **Restore** i Rescuezilla, stasjonen med imagene og deretter det **nye** imaget (uten varseltrekant, med den krympede C:-partisjonen).
+
+2.  Velg den nye SSD-en som mål. Kontroller modell og størrelse to ganger: Gjenopprettingen overskriver måldisken fullstendig.
+
+3.  La alle partisjoner være avkrysset, det samme gjelder **Overwrite partition table**, og start gjenopprettingen.
+
+4.  Start deretter fra den nye SSD-en. Det enkleste er å koble fra den gamle disken på forhånd; ellers velger du den nye SSD-en i fastvarens oppstartsmeny.
+
+## Etterarbeid
+
+På den nye stasjonen slår du på igjen det som ble deaktivert for flyttingen. Dvalemodus aktiveres med `powercfg /h on`. BitLocker aktiverer du via Innstillinger → Personvern og sikkerhet → Enhetskryptering eller med `manage-bde -on C:`; kontroller deretter med `manage-bde -protectors -get C:` at gjenopprettingsnøkkelen er sikkerhetskopiert. Hvis Secure Boot ble deaktivert i UEFI for å starte Rescuezilla, slår du det på igjen; så lenge det er av, logger BitLocker hendelse 810 ved hver oppstart.
+
+Du kan slette imaget av den uendrede 1 TB-disken så snart Windows starter problemfritt fra den nye SSD-en og dataene er fullstendige.
+
+## Kilder
+
+1.  [Rescuezilla Wiki: Restoring to a smaller disk](https://github.com/rescuezilla/rescuezilla/wiki/HOWTO:-Restoring-to-a-smaller-disk.-Eg,-1000GB-HDD-to-500GB-SSD): offisiell fremgangsmåte med GParted, årsaken til begrensningen ved gjenoppretting.
+
+2.  [Rescuezilla](https://rescuezilla.com/): prosjektside med nedlasting av live-systemet.
+
+3.  [GParted Manual](https://gparted.org/display-doc.php?name=help-manual): bruk av Resize/Move, justering til MiB og utføring av planlagte operasjoner.
+
+4.  [ntfsresize(8), Ubuntu Manpage](https://manpages.ubuntu.com/manpages/noble/man8/ntfsresize.8.html): verktøyet bak NTFS-krymping i GParted; beskriver den bevisst satte kontrollmarkeringen.
+
+5.  [Microsoft Learn: chkdsk](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/chkdsk): parameteren `/f` og planlegging av kontroll på systemvolumet.
+
+6.  [Microsoft Learn: fsutil dirty](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-dirty): spørring og betydning av Dirty-bit.
+
+7.  [Microsoft Learn: manage-bde status](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-status): statuskontroll av BitLocker.
+
+8.  [Microsoft Learn: manage-bde off](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/manage-bde-off): dekryptering av et volum.
+
+9.  [Microsoft Learn: Powercfg command-line options](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/powercfg-command-line-options): alternativet `/hibernate` og påvirkningen på hurtigstart.
+
+10.  [Microsoft Learn: Get-PartitionSupportedSize](https://learn.microsoft.com/en-us/powershell/module/storage/get-partitionsupportedsize): minste og største partisjonsstørrelse fra Windows' perspektiv.
+
+11.  [Microsoft Learn: REAgentC command-line options](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/reagentc-command-line-options): kontroller status og lagringssted for Windows RE.
+
+12.  [Microsoft Learn: shutdown](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/shutdown): parameterne `/o` og `/fw` for oppstart i henholdsvis avanserte alternativer og UEFI.
 
 ----
 

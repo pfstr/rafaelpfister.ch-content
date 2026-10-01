@@ -2,13 +2,14 @@
 title: "Proton Drive på Linux: läget i juli 2026"
 navTitle: "Proton Drive och Linux"
 description: "Den officiella Linux-klienten har annonserats men är ännu inte tillgänglig. På servrar kan Proton Drive för närvarande monteras med Rclone; det nya SDK:t visar den tekniska riktningen. Det som fortfarande saknas är maskinåtkomst begränsad till enskilda mappar eller uppgifter."
-date: "2026-07-26"
+date: "2026-10-01"
 kategorie: "Proton Drive"
 timeToRead: "8 min. lästid"
 themen:
   - proton-drive
   - rclone
 related:
+  - proton-drive-cli
   - paperless-dokumente-clouddienst-auslagern
   - rclone-mount-in-docker-container
 slug: "proton-drive-pa-linux-laget-i-juli-2026"

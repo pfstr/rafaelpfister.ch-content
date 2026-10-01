@@ -2,13 +2,14 @@
 title: "Proton Drive sous Linux : état des lieux en juillet 2026"
 navTitle: "Proton Drive et Linux"
 description: "Le client Linux officiel est annoncé, mais pas encore disponible. Sur les serveurs, Proton Drive peut actuellement être monté avec Rclone ; le nouveau SDK indique la direction technique. Il manque toujours un accès machine limité à certains dossiers ou tâches."
-date: "2026-07-26"
+date: "2026-10-01"
 kategorie: "Proton Drive"
 timeToRead: "8 min de lecture"
 themen:
   - proton-drive
   - rclone
 related:
+  - proton-drive-cli
   - paperless-dokumente-clouddienst-auslagern
   - rclone-mount-in-docker-container
 slug: "proton-drive-sous-linux-etat-des-lieux-en-juillet-2026"
