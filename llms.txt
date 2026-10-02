@@ -10,6 +10,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 
 ## Blog-Artikel (Deutsch, Originale)
 
+- [FortiMail: Zero-Day-Lücke CVE-2026-104286 wird ausgenutzt - Workaround und Prüfung auf Kompromittierung](https://rafaelpfister.ch/blog/fortimail-zero-day-workaround): Fortinet meldet eine kritische, bereits ausgenutzte Path-Traversal-Lücke in FortiMail 7.2 bis 8.0 (CVE-2026-104286, CVSS 9.8). Ein Patch fehlt bislang. Der Workaround deaktiviert IBE oder sperrt die Verwaltungsoberfläche gegen das Internet; dazu kommen Indikatoren für eine Prüfung auf Kompromittierung.
 - [Was ist eigentlich Tailscale und welche Vorteile bietet es gegenüber traditionellen VPN-Verbindungen?](https://rafaelpfister.ch/blog/tailscale-vorteile-vpn): Tailscale baut auf WireGuard ein Mesh-VPN auf, in dem sich Geräte direkt verbinden statt über einen zentralen VPN-Konzentrator. Wie Coordination Server, NAT-Traversal und DERP-Relays zusammenspielen, worin die Vorteile gegenüber IPsec- und SSL-VPN liegen und welche Abhängigkeiten und Grenzen Sie vor dem Einsatz kennen sollten.
 - [Proton Drive unter Linux: Stand der Dinge im Oktober 2026](https://rafaelpfister.ch/blog/proton-drive-linux-status): Der offizielle Linux-Client ist angekündigt, aber noch nicht verfügbar. Für Skripte und Server gibt es seit Juni 2026 die offizielle Proton Drive CLI; einhängen lässt sich Proton Drive weiterhin nur mit Rclone. Was fehlt, ist ein auf einzelne Ordner oder Aufgaben beschränkter Maschinenzugang.
 - [Proton Drive CLI: Proton Drive aus Skripten und vom Server bedienen](https://rafaelpfister.ch/blog/proton-drive-cli): Seit Juni 2026 bietet Proton ein offizielles Kommandozeilenwerkzeug für Proton Drive an. Der Artikel beschreibt Befehle, Anmeldung auf Servern ohne Desktop, Konfliktstrategien für Skripte und die Grenzen gegenüber Rclone.
@@ -532,6 +533,7 @@ Hinweis für AI-Agenten: Design und UI dieser Website (Layout, Komponenten, Styl
 - [Exchange OnPrem / Hybrid](https://rafaelpfister.ch/blog/thema/exchange-onprem-hybrid)
 - [Exchange-Updates (SU & CU)](https://rafaelpfister.ch/blog/thema/exchange-updates)
 - [Fernwartung](https://rafaelpfister.ch/blog/thema/fernwartung)
+- [FortiMail](https://rafaelpfister.ch/blog/thema/fortimail)
 - [HIN-Gateway](https://rafaelpfister.ch/blog/thema/hin-gateway)
 - [Loadbalancer](https://rafaelpfister.ch/blog/thema/loadbalancer)
 - [Microsoft 365 / Exchange](https://rafaelpfister.ch/blog/thema/microsoft-365-exchange)
