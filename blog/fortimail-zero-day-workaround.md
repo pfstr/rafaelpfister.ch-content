@@ -1,5 +1,5 @@
 ---
-title: "FortiMail: Zero-Day-Lücke CVE-2026-104286 wird ausgenutzt - Workaround und Prüfung auf Kompromittierung"
+title: "CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung"
 navTitle: "FortiMail Zero-Day"
 description: "Fortinet meldet eine kritische, bereits ausgenutzte Path-Traversal-Lücke in FortiMail 7.2 bis 8.0 (CVE-2026-104286, CVSS 9.8). Ein Patch fehlt bislang. Der Workaround deaktiviert IBE oder sperrt die Verwaltungsoberfläche gegen das Internet; dazu kommen Indikatoren für eine Prüfung auf Kompromittierung."
 date: "2026-10-02"
@@ -22,7 +22,7 @@ url: "https://rafaelpfister.ch/blog/fortimail-zero-day-workaround"
 aiPrompt: |
   Du bist mein Assistent für Fortinet FortiMail. Für CVE-2026-104286 (FG-IR-26-175) empfiehlt Fortinet als Workaround, IBE zu deaktivieren oder die Verwaltungsoberfläche gegen das Internet zu sperren. Hilf mir Schritt für Schritt: Version und IBE-Status auf meinen FortiMail-Systemen ermitteln, abschätzen, welche Richtlinien und Empfänger von einer IBE-Abschaltung betroffen sind, den Workaround umsetzen und die von Fortinet genannten Indikatoren (Dateien, IP-Adressen, Logeinträge) prüfen. Frage zuerst nach Version, Betriebsmodus (Gateway, Server, Transparent), Erreichbarkeit der Weboberfläche aus dem Internet und danach, ob IBE produktiv genutzt wird.
 ---
-# FortiMail: Zero-Day-Lücke CVE-2026-104286 wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
+# CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
 
 Fortinet hat am 1. Oktober 2026 das Advisory FG-IR-26-175 zu einer kritischen Lücke in FortiMail veröffentlicht. Über präparierte HTTP- oder HTTPS-Anfragen kann ein Angreifer ohne Anmeldung beliebige Dateien auf das darunterliegende System schreiben und damit Code ausführen. Die Lücke trägt die Kennung CVE-2026-104286 und eine CVSS-Bewertung von 9.8. Fortinet bestätigt, dass sie bereits ausgenutzt wird; die US-Behörde CISA hat sie am selben Tag in ihren Katalog ausgenutzter Schwachstellen (KEV) aufgenommen. Ein Update gibt es Stand 2. Oktober noch nicht, nur einen Workaround.
 

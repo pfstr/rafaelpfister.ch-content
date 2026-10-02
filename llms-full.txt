@@ -12,12 +12,12 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# FortiMail: Zero-Day-Lücke CVE-2026-104286 wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
+# CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
 
 URL: https://rafaelpfister.ch/blog/fortimail-zero-day-workaround
 Datum: 2026-10-02
 
-# FortiMail: Zero-Day-Lücke CVE-2026-104286 wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
+# CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
 
 Fortinet hat am 1. Oktober 2026 das Advisory FG-IR-26-175 zu einer kritischen Lücke in FortiMail veröffentlicht. Über präparierte HTTP- oder HTTPS-Anfragen kann ein Angreifer ohne Anmeldung beliebige Dateien auf das darunterliegende System schreiben und damit Code ausführen. Die Lücke trägt die Kennung CVE-2026-104286 und eine CVSS-Bewertung von 9.8. Fortinet bestätigt, dass sie bereits ausgenutzt wird; die US-Behörde CISA hat sie am selben Tag in ihren Katalog ausgenutzter Schwachstellen (KEV) aufgenommen. Ein Update gibt es Stand 2. Oktober noch nicht, nur einen Workaround.
 
