@@ -1,10 +1,10 @@
 ---
-name: "Cloudflare Workers"
+name: "Cloudflare"
 slug: "cloudflare-workers"
 hub: "ai-automation"
 url: "https://rafaelpfister.ch/blog/thema/cloudflare-workers"
 ---
 
-# Cloudflare Workers
+# Cloudflare
 
-Anwendungen ohne eigenen Server betreiben: Cloudflare Workers, D1, Pages, Deployments und Automatisierung.
+Cloudflare als Plattform: Anwendungen ohne eigenen Server mit Workers, D1 und Pages, dazu WAF-Regeln, Sicherheit und Automatisierung.

@@ -15778,6 +15778,333 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Which data center processes Claude? Tracing the connection and limiting processing to Switzerland or the EU
+
+URL: https://rafaelpfister.ch/en/blog/which-data-center-processes-claude-tracing-the-connection-and-limiting-processing-to
+Datum: 2026-10-02
+
+Anyone using Claude through claude.ai, Claude Code, or the API cannot tell which data center processes the request. Only the first section of the connection, up to the nearest edge node, is visible. For companies that provide personal data or confidential content to a language model, that is insufficient: they must be able to demonstrate to customers, data protection advisors, or auditors where processing takes place.
+
+This article shows how far the connection itself can be traced, what is publicly known about Anthropic's data centers, and which options reliably restrict processing to the EU or the EU-plus-Switzerland area. Prices and regions are current as of October 2, 2026.
+
+**Switzerland focus:** The revised Federal Act on Data Protection (revFADP) is decisive. Disclosure of personal data abroad is permitted under Art. 16 revFADP if the Federal Council attests that the destination country provides adequate protection (Annex 1 of the Data Protection Ordinance, DPO) or if appropriate safeguards such as standard contractual clauses are in place. EU and EEA states are on this list; the U.S. is included only for companies certified under the Swiss-U.S. Data Privacy Framework. A processing location in the EU therefore makes the justification considerably easier, but does not replace the other obligations (data processing agreement, informing data subjects, data security).
+
+**EU note:** Companies based in the EU are instead subject to Art. 44 et seq. GDPR. The European Commission has recognized Switzerland as providing an adequate level of data protection (adequacy decision 2000/518/EC, confirmed in January 2024); processing in Zurich is therefore not a problematic third-country transfer for EU companies.
+
+## Which stops a request to Claude passes through
+
+A request to `claude.ai` or `api.anthropic.com` passes through three stops:
+
+| Stop | Who operates it | Visible to you? |
+|---|---|---|
+| Edge node (TLS termination, abuse protection) | Cloudflare, on behalf of Anthropic | Yes, location can be read from the header |
+| Internal network to the backend | Cloudflare and Anthropic | No |
+| Inference (the model performs computation) | Anthropic, using computing capacity from AWS, Google Cloud, and its own data centers | No, only the broad setting `us` or `global` |
+
+The hostnames `claude.ai` and `api.anthropic.com` both point to address `160.79.104.10`. It belongs to prefix `160.79.104.0/23`, which is registered to Anthropic (AS399358) and, according to RPKI, is validly originated by Anthropic. In global routing, however, the prefix is announced exclusively through Cloudflare (AS13335): Anthropic brings its own IP addresses into Cloudflare's Anycast network. As a result, the same address is answered from every Cloudflare location worldwide, and the connection reaches the nearest edge node.
+
+## Determining the edge node yourself
+
+Cloudflare reveals the serving location in a diagnostic page and in the `cf-ray` header. The suffix after the Ray ID is an IATA airport code: `ZRH` stands for Zurich, `GVA` for Geneva, `FRA` for Frankfurt, and `MRS` for Marseille.
+
+```bash
+curl -s https://api.anthropic.com/cdn-cgi/trace
+```
+
+The relevant output lines are `colo=` (edge location) and `loc=` (the country to which Cloudflare assigns your source address). On Windows, PowerShell provides the same information:
+
+```powershell
+$trace = Invoke-WebRequest -Uri "https://api.anthropic.com/cdn-cgi/trace" -UseBasicParsing
+$trace.Content
+```
+
+Read the header using a HEAD request:
+
+```bash
+curl -sI https://api.anthropic.com/ \
+  | grep -i -E '^(server|cf-ray):'
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-s` | Suppresses curl's progress display and error messages |
+| `-I` | Sends a HEAD request and outputs only the response headers |
+| `grep -i` | Searches without regard to case |
+| `-E '^(server\|cf-ray):'` | Extended regular expression: only lines beginning with `server:` or `cf-ray:` |
+
+</details>
+
+From a Swiss network, `ZRH` or `GVA` can generally be expected. If the internet egress is elsewhere, for example in a corporate network with centralized egress abroad, the edge node there responds instead, for example with `colo=FRA` or `colo=MRS`. The edge location therefore follows your network egress, not the processing location.
+
+## Why traceroute ends at the edge
+
+A traceroute shows the path to the edge node and no further:
+
+```powershell
+Test-NetConnection -ComputerName api.anthropic.com -TraceRoute -Hops 20
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-ComputerName api.anthropic.com` | Target host of the measurement |
+| `-TraceRoute` | Determines router hops on the path to the destination |
+| `-Hops 20` | Maximum number of hops to check |
+
+</details>
+
+On Linux and macOS, the equivalent is `traceroute -n api.anthropic.com` (`-n` suppresses DNS resolution of the hops). In the measurement, the final hops before `160.79.104.10` were in address range `162.158.0.0/15`, which belongs to Cloudflare. The trace ends after that: the connection is terminated at the edge node, and forwarding to the backend occurs over a new internal connection that is not visible externally.
+
+RIPEstat shows who owns the prefix and through which network it is announced:
+
+```bash
+curl -s "https://stat.ripe.net/data/prefix-overview/data.json?resource=160.79.104.10"
+curl -s "https://stat.ripe.net/data/bgp-state/data.json?resource=160.79.104.0/23"
+```
+
+In the second result, all AS paths end at `13335 399358`: Cloudflare is the only upstream for the Anthropic prefix.
+
+Based on my research, there is no public measurement that traces the path all the way to an inference data center; because termination occurs at the edge, this is also not possible with network tools. Measurement services such as llmlatency.dev capture only the response time to the first byte at the edge (as of September 2026: 96 ms median from US Central, 199 ms from Germany). Time to First Token could be compared from several locations, but it depends more heavily on the model, prompt length, and load than on distance. It therefore cannot provide a reliable inference about location.
+
+## What is known about Anthropic's data centers
+
+Anthropic has not yet operated its own publicly identified inference data center with an address. Its computing capacity comes from partnerships compiled by Tim Cadenbach on the TCDEV blog:
+
+| Location / partner | Key facts | Known role |
+|---|---|---|
+| Project Rainier, New Carlisle (Indiana, U.S.), Amazon Web Services | Opened October 2025, approximately USD 11 billion, about 500,000 Trainium2 chips, more than 2.2 GW planned | Anthropic is the primary tenant; mainly training |
+| Google Cloud | Agreement in October 2025 for up to 1 million TPUs, more than 1 GW from 2026 | Regions not disclosed |
+| Own data centers with Fluidstack | Announced November 2025, USD 50 billion, locations in Texas and New York, commissioning from 2026 | Still under construction |
+
+Training and inference do not necessarily take place in the same location. Inference can run in any AWS or Google Cloud region, and Anthropic does not disclose which location processes a response for a user in Switzerland. The only certainty is what the privacy policy states: the contracting party and controller for customers from the EEA, the United Kingdom, and Switzerland is Anthropic Ireland, Limited in Dublin; data is transferred to servers in the U.S. or other countries outside the EEA on the basis of standard contractual clauses.
+
+## Controls directly with Anthropic: U.S. only or global
+
+Since generation 4.6 models, the Claude API has supported parameter `inference_geo`. It has exactly two values:
+
+| Value | Effect | Price |
+|---|---|---|
+| `global` (default) | Inference in any available region | List price |
+| `us` | Inference exclusively in the U.S. | List price × 1.1 |
+
+There is no value for the EU or Switzerland. The Workspace storage location (`workspace geo`) can currently also be set only to `us`. The response reports the setting applied in field `usage.inference_geo`, but not a specific region. For Haiku 4.5 and older models, the API returns error 400 for this parameter.
+
+There is no processing-location setting for claude.ai and Claude Code with a subscription (Pro, Max, Team, Enterprise). Through Anthropic's direct offerings, processing therefore cannot be restricted to either the EU or Switzerland. That is possible only through cloud vendors that operate Claude in their own regions.
+
+## AWS Bedrock: EU-plus-Switzerland area from Zurich
+
+AWS Bedrock runs Claude on AWS infrastructure. According to AWS, Anthropic has no access to customers' prompts, responses, or logs. You select the region through the source region of your API call and through the Inference Profile:
+
+| Endpoint type | Model ID prefix | Processing location |
+|---|---|---|
+| Global Cross-Region Inference | `global.` | Any commercial AWS region worldwide |
+| Geographic Cross-Region Inference | `eu.` | Only regions within the geography |
+| In-Region | no prefix | Only the called region |
+
+For Switzerland, region `eu-central-2` (Zurich) is relevant. Opus 5.5, Sonnet 5.5, and Haiku 4.5 are available there, but only as Global or EU profiles and not In-Region. A profile that computes exclusively in Zurich does not exist. If the EU profile is called from Zurich, AWS distributes requests according to the model card (documented for Haiku 4.5 and Sonnet 4.6) across these regions:
+
+| Region | Location |
+|---|---|
+| `eu-central-2` | Zurich |
+| `eu-central-1` | Frankfurt |
+| `eu-north-1` | Stockholm |
+| `eu-south-1` | Milan |
+| `eu-south-2` | Spain |
+| `eu-west-1` | Ireland |
+| `eu-west-3` | Paris |
+
+Zurich is a possible target only if the request originates from Zurich. Processing thus remains within the EU-plus-Switzerland area. For Opus 5.5 and Sonnet 5.5, the model card does not specify the target regions; the API returns the actual list:
+
+```bash
+aws bedrock get-inference-profile \
+  --region eu-central-2 \
+  --inference-profile-identifier eu.anthropic.claude-sonnet-5-5 \
+  --query "models[].modelArn"
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `bedrock get-inference-profile` | Reads the definition of an Inference Profile |
+| `--region eu-central-2` | Source region Zurich; the target list depends on the source region |
+| `--inference-profile-identifier` | ID of the EU profile for Sonnet 5.5 |
+| `--query "models[].modelArn"` | Outputs only the model ARNs; the region appears in each ARN |
+
+</details>
+
+By default, data is stored only in the source region. One exception is content retained for abuse detection: it is stored in the target region. Transport between regions is encrypted over the AWS network.
+
+### Demonstrating the processing region for each request
+
+Bedrock is the only one of the described options that logs the actual processing region for each request. CloudTrail writes it in the source region to field `additionalEventData.inferenceRegion`:
+
+```bash
+aws cloudtrail lookup-events \
+  --region eu-central-2 \
+  --lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com \
+  --max-results 20 \
+  --query "Events[].CloudTrailEvent" \
+  --output text \
+  | jq -r '[.eventTime, .eventName, .additionalEventData.inferenceRegion] | @tsv'
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `cloudtrail lookup-events` | Searches CloudTrail events from the past 90 days |
+| `--region eu-central-2` | Source region where calls are logged |
+| `--lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com` | Filters for Bedrock events |
+| `--max-results 20` | Limits output to 20 events |
+| `--query "Events[].CloudTrailEvent"` | Outputs only the complete event as JSON text |
+| `--output text` | Output without JSON wrapper, one event per line |
+| `jq -r '… \| @tsv'` | Extracts timestamp, action, and processing region as a tab-separated line |
+
+</details>
+
+In addition, a Service Control Policy (SCP) in AWS Organizations can block all regions outside the EU and Switzerland. If a profile target region is blocked, the request fails rather than falling back to another region. With this combination, the processing location is technically enforced and demonstrable for every request.
+
+### Claude Code through Bedrock in the EU
+
+Claude Code can also be operated through Bedrock. In an `eu-*` region, Claude Code automatically selects prefix `eu.`:
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=eu-central-2
+claude
+```
+
+| Variable | Effect |
+|---|---|
+| `CLAUDE_CODE_USE_BEDROCK=1` | Switches Claude Code from the Anthropic API to Bedrock |
+| `AWS_REGION=eu-central-2` | Source region Zurich; this results in the EU profile |
+
+Prefix selection can be overridden with `ANTHROPIC_BEDROCK_REGION_PREFIX`. AWS authentication uses the standard mechanisms (profile, SSO, environment variables). Billing is through the AWS account, not a Claude subscription.
+
+## Google Vertex AI: EU only, explicitly excluding Switzerland
+
+On Google Cloud (Vertex AI, now under the Gemini Enterprise Agent Platform name), the situation is less favorable for Switzerland:
+
+| Endpoint | Models (selection) | Processing location |
+|---|---|---|
+| `global` | all | Any Google Cloud region, without guarantee |
+| Multi-region `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | EU member states only |
+| Region `europe-west1` (Belgium) | Haiku 4.5, Sonnet 4.6, Opus 4.6, and older | According to the model page, Europe multi-region |
+| Region `europe-west6` (Zurich) | none | Claude unavailable |
+
+Google explicitly excludes Switzerland from the EU multi-region endpoint: it covers only EU member states; the United Kingdom and Switzerland are not included. Several Swiss guidance pages cite `europe-west6` as a path to Claude in Zurich; according to Google's official location table, no Claude model is available there. Google does not document a log field containing the actual processing region for each request. For the global endpoint, Google states that the processing region can neither be controlled nor determined.
+
+Vertex AI is thus suitable for processing exclusively in the EU, but not for processing in Switzerland.
+
+## Microsoft Foundry: currently no EU option
+
+Microsoft offers Claude in Foundry in two variants. “Hosted on Azure” runs on Azure infrastructure, either as Global Standard or as Data Zone Standard; for Claude, the Data Zone exists only for the U.S. “Hosted on Anthropic” runs on Anthropic infrastructure, and Microsoft notes that data may be processed outside Azure and outside the selected region. Anthropic lists Foundry for Europe as “Coming soon.” In Microsoft 365 Copilot and Copilot Studio, Anthropic models are excluded from the EU Data Boundary and are disabled by default in the EU, EFTA (including Switzerland), and the United Kingdom.
+
+## Overview: which option guarantees which processing location
+
+| Option | Switzerland only | EU only | EU-plus-Switzerland area | Region demonstrable per request |
+|---|---|---|---|---|
+| claude.ai, Claude Code (subscription) | no | no | no | no |
+| Claude API with `inference_geo` | no | no | no (only `us`) | only `us`/`global` |
+| AWS Bedrock, source `eu-central-2`, profile `eu.` | no | no | yes | yes (CloudTrail) |
+| AWS Bedrock, source in the EU, profile `eu.` | no | yes | yes | yes (CloudTrail) |
+| Google Vertex AI, endpoint `eu` | no | yes | (EU portion only) | no |
+| Microsoft Foundry | no | no | no | no |
+
+No vendor currently offers a path that guarantees Claude processing exclusively in Switzerland. AWS Bedrock with Zurich as the source region and the EU profile comes closest. If it must additionally be ruled out that data leaves the EU, for example because of contractual commitments to EU customers, the EU profile can be called from an EU region such as Frankfurt; Zurich then ceases to be a target.
+
+## What regional binding costs
+
+All three cloud vendors and Anthropic itself charge a 10% premium for binding to a region or geography compared with the global endpoint. For Bedrock, pricing depends on the source region; Zurich, Frankfurt, and North Virginia cost the same. Routing between regions is not billed separately.
+
+List prices in USD per 1 million tokens (input / output):
+
+| Model | Anthropic API, `global` | Anthropic API, `us` | Bedrock or Vertex, global | Bedrock `eu.` or Vertex `eu` |
+|---|---|---|---|---|
+| Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
+| Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 4.5 | 1.00 / 5.00 | not available | 1.00 / 5.00 | 1.10 / 5.50 |
+| Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
+
+For Vertex AI, the EU-column price applies to Haiku 4.5 and Sonnet 4.6 in region `europe-west1`. A calculation example for an internal application with 50 million input and 10 million output tokens per month:
+
+| Model | Global | EU-bound | Additional monthly cost |
+|---|---|---|---|
+| Sonnet 5.5 | 50 × 2 + 10 × 10 = 200 USD | 220 USD | 20 USD |
+| Opus 5.5 | 50 × 4 + 10 × 20 = 400 USD | 440 USD | 40 USD |
+
+Regional binding therefore costs 10% more than the global endpoint. Compared with Anthropic's direct list price using `inference_geo: "us"`, an EU profile on Bedrock costs the same. More important considerations are likely to be the ancillary costs: an AWS or Google Cloud account with organizational policies, logging, and budget alerts must be set up and operated, and the fixed monthly prices of Claude subscriptions are replaced by strictly usage-based billing. Whether switching pays off depends on volume; a subscription has a fixed price per person but provides no control over the processing location.
+
+## Retention and training
+
+In addition to location, how long data is stored matters:
+
+- **Anthropic API:** Prompts and responses are not used for training unless explicit consent is provided. Zero Data Retention (ZDR) is available upon request per organization and can be combined with `inference_geo`. Content flagged by abuse detection remains stored for up to two years even with ZDR. For the Fable and Mythos models, 30-day retention is mandatory.
+- **AWS Bedrock:** Content does not go to Anthropic. Retention can be selected per model between `none`, `default` and `aws_review`; Fable requires `aws_review` with up to 30 days of storage for review by AWS.
+- **Google Vertex AI:** Google uses data for training or fine-tuning only with prior consent.
+
+## Sources
+
+1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): Parameter `inference_geo`, values `us` and `global`, Workspace geo, supported models, field `usage.inference_geo`.
+
+2.  [Claude Platform Docs: Pricing](https://platform.claude.com/docs/en/about-claude/pricing): Anthropic API list prices and factor 1.1 for `inference_geo: "us"`.
+
+3.  [Claude Platform Docs: API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention): Zero Data Retention, exceptions for flagged content and for Fable/Mythos.
+
+4.  [Anthropic: Privacy Policy](https://www.anthropic.com/legal/privacy): Anthropic Ireland as controller for the EEA, UK, and Switzerland, transfer to the U.S. based on standard contractual clauses.
+
+5.  [Anthropic: Regional compliance](https://claude.com/regional-compliance): Overview of which platform offers data residency in which region; Foundry Europe as “Coming soon.”
+
+6.  [Claude Platform Docs: Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock): Endpoint types by region, 10% premium for regional endpoints.
+
+7.  [AWS: Model card Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): Target regions of the EU profile by source region, including Zurich.
+
+8.  [AWS: Model card Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): Availability in `eu-central-2` only as Geo and Global profiles.
+
+9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): Data remains within the geography, storage location, blocking target regions using SCP.
+
+10.  [AWS: Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html): Field `additionalEventData.inferenceRegion` in CloudTrail, pricing by source region.
+
+11.  [AWS: Data protection in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): Model vendors have no access to prompts, responses, and logs.
+
+12.  [AWS: Amazon Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/): List prices for Global and Geo profiles, identical for Zurich, Frankfurt, and North Virginia.
+
+13.  [AWS Alps Blog: Cross-region inference for EU data processing in Switzerland](https://aws.amazon.com/blogs/alps/unlocking-ai-flexibility-in-switzerland-a-guide-to-cross-region-inference-for-eu-data-processing-and-model-access/): Guidance from AWS Switzerland on the EU profile from Zurich.
+
+14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): Environment variables and automatic `eu.` prefix in EU regions.
+
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): Location table for Claude models, no availability in `europe-west6`.
+
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): EU multi-region only for EU member states, Switzerland and the UK excluded.
+
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): List prices for global, EU multi-region, and `europe-west1`.
+
+18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure and Hosted on Anthropic, Data Zone only in the U.S.
+
+19.  [Microsoft Learn: Anthropic as AI subprocessor in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/connect-to-ai-subprocessor): Exception from the EU Data Boundary, default setting in the EU/EFTA.
+
+20.  [TCDEV Blog: Where Are Claude's Data Centers?](https://www.tcdev.de/blog/where-are-claudes-data-centers/): Tim Cadenbach's overview of Project Rainier, the Google TPU agreement, and own data centers with Fluidstack.
+
+21.  [Anthropic: USD 50 billion investment in U.S. infrastructure](https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure): Announcement of own data centers in Texas and New York with Fluidstack.
+
+22.  [Claude Platform Docs: IP addresses](https://platform.claude.com/docs/en/api/ip-addresses): Incoming address range `160.79.104.0/23`.
+
+23.  [RIPEstat](https://stat.ripe.net/): Prefix overview and BGP status for `160.79.104.0/23` (AS399358, upstream AS13335).
+
+24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): Response times at the edge by measurement location.
+
+25.  [Fedlex: Data Protection Ordinance (DPO), Annex 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): List of countries with adequate data protection, including the EU/EEA and the U.S. for certified companies.
+
+----
+
 # CVE-2026-104286: FortiMail Zero-Day Is Being Exploited - Workaround and Compromise Assessment
 
 URL: https://rafaelpfister.ch/en/blog/cve-2026-104286-fortimail-zero-day-is-being-exploited-workaround-and-compromise-assessment
@@ -31158,6 +31485,333 @@ This makes it possible to trace a mail flow step by step without mistakenly read
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Dans quel centre de données Claude effectue-t-il ses calculs ? Suivre la connexion et limiter le traitement à la Suisse ou à l’UE
+
+URL: https://rafaelpfister.ch/fr/blog/dans-quel-centre-de-donnees-claude-effectue-t-il-ses-calculs-suivre-la-connexion-et-limiter-le
+Datum: 2026-10-02
+
+Quiconque utilise Claude via claude.ai, Claude Code ou l’API ne sait pas dans quel centre de données le modèle traite sa requête. Seul le premier tronçon de la connexion, jusqu’au nœud edge le plus proche, est visible. Pour les entreprises qui transmettent des données personnelles ou des contenus confidentiels à un modèle de langage, cela ne suffit pas : elles doivent pouvoir démontrer à leurs clients, conseillers en protection des données ou à l’audit où le traitement a lieu.
+
+Cet article montre jusqu’où la connexion peut être suivie, ce qui est publiquement connu des centres de données d’Anthropic et par quelles voies le traitement peut être limité de manière contraignante à l’UE ou à l’espace UE plus Suisse. Les prix et les régions correspondent à la situation au 2 octobre 2026.
+
+**Focus Suisse :** La loi fédérale révisée sur la protection des données (revLPD) est déterminante. Une communication de données personnelles à l’étranger est autorisée selon l’art. 16 revLPD lorsque le Conseil fédéral atteste que l’État de destination assure une protection adéquate (annexe 1 de l’ordonnance sur la protection des données, OPDo) ou lorsque des garanties appropriées, telles que des clauses contractuelles types, existent. Les États de l’UE et de l’EEE figurent sur cette liste ; les États-Unis uniquement pour les entreprises certifiées selon le Swiss-U.S. Data Privacy Framework. Un lieu de traitement dans l’UE simplifie donc considérablement la justification, sans remplacer les autres obligations (contrat de sous-traitance, information des personnes concernées, sécurité des données).
+
+**Remarque UE :** Pour les entreprises établies dans l’UE, les art. 44 et suivants du RGPD s’appliquent à la place. La Commission européenne a reconnu à la Suisse un niveau adéquat de protection des données (décision d’adéquation 2000/518/CE, confirmée en janvier 2024) ; un traitement à Zurich ne constitue donc pas, pour les entreprises de l’UE, un transfert vers un pays tiers au sens problématique du terme.
+
+## Quelles étapes une requête vers Claude traverse
+
+Une requête vers `claude.ai` ou `api.anthropic.com` passe par trois étapes :
+
+| Étape | Exploitant | Visible pour vous ? |
+|---|---|---|
+| Nœud edge (terminaison TLS, protection contre les abus) | Cloudflare, au nom d’Anthropic | Oui, emplacement lisible dans l’en-tête |
+| Réseau interne jusqu’au backend | Cloudflare et Anthropic | Non |
+| Inférence (le modèle calcule) | Anthropic, sur des capacités de calcul d’AWS, Google Cloud et de ses propres centres de données | Non, seulement l’indication générale `us` ou `global` |
+
+Les noms d’hôte `claude.ai` et `api.anthropic.com` pointent tous deux vers l’adresse `160.79.104.10`. Elle appartient au préfixe `160.79.104.0/23`, enregistré au nom d’Anthropic (AS399358) et dont l’origine Anthropic est valide selon RPKI. Dans le routage mondial, ce préfixe est toutefois annoncé exclusivement via Cloudflare (AS13335) : Anthropic introduit ses propres adresses IP dans le réseau Anycast de Cloudflare. La même adresse répond ainsi depuis chaque emplacement Cloudflare dans le monde, et la connexion aboutit au nœud edge le plus proche.
+
+## Déterminer le nœud edge lui-même
+
+Cloudflare révèle le site qui répond sur une page de diagnostic et dans l’en-tête `cf-ray`. Le code situé après l’ID Ray est un code aéroportuaire IATA : `ZRH` désigne Zurich, `GVA` Genève, `FRA` Francfort, `MRS` Marseille.
+
+```bash
+curl -s https://api.anthropic.com/cdn-cgi/trace
+```
+
+Dans la sortie, les lignes `colo=` (emplacement edge) et `loc=` (pays auquel Cloudflare associe votre adresse source) sont pertinentes. Sous Windows, PowerShell fournit le même résultat :
+
+```powershell
+$trace = Invoke-WebRequest -Uri "https://api.anthropic.com/cdn-cgi/trace" -UseBasicParsing
+$trace.Content
+```
+
+Vous pouvez lire l’en-tête au moyen d’une requête HEAD :
+
+```bash
+curl -sI https://api.anthropic.com/ \
+  | grep -i -E '^(server|cf-ray):'
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `-s` | Supprime l’indicateur de progression et les messages d’erreur de curl |
+| `-I` | Envoie une requête HEAD et n’affiche que les en-têtes de réponse |
+| `grep -i` | Recherche sans tenir compte de la casse |
+| `-E '^(server\|cf-ray):'` | Expression régulière étendue : uniquement les lignes qui commencent par `server:` ou `cf-ray:` |
+
+</details>
+
+Depuis un réseau suisse, il faut généralement s’attendre à `ZRH` ou `GVA`. Si la sortie Internet se trouve ailleurs, par exemple dans un réseau d’entreprise avec une sortie centralisée à l’étranger, le nœud edge répond depuis cet endroit, par exemple avec `colo=FRA` ou `colo=MRS`. L’emplacement edge suit donc votre sortie réseau, et non le lieu du traitement.
+
+## Pourquoi le traceroute s’arrête à l’edge
+
+Un traceroute montre le chemin jusqu’au nœud edge, mais pas au-delà :
+
+```powershell
+Test-NetConnection -ComputerName api.anthropic.com -TraceRoute -Hops 20
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `-ComputerName api.anthropic.com` | Hôte cible de la mesure |
+| `-TraceRoute` | Détermine les sauts de routeurs sur le chemin vers la cible |
+| `-Hops 20` | Nombre maximal de sauts vérifiés |
+
+</details>
+
+Sous Linux et macOS, l’équivalent est `traceroute -n api.anthropic.com` (`-n` supprime la résolution DNS des sauts). Dans la mesure, les derniers sauts avant `160.79.104.10` se trouvaient dans la plage d’adresses `162.158.0.0/15`, qui appartient à Cloudflare. Ensuite, la trace s’arrête : la connexion est terminée au nœud edge, et l’acheminement vers le backend se fait via une nouvelle connexion interne, non visible depuis l’extérieur.
+
+RIPEstat indique à qui appartient le préfixe et par quel réseau il est annoncé :
+
+```bash
+curl -s "https://stat.ripe.net/data/prefix-overview/data.json?resource=160.79.104.10"
+curl -s "https://stat.ripe.net/data/bgp-state/data.json?resource=160.79.104.0/23"
+```
+
+Dans le second résultat, tous les chemins AS se terminent par `13335 399358` : Cloudflare est le seul upstream du préfixe Anthropic.
+
+D’après mes recherches, il n’existe aucune mesure publique permettant de retracer le chemin jusqu’à un centre de données d’inférence et, en raison de la terminaison à l’edge, cela n’est pas non plus possible avec des outils réseau. Les services de mesure tels que llmlatency.dev ne mesurent que le temps de réponse jusqu’au premier octet à l’edge (en septembre 2026 : médiane de 96 ms depuis US-Central, 199 ms depuis l’Allemagne). Il serait certes possible de comparer le délai jusqu’au premier token (Time to First Token) depuis plusieurs sites, mais il dépend davantage du modèle, de la longueur du prompt et de la charge que de la distance. En déduire un emplacement ne serait donc pas fiable.
+
+## Ce que l’on sait des centres de données d’Anthropic
+
+Anthropic n’exploite à ce jour aucun centre de données d’inférence propre publiquement associé à une adresse. La puissance de calcul provient de partenariats compilés par Tim Cadenbach dans le blog TCDEV :
+
+| Site / partenaire | Caractéristiques | Rôle connu |
+|---|---|---|
+| Project Rainier, New Carlisle (Indiana, États-Unis), Amazon Web Services | Ouvert en octobre 2025, environ 11 milliards USD, quelque 500 000 puces Trainium2, plus de 2,2 GW prévus | Anthropic est locataire principal ; surtout entraînement |
+| Google Cloud | Accord d’octobre 2025 portant sur jusqu’à 1 million de TPU, plus de 1 GW à partir de 2026 | Régions non publiées |
+| Propres centres de données avec Fluidstack | Annoncés en novembre 2025, 50 milliards USD, sites au Texas et à New York, mise en service à partir de 2026 | Encore en construction |
+
+L’entraînement et l’inférence n’ont pas nécessairement lieu au même endroit. L’inférence peut s’exécuter dans n’importe quelle région AWS ou Google Cloud, et Anthropic ne révèle pas quel site calcule la réponse pour un utilisateur en Suisse. Seul ce que prévoit la déclaration de confidentialité est établi : le partenaire contractuel et responsable des clients de l’EEE, du Royaume-Uni et de Suisse est Anthropic Ireland, Limited à Dublin ; les données sont transférées vers des serveurs aux États-Unis ou dans d’autres pays hors EEE sur la base de clauses contractuelles types.
+
+## Le contrôle directement chez Anthropic : États-Unis ou global uniquement
+
+Depuis les modèles de génération 4.6, l’API Claude connaît le paramètre `inference_geo`. Il comporte exactement deux valeurs :
+
+| Valeur | Effet | Prix |
+|---|---|---|
+| `global` (par défaut) | Inférence dans toute région disponible | Prix catalogue |
+| `us` | Inférence exclusivement aux États-Unis | Prix catalogue × 1,1 |
+
+Il n’existe aucune valeur pour l’UE ou la Suisse. Le lieu de stockage du workspace (`workspace geo`) ne peut actuellement être défini que sur `us`. La réponse indique dans le champ `usage.inference_geo` quel réglage a été appliqué, mais pas de région concrète. Pour Haiku 4.5 et les modèles plus anciens, l’API renvoie une erreur 400 pour ce paramètre.
+
+Pour claude.ai et Claude Code avec un abonnement (Pro, Max, Team, Enterprise), il n’existe aucun réglage du lieu de traitement. Les offres directes d’Anthropic ne permettent donc de limiter le traitement ni à l’UE ni à la Suisse. Cela n’est possible qu’au moyen des fournisseurs cloud qui exploitent Claude dans leurs propres régions.
+
+## AWS Bedrock : espace UE plus Suisse depuis Zurich
+
+AWS Bedrock exploite Claude sur l’infrastructure AWS. Selon AWS, Anthropic n’a pas accès aux prompts, réponses ou journaux des clients. Vous choisissez la région par la région source de votre appel API et par l’Inference Profile :
+
+| Type de point de terminaison | Préfixe de l’ID du modèle | Lieu de traitement |
+|---|---|---|
+| Global Cross-Region Inference | `global.` | Toute région AWS commerciale dans le monde |
+| Geographic Cross-Region Inference | `eu.` | Uniquement les régions au sein de la géographie |
+| In-Region | sans préfixe | Uniquement la région appelée |
+
+Pour la Suisse, la région `eu-central-2` (Zurich) est déterminante. Opus 5.5, Sonnet 5.5 et Haiku 4.5 y sont disponibles, mais uniquement sous forme de profils Global ou EU, et non In-Region. Il n’existe pas de profil qui calcule exclusivement à Zurich. Lorsque le profil EU est appelé depuis Zurich, AWS répartit les requêtes, selon la carte de modèle (documenté pour Haiku 4.5 et Sonnet 4.6), entre les régions suivantes :
+
+| Région | Emplacement |
+|---|---|
+| `eu-central-2` | Zurich |
+| `eu-central-1` | Francfort |
+| `eu-north-1` | Stockholm |
+| `eu-south-1` | Milan |
+| `eu-south-2` | Espagne |
+| `eu-west-1` | Irlande |
+| `eu-west-3` | Paris |
+
+Zurich n’est une destination possible que si la requête provient de Zurich. Le traitement reste donc dans l’espace UE plus Suisse. Pour Opus 5.5 et Sonnet 5.5, la carte de modèle ne mentionne pas les régions cibles ; l’API renvoie la liste effective :
+
+```bash
+aws bedrock get-inference-profile \
+  --region eu-central-2 \
+  --inference-profile-identifier eu.anthropic.claude-sonnet-5-5 \
+  --query "models[].modelArn"
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `bedrock get-inference-profile` | Lit la définition d’un Inference Profile |
+| `--region eu-central-2` | Région source Zurich ; la liste des destinations dépend de la région source |
+| `--inference-profile-identifier` | ID du profil EU pour Sonnet 5.5 |
+| `--query "models[].modelArn"` | Affiche uniquement les ARN de modèle ; la région figure dans chaque ARN |
+
+</details>
+
+Par défaut, les données ne sont stockées que dans la région source. Les contenus conservés pour la détection des abus constituent une exception : ils sont stockés dans la région cible. Le transport entre régions est chiffré via le réseau AWS.
+
+### Prouver la région de traitement pour chaque requête
+
+Bedrock est la seule des voies décrites qui consigne la région de traitement effective pour chaque requête. CloudTrail l’écrit dans la région source, dans le champ `additionalEventData.inferenceRegion` :
+
+```bash
+aws cloudtrail lookup-events \
+  --region eu-central-2 \
+  --lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com \
+  --max-results 20 \
+  --query "Events[].CloudTrailEvent" \
+  --output text \
+  | jq -r '[.eventTime, .eventName, .additionalEventData.inferenceRegion] | @tsv'
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `cloudtrail lookup-events` | Recherche les événements CloudTrail des 90 derniers jours |
+| `--region eu-central-2` | Région source dans laquelle les appels sont consignés |
+| `--lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com` | Filtre les événements Bedrock |
+| `--max-results 20` | Limite la sortie à 20 événements |
+| `--query "Events[].CloudTrailEvent"` | N’affiche que l’événement complet sous forme de texte JSON |
+| `--output text` | Sortie sans enveloppe JSON, un événement par ligne |
+| `jq -r '… \| @tsv'` | Extrait l’heure, l’action et la région de traitement sous forme de ligne séparée par des tabulations |
+
+</details>
+
+En outre, une Service Control Policy (SCP) dans AWS Organizations permet de bloquer toutes les régions hors de l’UE et de la Suisse. Si une région cible d’un profil est bloquée, la requête échoue au lieu de basculer vers une autre région. Avec cette combinaison, le lieu de traitement est techniquement imposé et peut être prouvé pour chaque requête.
+
+### Claude Code via Bedrock dans l’UE
+
+Claude Code peut également fonctionner via Bedrock. Dans une région `eu-*`, Claude Code sélectionne automatiquement le préfixe `eu.` :
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=eu-central-2
+claude
+```
+
+| Variable | Effet |
+|---|---|
+| `CLAUDE_CODE_USE_BEDROCK=1` | Bascule Claude Code de l’API Anthropic vers Bedrock |
+| `AWS_REGION=eu-central-2` | Région source Zurich ; il en résulte le profil EU |
+
+Le préfixe peut être remplacé avec `ANTHROPIC_BEDROCK_REGION_PREFIX`. L’authentification AWS s’effectue par les mécanismes habituels (profil, SSO, variables d’environnement). La facturation passe par le compte AWS, et non par un abonnement Claude.
+
+## Google Vertex AI : UE uniquement, Suisse explicitement exclue
+
+Sur Google Cloud (Vertex AI, désormais sous le nom Gemini Enterprise Agent Platform), la situation est moins favorable pour la Suisse :
+
+| Point de terminaison | Modèles (sélection) | Lieu de traitement |
+|---|---|---|
+| `global` | tous | Toute région Google Cloud, sans garantie |
+| Multi-région `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | Uniquement les États membres de l’UE |
+| Région `europe-west1` (Belgique) | Haiku 4.5, Sonnet 4.6, Opus 4.6 et modèles plus anciens | Selon la page du modèle, multi-région Europe |
+| Région `europe-west6` (Zurich) | aucun | Claude non disponible |
+
+Google exclut explicitement la Suisse du point de terminaison multi-région UE : il ne couvre que les États membres de l’UE ; le Royaume-Uni et la Suisse n’en font pas partie. Plusieurs pages de conseil suisses présentent `europe-west6` comme une voie vers Claude à Zurich ; selon le tableau officiel des emplacements de Google, aucun modèle Claude n’y est disponible. Google ne documente pas de champ de journal indiquant la région de traitement effective pour chaque requête. Pour le point de terminaison global, Google précise que la région de traitement ne peut être ni contrôlée ni déterminée.
+
+Vertex AI convient donc à un traitement exclusivement dans l’UE, mais non à un traitement en Suisse.
+
+## Microsoft Foundry : actuellement aucune option UE
+
+Microsoft propose Claude dans Foundry sous deux variantes. « Hosted on Azure » calcule sur l’infrastructure Azure, en Global Standard ou en Data Zone Standard ; pour Claude, la Data Zone n’existe que pour les États-Unis. « Hosted on Anthropic » calcule sur l’infrastructure Anthropic, et Microsoft précise que les données peuvent être traitées en dehors d’Azure et en dehors de la région sélectionnée. Anthropic indique Foundry pour l’Europe comme « Coming soon ». Dans Microsoft 365 Copilot et Copilot Studio, les modèles Anthropic sont exclus de la EU Data Boundary et sont désactivés par défaut dans l’UE, l’AELE (donc aussi en Suisse) et au Royaume-Uni.
+
+## Vue d’ensemble : quelle voie garantit quel lieu de traitement
+
+| Voie | Suisse uniquement | UE uniquement | Espace UE plus Suisse | Région prouvable par requête |
+|---|---|---|---|---|
+| claude.ai, Claude Code (abonnement) | non | non | non | non |
+| API Claude avec `inference_geo` | non | non | non (uniquement `us`) | uniquement `us`/`global` |
+| AWS Bedrock, source `eu-central-2`, profil `eu.` | non | non | oui | oui (CloudTrail) |
+| AWS Bedrock, source dans l’UE, profil `eu.` | non | oui | oui | oui (CloudTrail) |
+| Google Vertex AI, point de terminaison `eu` | non | oui | (partie UE uniquement) | non |
+| Microsoft Foundry | non | non | non | non |
+
+Aucun fournisseur ne propose actuellement de voie garantissant que le traitement de Claude soit limité à la Suisse. AWS Bedrock avec région source Zurich et profil EU s’en approche le plus. S’il faut également exclure que les données quittent l’UE, par exemple en raison d’engagements contractuels envers des clients de l’UE, le profil EU peut être appelé depuis une région UE telle que Francfort ; Zurich ne constitue alors plus une destination.
+
+## Ce que coûte l’ancrage régional
+
+Les trois fournisseurs cloud et Anthropic facturent eux-mêmes un supplément de 10 % pour l’ancrage à une région ou à une géographie par rapport au point de terminaison global. Chez Bedrock, les prix dépendent de la région source ; Zurich, Francfort et Virginie du Nord coûtent la même chose. Le routage entre régions n’est pas facturé en supplément.
+
+Prix catalogue en USD par million de tokens (entrée / sortie) :
+
+| Modèle | API Anthropic, `global` | API Anthropic, `us` | Bedrock ou Vertex, global | Bedrock `eu.` ou Vertex `eu` |
+|---|---|---|---|---|
+| Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
+| Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 4.5 | 1.00 / 5.00 | non disponible | 1.00 / 5.00 | 1.10 / 5.50 |
+| Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
+
+Pour Vertex AI, le prix de la colonne UE s’applique à Haiku 4.5 et Sonnet 4.6 dans la région `europe-west1`. Exemple de calcul pour une application interne avec 50 millions de tokens d’entrée et 10 millions de tokens de sortie par mois :
+
+| Modèle | Global | Lié à l’UE | Surcoût mensuel |
+|---|---|---|---|
+| Sonnet 5.5 | 50 × 2 + 10 × 10 = 200 USD | 220 USD | 20 USD |
+| Opus 5.5 | 50 × 4 + 10 × 20 = 400 USD | 440 USD | 40 USD |
+
+L’ancrage régional coûte donc 10 % de plus que le point de terminaison global. Par rapport au prix catalogue directement chez Anthropic avec `inference_geo: "us"`, un profil EU sur Bedrock coûte le même prix. Les coûts annexes pèsent davantage dans le choix : un compte AWS ou Google Cloud avec des politiques d’organisation, de la journalisation et des alertes budgétaires doit être mis en place et exploité, et les prix mensuels fixes des abonnements Claude cèdent la place à une facturation purement à la consommation. La rentabilité du changement dépend du volume ; un abonnement a un prix fixe par personne, mais n’offre aucun contrôle sur le lieu de traitement.
+
+## Conservation et entraînement
+
+Outre le lieu, la durée de conservation des données est importante :
+
+- **API Anthropic :** les prompts et les réponses ne sont pas utilisés pour l’entraînement sans consentement explicite. La Zero Data Retention (ZDR) est disponible sur demande par organisation et peut être combinée avec `inference_geo`. Les contenus signalés par la détection des abus restent stockés jusqu’à deux ans, même avec ZDR. Pour les modèles Fable et Mythos, une conservation de 30 jours est obligatoire.
+- **AWS Bedrock :** les contenus ne sont pas transmis à Anthropic. La conservation peut être choisie par modèle entre `none`, `default` et `aws_review`; Fable exige `aws_review` avec jusqu’à 30 jours de stockage pour examen par AWS.
+- **Google Vertex AI :** Google n’utilise les données pour l’entraînement ou le fine-tuning qu’avec un consentement préalable.
+
+## Sources
+
+1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): paramètre `inference_geo`, valeurs `us` et `global`, workspace geo, modèles pris en charge, champ `usage.inference_geo`.
+
+2.  [Claude Platform Docs: Pricing](https://platform.claude.com/docs/en/about-claude/pricing): prix catalogue de l’API Anthropic et facteur 1,1 pour `inference_geo: "us"`.
+
+3.  [Claude Platform Docs: API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention): Zero Data Retention, exceptions pour les contenus signalés et pour Fable/Mythos.
+
+4.  [Anthropic: Privacy Policy](https://www.anthropic.com/legal/privacy): Anthropic Ireland en tant que responsable pour l’EEE, le Royaume-Uni et la Suisse, transfert vers les États-Unis sur la base de clauses contractuelles types.
+
+5.  [Anthropic: Regional compliance](https://claude.com/regional-compliance): aperçu des plateformes qui offrent une résidence des données dans chaque région ; Foundry Europe indiqué comme « Coming soon ».
+
+6.  [Claude Platform Docs: Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock): types de points de terminaison par région, supplément de 10 % pour les points de terminaison régionaux.
+
+7.  [AWS: Carte de modèle Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): régions cibles du profil EU par région source, y compris Zurich.
+
+8.  [AWS: Carte de modèle Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): disponibilité dans `eu-central-2` uniquement en profil Geo et Global.
+
+9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): conservation des données dans la géographie, lieu de stockage, blocage de régions cibles par SCP.
+
+10.  [AWS: Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html): champ `additionalEventData.inferenceRegion` dans CloudTrail, prix selon la région source.
+
+11.  [AWS: Data protection in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): aucun accès des fournisseurs de modèles aux prompts, réponses et journaux.
+
+12.  [AWS: Amazon Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/): prix catalogue pour les profils Global et Geo, identiques pour Zurich, Francfort et Virginie du Nord.
+
+13.  [AWS Alps Blog: Cross-region inference for EU data processing in Switzerland](https://aws.amazon.com/blogs/alps/unlocking-ai-flexibility-in-switzerland-a-guide-to-cross-region-inference-for-eu-data-processing-and-model-access/): guide d’AWS Suisse concernant le profil EU depuis Zurich.
+
+14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): variables d’environnement et préfixe automatique `eu.` dans les régions UE.
+
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): tableau des emplacements des modèles Claude, aucune disponibilité dans `europe-west6`.
+
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): multi-région UE réservée aux États membres de l’UE, Suisse et Royaume-Uni exclus.
+
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): prix catalogue global, multi-région UE et `europe-west1`.
+
+18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure et Hosted on Anthropic, Data Zone uniquement aux États-Unis.
+
+19.  [Microsoft Learn: Anthropic as AI subprocessor in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/connect-to-ai-subprocessor): exception à la EU Data Boundary, paramètre par défaut dans l’UE/l’AELE.
+
+20.  [TCDEV Blog: Where Are Claude's Data Centers?](https://www.tcdev.de/blog/where-are-claudes-data-centers/): aperçu de Tim Cadenbach sur Project Rainier, l’accord Google TPU et les propres centres de données avec Fluidstack.
+
+21.  [Anthropic: Investissement de 50 milliards USD dans l’infrastructure américaine](https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure): annonce des propres centres de données au Texas et à New York avec Fluidstack.
+
+22.  [Claude Platform Docs: IP addresses](https://platform.claude.com/docs/en/api/ip-addresses): plage d’adresses entrantes `160.79.104.0/23`.
+
+23.  [RIPEstat](https://stat.ripe.net/): vue d’ensemble du préfixe et statut BGP pour `160.79.104.0/23` (AS399358, upstream AS13335).
+
+24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): temps de réponse à l’edge selon le site de mesure.
+
+25.  [Fedlex: Ordonnance sur la protection des données (OPDo), annexe 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): liste des États assurant une protection adéquate des données, y compris UE/EEE et États-Unis pour les entreprises certifiées.
 
 ----
 
@@ -46544,6 +47198,333 @@ Il est ainsi possible de suivre un flux de messagerie étape par étape, sans li
 
 ----
 
+# In quale data center elabora Claude? Tracciare la connessione e limitare l’elaborazione alla Svizzera o all’UE
+
+URL: https://rafaelpfister.ch/it/blog/in-quale-data-center-elabora-claude-tracciare-la-connessione-e-limitare-l-elaborazione-alla
+Datum: 2026-10-02
+
+Chi utilizza Claude tramite claude.ai, Claude Code o l’API non può sapere in quale data center il modello elabora la richiesta. È visibile soltanto il primo tratto della connessione fino al nodo edge più vicino. Per le aziende che trasmettono dati personali o contenuti riservati a un modello linguistico, questo non basta: devono poter dimostrare a clienti, consulenti per la protezione dei dati o revisori dove avviene l’elaborazione.
+
+Questo articolo mostra fino a che punto sia possibile tracciare direttamente la connessione, cosa si sa pubblicamente dei data center di Anthropic e attraverso quali canali sia possibile limitare in modo vincolante l’elaborazione all’UE o allo spazio UE più Svizzera. I prezzi e le regioni sono aggiornati al 2 ottobre 2026.
+
+**Focus Svizzera:** Fa fede la legge federale riveduta sulla protezione dei dati (revLPD). Una comunicazione di dati personali all’estero è consentita ai sensi dell’art. 16 revLPD se il Consiglio federale attesta che lo Stato destinatario garantisce una protezione adeguata (allegato 1 dell’ordinanza sulla protezione dei dati, OPDa) o se esistono garanzie adeguate quali le clausole contrattuali standard. Gli Stati dell’UE e del SEE sono inclusi in questo elenco; gli USA lo sono solo per le imprese certificate ai sensi dello Swiss-U.S. Data Privacy Framework. Un luogo di elaborazione nell’UE semplifica quindi notevolmente la motivazione, ma non sostituisce gli altri obblighi (contratto per il trattamento su incarico, informazione delle persone interessate, sicurezza dei dati).
+
+**Nota UE:** Per le imprese con sede nell’UE si applicano invece gli artt. 44 e segg. del GDPR. La Commissione europea ha riconosciuto alla Svizzera un livello di protezione dei dati adeguato (decisione di adeguatezza 2000/518/CE, confermata nel gennaio 2024); per le imprese dell’UE, un’elaborazione a Zurigo non costituisce pertanto un trasferimento verso un paese terzo in senso problematico.
+
+## Quali passaggi attraversa una richiesta a Claude
+
+Una richiesta a `claude.ai` o `api.anthropic.com` attraversa tre stazioni:
+
+| Stazione | Chi la gestisce | Visibile per voi? |
+|---|---|---|
+| Nodo edge (terminazione TLS, protezione dagli abusi) | Cloudflare, per conto di Anthropic | Sì, località rilevabile dall’header |
+| Rete interna fino al backend | Cloudflare e Anthropic | No |
+| Inferenza (il modello esegue i calcoli) | Anthropic, su capacità di calcolo AWS, Google Cloud e nei propri data center | No, solo l’indicazione generica `us` o `global` |
+
+I nomi host `claude.ai` e `api.anthropic.com` puntano entrambi all’indirizzo `160.79.104.10`. Esso appartiene al prefisso `160.79.104.0/23`, registrato a nome di Anthropic (AS399358) e che, secondo RPKI, proviene validamente da Anthropic. Nel routing globale, tuttavia, il prefisso viene annunciato esclusivamente tramite Cloudflare (AS13335): Anthropic immette i propri indirizzi IP nella rete anycast di Cloudflare. Lo stesso indirizzo riceve quindi risposta da ogni sede Cloudflare nel mondo e la connessione raggiunge il nodo edge più vicino.
+
+## Determinare il nodo edge
+
+Cloudflare rivela la sede che gestisce la richiesta in una pagina diagnostica e nell’header `cf-ray`. Il codice dopo il Ray ID è un codice aeroportuale IATA: `ZRH` indica Zurigo, `GVA` Ginevra, `FRA` Francoforte, `MRS` Marsiglia.
+
+```bash
+curl -s https://api.anthropic.com/cdn-cgi/trace
+```
+
+Nell’output sono rilevanti le righe `colo=` (sede edge) e `loc=` (paese al quale Cloudflare assegna il vostro indirizzo di origine). In Windows, PowerShell restituisce lo stesso risultato:
+
+```powershell
+$trace = Invoke-WebRequest -Uri "https://api.anthropic.com/cdn-cgi/trace" -UseBasicParsing
+$trace.Content
+```
+
+Potete leggere l’header con una richiesta HEAD:
+
+```bash
+curl -sI https://api.anthropic.com/ \
+  | grep -i -E '^(server|cf-ray):'
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-s` | Sopprime l’indicatore di avanzamento e i messaggi di errore di curl |
+| `-I` | Invia una richiesta HEAD e restituisce solo gli header di risposta |
+| `grep -i` | Cerca senza distinguere tra maiuscole e minuscole |
+| `-E '^(server\|cf-ray):'` | Espressione regolare estesa: solo righe che iniziano con `server:` o `cf-ray:` |
+
+</details>
+
+Da una rete svizzera, in genere ci si può attendere `ZRH` o `GVA`. Se l’uscita Internet si trova altrove, ad esempio in una rete aziendale con uscita centralizzata all’estero, risponde il nodo edge locale, per esempio con `colo=FRA` o `colo=MRS`. La sede edge segue quindi l’uscita della vostra rete, non il luogo dell’elaborazione.
+
+## Perché il traceroute termina all’edge
+
+Un traceroute mostra il percorso fino al nodo edge e non oltre:
+
+```powershell
+Test-NetConnection -ComputerName api.anthropic.com -TraceRoute -Hops 20
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-ComputerName api.anthropic.com` | Host di destinazione della misurazione |
+| `-TraceRoute` | Determina gli hop dei router lungo il percorso verso la destinazione |
+| `-Hops 20` | Numero massimo di hop da controllare |
+
+</details>
+
+In Linux e macOS, l’equivalente è `traceroute -n api.anthropic.com` (`-n` sopprime la risoluzione DNS degli hop). Nella misurazione, gli ultimi hop prima di `160.79.104.10` erano nell’intervallo di indirizzi `162.158.0.0/15`, che appartiene a Cloudflare. Dopodiché la traccia termina: la connessione viene terminata al nodo edge e l’inoltro al backend avviene tramite una nuova connessione interna, non visibile dall’esterno.
+
+RIPEstat mostra a chi appartiene il prefisso e attraverso quale rete viene annunciato:
+
+```bash
+curl -s "https://stat.ripe.net/data/prefix-overview/data.json?resource=160.79.104.10"
+curl -s "https://stat.ripe.net/data/bgp-state/data.json?resource=160.79.104.0/23"
+```
+
+Nel secondo risultato, tutti i percorsi AS terminano con `13335 399358`: Cloudflare è l’unico upstream del prefisso Anthropic.
+
+Secondo la mia ricerca, non esiste una misurazione pubblica in grado di tracciare il percorso fino a un data center di inferenza; a causa della terminazione all’edge, non è possibile farlo neppure con strumenti di rete. Servizi di misurazione come llmlatency.dev rilevano soltanto il tempo di risposta fino al primo byte all’edge (situazione a settembre 2026: mediana di 96 ms dagli USA centrali, 199 ms dalla Germania). Sarebbe possibile confrontare il tempo fino al primo token (Time to First Token) da più località, ma esso dipende più dal modello, dalla lunghezza del prompt e dal carico che dalla distanza. Non consente quindi di dedurre in modo affidabile una località.
+
+## Cosa si sa dei data center di Anthropic
+
+Anthropic non gestisce ancora un proprio data center di inferenza pubblicamente attribuito e dotato di indirizzo. La capacità di calcolo deriva da partnership raccolte da Tim Cadenbach nel blog TCDEV:
+
+| Sede / partner | Dati principali | Ruolo noto |
+|---|---|---|
+| Project Rainier, New Carlisle (Indiana, USA), Amazon Web Services | Inaugurato nell’ottobre 2025, circa 11 miliardi di USD, circa 500 000 chip Trainium2, oltre 2,2 GW previsti | Anthropic è l’inquilino principale; soprattutto addestramento |
+| Google Cloud | Accordo dell’ottobre 2025 per fino a 1 milione di TPU, oltre 1 GW dal 2026 | Regioni non pubblicate |
+| Propri data center con Fluidstack | Annunciati nel novembre 2025, 50 miliardi di USD, sedi in Texas e New York, messa in servizio dal 2026 | Ancora in fase di realizzazione |
+
+Addestramento e inferenza non avvengono necessariamente nello stesso luogo. L’inferenza può svolgersi in qualunque regione AWS o Google Cloud e Anthropic non rende noto quale sede elabori la risposta per un utente in Svizzera. È certo soltanto quanto stabilito nell’informativa sulla privacy: il partner contrattuale e titolare del trattamento per i clienti del SEE, del Regno Unito e della Svizzera è Anthropic Ireland, Limited a Dublino; i dati vengono trasferiti a server negli USA o in altri paesi al di fuori del SEE sulla base di clausole contrattuali standard.
+
+## Il controllo direttamente presso Anthropic: solo USA o globale
+
+Dalla generazione di modelli 4.6, la Claude API conosce il parametro `inference_geo`. Ha esattamente due valori:
+
+| Valore | Effetto | Prezzo |
+|---|---|---|
+| `global` (predefinito) | Inferenza in qualsiasi regione disponibile | Prezzo di listino |
+| `us` | Inferenza esclusivamente negli USA | Prezzo di listino × 1,1 |
+
+Non esiste un valore per l’UE o la Svizzera. Anche la località di archiviazione del workspace (`workspace geo`) può attualmente essere impostata solo su `us`. La risposta comunica nel campo `usage.inference_geo` quale impostazione è stata applicata, ma non una regione concreta. Per Haiku 4.5 e i modelli più vecchi, l’API risponde al parametro con un errore 400.
+
+Per claude.ai e Claude Code con un abbonamento (Pro, Max, Team, Enterprise), non esiste alcuna impostazione della località di elaborazione. Tramite le offerte dirette di Anthropic, l’elaborazione non può quindi essere limitata né all’UE né alla Svizzera. Questo è possibile solo tramite i fornitori cloud che eseguono Claude nelle proprie regioni.
+
+## AWS Bedrock: spazio UE più Svizzera da Zurigo
+
+AWS Bedrock esegue Claude su infrastruttura AWS. Secondo AWS, Anthropic non ha accesso ai prompt, alle risposte o ai log dei clienti. Scegliete la regione tramite la regione di origine della chiamata API e l’Inference Profile:
+
+| Tipo di endpoint | Prefisso dell’ID modello | Luogo di elaborazione |
+|---|---|---|
+| Global Cross-Region Inference | `global.` | Qualsiasi regione AWS commerciale nel mondo |
+| Geographic Cross-Region Inference | `eu.` | Solo regioni all’interno della geografia |
+| In-Region | senza prefisso | Solo la regione chiamata |
+
+Per la Svizzera, è determinante la regione `eu-central-2` (Zurigo). Qui sono disponibili Opus 5.5, Sonnet 5.5 e Haiku 4.5, tuttavia solo come profilo globale o UE e non In-Region. Non esiste un profilo che elabori esclusivamente a Zurigo. Se il profilo UE viene chiamato da Zurigo, AWS distribuisce le richieste, secondo la scheda del modello (documentato per Haiku 4.5 e Sonnet 4.6), nelle seguenti regioni:
+
+| Regione | Sede |
+|---|---|
+| `eu-central-2` | Zurigo |
+| `eu-central-1` | Francoforte |
+| `eu-north-1` | Stoccolma |
+| `eu-south-1` | Milano |
+| `eu-south-2` | Spagna |
+| `eu-west-1` | Irlanda |
+| `eu-west-3` | Parigi |
+
+Zurigo è una possibile destinazione solo se la richiesta proviene da Zurigo. L’elaborazione rimane quindi nello spazio UE più Svizzera. Per Opus 5.5 e Sonnet 5.5, la scheda del modello non indica le regioni di destinazione; l’elenco effettivo viene restituito dall’API:
+
+```bash
+aws bedrock get-inference-profile \
+  --region eu-central-2 \
+  --inference-profile-identifier eu.anthropic.claude-sonnet-5-5 \
+  --query "models[].modelArn"
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `bedrock get-inference-profile` | Legge la definizione di un Inference Profile |
+| `--region eu-central-2` | Regione di origine Zurigo; l’elenco di destinazione dipende dalla regione di origine |
+| `--inference-profile-identifier` | ID del profilo UE per Sonnet 5.5 |
+| `--query "models[].modelArn"` | Restituisce solo gli ARN dei modelli; la regione è indicata in ciascun ARN |
+
+</details>
+
+Per impostazione predefinita, i dati vengono archiviati solo nella regione di origine. Fanno eccezione i contenuti trattenuti per il rilevamento degli abusi: sono conservati nella regione di destinazione. Il trasporto tra regioni avviene crittografato attraverso la rete AWS.
+
+### Documentare la regione di elaborazione per ogni richiesta
+
+Bedrock è l’unica delle modalità descritte che registra l’effettiva regione di elaborazione per ogni richiesta. CloudTrail la scrive nella regione di origine nel campo `additionalEventData.inferenceRegion`:
+
+```bash
+aws cloudtrail lookup-events \
+  --region eu-central-2 \
+  --lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com \
+  --max-results 20 \
+  --query "Events[].CloudTrailEvent" \
+  --output text \
+  | jq -r '[.eventTime, .eventName, .additionalEventData.inferenceRegion] | @tsv'
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `cloudtrail lookup-events` | Cerca gli eventi CloudTrail degli ultimi 90 giorni |
+| `--region eu-central-2` | Regione di origine nella quale sono registrate le chiamate |
+| `--lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com` | Filtra gli eventi di Bedrock |
+| `--max-results 20` | Limita l’output a 20 eventi |
+| `--query "Events[].CloudTrailEvent"` | Restituisce solo l’evento completo come testo JSON |
+| `--output text` | Output senza involucro JSON, un evento per riga |
+| `jq -r '… \| @tsv'` | Estrae data e ora, azione e regione di elaborazione come riga separata da tabulazioni |
+
+</details>
+
+Inoltre, con una Service Control Policy (SCP) in AWS Organizations è possibile bloccare tutte le regioni al di fuori dell’UE e della Svizzera. Se una regione di destinazione di un profilo è bloccata, la richiesta fallisce invece di passare a un’altra regione. Con questa combinazione, il luogo di elaborazione è imposto tecnicamente e dimostrabile per ogni richiesta.
+
+### Claude Code tramite Bedrock nell’UE
+
+Anche Claude Code può essere utilizzato tramite Bedrock. In una regione `eu-*`, Claude Code seleziona automaticamente il prefisso `eu.`:
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=eu-central-2
+claude
+```
+
+| Variabile | Effetto |
+|---|---|
+| `CLAUDE_CODE_USE_BEDROCK=1` | Passa Claude Code dall’API Anthropic a Bedrock |
+| `AWS_REGION=eu-central-2` | Regione di origine Zurigo; ne deriva il profilo UE |
+
+Con `ANTHROPIC_BEDROCK_REGION_PREFIX` è possibile sovrascrivere il prefisso. L’autenticazione AWS avviene tramite i meccanismi abituali (profilo, SSO, variabili d’ambiente). La fatturazione avviene tramite l’account AWS, non tramite un abbonamento Claude.
+
+## Google Vertex AI: solo UE, espressamente senza Svizzera
+
+Su Google Cloud (Vertex AI, ora con il nome Gemini Enterprise Agent Platform), la situazione è meno favorevole per la Svizzera:
+
+| Endpoint | Modelli (selezione) | Luogo di elaborazione |
+|---|---|---|
+| `global` | tutti | Qualsiasi regione Google Cloud, senza garanzia |
+| Multi-regione `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | Solo Stati membri dell’UE |
+| Regione `europe-west1` (Belgio) | Haiku 4.5, Sonnet 4.6, Opus 4.6 e precedenti | Secondo la pagina del modello, multi-regione Europa |
+| Regione `europe-west6` (Zurigo) | nessuno | Claude non disponibile |
+
+Google esclude espressamente la Svizzera dall’endpoint multi-regione UE: copre solo gli Stati membri dell’UE; Regno Unito e Svizzera non ne fanno parte. Diverse pagine guida svizzere indicano `europe-west6` come via per utilizzare Claude a Zurigo; secondo la tabella ufficiale delle località di Google, tuttavia, non vi è disponibile alcun modello Claude. Google non documenta un campo di log con l’effettiva regione di elaborazione per ogni richiesta. Per l’endpoint globale, Google precisa che la regione di elaborazione non può essere né controllata né determinata.
+
+Vertex AI è quindi adatto a un’elaborazione esclusivamente nell’UE, ma non a un’elaborazione in Svizzera.
+
+## Microsoft Foundry: al momento nessuna opzione UE
+
+Microsoft offre Claude in Foundry in due varianti. “Hosted on Azure” calcola su infrastruttura Azure, come Global Standard o Data Zone Standard; per Claude, la Data Zone esiste solo per gli USA. “Hosted on Anthropic” calcola su infrastruttura Anthropic e Microsoft segnala che i dati possono essere elaborati al di fuori di Azure e al di fuori della regione selezionata. Anthropic indica Foundry per l’Europa come “Coming soon”. In Microsoft 365 Copilot e Copilot Studio, i modelli Anthropic sono esclusi dall’EU Data Boundary e sono disattivati per impostazione predefinita nell’UE, nell’EFTA (quindi anche in Svizzera) e nel Regno Unito.
+
+## Panoramica: quale percorso garantisce quale luogo di elaborazione
+
+| Percorso | Solo Svizzera | Solo UE | Spazio UE più Svizzera | Regione dimostrabile per richiesta |
+|---|---|---|---|---|
+| claude.ai, Claude Code (abbonamento) | no | no | no | no |
+| Claude API con `inference_geo` | no | no | no (solo `us`) | solo `us`/`global` |
+| AWS Bedrock, origine `eu-central-2`, profilo `eu.` | no | no | sì | sì (CloudTrail) |
+| AWS Bedrock, origine nell’UE, profilo `eu.` | no | sì | sì | sì (CloudTrail) |
+| Google Vertex AI, endpoint `eu` | no | sì | (solo parte UE) | no |
+| Microsoft Foundry | no | no | no | no |
+
+Attualmente non esiste alcun percorso che garantisca che l’elaborazione di Claude sia limitata alla Svizzera. Quello più vicino è AWS Bedrock con regione di origine Zurigo e profilo UE. Se occorre inoltre escludere che i dati lascino l’UE, ad esempio per impegni contrattuali verso clienti UE, il profilo UE può essere chiamato da una regione UE come Francoforte; in tal caso Zurigo non è più una destinazione.
+
+## Quanto costa il vincolo regionale
+
+Tutti e tre i fornitori cloud e Anthropic stessa applicano un sovrapprezzo del 10% rispetto all’endpoint globale per il vincolo a una regione o geografia. Per Bedrock, i prezzi dipendono dalla regione di origine; Zurigo, Francoforte e North Virginia costano uguale. Il routing tra regioni non comporta costi aggiuntivi.
+
+Prezzi di listino in USD per 1 milione di token (input / output):
+
+| Modello | Anthropic API, `global` | Anthropic API, `us` | Bedrock o Vertex, globale | Bedrock `eu.` o Vertex `eu` |
+|---|---|---|---|---|
+| Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
+| Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 4.5 | 1.00 / 5.00 | non disponibile | 1.00 / 5.00 | 1.10 / 5.50 |
+| Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
+
+Per Vertex AI, il prezzo della colonna UE si applica a Haiku 4.5 e Sonnet 4.6 nella regione `europe-west1`. Un esempio di calcolo per un’applicazione interna con 50 milioni di token di input e 10 milioni di token di output al mese:
+
+| Modello | Globale | Vincolato all’UE | Costi aggiuntivi mensili |
+|---|---|---|---|
+| Sonnet 5.5 | 50 × 2 + 10 × 10 = 200 USD | 220 USD | 20 USD |
+| Opus 5.5 | 50 × 4 + 10 × 20 = 400 USD | 440 USD | 40 USD |
+
+Il vincolo regionale costa quindi il 10% in più dell’endpoint globale. Rispetto al prezzo di listino direttamente presso Anthropic con `inference_geo: "us"`, un profilo UE su Bedrock costa lo stesso. Nella scelta pesano maggiormente i costi indiretti: occorre creare e gestire un account AWS o Google Cloud con policy organizzative, logging e avvisi di budget; inoltre, i prezzi mensili fissi degli abbonamenti Claude vengono sostituiti da una fatturazione esclusivamente a consumo. La convenienza del passaggio dipende dal volume; un abbonamento ha un prezzo fisso per persona, ma non offre alcun controllo sul luogo di elaborazione.
+
+## Conservazione e addestramento
+
+Oltre al luogo, conta anche per quanto tempo vengono conservati i dati:
+
+- **Anthropic API:** Prompt e risposte non vengono utilizzati per l’addestramento, salvo consenso esplicito. Zero Data Retention (ZDR) è disponibile su richiesta per organizzazione e può essere combinato con `inference_geo`. I contenuti segnalati dal rilevamento degli abusi restano conservati fino a due anni anche con ZDR. Per i modelli Fable e Mythos è obbligatoria una conservazione di 30 giorni.
+- **AWS Bedrock:** I contenuti non vengono trasmessi ad Anthropic. La conservazione è selezionabile per modello tra `none`, `default` e `aws_review`; Fable richiede `aws_review` con conservazione fino a 30 giorni per la verifica da parte di AWS.
+- **Google Vertex AI:** Google utilizza i dati per l’addestramento o il fine-tuning solo previo consenso.
+
+## Fonti
+
+1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): parametro `inference_geo`, valori `us` e `global`, geo del workspace, modelli supportati, campo `usage.inference_geo`.
+
+2.  [Claude Platform Docs: Pricing](https://platform.claude.com/docs/en/about-claude/pricing): prezzi di listino dell’Anthropic API e fattore 1,1 per `inference_geo: "us"`.
+
+3.  [Claude Platform Docs: API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention): Zero Data Retention, eccezioni per contenuti segnalati e per Fable/Mythos.
+
+4.  [Anthropic: Privacy Policy](https://www.anthropic.com/legal/privacy): Anthropic Ireland quale titolare del trattamento per SEE, UK e Svizzera, trasferimento negli USA sulla base di clausole contrattuali standard.
+
+5.  [Anthropic: Regional compliance](https://claude.com/regional-compliance): panoramica delle piattaforme che offrono residenza dei dati in ciascuna regione; Foundry Europa come “Coming soon”.
+
+6.  [Claude Platform Docs: Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock): tipi di endpoint per regione, sovrapprezzo del 10% per endpoint regionali.
+
+7.  [AWS: Scheda del modello Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): regioni di destinazione del profilo UE per regione di origine, inclusa Zurigo.
+
+8.  [AWS: Scheda del modello Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): disponibilità in `eu-central-2` solo come profilo geografico e globale.
+
+9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): permanenza dei dati nella geografia, luogo di archiviazione, blocco delle regioni di destinazione tramite SCP.
+
+10.  [AWS: Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html): campo `additionalEventData.inferenceRegion` in CloudTrail, prezzo in base alla regione di origine.
+
+11.  [AWS: Data protection in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): nessun accesso dei fornitori di modelli a prompt, risposte e log.
+
+12.  [AWS: Amazon Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/): prezzi di listino per profili Global e Geo, identici per Zurigo, Francoforte e North Virginia.
+
+13.  [AWS Alps Blog: Cross-region inference for EU data processing in Switzerland](https://aws.amazon.com/blogs/alps/unlocking-ai-flexibility-in-switzerland-a-guide-to-cross-region-inference-for-eu-data-processing-and-model-access/): guida di AWS Svizzera sul profilo UE da Zurigo.
+
+14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): variabili d’ambiente e prefisso automatico `eu.` nelle regioni UE.
+
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): tabella delle località dei modelli Claude, nessuna disponibilità in `europe-west6`.
+
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): multi-regione UE solo per gli Stati membri UE, Svizzera e UK esclusi.
+
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): prezzi di listino globali, multi-regione UE e `europe-west1`.
+
+18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure e Hosted on Anthropic, Data Zone solo USA.
+
+19.  [Microsoft Learn: Anthropic as AI subprocessor in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/connect-to-ai-subprocessor): eccezione dall’EU Data Boundary, impostazione predefinita in UE/EFTA.
+
+20.  [TCDEV Blog: Where Are Claude's Data Centers?](https://www.tcdev.de/blog/where-are-claudes-data-centers/): panoramica di Tim Cadenbach su Project Rainier, il contratto Google TPU e i propri data center con Fluidstack.
+
+21.  [Anthropic: Investimento di 50 miliardi di USD nell’infrastruttura USA](https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure): annuncio dei propri data center in Texas e New York con Fluidstack.
+
+22.  [Claude Platform Docs: IP addresses](https://platform.claude.com/docs/en/api/ip-addresses): intervallo di indirizzi in entrata `160.79.104.0/23`.
+
+23.  [RIPEstat](https://stat.ripe.net/): panoramica del prefisso e stato BGP per `160.79.104.0/23` (AS399358, upstream AS13335).
+
+24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): tempi di risposta all’edge per località di misurazione.
+
+25.  [Fedlex: Ordinanza sulla protezione dei dati (OPDa), allegato 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): elenco degli Stati con protezione adeguata dei dati, inclusi UE/SEE e USA per imprese certificate.
+
+----
+
 # CVE-2026-104286: viene sfruttato uno zero-day di FortiMail - workaround e verifica della compromissione
 
 URL: https://rafaelpfister.ch/it/blog/cve-2026-104286-viene-sfruttato-uno-zero-day-di-fortimail-workaround-e-verifica-della
@@ -61924,6 +62905,333 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e corpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# ¿En qué centro de datos procesa Claude? Rastrear la conexión y limitar el procesamiento a Suiza o la UE
+
+URL: https://rafaelpfister.ch/es/blog/en-que-centro-de-datos-procesa-claude-rastrear-la-conexion-y-limitar-el-procesamiento-a-suiza-o
+Datum: 2026-10-02
+
+Quien utiliza Claude a través de claude.ai, Claude Code o la API no sabe en qué centro de datos el modelo procesa la solicitud. Solo es visible el primer tramo de la conexión hasta el nodo edge más cercano. Para las empresas que entregan datos personales o contenido confidencial a un modelo de lenguaje, esto no es suficiente: deben poder demostrar ante clientes, asesores de protección de datos o auditoría dónde tiene lugar el procesamiento.
+
+Este artículo muestra hasta dónde puede rastrearse la conexión por cuenta propia, qué se conoce públicamente sobre los centros de datos de Anthropic y mediante qué vías puede limitarse de forma vinculante el procesamiento a la UE o al espacio UE más Suiza. Los precios y las regiones corresponden al estado del 2 de octubre de 2026.
+
+**Enfoque en Suiza:** Es determinante la Ley Federal revisada sobre Protección de Datos (revDSG). La comunicación de datos personales al extranjero está permitida conforme al art. 16 revDSG si el Consejo Federal certifica que el Estado de destino ofrece una protección adecuada (anexo 1 de la Ordenanza sobre Protección de Datos, DSV) o si existen garantías adecuadas, como cláusulas contractuales tipo. Los Estados de la UE y del EEE figuran en esta lista; Estados Unidos, solo para empresas certificadas conforme al Swiss-U.S. Data Privacy Framework. Por ello, una ubicación de procesamiento en la UE simplifica considerablemente la justificación, pero no sustituye las demás obligaciones (contrato de encargado del tratamiento, información a las personas afectadas, seguridad de los datos).
+
+**Nota sobre la UE:** Para las empresas establecidas en la UE se aplican en su lugar los arts. 44 y siguientes del RGPD. La Comisión Europea ha certificado que Suiza cuenta con un nivel adecuado de protección de datos (Decisión de adecuación 2000/518/CE, confirmada en enero de 2024); por tanto, el procesamiento en Zúrich no constituye para las empresas de la UE una transferencia a un tercer país en el sentido problemático.
+
+## Qué etapas recorre una solicitud a Claude
+
+Una solicitud a `claude.ai` o `api.anthropic.com` pasa por tres etapas:
+
+| Etapa | Quién la opera | ¿Es visible para usted? |
+|---|---|---|
+| Nodo edge (terminación TLS, protección contra abusos) | Cloudflare, en nombre de Anthropic | Sí, la ubicación puede leerse mediante el encabezado |
+| Red interna hasta el backend | Cloudflare y Anthropic | No |
+| Inferencia (el modelo realiza el cálculo) | Anthropic, con capacidad de cómputo de AWS, Google Cloud y sus propios centros de datos | No, solo indicación general `us` o `global` |
+
+Los nombres de host `claude.ai` y `api.anthropic.com` apuntan ambos a la dirección `160.79.104.10`. Esta pertenece al prefijo `160.79.104.0/23`, registrado a nombre de Anthropic (AS399358) y cuyo origen RPKI válido es Anthropic. Sin embargo, en el enrutamiento global el prefijo se anuncia exclusivamente a través de Cloudflare (AS13335): Anthropic incorpora sus propias direcciones IP a la red anycast de Cloudflare. Así, cada ubicación de Cloudflare en el mundo responde a la misma dirección y la conexión llega al nodo edge más cercano.
+
+## Determinar el propio nodo edge
+
+Cloudflare revela la ubicación que atiende la solicitud en una página de diagnóstico y en el encabezado `cf-ray`. La abreviatura tras la ID de Ray es un código aeroportuario IATA: `ZRH` corresponde a Zúrich, `GVA` a Ginebra, `FRA` a Fráncfort y `MRS` a Marsella.
+
+```bash
+curl -s https://api.anthropic.com/cdn-cgi/trace
+```
+
+En la salida son relevantes las líneas `colo=` (ubicación edge) y `loc=` (país al que Cloudflare asigna su dirección de origen). En Windows, PowerShell ofrece lo mismo:
+
+```powershell
+$trace = Invoke-WebRequest -Uri "https://api.anthropic.com/cdn-cgi/trace" -UseBasicParsing
+$trace.Content
+```
+
+Puede leer el encabezado mediante una solicitud HEAD:
+
+```bash
+curl -sI https://api.anthropic.com/ \
+  | grep -i -E '^(server|cf-ray):'
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-s` | Suprime el indicador de progreso y los mensajes de error de curl |
+| `-I` | Envía una solicitud HEAD y muestra únicamente los encabezados de respuesta |
+| `grep -i` | Busca sin distinguir entre mayúsculas y minúsculas |
+| `-E '^(server\|cf-ray):'` | Expresión regular extendida: solo líneas que comienzan por `server:` o `cf-ray:` |
+
+</details>
+
+Desde una red suiza, normalmente cabe esperar `ZRH` o `GVA`. Si la salida a Internet está en otro lugar, por ejemplo en una red corporativa con salida centralizada en el extranjero, el nodo edge responde allí, por ejemplo con `colo=FRA` o `colo=MRS`. Por tanto, la ubicación edge sigue a la salida de su red, no al lugar de procesamiento.
+
+## Por qué el traceroute termina en el edge
+
+Un traceroute muestra el trayecto hasta el nodo edge y no más allá:
+
+```powershell
+Test-NetConnection -ComputerName api.anthropic.com -TraceRoute -Hops 20
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-ComputerName api.anthropic.com` | Host de destino de la medición |
+| `-TraceRoute` | Determina los saltos de router en el trayecto hacia el destino |
+| `-Hops 20` | Número máximo de saltos que se comprueban |
+
+</details>
+
+En Linux y macOS, el equivalente es `traceroute -n api.anthropic.com` (`-n` suprime la resolución DNS de los saltos). En la medición, los últimos saltos antes de `160.79.104.10` se encontraban en el rango de direcciones `162.158.0.0/15`, que pertenece a Cloudflare. Después, el rastro termina: la conexión se termina en el nodo edge y el reenvío al backend se realiza mediante una conexión interna nueva que no es visible desde el exterior.
+
+RIPEstat muestra a quién pertenece el prefijo y a través de qué red se anuncia:
+
+```bash
+curl -s "https://stat.ripe.net/data/prefix-overview/data.json?resource=160.79.104.10"
+curl -s "https://stat.ripe.net/data/bgp-state/data.json?resource=160.79.104.0/23"
+```
+
+En el segundo resultado, todas las rutas AS terminan en `13335 399358`: Cloudflare es el único upstream del prefijo de Anthropic.
+
+Según mi investigación, no existe una medición pública que permita rastrear el trayecto hasta un centro de datos de inferencia, y debido a la terminación en el edge tampoco es posible hacerlo con herramientas de red. Los servicios de medición como llmlatency.dev solo registran el tiempo de respuesta hasta el primer byte en el edge (estado de septiembre de 2026: mediana de 96 ms desde US-Central y de 199 ms desde Alemania). Aunque el tiempo hasta el primer token (Time to First Token) podría compararse desde varios lugares, depende más del modelo, de la longitud del prompt y de la carga que de la distancia. Por tanto, no permite inferir de forma fiable una ubicación.
+
+## Qué se sabe sobre los centros de datos de Anthropic
+
+Hasta ahora, Anthropic no opera ningún centro de datos de inferencia propio asociado públicamente a una dirección. La capacidad de cómputo procede de asociaciones recopiladas por Tim Cadenbach en el blog TCDEV:
+
+| Ubicación / socio | Datos clave | Función conocida |
+|---|---|---|
+| Project Rainier, New Carlisle (Indiana, EE. UU.), Amazon Web Services | Inaugurado en octubre de 2025, unos 11 000 millones de USD, aproximadamente 500 000 chips Trainium2, más de 2,2 GW previstos | Anthropic es el principal inquilino; principalmente entrenamiento |
+| Google Cloud | Acuerdo de octubre de 2025 para hasta 1 millón de TPU, más de 1 GW a partir de 2026 | Regiones no publicadas |
+| Centros de datos propios con Fluidstack | Anunciados en noviembre de 2025, 50 000 millones de USD, ubicaciones en Texas y Nueva York, puesta en marcha a partir de 2026 | Aún en construcción |
+
+El entrenamiento y la inferencia no tienen por qué realizarse en el mismo lugar. La inferencia puede ejecutarse en cualquier región de AWS o Google Cloud, y Anthropic no revela qué ubicación procesa la respuesta para un usuario en Suiza. Lo único confirmado es lo indicado en la política de privacidad: la contraparte contractual y responsable para clientes del EEE, Reino Unido y Suiza es Anthropic Ireland, Limited, en Dublín; los datos se transfieren a servidores en Estados Unidos u otros países fuera del EEE sobre la base de cláusulas contractuales tipo.
+
+## Control directamente con Anthropic: solo EE. UU. o global
+
+La API de Claude admite desde los modelos de generación 4.6 el parámetro `inference_geo`. Tiene exactamente dos valores:
+
+| Valor | Efecto | Precio |
+|---|---|---|
+| `global` (predeterminado) | Inferencia en cualquier región disponible | Precio de lista |
+| `us` | Inferencia exclusivamente en EE. UU. | Precio de lista × 1,1 |
+
+No existe un valor para la UE ni para Suiza. Actualmente, la ubicación de almacenamiento del workspace (`workspace geo`) también solo puede establecerse en `us`. La respuesta indica en el campo `usage.inference_geo` qué configuración se aplicó, pero no una región concreta. Para Haiku 4.5 y modelos anteriores, la API responde al parámetro con un error 400.
+
+Para claude.ai y Claude Code con una suscripción (Pro, Max, Team, Enterprise), no existe ninguna configuración de la ubicación de procesamiento. Por tanto, las ofertas directas de Anthropic no permiten limitar el procesamiento ni a la UE ni a Suiza. Esto solo es posible mediante los proveedores cloud que operan Claude en sus propias regiones.
+
+## AWS Bedrock: espacio UE más Suiza desde Zúrich
+
+AWS Bedrock opera Claude sobre infraestructura de AWS. Según AWS, Anthropic no tiene acceso a los prompts, las respuestas ni los registros de los clientes. La región se elige mediante la región de origen de la llamada API y el Inference Profile:
+
+| Tipo de endpoint | Prefijo del ID del modelo | Ubicación de procesamiento |
+|---|---|---|
+| Global Cross-Region Inference | `global.` | Cualquier región comercial de AWS en el mundo |
+| Geographic Cross-Region Inference | `eu.` | Solo regiones dentro de la geografía |
+| In-Region | sin prefijo | Solo la región llamada |
+
+Para Suiza, es determinante la región `eu-central-2` (Zúrich). Allí están disponibles Opus 5.5, Sonnet 5.5 y Haiku 4.5, aunque solo como perfil Global o EU y no In-Region. No existe un perfil que procese exclusivamente en Zúrich. Si se llama al perfil EU desde Zúrich, AWS distribuye las solicitudes según la tarjeta de modelo (documentado para Haiku 4.5 y Sonnet 4.6) entre estas regiones:
+
+| Región | Ubicación |
+|---|---|
+| `eu-central-2` | Zúrich |
+| `eu-central-1` | Fráncfort |
+| `eu-north-1` | Estocolmo |
+| `eu-south-1` | Milán |
+| `eu-south-2` | España |
+| `eu-west-1` | Irlanda |
+| `eu-west-3` | París |
+
+Zúrich solo es un destino posible si la solicitud procede de Zúrich. El procesamiento se mantiene así en el espacio UE más Suiza. Para Opus 5.5 y Sonnet 5.5, la tarjeta de modelo no indica las regiones de destino; la lista real la devuelve la API:
+
+```bash
+aws bedrock get-inference-profile \
+  --region eu-central-2 \
+  --inference-profile-identifier eu.anthropic.claude-sonnet-5-5 \
+  --query "models[].modelArn"
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `bedrock get-inference-profile` | Lee la definición de un Inference Profile |
+| `--region eu-central-2` | Región de origen Zúrich; la lista de destinos depende de la región de origen |
+| `--inference-profile-identifier` | ID del perfil EU para Sonnet 5.5 |
+| `--query "models[].modelArn"` | Muestra únicamente los ARN de modelos; la región aparece en cada ARN |
+
+</details>
+
+Por defecto, los datos se almacenan solo en la región de origen. Una excepción son los contenidos retenidos para la detección de abusos: se almacenan en la región de destino. El transporte entre las regiones se realiza cifrado a través de la red de AWS.
+
+### Acreditar la región de procesamiento por solicitud
+
+Bedrock es la única de las vías descritas que registra la región de procesamiento real para cada solicitud. CloudTrail la escribe en la región de origen, en el campo `additionalEventData.inferenceRegion`:
+
+```bash
+aws cloudtrail lookup-events \
+  --region eu-central-2 \
+  --lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com \
+  --max-results 20 \
+  --query "Events[].CloudTrailEvent" \
+  --output text \
+  | jq -r '[.eventTime, .eventName, .additionalEventData.inferenceRegion] | @tsv'
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `cloudtrail lookup-events` | Busca eventos de CloudTrail de los últimos 90 días |
+| `--region eu-central-2` | Región de origen en la que se registran las llamadas |
+| `--lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com` | Filtra eventos de Bedrock |
+| `--max-results 20` | Limita la salida a 20 eventos |
+| `--query "Events[].CloudTrailEvent"` | Muestra únicamente el evento completo como texto JSON |
+| `--output text` | Salida sin envoltorio JSON, un evento por línea |
+| `jq -r '… \| @tsv'` | Extrae hora, acción y región de procesamiento como línea separada por tabuladores |
+
+</details>
+
+Además, una Service Control Policy (SCP) en AWS Organizations permite bloquear todas las regiones fuera de la UE y Suiza. Si una región de destino de un perfil está bloqueada, la solicitud falla en lugar de recurrir a otra región. Con esta combinación, la ubicación de procesamiento se impone técnicamente y puede demostrarse para cada solicitud.
+
+### Claude Code mediante Bedrock en la UE
+
+Claude Code también puede utilizarse mediante Bedrock. En una región `eu-*`, Claude Code selecciona automáticamente el prefijo `eu.`:
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=eu-central-2
+claude
+```
+
+| Variable | Efecto |
+|---|---|
+| `CLAUDE_CODE_USE_BEDROCK=1` | Cambia Claude Code de la API de Anthropic a Bedrock |
+| `AWS_REGION=eu-central-2` | Región de origen Zúrich; de ello se deriva el perfil EU |
+
+Con `ANTHROPIC_BEDROCK_REGION_PREFIX` puede anularse el prefijo. La autenticación de AWS se realiza mediante los mecanismos habituales (perfil, SSO, variables de entorno). La facturación se realiza a través de la cuenta de AWS, no de una suscripción de Claude.
+
+## Google Vertex AI: solo UE, expresamente sin Suiza
+
+En Google Cloud (Vertex AI, ahora bajo el nombre Gemini Enterprise Agent Platform), la situación es menos favorable para Suiza:
+
+| Endpoint | Modelos (selección) | Ubicación de procesamiento |
+|---|---|---|
+| `global` | todos | Cualquier región de Google Cloud, sin garantía |
+| Multirregión `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | Solo Estados miembros de la UE |
+| Región `europe-west1` (Bélgica) | Haiku 4.5, Sonnet 4.6, Opus 4.6 y anteriores | Según la página del modelo, multirregión Europa |
+| Región `europe-west6` (Zúrich) | ninguno | Claude no disponible |
+
+Google excluye expresamente a Suiza del endpoint multirregión de la UE: solo cubre Estados miembros de la UE; el Reino Unido y Suiza no están incluidos. Varios sitios suizos de asesoramiento mencionan `europe-west6` como vía para acceder a Claude en Zúrich; según la tabla oficial de ubicaciones de Google, allí no está disponible ningún modelo Claude. Google no documenta un campo de registro con la región de procesamiento real por solicitud. Para el endpoint global, Google indica que la región de procesamiento no puede controlarse ni determinarse.
+
+Por tanto, Vertex AI es adecuado para el procesamiento exclusivamente en la UE, pero no para el procesamiento en Suiza.
+
+## Microsoft Foundry: actualmente sin opción para la UE
+
+Microsoft ofrece Claude en Foundry en dos variantes. «Hosted on Azure» procesa en infraestructura de Azure, como Global Standard o Data Zone Standard; para Claude, la Data Zone solo existe para Estados Unidos. «Hosted on Anthropic» procesa en infraestructura de Anthropic, y Microsoft advierte de que los datos pueden procesarse fuera de Azure y fuera de la región seleccionada. Anthropic lista Foundry para Europa como «Coming soon». En Microsoft 365 Copilot y Copilot Studio, los modelos de Anthropic están excluidos de la EU Data Boundary y están desactivados por defecto en la UE, la EFTA (incluida Suiza) y el Reino Unido.
+
+## Resumen: qué vía garantiza qué ubicación de procesamiento
+
+| Vía | Solo Suiza | Solo UE | Espacio UE más Suiza | Región demostrable por solicitud |
+|---|---|---|---|---|
+| claude.ai, Claude Code (suscripción) | no | no | no | no |
+| API de Claude con `inference_geo` | no | no | no (solo `us`) | solo `us`/`global` |
+| AWS Bedrock, origen `eu-central-2`, perfil `eu.` | no | no | sí | sí (CloudTrail) |
+| AWS Bedrock, origen en la UE, perfil `eu.` | no | sí | sí | sí (CloudTrail) |
+| Google Vertex AI, endpoint `eu` | no | sí | (solo la parte de la UE) | no |
+| Microsoft Foundry | no | no | no | no |
+
+Actualmente, ningún proveedor ofrece una vía que garantice que el procesamiento de Claude se limita a Suiza. Lo más cercano es AWS Bedrock con región de origen Zúrich y perfil EU. Si además debe excluirse que los datos salgan de la UE (por ejemplo, debido a compromisos contractuales con clientes de la UE), puede llamarse al perfil EU desde una región de la UE como Fráncfort; entonces Zúrich deja de ser un destino.
+
+## Cuánto cuesta la vinculación regional
+
+Los tres proveedores cloud y Anthropic cobran un recargo del 10 % frente al endpoint global por vincular a una región o geografía. En Bedrock, los precios se basan en la región de origen; Zúrich, Fráncfort y Norte de Virginia cuestan lo mismo. El enrutamiento entre regiones no genera costes adicionales.
+
+Precios de lista en USD por 1 millón de tokens (entrada / salida):
+
+| Modelo | API de Anthropic, `global` | API de Anthropic, `us` | Bedrock o Vertex, global | Bedrock `eu.` o Vertex `eu` |
+|---|---|---|---|---|
+| Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
+| Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 4.5 | 1.00 / 5.00 | no disponible | 1.00 / 5.00 | 1.10 / 5.50 |
+| Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
+
+En Vertex AI, el precio de la columna UE se aplica a Haiku 4.5 y Sonnet 4.6 en la región `europe-west1`. Un ejemplo de cálculo para una aplicación interna con 50 millones de tokens de entrada y 10 millones de tokens de salida al mes:
+
+| Modelo | Global | Vinculado a la UE | Coste adicional mensual |
+|---|---|---|---|
+| Sonnet 5.5 | 50 × 2 + 10 × 10 = 200 USD | 220 USD | 20 USD |
+| Opus 5.5 | 50 × 4 + 10 × 20 = 400 USD | 440 USD | 40 USD |
+
+Por tanto, la vinculación regional cuesta un 10 % más que el endpoint global. Frente al precio de lista de Anthropic directamente con `inference_geo: "us"`, un perfil EU en Bedrock cuesta lo mismo. Al elegir, pesan más los costes indirectos: hay que implementar y operar una cuenta de AWS o Google Cloud con políticas organizativas, registro y alertas presupuestarias, y las tarifas mensuales fijas de las suscripciones de Claude se sustituyen por una facturación exclusivamente según el consumo. La rentabilidad del cambio depende del volumen; una suscripción tiene un precio fijo por persona, pero no ofrece control sobre la ubicación de procesamiento.
+
+## Conservación y entrenamiento
+
+Además de la ubicación, importa cuánto tiempo se almacenan los datos:
+
+- **API de Anthropic:** Los prompts y las respuestas no se utilizan para entrenamiento mientras no exista consentimiento expreso. Zero Data Retention (ZDR) está disponible previa solicitud por organización y puede combinarse con `inference_geo`. Los contenidos marcados por la detección de abusos se conservan hasta dos años incluso con ZDR. Para los modelos Fable y Mythos, es obligatoria una conservación de 30 días.
+- **AWS Bedrock:** Los contenidos no se envían a Anthropic. La conservación puede elegirse por modelo entre `none`, `default` y `aws_review`; Fable requiere `aws_review` con almacenamiento de hasta 30 días para revisión por AWS.
+- **Google Vertex AI:** Google utiliza los datos para entrenamiento o ajuste fino solo con consentimiento previo.
+
+## Fuentes
+
+1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): parámetro `inference_geo`, valores `us` y `global`, geografía del workspace, modelos compatibles, campo `usage.inference_geo`.
+
+2.  [Claude Platform Docs: Pricing](https://platform.claude.com/docs/en/about-claude/pricing): precios de lista de la API de Anthropic y factor 1,1 para `inference_geo: "us"`.
+
+3.  [Claude Platform Docs: API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention): Zero Data Retention, excepciones para contenidos marcados y para Fable/Mythos.
+
+4.  [Anthropic: Privacy Policy](https://www.anthropic.com/legal/privacy): Anthropic Ireland como responsable para el EEE, Reino Unido y Suiza, transferencia a Estados Unidos basada en cláusulas contractuales tipo.
+
+5.  [Anthropic: Regional compliance](https://claude.com/regional-compliance): resumen de qué plataforma ofrece residencia de datos en qué región; Foundry Europa como «Coming soon».
+
+6.  [Claude Platform Docs: Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock): tipos de endpoint por región, recargo del 10 % para endpoints regionales.
+
+7.  [AWS: Tarjeta de modelo Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): regiones de destino del perfil EU según la región de origen, incluido Zúrich.
+
+8.  [AWS: Tarjeta de modelo Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): disponibilidad en `eu-central-2` solo como perfil Geo y Global.
+
+9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): permanencia de datos en la geografía, ubicación de almacenamiento, bloqueo de regiones de destino mediante SCP.
+
+10.  [AWS: Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html): campo `additionalEventData.inferenceRegion` en CloudTrail, precio según región de origen.
+
+11.  [AWS: Data protection in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): los proveedores de modelos no tienen acceso a prompts, respuestas ni registros.
+
+12.  [AWS: Amazon Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/): precios de lista para perfiles Global y Geo, idénticos para Zúrich, Fráncfort y Norte de Virginia.
+
+13.  [AWS Alps Blog: Cross-region inference for EU data processing in Switzerland](https://aws.amazon.com/blogs/alps/unlocking-ai-flexibility-in-switzerland-a-guide-to-cross-region-inference-for-eu-data-processing-and-model-access/): guía de AWS Suiza para el perfil EU desde Zúrich.
+
+14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): variables de entorno y prefijo automático `eu.` en regiones de la UE.
+
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): tabla de ubicaciones de los modelos Claude, sin disponibilidad en `europe-west6`.
+
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): multirregión UE solo para Estados miembros de la UE; Suiza y Reino Unido excluidos.
+
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): precios de lista globales, multirregión UE y `europe-west1`.
+
+18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure y Hosted on Anthropic, Data Zone solo en EE. UU.
+
+19.  [Microsoft Learn: Anthropic as AI subprocessor in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/connect-to-ai-subprocessor): excepción de la EU Data Boundary, configuración predeterminada en UE/EFTA.
+
+20.  [TCDEV Blog: Where Are Claude's Data Centers?](https://www.tcdev.de/blog/where-are-claudes-data-centers/): resumen de Tim Cadenbach sobre Project Rainier, el acuerdo de TPU de Google y los centros de datos propios con Fluidstack.
+
+21.  [Anthropic: Inversión de 50 000 millones de USD en infraestructura de EE. UU.](https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure): anuncio de los centros de datos propios en Texas y Nueva York con Fluidstack.
+
+22.  [Claude Platform Docs: IP addresses](https://platform.claude.com/docs/en/api/ip-addresses): rango de direcciones entrante `160.79.104.0/23`.
+
+23.  [RIPEstat](https://stat.ripe.net/): resumen de prefijo y estado BGP para `160.79.104.0/23` (AS399358, upstream AS13335).
+
+24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): tiempos de respuesta en el edge por ubicación de medición.
+
+25.  [Fedlex: Ordenanza sobre Protección de Datos (DSV), anexo 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): lista de Estados con protección de datos adecuada, incluida UE/EEE y Estados Unidos para empresas certificadas.
 
 ----
 
@@ -77310,6 +78618,333 @@ De este modo, se puede seguir un flujo de correo paso a paso sin interpretar err
 
 ----
 
+# Which data centre processes Claude? Trace the connection and restrict processing to Switzerland or the EU
+
+URL: https://rafaelpfister.ch/sv/blog/which-data-centre-processes-claude-trace-the-connection-and-restrict-processing-to-switzerland
+Datum: 2026-10-02
+
+Anyone using Claude via claude.ai, Claude Code or the API cannot determine which data centre processes the request. Only the first segment of the connection, up to the nearest edge node, is visible. For companies that submit personal data or confidential content to a language model, this is insufficient: they need to be able to demonstrate to customers, data protection advisers or auditors where processing takes place.
+
+This article shows how far the connection itself can be traced, what is publicly known about Anthropic's data centres and which routes can reliably restrict processing to the EU or the EU-plus-Switzerland area. Prices and regions are current as of 2 October 2026.
+
+**Switzerland focus:** The revised Federal Act on Data Protection (revFADP) is decisive. Disclosure of personal data abroad is permitted under Art. 16 revFADP if the Federal Council certifies that the destination state provides adequate protection (Annex 1 of the Data Protection Ordinance, DPO) or if suitable safeguards such as standard contractual clauses are in place. EU and EEA states are on this list, while the US is included only for companies certified under the Swiss-U.S. Data Privacy Framework. A processing location in the EU therefore makes the justification considerably easier, but does not replace the other obligations (data processing agreement, informing data subjects, data security).
+
+**EU note:** Companies based in the EU are instead subject to Arts. 44 et seq. GDPR. The European Commission has recognised Switzerland as providing an adequate level of data protection (adequacy decision 2000/518/EC, confirmed in January 2024); processing in Zurich is therefore not a problematic third-country transfer for EU companies.
+
+## Which stages a request to Claude passes through
+
+A request to `claude.ai` or `api.anthropic.com` passes through three stages:
+
+| Stage | Who operates it | Visible to you? |
+|---|---|---|
+| Edge node (TLS termination, abuse protection) | Cloudflare, on behalf of Anthropic | Yes, location can be read from the header |
+| Internal network to the backend | Cloudflare and Anthropic | No |
+| Inference (the model computes) | Anthropic, using compute from AWS, Google Cloud and its own data centres | No, only the broad designation `us` or `global` |
+
+The host names `claude.ai` and `api.anthropic.com` both resolve to address `160.79.104.10`. It belongs to prefix `160.79.104.0/23`, which is registered to Anthropic (AS399358) and is validly originated by Anthropic according to RPKI. In global routing, however, the prefix is advertised exclusively via Cloudflare (AS13335): Anthropic brings its own IP addresses into Cloudflare's anycast network. The same address is therefore answered from every Cloudflare location worldwide, and the connection reaches the nearest edge node.
+
+## Determine the edge node itself
+
+Cloudflare reveals the serving location on a diagnostic page and in the `cf-ray` header. The abbreviation after the Ray ID is an IATA airport code: `ZRH` stands for Zurich, `GVA` for Geneva, `FRA` for Frankfurt and `MRS` for Marseille.
+
+```bash
+curl -s https://api.anthropic.com/cdn-cgi/trace
+```
+
+The relevant lines in the output are `colo=` (edge location) and `loc=` (the country to which Cloudflare assigns your source address). On Windows, PowerShell provides the same result:
+
+```powershell
+$trace = Invoke-WebRequest -Uri "https://api.anthropic.com/cdn-cgi/trace" -UseBasicParsing
+$trace.Content
+```
+
+Read the header with a HEAD request:
+
+```bash
+curl -sI https://api.anthropic.com/ \
+  | grep -i -E '^(server|cf-ray):'
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-s` | Suppresses curl's progress meter and error messages |
+| `-I` | Sends a HEAD request and outputs only the response headers |
+| `grep -i` | Searches without regard to upper or lower case |
+| `-E '^(server\|cf-ray):'` | Extended regular expression: only lines beginning with `server:` or `cf-ray:` |
+
+</details>
+
+From a Swiss network, `ZRH` or `GVA` can generally be expected. If the internet egress is elsewhere, for example in a corporate network with central egress abroad, the edge node there responds, such as with `colo=FRA` or `colo=MRS`. The edge location thus follows your network egress, not the processing location.
+
+## Why traceroute ends at the edge
+
+A traceroute shows the route as far as the edge node, and no further:
+
+```powershell
+Test-NetConnection -ComputerName api.anthropic.com -TraceRoute -Hops 20
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-ComputerName api.anthropic.com` | Measurement target host |
+| `-TraceRoute` | Determines the router hops on the route to the destination |
+| `-Hops 20` | Maximum number of hops to check |
+
+</details>
+
+On Linux and macOS, the equivalent is `traceroute -n api.anthropic.com` (`-n` suppresses DNS resolution of the hops). In the measurement, the final hops before `160.79.104.10` were in address range `162.158.0.0/15`, which belongs to Cloudflare. The trace then ends: the connection is terminated at the edge node, while forwarding to the backend occurs over a new internal connection that is not visible externally.
+
+RIPEstat shows who owns the prefix and through which network it is advertised:
+
+```bash
+curl -s "https://stat.ripe.net/data/prefix-overview/data.json?resource=160.79.104.10"
+curl -s "https://stat.ripe.net/data/bgp-state/data.json?resource=160.79.104.0/23"
+```
+
+In the second result, all AS paths end at `13335 399358`: Cloudflare is the sole upstream for Anthropic's prefix.
+
+According to my research, no public measurement traces the route through to an inference data centre, and because of termination at the edge, this is not possible with network tools either. Measurement services such as llmlatency.dev capture only the time to first byte at the edge (as of September 2026: median 96 ms from US Central, 199 ms from Germany). While time to first token could be compared across several locations, it depends more on the model, prompt length and load than on distance. It therefore cannot reliably indicate a location.
+
+## What is known about Anthropic's data centres
+
+Anthropic does not yet operate a dedicated inference data centre with a publicly assigned address. The compute capacity comes from partnerships compiled by Tim Cadenbach in the TCDEV blog:
+
+| Location / partner | Key facts | Known role |
+|---|---|---|
+| Project Rainier, New Carlisle (Indiana, USA), Amazon Web Services | Opened October 2025, around USD 11 billion, approximately 500,000 Trainium2 chips, more than 2.2 GW planned | Anthropic is the anchor tenant; primarily training |
+| Google Cloud | Agreement in October 2025 for up to 1 million TPUs, more than 1 GW from 2026 | Regions not disclosed |
+| Own data centres with Fluidstack | Announced November 2025, USD 50 billion, sites in Texas and New York, commissioning from 2026 | Still under construction |
+
+Training and inference do not necessarily take place in the same location. Inference can run in any AWS or Google Cloud region, and Anthropic does not disclose which location computes the response for a user in Switzerland. The only confirmed information is in the privacy policy: Anthropic Ireland, Limited in Dublin is the contracting party and controller for customers in the EEA, the United Kingdom and Switzerland; data is transferred to servers in the US or other countries outside the EEA, based on standard contractual clauses.
+
+## Control directly at Anthropic: US or global only
+
+Since generation 4.6 models, the Claude API has supported parameter `inference_geo`. It has exactly two values:
+
+| Value | Effect | Price |
+|---|---|---|
+| `global` (default) | Inference in any available region | List price |
+| `us` | Inference exclusively in the US | List price × 1.1 |
+
+There is no value for the EU or Switzerland. The Workspace storage location (`workspace geo`) can currently only be set to `us`. The response reports in field `usage.inference_geo` which setting was applied, but not a specific region. For Haiku 4.5 and older models, the API acknowledges the parameter with a 400 error.
+
+For claude.ai and Claude Code with a subscription (Pro, Max, Team, Enterprise), there is no processing-location setting. Through Anthropic's direct offerings, processing can therefore be restricted neither to the EU nor to Switzerland. This is possible only through cloud providers that operate Claude in their own regions.
+
+## AWS Bedrock: EU-plus-Switzerland area from Zurich
+
+AWS Bedrock runs Claude on AWS infrastructure. According to AWS, Anthropic has no access to customers' prompts, responses or logs. You choose the region through the source region of your API call and through the Inference Profile:
+
+| Endpoint type | Model ID prefix | Processing location |
+|---|---|---|
+| Global Cross-Region Inference | `global.` | Any commercial AWS region worldwide |
+| Geographic Cross-Region Inference | `eu.` | Only regions within the geography |
+| In-Region | without prefix | Only the called region |
+
+For Switzerland, region `eu-central-2` (Zurich) is relevant. Opus 5.5, Sonnet 5.5 and Haiku 4.5 are available there, but only as Global or EU profiles and not In-Region. No profile exists that computes exclusively in Zurich. If the EU profile is called from Zurich, AWS distributes requests according to the model card (documented for Haiku 4.5 and Sonnet 4.6) across these regions:
+
+| Region | Location |
+|---|---|
+| `eu-central-2` | Zurich |
+| `eu-central-1` | Frankfurt |
+| `eu-north-1` | Stockholm |
+| `eu-south-1` | Milan |
+| `eu-south-2` | Spain |
+| `eu-west-1` | Ireland |
+| `eu-west-3` | Paris |
+
+Zurich is a possible destination only if the request originates from Zurich. Processing therefore remains in the EU-plus-Switzerland area. For Opus 5.5 and Sonnet 5.5, the model card does not state the destination regions; the API returns the actual list:
+
+```bash
+aws bedrock get-inference-profile \
+  --region eu-central-2 \
+  --inference-profile-identifier eu.anthropic.claude-sonnet-5-5 \
+  --query "models[].modelArn"
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `bedrock get-inference-profile` | Reads the definition of an Inference Profile |
+| `--region eu-central-2` | Zurich source region; the destination list depends on the source region |
+| `--inference-profile-identifier` | EU profile ID for Sonnet 5.5 |
+| `--query "models[].modelArn"` | Outputs only model ARNs; the region is included in each ARN |
+
+</details>
+
+By default, data is stored only in the source region. Content retained for abuse detection is an exception: it is held in the destination region. Transfer between regions is encrypted over the AWS network.
+
+### Document the processing region for each request
+
+Bedrock is the only route described that records the actual processing region for each request. CloudTrail writes it in the source region to field `additionalEventData.inferenceRegion`:
+
+```bash
+aws cloudtrail lookup-events \
+  --region eu-central-2 \
+  --lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com \
+  --max-results 20 \
+  --query "Events[].CloudTrailEvent" \
+  --output text \
+  | jq -r '[.eventTime, .eventName, .additionalEventData.inferenceRegion] | @tsv'
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `cloudtrail lookup-events` | Searches CloudTrail events from the past 90 days |
+| `--region eu-central-2` | Source region in which calls are logged |
+| `--lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com` | Filters for Bedrock events |
+| `--max-results 20` | Limits output to 20 events |
+| `--query "Events[].CloudTrailEvent"` | Outputs only the complete event as JSON text |
+| `--output text` | Output without a JSON wrapper, one event per line |
+| `jq -r '… \| @tsv'` | Extracts timestamp, action and processing region as a tab-separated line |
+
+</details>
+
+In addition, a Service Control Policy (SCP) in AWS Organizations can block all regions outside the EU and Switzerland. If a profile's destination region is blocked, the request fails instead of falling back to another region. With this combination, the processing location is technically enforced and verifiable for each request.
+
+### Claude Code via Bedrock in the EU
+
+Claude Code can also run via Bedrock. In an `eu-*` region, Claude Code automatically selects prefix `eu.`:
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=eu-central-2
+claude
+```
+
+| Variable | Effect |
+|---|---|
+| `CLAUDE_CODE_USE_BEDROCK=1` | Switches Claude Code from the Anthropic API to Bedrock |
+| `AWS_REGION=eu-central-2` | Zurich source region; this results in the EU profile |
+
+Prefix `ANTHROPIC_BEDROCK_REGION_PREFIX` can be used to override the prefix. AWS authentication uses the usual mechanisms (profile, SSO, environment variables). Billing is through the AWS account, not a Claude subscription.
+
+## Google Vertex AI: EU only, explicitly excluding Switzerland
+
+On Google Cloud (Vertex AI, now called Gemini Enterprise Agent Platform), the situation is less favourable for Switzerland:
+
+| Endpoint | Models (selection) | Processing location |
+|---|---|---|
+| `global` | all | Any Google Cloud region, without assurance |
+| Multi-region `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | EU member states only |
+| Region `europe-west1` (Belgium) | Haiku 4.5, Sonnet 4.6, Opus 4.6 and older | According to the model page, Europe multi-region |
+| Region `europe-west6` (Zurich) | none | Claude unavailable |
+
+Google explicitly excludes Switzerland from the EU multi-region endpoint: it covers EU member states only; the United Kingdom and Switzerland are not included. Several Swiss guidance pages cite `europe-west6` as a route to Claude in Zurich; according to Google's official location table, no Claude model is available there. Google does not document a log field containing the actual processing region for each request. For the global endpoint, Google states that the processing region can neither be controlled nor determined.
+
+Vertex AI is therefore suitable for processing exclusively in the EU, but not for processing in Switzerland.
+
+## Microsoft Foundry: currently no EU option
+
+Microsoft offers Claude in Foundry in two variants. “Hosted on Azure” computes on Azure infrastructure, either as Global Standard or Data Zone Standard; the Data Zone for Claude exists only for the US. “Hosted on Anthropic” computes on Anthropic infrastructure, and Microsoft notes that data may be processed outside Azure and outside the selected region. Anthropic lists Foundry for Europe as “Coming soon”. In Microsoft 365 Copilot and Copilot Studio, Anthropic models are excluded from the EU Data Boundary and are disabled by default in the EU, EFTA (including Switzerland) and the United Kingdom.
+
+## Overview: which route guarantees which processing location
+
+| Route | Switzerland only | EU only | EU-plus-Switzerland area | Region verifiable per request |
+|---|---|---|---|---|
+| claude.ai, Claude Code (subscription) | no | no | no | no |
+| Claude API with `inference_geo` | no | no | no (only `us`) | only `us`/`global` |
+| AWS Bedrock, source `eu-central-2`, profile `eu.` | no | no | yes | yes (CloudTrail) |
+| AWS Bedrock, source in the EU, profile `eu.` | no | yes | yes | yes (CloudTrail) |
+| Google Vertex AI, endpoint `eu` | no | yes | (EU portion only) | no |
+| Microsoft Foundry | no | no | no | no |
+
+No provider currently offers a route that guarantees Claude processing exclusively in Switzerland. AWS Bedrock with Zurich as the source region and the EU profile comes closest. If it must additionally be ruled out that data leaves the EU (for example, due to contractual commitments to EU customers), the EU profile can be called from an EU region such as Frankfurt; Zurich is then no longer a destination.
+
+## What regional binding costs
+
+All three cloud providers and Anthropic itself charge a 10% premium for binding to a region or geography compared with the global endpoint. For Bedrock, prices are based on the source region; Zurich, Frankfurt and North Virginia cost the same. Routing between regions incurs no additional charge.
+
+List prices in USD per 1 million tokens (input / output):
+
+| Model | Anthropic API, `global` | Anthropic API, `us` | Bedrock or Vertex, global | Bedrock `eu.` or Vertex `eu` |
+|---|---|---|---|---|
+| Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
+| Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 4.5 | 1.00 / 5.00 | not available | 1.00 / 5.00 | 1.10 / 5.50 |
+| Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
+
+For Vertex AI, the EU-column price applies to Haiku 4.5 and Sonnet 4.6 in region `europe-west1`. An example calculation for an internal application with 50 million input and 10 million output tokens per month:
+
+| Model | Global | EU-bound | Additional cost per month |
+|---|---|---|---|
+| Sonnet 5.5 | 50 × 2 + 10 × 10 = USD 200 | USD 220 | USD 20 |
+| Opus 5.5 | 50 × 4 + 10 × 20 = USD 400 | USD 440 | USD 40 |
+
+Regional binding therefore costs 10% more than the global endpoint. Compared with Anthropic's direct list price with `inference_geo: "us"`, an EU profile on Bedrock costs the same. Other overheads tend to weigh more heavily in the decision: an AWS or Google Cloud account with organisational policies, logging and budget alerts must be set up and operated, and fixed monthly Claude subscription prices are replaced by pure usage-based billing. Whether switching pays off depends on volume; a subscription has a fixed price per person, but provides no control over the processing location.
+
+## Retention and training
+
+Alongside location, how long data is stored also matters:
+
+- **Anthropic API:** Prompts and responses are not used for training unless explicit consent is given. Zero Data Retention (ZDR) is available on request per organisation and can be combined with `inference_geo`. Content flagged by abuse detection remains stored for up to two years even with ZDR. The Fable and Mythos models require retention for 30 days.
+- **AWS Bedrock:** Content is not sent to Anthropic. Retention can be selected per model between `none`, `default` and `aws_review`; Fable requires `aws_review` with storage for up to 30 days for review by AWS.
+- **Google Vertex AI:** Google uses the data for training or fine-tuning only with prior consent.
+
+## Källor
+
+1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): Parameter `inference_geo`, values `us` and `global`, Workspace geo, supported models, field `usage.inference_geo`.
+
+2.  [Claude Platform Docs: Pricing](https://platform.claude.com/docs/en/about-claude/pricing): Anthropic API list prices and factor 1.1 for `inference_geo: "us"`.
+
+3.  [Claude Platform Docs: API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention): Zero Data Retention, exceptions for flagged content and Fable/Mythos.
+
+4.  [Anthropic: Privacy Policy](https://www.anthropic.com/legal/privacy): Anthropic Ireland as controller for the EEA, UK and Switzerland, transfer to the US based on standard contractual clauses.
+
+5.  [Anthropic: Regional compliance](https://claude.com/regional-compliance): overview of which platform provides data residency in which region; Foundry Europe as “Coming soon”.
+
+6.  [Claude Platform Docs: Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock): endpoint types by region, 10% premium for regional endpoints.
+
+7.  [AWS: Model card Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): destination regions of the EU profile by source region, including Zurich.
+
+8.  [AWS: Model card Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): availability in `eu-central-2` only as Geo and Global profiles.
+
+9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): data remains within the geography, storage location, blocking destination regions using SCP.
+
+10.  [AWS: Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html): field `additionalEventData.inferenceRegion` in CloudTrail, pricing by source region.
+
+11.  [AWS: Data protection in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): model providers have no access to prompts, responses and logs.
+
+12.  [AWS: Amazon Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/): list prices for Global and Geo profiles, identical for Zurich, Frankfurt and North Virginia.
+
+13.  [AWS Alps Blog: Cross-region inference for EU data processing in Switzerland](https://aws.amazon.com/blogs/alps/unlocking-ai-flexibility-in-switzerland-a-guide-to-cross-region-inference-for-eu-data-processing-and-model-access/): guidance from AWS Switzerland on the EU profile from Zurich.
+
+14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): environment variables and automatic prefix `eu.` in EU regions.
+
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): location table for Claude models, no availability in `europe-west6`.
+
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): EU multi-region only for EU member states, Switzerland and UK excluded.
+
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): global, EU multi-region and `europe-west1` list prices.
+
+18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure and Hosted on Anthropic, Data Zone only in the US.
+
+19.  [Microsoft Learn: Anthropic as AI subprocessor in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/connect-to-ai-subprocessor): exclusion from the EU Data Boundary, default setting in EU/EFTA.
+
+20.  [TCDEV Blog: Where Are Claude's Data Centers?](https://www.tcdev.de/blog/where-are-claudes-data-centers/): Tim Cadenbach's overview of Project Rainier, the Google TPU agreement and proprietary data centres with Fluidstack.
+
+21.  [Anthropic: USD 50 billion investment in US infrastructure](https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure): announcement of proprietary data centres in Texas and New York with Fluidstack.
+
+22.  [Claude Platform Docs: IP addresses](https://platform.claude.com/docs/en/api/ip-addresses): incoming address range `160.79.104.0/23`.
+
+23.  [RIPEstat](https://stat.ripe.net/): prefix overview and BGP status for `160.79.104.0/23` (AS399358, upstream AS13335).
+
+24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): response times at the edge by measurement location.
+
+25.  [Fedlex: Data Protection Ordinance (DPO), Annex 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): list of states with adequate data protection, including EU/EEA and the US for certified companies.
+
+----
+
 # CVE-2026-104286: FortiMail-zero-day utnyttjas – workaround och kontroll av kompromettering
 
 URL: https://rafaelpfister.ch/sv/blog/cve-2026-104286-fortimail-zero-day-utnyttjas-workaround-och-kontroll-av-kompromettering
@@ -92690,6 +94325,333 @@ På så sätt kan ett e-postflöde följas steg för steg, utan att felaktigt l�
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för internettextmeddelanden (rubriker och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Konfiguration av anslutningar för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Hvilket datasenter kjører Claude i? Spor forbindelsen og begrens behandlingen til Sveits eller EU
+
+URL: https://rafaelpfister.ch/no/blog/hvilket-datasenter-kjorer-claude-i-spor-forbindelsen-og-begrens-behandlingen-til-sveits-eller-eu
+Datum: 2026-10-02
+
+Når du bruker Claude via claude.ai, Claude Code eller API-et, får du ikke vite hvilket datasenter modellen behandler forespørselen i. Bare den første delen av forbindelsen frem til nærmeste edge-node er synlig. For virksomheter som overfører personopplysninger eller konfidensielt innhold til en språkmodell, er dette ikke nok: De må kunne dokumentere overfor kunder, personvernrådgivere eller revisjonen hvor behandlingen finner sted.
+
+Denne artikkelen viser hvor langt forbindelsen kan spores på egen hånd, hva som er offentlig kjent om Anthropics datasentre, og hvilke veier som gjør det mulig å begrense behandlingen bindende til EU eller området EU pluss Sveits. Prisene og regionene er per 2. oktober 2026.
+
+**Sveits-fokus:** Den reviderte personvernloven (revDSG) er avgjørende. Utlevering av personopplysninger til utlandet er tillatt etter art. 16 revDSG dersom Forbundsrådet har attestert tilstrekkelig vern i mottakerstaten (vedlegg 1 til personvernforordningen, DSV), eller det finnes egnede garantier som standard kontraktsklausuler. EU- og EØS-statene står på denne listen, mens USA kun gjør det for selskaper som er sertifisert under Swiss-U.S. Data Privacy Framework. Et behandlingssted i EU gjør derfor begrunnelsen betydelig enklere, men erstatter ikke de øvrige pliktene (databehandleravtale, informasjon til de registrerte, datasikkerhet).
+
+**EU-merknad:** For virksomheter med sete i EU gjelder i stedet art. 44 flg. i personvernforordningen (GDPR). EU-kommisjonen har attestert at Sveits har et tilstrekkelig personvernnivå (tilstrekkelighetsbeslutning 2000/518/EF, bekreftet i januar 2024); behandling i Zürich er dermed ikke en problematisk overføring til tredjeland for EU-virksomheter.
+
+## Hvilke stasjoner en forespørsel til Claude passerer
+
+En forespørsel til `claude.ai` eller `api.anthropic.com` går gjennom tre stasjoner:
+
+| Stasjon | Hvem driver den | Synlig for deg? |
+|---|---|---|
+| Edge-node (TLS-terminering, vern mot misbruk) | Cloudflare, på vegne av Anthropic | Ja, plasseringen kan leses av via header |
+| Internt nett til backend | Cloudflare og Anthropic | Nei |
+| Inferens (modellen beregner) | Anthropic, på datakraft fra AWS, Google Cloud og egne datasentre | Nei, kun grov angivelse `us` eller `global` |
+
+Vertsnavnene `claude.ai` og `api.anthropic.com` peker begge til adressen `160.79.104.10`. Den tilhører prefikset `160.79.104.0/23`, som er registrert på Anthropic (AS399358) og ifølge RPKI er gyldig fra Anthropic. I global ruting annonseres prefikset imidlertid utelukkende via Cloudflare (AS13335): Anthropic bringer sine egne IP-adresser inn i Cloudflares Anycast-nettverk. Dermed besvares samme adresse over hele verden fra hvert Cloudflare-sted, og forbindelsen havner ved nærmeste edge-node.
+
+## Fastslå edge-noden selv
+
+Cloudflare oppgir betjenende sted på en diagnostikkside og i headeren `cf-ray`. Forkortelsen bak Ray-ID-en er en IATA-flyplasskode: `ZRH` står for Zürich, `GVA` for Genève, `FRA` for Frankfurt, `MRS` for Marseille.
+
+```bash
+curl -s https://api.anthropic.com/cdn-cgi/trace
+```
+
+De relevante linjene i utdataene er `colo=` (edge-plassering) og `loc=` (landet Cloudflare tilordner avsenderadressen din). I Windows gir PowerShell det samme:
+
+```powershell
+$trace = Invoke-WebRequest -Uri "https://api.anthropic.com/cdn-cgi/trace" -UseBasicParsing
+$trace.Content
+```
+
+Du leser headeren med en HEAD-forespørsel:
+
+```bash
+curl -sI https://api.anthropic.com/ \
+  | grep -i -E '^(server|cf-ray):'
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-s` | Undertrykker fremdriftsvisning og feilmeldinger fra curl |
+| `-I` | Sender en HEAD-forespørsel og skriver kun ut svar-headerne |
+| `grep -i` | Søker uten hensyn til store og små bokstaver |
+| `-E '^(server\|cf-ray):'` | Utvidet regulært uttrykk: kun linjer som begynner med `server:` eller `cf-ray:` |
+
+</details>
+
+Fra et sveitsisk nettverk er det vanligvis forventet `ZRH` eller `GVA`. Dersom internettutgangen er et annet sted, for eksempel i et bedriftsnett med sentral utgang i utlandet, svarer edge-noden der, for eksempel med `colo=FRA` eller `colo=MRS`. Edge-plasseringen følger altså nettutgangen din, ikke behandlingsstedet.
+
+## Hvorfor traceroute ender ved edge
+
+En traceroute viser veien frem til edge-noden og ikke videre:
+
+```powershell
+Test-NetConnection -ComputerName api.anthropic.com -TraceRoute -Hops 20
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-ComputerName api.anthropic.com` | Målhvert for målingen |
+| `-TraceRoute` | Finner rutinghoppene på veien til målet |
+| `-Hops 20` | Maksimalt antall hopp som kontrolleres |
+
+</details>
+
+I Linux og macOS tilsvarer dette `traceroute -n api.anthropic.com` (`-n` undertrykker DNS-oppløsning av hoppene). I målingen lå de siste hoppene før `160.79.104.10` i adresseområdet `162.158.0.0/15`, som tilhører Cloudflare. Deretter ender sporet: Forbindelsen termineres ved edge-noden, og videresendingen til backend skjer i en ny, intern forbindelse som ikke er synlig utenfra.
+
+RIPEstat viser hvem som eier prefikset og hvilket nettverk det annonseres gjennom:
+
+```bash
+curl -s "https://stat.ripe.net/data/prefix-overview/data.json?resource=160.79.104.10"
+curl -s "https://stat.ripe.net/data/bgp-state/data.json?resource=160.79.104.0/23"
+```
+
+I det andre resultatet ender alle AS-stier på `13335 399358`: Cloudflare er den eneste upstreamen for Anthropic-prefikset.
+
+Etter min undersøkelse finnes det ingen offentlig måling som sporer veien helt til et inferensdatasenter, og på grunn av termineringen ved edge er det heller ikke mulig med nettverksverktøy. Måletjenester som llmlatency.dev måler kun svartiden til første byte ved edge (per september 2026: median 96 ms fra US-Central, 199 ms fra Tyskland). Tiden til første token (Time to First Token) kunne riktignok sammenlignes fra flere steder, men den avhenger mer av modell, promptlengde og belastning enn av avstand. Det er derfor ikke grunnlag for å trekke en pålitelig slutning om plasseringen.
+
+## Hva som er kjent om Anthropics datasentre
+
+Anthropic driver foreløpig ikke et eget, offentlig tilordnet inferensdatasenter med adresse. Datakraften kommer fra partnerskap som Tim Cadenbach har samlet i TCDEV-bloggen:
+
+| Sted / partner | Nøkkeldata | Kjent rolle |
+|---|---|---|
+| Project Rainier, New Carlisle (Indiana, USA), Amazon Web Services | Åpnet oktober 2025, rundt 11 mrd. USD, omtrent 500 000 Trainium2-brikker, over 2,2 GW planlagt | Anthropic er hovedleietaker; hovedsakelig trening |
+| Google Cloud | Avtale i oktober 2025 om opptil 1 mill. TPU-er, over 1 GW fra 2026 | Regioner ikke offentliggjort |
+| Egne datasentre med Fluidstack | Annonsert november 2025, 50 mrd. USD, steder i Texas og New York, idriftsettelse fra 2026 | Fortsatt under oppbygging |
+
+Trening og inferens skjer ikke nødvendigvis på samme sted. Inferens kan kjøre i vilkårlige AWS- eller Google Cloud-regioner, og Anthropic opplyser ikke hvilken lokasjon som beregner svaret for en bruker i Sveits. Det eneste sikre er det personvernerklæringen fastslår: Avtalepart og behandlingsansvarlig for kunder fra EØS, Storbritannia og Sveits er Anthropic Ireland, Limited i Dublin; dataene overføres til servere i USA eller andre land utenfor EØS, basert på standard kontraktsklausuler.
+
+## Styringen direkte hos Anthropic: kun USA eller globalt
+
+Claude API kjenner parameteren `inference_geo` siden modellene i generasjon 4.6. Den har nøyaktig to verdier:
+
+| Verdi | Virkning | Pris |
+|---|---|---|
+| `global` (standard) | Inferens i en hvilken som helst tilgjengelig region | Listepris |
+| `us` | Inferens utelukkende i USA | Listepris × 1,1 |
+
+Det finnes ingen verdi for EU eller Sveits. Lagringsstedet for arbeidsområdet (`workspace geo`) kan for tiden også bare settes til `us`. Svaret oppgir i feltet `usage.inference_geo` hvilken innstilling som ble brukt, men ingen konkret region. For Haiku 4.5 og eldre modeller svarer API-et med feil 400 på parameteren.
+
+For claude.ai og Claude Code med abonnement (Pro, Max, Team, Enterprise) finnes det ingen innstilling for behandlingssted. Gjennom Anthropics direkte tilbud kan behandlingen dermed verken begrenses til EU eller Sveits. Dette er kun mulig via skyleverandørene som driver Claude i sine egne regioner.
+
+## AWS Bedrock: området EU pluss Sveits fra Zürich
+
+AWS Bedrock driver Claude på AWS-infrastruktur. Ifølge AWS har Anthropic ikke tilgang til kundenes prompt, svar eller logger. Regionen velges via kilderegionen for API-kallet og via Inference Profile:
+
+| Endepunkttype | Prefiks for modell-ID | Behandlingssted |
+|---|---|---|
+| Global Cross-Region Inference | `global.` | Valgfri kommersiell AWS-region over hele verden |
+| Geographic Cross-Region Inference | `eu.` | Kun regioner innenfor geografien |
+| In-Region | uten prefiks | Kun regionen som kalles opp |
+
+For Sveits er regionen `eu-central-2` (Zürich) avgjørende. Opus 5.5, Sonnet 5.5 og Haiku 4.5 er tilgjengelige der, men bare som Global- eller EU-profil og ikke In-Region. En profil som utelukkende beregner i Zürich, finnes ikke. Hvis EU-profilen kalles opp fra Zürich, fordeler AWS ifølge modellkortet (dokumentert for Haiku 4.5 og Sonnet 4.6) forespørslene på disse regionene:
+
+| Region | Sted |
+|---|---|
+| `eu-central-2` | Zürich |
+| `eu-central-1` | Frankfurt |
+| `eu-north-1` | Stockholm |
+| `eu-south-1` | Milano |
+| `eu-south-2` | Spania |
+| `eu-west-1` | Irland |
+| `eu-west-3` | Paris |
+
+Zürich er bare et mulig mål dersom forespørselen kommer fra Zürich. Behandlingen forblir dermed i området EU pluss Sveits. For Opus 5.5 og Sonnet 5.5 oppgir ikke modellkortet målregionene; API-et returnerer den faktiske listen:
+
+```bash
+aws bedrock get-inference-profile \
+  --region eu-central-2 \
+  --inference-profile-identifier eu.anthropic.claude-sonnet-5-5 \
+  --query "models[].modelArn"
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `bedrock get-inference-profile` | Leser definisjonen av en Inference Profile |
+| `--region eu-central-2` | Kilderegion Zürich; mållisten avhenger av kilderegionen |
+| `--inference-profile-identifier` | ID for EU-profilen for Sonnet 5.5 |
+| `--query "models[].modelArn"` | Skriver kun ut modell-ARN-ene; regionen står i hvert ARN |
+
+</details>
+
+Data lagres som standard kun i kilderegionen. Et unntak er innhold som holdes tilbake for misbruksdeteksjon: Det lagres i målregionen. Transporten mellom regionene skjer kryptert over AWS-nettverket.
+
+### Dokumenter behandlingsregionen per forespørsel
+
+Bedrock er den eneste av de beskrevne veiene som logger den faktiske behandlingsregionen per forespørsel. CloudTrail skriver den i kilderegionen i feltet `additionalEventData.inferenceRegion`:
+
+```bash
+aws cloudtrail lookup-events \
+  --region eu-central-2 \
+  --lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com \
+  --max-results 20 \
+  --query "Events[].CloudTrailEvent" \
+  --output text \
+  | jq -r '[.eventTime, .eventName, .additionalEventData.inferenceRegion] | @tsv'
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `cloudtrail lookup-events` | Gjennomsøker CloudTrail-hendelsene de siste 90 dagene |
+| `--region eu-central-2` | Kilderegionen der kallene logges |
+| `--lookup-attributes AttributeKey=EventSource,AttributeValue=bedrock.amazonaws.com` | Filtrerer etter hendelser fra Bedrock |
+| `--max-results 20` | Begrenser utdataene til 20 hendelser |
+| `--query "Events[].CloudTrailEvent"` | Skriver kun ut hele hendelsen som JSON-tekst |
+| `--output text` | Utdata uten JSON-innpakning, én hendelse per linje |
+| `jq -r '… \| @tsv'` | Henter ut tidspunkt, handling og behandlingsregion som en tabulatorseparert linje |
+
+</details>
+
+I tillegg kan en Service Control Policy (SCP) i AWS Organizations sperre alle regioner utenfor EU og Sveits. Dersom en målregion i en profil er sperret, mislykkes forespørselen i stedet for å falle tilbake til en annen region. Med denne kombinasjonen er behandlingsstedet teknisk håndhevet og dokumenterbart per forespørsel.
+
+### Claude Code via Bedrock i EU
+
+Claude Code kan også drives via Bedrock. I en `eu-*`-region velger Claude Code prefikset `eu.` automatisk:
+
+```bash
+export CLAUDE_CODE_USE_BEDROCK=1
+export AWS_REGION=eu-central-2
+claude
+```
+
+| Variabel | Virkning |
+|---|---|
+| `CLAUDE_CODE_USE_BEDROCK=1` | Bytter Claude Code fra Anthropic API til Bedrock |
+| `AWS_REGION=eu-central-2` | Kilderegion Zürich; dette medfører EU-profilen |
+
+Med `ANTHROPIC_BEDROCK_REGION_PREFIX` kan prefikset overstyres. AWS-autentisering skjer gjennom vanlige mekanismer (profil, SSO, miljøvariabler). Fakturering skjer via AWS-kontoen, ikke via et Claude-abonnement.
+
+## Google Vertex AI: kun EU, uttrykkelig uten Sveits
+
+På Google Cloud (Vertex AI, nå under navnet Gemini Enterprise Agent Platform) er situasjonen mindre gunstig for Sveits:
+
+| Endepunkt | Modeller (utvalg) | Behandlingssted |
+|---|---|---|
+| `global` | alle | Valgfri Google Cloud-region, uten garanti |
+| Multiregion `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | Kun EU-medlemsstater |
+| Region `europe-west1` (Belgia) | Haiku 4.5, Sonnet 4.6, Opus 4.6 og eldre | Ifølge modellsiden multiregion Europa |
+| Region `europe-west6` (Zürich) | ingen | Claude ikke tilgjengelig |
+
+Google utelukker uttrykkelig Sveits fra EU-multiregion-endepunktet: Det dekker bare EU-medlemsstater; Storbritannia og Sveits er ikke omfattet. Flere sveitsiske veiledningssider nevner `europe-west6` som en vei til Claude i Zürich; ifølge Googles offisielle stedstabell er ingen Claude-modeller tilgjengelige der. Google dokumenterer ikke et loggfelt med den faktiske behandlingsregionen per forespørsel. For det globale endepunktet fastslår Google at behandlingsregionen verken kan styres eller fastslås.
+
+Vertex AI egner seg derfor for behandling utelukkende i EU, men ikke for behandling i Sveits.
+
+## Microsoft Foundry: foreløpig ingen EU-løsning
+
+Microsoft tilbyr Claude i Foundry i to varianter. «Hosted on Azure» beregner på Azure-infrastruktur, som Global Standard eller Data Zone Standard; Data Zone finnes bare for Claude i USA. «Hosted on Anthropic» beregner på Anthropic-infrastruktur, og Microsoft opplyser at data kan behandles utenfor Azure og utenfor den valgte regionen. Anthropic oppfører Foundry for Europa som «Coming soon». I Microsoft 365 Copilot og Copilot Studio er Anthropic-modellene unntatt fra EU Data Boundary og er som standard deaktivert i EU, EFTA (også i Sveits) og Storbritannia.
+
+## Oversikt: hvilken vei garanterer hvilket behandlingssted
+
+| Vei | Kun Sveits | Kun EU | Området EU pluss Sveits | Region per forespørsel dokumenterbar |
+|---|---|---|---|---|
+| claude.ai, Claude Code (abonnement) | nei | nei | nei | nei |
+| Claude API med `inference_geo` | nei | nei | nei (kun `us`) | kun `us`/`global` |
+| AWS Bedrock, kilde `eu-central-2`, profil `eu.` | nei | nei | ja | ja (CloudTrail) |
+| AWS Bedrock, kilde i EU, profil `eu.` | nei | ja | ja | ja (CloudTrail) |
+| Google Vertex AI, endepunkt `eu` | nei | ja | (kun EU-delen) | nei |
+| Microsoft Foundry | nei | nei | nei | nei |
+
+Ingen leverandør tilbyr for tiden en vei som garanterer at Claudes behandling begrenses til Sveits. AWS Bedrock med kilderegion Zürich og EU-profil kommer nærmest. Dersom det i tillegg må utelukkes at data forlater EU, for eksempel på grunn av kontraktsmessige løfter til EU-kunder, kan EU-profilen kalles opp fra en EU-region som Frankfurt; Zürich er da ikke lenger et mål.
+
+## Hva regional binding koster
+
+Alle tre skyleverandørene og Anthropic selv krever et tillegg på 10 % sammenlignet med det globale endepunktet for binding til en region eller geografi. Prisene i Bedrock følger kilderegionen; Zürich, Frankfurt og North Virginia koster det samme. Ruting mellom regioner koster ikke ekstra.
+
+Listepriser i USD per 1 mill. token (input / output):
+
+| Modell | Anthropic API, `global` | Anthropic API, `us` | Bedrock eller Vertex, global | Bedrock `eu.` eller Vertex `eu` |
+|---|---|---|---|---|
+| Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
+| Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 4.5 | 1.00 / 5.00 | ikke tilgjengelig | 1.00 / 5.00 | 1.10 / 5.50 |
+| Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
+
+For Vertex AI gjelder prisen i EU-kolonnen for Haiku 4.5 og Sonnet 4.6 i regionen `europe-west1`. Et regneeksempel for en intern applikasjon med 50 mill. input- og 10 mill. output-token per måned:
+
+| Modell | Globalt | EU-bundet | Ekstrakostnad per måned |
+|---|---|---|---|
+| Sonnet 5.5 | 50 × 2 + 10 × 10 = 200 USD | 220 USD | 20 USD |
+| Opus 5.5 | 50 × 4 + 10 × 20 = 400 USD | 440 USD | 40 USD |
+
+Regional binding koster altså 10 % mer enn det globale endepunktet. Sammenlignet med listeprisen direkte hos Anthropic med `inference_geo: "us"` er en EU-profil på Bedrock like dyr. Andre kostnader har større betydning ved valget: En AWS- eller Google Cloud-konto med organisasjonsregler, logging og budsjettvarsler må bygges opp og driftes, og de faste månedsprisene for Claude-abonnementene faller bort til fordel for ren forbruksavregning. Om byttet lønner seg, avhenger av volumet; et abonnement har fast pris per person, men gir ingen kontroll over behandlingsstedet.
+
+## Oppbevaring og trening
+
+I tillegg til stedet teller det hvor lenge data lagres:
+
+- **Anthropic API:** Prompt og svar brukes ikke til trening så lenge det ikke foreligger uttrykkelig samtykke. Zero Data Retention (ZDR) er tilgjengelig på forespørsel per organisasjon og kan kombineres med `inference_geo`. Innhold som misbruksdeteksjonen markerer, lagres også med ZDR i opptil to år. For modellene Fable og Mythos er oppbevaring i 30 dager obligatorisk.
+- **AWS Bedrock:** Innhold sendes ikke til Anthropic. Oppbevaring kan velges per modell mellom `none`, `default` og `aws_review`; Fable krever `aws_review` med opptil 30 dagers lagring for gjennomgang hos AWS.
+- **Google Vertex AI:** Google bruker kun dataene til trening eller finjustering med forhåndssamtykke.
+
+## Kilder
+
+1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): Parameter `inference_geo`, verdiene `us` og `global`, arbeidsområdets geo, støttede modeller, feltet `usage.inference_geo`.
+
+2.  [Claude Platform Docs: Pricing](https://platform.claude.com/docs/en/about-claude/pricing): Listepriser for Anthropic API og faktor 1,1 for `inference_geo: "us"`.
+
+3.  [Claude Platform Docs: API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention): Zero Data Retention, unntak for markert innhold og for Fable/Mythos.
+
+4.  [Anthropic: Privacy Policy](https://www.anthropic.com/legal/privacy): Anthropic Ireland som behandlingsansvarlig for EØS, Storbritannia og Sveits, overføring til USA basert på standard kontraktsklausuler.
+
+5.  [Anthropic: Regional compliance](https://claude.com/regional-compliance): Oversikt over hvilken plattform som tilbyr dataresidens i hvilken region; Foundry Europa som «Coming soon».
+
+6.  [Claude Platform Docs: Claude in Amazon Bedrock](https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock): Endepunkttyper per region, 10 % tillegg for regionale endepunkter.
+
+7.  [AWS: Modellkort Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): Målregioner for EU-profilen per kilderegion, inkludert Zürich.
+
+8.  [AWS: Modellkort Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): Tilgjengelighet i `eu-central-2` kun som Geo- og Global-profil.
+
+9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): Data forblir innenfor geografien, lagringssted, sperring av målregioner via SCP.
+
+10.  [AWS: Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html): Feltet `additionalEventData.inferenceRegion` i CloudTrail, pris etter kilderegion.
+
+11.  [AWS: Data protection in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): Modellleverandørene har ikke tilgang til prompt, svar og logger.
+
+12.  [AWS: Amazon Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/): Listepriser for Global- og Geo-profiler, identiske for Zürich, Frankfurt og North Virginia.
+
+13.  [AWS Alps Blog: Cross-region inference for EU data processing in Switzerland](https://aws.amazon.com/blogs/alps/unlocking-ai-flexibility-in-switzerland-a-guide-to-cross-region-inference-for-eu-data-processing-and-model-access/): AWS Sveits' veiledning om EU-profilen fra Zürich.
+
+14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): Miljøvariabler og automatisk prefiks `eu.` i EU-regioner.
+
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): Stedstabell for Claude-modellene, ingen tilgjengelighet i `europe-west6`.
+
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): EU-multiregion kun for EU-medlemsstater, Sveits og Storbritannia er utelukket.
+
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): Listepriser globalt, EU-multiregion og `europe-west1`.
+
+18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure og Hosted on Anthropic, Data Zone kun USA.
+
+19.  [Microsoft Learn: Anthropic as AI subprocessor in Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/connect-to-ai-subprocessor): Unntak fra EU Data Boundary, standardinnstilling i EU/EFTA.
+
+20.  [TCDEV Blog: Where Are Claude's Data Centers?](https://www.tcdev.de/blog/where-are-claudes-data-centers/): Tim Cadenbachs oversikt over Project Rainier, Google-TPU-avtalen og egne datasentre med Fluidstack.
+
+21.  [Anthropic: Investering på 50 mrd. USD i amerikansk infrastruktur](https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure): Annonsering av egne datasentre i Texas og New York med Fluidstack.
+
+22.  [Claude Platform Docs: IP addresses](https://platform.claude.com/docs/en/api/ip-addresses): Innkommende adresseområde `160.79.104.0/23`.
+
+23.  [RIPEstat](https://stat.ripe.net/): Prefiksoversikt og BGP-status for `160.79.104.0/23` (AS399358, upstream AS13335).
+
+24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): Svartider ved edge etter måleplassering.
+
+25.  [Fedlex: Personvernforordningen (DSV), vedlegg 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Liste over stater med tilstrekkelig personvern, inkludert EU/EØS og USA for sertifiserte selskaper.
 
 ----
 
