@@ -18,6 +18,23 @@ All content from [rafaelpfister.ch](https://rafaelpfister.ch) in open, machine-r
 
 The complete, always-current article list with one-line summaries lives in [`llms.txt`](llms.txt). German originals are published immediately. Translations are then added progressively in the order English, French, Italian, Spanish, Swedish, and Norwegian.
 
+## Vulnerabilities covered (CVE)
+
+Articles that analyse or reference these vulnerabilities (generated from the article sources):
+
+| CVE | Article |
+| --- | --- |
+| CVE-2026-104286 | [CVE-2026-104286: FortiMail Zero-Day Is Being Exploited - Workaround and Compromise Assessment](https://rafaelpfister.ch/en/blog/cve-2026-104286-fortimail-zero-day-is-being-exploited-workaround-and-compromise-assessment) |
+| CVE-2026-65813 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-62915 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-62914 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-62913 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-62912 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-62911 | [CVE-2026-62911: Why 85 Percent of On-Premises Exchange Servers Are Vulnerable and What Is Technically Behind It](https://rafaelpfister.ch/en/blog/cve-2026-62911-why-85-percent-of-on-premises-exchange-servers-are-vulnerable-and-what-is)<br>[August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-62910 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
+| CVE-2026-42897 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled)<br>[Properly follow up on the July 2026 Exchange security updates](https://rafaelpfister.ch/en/blog/exchange-server-security-updates-july-2026) |
+| CVE-2025-32756 | [CVE-2026-104286: FortiMail Zero-Day Is Being Exploited - Workaround and Compromise Assessment](https://rafaelpfister.ch/en/blog/cve-2026-104286-fortimail-zero-day-is-being-exploited-workaround-and-compromise-assessment) |
+
 ## Blog article frontmatter
 
 ```yaml
