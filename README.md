@@ -51,10 +51,6 @@ url: "https://rafaelpfister.ch/blog/<slug>"
 
 The `## Quellen` section (`## Sources` in English articles) at the end of each article contains the annotated source list that appears on the website in the "Links und Informationen" block.
 
-## Synchronisation
-
-This repository is the source of truth for the website. New German articles are deployed immediately; a quota-aware DeepL queue publishes each translated version independently as soon as it is ready. Corrections and suggestions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
-
 ## Author
 
 Rafael Pfister — Founder & Messaging Expert, [adeptio ag](https://adeptio.ch)
