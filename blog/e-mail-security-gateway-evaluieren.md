@@ -9,8 +9,6 @@ themen:
   - "e-mail-verschluesselung"
   - "seppmail"
   - "totemomail"
-produkte:
-  - "uebergreifend"
 protokolle:
   - "verschluesselung"
 hauptthema: "e-mail-verschluesselung"

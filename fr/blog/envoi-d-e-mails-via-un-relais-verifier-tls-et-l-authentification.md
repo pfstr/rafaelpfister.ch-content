@@ -7,8 +7,6 @@ kategorie: "SMTP et flux de messagerie"
 timeToRead: "5 min de lecture"
 themen:
   - smtp-mailflow
-produkte:
-  - "uebergreifend"
 protokolle:
   - "smtp"
   - "tls"

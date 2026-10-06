@@ -10,7 +10,6 @@ themen:
   - "windows-client"
 produkte:
   - "totemomail"
-  - "uebergreifend"
 protokolle:
   - "ssh"
   - "haertung"

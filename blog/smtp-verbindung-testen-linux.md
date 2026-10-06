@@ -9,8 +9,6 @@ themen:
   - "smtp-mailflow"
   - "testing"
   - "e-mail-verschluesselung"
-produkte:
-  - "uebergreifend"
 protokolle:
   - "testing"
   - "smtp"

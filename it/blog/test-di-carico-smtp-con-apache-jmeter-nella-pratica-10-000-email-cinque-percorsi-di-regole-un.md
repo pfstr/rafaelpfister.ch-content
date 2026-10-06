@@ -10,7 +10,6 @@ themen:
   - testing
   - totemomail
 produkte:
-  - "uebergreifend"
   - "totemomail"
   - "apache-james"
 protokolle:

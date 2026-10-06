@@ -10,7 +10,6 @@ themen:
   - "exchange-onprem-hybrid"
 produkte:
   - "exchange-on-premises"
-  - "uebergreifend"
 protokolle:
   - "smtp"
   - "powershell"

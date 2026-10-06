@@ -8,8 +8,6 @@ timeToRead: "7 min de lectura"
 themen:
   - smtp-mailflow
 hauptthema: "smtp-mailflow"
-produkte:
-  - "uebergreifend"
 protokolle:
   - "smtp"
   - "mail-auth"

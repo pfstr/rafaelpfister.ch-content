@@ -8,8 +8,6 @@ timeToRead: "15 min lästid"
 themen:
   - smtp-mailflow
   - e-mail-verschluesselung
-produkte:
-  - "uebergreifend"
 protokolle:
   - "dns"
   - "smtp"

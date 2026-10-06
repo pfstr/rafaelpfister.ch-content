@@ -11,7 +11,6 @@ themen:
   - exchange-onprem-hybrid
 hauptthema: "smtp-mailflow"
 produkte:
-  - "uebergreifend"
   - "exchange"
 protokolle:
   - "smtp"

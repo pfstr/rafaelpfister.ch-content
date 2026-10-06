@@ -8,8 +8,6 @@ timeToRead: "7 min read"
 themen:
   - smtp-mailflow
   - smtp-lasttests
-produkte:
-  - "uebergreifend"
 protokolle:
   - "smtp"
   - "testing"

@@ -11,7 +11,6 @@ themen:
 hauptthema: "smtp-mailflow"
 produkte:
   - "exchange-online"
-  - "uebergreifend"
 protokolle:
   - "powershell"
   - "mail-auth"

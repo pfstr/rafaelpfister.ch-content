@@ -7,8 +7,6 @@ kategorie: "SMTP und Mailflow"
 timeToRead: "10 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
-produkte:
-  - "uebergreifend"
 protokolle:
   - "smtp"
   - "troubleshooting"
