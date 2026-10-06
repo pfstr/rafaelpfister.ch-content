@@ -4,7 +4,7 @@ navTitle: "digitalSTROM und HA"
 description: "Eine lokale Home-Assistant-Integration für den digitalSTROM-Server, dazu Bewegungslicht, Duschmodus, Musik per 4× Tippen und automatisches Gehen per FRITZ!Box. Mit den Problemen, die in der Praxis aufgetreten sind."
 date: "2026-10-06"
 kategorie: "Home Assistant und IoT"
-timeToRead: "12 Min. Lesezeit"
+timeToRead: "13 Min. Lesezeit"
 themen:
   - "smart-home-iot"
 produkte:
@@ -74,9 +74,15 @@ Bei Bewegung geht das Licht an, nach einer einstellbaren Zeit ohne Bewegung wied
 
 Ein Detail fällt erst im Betrieb auf: Der Auslöser „Melder seit 2 Minuten ruhig" ist ein Zähler, den Home Assistant bei jedem Neustart verwirft. Hat sich der Melder vor dem Neustart zuletzt bewegt, folgt kein neuer Wechsel auf „ruhig", und das Licht bleibt an. Der Blueprint prüft deshalb zusätzlich jede Minute, ob ein von ihm eingeschaltetes Licht brennt, obwohl der Melder lange genug ruhig ist.
 
+### Licht aus beim Verlassen des Raums
+
+Die Ausschaltzeit des Bewegungslichts ist ein Kompromiss: Zu kurz, und das Licht geht aus, während jemand still im Raum steht; zu lang, und es brennt nach dem Verlassen minutenlang weiter. Ein weiterer Blueprint nutzt deshalb einen zweiten Melder ausserhalb des Raums, typischerweise im Gang. Erkennt dieser Bewegung, hat der Melder im Raum kurz zuvor (innerhalb von 30 Sekunden) noch Bewegung gesehen und bleibt es dort anschliessend ruhig, geht das Licht im Raum sofort aus. Mit Hue-Meldern, die etwa 10 Sekunden nach der letzten Bewegung „ruhig" melden, sind das rund 10 bis 15 Sekunden nach dem Hinaustreten.
+
+Damit niemand im Dunkeln sitzt, greift die Regel nur unter Bedingungen: Das Licht muss von der Bewegungsautomation eingeschaltet worden sein, ein Duschmodus darf nicht aktiv sein, und es darf höchstens eine Person zu Hause sein. Die Personenzahl ergibt sich aus den Handys, die Home Assistant als Personen kennt. Die 30-Sekunden-Bedingung schützt zusätzlich den Fall, dass jemand länger still im Raum ist und eine andere Person durch den Gang geht.
+
 ### Duschmodus per 2× Tippen
 
-In der Dusche erkennt ein Bewegungsmelder meist niemanden, und nach der eingestellten Zeit wird es dunkel. 2× Tippen auf den Badtaster löst bei digitalSTROM die Stimmung 2 aus (Szene 17). Die Automation erkennt diese Szene im Raum und schaltet einen Duschmodus ein, der das Ausschalten blockiert. Bewegungen in den ersten 2 Minuten werden ignoriert (Ausziehen, Einsteigen). Die erste Bewegung danach beendet den Duschmodus, ab dann gilt wieder die normale Ausschaltzeit. Nach einer einstellbaren Maximaldauer endet er von selbst.
+In der Dusche erkennt ein Bewegungsmelder meist niemanden, und nach der eingestellten Zeit wird es dunkel. 2× Tippen auf den Badtaster löst bei digitalSTROM die Stimmung 2 aus (Szene 17). Die Automation erkennt diese Szene im Raum und schaltet einen Duschmodus ein, der das Ausschalten blockiert. Bewegungen in den ersten 2 Minuten werden ignoriert (Ausziehen, Einsteigen). Die erste Bewegung danach beendet den Duschmodus, ab dann gilt wieder die normale Ausschaltzeit. Nach einer einstellbaren Maximaldauer (Standard 20 Minuten) endet er von selbst.
 
 ### 4× Tippen startet Sonos
 
