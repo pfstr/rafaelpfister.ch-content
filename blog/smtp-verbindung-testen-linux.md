@@ -9,6 +9,8 @@ themen:
   - "smtp-mailflow"
   - "testing"
   - "e-mail-verschluesselung"
+produkte:
+  - "openssl"
 protokolle:
   - "testing"
   - "smtp"

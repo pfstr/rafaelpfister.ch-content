@@ -8,6 +8,8 @@ timeToRead: "7 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
 hauptthema: "smtp-mailflow"
+produkte:
+  - "mail-header-analyzer"
 protokolle:
   - "smtp"
   - "mail-auth"

@@ -8,6 +8,9 @@ timeToRead: "12 Min. Lesezeit"
 themen:
   - "smtp-mailflow"
   - "testing"
+produkte:
+  - "smtp-source"
+  - "apache-jmeter"
 protokolle:
   - "testing"
   - "smtp"
