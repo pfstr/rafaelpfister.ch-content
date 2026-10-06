@@ -7,6 +7,7 @@ kategorie: "Kiteworks / TotemoMail"
 timeToRead: "9 min read"
 themen:
   - totemomail
+  - sicherheitsluecken
 produkte:
   - "totemomail"
 protokolle:

@@ -8,8 +8,10 @@ timeToRead: "8 Min. Lesezeit"
 themen:
   - "fortimail"
   - "e-mail-verschluesselung"
+  - "sicherheitsluecken"
 produkte:
   - "fortimail"
+  - "sicherheitsluecken"
 protokolle:
   - "haertung"
   - "verschluesselung"

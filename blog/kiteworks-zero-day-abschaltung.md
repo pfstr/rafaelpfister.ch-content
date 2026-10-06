@@ -7,8 +7,10 @@ kategorie: "Kiteworks / Totemomail"
 timeToRead: "9 Min. Lesezeit"
 themen:
   - "totemomail"
+  - "sicherheitsluecken"
 produkte:
   - "totemomail"
+  - "sicherheitsluecken"
 protokolle:
   - "verschluesselung"
   - "haertung"

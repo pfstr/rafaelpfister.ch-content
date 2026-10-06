@@ -25,6 +25,8 @@ Articles that analyse or reference these vulnerabilities (generated from the art
 | CVE | Article |
 | --- | --- |
 | CVE-2026-104286 | [CVE-2026-104286: FortiMail Zero-Day Is Being Exploited - Workaround and Compromise Assessment](https://rafaelpfister.ch/en/blog/cve-2026-104286-fortimail-zero-day-is-being-exploited-workaround-and-compromise-assessment) |
+| CVE-2026-76461 | [CVE-2026-76461: Cisco Secure Email Gateway SQL Injection Is Being Exploited—Update and Check for Compromise](https://rafaelpfister.ch/en/blog/cve-2026-76461-cisco-secure-email-gateway-sql-injection-is-being-exploited-update-and-check-for) |
+| CVE-2026-73570 | [CVE-2026-73570: Zimbra Command Injection via SNMP Is Being Exploited—Update to 10.1.20 and Check for Compromise](https://rafaelpfister.ch/en/blog/cve-2026-73570-zimbra-command-injection-via-snmp-is-being-exploited-update-to-10-1-20-and-check) |
 | CVE-2026-65813 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
 | CVE-2026-62915 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
 | CVE-2026-62914 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
@@ -34,6 +36,7 @@ Articles that analyse or reference these vulnerabilities (generated from the art
 | CVE-2026-62910 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled) |
 | CVE-2026-42897 | [August 2026 Exchange Security Updates: Pwn2Own Vulnerability Fixed, OWA Light Disabled](https://rafaelpfister.ch/en/blog/exchange-security-updates-for-august-2026-pwn2own-vulnerability-closed-owa-light-disabled)<br>[Properly follow up on the July 2026 Exchange security updates](https://rafaelpfister.ch/en/blog/exchange-server-security-updates-july-2026) |
 | CVE-2025-32756 | [CVE-2026-104286: FortiMail Zero-Day Is Being Exploited - Workaround and Compromise Assessment](https://rafaelpfister.ch/en/blog/cve-2026-104286-fortimail-zero-day-is-being-exploited-workaround-and-compromise-assessment) |
+| CVE-2025-20393 | [CVE-2026-76461: Cisco Secure Email Gateway SQL Injection Is Being Exploited—Update and Check for Compromise](https://rafaelpfister.ch/en/blog/cve-2026-76461-cisco-secure-email-gateway-sql-injection-is-being-exploited-update-and-check-for) |
 
 ## Blog article frontmatter
 
