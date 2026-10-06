@@ -1,10 +1,10 @@
 ---
-title: "digitalSTROM-Mietwohnung mit Home Assistant verbinden: ein Praxisbericht"
+title: "digitalSTROM mit Home Assistant verbinden: lokale Integration und Automationen"
 navTitle: "digitalSTROM und HA"
 description: "Eine lokale Home-Assistant-Integration für den digitalSTROM-Server, dazu Bewegungslicht, Duschmodus, Musik per 4× Tippen und automatisches Gehen per FRITZ!Box. Mit den Problemen, die in der Praxis aufgetreten sind."
 date: "2026-10-06"
 kategorie: "Home Assistant und IoT"
-timeToRead: "13 Min. Lesezeit"
+timeToRead: "12 Min. Lesezeit"
 themen:
   - "smart-home-iot"
 produkte:
@@ -19,7 +19,7 @@ translationId: "article-271967fa6d61231d"
 url: "https://rafaelpfister.ch/blog/digitalstrom-home-assistant"
 ---
 
-Meine Mietwohnung ist mit digitalSTROM ausgestattet: Lichter, Storen und eine Lüftungsklappe hängen an Klemmen im Sicherungskasten, gesteuert über Taster und einen digitalSTROM-Server (dSS20). Dazu kommen Philips Hue, drei Sonos-Lautsprecher und eine FRITZ!Box. Ziel war, alles lokal in Home Assistant zusammenzuführen, ohne Cloud-Konto und ohne das Passwort des dSS in Home Assistant abzulegen. Daraus ist eine kleine Integration entstanden, die ich zusammen mit den Automationen als [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) unter MIT-Lizenz veröffentlicht habe.
+In digitalSTROM-Installationen hängen Lichter, Storen und weitere Verbraucher an Klemmen im Sicherungskasten, gesteuert über Taster und einen digitalSTROM-Server (dSS20). Kommen weitere Systeme wie Philips Hue, Sonos und eine FRITZ!Box dazu, liegt es nahe, alles lokal in Home Assistant zusammenzuführen, ohne Cloud-Konto und ohne das Passwort des dSS in Home Assistant abzulegen. Dafür habe ich eine kleine Integration geschrieben und zusammen mit passenden Automationen als [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) unter MIT-Lizenz veröffentlicht.
 
 Kurzfazit: Der dSS bietet eine brauchbare JSON-API mit Ereignissen. Wer sie schonend nutzt, bekommt Taster, Szenen und die Aktivitäten Gehen und Kommen ohne Verzögerung nach Home Assistant und kann damit Automationen auslösen, die digitalSTROM allein nicht kennt.
 
@@ -60,55 +60,55 @@ Direkte Abfragen von Ausgangswerten (`device/getOutputValue`) gehen dagegen übe
 | `scene` | im Configurator benannte Stimmungen |
 | `button` | Gehen (Szene 72) und Kommen (Szene 71) |
 | `binary_sensor` | Anwesenheit, Windalarm, Bewegungsmelder, Joker-Ausgänge |
-| `sensor` | Gesamtverbrauch der Wohnung |
+| `sensor` | Gesamtverbrauch |
 
 Zusätzlich meldet die Integration jede Raumszene sowie Gehen und Kommen als Ereignis `digitalstrom_local_event` an Home Assistant. Damit lassen sich 2× oder 4× Tippen auf einem gewöhnlichen Lichtschalter frei belegen.
 
-## Automationen aus der Wohnung
+## Automationen als Blueprints
 
 Die folgenden Automationen sind im Repository als Blueprints enthalten und lassen sich über den Import-Knopf im README in Home Assistant übernehmen.
 
 ### Bewegungslicht, das von Hand eingeschaltetes Licht nicht löscht
 
-Gang, Reduit, Bad und Büro haben Hue-Bewegungsmelder. Bei Bewegung geht das Licht an, nach einer einstellbaren Zeit ohne Bewegung wieder aus: im Gang 2 Minuten und nur unter 20 Lux, nachts gedimmt auf 20 %; im Reduit 30 Sekunden. Schaltet jemand das Licht am Taster ein, bleibt es an. Ein Hilfsschalter (`input_boolean`) merkt sich dafür, ob die Automation das Licht eingeschaltet hat; nur dann schaltet sie es auch wieder aus.
+Bei Bewegung geht das Licht an, nach einer einstellbaren Zeit ohne Bewegung wieder aus. Optional gilt das nur unter einer Helligkeitsschwelle, nur in einem Zeitfenster oder nachts gedimmt. Schaltet jemand das Licht am Taster ein, bleibt es an. Ein Hilfsschalter (`input_boolean`) merkt sich dafür, ob die Automation das Licht eingeschaltet hat; nur dann schaltet sie es auch wieder aus.
 
-Ein Detail ist mir erst im Betrieb aufgefallen: Der Auslöser „Melder seit 2 Minuten ruhig" ist ein Zähler, den Home Assistant bei jedem Neustart verwirft. Hat sich der Melder vor dem Neustart zuletzt bewegt, folgt kein neuer Wechsel auf „ruhig", und das Licht bleibt an. Der Blueprint prüft deshalb zusätzlich jede Minute, ob ein von ihm eingeschaltetes Licht brennt, obwohl der Melder lange genug ruhig ist.
+Ein Detail fällt erst im Betrieb auf: Der Auslöser „Melder seit 2 Minuten ruhig" ist ein Zähler, den Home Assistant bei jedem Neustart verwirft. Hat sich der Melder vor dem Neustart zuletzt bewegt, folgt kein neuer Wechsel auf „ruhig", und das Licht bleibt an. Der Blueprint prüft deshalb zusätzlich jede Minute, ob ein von ihm eingeschaltetes Licht brennt, obwohl der Melder lange genug ruhig ist.
 
 ### Duschmodus per 2× Tippen
 
-Hinter dem Duschvorhang sieht der Bewegungsmelder niemanden, und nach 5 Minuten wird es dunkel. 2× Tippen auf den Badtaster löst bei digitalSTROM die Stimmung 2 aus (Szene 17). Die Automation erkennt diese Szene im Raum Bad und schaltet einen Duschmodus ein, der das Ausschalten blockiert. Bewegungen in den ersten 2 Minuten werden ignoriert (Ausziehen, Einsteigen). Die erste Bewegung danach beendet den Duschmodus, ab dann gilt wieder die normale Ausschaltzeit. Nach spätestens 60 Minuten endet er von selbst.
+In der Dusche erkennt ein Bewegungsmelder meist niemanden, und nach der eingestellten Zeit wird es dunkel. 2× Tippen auf den Badtaster löst bei digitalSTROM die Stimmung 2 aus (Szene 17). Die Automation erkennt diese Szene im Raum und schaltet einen Duschmodus ein, der das Ausschalten blockiert. Bewegungen in den ersten 2 Minuten werden ignoriert (Ausziehen, Einsteigen). Die erste Bewegung danach beendet den Duschmodus, ab dann gilt wieder die normale Ausschaltzeit. Nach einer einstellbaren Maximaldauer endet er von selbst.
 
 ### 4× Tippen startet Sonos
 
-Tippt man mehrmals schnell auf einen Taster, schaltet digitalSTROM die Stimmungen der Reihe nach durch: Szene 5, 17, 18 und beim vierten Tippen 19. Im Configurator habe ich Szene 19 bei allen Lampen auf „Ausgang nicht verändern" gestellt; ein Blueprint reagiert auf diese Szene, schaltet das Raumlicht aus und startet den Sonos-Lautsprecher im Raum. In Räumen ohne Lautsprecher spielen alle drei zusammen.
+Tippt man mehrmals schnell auf einen Taster, schaltet digitalSTROM die Stimmungen der Reihe nach durch: Szene 5, 17, 18 und beim vierten Tippen 19. Stellt man Szene 19 im Configurator bei allen Lampen auf „Ausgang nicht verändern", ist sie frei für andere Zwecke. Ein Blueprint reagiert auf diese Szene, schaltet das Raumlicht aus und startet den Sonos-Lautsprecher im Raum oder, in Räumen ohne Lautsprecher, mehrere zusammen.
 
 Das Skript dazu achtet auf drei Punkte: Läuft schon ein Lautsprecher, wird der neue Raum dessen Gruppe zugeschaltet, damit die Wiedergabe synchron bleibt. Lässt sich nichts fortsetzen, spielt ein Radiosender aus dem Radio-Browser-Verzeichnis. Und vor jedem Start wird dieselbe Startlautstärke gesetzt, sonst spielt der eine Raum leise und der andere so laut, wie zuletzt jemand Musik gehört hat.
 
 ### Gehen und Kommen per FRITZ!Box
 
-Die Integration FRITZ!Box Tools meldet, ob das Handy im WLAN ist; sie wertet die Geräteliste der Box aus und deckt damit 2,4-GHz-Netz, 5-GHz-Netz und LAN gleichzeitig ab. Ist niemand mehr zu Hause und wurde Gehen nicht gedrückt, löst ein Blueprint Gehen aus. Beim Heimkommen folgt Kommen und, wenn es dunkel ist, das Licht im Gang.
+Die Integration FRITZ!Box Tools meldet, ob ein Handy im WLAN ist; sie wertet die Geräteliste der Box aus und deckt damit 2,4-GHz-Netz, 5-GHz-Netz und LAN gleichzeitig ab. Ist niemand mehr zu Hause und wurde Gehen nicht gedrückt, löst ein Blueprint Gehen aus. Beim Heimkommen folgt Kommen und, wenn es dunkel ist, ein Begrüssungslicht.
 
-Ergänzend schaltet eine Automation bei Gehen alle Hue-Lampen aus und pausiert Sonos. Die digitalSTROM-Lampen schaltet der dSS selbst aus.
+Ergänzend kann eine Automation bei Gehen die Lampen anderer Systeme (zum Beispiel Hue) ausschalten und Sonos pausieren. Die digitalSTROM-Lampen schaltet der dSS selbst aus.
 
 ## Grundriss als Dashboard
 
-Die Übersicht in Home Assistant ist ein Grundriss mit der eingebauten Karte `picture-elements`. Pro Raum liegt ein transparentes SVG über dem Plan, das bei eingeschaltetem Licht durch ein leicht gelbes ersetzt wird; ein Tippen auf den Raum schaltet das Licht. Lampen, Lautsprecher, Storen und Melder sitzen als Symbole dort, wo sie in der Wohnung stehen. Die Anleitung mit Beispielkonfiguration liegt im Repository unter `docs/floor-plan-dashboard.md`.
+Eine übersichtliche Darstellung in Home Assistant ist ein Grundriss mit der eingebauten Karte `picture-elements`. Pro Raum liegt ein transparentes SVG über dem Plan, das bei eingeschaltetem Licht durch ein leicht gelbes ersetzt wird; ein Tippen auf den Raum schaltet das Licht. Lampen, Lautsprecher, Storen und Melder sitzen als Symbole an ihrem Standort. Die Anleitung mit Beispielkonfiguration liegt im Repository unter `docs/floor-plan-dashboard.md`.
 
 ## Probleme aus der Praxis
 
 | Problem | Ursache | Lösung |
 |---|---|---|
-| Gehen-Taster ohne Wirkung | dSS nicht im Netz, Aktivitäten über mehrere Stromkreise laufen über den Server | Netzwerkverbindung des dSS wiederhergestellt; seither funktioniert Gehen |
-| Storen reagieren nicht | Windalarm stand seit langem auf „aktiv", obwohl kein Windsensor vorhanden ist | Szene 87 („kein Wind") wohnungsweit ausgelöst |
+| Gehen-Taster ohne Wirkung | dSS nicht im Netz, Aktivitäten über mehrere Stromkreise laufen über den Server | Netzwerkverbindung des dSS wiederhergestellt |
+| Storen reagieren nicht | Windalarm stand auf „aktiv", obwohl kein Windsensor vorhanden ist | Szene 87 („kein Wind") für alle Räume ausgelöst |
 | Storen fahren bei Gehen nicht hoch | Szene 72 auf „Ausgang nicht verändern" (`dontCare`) | `device/setSceneMode` mit `dontCare=0`; der Wert `false` wurde angenommen, aber ignoriert |
-| Bad lässt sich nicht dimmen | Leuchtstoffröhre an einer geschalteten Klemme (Ausgangsmodus 35) | Integration erkennt geschaltete Klemmen und bietet dort nur Ein/Aus an |
+| Licht lässt sich nicht dimmen | Leuchtstoffröhre an einer geschalteten Klemme (Ausgangsmodus 35) | Integration erkennt geschaltete Klemmen und bietet dort nur Ein/Aus an |
 | Licht bleibt nach Neustart an | Zähler für „seit X Minuten ruhig" geht beim Neustart verloren | zusätzliche Prüfung jede Minute |
 | Handy gilt als abwesend | iPhone nutzt eine wechselnde private WLAN-Adresse und trennt im Ruhezustand kurz das WLAN | Private WLAN-Adresse auf „Fest", Karenzzeit 10 Minuten |
-| DECT funkt dauernd | „DECT Eco" ist nicht verfügbar, sobald ein FRITZ!-Smart-Home-Gerät angemeldet ist | Keller-WLAN wird über Powerline statt über eine DECT-Steckdose geschaltet (geplant) |
+| DECT funkt dauernd | „DECT Eco" ist nicht verfügbar, sobald ein FRITZ!-Smart-Home-Gerät angemeldet ist | auf DECT-Steckdosen verzichten, wenn DECT Eco gewünscht ist |
 
 Eine Gerätesuche an der Hue-Bridge nimmt alle Geräte auf, die sich gerade im Kopplungsmodus befinden. Prüfen Sie danach in der Geräteliste, ob nur die eigenen Lampen dazugekommen sind.
 
-Die Szenen-Tabellen der Klemmen lassen sich über die API auslesen und ändern, etwa mit `device/getSceneMode` und `device/saveScene`. Jeder dieser Aufrufe geht über den Bus. Vor Änderungen habe ich die alten Werte jeweils in eine CSV-Datei gesichert, um sie bei Bedarf wiederherstellen zu können.
+Die Szenen-Tabellen der Klemmen lassen sich über die API auslesen und ändern, etwa mit `device/getSceneMode` und `device/saveScene`. Jeder dieser Aufrufe geht über den Bus. Sichern Sie vor Änderungen die alten Werte, zum Beispiel in einer CSV-Datei, um sie bei Bedarf wiederherstellen zu können.
 
 ## Quellen
 
