@@ -17490,6 +17490,130 @@ Affected organizations are those that operate Zimbra as their own mail server an
 
 ----
 
+# Connecting digitalSTROM with Home Assistant: local integration and automations
+
+URL: https://rafaelpfister.ch/en/blog/connecting-digitalstrom-with-home-assistant-local-integration-and-automations
+Datum: 2026-10-06
+
+In digitalSTROM installations, lights, blinds, and other loads are connected to terminals in the electrical panel, controlled via push buttons and a digitalSTROM server (dSS20). When other systems such as Philips Hue, Sonos, and a FRITZ!Box are added, it makes sense to bring everything together locally in Home Assistant, without a cloud account and without storing the dSS password in Home Assistant. To do this, I wrote a small integration and published it together with suitable automations as [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) under the MIT License.
+
+In short: the dSS provides a usable JSON API with events. If used carefully, it delivers push buttons, scenes, and the Leaving and Arriving activities to Home Assistant without delay, allowing automations that digitalSTROM alone does not support.
+
+## How the integration works
+
+The dSS provides its API via HTTPS on port 8080, using a self-signed certificate. digitalSTROM provides app tokens for programs: the program requests a token, the user authorizes it in the Configurator under System > Access authorization, and the program then logs in with it. The dSS password remains with the user.
+
+```bash
+DSS=https://dss.local:8080/json
+curl -sk "$DSS/system/requestApplicationToken?applicationName=Home%20Assistant"
+curl -sk "$DSS/system/loginApplication?loginToken=<APP-TOKEN>"
+curl -sk "$DSS/event/subscribe?name=callScene&subscriptionID=42&token=<SESSION>"
+curl -sk "$DSS/event/get?subscriptionID=42&timeout=30000&token=<SESSION>"
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-s` | no progress indicator |
+| `-k` | accept the dSS self-signed certificate |
+| `requestApplicationToken` | creates an app token that must be authorized in the Configurator |
+| `loginApplication` | exchanges the authorized app token for a session token |
+| `event/subscribe` | subscribes to an event (`callScene`, `stateChange`, `buttonClick` …) under a freely chosen ID |
+| `event/get` with `timeout` | waits up to 30 seconds for new events (long polling) |
+
+</details>
+
+The integration keeps such a long-poll connection open continuously. Every scene triggered by a push button, the app, or the Configurator arrives as an event. States such as “light on in room” or presence are stored in the dSS cache under `/usr/states` and can be queried without putting load on the terminals.
+
+Direct queries of output values (`device/getOutputValue`) instead travel over the dS485 bus to the terminal and take half a second to a full second per value. Many such queries at short intervals can overload the meters. The integration therefore reads only blind positions and Joker outputs directly, every 15 minutes and about one minute after movement.
+
+| Platform | Content |
+|---|---|
+| `light` | one light per room, switched through room scenes like the push buttons; brightness for dimmed terminals, on/off only for switched ones |
+| `cover` | blinds with open, close, stop, and position |
+| `scene` | moods named in the Configurator |
+| `button` | Leaving (scene 72) and Arriving (scene 71) |
+| `binary_sensor` | presence, wind alarm, motion sensors, Joker outputs |
+| `sensor` | total consumption |
+
+In addition, the integration reports every room scene as well as Leaving and Arriving as the `digitalstrom_local_event` event to Home Assistant. This makes it possible to freely assign 2× or 4× taps on a regular light switch.
+
+## Automations as blueprints
+
+The following automations are included in the repository as blueprints and can be imported into Home Assistant using the import button in the README.
+
+### Motion-activated lighting that does not turn off manually switched-on lights
+
+When motion is detected, the light turns on, then turns off again after an adjustable period without motion. Optionally, this applies only below a brightness threshold, only during a time window, or dimmed at night. If someone turns on the light using the push button, it remains on. A helper switch (`input_boolean`) records whether the automation turned on the light; only then does it turn it off again.
+
+One detail only becomes apparent in operation: the “sensor clear for 2 minutes” trigger is a counter that Home Assistant discards at every restart. If the sensor last detected motion before the restart, it does not switch to “clear” again, and the light stays on. The blueprint therefore also checks every minute whether a light it turned on is still lit even though the sensor has been clear long enough.
+
+### Turn off lights when leaving the room
+
+The motion-lighting shutoff time is a compromise: too short, and the light turns off while someone is standing still in the room; too long, and it remains on for minutes after they leave. Another blueprint therefore uses a second sensor outside the room, typically in the hallway. If it detects motion, the sensor in the room detected motion shortly before (within 30 seconds), and it then remains clear there, the room light turns off immediately. With Hue sensors, which report “clear” about 10 seconds after the last motion, this takes around 10 to 15 seconds after leaving the room.
+
+To ensure nobody is left sitting in the dark, the rule applies only under certain conditions: the light must have been turned on by the motion automation, shower mode must not be active, and at most one person may be home. The number of people is determined from the phones that Home Assistant knows as persons. The 30-second condition also protects against the case where someone remains still in the room while another person walks through the hallway.
+
+### Shower mode with 2× tapping
+
+In the shower, a motion sensor usually does not detect anyone, and after the configured time it gets dark. Tapping the bathroom button 2× triggers mood 2 (scene 17) in digitalSTROM. The automation detects this scene in the room and enables a shower mode that blocks switching off. Motion during the first 2 minutes is ignored (undressing, getting in). The first motion after that ends shower mode, after which the normal shutoff time applies again. After an adjustable maximum duration (20 minutes by default), it ends automatically.
+
+### 4× tapping starts Sonos
+
+If you tap a button rapidly several times, digitalSTROM cycles through moods in sequence: scene 5, 17, 18, and scene 19 on the fourth tap. If you set scene 19 to “Do not change output” for all lights in the Configurator, it is available for other purposes. A blueprint responds to this scene, turns off the room light, and starts the Sonos speaker in the room or, in rooms without a speaker, several speakers together.
+
+The corresponding script considers three points: if a speaker is already playing, the new room is added to its group so that playback remains synchronized. If nothing can be resumed, it plays a radio station from the Radio Browser directory. And the same starting volume is set before every start; otherwise, one room plays quietly while another plays as loudly as someone last listened to music there.
+
+### Leaving and arriving via FRITZ!Box
+
+The FRITZ!Box Tools integration reports whether a phone is on Wi-Fi; it evaluates the box’s device list and therefore covers the 2.4 GHz network, 5 GHz network, and LAN at the same time. If nobody is home anymore and Leaving was not triggered, a blueprint triggers Leaving. On arriving home, Arriving follows and, if it is dark, a welcome light.
+
+Additionally, an automation can turn off lights from other systems (such as Hue) and pause Sonos when Leaving is triggered. The dSS turns off the digitalSTROM lights itself.
+
+## Floor plan as a dashboard
+
+A clear display in Home Assistant is a floor plan using the built-in `picture-elements` card. Each room has a transparent SVG overlaid on the plan, replaced by a slightly yellow one when the light is on; tapping the room switches the light. Lights, speakers, blinds, and sensors are placed as symbols at their locations. Instructions with an example configuration are available in the repository under `docs/floor-plan-dashboard.md`.
+
+## Issues encountered in practice
+
+| Issue | Cause | Solution |
+|---|---|---|
+| Leaving button has no effect | dSS is not on the network; activities across multiple circuits run through the server | Restored the dSS network connection |
+| Blinds do not respond | Wind alarm was set to “active” although no wind sensor was installed | Triggered scene 87 (“no wind”) for all rooms |
+| Blinds do not raise when Leaving | Scene 72 set to “Do not change output” (`dontCare`) | `device/setSceneMode` with `dontCare=0`; the value `false` was accepted but ignored |
+| Light cannot be dimmed | Fluorescent tube connected to a switched terminal (output mode 35) | The integration detects switched terminals and offers only on/off for them |
+| Light remains on after restart | Counter for “clear for X minutes” is lost on restart | Additional check every minute |
+| Phone is considered absent | iPhone uses a rotating private Wi-Fi address and briefly disconnects from Wi-Fi while asleep | Set Private Wi-Fi Address to “Fixed,” grace period 10 minutes |
+| DECT transmits continuously | “DECT Eco” is unavailable as soon as a FRITZ! smart home device is registered | Avoid DECT outlets if DECT Eco is desired |
+
+A device search on the Hue Bridge adds all devices currently in pairing mode. Afterwards, check the device list to ensure that only your own lights were added.
+
+The terminals’ scene tables can be read and changed through the API, for example with `device/getSceneMode` and `device/saveScene`. Each of these calls goes over the bus. Before making changes, back up the old values, for example in a CSV file, so that you can restore them if necessary.
+
+## Sources
+
+1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): Integration and blueprints from this article, MIT License.
+
+2.  [digitalSTROM: Operating and Configuration Manual](https://www.digitalstrom.com/wp-content/uploads/2021/08/AHB_DE_A1121D001V013_neu.pdf): Leaving activity (hold for 3 seconds), “Do not change output” setting in chapter 3.5.2.
+
+3.  [digitalSTROM: Terminal Button Documentation](https://www.digitalstrom.com/wp-content/uploads/2021/08/A0818D078V001_Tastendokumentation.pdf): Default settings for button functions by terminal type.
+
+4.  [digitalSTROM: Operating Manuals](https://www.digitalstrom.com/bedienungsanleitungen/): Overview of manuals, planning, and installation documents.
+
+5.  [Home Assistant: FRITZ!Box Tools](https://www.home-assistant.io/integrations/fritz/): Presence detection, Wi-Fi switches, integration options.
+
+6.  [Home Assistant: Picture Elements card](https://www.home-assistant.io/dashboards/picture-elements/): Basis for the floor-plan dashboard.
+
+7.  [Home Assistant: Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): Importing and using blueprints.
+
+8.  [FRITZ! Knowledge Base: FRITZ! outlet loses connection](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): Notes on DECT range and radio transmission power for smart home outlets.
+
+9.  [Radio Browser](https://www.radio-browser.info/): Free directory of radio streams, integrated in Home Assistant as a media source.
+
+----
+
 # HIN Mail Login: Webmail, Outlook Token, Forgotten Password, and HIN Mail Global
 
 URL: https://rafaelpfister.ch/en/blog/hin-mail-login-webmail-outlook-token-forgotten-password-and-hin-mail-global
@@ -34068,6 +34192,130 @@ Les organisations concernées sont celles qui exploitent Zimbra comme serveur de
 16.  [SecurityWeek : Hackers Target Zimbra Servers in Active Exploitation Campaign](https://www.securityweek.com/hackers-target-zimbra-servers-in-active-exploitation-campaign/): mise en contexte avec le nombre de vulnérabilités Zimbra dans le catalogue KEV.
 
 17.  [Wiki Zimbra : Zmcontrol](https://wiki.zimbra.com/wiki/Zmcontrol): documentation de `zmcontrol -v` pour la vérification de version.
+
+----
+
+# Connecter digitalSTROM à Home Assistant : intégration locale et automatisations
+
+URL: https://rafaelpfister.ch/fr/blog/connecter-digitalstrom-a-home-assistant-integration-locale-et-automatisations
+Datum: 2026-10-06
+
+Dans les installations digitalSTROM, les luminaires, stores et autres consommateurs sont raccordés à des bornes dans le tableau électrique, commandés par des boutons-poussoirs et un serveur digitalSTROM (dSS20). Lorsque d’autres systèmes tels que Philips Hue, Sonos et une FRITZ!Box s’y ajoutent, il est naturel de tout réunir localement dans Home Assistant, sans compte cloud et sans enregistrer le mot de passe du dSS dans Home Assistant. J’ai pour cela développé une petite intégration et l’ai publiée, avec les automatisations correspondantes, sous [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) sous licence MIT.
+
+En bref : le dSS propose une API JSON utilisable avec des événements. En l’utilisant avec modération, les boutons-poussoirs, scènes et activités Départ et Arrivée sont transmis sans délai à Home Assistant et permettent de déclencher des automatisations que digitalSTROM ne connaît pas seul.
+
+## Fonctionnement de l’intégration
+
+Le dSS met son API à disposition sur le port 8080 via HTTPS, avec un certificat autosigné. Pour les programmes, digitalSTROM prévoit des jetons d’application : le programme demande un jeton, l’utilisateur l’autorise dans le Configurator sous Système > Autorisation d’accès, puis le programme s’y connecte. Le mot de passe du dSS reste chez l’utilisateur.
+
+```bash
+DSS=https://dss.local:8080/json
+curl -sk "$DSS/system/requestApplicationToken?applicationName=Home%20Assistant"
+curl -sk "$DSS/system/loginApplication?loginToken=<APP-TOKEN>"
+curl -sk "$DSS/event/subscribe?name=callScene&subscriptionID=42&token=<SESSION>"
+curl -sk "$DSS/event/get?subscriptionID=42&timeout=30000&token=<SESSION>"
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-s` | aucune indication de progression |
+| `-k` | accepter le certificat autosigné du dSS |
+| `requestApplicationToken` | crée un jeton d’application qui doit être autorisé dans le Configurator |
+| `loginApplication` | échange le jeton d’application autorisé contre un jeton de session |
+| `event/subscribe` | s’abonne à un événement (`callScene`, `stateChange`, `buttonClick` …) sous un identifiant librement choisi |
+| `event/get` avec `timeout` | attend jusqu’à 30 secondes de nouveaux événements (long polling) |
+
+</details>
+
+L’intégration maintient en permanence une telle connexion de long polling ouverte. Chaque scène déclenchée par un bouton-poussoir, l’application ou le Configurator arrive comme événement. Les états tels que « lumière allumée dans la pièce » ou la présence se trouvent dans le cache du dSS sous `/usr/states` et peuvent être interrogés sans solliciter les bornes.
+
+Les interrogations directes des valeurs de sortie (`device/getOutputValue`) passent en revanche par le bus dS485 jusqu’à la borne et prennent une demi-seconde à une seconde par valeur. Un grand nombre de telles interrogations à de courts intervalles peut surcharger les compteurs. L’intégration ne lit donc directement que les positions des stores et les sorties Joker, toutes les 15 minutes et environ une minute après un déplacement.
+
+| Plateforme | Contenu |
+|---|---|
+| `light` | une lumière par pièce, commandée par des scènes de pièce comme les boutons-poussoirs ; luminosité pour les bornes à variateur, uniquement marche/arrêt pour les bornes commutées |
+| `cover` | stores avec montée, descente, arrêt et position |
+| `scene` | ambiances nommées dans le Configurator |
+| `button` | Départ (scène 72) et Arrivée (scène 71) |
+| `binary_sensor` | présence, alarme vent, détecteurs de mouvement, sorties Joker |
+| `sensor` | consommation totale |
+
+L’intégration signale en outre chaque scène de pièce ainsi que Départ et Arrivée comme événement `digitalstrom_local_event` à Home Assistant. Cela permet d’attribuer librement une fonction à 2× ou 4× pressions sur un interrupteur d’éclairage ordinaire.
+
+## Automatisations sous forme de Blueprints
+
+Les automatisations suivantes sont incluses dans le dépôt sous forme de Blueprints et peuvent être importées dans Home Assistant via le bouton d’importation du README.
+
+### Éclairage sur mouvement qui n’éteint pas une lumière allumée manuellement
+
+En cas de mouvement, la lumière s’allume, puis s’éteint après une durée configurable sans mouvement. En option, cela ne s’applique que sous un seuil de luminosité, dans une plage horaire ou la nuit avec variation. Si quelqu’un allume la lumière au bouton-poussoir, elle reste allumée. Un interrupteur auxiliaire (`input_boolean`) mémorise à cette fin si l’automatisation a allumé la lumière ; elle ne l’éteint que dans ce cas.
+
+Un détail ne devient apparent qu’en fonctionnement : le déclencheur « détecteur calme depuis 2 minutes » est un compteur que Home Assistant réinitialise à chaque redémarrage. Si le détecteur a détecté un mouvement pour la dernière fois avant le redémarrage, aucun nouveau passage à « calme » ne se produit et la lumière reste allumée. Le Blueprint vérifie donc aussi chaque minute si une lumière qu’il a allumée est encore allumée alors que le détecteur est calme depuis suffisamment longtemps.
+
+### Éteindre la lumière en quittant la pièce
+
+Le délai d’extinction de l’éclairage sur mouvement est un compromis : trop court, la lumière s’éteint alors que quelqu’un reste immobile dans la pièce ; trop long, elle reste allumée plusieurs minutes après le départ. Un autre Blueprint utilise donc un second détecteur à l’extérieur de la pièce, généralement dans le couloir. Si celui-ci détecte un mouvement, que le détecteur dans la pièce a encore détecté un mouvement peu auparavant (dans les 30 secondes) et qu’il reste ensuite calme dans la pièce, la lumière de la pièce s’éteint immédiatement. Avec des détecteurs Hue, qui signalent « calme » environ 10 secondes après le dernier mouvement, cela représente environ 10 à 15 secondes après la sortie.
+
+Afin que personne ne reste dans le noir, la règle ne s’applique que sous certaines conditions : la lumière doit avoir été allumée par l’automatisation de mouvement, un mode douche ne doit pas être actif et il ne doit y avoir au maximum qu’une personne à la maison. Le nombre de personnes est déterminé à partir des téléphones que Home Assistant connaît comme personnes. La condition de 30 secondes protège en outre contre le cas où une personne reste immobile dans la pièce et une autre passe dans le couloir.
+
+### Mode douche par 2× pressions
+
+Dans la douche, un détecteur de mouvement ne détecte généralement personne et, après le délai réglé, il fait sombre. 2× pressions sur le bouton-poussoir de la salle de bains déclenchent l’ambiance 2 (scène 17) dans digitalSTROM. L’automatisation reconnaît cette scène dans la pièce et active un mode douche qui bloque l’extinction. Les mouvements durant les 2 premières minutes sont ignorés (se déshabiller, entrer dans la douche). Le premier mouvement qui suit désactive le mode douche ; à partir de là, le délai d’extinction normal s’applique à nouveau. Après une durée maximale configurable (20 minutes par défaut), il se termine de lui-même.
+
+### 4× pressions lancent Sonos
+
+Lorsqu’on appuie rapidement plusieurs fois sur un bouton-poussoir, digitalSTROM fait défiler les ambiances dans l’ordre : scène 5, 17, 18 et, à la quatrième pression, 19. Si la scène 19 est réglée dans le Configurator sur « ne pas modifier la sortie » pour toutes les lampes, elle est libre pour d’autres usages. Un Blueprint réagit à cette scène, éteint l’éclairage de la pièce et démarre le haut-parleur Sonos dans la pièce ou, dans les pièces sans haut-parleur, plusieurs haut-parleurs ensemble.
+
+Le script associé tient compte de trois points : si un haut-parleur fonctionne déjà, la nouvelle pièce est ajoutée à son groupe afin que la lecture reste synchronisée. S’il n’est pas possible de reprendre quoi que ce soit, une station de radio du répertoire Radio Browser est lue. Et le même volume de départ est réglé avant chaque démarrage ; sinon, une pièce joue doucement et l’autre aussi fort que la dernière fois que quelqu’un y a écouté de la musique.
+
+### Départ et Arrivée via FRITZ!Box
+
+L’intégration FRITZ!Box Tools indique si un téléphone est connecté au WLAN ; elle évalue la liste des appareils de la box et couvre ainsi simultanément les réseaux 2,4 GHz, 5 GHz et le LAN. Lorsque plus personne n’est à la maison et que Départ n’a pas été activé, un Blueprint déclenche Départ. Au retour à la maison, Arrivée suit et, s’il fait sombre, une lumière d’accueil.
+
+En complément, une automatisation peut éteindre les lampes d’autres systèmes (par exemple Hue) et mettre Sonos en pause lors du départ. Le dSS éteint lui-même les lampes digitalSTROM.
+
+## Plan au sol comme tableau de bord
+
+Une représentation claire dans Home Assistant est un plan au sol utilisant la carte intégrée `picture-elements`. Pour chaque pièce, un SVG transparent est placé au-dessus du plan et remplacé par une version légèrement jaune lorsque la lumière est allumée ; une pression sur la pièce commande la lumière. Les lampes, haut-parleurs, stores et détecteurs sont représentés par des symboles à leur emplacement. Les instructions avec une configuration d’exemple se trouvent dans le dépôt sous `docs/floor-plan-dashboard.md`.
+
+## Problèmes rencontrés en pratique
+
+| Problème | Cause | Solution |
+|---|---|---|
+| Bouton Départ sans effet | dSS non connecté au réseau, les activités sur plusieurs circuits électriques passent par le serveur | connexion réseau du dSS rétablie |
+| Les stores ne réagissent pas | l’alarme vent était réglée sur « active », bien qu’aucun capteur de vent ne soit présent | scène 87 (« pas de vent ») déclenchée pour toutes les pièces |
+| Les stores ne montent pas au départ | scène 72 sur « ne pas modifier la sortie » (`dontCare`) | `device/setSceneMode` avec `dontCare=0`; la valeur `false` a été acceptée, mais ignorée |
+| Impossible de varier la lumière | tube fluorescent sur une borne commutée (mode de sortie 35) | l’intégration reconnaît les bornes commutées et n’y propose que marche/arrêt |
+| La lumière reste allumée après un redémarrage | le compteur « calme depuis X minutes » est perdu au redémarrage | vérification supplémentaire chaque minute |
+| Le téléphone est considéré absent | l’iPhone utilise une adresse WLAN privée changeante et se déconnecte brièvement du WLAN en veille | adresse WLAN privée réglée sur « fixe », délai de grâce de 10 minutes |
+| DECT émet en permanence | « DECT Eco » n’est pas disponible dès qu’un appareil FRITZ! Smart Home est enregistré | renoncer aux prises DECT si DECT Eco est souhaité |
+
+Une recherche d’appareils sur le pont Hue ajoute tous les appareils qui se trouvent alors en mode d’appairage. Vérifiez ensuite dans la liste des appareils que seules vos propres lampes ont été ajoutées.
+
+Les tables de scènes des bornes peuvent être lues et modifiées via l’API, par exemple avec `device/getSceneMode` et `device/saveScene`. Chacun de ces appels passe par le bus. Avant toute modification, sauvegardez les anciennes valeurs, par exemple dans un fichier CSV, afin de pouvoir les restaurer si nécessaire.
+
+## Sources
+
+1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): intégration et Blueprints de cet article, licence MIT.
+
+2.  [digitalSTROM : manuel d’utilisation et de réglage](https://www.digitalstrom.com/wp-content/uploads/2021/08/AHB_DE_A1121D001V013_neu.pdf): activité Départ (maintenir 3 secondes), réglage « ne pas modifier la sortie » au chapitre 3.5.2.
+
+3.  [digitalSTROM : documentation des boutons-poussoirs des bornes](https://www.digitalstrom.com/wp-content/uploads/2021/08/A0818D078V001_Tastendokumentation.pdf): réglages d’usine des fonctions des boutons-poussoirs par type de borne.
+
+4.  [digitalSTROM : modes d’emploi](https://www.digitalstrom.com/bedienungsanleitungen/): aperçu des manuels, documents de planification et d’installation.
+
+5.  [Home Assistant : FRITZ!Box Tools](https://www.home-assistant.io/integrations/fritz/): détection de présence, interrupteurs WLAN, options de l’intégration.
+
+6.  [Home Assistant : carte Picture Elements](https://www.home-assistant.io/dashboards/picture-elements/): base du tableau de bord avec plan au sol.
+
+7.  [Home Assistant : Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): importation et utilisation de Blueprints.
+
+8.  [Base de connaissances FRITZ! : la prise FRITZ! perd la connexion](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): indications sur la portée et la puissance radio DECT des prises Smart Home.
+
+9.  [Radio Browser](https://www.radio-browser.info/): répertoire libre de flux radio, intégré dans Home Assistant comme source multimédia.
 
 ----
 
@@ -50652,6 +50900,130 @@ Sono interessate le organizzazioni che gestiscono Zimbra come server di posta pr
 
 ----
 
+# Collegare digitalSTROM a Home Assistant: integrazione locale e automazioni
+
+URL: https://rafaelpfister.ch/it/blog/collegare-digitalstrom-a-home-assistant-integrazione-locale-e-automazioni
+Datum: 2026-10-06
+
+Nelle installazioni digitalSTROM, luci, tapparelle e altre utenze sono collegate a morsetti nel quadro elettrico e controllate tramite pulsanti e un server digitalSTROM (dSS20). Quando si aggiungono altri sistemi come Philips Hue, Sonos e una FRITZ!Box, è naturale riunire tutto localmente in Home Assistant, senza un account cloud e senza memorizzare la password del dSS in Home Assistant. A questo scopo ho scritto una piccola integrazione e l'ho pubblicata, insieme alle relative automazioni, come [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) con licenza MIT.
+
+In breve: il dSS offre una JSON API utilizzabile con eventi. Usandola con cautela, pulsanti, scene e le attività Uscita e Arrivo arrivano in Home Assistant senza ritardi, consentendo di attivare automazioni che digitalSTROM da solo non conosce.
+
+## Come funziona l'integrazione
+
+Il dSS mette a disposizione la sua API sulla porta 8080 tramite HTTPS, con un certificato autofirmato. Per i programmi digitalSTROM prevede token per app: il programma richiede un token, l'utente lo autorizza nel Configurator in Sistema > Autorizzazione di accesso, dopodiché il programma effettua l'accesso con esso. La password del dSS resta all'utente.
+
+```bash
+DSS=https://dss.local:8080/json
+curl -sk "$DSS/system/requestApplicationToken?applicationName=Home%20Assistant"
+curl -sk "$DSS/system/loginApplication?loginToken=<APP-TOKEN>"
+curl -sk "$DSS/event/subscribe?name=callScene&subscriptionID=42&token=<SESSION>"
+curl -sk "$DSS/event/get?subscriptionID=42&timeout=30000&token=<SESSION>"
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-s` | nessuna indicazione di avanzamento |
+| `-k` | accetta il certificato autofirmato del dSS |
+| `requestApplicationToken` | crea un token per app che deve essere autorizzato nel Configurator |
+| `loginApplication` | scambia il token per app autorizzato con un token di sessione |
+| `event/subscribe` | sottoscrive un evento (`callScene`, `stateChange`, `buttonClick` …) con un ID scelto liberamente |
+| `event/get` con `timeout` | attende fino a 30 secondi nuovi eventi (long poll) |
+
+</details>
+
+L'integrazione mantiene permanentemente aperta una connessione long poll di questo tipo. Ogni scena attivata da un pulsante, dall'app o dal Configurator arriva come evento. Stati quali «luce accesa nella stanza» o la presenza sono disponibili nella cache del dSS in `/usr/states` e possono essere interrogati senza gravare sui morsetti.
+
+Le interrogazioni dirette dei valori di uscita (`device/getOutputValue`) passano invece attraverso il bus dS485 fino al morsetto e richiedono da mezzo secondo a un secondo per valore. Molte interrogazioni di questo tipo a intervalli brevi possono sovraccaricare i meter. Per questo l'integrazione legge direttamente solo le posizioni delle tapparelle e le uscite Joker, ogni 15 minuti e circa un minuto dopo un movimento.
+
+| Piattaforma | Contenuto |
+|---|---|
+| `light` | una luce per stanza, comandata tramite scene della stanza come i pulsanti; luminosità con morsetti dimmerabili, solo acceso/spento con quelli commutati |
+| `cover` | tapparelle con apertura, chiusura, stop e posizione |
+| `scene` | atmosfere denominate nel Configurator |
+| `button` | Uscita (scena 72) e Arrivo (scena 71) |
+| `binary_sensor` | presenza, allarme vento, rilevatori di movimento, uscite Joker |
+| `sensor` | consumo totale |
+
+Inoltre, l'integrazione segnala a Home Assistant ogni scena della stanza nonché Uscita e Arrivo come evento `digitalstrom_local_event`. In questo modo è possibile assegnare liberamente 2× o 4× tocchi su un normale interruttore della luce.
+
+## Automazioni come blueprint
+
+Le seguenti automazioni sono incluse nel repository come blueprint e possono essere importate in Home Assistant tramite il pulsante di importazione nel README.
+
+### Luce con rilevamento di movimento che non spegne una luce accesa manualmente
+
+In caso di movimento la luce si accende e, dopo un tempo configurabile senza movimento, si spegne di nuovo. Facoltativamente, questo vale solo sotto una soglia di luminosità, solo in una fascia oraria o con luce attenuata di notte. Se qualcuno accende la luce dal pulsante, resta accesa. Un interruttore di supporto (`input_boolean`) memorizza se l'automazione ha acceso la luce; solo in tal caso la spegne di nuovo.
+
+Un dettaglio emerge solo durante il funzionamento: il trigger «rilevatore inattivo da 2 minuti» è un contatore che Home Assistant scarta a ogni riavvio. Se il rilevatore ha rilevato movimento per l'ultima volta prima del riavvio, non avviene una nuova transizione a «inattivo» e la luce resta accesa. Per questo il blueprint verifica inoltre ogni minuto se una luce da esso accesa è ancora accesa nonostante il rilevatore sia inattivo da abbastanza tempo.
+
+### Spegnere la luce quando si esce dalla stanza
+
+Il tempo di spegnimento della luce con rilevamento di movimento è un compromesso: troppo breve e la luce si spegne mentre qualcuno resta immobile nella stanza; troppo lungo e rimane accesa per minuti dopo l'uscita. Un ulteriore blueprint utilizza quindi un secondo rilevatore fuori dalla stanza, in genere nel corridoio. Se rileva movimento, il rilevatore nella stanza ha rilevato movimento poco prima (entro 30 secondi) e successivamente lì resta inattivo, la luce nella stanza si spegne subito. Con i rilevatori Hue, che segnalano «inattivo» circa 10 secondi dopo l'ultimo movimento, ciò avviene all'incirca 10-15 secondi dopo essere usciti.
+
+Per evitare che qualcuno resti al buio, la regola si applica solo a determinate condizioni: la luce deve essere stata accesa dall'automazione del movimento, la modalità doccia non deve essere attiva e in casa può esserci al massimo una persona. Il numero di persone deriva dai telefoni che Home Assistant riconosce come persone. La condizione dei 30 secondi protegge inoltre dal caso in cui qualcuno resti immobile a lungo nella stanza e un'altra persona passi nel corridoio.
+
+### Modalità doccia con 2× tocchi
+
+Nella doccia, un rilevatore di movimento solitamente non rileva nessuno e, trascorso il tempo impostato, diventa buio. Con 2× tocchi sul pulsante del bagno, digitalSTROM attiva l'atmosfera 2 (scena 17). L'automazione riconosce questa scena nella stanza e attiva una modalità doccia che blocca lo spegnimento. I movimenti nei primi 2 minuti vengono ignorati (spogliarsi, entrare). Il primo movimento successivo termina la modalità doccia; da quel momento vale di nuovo il normale tempo di spegnimento. Dopo una durata massima configurabile (standard 20 minuti), termina automaticamente.
+
+### 4× tocchi avviano Sonos
+
+Toccando rapidamente più volte un pulsante, digitalSTROM attiva in sequenza le atmosfere: scena 5, 17, 18 e, al quarto tocco, 19. Se nel Configurator si imposta la scena 19 su «non modificare l'uscita» per tutte le lampade, questa resta libera per altri scopi. Un blueprint reagisce a questa scena, spegne la luce della stanza e avvia l'altoparlante Sonos nella stanza oppure, nelle stanze senza altoparlante, più altoparlanti insieme.
+
+Lo script tiene conto di tre aspetti: se un altoparlante è già in funzione, alla sua gruppo viene aggiunta la nuova stanza, affinché la riproduzione resti sincronizzata. Se non è possibile riprendere nulla, viene riprodotta una stazione radio dalla directory Radio Browser. E prima di ogni avvio viene impostato lo stesso volume iniziale, altrimenti una stanza riproduce a basso volume e l'altra al volume a cui qualcuno ha ascoltato musica l'ultima volta.
+
+### Uscita e Arrivo tramite FRITZ!Box
+
+L'integrazione FRITZ!Box Tools segnala se un telefono è nella WLAN; valuta l'elenco dei dispositivi del box e copre quindi contemporaneamente rete a 2,4 GHz, rete a 5 GHz e LAN. Se non c'è più nessuno in casa e non è stato premuto Uscita, un blueprint attiva Uscita. Al rientro segue Arrivo e, se è buio, una luce di benvenuto.
+
+In aggiunta, un'automazione può spegnere le lampade di altri sistemi (per esempio Hue) e mettere in pausa Sonos all'uscita. Il dSS spegne autonomamente le lampade digitalSTROM.
+
+## Pianta come dashboard
+
+Una rappresentazione chiara in Home Assistant è una pianta con la scheda integrata `picture-elements`. Per ogni stanza, un SVG trasparente si sovrappone alla pianta e viene sostituito da uno leggermente giallo quando la luce è accesa; toccando la stanza si accende o spegne la luce. Lampade, altoparlanti, tapparelle e rilevatori sono posizionati come simboli nella loro ubicazione. Le istruzioni con una configurazione di esempio sono disponibili nel repository in `docs/floor-plan-dashboard.md`.
+
+## Problemi riscontrati nella pratica
+
+| Problema | Causa | Soluzione |
+|---|---|---|
+| Pulsante Uscita senza effetto | dSS non in rete, le attività su più circuiti elettrici passano dal server | ripristinata la connessione di rete del dSS |
+| Le tapparelle non reagiscono | l'allarme vento era impostato su «attivo», benché non fosse presente alcun sensore del vento | attivata la scena 87 («nessun vento») per tutte le stanze |
+| Le tapparelle non si alzano all'uscita | scena 72 su «non modificare l'uscita» (`dontCare`) | `device/setSceneMode` con `dontCare=0`; il valore `false` è stato accettato, ma ignorato |
+| Non è possibile regolare l'intensità della luce | tubo fluorescente su un morsetto commutato (modalità di uscita 35) | l'integrazione riconosce i morsetti commutati e offre solo acceso/spento |
+| La luce resta accesa dopo il riavvio | il contatore per «inattivo da X minuti» si perde al riavvio | controllo aggiuntivo ogni minuto |
+| Il telefono risulta assente | iPhone usa un indirizzo WLAN privato variabile e in stato di riposo disconnette brevemente la WLAN | indirizzo WLAN privato impostato su «Fisso», periodo di tolleranza di 10 minuti |
+| DECT trasmette continuamente | «DECT Eco» non è disponibile non appena è registrato un dispositivo FRITZ! Smart Home | rinunciare alle prese DECT se si desidera DECT Eco |
+
+Una ricerca di dispositivi sul bridge Hue aggiunge tutti i dispositivi che si trovano in quel momento in modalità di associazione. Verificare poi nell'elenco dei dispositivi che siano state aggiunte solo le proprie lampade.
+
+Le tabelle delle scene dei morsetti possono essere lette e modificate tramite l'API, ad esempio con `device/getSceneMode` e `device/saveScene`. Ciascuna di queste chiamate passa attraverso il bus. Prima di apportare modifiche, salvare i vecchi valori, per esempio in un file CSV, per poterli ripristinare se necessario.
+
+## Fonti
+
+1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): integrazione e blueprint di questo articolo, licenza MIT.
+
+2.  [digitalSTROM: Manuale d'uso e configurazione](https://www.digitalstrom.com/wp-content/uploads/2021/08/AHB_DE_A1121D001V013_neu.pdf): attività Uscita (tenere premuto per 3 secondi), impostazione «non modificare l'uscita» nel capitolo 3.5.2.
+
+3.  [digitalSTROM: Documentazione dei pulsanti dei morsetti](https://www.digitalstrom.com/wp-content/uploads/2021/08/A0818D078V001_Tastendokumentation.pdf): impostazioni di fabbrica delle funzioni dei pulsanti per tipo di morsetto.
+
+4.  [digitalSTROM: Manuali d'uso](https://www.digitalstrom.com/bedienungsanleitungen/): panoramica dei manuali, documenti per progettazione e installazione.
+
+5.  [Home Assistant: FRITZ!Box Tools](https://www.home-assistant.io/integrations/fritz/): rilevamento della presenza, interruttori WLAN, opzioni dell'integrazione.
+
+6.  [Home Assistant: Picture Elements card](https://www.home-assistant.io/dashboards/picture-elements/): base della dashboard della pianta.
+
+7.  [Home Assistant: Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): importazione e utilizzo dei blueprint.
+
+8.  [FRITZ! Knowledge Base: la presa FRITZ! perde la connessione](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): indicazioni sulla portata DECT e sulla potenza di trasmissione delle prese Smart Home.
+
+9.  [Radio Browser](https://www.radio-browser.info/): directory libera di flussi radio, integrata in Home Assistant come sorgente multimediale.
+
+----
+
 # Accesso a HIN Mail: Webmail, token per Outlook, password dimenticata e HIN Mail Global
 
 URL: https://rafaelpfister.ch/it/blog/accesso-a-hin-mail-webmail-token-per-outlook-password-dimenticata-e-hin-mail-global
@@ -67230,6 +67602,130 @@ Están afectadas las organizaciones que operan Zimbra como servidor de correo pr
 16.  [SecurityWeek: hackers atacan servidores Zimbra en una campaña de explotación activa](https://www.securityweek.com/hackers-target-zimbra-servers-in-active-exploitation-campaign/): contexto con el número de vulnerabilidades de Zimbra en el catálogo KEV.
 
 17.  [Wiki de Zimbra: Zmcontrol](https://wiki.zimbra.com/wiki/Zmcontrol): documentación de `zmcontrol -v` para consultar la versión.
+
+----
+
+# Conectar digitalSTROM con Home Assistant: integración local y automatizaciones
+
+URL: https://rafaelpfister.ch/es/blog/conectar-digitalstrom-con-home-assistant-integracion-local-y-automatizaciones
+Datum: 2026-10-06
+
+En las instalaciones de digitalSTROM, las luces, persianas y otros consumidores están conectados a bornes en el cuadro eléctrico y se controlan mediante pulsadores y un servidor digitalSTROM (dSS20). Si se añaden otros sistemas como Philips Hue, Sonos y una FRITZ!Box, resulta lógico reunirlo todo localmente en Home Assistant, sin cuenta en la nube y sin guardar la contraseña del dSS en Home Assistant. Para ello he escrito una pequeña integración y la he publicado junto con las automatizaciones correspondientes como [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) bajo licencia MIT.
+
+Conclusión breve: el dSS ofrece una API JSON funcional con eventos. Si se utiliza con moderación, permite llevar a Home Assistant los pulsadores, las escenas y las actividades Salir y Llegar sin retrasos, y activar así automatizaciones que digitalSTROM por sí solo no conoce.
+
+## Cómo funciona la integración
+
+El dSS proporciona su API por HTTPS en el puerto 8080, con un certificado autofirmado. Para los programas, digitalSTROM prevé tokens de aplicación: el programa solicita un token, el usuario lo autoriza en Configurator mediante Sistema > Autorización de acceso y, después, el programa inicia sesión con él. La contraseña del dSS permanece con el usuario.
+
+```bash
+DSS=https://dss.local:8080/json
+curl -sk "$DSS/system/requestApplicationToken?applicationName=Home%20Assistant"
+curl -sk "$DSS/system/loginApplication?loginToken=<APP-TOKEN>"
+curl -sk "$DSS/event/subscribe?name=callScene&subscriptionID=42&token=<SESSION>"
+curl -sk "$DSS/event/get?subscriptionID=42&timeout=30000&token=<SESSION>"
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-s` | sin indicador de progreso |
+| `-k` | acepta el certificado autofirmado del dSS |
+| `requestApplicationToken` | crea un token de aplicación que debe autorizarse en Configurator |
+| `loginApplication` | intercambia el token de aplicación autorizado por un token de sesión |
+| `event/subscribe` | suscribe un evento (`callScene`, `stateChange`, `buttonClick` …) con un ID elegido libremente |
+| `event/get` con `timeout` | espera hasta 30 segundos nuevos eventos (Long-Poll) |
+
+</details>
+
+La integración mantiene permanentemente abierta una conexión Long-Poll de este tipo. Cada escena activada por un pulsador, la aplicación o Configurator llega como evento. Estados como «luz encendida en la habitación» o la presencia se encuentran en la caché del dSS bajo `/usr/states` y pueden consultarse sin cargar los bornes.
+
+Las consultas directas de valores de salida (`device/getOutputValue`), en cambio, recorren el bus dS485 hasta el borne y tardan entre medio segundo y un segundo por valor. Muchas consultas de este tipo a intervalos cortos pueden sobrecargar los medidores. Por ello, la integración solo lee directamente las posiciones de las persianas y las salidas Joker, cada 15 minutos y aproximadamente un minuto después de un desplazamiento.
+
+| Plataforma | Contenido |
+|---|---|
+| `light` | una luz por habitación, controlada mediante escenas de habitación como los pulsadores; brillo en bornes regulables, solo encendido/apagado en los conmutados |
+| `cover` | persianas con subir, bajar, detener y posición |
+| `scene` | ambientes nombrados en Configurator |
+| `button` | Salir (escena 72) y Llegar (escena 71) |
+| `binary_sensor` | presencia, alarma de viento, detectores de movimiento, salidas Joker |
+| `sensor` | consumo total |
+
+Además, la integración notifica a Home Assistant cada escena de habitación, así como Salir y Llegar, como evento `digitalstrom_local_event`. Esto permite asignar libremente 2 o 4 pulsaciones en un interruptor de luz convencional.
+
+## Automatizaciones como Blueprints
+
+Las siguientes automatizaciones están incluidas como Blueprints en el repositorio y pueden importarse a Home Assistant mediante el botón de importación del README.
+
+### Luz por movimiento que no apaga la luz encendida manualmente
+
+Cuando hay movimiento, la luz se enciende y vuelve a apagarse tras un tiempo configurable sin movimiento. Opcionalmente, esto solo se aplica por debajo de un umbral de luminosidad, dentro de una franja horaria o con atenuación nocturna. Si alguien enciende la luz con el pulsador, permanece encendida. Para ello, un interruptor auxiliar (`input_boolean`) recuerda si la automatización encendió la luz; solo entonces también la apaga.
+
+Un detalle solo se hace evidente durante el funcionamiento: el disparador «detector inactivo durante 2 minutos» es un contador que Home Assistant descarta en cada reinicio. Si el detector registró movimiento por última vez antes del reinicio, no se produce un nuevo cambio a «inactivo» y la luz permanece encendida. Por eso, el Blueprint comprueba además cada minuto si una luz encendida por él sigue encendida aunque el detector lleve suficiente tiempo inactivo.
+
+### Apagar la luz al salir de la habitación
+
+El tiempo de apagado de la luz por movimiento es un compromiso: si es demasiado corto, la luz se apaga mientras alguien permanece quieto en la habitación; si es demasiado largo, sigue encendida durante minutos tras salir. Por eso, otro Blueprint utiliza un segundo detector fuera de la habitación, normalmente en el pasillo. Si este detecta movimiento, el detector de la habitación había visto movimiento poco antes (en los últimos 30 segundos) y posteriormente permanece inactivo allí, la luz de la habitación se apaga inmediatamente. Con detectores Hue, que informan de «inactividad» unos 10 segundos después del último movimiento, esto ocurre aproximadamente entre 10 y 15 segundos después de salir.
+
+Para que nadie se quede a oscuras, la regla solo se aplica bajo ciertas condiciones: la luz debe haber sido encendida por la automatización de movimiento, el modo ducha no debe estar activo y debe haber como máximo una persona en casa. El número de personas se obtiene de los teléfonos que Home Assistant conoce como personas. La condición de 30 segundos protege además contra el caso en que alguien permanece quieto durante más tiempo en la habitación y otra persona pasa por el pasillo.
+
+### Modo ducha con 2 pulsaciones
+
+En la ducha, un detector de movimiento normalmente no detecta a nadie y, tras el tiempo configurado, se queda oscuro. Pulsar 2 veces el botón del baño activa en digitalSTROM el ambiente 2 (escena 17). La automatización detecta esta escena en la habitación y activa un modo ducha que bloquea el apagado. Los movimientos durante los primeros 2 minutos se ignoran (desvestirse, entrar). El primer movimiento posterior finaliza el modo ducha; a partir de entonces vuelve a aplicarse el tiempo de apagado normal. Tras una duración máxima configurable (20 minutos de forma predeterminada), termina por sí solo.
+
+### 4 pulsaciones inician Sonos
+
+Al pulsar varias veces rápidamente un pulsador, digitalSTROM activa los ambientes en orden: escena 5, 17, 18 y 19 en la cuarta pulsación. Si se configura la escena 19 en Configurator como «no modificar salida» para todas las lámparas, queda libre para otros fines. Un Blueprint reacciona a esta escena, apaga la luz de la habitación e inicia el altavoz Sonos de la habitación o, en habitaciones sin altavoz, varios altavoces agrupados.
+
+El script correspondiente tiene en cuenta tres aspectos: si ya hay un altavoz en reproducción, se añade la nueva habitación a su grupo para que la reproducción permanezca sincronizada. Si no se puede reanudar nada, reproduce una emisora de radio del directorio Radio Browser. Y antes de cada inicio se establece el mismo volumen inicial; de lo contrario, una habitación suena baja y otra tan alta como la última vez que alguien escuchó música.
+
+### Salir y llegar mediante FRITZ!Box
+
+La integración FRITZ!Box Tools informa de si un teléfono está en la WLAN; evalúa la lista de dispositivos de la caja y cubre simultáneamente la red de 2,4 GHz, la de 5 GHz y LAN. Si ya no hay nadie en casa y no se ha pulsado Salir, un Blueprint activa Salir. Al volver a casa, sigue Llegar y, si está oscuro, una luz de bienvenida.
+
+Como complemento, una automatización puede apagar al salir las lámparas de otros sistemas (por ejemplo, Hue) y pausar Sonos. El propio dSS apaga las lámparas digitalSTROM.
+
+## Plano como panel de control
+
+Una visualización clara en Home Assistant es un plano con la tarjeta integrada `picture-elements`. En cada habitación se coloca un SVG transparente sobre el plano, que se sustituye por otro ligeramente amarillo cuando la luz está encendida; al pulsar la habitación se enciende o apaga la luz. Lámparas, altavoces, persianas y detectores se muestran como símbolos en su ubicación. Las instrucciones con una configuración de ejemplo se encuentran en el repositorio bajo `docs/floor-plan-dashboard.md`.
+
+## Problemas de la práctica
+
+| Problema | Causa | Solución |
+|---|---|---|
+| El pulsador Salir no tiene efecto | El dSS no está en la red; las actividades a través de varios circuitos eléctricos se ejecutan mediante el servidor | Se restableció la conexión de red del dSS |
+| Las persianas no reaccionan | La alarma de viento estaba en «activa» aunque no había sensor de viento | Se activó la escena 87 («sin viento») para todas las habitaciones |
+| Las persianas no suben al salir | Escena 72 configurada como «no modificar salida» (`dontCare`) | `device/setSceneMode` con `dontCare=0`; se aceptó el valor `false`, pero se ignoró |
+| No se puede regular la luz | Tubo fluorescente conectado a un borne conmutado (modo de salida 35) | La integración detecta los bornes conmutados y allí solo ofrece encendido/apagado |
+| La luz permanece encendida tras reiniciar | El contador de «inactivo desde hace X minutos» se pierde al reiniciar | Comprobación adicional cada minuto |
+| El teléfono se considera ausente | El iPhone utiliza una dirección WLAN privada cambiante y desconecta brevemente la WLAN en reposo | Dirección WLAN privada configurada como «Fija», período de gracia de 10 minutos |
+| DECT transmite continuamente | «DECT Eco» no está disponible en cuanto se registra un dispositivo FRITZ! Smart Home | Prescindir de enchufes DECT si se desea DECT Eco |
+
+Una búsqueda de dispositivos en el puente Hue añade todos los dispositivos que se encuentren en modo de emparejamiento en ese momento. Después, compruebe en la lista de dispositivos que solo se hayan añadido sus propias lámparas.
+
+Las tablas de escenas de los bornes pueden leerse y modificarse mediante la API, por ejemplo con `device/getSceneMode` y `device/saveScene`. Cada una de estas llamadas pasa por el bus. Antes de realizar cambios, guarde los valores anteriores, por ejemplo en un archivo CSV, para poder restaurarlos si fuera necesario.
+
+## Fuentes
+
+1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): integración y Blueprints de este artículo, licencia MIT.
+
+2.  [digitalSTROM: Manual de uso y configuración](https://www.digitalstrom.com/wp-content/uploads/2021/08/AHB_DE_A1121D001V013_neu.pdf): actividad Salir (mantener pulsado 3 segundos), ajuste «no modificar salida» en el capítulo 3.5.2.
+
+3.  [digitalSTROM: Documentación de pulsadores de los bornes](https://www.digitalstrom.com/wp-content/uploads/2021/08/A0818D078V001_Tastendokumentation.pdf): configuraciones de fábrica de las funciones de los pulsadores según el tipo de borne.
+
+4.  [digitalSTROM: Manuales de instrucciones](https://www.digitalstrom.com/bedienungsanleitungen/): resumen de manuales y documentación de planificación e instalación.
+
+5.  [Home Assistant: FRITZ!Box Tools](https://www.home-assistant.io/integrations/fritz/): detección de presencia, interruptor WLAN, opciones de la integración.
+
+6.  [Home Assistant: tarjeta Picture Elements](https://www.home-assistant.io/dashboards/picture-elements/): base del panel de plano.
+
+7.  [Home Assistant: Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): importación y uso de Blueprints.
+
+8.  [Base de conocimientos de FRITZ!: el enchufe FRITZ! pierde la conexión](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): indicaciones sobre el alcance y la potencia de transmisión DECT en enchufes Smart Home.
+
+9.  [Radio Browser](https://www.radio-browser.info/): directorio libre de transmisiones de radio, integrado en Home Assistant como fuente multimedia.
 
 ----
 
@@ -83814,6 +84310,130 @@ Berörda är organisationer som driver Zimbra som egen e-postserver och tar emot
 
 ----
 
+# Anslut digitalSTROM till Home Assistant: lokal integration och automationer
+
+URL: https://rafaelpfister.ch/sv/blog/anslut-digitalstrom-till-home-assistant-lokal-integration-och-automationer
+Datum: 2026-10-06
+
+I digitalSTROM-installationer är lampor, persienner och andra förbrukare anslutna till klämmor i elcentralen och styrs via tryckknappar och en digitalSTROM-server (dSS20). När ytterligare system som Philips Hue, Sonos och en FRITZ!Box tillkommer är det naturligt att samla allt lokalt i Home Assistant, utan molnkonto och utan att lagra dSS-lösenordet i Home Assistant. För detta har jag skrivit en liten integration och publicerat den tillsammans med passande automationer som [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) under MIT-licens.
+
+Kort sammanfattat: dSS erbjuder ett användbart JSON-API med händelser. Den som använder det varsamt får tryckknappar, scener samt aktiviteterna Gå och Komma till Home Assistant utan fördröjning och kan därmed utlösa automationer som digitalSTROM inte känner till på egen hand.
+
+## Så fungerar integrationen
+
+dSS tillhandahåller sitt API på port 8080 via HTTPS, med ett självsignerat certifikat. För program erbjuder digitalSTROM app-token: Programmet begär en token, användaren godkänner den i Configurator under System > Åtkomstbehörighet och programmet loggar sedan in med den. dSS-lösenordet stannar hos användaren.
+
+```bash
+DSS=https://dss.local:8080/json
+curl -sk "$DSS/system/requestApplicationToken?applicationName=Home%20Assistant"
+curl -sk "$DSS/system/loginApplication?loginToken=<APP-TOKEN>"
+curl -sk "$DSS/event/subscribe?name=callScene&subscriptionID=42&token=<SESSION>"
+curl -sk "$DSS/event/get?subscriptionID=42&timeout=30000&token=<SESSION>"
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativen</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `-s` | ingen förloppsindikator |
+| `-k` | acceptera dSS:s självsignerade certifikat |
+| `requestApplicationToken` | skapar en app-token som måste godkännas i Configurator |
+| `loginApplication` | byter den godkända app-token mot en session-token |
+| `event/subscribe` | prenumererar på en händelse (`callScene`, `stateChange`, `buttonClick` …) under ett valfritt ID |
+| `event/get` med `timeout` | väntar upp till 30 sekunder på nya händelser (long poll) |
+
+</details>
+
+Integrationen håller en sådan long poll-anslutning öppen permanent. Varje scen som utlöses av en tryckknapp, appen eller Configurator kommer in som en händelse. Tillstånd som ”ljus på i rummet” eller närvaro finns i dSS:s cache under `/usr/states` och kan hämtas utan att belasta klämmorna.
+
+Direkta frågor om utgångsvärden (`device/getOutputValue`) går däremot via dS485-bussen hela vägen till klämman och tar en halv till en sekund per värde. Många sådana frågor med korta intervall kan överbelasta mätarna. Integrationen läser därför endast persiennpositioner och Joker-utgångar direkt, var 15:e minut och ungefär en minut efter en körning.
+
+| Plattform | Innehåll |
+|---|---|
+| `light` | en lampa per rum, styrd via rumsscener som tryckknapparna; ljusstyrka för dimrade klämmor, endast på/av för switchade |
+| `cover` | persienner med upp, ned, stopp och position |
+| `scene` | stämningar namngivna i Configurator |
+| `button` | Gå (scen 72) och Komma (scen 71) |
+| `binary_sensor` | närvaro, vindlarm, rörelsedetektorer, Joker-utgångar |
+| `sensor` | total förbrukning |
+
+Dessutom rapporterar integrationen varje rumsscen samt Gå och Komma som händelsen `digitalstrom_local_event` till Home Assistant. Därmed kan 2× eller 4× tryckningar på en vanlig ljusknapp tilldelas fritt.
+
+## Automationer som Blueprints
+
+Följande automationer ingår som Blueprints i repositoriet och kan läggas till i Home Assistant via importknappen i README.
+
+### Rörelsebelysning som inte släcker manuellt tänd belysning
+
+Vid rörelse tänds ljuset och släcks igen efter en inställbar tid utan rörelse. Valfritt gäller detta endast under en ljusstyrketröskel, endast inom ett tidsfönster eller dämpat på natten. Om någon tänder ljuset med tryckknappen förblir det tänt. En hjälpbrytare (`input_boolean`) minns om automationen tände ljuset; endast då släcker den det också igen.
+
+En detalj märks först under drift: Utlösaren ”detektorn har varit lugn i 2 minuter” är en räknare som Home Assistant förkastar vid varje omstart. Om detektorn senast registrerade rörelse före omstarten sker ingen ny övergång till ”lugn”, och ljuset förblir tänt. Blueprinten kontrollerar därför dessutom varje minut om ett ljus som den har tänt fortfarande lyser trots att detektorn har varit lugn tillräckligt länge.
+
+### Släck ljuset när rummet lämnas
+
+Avstängningstiden för rörelsebelysningen är en kompromiss: Är den för kort släcks ljuset medan någon står stilla i rummet; är den för lång fortsätter det lysa i flera minuter efter att rummet lämnats. En annan Blueprint använder därför en andra detektor utanför rummet, vanligtvis i hallen. Om denna registrerar rörelse, detektorn i rummet nyligen (inom 30 sekunder) också har registrerat rörelse och det sedan förblir lugnt där, släcks ljuset i rummet omedelbart. Med Hue-detektorer, som rapporterar ”lugn” ungefär 10 sekunder efter den senaste rörelsen, blir det cirka 10 till 15 sekunder efter att man gått ut.
+
+För att ingen ska sitta i mörkret gäller regeln endast under vissa villkor: Ljuset måste ha tänts av rörelseautomation, ett duschläge får inte vara aktivt och högst en person får vara hemma. Antalet personer avgörs av mobilerna som Home Assistant känner till som personer. 30-sekundersvillkoret skyddar dessutom mot fallet att någon står stilla i rummet under längre tid medan en annan person går genom hallen.
+
+### Duschläge med 2× tryckningar
+
+I duschen registrerar en rörelsedetektor oftast ingen, och efter den inställda tiden blir det mörkt. 2× tryckningar på badrumsknappen utlöser stämning 2 (scen 17) i digitalSTROM. Automation känner igen denna scen i rummet och aktiverar ett duschläge som blockerar avstängning. Rörelser under de första 2 minuterna ignoreras (avklädning, att stiga in). Den första rörelsen därefter avslutar duschläget, och från då gäller åter den normala avstängningstiden. Efter en inställbar maximal tid (standard 20 minuter) avslutas det automatiskt.
+
+### 4× tryckningar startar Sonos
+
+När man trycker snabbt flera gånger på en knapp växlar digitalSTROM genom stämningarna i tur och ordning: scen 5, 17, 18 och 19 vid den fjärde tryckningen. Om scen 19 i Configurator ställs in på ”Ändra inte utgång” för alla lampor är den ledig för andra ändamål. En Blueprint reagerar på denna scen, släcker rummets ljus och startar Sonos-högtalaren i rummet eller, i rum utan högtalare, flera högtalare tillsammans.
+
+Skriptet tar hänsyn till tre saker: Om en högtalare redan spelar läggs det nya rummet till i dess grupp så att uppspelningen förblir synkroniserad. Om inget kan återupptas spelas en radiostation från Radio Browser-katalogen. Och före varje start ställs samma startvolym in, annars spelar det ena rummet tyst och det andra lika högt som någon senast lyssnade på musik.
+
+### Gå och Komma via FRITZ!Box
+
+Integrationen FRITZ!Box Tools rapporterar om en mobil är ansluten till WLAN; den utvärderar boxens enhetslista och täcker därmed 2,4 GHz-nät, 5 GHz-nät och LAN samtidigt. Om ingen längre är hemma och Gå inte har aktiverats utlöser en Blueprint Gå. När någon kommer hem följer Komma och, om det är mörkt, en välkomstbelysning.
+
+Som komplement kan en automation släcka lampor i andra system (till exempel Hue) och pausa Sonos vid Gå. digitalSTROM-lamporna släcks av dSS självt.
+
+## Planritning som dashboard
+
+En tydlig visning i Home Assistant är en planritning med det inbyggda kortet `picture-elements`. I varje rum ligger en transparent SVG över planen, som ersätts av en svagt gul när ljuset är tänt; ett tryck på rummet växlar ljuset. Lampor, högtalare, persienner och detektorer placeras som symboler på sina respektive platser. Instruktionerna med exempelkonfiguration finns i repositoriet under `docs/floor-plan-dashboard.md`.
+
+## Problem från praktiken
+
+| Problem | Orsak | Lösning |
+|---|---|---|
+| Gå-knappen har ingen effekt | dSS är inte ansluten till nätverket, aktiviteter över flera strömkretsar går via servern | dSS:s nätverksanslutning återställdes |
+| Persienner reagerar inte | Vindlarm var inställt på ”aktivt” trots att ingen vindsensor finns | Scen 87 (”ingen vind”) utlöstes för alla rum |
+| Persienner körs inte upp vid Gå | Scen 72 är inställd på ”Ändra inte utgång” (`dontCare`) | `device/setSceneMode` med `dontCare=0`; värdet `false` accepterades men ignorerades |
+| Ljuset kan inte dimras | Lysrör anslutet till en switchad klämma (utgångsläge 35) | Integrationen identifierar switchade klämmor och erbjuder där endast på/av |
+| Ljuset förblir tänt efter omstart | Räknaren för ”lugn sedan X minuter” försvinner vid omstart | ytterligare kontroll varje minut |
+| Mobilen räknas som frånvarande | iPhone använder en växlande privat WLAN-adress och kopplar kort bort WLAN i viloläge | Privat WLAN-adress inställd på ”Fast”, respittid 10 minuter |
+| DECT sänder hela tiden | ”DECT Eco” är inte tillgängligt så snart en FRITZ!-smart-home-enhet är registrerad | avstå från DECT-uttag om DECT Eco önskas |
+
+En enhetssökning på Hue-bryggan lägger till alla enheter som just då är i parkopplingsläge. Kontrollera därefter i enhetslistan att endast dina egna lampor har lagts till.
+
+Klämmornas scentabeller kan läsas ut och ändras via API:t, till exempel med `device/getSceneMode` och `device/saveScene`. Vart och ett av dessa anrop går via bussen. Säkerhetskopiera de gamla värdena före ändringar, exempelvis i en CSV-fil, så att de kan återställas vid behov.
+
+## Källor
+
+1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): Integration och Blueprints från denna artikel, MIT-licens.
+
+2.  [digitalSTROM: Handbok för användning och inställning](https://www.digitalstrom.com/wp-content/uploads/2021/08/AHB_DE_A1121D001V013_neu.pdf): Aktiviteten Gå (håll inne i 3 sekunder), inställningen ”Ändra inte utgång” i kapitel 3.5.2.
+
+3.  [digitalSTROM: Dokumentation för klämmornas knappar](https://www.digitalstrom.com/wp-content/uploads/2021/08/A0818D078V001_Tastendokumentation.pdf): Fabriksinställningar för knappfunktioner per klämmtyp.
+
+4.  [digitalSTROM: Bruksanvisningar](https://www.digitalstrom.com/bedienungsanleitungen/): Översikt över handböcker, planerings- och installationsunderlag.
+
+5.  [Home Assistant: FRITZ!Box Tools](https://www.home-assistant.io/integrations/fritz/): Närvarodetektering, WLAN-brytare, integrationsalternativ.
+
+6.  [Home Assistant: Picture Elements card](https://www.home-assistant.io/dashboards/picture-elements/): Grund för planritningsdashboarden.
+
+7.  [Home Assistant: Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): Import och användning av Blueprints.
+
+8.  [FRITZ! kunskapsdatabas: FRITZ!-uttag tappar anslutningen](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): Information om DECT-räckvidd och radiosändareffekt för smart-home-uttag.
+
+9.  [Radio Browser](https://www.radio-browser.info/): Fri katalog över radioströmmar, integrerad som mediekälla i Home Assistant.
+
+----
+
 # HIN Mail-inloggning: webbmail, Outlook-token, glömt lösenord och HIN Mail Global
 
 URL: https://rafaelpfister.ch/sv/blog/hin-mail-inloggning-webbmail-outlook-token-glomt-losenord-och-hin-mail-global
@@ -100034,6 +100654,130 @@ For use in TotemoMail, the observations above suggest this approach: import the 
 5.  [OpenSSL documentation: openssl-pkcs12](https://docs.openssl.org/master/man1/openssl-pkcs12/): Creating and checking PKCS#12 files.
 
 6.  [crt.sh](https://crt.sh): Search Certificate Transparency logs to verify issuance of a public certificate.
+
+----
+
+# Koble digitalSTROM til Home Assistant: lokal integrasjon og automasjoner
+
+URL: https://rafaelpfister.ch/no/blog/koble-digitalstrom-til-home-assistant-lokal-integrasjon-og-automasjoner
+Datum: 2026-10-06
+
+I digitalSTROM-installasjoner er lys, persienner og andre forbrukere koblet til klemmer i sikringsskapet, styrt via brytere og en digitalSTROM-server (dSS20). Når flere systemer som Philips Hue, Sonos og en FRITZ!Box kommer til, er det nærliggende å samle alt lokalt i Home Assistant, uten skykonto og uten å lagre passordet til dSS i Home Assistant. Derfor har jeg skrevet en liten integrasjon og publisert den sammen med passende automasjoner som [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) under MIT-lisens.
+
+Kort oppsummert: dSS tilbyr et brukbart JSON-API med hendelser. De som bruker det skånsomt, får brytere, scener og aktivitetene Borte og Hjem uten forsinkelse inn i Home Assistant og kan dermed utløse automasjoner som digitalSTROM alene ikke kjenner.
+
+## Slik fungerer integrasjonen
+
+DSS tilbyr API-et sitt på port 8080 via HTTPS, med et selvsignert sertifikat. digitalSTROM har app-tokener for programmer: Programmet ber om et token, brukeren godkjenner det i Configurator under System > Access authorization, og deretter logger programmet inn med det. Passordet til dSS forblir hos brukeren.
+
+```bash
+DSS=https://dss.local:8080/json
+curl -sk "$DSS/system/requestApplicationToken?applicationName=Home%20Assistant"
+curl -sk "$DSS/system/loginApplication?loginToken=<APP-TOKEN>"
+curl -sk "$DSS/event/subscribe?name=callScene&subscriptionID=42&token=<SESSION>"
+curl -sk "$DSS/event/get?subscriptionID=42&timeout=30000&token=<SESSION>"
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-s` | ingen fremdriftsvisning |
+| `-k` | godta selvsignert sertifikat fra dSS |
+| `requestApplicationToken` | oppretter et app-token som må godkjennes i Configurator |
+| `loginApplication` | bytter det godkjente app-tokenet mot et sesjonstoken |
+| `event/subscribe` | abonnerer på en hendelse (`callScene`, `stateChange`, `buttonClick` …) under en valgfri ID |
+| `event/get` med `timeout` | venter i opptil 30 sekunder på nye hendelser (long poll) |
+
+</details>
+
+Integrasjonen holder en slik long-poll-forbindelse åpen permanent. Hver scene som utløses av en bryter, appen eller Configurator, kommer inn som en hendelse. Tilstander som «lys på i rommet» eller tilstedeværelse ligger i hurtigbufferen til dSS under `/usr/states` og kan hentes uten å belaste klemmene.
+
+Direkte spørringer av utgangsverdier (`device/getOutputValue`) går derimot via dS485-bussen helt til klemmen og tar et halvt til ett sekund per verdi. Mange slike spørringer med korte intervaller kan overbelaste målerne. Integrasjonen leser derfor bare persienneposisjoner og Joker-utganger direkte, hvert 15. minutt og omtrent ett minutt etter en bevegelse.
+
+| Plattform | Innhold |
+|---|---|
+| `light` | ett lys per rom, styrt via romscener som bryterne; lysstyrke for dimmede klemmer, bare på/av for brytede |
+| `cover` | persienner med opp, ned, stopp og posisjon |
+| `scene` | stemninger med navn i Configurator |
+| `button` | Borte (scene 72) og Hjem (scene 71) |
+| `binary_sensor` | tilstedeværelse, vindalarm, bevegelsessensorer, Joker-utganger |
+| `sensor` | totalt forbruk |
+
+I tillegg rapporterer integrasjonen hver romscene samt Borte og Hjem som hendelsen `digitalstrom_local_event` til Home Assistant. Dermed kan 2× eller 4× trykk på en vanlig lysbryter tildeles fritt.
+
+## Automatiseringer som blueprints
+
+De følgende automatiseringene er inkludert som blueprints i repositoriet og kan importeres til Home Assistant via importknappen i README.
+
+### Bevegelseslys som ikke slår av lys som er slått på manuelt
+
+Ved bevegelse slås lyset på, og etter en justerbar tid uten bevegelse slås det av igjen. Valgfritt gjelder dette bare under en terskel for lysstyrke, bare i et tidsvindu eller dimmet om natten. Hvis noen slår på lyset med bryteren, forblir det på. En hjelpekontakt (`input_boolean`) husker om automasjonen slo på lyset; bare da slår den det også av igjen.
+
+En detalj blir først tydelig i drift: Utløseren «sensoren har vært rolig i 2 minutter» er en teller som Home Assistant forkaster ved hver omstart. Dersom sensoren sist registrerte bevegelse før omstarten, kommer det ingen ny overgang til «rolig», og lyset forblir på. Blueprintet kontrollerer derfor også hvert minutt om et lys det har slått på, fortsatt lyser selv om sensoren har vært rolig lenge nok.
+
+### Slå av lys når du forlater rommet
+
+Tidspunktet for å slå av bevegelseslyset er et kompromiss: Er det for kort, slås lyset av mens noen står stille i rommet; er det for langt, fortsetter det å lyse i flere minutter etter at rommet er forlatt. Et annet blueprint bruker derfor en andre sensor utenfor rommet, typisk i gangen. Hvis denne registrerer bevegelse, sensoren i rommet har registrert bevegelse kort tid før (innen 30 sekunder), og det deretter forblir rolig der inne, slås lyset i rommet av umiddelbart. Med Hue-sensorer, som rapporterer «rolig» rundt 10 sekunder etter siste bevegelse, skjer dette omtrent 10 til 15 sekunder etter at man går ut.
+
+For at ingen skal sitte i mørket, gjelder regelen bare under visse betingelser: Lyset må ha blitt slått på av bevegelsesautomasjonen, en dusjmodus må ikke være aktiv, og det kan maksimalt være én person hjemme. Antall personer beregnes ut fra mobiltelefonene som Home Assistant kjenner som personer. 30-sekundersbetingelsen beskytter dessuten mot tilfeller der noen står stille lenge i rommet mens en annen person går gjennom gangen.
+
+### Dusjmodus med 2× trykk
+
+I dusjen registrerer en bevegelsessensor som regel ingen, og etter den angitte tiden blir det mørkt. 2× trykk på baderomsbryteren utløser stemning 2 (scene 17) i digitalSTROM. Automatiseringen gjenkjenner denne scenen i rommet og slår på en dusjmodus som blokkerer avslåing. Bevegelser i de første 2 minuttene ignoreres (avkledning, innstigning). Den første bevegelsen etterpå avslutter dusjmodusen, og fra da av gjelder normal avslåingstid igjen. Etter en justerbar maksimal varighet (standard 20 minutter) avsluttes den av seg selv.
+
+### 4× trykk starter Sonos
+
+Når man trykker raskt flere ganger på en bryter, går digitalSTROM gjennom stemningene etter tur: scene 5, 17, 18 og 19 ved fjerde trykk. Hvis scene 19 settes til «ikke endre utgang» for alle lamper i Configurator, er den ledig for andre formål. Et blueprint reagerer på denne scenen, slår av romlyset og starter Sonos-høyttaleren i rommet eller, i rom uten høyttaler, flere høyttalere samlet.
+
+Skriptet tar hensyn til tre punkter: Hvis en høyttaler allerede spiller, legges det nye rommet til gruppen, slik at avspillingen forblir synkron. Hvis ingenting kan fortsettes, spilles en radiostasjon fra Radio Browser-katalogen. Og før hver start settes den samme startvolumet, ellers spiller det ene rommet lavt og det andre like høyt som sist noen hørte på musikk.
+
+### Borte og Hjem via FRITZ!Box
+
+Integrasjonen FRITZ!Box Tools rapporterer om en mobiltelefon er på WLAN; den evaluerer enhetslisten til boksen og dekker dermed 2,4 GHz-nett, 5 GHz-nett og LAN samtidig. Hvis ingen lenger er hjemme og Borte ikke er trykket, utløser et blueprint Borte. Når noen kommer hjem, følger Hjem og, hvis det er mørkt, et velkomstlys.
+
+I tillegg kan en automatisering slå av lampene i andre systemer (for eksempel Hue) og sette Sonos på pause ved Borte. digitalSTROM-lampene slår dSS av selv.
+
+## Plantegning som dashboard
+
+En oversiktlig fremstilling i Home Assistant er en plantegning med det innebygde kortet `picture-elements`. For hvert rom ligger en gjennomsiktig SVG over planen, som erstattes med en lett gul når lyset er slått på; et trykk på rommet slår på lyset. Lamper, høyttalere, persienner og sensorer er plassert som symboler der de befinner seg. Veiledningen med eksempelkonfigurasjon ligger i repositoriet under `docs/floor-plan-dashboard.md`.
+
+## Problemer fra praksis
+
+| Problem | Årsak | Løsning |
+|---|---|---|
+| Borte-bryter uten effekt | dSS er ikke på nettverket, aktiviteter på tvers av flere strømkretser går via serveren | nettverksforbindelsen til dSS ble gjenopprettet |
+| Persienner reagerer ikke | vindalarm var satt til «aktiv», selv om ingen vindsensor finnes | scene 87 («ingen vind») ble utløst for alle rom |
+| Persienner går ikke opp ved Borte | scene 72 er satt til «ikke endre utgang» (`dontCare`) | `device/setSceneMode` med `dontCare=0`; verdien `false` ble godtatt, men ignorert |
+| Lyset kan ikke dimmes | lysrør på en brytet klemme (utgangsmodus 35) | integrasjonen oppdager brytede klemmer og tilbyr der bare på/av |
+| Lyset forblir på etter omstart | teller for «rolig i X minutter» går tapt ved omstart | ekstra kontroll hvert minutt |
+| Mobiltelefonen anses som fraværende | iPhone bruker en skiftende privat WLAN-adresse og kobler kort fra WLAN i hvilemodus | privat WLAN-adresse satt til «Fast», grace-periode på 10 minutter |
+| DECT sender kontinuerlig | «DECT Eco» er ikke tilgjengelig så snart en FRITZ!-smarthjem-enhet er registrert | unngå DECT-stikkontakter hvis DECT Eco er ønsket |
+
+Et enhetssøk på Hue-broen legger til alle enheter som for øyeblikket er i paringsmodus. Kontroller deretter i enhetslisten at bare dine egne lamper er lagt til.
+
+Scenetabellene til klemmene kan leses ut og endres via API-et, for eksempel med `device/getSceneMode` og `device/saveScene`. Hvert av disse kallene går via bussen. Sikkerhetskopier de gamle verdiene før endringer, for eksempel i en CSV-fil, slik at de kan gjenopprettes ved behov.
+
+## Kilder
+
+1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): Integrasjon og blueprints fra denne artikkelen, MIT-lisens.
+
+2.  [digitalSTROM: Håndbok for betjening og innstillinger](https://www.digitalstrom.com/wp-content/uploads/2021/08/AHB_DE_A1121D001V013_neu.pdf): Aktiviteten Borte (hold inne i 3 sekunder), innstillingen «ikke endre utgang» i kapittel 3.5.2.
+
+3.  [digitalSTROM: Knappdokumentasjon for klemmene](https://www.digitalstrom.com/wp-content/uploads/2021/08/A0818D078V001_Tastendokumentation.pdf): Fabrikkinnstillinger for knappfunksjonene per klemmetype.
+
+4.  [digitalSTROM: Bruksanvisninger](https://www.digitalstrom.com/bedienungsanleitungen/): Oversikt over håndbøker, planleggings- og installasjonsdokumenter.
+
+5.  [Home Assistant: FRITZ!Box Tools](https://www.home-assistant.io/integrations/fritz/): Tilstedeværelsesregistrering, WLAN-bryter, integrasjonens alternativer.
+
+6.  [Home Assistant: Picture Elements card](https://www.home-assistant.io/dashboards/picture-elements/): Grunnlag for plantegningsdashboardet.
+
+7.  [Home Assistant: Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): Import og bruk av blueprints.
+
+8.  [FRITZ! Kunnskapsbase: FRITZ!-stikkontakt mister forbindelsen](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): Merknader om DECT-rekkevidde og sendeeffekt for smarthjem-stikkontakter.
+
+9.  [Radio Browser](https://www.radio-browser.info/): Fritt katalog over radiostrømmer, integrert i Home Assistant som mediekilde.
 
 ----
 

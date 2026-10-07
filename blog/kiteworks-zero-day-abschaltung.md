@@ -1,10 +1,10 @@
 ---
 title: "Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bislang bekannt ist"
 navTitle: "Kiteworks-Abschaltung"
-description: "Kiteworks fordert seine Kunden per E-Mail auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Grund ist eine Warnung von Strafverfolgungsbehörden vor einem möglichen Angriff. Seit 27.09. ist die Empfehlung aufgehoben; eine CVE oder einen neuen Patch gibt es nicht. Totemomail ist nicht betroffen."
+description: "Kiteworks forderte seine Kunden auf, alle Systeme am Samstag, 26.09.2026, von 04:00 bis 10:00 Uhr herunterzufahren. Abschlussbericht: Während der Abschaltung fand und schloss der Hersteller eine kritische Lücke ohne CVE; am 30.09. folgten 125 Advisories, darunter CVE-2026-54154 (CVSS 10.0) im Email Protection Gateway. Totemomail ist nicht betroffen."
 date: "2026-09-25"
 kategorie: "Kiteworks / Totemomail"
-timeToRead: "9 Min. Lesezeit"
+timeToRead: "12 Min. Lesezeit"
 themen:
   - "totemomail"
   - "sicherheitsluecken"
@@ -21,15 +21,23 @@ featured: "2026-09-28"
 translationId: "article-38fbaa0e9095957a"
 url: "https://rafaelpfister.ch/blog/kiteworks-zero-day-abschaltung"
 aiPrompt: |
-  Du bist mein Exchange- und Mailflow-Assistent. Kiteworks empfiehlt, alle Systeme am 26.09.2026 von 04:00 bis 10:00 Uhr herunterzufahren. Hilf mir zu ermitteln, welche Connectoren, Transportregeln und MX-Einträge in meiner Umgebung Mails über das Gateway leiten, wie ich den Mailflow für die Dauer der Abschaltung umleite oder kontrolliert anhalte und wie ich den ursprünglichen Zustand danach wiederherstelle. Frage zuerst nach meinem Aufbau (Exchange Online, Exchange Server oder Hybrid, Richtung des Mailflows, Position des Gateways).
+  Du bist mein Assistent für Kiteworks-Betrieb und Mail-Sicherheit. Kiteworks hat am 30.09.2026 125 Security Advisories für Core, Email Protection Gateway, Secure Data Forms und MFT veröffentlicht, alle behoben bis Version 9.5.1, darunter CVE-2026-54154 (CVSS 10.0, Email Protection Gateway vor 9.4.1). Hilf mir festzustellen, welche Kiteworks-Komponenten ich betreibe und in welcher Version, welche Advisories mich betreffen, wie ich das Update auf 9.5.1 plane (Cluster-Reihenfolge, Wartungsmodus, Mailflow-Umleitung während des Updates) und welche Protokolle ich auf Hinweise einer Kompromittierung prüfe. Frage zuerst nach meinem Aufbau (selbst betrieben oder gehostet, Komponenten, Version, Position des Gateways im Mailflow).
 ---
 # Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bislang bekannt ist
 
-Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle Kiteworks-Systeme am Samstag, 26. September, von 04:00 bis 10:00 Uhr (mitteleuropäische Zeit) herunterzufahren. Laut dem Schreiben des CISO Frank Balonis liegen dem Hersteller Hinweise von Strafverfolgungsbehörden vor, dass an diesem Wochenende ein Angriff auf Kiteworks-Systeme bevorstehen könnte. Der Kundensupport begründet die Abschaltung mit dem Schutz vor möglichen Zero-Day-Angriffen. heise online hat die Echtheit der Nachricht telefonisch beim Support bestätigt.
+Kiteworks hat seine Kunden am 25. September 2026 per E-Mail aufgefordert, alle Kiteworks-Systeme am Samstag, 26. September, von 04:00 bis 10:00 Uhr (mitteleuropäische Zeit) herunterzufahren. Laut dem Schreiben des CISO Frank Balonis lagen dem Hersteller Hinweise von Strafverfolgungsbehörden vor, dass an diesem Wochenende ein Angriff auf Kiteworks-Systeme bevorstehen könnte. Der Kundensupport begründete die Abschaltung mit dem Schutz vor möglichen Zero-Day-Angriffen. heise online hat die Echtheit der Nachricht telefonisch beim Support bestätigt.
 
-<div class="notfall-hinweis">
-<p class="notfall-hinweis__titel">Notfall-Unterstützung beim Umschalten des Mailflows</p>
-<p>Wenn Sie Hilfe brauchen, um den Mailflow vor der Abschaltung umzuleiten und danach wieder zurückzustellen, nutzen Sie bitte das <a href="https://adeptio.ch/">Kontaktformular auf adeptio.ch</a>. Ich melde mich auch kurzfristig.</p>
+<div class="update-hinweis">
+<p class="update-hinweis__titel">Abschlussbericht vom 7. Oktober 2026</p>
+<p>Der Vorfall ist aus Sicht des Herstellers abgeschlossen. Die Abschaltempfehlung gilt seit dem 27. September nicht mehr, ein Angriff auf Kiteworks- oder Kundensysteme ist bis heute nicht bekannt geworden. Die wichtigsten Ergebnisse:</p>
+<ul>
+<li><strong>Kritische Lücke während der Abschaltung gefunden:</strong> Laut Pressemitteilung vom 28. September stiess Kiteworks bei der Analyse mit den Bundesbehörden auf eine bisher unbekannte kritische Schwachstelle in einer Funktion, die bei weniger als 1 % der Kunden aktiviert ist. Der Hersteller hat im Abschaltfenster einen Fix entwickelt und ausgerollt und zusätzlich eine Schutzschicht in allen Umgebungen aktiviert. Welche Funktion betroffen war, ist nicht veröffentlicht; eine CVE-Nummer gibt es dafür bis heute nicht.</li>
+<li><strong>125 Advisories am 30. September:</strong> Zwei Tage später veröffentlichte Kiteworks auf GitHub 125 Security Advisories für Kiteworks Core (66), Email Protection Gateway (28), Secure Data Forms (28) und MFT Server (3); 12 davon kritisch, 49 hoch. Alle sind in Versionen bis einschliesslich 9.5.1 behoben, die meisten wurden über das Bug-Bounty-Programm auf YesWeHack gemeldet. Mit der Lücke aus dem Abschaltfenster haben sie nach heutigem Stand nichts zu tun.</li>
+<li><strong>CVE-2026-54154 (CVSS 10.0):</strong> Die schwerste Lücke betrifft das Email Protection Gateway vor Version 9.4.1. Ein nicht authentifizierter Angreifer kann über öffentlich erreichbare Endpunkte Code mit Root-Rechten ausführen. 10 der 12 kritischen Advisories betreffen das Email Protection Gateway.</li>
+<li><strong>Keine bekannte Ausnutzung:</strong> Für keine der Lücken gibt es Berichte über Angriffe; im CISA-KEV-Katalog steht Stand 7. Oktober kein Kiteworks-Eintrag aus 2026. Shadowserver zählt laut BleepingComputer knapp 400 aus dem Internet erreichbare Kiteworks-Instanzen.</li>
+<li><strong>Totemomail:</strong> Taucht in keinem der Advisories auf und war laut Hersteller von der Abschaltung nicht betroffen.</li>
+</ul>
+<p><strong>Handlungsbedarf:</strong> Wer Kiteworks selbst betreibt, sollte alle Komponenten auf Version 9.5.1 bringen; das Email Protection Gateway hat dabei Vorrang. Die Details stehen im Abschnitt <a href="#abschlussbericht">Abschlussbericht</a>.</p>
 </div>
 
 <div class="update-hinweis">
@@ -90,10 +98,25 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 <p class="timeline__titel">Empfehlung aufgehoben</p>
 <p>Kiteworks ergänzt die Pressemitteilung: Die Abschaltempfehlung ist für alle Kunden aufgehoben, die Systeme dürfen wieder laufen. Die gehosteten Instanzen sind wieder in Betrieb. Kunden mit selbst betriebenen Advanced Forms sollen sich an den Support wenden.</p>
 </li>
+<li class="timeline__item">
+<p class="timeline__zeit">Mo, 28. September</p>
+<p class="timeline__titel">Kritische Lücke gefunden und geschlossen</p>
+<p>Kiteworks meldet in einer weiteren Pressemitteilung, dass bei der Arbeit mit den Bundesbehörden während der Abschaltung eine bisher unbekannte kritische Schwachstelle gefunden wurde. Sie betrifft eine Funktion, die bei weniger als 1 % der Kunden aktiviert ist. Fix und zusätzliche Schutzschicht sind ausgerollt, Hinweise auf eine Kompromittierung gibt es keine. Funktion und CVE-Nummer nennt der Hersteller nicht.</p>
+</li>
+<li class="timeline__item">
+<p class="timeline__zeit">Mi, 30. September, ab 18:38</p>
+<p class="timeline__titel">125 Security Advisories auf GitHub</p>
+<p>Kiteworks veröffentlicht 125 Advisories für Core, Email Protection Gateway, Secure Data Forms und MFT Server, alle behoben bis Version 9.5.1. Die schwerste Lücke ist CVE-2026-54154 im Email Protection Gateway vor 9.4.1 (CVSS 10.0, Codeausführung mit Root-Rechten ohne Anmeldung).</p>
+</li>
+<li class="timeline__item">
+<p class="timeline__zeit">Do, 1. Oktober</p>
+<p class="timeline__titel">Medienberichte und MS-ISAC-Advisory</p>
+<p>BleepingComputer, SecurityOnline und weitere berichten über die Advisories; das MS-ISAC (Center for Internet Security) gibt ein eigenes Advisory zu CVE-2026-54154 heraus. Eine Ausnutzung ist nicht bekannt.</p>
+</li>
 <li class="timeline__item timeline__item--offen">
-<p class="timeline__zeit">Stand Mo, 28. September</p>
-<p class="timeline__titel">Weiterhin offen</p>
-<p>Kein öffentliches Advisory, keine CVE-Nummer, keine neue Version, keine Indikatoren, keine Angaben zur Lücke und keine Berichte über einen erfolgten oder versuchten Angriff.</p>
+<p class="timeline__zeit">Stand Mi, 7. Oktober</p>
+<p class="timeline__titel">Abschluss</p>
+<p>Keine Berichte über einen erfolgten oder versuchten Angriff, kein Kiteworks-Eintrag im CISA-KEV-Katalog. Offen bleiben die betroffene Funktion, eine CVE-Nummer für die Lücke aus dem Abschaltfenster und der Hintergrund der Behördenwarnung.</p>
 </li>
 </ol>
 
@@ -101,7 +124,7 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 
 Die Empfehlung gilt weltweit; die E-Mail nennt das Zeitfenster für alle Zeitzonen von AEST bis PDT. Kiteworks rät, die Systeme schon vor Beginn des Fensters herunterzufahren, und zwar auch dann, wenn sie nicht aus dem Internet erreichbar sind.
 
-Offen ist bisher fast alles andere: Es gibt kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Die Pressemitteilung nennt als Quelle „federal intelligence authorities“, vermutlich also US-Bundesbehörden; welche, ist nicht bekannt. Unter Security Updates und in den GitHub-Advisories von Kiteworks gibt es Stand 28. September keinen Eintrag; der letzte GitHub-Eintrag stammt vom 27. Mai 2026. Öffentlich sind die oben zitierte Stellungnahme und die Pressemitteilung vom 25. September.
+Bis zum 28. September war fast alles andere offen: Es gab kein öffentliches Security Advisory, keine CVE-Nummer, keinen Patch und keine Angabe dazu, welche Produkte oder Versionen betroffen sind. Die Pressemitteilung nennt als Quelle „federal intelligence authorities“, vermutlich also US-Bundesbehörden; welche, ist bis heute nicht bekannt. In den GitHub-Advisories von Kiteworks stammte der letzte Eintrag bis dahin vom 27. Mai 2026; die Advisories vom 30. September sind im Abschnitt [Abschlussbericht](#abschlussbericht) zusammengefasst.
 
 Gegenüber TechCrunch hat Kiteworks-CISO Frank Balonis die Stellungnahme im selben Wortlaut abgegeben. Das BKA hat gegenüber heise eine Stellungnahme aus ermittlungstaktischen Gründen abgelehnt, das BSI hat nicht geantwortet. Das FBI wollte sich gegenüber TechCrunch nicht äussern, ein Sprecher der CISA wollte sich nicht öffentlich äussern. Ein Kunde aus dem Gesundheitswesen hat laut TechCrunch seinen Server sofort vom Netz genommen, mit spürbaren Einschränkungen im Betrieb: Ärzte konnten ihre Patienten zeitweise nur verzögert erreichen. Laut einem von TechCrunch zitierten Sicherheitsforscher sind mindestens 1000 Kiteworks-Systeme aus dem Internet erreichbar; BornCity spricht von mehr als 1000 Organisationen, die die Warnung erhalten haben.
 
@@ -141,7 +164,7 @@ Auf Nachfrage hat der Kiteworks-Support zudem bestätigt, dass keine der Tochter
 
 ## Mögliche Ursachen: Theorien
 
-Solange Kiteworks keine Details veröffentlicht, bleibt die Ursache offen. Die folgenden Erklärungen sind Hypothesen, die sich aus den bekannten Eckdaten ableiten lassen; einige davon werden auch in den Kommentaren zur heise-Meldung diskutiert. Keine davon ist bestätigt.
+Dieser Abschnitt entstand vor dem 28. September; die Einordnung nach dem heutigen Stand steht im [Abschlussbericht](#abschlussbericht). Die folgenden Erklärungen sind Hypothesen, die sich aus den bekannten Eckdaten ableiten lassen; einige davon werden auch in den Kommentaren zur heise-Meldung diskutiert. Keine davon ist bestätigt.
 
 Drei Eckdaten schränken den Raum ein. Erstens nennt die Warnung ein festes Zeitfenster statt einer unbefristeten Abschaltung bis zum Patch. Zweitens sollen auch Systeme vom Netz, die nicht aus dem Internet erreichbar sind. Drittens liegt das Fenster weltweit auf derselben Uhrzeit (02:00 bis 08:00 UTC) statt jeweils in der lokalen Nacht. Eine klassische, über das Internet ausnutzbare Lücke würde die ersten beiden Punkte nicht erklären: Dagegen hilft es, das System vom Internet zu trennen, und zwar so lange, bis der Patch da ist.
 
@@ -177,11 +200,56 @@ Denkbar ist schliesslich, dass die Behörden im selben Zeitraum gegen die Infras
 
 In den heise-Kommentaren überwiegt Skepsis, und die Einwände sind sachlich nachvollziehbar: Ohne Angaben zur Lücke lässt sich nicht beurteilen, ob eine Trennung vom Internet per Firewall genügt hätte. Ein Zeitfenster ohne angekündigten Patch lässt offen, was nach 10:00 Uhr gilt. Und eine Warnung, die nur per E-Mail an Kunden geht, erreicht nicht alle Betreiber, etwa bei Partnern, Dienstleistern oder nach Personalwechseln. Unabhängig davon, welche Theorie zutrifft: Wer Kiteworks betreibt, sollte nach dem Wiederhochfahren die Protokolle prüfen und die Kanäle des Herstellers beobachten, bis ein Advisory vorliegt.
 
+## Abschlussbericht
+
+Stand 7. Oktober 2026 ist der Vorfall aus Sicht des Herstellers abgeschlossen. Die Ereignisse nach dem Abschaltfenster lassen sich in zwei Stränge trennen: die Lücke, die während der Abschaltung gefunden wurde, und die Sammelveröffentlichung von Advisories zwei Tage später.
+
+### Die Lücke aus dem Abschaltfenster
+
+Am 28. September veröffentlichte Kiteworks eine zweite Pressemitteilung. Danach hat der Hersteller das Wochenende über mit den Bundesbehörden zusammengearbeitet; dabei wurde eine bisher unbekannte kritische Schwachstelle entdeckt, die auf eine Funktion beschränkt ist, die bei weniger als 1 % der Kunden aktiviert ist. Kiteworks hat im Abschaltfenster einen Fix entwickelt und ausgerollt und zusätzlich eine Schutzschicht in allen Umgebungen aktiviert. Die durchgehende Überwachung habe keine auffälligen Aktivitäten gezeigt, es gebe keinen Hinweis auf eine Kompromittierung von Kiteworks- oder Kundensystemen. Alle übrigen Kiteworks-Produkte seien nicht betroffen.
+
+Nicht veröffentlicht sind die betroffene Funktion, eine CVE-Nummer, die Versionen mit dem Fix und die Frage, ob selbst betriebene Installationen den Fix automatisch erhalten haben. Die Aufhebung vom 27. September enthielt nur eine Ausnahme: Kunden mit selbst betriebenen Advanced Forms sollten vor dem Neustart den Support kontaktieren. Ob diese Funktion die betroffene war, hat Kiteworks nicht bestätigt.
+
+Zu den Theorien weiter oben: Die Pressemitteilung beschreibt eine Lücke, die erst während des Fensters gefunden wurde. Das passt zu Theorie 2 (der Hersteller kannte die Lücke vorher nicht) in Verbindung mit Theorie 1 (die Behörden kannten einen geplanten Zeitpunkt). Für die Theorien 3 bis 5 gibt es keine Bestätigung. Was die Behörden konkret wussten und ob ein Angriff versucht wurde, ist weiterhin nicht bekannt.
+
+### 125 Security Advisories vom 30. September
+
+Am 30. September ab 18:38 Uhr veröffentlichte Kiteworks auf GitHub 125 Security Advisories auf einen Schlag. Sie verteilen sich wie folgt:
+
+| Produkt | Advisories | davon kritisch |
+|---|---|---|
+| Kiteworks Core | 66 | 2 |
+| Email Protection Gateway (EPG) | 28 | 10 |
+| Secure Data Forms (SDF) | 28 | 0 |
+| MFT Server | 3 | 0 |
+| **Gesamt** | **125** | **12** |
+
+Nach Schweregrad sind es 12 kritische, 49 hohe, 52 mittlere und 12 niedrige Einstufungen. Alle Lücken sind in Versionen bis einschliesslich 9.5.1 behoben; die ältesten Einträge betreffen Version 9.2.1. Es handelt sich also um eine nachträgliche Offenlegung bereits ausgelieferter Fixes, nicht um eine neue Version. Als Melder nennen die Advisories überwiegend Teilnehmer des Bug-Bounty-Programms auf YesWeHack. Eine Verbindung zur Lücke aus dem Abschaltfenster stellt Kiteworks nicht her; eine Woche nach dem Fenster entspricht der Stand der Advisories weiterhin der Aussage vom 25. September, dass alle bekannten Lücken in 9.5.1 behoben sind.
+
+Die kritischen Advisories:
+
+| CVE | Produkt | CVSS 3.1 | behoben ab | Auswirkung |
+|---|---|---|---|---|
+| CVE-2026-54154 | EPG | 10.0 | 9.4.1 | Codeausführung mit Root-Rechten ohne Anmeldung |
+| CVE-2026-85065 | EPG | 9.8 | 9.5.0 | Kontoübernahme |
+| CVE-2026-85066 | EPG | 9.8 | 9.5.0 | Kontoübernahme |
+| CVE-2026-102115 | Core | 9.8 | 9.5.0 | Kontoübernahme über die Passwort-Zurücksetzung |
+| CVE-2026-102149 | EPG | 9.4 | 9.5.1 | Kontoübernahme |
+| CVE-2026-102147 | Core | 9.3 | 9.5.1 | Kontoübernahme |
+| CVE-2026-102106 | EPG | 9.1 | 9.5.0 | Umgehung von Sicherheitsfunktionen |
+| CVE-2026-102095, CVE-2026-102102 bis 102105 | EPG | 9.1 | 9.5.0 | Zugriff auf interne Netzwerkressourcen (SSRF) |
+
+CVE-2026-54154 ist die schwerste Lücke: Laut Advisory ermöglicht eine Kombination von Fehlern bei der Eingabeprüfung in öffentlich erreichbaren Endpunkten des Email Protection Gateway einem nicht angemeldeten Angreifer, Code auszuführen und über weitere lokale Schwächen Root-Rechte auf der Appliance zu erlangen. Das MS-ISAC hat dazu am 1. Oktober ein eigenes Advisory herausgegeben. Für Mail-Administratoren ist das Gateway der relevante Teil der Veröffentlichung: Es steht typischerweise direkt im Mailfluss und ist aus dem Internet erreichbar.
+
+### Ausnutzung und Verbreitung
+
+Für keine der Lücken liegen Berichte über eine Ausnutzung oder öffentliche Exploits vor. Der CISA-KEV-Katalog enthält Stand 7. Oktober nur die vier Accellion-FTA-Einträge aus 2021. Shadowserver zählt laut BleepingComputer knapp 400 aus dem Internet erreichbare Kiteworks-Instanzen; wie viele davon bereits auf 9.5.1 laufen, ist nicht bekannt. Totemomail kommt in keinem der Advisories vor.
+
 ## Nach dem Fenster: Was Betreiber jetzt tun können
 
-Kiteworks hat die Abschaltempfehlung am 27. September aufgehoben, aber keine technischen Details veröffentlicht. Ob und wie die Gefahr beseitigt wurde, lässt sich daher nicht beurteilen. Beim Wiederhochfahren und danach sind folgende Schritte sinnvoll:
+Die Abschaltempfehlung ist aufgehoben, die bekannten Lücken sind in Version 9.5.1 behoben. Für selbst betriebene Installationen sind folgende Schritte sinnvoll:
 
-1.  **Version prüfen:** Läuft auf allen Knoten Version 9.5.1? Laut Hersteller sind darin alle bekannten Schwachstellen behoben.
+1.  **Version prüfen:** Läuft auf allen Knoten und allen Komponenten (Core, Email Protection Gateway, Secure Data Forms, MFT Server) Version 9.5.1? Ein Email Protection Gateway vor 9.4.1 ist von CVE-2026-54154 betroffen und sollte zuerst aktualisiert werden.
 
 2.  **Cluster-Zustand prüfen:** Im Cluster Health Dashboard sollten alle Knoten grün sein und der Wartungsmodus ausgeschaltet.
 
@@ -189,9 +257,16 @@ Kiteworks hat die Abschaltempfehlung am 27. September aufgehoben, aber keine tec
 
 4.  **Erreichbarkeit einschränken:** Wo möglich, den Zugriff aus dem Internet auf die Administrationsoberfläche sperren und nur benötigte Dienste freigeben.
 
-5.  **Advanced Forms:** Wer das Modul selbst betreibt, klärt den Neustart vorher mit dem Kiteworks-Support.
+5.  **Advanced Forms:** Wer das Modul selbst betreibt und noch keinen Kontakt mit dem Support hatte, klärt mit Kiteworks, ob der Fix aus dem Abschaltfenster auf der eigenen Installation angekommen ist.
 
-6.  **Kanäle beobachten:** Security Updates, GitHub-Advisories, Newsroom und Kunden-E-Mails von Kiteworks, bis ein Advisory mit technischen Details vorliegt.
+6.  **Advisories abgleichen:** Die GitHub-Advisories lassen sich nach Produkt filtern (Präfix `[Core]`, `[EPG]`, `[SDF]`, `[MFT]`). Für jede eingesetzte Komponente prüfen, ob die installierte Version unter der jeweils genannten Fix-Version liegt.
+
+7.  **Kanäle beobachten:** GitHub-Advisories, Newsroom und Kunden-E-Mails von Kiteworks, falls der Hersteller zur Lücke aus dem Abschaltfenster doch noch ein Advisory mit CVE-Nummer veröffentlicht. Neue CVEs zum Kiteworks Email Protection Gateway und zu Totemomail führt auch der [CVE-Tracker](/cve) dieser Seite; dort lässt sich eine Warn-Mail abonnieren.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Unterstützung beim Update</p>
+<p>Wenn Sie Hilfe beim Update eines Kiteworks- oder Totemomail-Gateways brauchen, etwa bei der Umleitung des Mailflows während des Wartungsfensters oder bei der Auswertung der Protokolle, nutzen Sie bitte das <a href="https://adeptio.ch/">Kontaktformular auf adeptio.ch</a>.</p>
+</div>
 
 ## Quellen
 
@@ -199,9 +274,9 @@ Kiteworks hat die Abschaltempfehlung am 27. September aufgehoben, aber keine tec
 
 2.  [heise online (EN): Imminent Zero-Day Attack: KiteWorks Urges Customers to Shut Down Servers](https://www.heise.de/en/news/Imminent-Zero-Day-Attack-KiteWorks-Urges-Customers-to-Shut-Down-Servers-11466375.html): englische Fassung mit dem Originalwortlaut des CISO.
 
-3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): offizieller Kanal des Herstellers, Stand 28.09.2026 ohne Eintrag zur Warnung.
+3.  [Kiteworks: Security Updates](https://www.kiteworks.com/company/security-updates/): ältere Update-Seite des Herstellers, Stand 07.10.2026 ohne Eintrag zur Warnung oder zu den Advisories vom 30.09.2026.
 
-4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, Stand 28.09.2026 letzter Eintrag vom 27.05.2026.
+4.  [Kiteworks: Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security): Advisory-Liste des Herstellers, bis 28.09.2026 letzter Eintrag vom 27.05.2026; am 30.09.2026 125 neue Advisories für Core, EPG, SDF und MFT. Zahlen in diesem Artikel per GitHub-API ausgezählt.
 
 5.  [Kiteworks: Newsroom](https://www.kiteworks.com/newsroom/): offizielle Mitteilungen, seit 25.09.2026 mit der Pressemitteilung zur Abschaltung.
 
@@ -224,3 +299,17 @@ Kiteworks hat die Abschaltempfehlung am 27. September aufgehoben, aber keine tec
 14.  [The Record: Kiteworks urges customers to stop using platform after warning from federal intelligence agencies](https://therecord.media/kiteworks-urges-customers-to-stop-using-systems-incident): Einordnung der Accellion-Angriffe durch Clop 2020/2021 und Zitat von watchTowr.
 
 15.  [Cyber Daily: Kiteworks warns customers to enact a „precautionary shutdown“ in wake of attack intelligence](https://www.cyberdaily.au/security/14241-kiteworks-warns-customers-to-enact-a-precautionary-shutdown-in-wake-of-attack-intelligence): Bericht vom 28.09.2026 über die Aufhebung der Empfehlung und den Betrieb der gehosteten Instanzen.
+
+16.  [Kiteworks: Kiteworks Restores Systems After Credible Threat (Pressemitteilung)](https://www.kiteworks.com/company/press-releases/kiteworks-restores-systems-credible-threat/): Mitteilung vom 28.09.2026 zur während der Abschaltung gefundenen kritischen Lücke, zum Fix und zur zusätzlichen Schutzschicht.
+
+17.  [The Hacker News: Kiteworks Fixes Critical Flaw Found During Nine-Hour Precautionary Shutdown](https://thehackernews.com/2026/09/kiteworks-fixes-critical-flaw-found.html): Zusammenfassung der zweiten Pressemitteilung mit Zitaten des CISO.
+
+18.  [GitHub Advisory GHSA-5xhq-9wq3-rvj6: CVE-2026-54154](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Herstellerangaben zur Codeausführung im Email Protection Gateway vor 9.4.1, CVSS 10.0, Meldung über YesWeHack.
+
+19.  [BleepingComputer: Kiteworks patches max severity code injection vulnerability](https://www.bleepingcomputer.com/news/security/kiteworks-patches-max-severity-email-protection-gateway-code-injection-vulnerability/): Bericht vom 01.10.2026 zu CVE-2026-54154 und Zahl der von Shadowserver gezählten Instanzen.
+
+20.  [MS-ISAC Advisory 2026-107: A Vulnerability in Kiteworks EPG Could Allow for Arbitrary Code Execution](https://www.cisecurity.org/advisory/a-vulnerability-in-kiteworks-epg-email-security-gateway-could-allow-for-arbitrary-code-execution_2026-107): Advisory des Center for Internet Security vom 01.10.2026 mit Empfehlungen.
+
+21.  [SecurityOnline: Kiteworks Patches 78 Vulnerabilities, Including Critical Account Takeover Flaw](https://securityonline.info/kiteworks-vulnerabilities/): Einordnung der Kontoübernahme-Lücken in Core, darunter CVE-2026-102115; die Zählung weicht von der Advisory-Liste ab.
+
+22.  [CISA: Known Exploited Vulnerabilities Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog): Stand 07.10.2026 nur die vier Accellion-FTA-Einträge aus 2021, kein Kiteworks-Eintrag aus 2026.
