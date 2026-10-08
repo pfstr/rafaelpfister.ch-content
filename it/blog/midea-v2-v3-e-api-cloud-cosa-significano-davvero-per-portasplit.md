@@ -19,6 +19,7 @@ translatedAt: 2026-09-03T08:34:21.263Z
 translationReview: automatic
 translationSourceHash: 12ce029c1de367a718159f3729a8d063f8c7df3982e1a0efa10be83a2af3b3ff
 url: https://rafaelpfister.ch/it/blog/midea-v2-v3-e-api-cloud-cosa-significano-davvero-per-portasplit
+image: ../images/midea-portasplit-home-assistant/portasplit-dashboard.png
 ---
 
 Nel contesto di Midea PortaSplit, «V2» indica diverse cose indipendenti tra loro. Esistono un protocollo locale V2 per dispositivi, numeri di versione negli endpoint privati dell’app e un’API V2 cloud-to-cloud ufficiale per partner. Chi equipara questi livelli giunge inevitabilmente a conclusioni errate sul controllo locale.

@@ -5,7 +5,7 @@ description: "Schritt für Schritt von der MSmartHome-Kopplung über die Integra
 date: "2026-07-24"
 kategorie: "Home Assistant und IoT"
 timeToRead: "10 Min. Lesezeit"
-image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard.png"
 themen:
   - "smart-home-iot"
 produkte:
@@ -22,9 +22,9 @@ url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant"
 
 Die Midea PortaSplit lässt sich mit einer Community-Integration direkt im lokalen Netz über Home Assistant steuern. In sieben Schritten entsteht von der App-Kopplung bis zum Dashboard eine lokale Steuerung mit Kennzahlen und Verlaufsdiagrammen. Dashboard, Hilfssensoren und Theme stehen im Repository <a class="gh-badge" href="https://github.com/pfstr/ha-portasplit-dashboard" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">pfstr/ha-portasplit-dashboard</span></a>.
 
-![Home-Assistant-Dashboard der Midea PortaSplit mit simulierten Werten eines heissen Sommertags: Kennzahlen oben, Thermostat im Kühlmodus auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png)
+![Home-Assistant-Dashboard der Midea PortaSplit im Kühlbetrieb: Kennzahlen oben, Thermostat auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard.png)
 
-Die Abbildung zeigt das fertige Dashboard mit simulierten Werten: Die PortaSplit kühlt ab 17 Uhr einen auf 27 °C aufgeheizten Raum auf 22 °C, ist nachts ausgeschaltet und regelt ab 11 Uhr mit dem Inverter-Kompressor gegen die Mittagshitze.
+Die Abbildung zeigt das fertige Dashboard im Kühlbetrieb mit Kennzahlen, Steuerung und den Verläufen der letzten 24 Stunden.
 
 Die Serie hat drei Teile: Teil 1 beschreibt die Einrichtung, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) behandelt die Absicherung von Token, Key und Heimnetz, [Teil 3](/blog/midea-v2-cloud-api-portasplit-home-assistant) ordnet die Warnungen zur Midea-Cloud-API ein.
 

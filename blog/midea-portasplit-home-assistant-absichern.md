@@ -15,7 +15,7 @@ protokolle:
 related:
   - "midea-portasplit-home-assistant"
   - "midea-v2-cloud-api-portasplit-home-assistant"
-image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard.png"
 slug: "midea-portasplit-home-assistant-absichern"
 translationId: "article-a02e26cce22063f1"
 url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-absichern"
@@ -34,6 +34,8 @@ url: "https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-absichern"
 Die lokale Steuerung der Midea PortaSplit beruht auf zwei gerätespezifischen Werten, Token und Key. Sie authentifizieren die Verbindung zwischen Home Assistant und Gerät und lassen sich derzeit nur über die Midea-Cloud beziehen. Daraus folgen zwei Aufgaben: die Werte so sichern, dass eine Neueinrichtung ohne Cloud möglich bleibt, und Gerät sowie Home Assistant so betreiben, dass die Werte auch bei einer Panne wenig Schaden anrichten.
 
 Die Serie hat drei Teile: [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, dieser Teil die Absicherung, [Teil 3](/blog/midea-v2-cloud-api-portasplit-home-assistant) die Hintergründe der Cloud-API-Warnungen.
+
+![Home-Assistant-Dashboard der Midea PortaSplit im Kühlbetrieb: Kennzahlen oben, Thermostat auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard.png)
 
 ## Woher Token und Key stammen
 

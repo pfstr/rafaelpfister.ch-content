@@ -10,7 +10,7 @@ themen:
 related:
   - midea-portasplit-home-assistant
   - midea-v2-cloud-api-portasplit-home-assistant
-image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard.png"
 slug: "midea-portasplit-i-home-assistant-hvorfor-token-og-nokkel-er-avgjorende"
 translationOf: "midea-portasplit-home-assistant-absichern"
 translationId: article-a02e26cce22063f1

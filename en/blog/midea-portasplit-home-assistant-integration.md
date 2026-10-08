@@ -11,7 +11,7 @@ related:
   - midea-portasplit-home-assistant
   - midea-v2-cloud-api-portasplit-home-assistant
 translationOf: "midea-portasplit-home-assistant-absichern"
-image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard.png"
 slug: "midea-portasplit-home-assistant-integration"
 translationId: article-a02e26cce22063f1
 translatedAt: 2026-09-04T08:27:13.777Z

@@ -15,6 +15,7 @@ related:
   - "midea-portasplit-home-assistant-absichern"
   - "midea-portasplit-home-assistant"
 draft: false
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard.png"
 slug: "midea-v2-cloud-api-portasplit-home-assistant"
 translationId: "article-f504b2af00493864"
 url: "https://rafaelpfister.ch/blog/midea-v2-cloud-api-portasplit-home-assistant"
@@ -27,6 +28,8 @@ Das Projekt `Midea AC LAN` warnt in seiner [README](https://github.com/wuwentao/
 > Eine offizielle Midea Cloud-to-Cloud API V2 existiert. Sie ist aber nicht identisch mit der von Home Assistant verwendeten Token-Schnittstelle und auch nicht mit dem lokalen V2- oder V3-Geräteprotokoll. Eine offiziell angekündigte Abschaltung der lokalen PortaSplit-Steuerung mit einem konkreten Termin ist nicht dokumentiert. Im Juni 2026 wurde zudem nachgewiesen, dass die vermeintlich abgeschaltete SmartHome-Token-API weiterhin funktionierte – der bisherige Request der Community-Bibliothek war lediglich unvollständig.
 
 Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Juli 2026.
+
+![Home-Assistant-Dashboard der Midea PortaSplit im Kühlbetrieb: Kennzahlen oben, Thermostat auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard.png)
 
 ## Weshalb die frühere Einordnung korrigiert werden muss
 

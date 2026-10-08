@@ -18,7 +18,7 @@ translationSourceHash: bbe70b67dd255184cf0db69f7308c756937dc961c3c83e152268ee668
 translatedAt: 2026-09-04T08:33:40.636Z
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/it/blog/controllare-localmente-e-utilizzare-in-sicurezza-midea-portasplit-con-home-assistant
-image: ../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png
+image: ../images/midea-portasplit-home-assistant/portasplit-dashboard.png
 ---
 
 La Midea PortaSplit può essere controllata direttamente sulla rete locale tramite Home Assistant dopo la configurazione. A questo scopo, l’integrazione community richiede due credenziali specifiche del dispositivo dalla cloud Midea: token e key.
