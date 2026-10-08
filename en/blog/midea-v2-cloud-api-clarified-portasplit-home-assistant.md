@@ -8,8 +8,8 @@ timeToRead: "11 min read"
 themen:
   - smart-home-iot
 related:
+  - midea-portasplit-home-assistant-absichern
   - midea-portasplit-home-assistant
-  - midea-portasplit-home-assistant-einrichten
 draft: false
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
 slug: "midea-v2-cloud-api-clarified-portasplit-home-assistant"
@@ -31,7 +31,7 @@ This article is current as of July 25, 2026.
 
 ## Why the earlier assessment needs to be corrected
 
-In the [first article on the cloud token question](/blog/midea-portasplit-home-assistant), I had paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly phrased as a statement of fact.
+In the [first article on the cloud token question](/blog/midea-portasplit-home-assistant-absichern), I had paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly phrased as a statement of fact.
 
 The warning remains relevant as a risk notice. However, it is not a published Midea roadmap. Above all, new technical material is now available that calls a significant part of the previous interpretation into question.
 
@@ -278,7 +278,7 @@ The following applies:
 - Check current functionality before firmware and integration updates.
 - Test local control again after updates.
 
-A backup is a reasonable safeguard against cloud changes, integration issues, and personal mistakes. However, it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant-einrichten) explains how to properly set up and secure a PortaSplit on the home network.
+A backup is a reasonable safeguard against cloud changes, integration issues, and personal mistakes. However, it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant) explains how to properly set up and secure a PortaSplit on the home network.
 
 ## Assessment based on the available evidence
 

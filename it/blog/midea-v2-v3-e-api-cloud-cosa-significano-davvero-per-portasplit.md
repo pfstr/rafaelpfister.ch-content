@@ -8,8 +8,8 @@ timeToRead: "11 min di lettura"
 themen:
   - smart-home-iot
 related:
+  - midea-portasplit-home-assistant-absichern
   - midea-portasplit-home-assistant
-  - midea-portasplit-home-assistant-einrichten
 draft: false
 slug: "midea-v2-v3-e-api-cloud-cosa-significano-davvero-per-portasplit"
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
@@ -31,7 +31,7 @@ Questo articolo è aggiornato al 25 luglio 2026.
 
 ## Perché la precedente classificazione deve essere corretta
 
-Nel [primo articolo sulla questione dei token cloud](/blog/midea-portasplit-home-assistant) avevo riportato l’avvertimento del progetto `Midea AC LAN` sostanzialmente come una dismissione annunciata delle interfacce cloud. Ciò corrispondeva al testo della README del progetto, ma era formulato in modo troppo categorico come affermazione di fatto.
+Nel [primo articolo sulla questione dei token cloud](/blog/midea-portasplit-home-assistant-absichern) avevo riportato l’avvertimento del progetto `Midea AC LAN` sostanzialmente come una dismissione annunciata delle interfacce cloud. Ciò corrispondeva al testo della README del progetto, ma era formulato in modo troppo categorico come affermazione di fatto.
 
 L’avvertimento rimane rilevante come indicazione di rischio. Tuttavia, non costituisce una roadmap Midea pubblicata. Soprattutto, nel frattempo è disponibile nuovo materiale tecnico che mette in discussione una parte essenziale dell’interpretazione precedente.
 
@@ -278,7 +278,7 @@ Vale quanto segue:
 - Verificare il funzionamento attuale prima di aggiornamenti firmware e integrazioni.
 - Testare nuovamente il controllo locale dopo gli aggiornamenti.
 
-Un backup è una ragionevole protezione contro modifiche cloud, problemi di integrazione ed errori propri. Non è però un’indicazione che una dismissione sia imminente. Come configurare correttamente una PortaSplit e proteggerla nella rete domestica è spiegato nella [parte pratica sulla configurazione](/blog/midea-portasplit-home-assistant-einrichten).
+Un backup è una ragionevole protezione contro modifiche cloud, problemi di integrazione ed errori propri. Non è però un’indicazione che una dismissione sia imminente. Come configurare correttamente una PortaSplit e proteggerla nella rete domestica è spiegato nella [parte pratica sulla configurazione](/blog/midea-portasplit-home-assistant).
 
 ## Valutazione basata sulle prove disponibili
 

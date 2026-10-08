@@ -8,11 +8,11 @@ timeToRead: "9 min lesetid"
 themen:
   - smart-home-iot
 related:
-  - midea-portasplit-home-assistant-einrichten
+  - midea-portasplit-home-assistant
   - midea-v2-cloud-api-portasplit-home-assistant
 image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
 slug: "midea-portasplit-i-home-assistant-hvorfor-token-og-nokkel-er-avgjorende"
-translationOf: "midea-portasplit-home-assistant"
+translationOf: "midea-portasplit-home-assistant-absichern"
 translationId: article-a02e26cce22063f1
 translationReview: automatic
 translationSourceHash: 93933b82cdbb4151fe6dc6ac73a356fc752f120f41461268af1c8e484b62652c
@@ -29,7 +29,7 @@ url: https://rafaelpfister.ch/no/blog/midea-portasplit-i-home-assistant-hvorfor-
     <li><strong>Sikkerhetskopier token, nøkkel og konfigurasjon kryptert.</strong> Dersom hentingen senere ikke lenger fungerer, er sikkerhetskopien den mest pålitelige måten å gjenopprette på.</li>
     <li><strong>Ikke opphev sammenkoblingen uten nød.</strong> Fabrikkinnstillinger, fjerning fra Midea-kontoen eller bytte av WLAN-modul tvinger frem ny anskaffelse av token, noe som kan mislykkes i fremtiden.</li>
   </ol>
-  <p>Enheter som allerede er satt opp, styres lokalt. Endringer i skygrensesnittet påvirker derfor først og fremst tilføyelse og gjenoppretting, ikke hver enkelt løpende styrekommando. De konkrete trinnene finnes i <a href="/blog/midea-portasplit-home-assistant-einrichten">den praktiske artikkelen om integrasjon og sikring</a>.</p>
+  <p>Enheter som allerede er satt opp, styres lokalt. Endringer i skygrensesnittet påvirker derfor først og fremst tilføyelse og gjenoppretting, ikke hver enkelt løpende styrekommando. De konkrete trinnene finnes i <a href="/blog/midea-portasplit-home-assistant">den praktiske artikkelen om integrasjon og sikring</a>.</p>
 </aside>
 
 ![Eksempel på et Home Assistant-dashboard for en Midea PortaSplit med rom- og settpunktstemperatur, luftfuktighet, effektforbruk, energiforbruk og kompressorens driftstider de siste 24 timene.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -98,7 +98,7 @@ Dette gir de tre trinnene fra boksen i begynnelsen av artikkelen, med begrunnels
 - **Sikre tilgangsdataene.** Home Assistant lagrer token og nøkkel lokalt. Et defekt system, en mislykket gjenoppretting eller en integrasjon som slettes ved et uhell, kan likevel gjøre lokal styring ubrukelig dersom det ikke finnes en ekstern sikkerhetskopi.
 - **Ikke opphev sammenkoblingen lettvint.** Det er ikke fullstendig dokumentert om tilbakestilling til fabrikkinnstillinger eller fjerning fra Midea-kontoen tvinger frem nye tilgangsdata for hver modell. En sikkerhetskopi før slike endringer er derfor nødvendig.
 
-Den løpende driften påvirkes foreløpig ikke av dette: Den lokale styringen bruker de allerede lagrede verdiene og trenger ikke lenger token-endepunktet. Det gjenstår en restrisiko dersom en senere fastvare endrer den lokale protokollen eller autentiseringen. Hvordan token, nøkkel og konfigurasjon sikres, står i [den praktiske artikkelen om oppsett](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
+Den løpende driften påvirkes foreløpig ikke av dette: Den lokale styringen bruker de allerede lagrede verdiene og trenger ikke lenger token-endepunktet. Det gjenstår en restrisiko dersom en senere fastvare endrer den lokale protokollen eller autentiseringen. Hvordan token, nøkkel og konfigurasjon sikres, står i [den praktiske artikkelen om oppsett](/blog/midea-portasplit-home-assistant#backup-der-konfiguration).
 
 ## Hva dette betyr for sikkerheten
 
@@ -108,13 +108,13 @@ En token som ikke utløper, er ikke i seg selv en sårbarhet. Det blir problemat
 
 Språklig presisjon er viktig her. Fellesskapsintegrasjonen «hacker» ikke klimaanlegget. Den implementerer en proprietær protokoll som er rekonstruert gjennom reverse engineering. Sikkerhetsproblemet oppstår fordi langvarige hemmeligheter kan brukes og lagres utenfor den opprinnelig tiltenkte appen.
 
-For drift i eget nettverk er det først og fremst relevant hva token og nøkkel muliggjør. Begge autentiserer den lokale kommunikasjonen med enheten. Hvis de havner i feil hender, kan en angriper, avhengig av protokollen og sin nettverksposisjon, oppdage enheten, autentisere seg overfor den, lese statusinformasjon, endre innstillinger, slå klimaanlegget av eller på, bytte driftsmodus og endre settpunktstemperaturen. Angriperen må som regel likevel kunne opprette en nettverksforbindelse til enheten; det å bare ha token og nøkkel muliggjør ikke et angrep fra hele internett. Token og nøkkel må derfor behandles som et passord. Hvordan enheten kan integreres nettverksmessig slik at disse verdiene gjør liten skade selv ved en feil, er temaet i [del to](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben).
+For drift i eget nettverk er det først og fremst relevant hva token og nøkkel muliggjør. Begge autentiserer den lokale kommunikasjonen med enheten. Hvis de havner i feil hender, kan en angriper, avhengig av protokollen og sin nettverksposisjon, oppdage enheten, autentisere seg overfor den, lese statusinformasjon, endre innstillinger, slå klimaanlegget av eller på, bytte driftsmodus og endre settpunktstemperaturen. Angriperen må som regel likevel kunne opprette en nettverksforbindelse til enheten; det å bare ha token og nøkkel muliggjør ikke et angrep fra hele internett. Token og nøkkel må derfor behandles som et passord. Hvordan enheten kan integreres nettverksmessig slik at disse verdiene gjør liten skade selv ved en feil, er temaet i [del to](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben).
 
 ## Hva som står igjen i praksis
 
 Den lokale styringen av PortaSplit avhenger helt av token og nøkkel, som for tiden bare kan hentes via Midea-skyen. Denne omveien er en del av protokolldesignet: Lokale kommandoer er knyttet til skyrelaterte tilgangsdata. Fordi endepunktet er privat og udokumentert, er den langsiktige tilgjengeligheten til den uoffisielle integrasjonen usikker.
 
-I praksis betyr det: Sikre tilgangsdata og konfigurasjon, ikke opphev en fungerende sammenkobling unødvendig, og følg med på endringer i integrasjon og fastvare. Enheter som allerede er satt opp, fortsetter å fungere lokalt. Oppsett, sikkerhetskopiering og nettverksbeskyttelse beskrives i [den praktiske artikkelen om PortaSplit](/blog/midea-portasplit-home-assistant-einrichten).
+I praksis betyr det: Sikre tilgangsdata og konfigurasjon, ikke opphev en fungerende sammenkobling unødvendig, og følg med på endringer i integrasjon og fastvare. Enheter som allerede er satt opp, fortsetter å fungere lokalt. Oppsett, sikkerhetskopiering og nettverksbeskyttelse beskrives i [den praktiske artikkelen om PortaSplit](/blog/midea-portasplit-home-assistant).
 
 ## Kilder
 

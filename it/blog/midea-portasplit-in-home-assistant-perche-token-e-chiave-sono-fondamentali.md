@@ -8,11 +8,11 @@ timeToRead: "9 min di lettura"
 themen:
   - smart-home-iot
 related:
-  - midea-portasplit-home-assistant-einrichten
+  - midea-portasplit-home-assistant
   - midea-v2-cloud-api-portasplit-home-assistant
 image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
 slug: "midea-portasplit-in-home-assistant-perche-token-e-chiave-sono-fondamentali"
-translationOf: "midea-portasplit-home-assistant"
+translationOf: "midea-portasplit-home-assistant-absichern"
 translationId: article-a02e26cce22063f1
 translationReview: automatic
 translationSourceHash: 93933b82cdbb4151fe6dc6ac73a356fc752f120f41461268af1c8e484b62652c
@@ -29,7 +29,7 @@ url: https://rafaelpfister.ch/it/blog/midea-portasplit-in-home-assistant-perche-
     <li><strong>Salvare in modo cifrato token, key e configurazione.</strong> Se in seguito il recupero non dovesse più funzionare, il backup rimane il modo più affidabile per il ripristino.</li>
     <li><strong>Non annullare l'abbinamento senza necessità.</strong> Il ripristino delle impostazioni di fabbrica, la rimozione dall'account Midea o la sostituzione del modulo Wi-Fi impongono un nuovo reperimento del token, che in futuro potrebbe fallire.</li>
   </ol>
-  <p>I dispositivi già configurati vengono controllati localmente. Le modifiche all'interfaccia cloud riguardano quindi anzitutto l'aggiunta e il ripristino, non ogni comando di controllo in esecuzione. I passaggi concreti sono descritti nel <a href="/blog/midea-portasplit-home-assistant-einrichten">contributo pratico su integrazione e protezione</a>.</p>
+  <p>I dispositivi già configurati vengono controllati localmente. Le modifiche all'interfaccia cloud riguardano quindi anzitutto l'aggiunta e il ripristino, non ogni comando di controllo in esecuzione. I passaggi concreti sono descritti nel <a href="/blog/midea-portasplit-home-assistant">contributo pratico su integrazione e protezione</a>.</p>
 </aside>
 
 ![Esempio di dashboard Home Assistant di una Midea PortaSplit con temperatura ambiente e impostata, umidità dell'aria, assorbimento di potenza, consumo energetico e tempi di funzionamento del compressore nelle ultime 24 ore.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -98,7 +98,7 @@ Da ciò derivano i tre passaggi riportati nel riquadro all'inizio dell'articolo,
 - **Proteggere le credenziali.** Home Assistant salva token e key localmente. Un sistema guasto, un ripristino non riuscito o un'integrazione eliminata accidentalmente possono comunque rendere inutilizzabile il controllo locale se non è disponibile un backup esterno.
 - **Non annullare l'abbinamento con leggerezza.** Non è completamente documentato se un ripristino di fabbrica o la rimozione dall'account Midea impongano nuove credenziali per ogni modello. Un backup prima di tali modifiche è pertanto indispensabile.
 
-Il funzionamento in corso non ne è inizialmente interessato: il controllo locale utilizza i valori già salvati e non ha più bisogno dell'endpoint del token. Rimane un rischio residuo nel caso in cui un firmware successivo modifichi il protocollo locale o l'autenticazione. Il [contributo pratico sulla configurazione](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration) spiega come proteggere token, key e configurazione.
+Il funzionamento in corso non ne è inizialmente interessato: il controllo locale utilizza i valori già salvati e non ha più bisogno dell'endpoint del token. Rimane un rischio residuo nel caso in cui un firmware successivo modifichi il protocollo locale o l'autenticazione. Il [contributo pratico sulla configurazione](/blog/midea-portasplit-home-assistant#backup-der-konfiguration) spiega come proteggere token, key e configurazione.
 
 ## Cosa significa per la sicurezza
 
@@ -108,13 +108,13 @@ Un token senza scadenza non è di per sé una vulnerabilità. Diventa problemati
 
 La precisione linguistica è importante. L'integrazione della community non «hackera» il climatizzatore. Implementa un protocollo proprietario ricostruito tramite reverse engineering. Il problema di sicurezza deriva dal fatto che segreti a lunga durata possono essere utilizzati e salvati al di fuori dell'app originariamente prevista.
 
-Per l'uso nella propria rete, ciò che conta soprattutto è cosa consentono token e key. Entrambi autenticano la comunicazione locale con il dispositivo. Se finiscono nelle mani sbagliate, un aggressore potrebbe, a seconda del protocollo e della sua posizione nella rete, rilevare il dispositivo, autenticarsi presso di esso, leggere informazioni di stato, modificare impostazioni, accendere o spegnere il climatizzatore, cambiare modalità operative e modificare la temperatura impostata. Di norma, l'aggressore deve comunque poter stabilire una connessione di rete con il dispositivo; il solo possesso di token e key non consente un attacco da tutta Internet. Token e key devono quindi essere trattati come una password. Il [secondo capitolo](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben) tratta di come integrare il dispositivo nella rete in modo che questi valori causino pochi danni anche in caso di incidente.
+Per l'uso nella propria rete, ciò che conta soprattutto è cosa consentono token e key. Entrambi autenticano la comunicazione locale con il dispositivo. Se finiscono nelle mani sbagliate, un aggressore potrebbe, a seconda del protocollo e della sua posizione nella rete, rilevare il dispositivo, autenticarsi presso di esso, leggere informazioni di stato, modificare impostazioni, accendere o spegnere il climatizzatore, cambiare modalità operative e modificare la temperatura impostata. Di norma, l'aggressore deve comunque poter stabilire una connessione di rete con il dispositivo; il solo possesso di token e key non consente un attacco da tutta Internet. Token e key devono quindi essere trattati come una password. Il [secondo capitolo](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben) tratta di come integrare il dispositivo nella rete in modo che questi valori causino pochi danni anche in caso di incidente.
 
 ## Cosa resta in pratica
 
 Il controllo locale della PortaSplit dipende interamente da token e key, che al momento possono essere ottenuti solo tramite il cloud Midea. Questo passaggio fa parte del design del protocollo: i comandi locali sono vincolati a credenziali legate al cloud. Poiché l'endpoint è privato e non documentato, la disponibilità a lungo termine dell'integrazione non ufficiale resta incerta.
 
-In pratica ciò significa: proteggere credenziali e configurazione, non annullare inutilmente un abbinamento funzionante e monitorare le modifiche all'integrazione e al firmware. I dispositivi già configurati continuano a funzionare localmente. Il [contributo pratico sulla PortaSplit](/blog/midea-portasplit-home-assistant-einrichten) descrive configurazione, backup e protezione della rete.
+In pratica ciò significa: proteggere credenziali e configurazione, non annullare inutilmente un abbinamento funzionante e monitorare le modifiche all'integrazione e al firmware. I dispositivi già configurati continuano a funzionare localmente. Il [contributo pratico sulla PortaSplit](/blog/midea-portasplit-home-assistant) descrive configurazione, backup e protezione della rete.
 
 ## Fonti
 

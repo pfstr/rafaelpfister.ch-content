@@ -8,8 +8,8 @@ timeToRead: "11 min läsning"
 themen:
   - smart-home-iot
 related:
+  - midea-portasplit-home-assistant-absichern
   - midea-portasplit-home-assistant
-  - midea-portasplit-home-assistant-einrichten
 draft: false
 slug: "midea-v2-v3-och-cloud-api-vad-det-faktiskt-betyder-for-portasplit"
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
@@ -31,7 +31,7 @@ Denna artikel är aktuell per den 25 juli 2026.
 
 ## Varför den tidigare bedömningen måste korrigeras
 
-I [den första artikeln om frågan kring molntoken](/blog/midea-portasplit-home-assistant) återgav jag i huvudsak varningen från projektet `Midea AC LAN` som en annonserad avveckling av molnsnittställena. Det motsvarade ordalydelsen i projektets README, men var för starkt formulerat som sakpåstående.
+I [den första artikeln om frågan kring molntoken](/blog/midea-portasplit-home-assistant-absichern) återgav jag i huvudsak varningen från projektet `Midea AC LAN` som en annonserad avveckling av molnsnittställena. Det motsvarade ordalydelsen i projektets README, men var för starkt formulerat som sakpåstående.
 
 Varningen är fortfarande relevant som riskinformation. Den är dock inte en publicerad Midea-färdplan. Framför allt finns nu nytt tekniskt material som ifrågasätter en väsentlig del av den tidigare tolkningen.
 
@@ -278,7 +278,7 @@ Följande gäller:
 - Kontrollera den aktuella funktionen före firmware- och integrationsuppdateringar.
 - Testa den lokala styrningen på nytt efter uppdateringar.
 
-En säkerhetskopia är ett rimligt skydd mot molnförändringar, integrationsproblem och egna misstag. Den är dock inte ett tecken på att en avveckling är nära förestående. Hur en PortaSplit kan installeras korrekt och skyddas i hemnätverket beskrivs i [den praktiska delen om installation](/blog/midea-portasplit-home-assistant-einrichten).
+En säkerhetskopia är ett rimligt skydd mot molnförändringar, integrationsproblem och egna misstag. Den är dock inte ett tecken på att en avveckling är nära förestående. Hur en PortaSplit kan installeras korrekt och skyddas i hemnätverket beskrivs i [den praktiska delen om installation](/blog/midea-portasplit-home-assistant).
 
 ## Bedömning utifrån tillgängliga belägg
 

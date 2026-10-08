@@ -14118,11 +14118,11 @@ Das Projekt `Midea AC LAN` warnt in seiner [README](https://github.com/wuwentao/
 
 > Eine offizielle Midea Cloud-to-Cloud API V2 existiert. Sie ist aber nicht identisch mit der von Home Assistant verwendeten Token-Schnittstelle und auch nicht mit dem lokalen V2- oder V3-Geräteprotokoll. Eine offiziell angekündigte Abschaltung der lokalen PortaSplit-Steuerung mit einem konkreten Termin ist nicht dokumentiert. Im Juni 2026 wurde zudem nachgewiesen, dass die vermeintlich abgeschaltete SmartHome-Token-API weiterhin funktionierte – der bisherige Request der Community-Bibliothek war lediglich unvollständig.
 
-Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant-einrichten) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Juli 2026.
+Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Juli 2026.
 
 ## Weshalb die frühere Einordnung korrigiert werden muss
 
-In einer früheren Fassung des [Artikels zu Token und Key](/blog/midea-portasplit-home-assistant) hatte ich die Warnung aus dem Projekt `Midea AC LAN` sinngemäss als angekündigte Abschaltung der Cloud-Schnittstellen wiedergegeben. Das entsprach dem Wortlaut der Projekt-README, war aber als Tatsachenbehauptung zu stark formuliert.
+In einer früheren Fassung des [Artikels zu Token und Key](/blog/midea-portasplit-home-assistant-absichern) hatte ich die Warnung aus dem Projekt `Midea AC LAN` sinngemäss als angekündigte Abschaltung der Cloud-Schnittstellen wiedergegeben. Das entsprach dem Wortlaut der Projekt-README, war aber als Tatsachenbehauptung zu stark formuliert.
 
 Die Warnung ist als Risikohinweis weiterhin relevant. Sie ist jedoch keine veröffentlichte Midea-Roadmap. Vor allem ist inzwischen neues technisches Material verfügbar, das einen wesentlichen Teil der bisherigen Interpretation infrage stellt.
 
@@ -14359,7 +14359,7 @@ Trotz der relativierenden Erkenntnisse bleibt ein Backup sinnvoll.
 
 Für V3-Geräte empfiehlt `Midea AC LAN` ausdrücklich, die erzeugte JSON-Konfiguration ausserhalb von HAOS zu sichern. Die aktuelle Empfehlung steht direkt in der [Projekt-README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
 
-Ein Backup ist eine vernünftige Absicherung gegen Cloudänderungen, Integrationsprobleme und eigene Fehler, aber kein Hinweis darauf, dass eine Abschaltung unmittelbar bevorsteht. Wie Token, Key und Konfiguration gesichert werden, beschreibt [Teil 2](/blog/midea-portasplit-home-assistant#token-key-und-konfiguration-sichern).
+Ein Backup ist eine vernünftige Absicherung gegen Cloudänderungen, Integrationsprobleme und eigene Fehler, aber kein Hinweis darauf, dass eine Abschaltung unmittelbar bevorsteht. Wie Token, Key und Konfiguration gesichert werden, beschreibt [Teil 2](/blog/midea-portasplit-home-assistant-absichern#token-key-und-konfiguration-sichern).
 
 ## Einordnung auf Basis der verfügbaren Belege
 
@@ -14411,9 +14411,248 @@ Die nüchterne Schlussfolgerung lautet deshalb:
 
 ----
 
-# Midea PortaSplit in Home Assistant absichern: Token, Key und Heimnetz
+# Midea PortaSplit in Home Assistant: Einrichtung und Dashboard
 
 URL: https://rafaelpfister.ch/blog/midea-portasplit-home-assistant
+Datum: 2026-07-24
+
+Die Midea PortaSplit lässt sich mit einer Community-Integration direkt im lokalen Netz über Home Assistant steuern. In sieben Schritten entsteht von der App-Kopplung bis zum Dashboard eine lokale Steuerung mit Kennzahlen und Verlaufsdiagrammen. Dashboard, Hilfssensoren und Theme stehen im Repository <a class="gh-badge" href="https://github.com/pfstr/ha-portasplit-dashboard" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">pfstr/ha-portasplit-dashboard</span></a>.
+
+![Home-Assistant-Dashboard der Midea PortaSplit mit simulierten Werten eines heissen Sommertags: Kennzahlen oben, Thermostat im Kühlmodus auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png)
+
+Die Abbildung zeigt das fertige Dashboard mit simulierten Werten: Die PortaSplit kühlt ab 17 Uhr einen auf 27 °C aufgeheizten Raum auf 22 °C, ist nachts ausgeschaltet und regelt ab 11 Uhr mit dem Inverter-Kompressor gegen die Mittagshitze.
+
+Die Serie hat drei Teile: Teil 1 beschreibt die Einrichtung, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) behandelt die Absicherung von Token, Key und Heimnetz, [Teil 3](/blog/midea-v2-cloud-api-portasplit-home-assistant) ordnet die Warnungen zur Midea-Cloud-API ein.
+
+## Wie die lokale Steuerung funktioniert
+
+Steuerbefehle gehen nach der Einrichtung direkt von Home Assistant an die PortaSplit, ohne Umweg über einen Midea-Server. Bei Geräten mit dem V3-Protokoll akzeptiert die PortaSplit lokale Befehle aber nur mit zwei gerätespezifischen Werten, Token und Key. Die Integration holt beide einmalig bei der Einrichtung über die Midea-Cloud ab und speichert sie lokal:
+
+```text
+Einrichtung:   Home Assistant → Midea-Cloud → Token und Key
+Betrieb:       Home Assistant → lokales Netz (6444/TCP) → PortaSplit
+```
+
+Die beschriebenen Integrationen stammen aus der Community und werden weder von Midea noch von Home Assistant offiziell unterstützt. Firmware- oder Cloud-Änderungen können ihr Verhalten beeinflussen.
+
+## Welche Integration passt
+
+Zwei Community-Integrationen unterstützen die PortaSplit:
+
+| Integration | Schwerpunkt |
+|---|---|
+| <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> (`Midea AC LAN`) | viele Midea-Geräteklassen; stellt bei der PortaSplit 21 Sensoren bereit, darunter Kompressorfrequenz, -strom und -spannung sowie Verdampfer-, Kondensator- und Heissgastemperatur |
+| <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> (`Midea Smart AC`) | auf Klimageräte (`0xAC`, `0xCC`) zugeschnitten, fragt die Gerätefähigkeiten ab und unterstützt den Leisemodus des Aussengeräts |
+
+Für meine PortaSplit verwende ich `Midea AC LAN`; Anleitung und Dashboard bauen auf deren Entitäten auf. Mit `Midea Smart AC` heissen die Entitäten anders, das Dashboard lässt sich dann nur nach Anpassung verwenden. Beide Integrationen gleichzeitig mit demselben Gerät zu betreiben führt zu Statusproblemen und ist nicht sinnvoll.
+
+## Voraussetzungen
+
+- Midea PortaSplit mit WLAN-Funktion und ein 2,4-GHz-WLAN
+- MSmartHome-App mit Midea-Konto
+- Home Assistant ab Version 2024.10 (getestet mit 2026.7) mit Zugriff auf das Konfigurationsverzeichnis `/config`, etwa über das Add-on File editor, Samba oder SSH
+- HACS für die Diagrammkarte `apexcharts-card`
+- Netzwerkzugriff von Home Assistant zur PortaSplit auf Port 6444/TCP
+
+## Schritt 1: PortaSplit mit MSmartHome verbinden
+
+1. MSmartHome-App installieren und mit dem Midea-Konto anmelden.
+2. PortaSplit in den WLAN-Kopplungsmodus versetzen und mit dem 2,4-GHz-WLAN verbinden.
+3. Prüfen, ob sich die PortaSplit über die App steuern lässt.
+4. Im Router eine DHCP-Reservation für die PortaSplit anlegen, damit sie dauerhaft dieselbe IP-Adresse erhält.
+
+Nutzt der Router dieselbe SSID für 2,4 und 5 GHz, funktioniert die Kopplung meist trotzdem. Bei Problemen hilft vorübergehend ein separates 2,4-GHz-WLAN.
+
+## Schritt 2: Midea AC LAN installieren
+
+**Über HACS:** HACS öffnen, nach `Midea AC LAN` suchen, die Integration herunterladen und Home Assistant neu starten.
+
+**Ohne HACS:** Laden Sie das Release-Archiv direkt in das Verzeichnis `custom_components`. In einer Docker-Installation geht das mit `docker exec -it homeassistant bash` im Container, beim Home Assistant OS im Terminal-Add-on:
+
+```bash
+mkdir -p /config/custom_components
+cd /config/custom_components
+wget https://github.com/wuwentao/midea_ac_lan/releases/download/v2026.9.2/midea_ac_lan.zip
+unzip midea_ac_lan.zip -d midea_ac_lan
+rm midea_ac_lan.zip
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `mkdir -p` | legt das Verzeichnis an, falls es fehlt, und meldet keinen Fehler, wenn es schon existiert |
+| `wget <url>` | lädt das Release-Archiv der angegebenen Version von GitHub herunter |
+| `unzip <archiv>` | entpackt das Archiv |
+| `-d midea_ac_lan` | Zielverzeichnis; die Dateien liegen im Archiv ohne Unterordner und müssen in `custom_components/midea_ac_lan/` landen |
+
+</details>
+
+Die aktuelle Versionsnummer steht auf der Release-Seite des Projekts. Starten Sie Home Assistant danach über Einstellungen, System und Neu starten. Die Warnung `We found a custom integration midea_ac_lan which has not been tested by Home Assistant` im Protokoll ist bei jeder Custom Integration normal.
+
+## Schritt 3: PortaSplit hinzufügen
+
+Unter Einstellungen, Geräte & Dienste, Integration hinzufügen nach `Midea AC LAN` suchen. Der Einrichtungsdialog fragt nacheinander:
+
+1. **Aktion:** `Discover automatically`.
+2. **IP-Adresse:** `auto` durchsucht das lokale Netz. Liegt die PortaSplit in einem anderen VLAN, tragen Sie ihre IP-Adresse ein, weil die Suche per Broadcast nicht über VLAN-Grenzen reicht.
+3. **Gerät:** Die PortaSplit erscheint als `<Geräte-ID> (Air Conditioner)`.
+4. **Login:** Konto, Passwort und Server. Für ein Konto der MSmartHome-App wählen Sie `SmartHome`; scheitert die Anmeldung, `NetHome Plus` mit denselben Zugangsdaten. Die Integration holt damit einmalig Token und Key.
+
+Danach erscheint das Gerät mit einer einzigen Entität `climate.<geräte-id>_climate`. Die Geräte-ID ist eine 15-stellige Zahl und wird im Folgenden als `DEVICE_ID` bezeichnet.
+
+## Schritt 4: Sensoren freischalten
+
+`Midea AC LAN` legt standardmässig nur die Klima-Entität an. Unter Einstellungen, Geräte & Dienste, Midea AC LAN, Konfigurieren öffnet sich der Optionsdialog:
+
+| Feld | Einstellung |
+|---|---|
+| IP-Adresse | unverändert lassen |
+| Refresh interval | 30 Sekunden (Standard) |
+| Sensors | alle angebotenen Sensoren auswählen |
+| Switches | mindestens `Power`, `ECO Mode`, `Sleep Mode`, `Swing Vertical`, `Swing Horizontal`, `Screen Display`, `Prompt Tone` und `Fan Speed Percent` |
+| Customize | leer lassen |
+
+Nach dem Speichern legt die Integration die Entitäten ohne Neustart an, nach dem Muster `sensor.DEVICE_ID_indoor_temperature`. Eine PortaSplit (Gerätetyp `0xAC`, Protokoll V3) lieferte mit `Midea AC LAN` v2026.9.2 im Standby diese Werte:
+
+| Entität | Bedeutung | Wert im Standby |
+|---|---|---|
+| `indoor_temperature` | Raumtemperatur | 23,0 °C |
+| `outdoor_temperature` | Aussentemperatur am Aussengerät | 23,5 °C |
+| `realtime_power` | aktuelle Leistungsaufnahme | 1,5 W |
+| `total_energy_consumption` | Energiezähler seit Inbetriebnahme | 90,54 kWh |
+| `compressor_frequency`, `target_compressor_frequency` | Kompressorfrequenz Ist und Soll | 0 Hz |
+| `compressor_voltage`, `compressor_current`, `compressor_power` | Spannung, Strom und Leistung am Kompressor | 230 V, 1 A, 4 W |
+| `indoor_coil_temperature` (T2), `outdoor_coil_temperature` (T3) | Verdampfer, Kondensator | 23,5 °C |
+| `discharge_pipe_temperature` (TP) | Heissgasleitung | 23 °C |
+| `indoor_fan_speed` | Lüfterdrehzahl | 0 rpm |
+| `error_code`, `full_dust` | Fehlercode, Filter verschmutzt | 0, on |
+| `indoor_humidity` | Luftfeuchtigkeit | unknown |
+
+Die PortaSplit besitzt keinen Feuchtesensor, `indoor_humidity` bleibt deshalb leer. Die Klima-Entität kennt die Modi Aus, Auto, Kühlen, Entfeuchten, Heizen und Lüften, Solltemperaturen von 16 bis 30 °C in Schritten von 0,5 °C sowie die Lüfterstufen Silent, Low, Medium, High, Full und Auto.
+
+## Schritt 5: Diagrammkarte installieren
+
+Die Verlaufsdiagramme verwenden `apexcharts-card`. In HACS nach `apexcharts-card` suchen und herunterladen. HACS registriert die Karte als Dashboard-Ressource; danach den Browser einmal neu laden.
+
+## Schritt 6: Hilfssensoren und Theme einrichten
+
+Das Dashboard benötigt fünf Hilfssensoren: Kompressor an/aus, Lüfterstufe als Zahl für das Stufendiagramm, Laufzeit und Energie seit Mitternacht sowie den Zeitpunkt der letzten Meldung. Aktivieren Sie zuerst Pakete und Themes in der `configuration.yaml`, sofern noch nicht geschehen:
+
+```yaml
+homeassistant:
+  packages: !include_dir_named packages
+
+frontend:
+  themes: !include_dir_merge_named themes
+```
+
+Kopieren Sie dann aus dem Repository `packages/portasplit.yaml` nach `/config/packages/` und `themes/portasplit.yaml` nach `/config/themes/` und ersetzen Sie in der Paketdatei jedes `DEVICE_ID` durch die eigene Geräte-ID. Das Paket enthält:
+
+```yaml
+template:
+  - binary_sensor:
+      - name: "PortaSplit Kompressor"
+        unique_id: portasplit_kompressor
+        icon: mdi:heat-pump-outline
+        device_class: running
+        state: >
+          {% set f = states('sensor.DEVICE_ID_compressor_frequency') %}
+          {% if f | is_number %}{{ f | float > 0 }}
+          {% else %}{{ states('sensor.DEVICE_ID_realtime_power') | float(0) > 150 }}{% endif %}
+  - sensor:
+      - name: "PortaSplit Lüfterstufe"
+        unique_id: portasplit_luefterstufe_num
+        icon: mdi:fan
+        state: >
+          {% set m = state_attr('climate.DEVICE_ID_climate', 'fan_mode') %}
+          {{ {'silent': 1, 'low': 2, 'medium': 3, 'high': 4,
+              'full': 5, 'auto': 6}.get(m, none) }}
+      - name: "PortaSplit letzte Meldung"
+        unique_id: portasplit_letzte_meldung
+        icon: mdi:sync
+        device_class: timestamp
+        state: "{{ states.climate['DEVICE_ID_climate'].last_reported }}"
+
+sensor:
+  - platform: history_stats
+    name: "PortaSplit Laufzeit heute"
+    unique_id: portasplit_laufzeit_heute
+    entity_id: binary_sensor.portasplit_kompressor
+    state: "on"
+    type: time
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"
+
+utility_meter:
+  portasplit_energie_heute:
+    name: "PortaSplit Energie heute"
+    unique_id: portasplit_energie_heute
+    source: sensor.DEVICE_ID_total_energy_consumption
+    cycle: daily
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `template: binary_sensor` | Kompressor gilt als laufend, wenn die Kompressorfrequenz über 0 Hz liegt; meldet ein Gerät keine Frequenz, gilt eine Leistung über 150 W als Kriterium |
+| `template: sensor` (Lüfterstufe) | übersetzt den Lüftermodus in eine Zahl von 1 (Silent) bis 6 (Auto), damit das Diagramm Stufen zeichnen kann |
+| `states.climate['…']` | Klammerschreibweise ist nötig, weil die Objekt-ID mit Ziffern beginnt; `states.climate.123…` ist für Jinja ungültig |
+| `last_reported` | Zeitpunkt der letzten Meldung des Geräts, auch wenn sich kein Wert geändert hat |
+| `history_stats` mit `type: time` | summiert die Zeit, in der der Kompressor-Sensor `on` war |
+| `start` / `end` | Zeitraum von Mitternacht bis jetzt |
+| `utility_meter` mit `cycle: daily` | bildet aus dem Gesamtzähler einen Tageszähler, der um Mitternacht auf 0 zurückgesetzt wird |
+
+</details>
+
+Prüfen Sie die Konfiguration unter Entwicklerwerkzeuge, YAML, Konfiguration prüfen und starten Sie Home Assistant neu; `utility_meter` lässt sich nicht per Reload laden. Danach existieren `binary_sensor.portasplit_kompressor`, `sensor.portasplit_lufterstufe`, `sensor.portasplit_laufzeit_heute`, `sensor.portasplit_energie_heute` und `sensor.portasplit_letzte_meldung`. Home Assistant lässt beim Bilden der Entitäts-ID den Umlaut weg, daher `lufterstufe`.
+
+## Schritt 7: Dashboard anlegen
+
+1. Einstellungen, Dashboards, Dashboard hinzufügen, Neues Dashboard von Grund auf, Name `PortaSplit`.
+2. Das neue Dashboard öffnen und über den Stift in den Bearbeitungsmodus wechseln.
+3. Über das Drei-Punkte-Menü den Raw-Konfigurationseditor öffnen.
+4. Den Inhalt vollständig durch `dashboard.yaml` aus dem Repository ersetzen, vorher jedes `DEVICE_ID` durch die eigene Geräte-ID ersetzen.
+5. Speichern und den Bearbeitungsmodus schliessen.
+
+Das Dashboard verwendet die Ansicht «Abschnitte» mit vier Spalten und das Theme `PortaSplit Dark`. Oben stehen acht Kennzahlen, links die Steuerung mit Thermostat, Betriebsmodus und Lüfterstufe, rechts die Verläufe der letzten 24 Stunden. Darunter folgen die technischen Werte des Kältekreislaufs und ein Statusblock mit Fehlercode, Filterzustand und letzter Meldung.
+
+Direkt nach der Einrichtung sind die Diagramme leer und füllen sich mit der Laufzeit. `Energie heute` zeigt `Unbekannt`, bis der Energiezähler zum ersten Mal steigt.
+
+## Nach der Einrichtung
+
+Token und Key liegen jetzt in Home Assistant. Lassen sie sich später nicht mehr über die Cloud beziehen, ist ein Backup der einzige Weg zu einer Neueinrichtung. Wie Sie Token, Key und Konfiguration sichern und die PortaSplit im Heimnetz abschotten, beschreibt [Teil 2: PortaSplit absichern](/blog/midea-portasplit-home-assistant-absichern).
+
+## Quellen
+
+1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: Integration `Midea AC LAN`: unterstützte Geräteklassen, Installation über HACS, Mindestversion Home Assistant 2024.4.1.
+
+2.  [midea_ac_lan: Releases](https://github.com/wuwentao/midea_ac_lan/releases): Release-Archive für die Installation ohne HACS, getestet mit v2026.9.2.
+
+3.  [midea_ac_lan: Dokumentation der Klimaentitäten](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md): Entitäten und Attribute für Klimageräte, darunter Leistung, Gesamtenergie und Kompressorfrequenz.
+
+4.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: Integration `Midea Smart AC`: unterstützte Gerätetypen `0xAC` und `0xCC`, PortaSplit mit „Out Silent Mode", Cloud-Nutzung zur Token- und Key-Beschaffung bei V3-Geräten und Standardport 6444.
+
+5.  <a class="gh-badge" href="https://github.com/pfstr/ha-portasplit-dashboard" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">pfstr/ha-portasplit-dashboard</span></a>: Dashboard, Hilfssensoren-Paket und Theme aus dieser Anleitung, mit der Liste der Entitäten, die eine PortaSplit mit `Midea AC LAN` v2026.9.2 meldet.
+
+6.  [apexcharts-card](https://github.com/RomRider/apexcharts-card): Diagrammkarte für die Verlaufsdiagramme.
+
+7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): Installation von Custom Integrations und Frontend-Karten.
+
+8.  [Home Assistant: Packages](https://www.home-assistant.io/docs/configuration/packages/): Bündeln von Template-, Sensor- und Utility-Meter-Konfiguration in einer Datei unter `/config/packages/`.
+
+9.  [Home Assistant: History Stats](https://www.home-assistant.io/integrations/history_stats/): Sensor-Plattform für die Laufzeit des Kompressors seit Mitternacht.
+
+10.  [Home Assistant: Utility Meter](https://www.home-assistant.io/integrations/utility_meter/): Tageszähler auf Basis des Gesamtenergiezählers.
+
+----
+
+# Midea PortaSplit in Home Assistant absichern: Token, Key und Heimnetz
+
+URL: https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-absichern
 Datum: 2026-07-24
 
 <aside class="article-update">
@@ -14428,7 +14667,7 @@ Datum: 2026-07-24
 
 Die lokale Steuerung der Midea PortaSplit beruht auf zwei gerätespezifischen Werten, Token und Key. Sie authentifizieren die Verbindung zwischen Home Assistant und Gerät und lassen sich derzeit nur über die Midea-Cloud beziehen. Daraus folgen zwei Aufgaben: die Werte so sichern, dass eine Neueinrichtung ohne Cloud möglich bleibt, und Gerät sowie Home Assistant so betreiben, dass die Werte auch bei einer Panne wenig Schaden anrichten.
 
-Die Serie hat drei Teile: [Teil 1](/blog/midea-portasplit-home-assistant-einrichten) beschreibt die Einrichtung bis zum Dashboard, dieser Teil die Absicherung, [Teil 3](/blog/midea-v2-cloud-api-portasplit-home-assistant) die Hintergründe der Cloud-API-Warnungen.
+Die Serie hat drei Teile: [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, dieser Teil die Absicherung, [Teil 3](/blog/midea-v2-cloud-api-portasplit-home-assistant) die Hintergründe der Cloud-API-Warnungen.
 
 ## Woher Token und Key stammen
 
@@ -14682,245 +14921,6 @@ So betrieben ist die lokale Steuerung unter Sicherheitsgesichtspunkten vertretba
 5.  [Midea SmartHome](https://www.midea.com/global/smarthome): Herstellerangaben zu den Sicherheits- und Datenschutzstandards EN 303 645, PSTI, NIST, DSGVO und RED DA.
 
 6.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): Installation und Verwaltung von Custom Integrations, die nicht Bestandteil von Home Assistant Core sind.
-
-----
-
-# Midea PortaSplit in Home Assistant: Einrichtung und Dashboard
-
-URL: https://rafaelpfister.ch/blog/midea-portasplit-home-assistant-einrichten
-Datum: 2026-07-24
-
-Die Midea PortaSplit lässt sich mit einer Community-Integration direkt im lokalen Netz über Home Assistant steuern. In sieben Schritten entsteht von der App-Kopplung bis zum Dashboard eine lokale Steuerung mit Kennzahlen und Verlaufsdiagrammen. Dashboard, Hilfssensoren und Theme stehen im Repository <a class="gh-badge" href="https://github.com/pfstr/ha-portasplit-dashboard" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">pfstr/ha-portasplit-dashboard</span></a>.
-
-![Home-Assistant-Dashboard der Midea PortaSplit mit simulierten Werten eines heissen Sommertags: Kennzahlen oben, Thermostat im Kühlmodus auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png)
-
-Die Abbildung zeigt das fertige Dashboard mit simulierten Werten: Die PortaSplit kühlt ab 17 Uhr einen auf 27 °C aufgeheizten Raum auf 22 °C, ist nachts ausgeschaltet und regelt ab 11 Uhr mit dem Inverter-Kompressor gegen die Mittagshitze.
-
-Die Serie hat drei Teile: Teil 1 beschreibt die Einrichtung, [Teil 2](/blog/midea-portasplit-home-assistant) behandelt die Absicherung von Token, Key und Heimnetz, [Teil 3](/blog/midea-v2-cloud-api-portasplit-home-assistant) ordnet die Warnungen zur Midea-Cloud-API ein.
-
-## Wie die lokale Steuerung funktioniert
-
-Steuerbefehle gehen nach der Einrichtung direkt von Home Assistant an die PortaSplit, ohne Umweg über einen Midea-Server. Bei Geräten mit dem V3-Protokoll akzeptiert die PortaSplit lokale Befehle aber nur mit zwei gerätespezifischen Werten, Token und Key. Die Integration holt beide einmalig bei der Einrichtung über die Midea-Cloud ab und speichert sie lokal:
-
-```text
-Einrichtung:   Home Assistant → Midea-Cloud → Token und Key
-Betrieb:       Home Assistant → lokales Netz (6444/TCP) → PortaSplit
-```
-
-Die beschriebenen Integrationen stammen aus der Community und werden weder von Midea noch von Home Assistant offiziell unterstützt. Firmware- oder Cloud-Änderungen können ihr Verhalten beeinflussen.
-
-## Welche Integration passt
-
-Zwei Community-Integrationen unterstützen die PortaSplit:
-
-| Integration | Schwerpunkt |
-|---|---|
-| <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a> (`Midea AC LAN`) | viele Midea-Geräteklassen; stellt bei der PortaSplit 21 Sensoren bereit, darunter Kompressorfrequenz, -strom und -spannung sowie Verdampfer-, Kondensator- und Heissgastemperatur |
-| <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a> (`Midea Smart AC`) | auf Klimageräte (`0xAC`, `0xCC`) zugeschnitten, fragt die Gerätefähigkeiten ab und unterstützt den Leisemodus des Aussengeräts |
-
-Für meine PortaSplit verwende ich `Midea AC LAN`; Anleitung und Dashboard bauen auf deren Entitäten auf. Mit `Midea Smart AC` heissen die Entitäten anders, das Dashboard lässt sich dann nur nach Anpassung verwenden. Beide Integrationen gleichzeitig mit demselben Gerät zu betreiben führt zu Statusproblemen und ist nicht sinnvoll.
-
-## Voraussetzungen
-
-- Midea PortaSplit mit WLAN-Funktion und ein 2,4-GHz-WLAN
-- MSmartHome-App mit Midea-Konto
-- Home Assistant ab Version 2024.10 (getestet mit 2026.7) mit Zugriff auf das Konfigurationsverzeichnis `/config`, etwa über das Add-on File editor, Samba oder SSH
-- HACS für die Diagrammkarte `apexcharts-card`
-- Netzwerkzugriff von Home Assistant zur PortaSplit auf Port 6444/TCP
-
-## Schritt 1: PortaSplit mit MSmartHome verbinden
-
-1. MSmartHome-App installieren und mit dem Midea-Konto anmelden.
-2. PortaSplit in den WLAN-Kopplungsmodus versetzen und mit dem 2,4-GHz-WLAN verbinden.
-3. Prüfen, ob sich die PortaSplit über die App steuern lässt.
-4. Im Router eine DHCP-Reservation für die PortaSplit anlegen, damit sie dauerhaft dieselbe IP-Adresse erhält.
-
-Nutzt der Router dieselbe SSID für 2,4 und 5 GHz, funktioniert die Kopplung meist trotzdem. Bei Problemen hilft vorübergehend ein separates 2,4-GHz-WLAN.
-
-## Schritt 2: Midea AC LAN installieren
-
-**Über HACS:** HACS öffnen, nach `Midea AC LAN` suchen, die Integration herunterladen und Home Assistant neu starten.
-
-**Ohne HACS:** Laden Sie das Release-Archiv direkt in das Verzeichnis `custom_components`. In einer Docker-Installation geht das mit `docker exec -it homeassistant bash` im Container, beim Home Assistant OS im Terminal-Add-on:
-
-```bash
-mkdir -p /config/custom_components
-cd /config/custom_components
-wget https://github.com/wuwentao/midea_ac_lan/releases/download/v2026.9.2/midea_ac_lan.zip
-unzip midea_ac_lan.zip -d midea_ac_lan
-rm midea_ac_lan.zip
-```
-
-<details class="options-details">
-<summary>Optionen erklärt</summary>
-
-| Option | Wirkung |
-|---|---|
-| `mkdir -p` | legt das Verzeichnis an, falls es fehlt, und meldet keinen Fehler, wenn es schon existiert |
-| `wget <url>` | lädt das Release-Archiv der angegebenen Version von GitHub herunter |
-| `unzip <archiv>` | entpackt das Archiv |
-| `-d midea_ac_lan` | Zielverzeichnis; die Dateien liegen im Archiv ohne Unterordner und müssen in `custom_components/midea_ac_lan/` landen |
-
-</details>
-
-Die aktuelle Versionsnummer steht auf der Release-Seite des Projekts. Starten Sie Home Assistant danach über Einstellungen, System und Neu starten. Die Warnung `We found a custom integration midea_ac_lan which has not been tested by Home Assistant` im Protokoll ist bei jeder Custom Integration normal.
-
-## Schritt 3: PortaSplit hinzufügen
-
-Unter Einstellungen, Geräte & Dienste, Integration hinzufügen nach `Midea AC LAN` suchen. Der Einrichtungsdialog fragt nacheinander:
-
-1. **Aktion:** `Discover automatically`.
-2. **IP-Adresse:** `auto` durchsucht das lokale Netz. Liegt die PortaSplit in einem anderen VLAN, tragen Sie ihre IP-Adresse ein, weil die Suche per Broadcast nicht über VLAN-Grenzen reicht.
-3. **Gerät:** Die PortaSplit erscheint als `<Geräte-ID> (Air Conditioner)`.
-4. **Login:** Konto, Passwort und Server. Für ein Konto der MSmartHome-App wählen Sie `SmartHome`; scheitert die Anmeldung, `NetHome Plus` mit denselben Zugangsdaten. Die Integration holt damit einmalig Token und Key.
-
-Danach erscheint das Gerät mit einer einzigen Entität `climate.<geräte-id>_climate`. Die Geräte-ID ist eine 15-stellige Zahl und wird im Folgenden als `DEVICE_ID` bezeichnet.
-
-## Schritt 4: Sensoren freischalten
-
-`Midea AC LAN` legt standardmässig nur die Klima-Entität an. Unter Einstellungen, Geräte & Dienste, Midea AC LAN, Konfigurieren öffnet sich der Optionsdialog:
-
-| Feld | Einstellung |
-|---|---|
-| IP-Adresse | unverändert lassen |
-| Refresh interval | 30 Sekunden (Standard) |
-| Sensors | alle angebotenen Sensoren auswählen |
-| Switches | mindestens `Power`, `ECO Mode`, `Sleep Mode`, `Swing Vertical`, `Swing Horizontal`, `Screen Display`, `Prompt Tone` und `Fan Speed Percent` |
-| Customize | leer lassen |
-
-Nach dem Speichern legt die Integration die Entitäten ohne Neustart an, nach dem Muster `sensor.DEVICE_ID_indoor_temperature`. Eine PortaSplit (Gerätetyp `0xAC`, Protokoll V3) lieferte mit `Midea AC LAN` v2026.9.2 im Standby diese Werte:
-
-| Entität | Bedeutung | Wert im Standby |
-|---|---|---|
-| `indoor_temperature` | Raumtemperatur | 23,0 °C |
-| `outdoor_temperature` | Aussentemperatur am Aussengerät | 23,5 °C |
-| `realtime_power` | aktuelle Leistungsaufnahme | 1,5 W |
-| `total_energy_consumption` | Energiezähler seit Inbetriebnahme | 90,54 kWh |
-| `compressor_frequency`, `target_compressor_frequency` | Kompressorfrequenz Ist und Soll | 0 Hz |
-| `compressor_voltage`, `compressor_current`, `compressor_power` | Spannung, Strom und Leistung am Kompressor | 230 V, 1 A, 4 W |
-| `indoor_coil_temperature` (T2), `outdoor_coil_temperature` (T3) | Verdampfer, Kondensator | 23,5 °C |
-| `discharge_pipe_temperature` (TP) | Heissgasleitung | 23 °C |
-| `indoor_fan_speed` | Lüfterdrehzahl | 0 rpm |
-| `error_code`, `full_dust` | Fehlercode, Filter verschmutzt | 0, on |
-| `indoor_humidity` | Luftfeuchtigkeit | unknown |
-
-Die PortaSplit besitzt keinen Feuchtesensor, `indoor_humidity` bleibt deshalb leer. Die Klima-Entität kennt die Modi Aus, Auto, Kühlen, Entfeuchten, Heizen und Lüften, Solltemperaturen von 16 bis 30 °C in Schritten von 0,5 °C sowie die Lüfterstufen Silent, Low, Medium, High, Full und Auto.
-
-## Schritt 5: Diagrammkarte installieren
-
-Die Verlaufsdiagramme verwenden `apexcharts-card`. In HACS nach `apexcharts-card` suchen und herunterladen. HACS registriert die Karte als Dashboard-Ressource; danach den Browser einmal neu laden.
-
-## Schritt 6: Hilfssensoren und Theme einrichten
-
-Das Dashboard benötigt fünf Hilfssensoren: Kompressor an/aus, Lüfterstufe als Zahl für das Stufendiagramm, Laufzeit und Energie seit Mitternacht sowie den Zeitpunkt der letzten Meldung. Aktivieren Sie zuerst Pakete und Themes in der `configuration.yaml`, sofern noch nicht geschehen:
-
-```yaml
-homeassistant:
-  packages: !include_dir_named packages
-
-frontend:
-  themes: !include_dir_merge_named themes
-```
-
-Kopieren Sie dann aus dem Repository `packages/portasplit.yaml` nach `/config/packages/` und `themes/portasplit.yaml` nach `/config/themes/` und ersetzen Sie in der Paketdatei jedes `DEVICE_ID` durch die eigene Geräte-ID. Das Paket enthält:
-
-```yaml
-template:
-  - binary_sensor:
-      - name: "PortaSplit Kompressor"
-        unique_id: portasplit_kompressor
-        icon: mdi:heat-pump-outline
-        device_class: running
-        state: >
-          {% set f = states('sensor.DEVICE_ID_compressor_frequency') %}
-          {% if f | is_number %}{{ f | float > 0 }}
-          {% else %}{{ states('sensor.DEVICE_ID_realtime_power') | float(0) > 150 }}{% endif %}
-  - sensor:
-      - name: "PortaSplit Lüfterstufe"
-        unique_id: portasplit_luefterstufe_num
-        icon: mdi:fan
-        state: >
-          {% set m = state_attr('climate.DEVICE_ID_climate', 'fan_mode') %}
-          {{ {'silent': 1, 'low': 2, 'medium': 3, 'high': 4,
-              'full': 5, 'auto': 6}.get(m, none) }}
-      - name: "PortaSplit letzte Meldung"
-        unique_id: portasplit_letzte_meldung
-        icon: mdi:sync
-        device_class: timestamp
-        state: "{{ states.climate['DEVICE_ID_climate'].last_reported }}"
-
-sensor:
-  - platform: history_stats
-    name: "PortaSplit Laufzeit heute"
-    unique_id: portasplit_laufzeit_heute
-    entity_id: binary_sensor.portasplit_kompressor
-    state: "on"
-    type: time
-    start: "{{ today_at() }}"
-    end: "{{ now() }}"
-
-utility_meter:
-  portasplit_energie_heute:
-    name: "PortaSplit Energie heute"
-    unique_id: portasplit_energie_heute
-    source: sensor.DEVICE_ID_total_energy_consumption
-    cycle: daily
-```
-
-<details class="options-details">
-<summary>Optionen erklärt</summary>
-
-| Option | Wirkung |
-|---|---|
-| `template: binary_sensor` | Kompressor gilt als laufend, wenn die Kompressorfrequenz über 0 Hz liegt; meldet ein Gerät keine Frequenz, gilt eine Leistung über 150 W als Kriterium |
-| `template: sensor` (Lüfterstufe) | übersetzt den Lüftermodus in eine Zahl von 1 (Silent) bis 6 (Auto), damit das Diagramm Stufen zeichnen kann |
-| `states.climate['…']` | Klammerschreibweise ist nötig, weil die Objekt-ID mit Ziffern beginnt; `states.climate.123…` ist für Jinja ungültig |
-| `last_reported` | Zeitpunkt der letzten Meldung des Geräts, auch wenn sich kein Wert geändert hat |
-| `history_stats` mit `type: time` | summiert die Zeit, in der der Kompressor-Sensor `on` war |
-| `start` / `end` | Zeitraum von Mitternacht bis jetzt |
-| `utility_meter` mit `cycle: daily` | bildet aus dem Gesamtzähler einen Tageszähler, der um Mitternacht auf 0 zurückgesetzt wird |
-
-</details>
-
-Prüfen Sie die Konfiguration unter Entwicklerwerkzeuge, YAML, Konfiguration prüfen und starten Sie Home Assistant neu; `utility_meter` lässt sich nicht per Reload laden. Danach existieren `binary_sensor.portasplit_kompressor`, `sensor.portasplit_lufterstufe`, `sensor.portasplit_laufzeit_heute`, `sensor.portasplit_energie_heute` und `sensor.portasplit_letzte_meldung`. Home Assistant lässt beim Bilden der Entitäts-ID den Umlaut weg, daher `lufterstufe`.
-
-## Schritt 7: Dashboard anlegen
-
-1. Einstellungen, Dashboards, Dashboard hinzufügen, Neues Dashboard von Grund auf, Name `PortaSplit`.
-2. Das neue Dashboard öffnen und über den Stift in den Bearbeitungsmodus wechseln.
-3. Über das Drei-Punkte-Menü den Raw-Konfigurationseditor öffnen.
-4. Den Inhalt vollständig durch `dashboard.yaml` aus dem Repository ersetzen, vorher jedes `DEVICE_ID` durch die eigene Geräte-ID ersetzen.
-5. Speichern und den Bearbeitungsmodus schliessen.
-
-Das Dashboard verwendet die Ansicht «Abschnitte» mit vier Spalten und das Theme `PortaSplit Dark`. Oben stehen acht Kennzahlen, links die Steuerung mit Thermostat, Betriebsmodus und Lüfterstufe, rechts die Verläufe der letzten 24 Stunden. Darunter folgen die technischen Werte des Kältekreislaufs und ein Statusblock mit Fehlercode, Filterzustand und letzter Meldung.
-
-Direkt nach der Einrichtung sind die Diagramme leer und füllen sich mit der Laufzeit. `Energie heute` zeigt `Unbekannt`, bis der Energiezähler zum ersten Mal steigt.
-
-## Nach der Einrichtung
-
-Token und Key liegen jetzt in Home Assistant. Lassen sie sich später nicht mehr über die Cloud beziehen, ist ein Backup der einzige Weg zu einer Neueinrichtung. Wie Sie Token, Key und Konfiguration sichern und die PortaSplit im Heimnetz abschotten, beschreibt [Teil 2: PortaSplit absichern](/blog/midea-portasplit-home-assistant).
-
-## Quellen
-
-1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: Integration `Midea AC LAN`: unterstützte Geräteklassen, Installation über HACS, Mindestversion Home Assistant 2024.4.1.
-
-2.  [midea_ac_lan: Releases](https://github.com/wuwentao/midea_ac_lan/releases): Release-Archive für die Installation ohne HACS, getestet mit v2026.9.2.
-
-3.  [midea_ac_lan: Dokumentation der Klimaentitäten](https://github.com/wuwentao/midea_ac_lan/blob/main/doc/AC.md): Entitäten und Attribute für Klimageräte, darunter Leistung, Gesamtenergie und Kompressorfrequenz.
-
-4.  <a class="gh-badge" href="https://github.com/mill1000/midea-ac-py" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">mill1000/midea-ac-py</span></a>: Integration `Midea Smart AC`: unterstützte Gerätetypen `0xAC` und `0xCC`, PortaSplit mit „Out Silent Mode", Cloud-Nutzung zur Token- und Key-Beschaffung bei V3-Geräten und Standardport 6444.
-
-5.  <a class="gh-badge" href="https://github.com/pfstr/ha-portasplit-dashboard" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">pfstr/ha-portasplit-dashboard</span></a>: Dashboard, Hilfssensoren-Paket und Theme aus dieser Anleitung, mit der Liste der Entitäten, die eine PortaSplit mit `Midea AC LAN` v2026.9.2 meldet.
-
-6.  [apexcharts-card](https://github.com/RomRider/apexcharts-card): Diagrammkarte für die Verlaufsdiagramme.
-
-7.  [Home Assistant Community Store (HACS)](https://www.hacs.xyz/): Installation von Custom Integrations und Frontend-Karten.
-
-8.  [Home Assistant: Packages](https://www.home-assistant.io/docs/configuration/packages/): Bündeln von Template-, Sensor- und Utility-Meter-Konfiguration in einer Datei unter `/config/packages/`.
-
-9.  [Home Assistant: History Stats](https://www.home-assistant.io/integrations/history_stats/): Sensor-Plattform für die Laufzeit des Kompressors seit Mitternacht.
-
-10.  [Home Assistant: Utility Meter](https://www.home-assistant.io/integrations/utility_meter/): Tageszähler auf Basis des Gesamtenergiezählers.
 
 ----
 
@@ -31115,7 +31115,7 @@ This article is current as of July 25, 2026.
 
 ## Why the earlier assessment needs to be corrected
 
-In the [first article on the cloud token question](/blog/midea-portasplit-home-assistant), I had paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly phrased as a statement of fact.
+In the [first article on the cloud token question](/blog/midea-portasplit-home-assistant-absichern), I had paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly phrased as a statement of fact.
 
 The warning remains relevant as a risk notice. However, it is not a published Midea roadmap. Above all, new technical material is now available that calls a significant part of the previous interpretation into question.
 
@@ -31362,7 +31362,7 @@ The following applies:
 - Check current functionality before firmware and integration updates.
 - Test local control again after updates.
 
-A backup is a reasonable safeguard against cloud changes, integration issues, and personal mistakes. However, it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant-einrichten) explains how to properly set up and secure a PortaSplit on the home network.
+A backup is a reasonable safeguard against cloud changes, integration issues, and personal mistakes. However, it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant) explains how to properly set up and secure a PortaSplit on the home network.
 
 ## Assessment based on the available evidence
 
@@ -31881,7 +31881,7 @@ Datum: 2026-07-24
     <li><strong>Back up the token, key, and configuration in encrypted form.</strong> If retrieval no longer works later, the backup remains the most reliable way to restore it.</li>
     <li><strong>Do not unpair it without good reason.</strong> Factory resets, removing it from the Midea account, or replacing the Wi-Fi module require obtaining a new token, which may fail in the future.</li>
   </ol>
-  <p>Devices that have already been set up are controlled locally. Changes to the cloud interface therefore affect adding and restoring devices first, not every command currently in use. The specific steps are covered in the <a href="/blog/midea-portasplit-home-assistant-einrichten">practical guide to integration and protection</a>.</p>
+  <p>Devices that have already been set up are controlled locally. Changes to the cloud interface therefore affect adding and restoring devices first, not every command currently in use. The specific steps are covered in the <a href="/blog/midea-portasplit-home-assistant">practical guide to integration and protection</a>.</p>
 </aside>
 
 ![Example Home Assistant dashboard for a Midea PortaSplit with room and target temperature, humidity, power consumption, energy consumption, and compressor run times over the last 24 hours.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -31950,7 +31950,7 @@ This leads to the three steps in the box at the beginning of the article, each w
 - **Back up credentials.** Home Assistant stores the token and key locally. A failed system, unsuccessful restore, or accidentally deleted integration can still make local control unusable if no external backup exists.
 - **Do not unpair it lightly.** Whether a factory reset or removing it from the Midea account requires new credentials for every model is not fully documented. A backup before such changes is therefore essential.
 
-Ongoing operation is not initially affected: local control uses the values already stored and no longer needs the token endpoint. A residual risk remains if later firmware changes the local protocol or authentication. How to back up the token, key, and configuration is covered in the [practical setup guide](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
+Ongoing operation is not initially affected: local control uses the values already stored and no longer needs the token endpoint. A residual risk remains if later firmware changes the local protocol or authentication. How to back up the token, key, and configuration is covered in the [practical setup guide](/blog/midea-portasplit-home-assistant#backup-der-konfiguration).
 
 ## What this means for security
 
@@ -31960,13 +31960,13 @@ A token that does not expire is not a vulnerability in itself. It becomes proble
 
 Linguistic precision matters here. The community integration does not “hack” the air conditioner. It implements a proprietary protocol that has been understood through reverse engineering. The security problem arises because long-lived secrets can be used and stored outside the originally intended app.
 
-For operation on your own network, what matters most is what the token and key enable. Both authenticate local communication with the device. If they fall into the wrong hands, an attacker could, depending on the protocol and their network position, identify the device, authenticate to it, read status information, change settings, turn the air conditioner on or off, switch operating modes, and change the target temperature. In general, the attacker would still need to establish a network connection to the device; possessing the token and key alone does not enable an attack from anywhere on the internet. The token and key should therefore be treated like a password. How to integrate the device into the network so that these values cause little damage even in the event of a mishap is the topic of the [second part](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben).
+For operation on your own network, what matters most is what the token and key enable. Both authenticate local communication with the device. If they fall into the wrong hands, an attacker could, depending on the protocol and their network position, identify the device, authenticate to it, read status information, change settings, turn the air conditioner on or off, switch operating modes, and change the target temperature. In general, the attacker would still need to establish a network connection to the device; possessing the token and key alone does not enable an attack from anywhere on the internet. The token and key should therefore be treated like a password. How to integrate the device into the network so that these values cause little damage even in the event of a mishap is the topic of the [second part](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben).
 
 ## What remains in practice
 
 Local control of the PortaSplit depends entirely on the token and key, which can currently only be obtained through the Midea Cloud. This detour is part of the protocol design: local commands are tied to cloud-related credentials. Because the endpoint is private and undocumented, the long-term availability of the unofficial integration remains uncertain.
 
-In practice, this means: back up credentials and configuration, do not unnecessarily unpair a working setup, and monitor changes to the integration and firmware. Devices that have already been set up continue to run locally. Setup, backup, and network protection are described in the [practical PortaSplit guide](/blog/midea-portasplit-home-assistant-einrichten).
+In practice, this means: back up credentials and configuration, do not unnecessarily unpair a working setup, and monitor changes to the integration and firmware. Devices that have already been set up continue to run locally. Setup, backup, and network protection are described in the [practical PortaSplit guide](/blog/midea-portasplit-home-assistant).
 
 ## Sources
 
@@ -48168,7 +48168,7 @@ Cet article est à jour au 25 juillet 2026.
 
 ## Pourquoi l’interprétation précédente doit être corrigée
 
-Dans le [premier article sur la question des jetons cloud](/blog/midea-portasplit-home-assistant), j’avais présenté l’avertissement du projet `Midea AC LAN` comme l’annonce, en substance, de l’arrêt des interfaces cloud. Cela correspondait au libellé du README du projet, mais était formulé de manière trop catégorique comme une affirmation factuelle.
+Dans le [premier article sur la question des jetons cloud](/blog/midea-portasplit-home-assistant-absichern), j’avais présenté l’avertissement du projet `Midea AC LAN` comme l’annonce, en substance, de l’arrêt des interfaces cloud. Cela correspondait au libellé du README du projet, mais était formulé de manière trop catégorique comme une affirmation factuelle.
 
 L’avertissement reste pertinent en tant qu’indication de risque. Il ne constitue toutefois pas une feuille de route Midea publiée. Surtout, de nouveaux éléments techniques sont désormais disponibles et remettent en question une partie essentielle de l’interprétation précédente.
 
@@ -48415,7 +48415,7 @@ Les règles suivantes s’appliquent :
 - Vérifier le fonctionnement actuel avant les mises à jour de firmware et d’intégration.
 - Tester à nouveau le contrôle local après les mises à jour.
 
-Une sauvegarde constitue une protection raisonnable contre les modifications du cloud, les problèmes d’intégration et les erreurs personnelles. Elle n’indique toutefois pas qu’un arrêt est imminent. La manière de configurer proprement une PortaSplit et de la sécuriser sur le réseau domestique est expliquée dans la [partie pratique consacrée à la configuration](/blog/midea-portasplit-home-assistant-einrichten).
+Une sauvegarde constitue une protection raisonnable contre les modifications du cloud, les problèmes d’intégration et les erreurs personnelles. Elle n’indique toutefois pas qu’un arrêt est imminent. La manière de configurer proprement une PortaSplit et de la sécuriser sur le réseau domestique est expliquée dans la [partie pratique consacrée à la configuration](/blog/midea-portasplit-home-assistant).
 
 ## Évaluation sur la base des éléments disponibles
 
@@ -48480,7 +48480,7 @@ Datum: 2026-07-24
     <li><strong>Sauvegarder de manière chiffrée le token, la clé et la configuration.</strong> Si la récupération ne fonctionne plus ultérieurement, la sauvegarde reste le moyen le plus fiable de restaurer la configuration.</li>
     <li><strong>Ne pas dissocier l’appareil sans nécessité.</strong> Un retour aux paramètres d’usine, la suppression du compte Midea ou le remplacement d’un module Wi-Fi imposent l’obtention d’un nouveau token, qui pourrait échouer à l’avenir.</li>
   </ol>
-  <p>Les appareils déjà configurés sont commandés localement. Les modifications de l’interface cloud concernent donc d’abord l’ajout et la restauration, et non chaque commande en cours. Les étapes concrètes figurent dans le <a href="/blog/midea-portasplit-home-assistant-einrichten">guide pratique sur l’intégration et la sécurisation</a>.</p>
+  <p>Les appareils déjà configurés sont commandés localement. Les modifications de l’interface cloud concernent donc d’abord l’ajout et la restauration, et non chaque commande en cours. Les étapes concrètes figurent dans le <a href="/blog/midea-portasplit-home-assistant">guide pratique sur l’intégration et la sécurisation</a>.</p>
 </aside>
 
 ![Exemple de tableau de bord Home Assistant d’une Midea PortaSplit avec température ambiante et de consigne, humidité de l’air, puissance absorbée, consommation d’énergie et temps de fonctionnement du compresseur au cours des dernières 24 heures.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -48549,7 +48549,7 @@ Les trois mesures de l’encadré au début de l’article en découlent, chacun
 - **Sauvegarder les identifiants.** Home Assistant enregistre le token et la clé localement. Un système défectueux, une restauration ratée ou une intégration supprimée par erreur peuvent néanmoins rendre la commande locale inutilisable en l’absence de sauvegarde externe.
 - **Ne pas dissocier l’appareil à la légère.** Il n’est pas entièrement documenté si une réinitialisation d’usine ou la suppression du compte Midea impose de nouveaux identifiants pour chaque modèle. Une sauvegarde avant de telles modifications est donc indispensable.
 
-Le fonctionnement courant n’est pas affecté dans un premier temps : la commande locale utilise les valeurs déjà enregistrées et n’a plus besoin du point de terminaison du token. Un risque résiduel demeure si un futur firmware modifie le protocole local ou l’authentification. Le [guide pratique sur la configuration](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration) explique comment sauvegarder le token, la clé et la configuration.
+Le fonctionnement courant n’est pas affecté dans un premier temps : la commande locale utilise les valeurs déjà enregistrées et n’a plus besoin du point de terminaison du token. Un risque résiduel demeure si un futur firmware modifie le protocole local ou l’authentification. Le [guide pratique sur la configuration](/blog/midea-portasplit-home-assistant#backup-der-konfiguration) explique comment sauvegarder le token, la clé et la configuration.
 
 ## Ce que cela signifie pour la sécurité
 
@@ -48559,13 +48559,13 @@ Un token sans expiration n’est pas en soi une vulnérabilité. Il devient prob
 
 La précision terminologique est importante. L’intégration communautaire ne « pirate » pas le climatiseur. Elle implémente un protocole propriétaire qui a été compris par ingénierie inverse. Le problème de sécurité vient du fait que des secrets durables peuvent être utilisés et enregistrés en dehors de l’application initialement prévue.
 
-Pour l’exploitation sur son propre réseau, l’essentiel est ce que permettent le token et la clé. Ils authentifient tous deux la communication locale avec l’appareil. S’ils tombent entre de mauvaises mains, un attaquant pourrait, selon le protocole et sa position sur le réseau, détecter l’appareil, s’authentifier auprès de lui, lire des informations d’état, modifier des paramètres, allumer ou éteindre le climatiseur, changer de mode de fonctionnement et modifier la température de consigne. L’attaquant doit toutefois généralement pouvoir établir une connexion réseau avec l’appareil ; la seule possession du token et de la clé ne permet pas une attaque depuis l’ensemble d’Internet. Le token et la clé doivent donc être traités comme un mot de passe. Le [deuxième volet](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben) traite de l’intégration de l’appareil au réseau afin que ces valeurs causent peu de dommages même en cas de problème.
+Pour l’exploitation sur son propre réseau, l’essentiel est ce que permettent le token et la clé. Ils authentifient tous deux la communication locale avec l’appareil. S’ils tombent entre de mauvaises mains, un attaquant pourrait, selon le protocole et sa position sur le réseau, détecter l’appareil, s’authentifier auprès de lui, lire des informations d’état, modifier des paramètres, allumer ou éteindre le climatiseur, changer de mode de fonctionnement et modifier la température de consigne. L’attaquant doit toutefois généralement pouvoir établir une connexion réseau avec l’appareil ; la seule possession du token et de la clé ne permet pas une attaque depuis l’ensemble d’Internet. Le token et la clé doivent donc être traités comme un mot de passe. Le [deuxième volet](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben) traite de l’intégration de l’appareil au réseau afin que ces valeurs causent peu de dommages même en cas de problème.
 
 ## Ce qui reste en pratique
 
 La commande locale de la PortaSplit dépend entièrement du token et de la clé, qui ne peuvent actuellement être obtenus que via le cloud Midea. Ce détour fait partie de la conception du protocole : les commandes locales sont liées à des identifiants associés au cloud. Le point de terminaison étant privé et non documenté, la disponibilité à long terme de l’intégration non officielle reste incertaine.
 
-En pratique, cela signifie : sauvegarder les identifiants et la configuration, ne pas dissocier inutilement une configuration fonctionnelle et surveiller les modifications de l’intégration et du firmware. Les appareils déjà configurés continuent de fonctionner localement. Le [guide pratique sur la PortaSplit](/blog/midea-portasplit-home-assistant-einrichten) décrit la configuration, la sauvegarde et la protection réseau.
+En pratique, cela signifie : sauvegarder les identifiants et la configuration, ne pas dissocier inutilement une configuration fonctionnelle et surveiller les modifications de l’intégration et du firmware. Les appareils déjà configurés continuent de fonctionner localement. Le [guide pratique sur la PortaSplit](/blog/midea-portasplit-home-assistant) décrit la configuration, la sauvegarde et la protection réseau.
 
 ## Sources
 
@@ -65221,7 +65221,7 @@ Questo articolo è aggiornato al 25 luglio 2026.
 
 ## Perché la precedente classificazione deve essere corretta
 
-Nel [primo articolo sulla questione dei token cloud](/blog/midea-portasplit-home-assistant) avevo riportato l’avvertimento del progetto `Midea AC LAN` sostanzialmente come una dismissione annunciata delle interfacce cloud. Ciò corrispondeva al testo della README del progetto, ma era formulato in modo troppo categorico come affermazione di fatto.
+Nel [primo articolo sulla questione dei token cloud](/blog/midea-portasplit-home-assistant-absichern) avevo riportato l’avvertimento del progetto `Midea AC LAN` sostanzialmente come una dismissione annunciata delle interfacce cloud. Ciò corrispondeva al testo della README del progetto, ma era formulato in modo troppo categorico come affermazione di fatto.
 
 L’avvertimento rimane rilevante come indicazione di rischio. Tuttavia, non costituisce una roadmap Midea pubblicata. Soprattutto, nel frattempo è disponibile nuovo materiale tecnico che mette in discussione una parte essenziale dell’interpretazione precedente.
 
@@ -65468,7 +65468,7 @@ Vale quanto segue:
 - Verificare il funzionamento attuale prima di aggiornamenti firmware e integrazioni.
 - Testare nuovamente il controllo locale dopo gli aggiornamenti.
 
-Un backup è una ragionevole protezione contro modifiche cloud, problemi di integrazione ed errori propri. Non è però un’indicazione che una dismissione sia imminente. Come configurare correttamente una PortaSplit e proteggerla nella rete domestica è spiegato nella [parte pratica sulla configurazione](/blog/midea-portasplit-home-assistant-einrichten).
+Un backup è una ragionevole protezione contro modifiche cloud, problemi di integrazione ed errori propri. Non è però un’indicazione che una dismissione sia imminente. Come configurare correttamente una PortaSplit e proteggerla nella rete domestica è spiegato nella [parte pratica sulla configurazione](/blog/midea-portasplit-home-assistant).
 
 ## Valutazione basata sulle prove disponibili
 
@@ -65533,7 +65533,7 @@ Datum: 2026-07-24
     <li><strong>Salvare in modo cifrato token, key e configurazione.</strong> Se in seguito il recupero non dovesse più funzionare, il backup rimane il modo più affidabile per il ripristino.</li>
     <li><strong>Non annullare l'abbinamento senza necessità.</strong> Il ripristino delle impostazioni di fabbrica, la rimozione dall'account Midea o la sostituzione del modulo Wi-Fi impongono un nuovo reperimento del token, che in futuro potrebbe fallire.</li>
   </ol>
-  <p>I dispositivi già configurati vengono controllati localmente. Le modifiche all'interfaccia cloud riguardano quindi anzitutto l'aggiunta e il ripristino, non ogni comando di controllo in esecuzione. I passaggi concreti sono descritti nel <a href="/blog/midea-portasplit-home-assistant-einrichten">contributo pratico su integrazione e protezione</a>.</p>
+  <p>I dispositivi già configurati vengono controllati localmente. Le modifiche all'interfaccia cloud riguardano quindi anzitutto l'aggiunta e il ripristino, non ogni comando di controllo in esecuzione. I passaggi concreti sono descritti nel <a href="/blog/midea-portasplit-home-assistant">contributo pratico su integrazione e protezione</a>.</p>
 </aside>
 
 ![Esempio di dashboard Home Assistant di una Midea PortaSplit con temperatura ambiente e impostata, umidità dell'aria, assorbimento di potenza, consumo energetico e tempi di funzionamento del compressore nelle ultime 24 ore.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -65602,7 +65602,7 @@ Da ciò derivano i tre passaggi riportati nel riquadro all'inizio dell'articolo,
 - **Proteggere le credenziali.** Home Assistant salva token e key localmente. Un sistema guasto, un ripristino non riuscito o un'integrazione eliminata accidentalmente possono comunque rendere inutilizzabile il controllo locale se non è disponibile un backup esterno.
 - **Non annullare l'abbinamento con leggerezza.** Non è completamente documentato se un ripristino di fabbrica o la rimozione dall'account Midea impongano nuove credenziali per ogni modello. Un backup prima di tali modifiche è pertanto indispensabile.
 
-Il funzionamento in corso non ne è inizialmente interessato: il controllo locale utilizza i valori già salvati e non ha più bisogno dell'endpoint del token. Rimane un rischio residuo nel caso in cui un firmware successivo modifichi il protocollo locale o l'autenticazione. Il [contributo pratico sulla configurazione](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration) spiega come proteggere token, key e configurazione.
+Il funzionamento in corso non ne è inizialmente interessato: il controllo locale utilizza i valori già salvati e non ha più bisogno dell'endpoint del token. Rimane un rischio residuo nel caso in cui un firmware successivo modifichi il protocollo locale o l'autenticazione. Il [contributo pratico sulla configurazione](/blog/midea-portasplit-home-assistant#backup-der-konfiguration) spiega come proteggere token, key e configurazione.
 
 ## Cosa significa per la sicurezza
 
@@ -65612,13 +65612,13 @@ Un token senza scadenza non è di per sé una vulnerabilità. Diventa problemati
 
 La precisione linguistica è importante. L'integrazione della community non «hackera» il climatizzatore. Implementa un protocollo proprietario ricostruito tramite reverse engineering. Il problema di sicurezza deriva dal fatto che segreti a lunga durata possono essere utilizzati e salvati al di fuori dell'app originariamente prevista.
 
-Per l'uso nella propria rete, ciò che conta soprattutto è cosa consentono token e key. Entrambi autenticano la comunicazione locale con il dispositivo. Se finiscono nelle mani sbagliate, un aggressore potrebbe, a seconda del protocollo e della sua posizione nella rete, rilevare il dispositivo, autenticarsi presso di esso, leggere informazioni di stato, modificare impostazioni, accendere o spegnere il climatizzatore, cambiare modalità operative e modificare la temperatura impostata. Di norma, l'aggressore deve comunque poter stabilire una connessione di rete con il dispositivo; il solo possesso di token e key non consente un attacco da tutta Internet. Token e key devono quindi essere trattati come una password. Il [secondo capitolo](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben) tratta di come integrare il dispositivo nella rete in modo che questi valori causino pochi danni anche in caso di incidente.
+Per l'uso nella propria rete, ciò che conta soprattutto è cosa consentono token e key. Entrambi autenticano la comunicazione locale con il dispositivo. Se finiscono nelle mani sbagliate, un aggressore potrebbe, a seconda del protocollo e della sua posizione nella rete, rilevare il dispositivo, autenticarsi presso di esso, leggere informazioni di stato, modificare impostazioni, accendere o spegnere il climatizzatore, cambiare modalità operative e modificare la temperatura impostata. Di norma, l'aggressore deve comunque poter stabilire una connessione di rete con il dispositivo; il solo possesso di token e key non consente un attacco da tutta Internet. Token e key devono quindi essere trattati come una password. Il [secondo capitolo](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben) tratta di come integrare il dispositivo nella rete in modo che questi valori causino pochi danni anche in caso di incidente.
 
 ## Cosa resta in pratica
 
 Il controllo locale della PortaSplit dipende interamente da token e key, che al momento possono essere ottenuti solo tramite il cloud Midea. Questo passaggio fa parte del design del protocollo: i comandi locali sono vincolati a credenziali legate al cloud. Poiché l'endpoint è privato e non documentato, la disponibilità a lungo termine dell'integrazione non ufficiale resta incerta.
 
-In pratica ciò significa: proteggere credenziali e configurazione, non annullare inutilmente un abbinamento funzionante e monitorare le modifiche all'integrazione e al firmware. I dispositivi già configurati continuano a funzionare localmente. Il [contributo pratico sulla PortaSplit](/blog/midea-portasplit-home-assistant-einrichten) descrive configurazione, backup e protezione della rete.
+In pratica ciò significa: proteggere credenziali e configurazione, non annullare inutilmente un abbinamento funzionante e monitorare le modifiche all'integrazione e al firmware. I dispositivi già configurati continuano a funzionare localmente. Il [contributo pratico sulla PortaSplit](/blog/midea-portasplit-home-assistant) descrive configurazione, backup e protezione della rete.
 
 ## Fonti
 
@@ -82274,7 +82274,7 @@ Este artículo está actualizado al 25 de julio de 2026.
 
 ## Por qué debe corregirse la clasificación anterior
 
-En el [primer artículo sobre la cuestión de los tokens de nube](/blog/midea-portasplit-home-assistant) reproduje la advertencia del proyecto `Midea AC LAN` como si anunciara el cierre de las interfaces en la nube. Eso correspondía al texto de la README del proyecto, pero estaba formulado de forma demasiado contundente como afirmación de hecho.
+En el [primer artículo sobre la cuestión de los tokens de nube](/blog/midea-portasplit-home-assistant-absichern) reproduje la advertencia del proyecto `Midea AC LAN` como si anunciara el cierre de las interfaces en la nube. Eso correspondía al texto de la README del proyecto, pero estaba formulado de forma demasiado contundente como afirmación de hecho.
 
 La advertencia sigue siendo relevante como indicación de riesgo. Sin embargo, no es una hoja de ruta publicada por Midea. Sobre todo, ahora hay nuevo material técnico disponible que cuestiona una parte esencial de la interpretación anterior.
 
@@ -82521,7 +82521,7 @@ Se aplica lo siguiente:
 - Comprobar el funcionamiento actual antes de actualizaciones de firmware e integración.
 - Volver a probar el control local después de las actualizaciones.
 
-Una copia de seguridad es una protección razonable frente a cambios en la nube, problemas de integración y errores propios. Pero no indica que una desactivación sea inminente. Cómo configurar correctamente una PortaSplit y protegerla en la red doméstica se explica en la [parte práctica sobre la configuración](/blog/midea-portasplit-home-assistant-einrichten).
+Una copia de seguridad es una protección razonable frente a cambios en la nube, problemas de integración y errores propios. Pero no indica que una desactivación sea inminente. Cómo configurar correctamente una PortaSplit y protegerla en la red doméstica se explica en la [parte práctica sobre la configuración](/blog/midea-portasplit-home-assistant).
 
 ## Evaluación basada en las pruebas disponibles
 
@@ -82586,7 +82586,7 @@ Datum: 2026-07-24
     <li><strong>Guardar de forma cifrada el token, la clave y la configuración.</strong> Si más adelante la recuperación deja de funcionar, la copia de seguridad seguirá siendo la forma más fiable de restaurar el sistema.</li>
     <li><strong>No desvincular sin necesidad.</strong> Restablecer los ajustes de fábrica, eliminar el dispositivo de la cuenta de Midea o sustituir el módulo Wi‑Fi obliga a obtener un nuevo token, algo que en el futuro podría fallar.</li>
   </ol>
-  <p>Los dispositivos ya configurados se controlan localmente. Por ello, los cambios en la interfaz de la nube afectan primero a la adición y restauración, no a cada comando de control en curso. Los pasos concretos se describen en el <a href="/blog/midea-portasplit-home-assistant-einrichten">artículo práctico sobre integración y protección</a>.</p>
+  <p>Los dispositivos ya configurados se controlan localmente. Por ello, los cambios en la interfaz de la nube afectan primero a la adición y restauración, no a cada comando de control en curso. Los pasos concretos se describen en el <a href="/blog/midea-portasplit-home-assistant">artículo práctico sobre integración y protección</a>.</p>
 </aside>
 
 ![Ejemplo de panel de Home Assistant para una Midea PortaSplit con temperatura ambiente y de consigna, humedad, consumo de potencia, consumo energético y tiempos de funcionamiento del compresor de las últimas 24 horas.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -82655,7 +82655,7 @@ De ello se derivan los tres pasos del recuadro al principio del artículo, cada 
 - **Guardar las credenciales.** Home Assistant almacena el token y la clave localmente. Aun así, un sistema defectuoso, una restauración fallida o una integración eliminada por accidente pueden dejar inutilizable el control local si no hay una copia de seguridad externa.
 - **No desvincular a la ligera.** No está completamente documentado si un restablecimiento de fábrica o la eliminación de la cuenta de Midea obliga a obtener nuevas credenciales en todos los modelos. Por ello, es imprescindible realizar una copia de seguridad antes de tales cambios.
 
-El funcionamiento habitual no se ve afectado por el momento: el control local utiliza los valores ya almacenados y ya no necesita el endpoint del token. Sigue existiendo un riesgo residual si un firmware posterior modifica el protocolo local o la autenticación. En el [artículo práctico sobre la configuración](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration) se explica cómo guardar el token, la clave y la configuración.
+El funcionamiento habitual no se ve afectado por el momento: el control local utiliza los valores ya almacenados y ya no necesita el endpoint del token. Sigue existiendo un riesgo residual si un firmware posterior modifica el protocolo local o la autenticación. En el [artículo práctico sobre la configuración](/blog/midea-portasplit-home-assistant#backup-der-konfiguration) se explica cómo guardar el token, la clave y la configuración.
 
 ## Qué significa esto para la seguridad
 
@@ -82665,13 +82665,13 @@ Un token sin caducidad no es por sí mismo una vulnerabilidad. Se vuelve problem
 
 La precisión lingüística es importante en este caso. La integración de la comunidad no «hackea» el aire acondicionado. Implementa un protocolo propietario que se ha reconstruido mediante ingeniería inversa. El problema de seguridad surge porque secretos duraderos pueden utilizarse y almacenarse fuera de la aplicación prevista originalmente.
 
-Para el uso en la propia red, lo más relevante es qué permiten el token y la clave. Ambos autentican la comunicación local con el dispositivo. Si caen en malas manos, un atacante podría, según el protocolo y su posición en la red, identificar el dispositivo, autenticarse ante él, leer información de estado, modificar ajustes, encender o apagar el aire acondicionado, cambiar modos de funcionamiento y modificar la temperatura de consigna. Por regla general, el atacante debe aun así poder establecer una conexión de red con el dispositivo; poseer únicamente el token y la clave no permite atacar desde cualquier lugar de Internet. Por ello, el token y la clave deben tratarse como una contraseña. El [segundo artículo](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben) trata de cómo integrar el dispositivo en la red de forma que estos valores causen pocos daños incluso en caso de incidente.
+Para el uso en la propia red, lo más relevante es qué permiten el token y la clave. Ambos autentican la comunicación local con el dispositivo. Si caen en malas manos, un atacante podría, según el protocolo y su posición en la red, identificar el dispositivo, autenticarse ante él, leer información de estado, modificar ajustes, encender o apagar el aire acondicionado, cambiar modos de funcionamiento y modificar la temperatura de consigna. Por regla general, el atacante debe aun así poder establecer una conexión de red con el dispositivo; poseer únicamente el token y la clave no permite atacar desde cualquier lugar de Internet. Por ello, el token y la clave deben tratarse como una contraseña. El [segundo artículo](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben) trata de cómo integrar el dispositivo en la red de forma que estos valores causen pocos daños incluso en caso de incidente.
 
 ## Qué queda en la práctica
 
 El control local de la PortaSplit depende por completo del token y la clave, que actualmente solo pueden obtenerse a través de la nube de Midea. Este desvío forma parte del diseño del protocolo: los comandos locales están vinculados a credenciales relacionadas con la nube. Puesto que el endpoint es privado y no está documentado, la disponibilidad a largo plazo de la integración no oficial sigue siendo incierta.
 
-En la práctica, esto significa: guardar las credenciales y la configuración, no deshacer innecesariamente una vinculación que funciona y vigilar los cambios en la integración y el firmware. Los dispositivos ya configurados siguen funcionando localmente. El [artículo práctico sobre la PortaSplit](/blog/midea-portasplit-home-assistant-einrichten) describe la configuración, la copia de seguridad y la protección de red.
+En la práctica, esto significa: guardar las credenciales y la configuración, no deshacer innecesariamente una vinculación que funciona y vigilar los cambios en la integración y el firmware. Los dispositivos ya configurados siguen funcionando localmente. El [artículo práctico sobre la PortaSplit](/blog/midea-portasplit-home-assistant) describe la configuración, la copia de seguridad y la protección de red.
 
 ## Fuentes
 
@@ -99327,7 +99327,7 @@ Denna artikel är aktuell per den 25 juli 2026.
 
 ## Varför den tidigare bedömningen måste korrigeras
 
-I [den första artikeln om frågan kring molntoken](/blog/midea-portasplit-home-assistant) återgav jag i huvudsak varningen från projektet `Midea AC LAN` som en annonserad avveckling av molnsnittställena. Det motsvarade ordalydelsen i projektets README, men var för starkt formulerat som sakpåstående.
+I [den första artikeln om frågan kring molntoken](/blog/midea-portasplit-home-assistant-absichern) återgav jag i huvudsak varningen från projektet `Midea AC LAN` som en annonserad avveckling av molnsnittställena. Det motsvarade ordalydelsen i projektets README, men var för starkt formulerat som sakpåstående.
 
 Varningen är fortfarande relevant som riskinformation. Den är dock inte en publicerad Midea-färdplan. Framför allt finns nu nytt tekniskt material som ifrågasätter en väsentlig del av den tidigare tolkningen.
 
@@ -99574,7 +99574,7 @@ Följande gäller:
 - Kontrollera den aktuella funktionen före firmware- och integrationsuppdateringar.
 - Testa den lokala styrningen på nytt efter uppdateringar.
 
-En säkerhetskopia är ett rimligt skydd mot molnförändringar, integrationsproblem och egna misstag. Den är dock inte ett tecken på att en avveckling är nära förestående. Hur en PortaSplit kan installeras korrekt och skyddas i hemnätverket beskrivs i [den praktiska delen om installation](/blog/midea-portasplit-home-assistant-einrichten).
+En säkerhetskopia är ett rimligt skydd mot molnförändringar, integrationsproblem och egna misstag. Den är dock inte ett tecken på att en avveckling är nära förestående. Hur en PortaSplit kan installeras korrekt och skyddas i hemnätverket beskrivs i [den praktiska delen om installation](/blog/midea-portasplit-home-assistant).
 
 ## Bedömning utifrån tillgängliga belägg
 
@@ -100093,7 +100093,7 @@ Datum: 2026-07-24
     <li><strong>Säkerhetskopiera token, nyckel och konfiguration krypterat.</strong> Om hämtningen senare inte längre fungerar förblir säkerhetskopian det mest tillförlitliga sättet att återställa.</li>
     <li><strong>Koppla inte från i onödan.</strong> Fabriksåterställning, borttagning från Midea-kontot eller byte av WLAN-modul kräver en ny tokenhämtning, som i framtiden kan misslyckas.</li>
   </ol>
-  <p>Redan konfigurerade enheter styrs lokalt. Ändringar i molngränssnittet påverkar därför i första hand tillägg och återställning, inte varje pågående styrkommando. De konkreta stegen finns i <a href="/blog/midea-portasplit-home-assistant-einrichten">praktiska artikeln om integrering och skydd</a>.</p>
+  <p>Redan konfigurerade enheter styrs lokalt. Ändringar i molngränssnittet påverkar därför i första hand tillägg och återställning, inte varje pågående styrkommando. De konkreta stegen finns i <a href="/blog/midea-portasplit-home-assistant">praktiska artikeln om integrering och skydd</a>.</p>
 </aside>
 
 ![Exempel på en Home Assistant-instrumentpanel för en Midea PortaSplit med rums- och börtemperatur, luftfuktighet, effektförbrukning, energiförbrukning och kompressorns drifttider under de senaste 24 timmarna.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -100162,7 +100162,7 @@ Av detta följer de tre stegen i rutan i början av artikeln, med respektive mot
 - **Säkerhetskopiera åtkomstuppgifterna.** Home Assistant lagrar token och nyckel lokalt. Ett trasigt system, en misslyckad återställning eller en oavsiktligt borttagen integration kan ändå göra den lokala styrningen obrukbar om det saknas en extern säkerhetskopia.
 - **Koppla inte från lättvindigt.** Om en fabriksåterställning eller borttagning från Midea-kontot kräver nya åtkomstuppgifter för varje modell är inte fullständigt dokumenterat. En säkerhetskopia före sådana ändringar är därför obligatorisk.
 
-Den löpande driften påverkas till en början inte: Den lokala styrningen använder de redan sparade värdena och behöver inte längre token-slutpunkten. En återstående risk finns om en senare firmware ändrar det lokala protokollet eller autentiseringen. Hur token, nyckel och konfiguration säkerhetskopieras beskrivs i [praktiska artikeln om konfiguration](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
+Den löpande driften påverkas till en början inte: Den lokala styrningen använder de redan sparade värdena och behöver inte längre token-slutpunkten. En återstående risk finns om en senare firmware ändrar det lokala protokollet eller autentiseringen. Hur token, nyckel och konfiguration säkerhetskopieras beskrivs i [praktiska artikeln om konfiguration](/blog/midea-portasplit-home-assistant#backup-der-konfiguration).
 
 ## Vad detta innebär för säkerheten
 
@@ -100172,13 +100172,13 @@ En token som inte löper ut är i sig ännu ingen sårbarhet. Problemet uppstår
 
 Språklig precision är viktig här. Community-integrationen ”hackar” inte luftkonditioneringsenheten. Den implementerar ett proprietärt protokoll som har förståtts genom reverse engineering. Säkerhetsproblemet uppstår genom att långlivade hemligheter kan användas och lagras utanför den ursprungligen avsedda appen.
 
-För drift i det egna nätverket är det framför allt relevant vad token och nyckel möjliggör. Båda autentiserar den lokala kommunikationen med enheten. Om de hamnar i fel händer kan en angripare, beroende på protokollet och sin nätverksposition, identifiera enheten, autentisera sig mot den, läsa statusinformation, ändra inställningar, slå på eller stänga av luftkonditioneringen, byta driftläge och ändra börtemperaturen. Angriparen måste dock vanligen fortfarande kunna upprätta en nätverksanslutning till enheten; innehav av token och nyckel ensamt möjliggör inte en attack från hela internet. Token och nyckel ska därför behandlas som ett lösenord. Hur enheten integreras i nätverket så att dessa värden orsakar liten skada även vid en incident är ämnet för [den andra delen](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben).
+För drift i det egna nätverket är det framför allt relevant vad token och nyckel möjliggör. Båda autentiserar den lokala kommunikationen med enheten. Om de hamnar i fel händer kan en angripare, beroende på protokollet och sin nätverksposition, identifiera enheten, autentisera sig mot den, läsa statusinformation, ändra inställningar, slå på eller stänga av luftkonditioneringen, byta driftläge och ändra börtemperaturen. Angriparen måste dock vanligen fortfarande kunna upprätta en nätverksanslutning till enheten; innehav av token och nyckel ensamt möjliggör inte en attack från hela internet. Token och nyckel ska därför behandlas som ett lösenord. Hur enheten integreras i nätverket så att dessa värden orsakar liten skada även vid en incident är ämnet för [den andra delen](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben).
 
 ## Vad som återstår i praktiken
 
 Den lokala styrningen av PortaSplit är helt beroende av token och nyckel, som för närvarande endast kan hämtas via Midea-molnet. Denna omväg är en del av protokolldesignen: Lokala kommandon är bundna till molnrelaterade åtkomstuppgifter. Eftersom slutpunkten är privat och odokumenterad är den långsiktiga tillgängligheten för den inofficiella integrationen osäker.
 
-I praktiken innebär det: säkerhetskopiera åtkomstuppgifter och konfiguration, koppla inte från en fungerande parkoppling i onödan och följ ändringar i integrationen och firmwaren. Redan konfigurerade enheter fortsätter att fungera lokalt. Konfiguration, säkerhetskopiering och nätverksskydd beskrivs i [praktiska artikeln om PortaSplit](/blog/midea-portasplit-home-assistant-einrichten).
+I praktiken innebär det: säkerhetskopiera åtkomstuppgifter och konfiguration, koppla inte från en fungerande parkoppling i onödan och följ ändringar i integrationen och firmwaren. Redan konfigurerade enheter fortsätter att fungera lokalt. Konfiguration, säkerhetskopiering och nätverksskydd beskrivs i [praktiska artikeln om PortaSplit](/blog/midea-portasplit-home-assistant).
 
 ## Källor
 
@@ -116380,7 +116380,7 @@ This article is current as of 25 July 2026.
 
 ## Why the earlier assessment needs to be corrected
 
-In the [first article on the cloud token question](/blog/midea-portasplit-home-assistant), I paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly phrased as a factual claim.
+In the [first article on the cloud token question](/blog/midea-portasplit-home-assistant-absichern), I paraphrased the warning from project `Midea AC LAN` as an announced shutdown of the cloud interfaces. This reflected the wording of the project README, but it was too strongly phrased as a factual claim.
 
 The warning remains relevant as a risk notice. However, it is not a published Midea roadmap. Above all, new technical material is now available that calls a substantial part of the previous interpretation into question.
 
@@ -116627,7 +116627,7 @@ The following applies:
 - Check current functionality before firmware and integration updates.
 - Test local control again after updates.
 
-A backup is sensible protection against cloud changes, integration issues and your own mistakes. But it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant-einrichten) explains how to set up a PortaSplit properly and secure it on the home network.
+A backup is sensible protection against cloud changes, integration issues and your own mistakes. But it is not an indication that a shutdown is imminent. The [practical setup guide](/blog/midea-portasplit-home-assistant) explains how to set up a PortaSplit properly and secure it on the home network.
 
 ## Assessment based on the available evidence
 
@@ -117146,7 +117146,7 @@ Datum: 2026-07-24
     <li><strong>Sikkerhetskopier token, nøkkel og konfigurasjon kryptert.</strong> Dersom hentingen senere ikke lenger fungerer, er sikkerhetskopien den mest pålitelige måten å gjenopprette på.</li>
     <li><strong>Ikke opphev sammenkoblingen uten nød.</strong> Fabrikkinnstillinger, fjerning fra Midea-kontoen eller bytte av WLAN-modul tvinger frem ny anskaffelse av token, noe som kan mislykkes i fremtiden.</li>
   </ol>
-  <p>Enheter som allerede er satt opp, styres lokalt. Endringer i skygrensesnittet påvirker derfor først og fremst tilføyelse og gjenoppretting, ikke hver enkelt løpende styrekommando. De konkrete trinnene finnes i <a href="/blog/midea-portasplit-home-assistant-einrichten">den praktiske artikkelen om integrasjon og sikring</a>.</p>
+  <p>Enheter som allerede er satt opp, styres lokalt. Endringer i skygrensesnittet påvirker derfor først og fremst tilføyelse og gjenoppretting, ikke hver enkelt løpende styrekommando. De konkrete trinnene finnes i <a href="/blog/midea-portasplit-home-assistant">den praktiske artikkelen om integrasjon og sikring</a>.</p>
 </aside>
 
 ![Eksempel på et Home Assistant-dashboard for en Midea PortaSplit med rom- og settpunktstemperatur, luftfuktighet, effektforbruk, energiforbruk og kompressorens driftstider de siste 24 timene.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -117215,7 +117215,7 @@ Dette gir de tre trinnene fra boksen i begynnelsen av artikkelen, med begrunnels
 - **Sikre tilgangsdataene.** Home Assistant lagrer token og nøkkel lokalt. Et defekt system, en mislykket gjenoppretting eller en integrasjon som slettes ved et uhell, kan likevel gjøre lokal styring ubrukelig dersom det ikke finnes en ekstern sikkerhetskopi.
 - **Ikke opphev sammenkoblingen lettvint.** Det er ikke fullstendig dokumentert om tilbakestilling til fabrikkinnstillinger eller fjerning fra Midea-kontoen tvinger frem nye tilgangsdata for hver modell. En sikkerhetskopi før slike endringer er derfor nødvendig.
 
-Den løpende driften påvirkes foreløpig ikke av dette: Den lokale styringen bruker de allerede lagrede verdiene og trenger ikke lenger token-endepunktet. Det gjenstår en restrisiko dersom en senere fastvare endrer den lokale protokollen eller autentiseringen. Hvordan token, nøkkel og konfigurasjon sikres, står i [den praktiske artikkelen om oppsett](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
+Den løpende driften påvirkes foreløpig ikke av dette: Den lokale styringen bruker de allerede lagrede verdiene og trenger ikke lenger token-endepunktet. Det gjenstår en restrisiko dersom en senere fastvare endrer den lokale protokollen eller autentiseringen. Hvordan token, nøkkel og konfigurasjon sikres, står i [den praktiske artikkelen om oppsett](/blog/midea-portasplit-home-assistant#backup-der-konfiguration).
 
 ## Hva dette betyr for sikkerheten
 
@@ -117225,13 +117225,13 @@ En token som ikke utløper, er ikke i seg selv en sårbarhet. Det blir problemat
 
 Språklig presisjon er viktig her. Fellesskapsintegrasjonen «hacker» ikke klimaanlegget. Den implementerer en proprietær protokoll som er rekonstruert gjennom reverse engineering. Sikkerhetsproblemet oppstår fordi langvarige hemmeligheter kan brukes og lagres utenfor den opprinnelig tiltenkte appen.
 
-For drift i eget nettverk er det først og fremst relevant hva token og nøkkel muliggjør. Begge autentiserer den lokale kommunikasjonen med enheten. Hvis de havner i feil hender, kan en angriper, avhengig av protokollen og sin nettverksposisjon, oppdage enheten, autentisere seg overfor den, lese statusinformasjon, endre innstillinger, slå klimaanlegget av eller på, bytte driftsmodus og endre settpunktstemperaturen. Angriperen må som regel likevel kunne opprette en nettverksforbindelse til enheten; det å bare ha token og nøkkel muliggjør ikke et angrep fra hele internett. Token og nøkkel må derfor behandles som et passord. Hvordan enheten kan integreres nettverksmessig slik at disse verdiene gjør liten skade selv ved en feil, er temaet i [del to](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben).
+For drift i eget nettverk er det først og fremst relevant hva token og nøkkel muliggjør. Begge autentiserer den lokale kommunikasjonen med enheten. Hvis de havner i feil hender, kan en angriper, avhengig av protokollen og sin nettverksposisjon, oppdage enheten, autentisere seg overfor den, lese statusinformasjon, endre innstillinger, slå klimaanlegget av eller på, bytte driftsmodus og endre settpunktstemperaturen. Angriperen må som regel likevel kunne opprette en nettverksforbindelse til enheten; det å bare ha token og nøkkel muliggjør ikke et angrep fra hele internett. Token og nøkkel må derfor behandles som et passord. Hvordan enheten kan integreres nettverksmessig slik at disse verdiene gjør liten skade selv ved en feil, er temaet i [del to](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben).
 
 ## Hva som står igjen i praksis
 
 Den lokale styringen av PortaSplit avhenger helt av token og nøkkel, som for tiden bare kan hentes via Midea-skyen. Denne omveien er en del av protokolldesignet: Lokale kommandoer er knyttet til skyrelaterte tilgangsdata. Fordi endepunktet er privat og udokumentert, er den langsiktige tilgjengeligheten til den uoffisielle integrasjonen usikker.
 
-I praksis betyr det: Sikre tilgangsdata og konfigurasjon, ikke opphev en fungerende sammenkobling unødvendig, og følg med på endringer i integrasjon og fastvare. Enheter som allerede er satt opp, fortsetter å fungere lokalt. Oppsett, sikkerhetskopiering og nettverksbeskyttelse beskrives i [den praktiske artikkelen om PortaSplit](/blog/midea-portasplit-home-assistant-einrichten).
+I praksis betyr det: Sikre tilgangsdata og konfigurasjon, ikke opphev en fungerende sammenkobling unødvendig, og følg med på endringer i integrasjon og fastvare. Enheter som allerede er satt opp, fortsetter å fungere lokalt. Oppsett, sikkerhetskopiering og nettverksbeskyttelse beskrives i [den praktiske artikkelen om PortaSplit](/blog/midea-portasplit-home-assistant).
 
 ## Kilder
 

@@ -13,7 +13,7 @@ protokolle:
   - "apis"
   - "troubleshooting"
 related:
-  - "midea-portasplit-home-assistant-einrichten"
+  - "midea-portasplit-home-assistant"
 slug: "digitalstrom-home-assistant"
 translationId: "article-271967fa6d61231d"
 url: "https://rafaelpfister.ch/blog/digitalstrom-home-assistant"

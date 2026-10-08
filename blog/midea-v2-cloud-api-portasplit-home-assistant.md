@@ -12,8 +12,8 @@ produkte:
 protokolle:
   - "apis"
 related:
+  - "midea-portasplit-home-assistant-absichern"
   - "midea-portasplit-home-assistant"
-  - "midea-portasplit-home-assistant-einrichten"
 draft: false
 slug: "midea-v2-cloud-api-portasplit-home-assistant"
 translationId: "article-f504b2af00493864"
@@ -26,11 +26,11 @@ Das Projekt `Midea AC LAN` warnt in seiner [README](https://github.com/wuwentao/
 
 > Eine offizielle Midea Cloud-to-Cloud API V2 existiert. Sie ist aber nicht identisch mit der von Home Assistant verwendeten Token-Schnittstelle und auch nicht mit dem lokalen V2- oder V3-Geräteprotokoll. Eine offiziell angekündigte Abschaltung der lokalen PortaSplit-Steuerung mit einem konkreten Termin ist nicht dokumentiert. Im Juni 2026 wurde zudem nachgewiesen, dass die vermeintlich abgeschaltete SmartHome-Token-API weiterhin funktionierte – der bisherige Request der Community-Bibliothek war lediglich unvollständig.
 
-Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant-einrichten) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Juli 2026.
+Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Juli 2026.
 
 ## Weshalb die frühere Einordnung korrigiert werden muss
 
-In einer früheren Fassung des [Artikels zu Token und Key](/blog/midea-portasplit-home-assistant) hatte ich die Warnung aus dem Projekt `Midea AC LAN` sinngemäss als angekündigte Abschaltung der Cloud-Schnittstellen wiedergegeben. Das entsprach dem Wortlaut der Projekt-README, war aber als Tatsachenbehauptung zu stark formuliert.
+In einer früheren Fassung des [Artikels zu Token und Key](/blog/midea-portasplit-home-assistant-absichern) hatte ich die Warnung aus dem Projekt `Midea AC LAN` sinngemäss als angekündigte Abschaltung der Cloud-Schnittstellen wiedergegeben. Das entsprach dem Wortlaut der Projekt-README, war aber als Tatsachenbehauptung zu stark formuliert.
 
 Die Warnung ist als Risikohinweis weiterhin relevant. Sie ist jedoch keine veröffentlichte Midea-Roadmap. Vor allem ist inzwischen neues technisches Material verfügbar, das einen wesentlichen Teil der bisherigen Interpretation infrage stellt.
 
@@ -267,7 +267,7 @@ Trotz der relativierenden Erkenntnisse bleibt ein Backup sinnvoll.
 
 Für V3-Geräte empfiehlt `Midea AC LAN` ausdrücklich, die erzeugte JSON-Konfiguration ausserhalb von HAOS zu sichern. Die aktuelle Empfehlung steht direkt in der [Projekt-README](https://github.com/wuwentao/midea_ac_lan#1-important-notice).
 
-Ein Backup ist eine vernünftige Absicherung gegen Cloudänderungen, Integrationsprobleme und eigene Fehler, aber kein Hinweis darauf, dass eine Abschaltung unmittelbar bevorsteht. Wie Token, Key und Konfiguration gesichert werden, beschreibt [Teil 2](/blog/midea-portasplit-home-assistant#token-key-und-konfiguration-sichern).
+Ein Backup ist eine vernünftige Absicherung gegen Cloudänderungen, Integrationsprobleme und eigene Fehler, aber kein Hinweis darauf, dass eine Abschaltung unmittelbar bevorsteht. Wie Token, Key und Konfiguration gesichert werden, beschreibt [Teil 2](/blog/midea-portasplit-home-assistant-absichern#token-key-und-konfiguration-sichern).
 
 ## Einordnung auf Basis der verfügbaren Belege
 

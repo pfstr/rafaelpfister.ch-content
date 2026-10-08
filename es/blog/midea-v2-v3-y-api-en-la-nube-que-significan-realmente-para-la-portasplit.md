@@ -8,8 +8,8 @@ timeToRead: "11 min de lectura"
 themen:
   - smart-home-iot
 related:
+  - midea-portasplit-home-assistant-absichern
   - midea-portasplit-home-assistant
-  - midea-portasplit-home-assistant-einrichten
 draft: false
 slug: "midea-v2-v3-y-api-en-la-nube-que-significan-realmente-para-la-portasplit"
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
@@ -31,7 +31,7 @@ Este artículo está actualizado al 25 de julio de 2026.
 
 ## Por qué debe corregirse la clasificación anterior
 
-En el [primer artículo sobre la cuestión de los tokens de nube](/blog/midea-portasplit-home-assistant) reproduje la advertencia del proyecto `Midea AC LAN` como si anunciara el cierre de las interfaces en la nube. Eso correspondía al texto de la README del proyecto, pero estaba formulado de forma demasiado contundente como afirmación de hecho.
+En el [primer artículo sobre la cuestión de los tokens de nube](/blog/midea-portasplit-home-assistant-absichern) reproduje la advertencia del proyecto `Midea AC LAN` como si anunciara el cierre de las interfaces en la nube. Eso correspondía al texto de la README del proyecto, pero estaba formulado de forma demasiado contundente como afirmación de hecho.
 
 La advertencia sigue siendo relevante como indicación de riesgo. Sin embargo, no es una hoja de ruta publicada por Midea. Sobre todo, ahora hay nuevo material técnico disponible que cuestiona una parte esencial de la interpretación anterior.
 
@@ -278,7 +278,7 @@ Se aplica lo siguiente:
 - Comprobar el funcionamiento actual antes de actualizaciones de firmware e integración.
 - Volver a probar el control local después de las actualizaciones.
 
-Una copia de seguridad es una protección razonable frente a cambios en la nube, problemas de integración y errores propios. Pero no indica que una desactivación sea inminente. Cómo configurar correctamente una PortaSplit y protegerla en la red doméstica se explica en la [parte práctica sobre la configuración](/blog/midea-portasplit-home-assistant-einrichten).
+Una copia de seguridad es una protección razonable frente a cambios en la nube, problemas de integración y errores propios. Pero no indica que una desactivación sea inminente. Cómo configurar correctamente una PortaSplit y protegerla en la red doméstica se explica en la [parte práctica sobre la configuración](/blog/midea-portasplit-home-assistant).
 
 ## Evaluación basada en las pruebas disponibles
 

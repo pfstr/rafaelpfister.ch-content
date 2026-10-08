@@ -13,7 +13,7 @@ protokolle:
   - "apis"
   - "troubleshooting"
 related:
-  - midea-portasplit-home-assistant-einrichten
+  - midea-portasplit-home-assistant
 slug: "conectar-digitalstrom-con-home-assistant-integracion-local-y-automatizaciones"
 translationId: "article-271967fa6d61231d"
 translationOf: digitalstrom-home-assistant

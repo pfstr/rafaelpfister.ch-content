@@ -8,8 +8,8 @@ timeToRead: "11 min de lecture"
 themen:
   - smart-home-iot
 related:
+  - midea-portasplit-home-assistant-absichern
   - midea-portasplit-home-assistant
-  - midea-portasplit-home-assistant-einrichten
 draft: false
 slug: "midea-v2-v3-et-api-cloud-ce-que-cela-signifie-reellement-pour-la-portasplit"
 translationOf: "midea-v2-cloud-api-portasplit-home-assistant"
@@ -31,7 +31,7 @@ Cet article est à jour au 25 juillet 2026.
 
 ## Pourquoi l’interprétation précédente doit être corrigée
 
-Dans le [premier article sur la question des jetons cloud](/blog/midea-portasplit-home-assistant), j’avais présenté l’avertissement du projet `Midea AC LAN` comme l’annonce, en substance, de l’arrêt des interfaces cloud. Cela correspondait au libellé du README du projet, mais était formulé de manière trop catégorique comme une affirmation factuelle.
+Dans le [premier article sur la question des jetons cloud](/blog/midea-portasplit-home-assistant-absichern), j’avais présenté l’avertissement du projet `Midea AC LAN` comme l’annonce, en substance, de l’arrêt des interfaces cloud. Cela correspondait au libellé du README du projet, mais était formulé de manière trop catégorique comme une affirmation factuelle.
 
 L’avertissement reste pertinent en tant qu’indication de risque. Il ne constitue toutefois pas une feuille de route Midea publiée. Surtout, de nouveaux éléments techniques sont désormais disponibles et remettent en question une partie essentielle de l’interprétation précédente.
 
@@ -278,7 +278,7 @@ Les règles suivantes s’appliquent :
 - Vérifier le fonctionnement actuel avant les mises à jour de firmware et d’intégration.
 - Tester à nouveau le contrôle local après les mises à jour.
 
-Une sauvegarde constitue une protection raisonnable contre les modifications du cloud, les problèmes d’intégration et les erreurs personnelles. Elle n’indique toutefois pas qu’un arrêt est imminent. La manière de configurer proprement une PortaSplit et de la sécuriser sur le réseau domestique est expliquée dans la [partie pratique consacrée à la configuration](/blog/midea-portasplit-home-assistant-einrichten).
+Une sauvegarde constitue une protection raisonnable contre les modifications du cloud, les problèmes d’intégration et les erreurs personnelles. Elle n’indique toutefois pas qu’un arrêt est imminent. La manière de configurer proprement une PortaSplit et de la sécuriser sur le réseau domestique est expliquée dans la [partie pratique consacrée à la configuration](/blog/midea-portasplit-home-assistant).
 
 ## Évaluation sur la base des éléments disponibles
 

@@ -8,9 +8,9 @@ timeToRead: "9 min read"
 themen:
   - smart-home-iot
 related:
-  - midea-portasplit-home-assistant-einrichten
+  - midea-portasplit-home-assistant
   - midea-v2-cloud-api-portasplit-home-assistant
-translationOf: "midea-portasplit-home-assistant"
+translationOf: "midea-portasplit-home-assistant-absichern"
 image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
 slug: "midea-portasplit-home-assistant-integration"
 translationId: article-a02e26cce22063f1
@@ -29,7 +29,7 @@ url: https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integratio
     <li><strong>Back up the token, key, and configuration in encrypted form.</strong> If retrieval no longer works later, the backup remains the most reliable way to restore it.</li>
     <li><strong>Do not unpair it without good reason.</strong> Factory resets, removing it from the Midea account, or replacing the Wi-Fi module require obtaining a new token, which may fail in the future.</li>
   </ol>
-  <p>Devices that have already been set up are controlled locally. Changes to the cloud interface therefore affect adding and restoring devices first, not every command currently in use. The specific steps are covered in the <a href="/blog/midea-portasplit-home-assistant-einrichten">practical guide to integration and protection</a>.</p>
+  <p>Devices that have already been set up are controlled locally. Changes to the cloud interface therefore affect adding and restoring devices first, not every command currently in use. The specific steps are covered in the <a href="/blog/midea-portasplit-home-assistant">practical guide to integration and protection</a>.</p>
 </aside>
 
 ![Example Home Assistant dashboard for a Midea PortaSplit with room and target temperature, humidity, power consumption, energy consumption, and compressor run times over the last 24 hours.](../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png)
@@ -98,7 +98,7 @@ This leads to the three steps in the box at the beginning of the article, each w
 - **Back up credentials.** Home Assistant stores the token and key locally. A failed system, unsuccessful restore, or accidentally deleted integration can still make local control unusable if no external backup exists.
 - **Do not unpair it lightly.** Whether a factory reset or removing it from the Midea account requires new credentials for every model is not fully documented. A backup before such changes is therefore essential.
 
-Ongoing operation is not initially affected: local control uses the values already stored and no longer needs the token endpoint. A residual risk remains if later firmware changes the local protocol or authentication. How to back up the token, key, and configuration is covered in the [practical setup guide](/blog/midea-portasplit-home-assistant-einrichten#backup-der-konfiguration).
+Ongoing operation is not initially affected: local control uses the values already stored and no longer needs the token endpoint. A residual risk remains if later firmware changes the local protocol or authentication. How to back up the token, key, and configuration is covered in the [practical setup guide](/blog/midea-portasplit-home-assistant#backup-der-konfiguration).
 
 ## What this means for security
 
@@ -108,13 +108,13 @@ A token that does not expire is not a vulnerability in itself. It becomes proble
 
 Linguistic precision matters here. The community integration does not “hack” the air conditioner. It implements a proprietary protocol that has been understood through reverse engineering. The security problem arises because long-lived secrets can be used and stored outside the originally intended app.
 
-For operation on your own network, what matters most is what the token and key enable. Both authenticate local communication with the device. If they fall into the wrong hands, an attacker could, depending on the protocol and their network position, identify the device, authenticate to it, read status information, change settings, turn the air conditioner on or off, switch operating modes, and change the target temperature. In general, the attacker would still need to establish a network connection to the device; possessing the token and key alone does not enable an attack from anywhere on the internet. The token and key should therefore be treated like a password. How to integrate the device into the network so that these values cause little damage even in the event of a mishap is the topic of the [second part](/blog/midea-portasplit-home-assistant-einrichten#die-portasplit-sicher-betreiben).
+For operation on your own network, what matters most is what the token and key enable. Both authenticate local communication with the device. If they fall into the wrong hands, an attacker could, depending on the protocol and their network position, identify the device, authenticate to it, read status information, change settings, turn the air conditioner on or off, switch operating modes, and change the target temperature. In general, the attacker would still need to establish a network connection to the device; possessing the token and key alone does not enable an attack from anywhere on the internet. The token and key should therefore be treated like a password. How to integrate the device into the network so that these values cause little damage even in the event of a mishap is the topic of the [second part](/blog/midea-portasplit-home-assistant#die-portasplit-sicher-betreiben).
 
 ## What remains in practice
 
 Local control of the PortaSplit depends entirely on the token and key, which can currently only be obtained through the Midea Cloud. This detour is part of the protocol design: local commands are tied to cloud-related credentials. Because the endpoint is private and undocumented, the long-term availability of the unofficial integration remains uncertain.
 
-In practice, this means: back up credentials and configuration, do not unnecessarily unpair a working setup, and monitor changes to the integration and firmware. Devices that have already been set up continue to run locally. Setup, backup, and network protection are described in the [practical PortaSplit guide](/blog/midea-portasplit-home-assistant-einrichten).
+In practice, this means: back up credentials and configuration, do not unnecessarily unpair a working setup, and monitor changes to the integration and firmware. Devices that have already been set up continue to run locally. Setup, backup, and network protection are described in the [practical PortaSplit guide](/blog/midea-portasplit-home-assistant).
 
 ## Sources
 

@@ -8,10 +8,10 @@ timeToRead: "14 min read"
 themen:
   - smart-home-iot
 related:
-  - midea-portasplit-home-assistant
+  - midea-portasplit-home-assistant-absichern
   - midea-v2-cloud-api-portasplit-home-assistant
 slug: "controlar-midea-portasplit-localmente-con-home-assistant-y-usarla-de-forma-segura"
-translationOf: "midea-portasplit-home-assistant-einrichten"
+translationOf: "midea-portasplit-home-assistant"
 translationId: article-36e7710abe426781
 translationReview: required
 translationSourceHash: bbe70b67dd255184cf0db69f7308c756937dc961c3c83e152268ee668f93dd07
