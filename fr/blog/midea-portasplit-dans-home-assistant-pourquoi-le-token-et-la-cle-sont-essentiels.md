@@ -9,8 +9,8 @@ themen:
   - smart-home-iot
 related:
   - midea-portasplit-home-assistant-einrichten
-  - serverloser-newsletter-cloudflare-workers-d1
-image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
+  - midea-v2-cloud-api-portasplit-home-assistant
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
 slug: "midea-portasplit-dans-home-assistant-pourquoi-le-token-et-la-cle-sont-essentiels"
 translationOf: "midea-portasplit-home-assistant"
 translationId: article-a02e26cce22063f1

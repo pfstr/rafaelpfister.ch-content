@@ -9,7 +9,7 @@ themen:
   - smart-home-iot
 related:
   - midea-portasplit-home-assistant
-  - serverloser-newsletter-cloudflare-workers-d1
+  - midea-v2-cloud-api-portasplit-home-assistant
 slug: "styr-midea-portasplit-lokalt-med-home-assistant-och-anvand-den-sakert"
 translationOf: "midea-portasplit-home-assistant-einrichten"
 translationId: article-36e7710abe426781
@@ -18,6 +18,7 @@ translationSourceHash: bbe70b67dd255184cf0db69f7308c756937dc961c3c83e152268ee668
 translatedAt: 2026-09-04T08:35:50.856Z
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/sv/blog/styr-midea-portasplit-lokalt-med-home-assistant-och-anvand-den-sakert
+image: ../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png
 ---
 
 Midea PortaSplit kan efter konfiguration styras direkt i det lokala nätverket via Home Assistant. För detta behöver community-integrationen två enhetsspecifika åtkomstvärden från Midea-molnet: Token och Key.

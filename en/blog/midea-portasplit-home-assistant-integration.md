@@ -9,9 +9,9 @@ themen:
   - smart-home-iot
 related:
   - midea-portasplit-home-assistant-einrichten
-  - serverloser-newsletter-cloudflare-workers-d1
+  - midea-v2-cloud-api-portasplit-home-assistant
 translationOf: "midea-portasplit-home-assistant"
-image: "../images/midea-portasplit-home-assistant/home-assistant-dashboard-portasplit.png"
+image: "../images/midea-portasplit-home-assistant/portasplit-dashboard-simuliert.png"
 slug: "midea-portasplit-home-assistant-integration"
 translationId: article-a02e26cce22063f1
 translatedAt: 2026-09-04T08:27:13.777Z
