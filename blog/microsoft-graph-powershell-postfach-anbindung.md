@@ -250,7 +250,7 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
 
 </details>
 
-Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf GitHub: [pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer).
+Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf GitHub: [pfstr/ecall-log-analyzer](https://github.com/pfstr/ecall-log-analyzer).
 
 ## Quellen
 

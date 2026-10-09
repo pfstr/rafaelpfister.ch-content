@@ -11,7 +11,7 @@ slug: "acceder-a-exchange-online-con-powershell-sustituir-ews-por-microsoft-grap
 translationOf: "microsoft-graph-powershell-postfach-anbindung"
 translationId: article-4c6a02c79b7bf0fe
 translationReview: automatic
-translationSourceHash: 66e214f25e8088562270157199f9ff55fcd9828362abf145170a12f287cd0f6c
+translationSourceHash: ad0542d870d48ea7cdb659d03b119c51a3056c0f8e48290ecc95a7832a435aab
 translatedAt: 2026-09-05T07:56:07.512Z
 url: https://rafaelpfister.ch/es/blog/acceder-a-exchange-online-con-powershell-sustituir-ews-por-microsoft-graph
 translationModel: gpt-5.6-terra
@@ -248,7 +248,7 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
 
 </details>
 
-El ejemplo completo con registro y gestión de errores está disponible en GitHub: [pfstr/eCall-Log-Analyzer](https://github.com/pfstr/eCall-Log-Analyzer).
+El ejemplo completo con registro y gestión de errores está disponible en GitHub: [pfstr/ecall-log-analyzer](https://github.com/pfstr/ecall-log-analyzer).
 
 ## Fuentes
 
