@@ -218,5 +218,5 @@ Usikker på om Exchange Online-leietakeren din også har en åpen sideinngang? *
 
 De som ønsker å få kontrollert eller sikret e-postflyten sin ordentlig, kan gjerne avtale en uforpliktende rådgivningssamtale:
 
-**[Bestill en rådgivningssamtale med adeptio](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
+**[Bestill en rådgivningssamtale med adeptio](/no/contact)**  
 [adeptio.ch](https://adeptio.ch/)

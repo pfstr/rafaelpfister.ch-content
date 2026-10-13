@@ -57,7 +57,7 @@ Följande exempel innehåller, utöver standardköerna, även valfria kataloger 
 > Om du behöver hjälp med anslutningen till HIN Mailgateway eller med migreringen till den nya HIN Stargate-lösningen hittar du rätt experter hos [adeptio](https://adeptio.ch/).  
 >   
 > **adeptio** är officiell partner till [Health Info Net AG](https://www.hin.ch/de/index.cfm) och har som sådan även direkta kontaktpersoner hos tillverkaren.  
-> [➜ Boka en tid redan i dag.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
+> [➜ Boka en tid redan i dag.](/sv/contact)
 
 ```text
 Root-Folder:

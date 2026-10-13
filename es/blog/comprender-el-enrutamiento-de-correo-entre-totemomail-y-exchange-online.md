@@ -57,7 +57,7 @@ El siguiente ejemplo contiene, además de las colas estándar, directorios opcio
 > Si necesita ayuda para conectar HIN-Mailgateway o para migrar a la nueva solución HIN-Stargate, encontrará a los expertos adecuados en [adeptio](https://adeptio.ch/).  
 >   
 > **adeptio** es socio oficial de [Health Info Net AG](https://www.hin.ch/de/index.cfm) y, como tal, también dispone de contactos directos con el fabricante.  
-> [➜ Reserve hoy mismo una cita.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
+> [➜ Reserve hoy mismo una cita.](/es/contact)
 
 ```text
 Root-Folder:

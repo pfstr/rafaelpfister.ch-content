@@ -218,5 +218,5 @@ La parte útil de la publicación es la llamada de atención: aparentemente, muc
 
 Quien desee revisar su flujo de correo o protegerlo adecuadamente puede concertar sin compromiso una consulta:
 
-**[Reservar una consulta con adeptio](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
+**[Reservar una consulta con adeptio](/es/contact)**  
 [adeptio.ch](https://adeptio.ch/)

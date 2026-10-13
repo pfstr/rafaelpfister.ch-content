@@ -57,7 +57,7 @@ L'esempio seguente include, oltre alle code standard, anche directory opzionali 
 > Se avete bisogno di supporto per la connessione a HIN-Mailgateway o per la migrazione alla nuova soluzione HIN-Stargate, presso [adeptio](https://adeptio.ch/) trovate gli esperti competenti.  
 >   
 > **adeptio** è partner ufficiale di [Health Info Net AG](https://www.hin.ch/de/index.cfm) e, in quanto tale, dispone anche di contatti diretti presso il produttore.  
-> [➜ Prenotate oggi stesso un appuntamento.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
+> [➜ Prenotate oggi stesso un appuntamento.](/it/contact)
 
 ```text
 Root-Folder:

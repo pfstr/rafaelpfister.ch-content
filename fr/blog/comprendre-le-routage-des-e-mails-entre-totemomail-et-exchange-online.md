@@ -57,7 +57,7 @@ L’exemple suivant contient, en plus des files d’attente standard, des réper
 > Si vous avez besoin d’aide pour la connexion de la passerelle de messagerie HIN ou pour la migration vers la nouvelle solution HIN Stargate, vous trouverez les experts appropriés chez [adeptio](https://adeptio.ch/).  
 >   
 > **adeptio** est partenaire officiel de [Health Info Net AG](https://www.hin.ch/de/index.cfm) et dispose à ce titre également d’interlocuteurs directs auprès du fabricant.  
-> [➜ Réservez encore aujourd’hui un rendez-vous.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
+> [➜ Réservez encore aujourd’hui un rendez-vous.](/fr/contact)
 
 ```text
 Root-Folder:

@@ -218,5 +218,5 @@ Vous ne savez pas si votre tenant Exchange Online possède lui aussi une entrée
 
 Pour faire vérifier ou sécuriser correctement votre flux de messagerie, vous pouvez volontiers convenir d’un entretien de conseil sans engagement :
 
-**[Réserver un entretien de conseil avec adeptio](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
+**[Réserver un entretien de conseil avec adeptio](/fr/contact)**  
 [adeptio.ch](https://adeptio.ch/)

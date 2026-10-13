@@ -220,5 +220,5 @@ Unsicher, ob Ihr Exchange-Online-Tenant ebenfalls einen offenen Nebeneingang hat
 
 Wer seinen Mailflow prüfen oder sauber absichern lassen möchte, kann gerne ein unverbindliches Beratungsgespräch vereinbaren:
 
-**[Beratungsgespräch mit adeptio buchen](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
+**[Beratungsgespräch mit adeptio buchen](/kontakt)**  
 [adeptio.ch](https://adeptio.ch/)

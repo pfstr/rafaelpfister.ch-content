@@ -218,5 +218,5 @@ Osäker på om din Exchange Online-klientorganisation också har en öppen sidod
 
 Den som vill granska sitt e-postflöde eller få det ordentligt säkrat kan gärna boka ett icke-bindande rådgivningssamtal:
 
-**[Boka ett rådgivningssamtal med adeptio](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
+**[Boka ett rådgivningssamtal med adeptio](/sv/contact)**  
 [adeptio.ch](https://adeptio.ch/)

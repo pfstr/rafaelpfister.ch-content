@@ -57,7 +57,7 @@ Eksemplet nedenfor inneholder, i tillegg til standardkøene, også valgfrie kata
 > Hvis du trenger hjelp med tilkobling til HIN-Mailgateway eller migrering til den nye HIN-Stargate-løsningen, finner du de riktige ekspertene hos [adeptio](https://adeptio.ch/).  
 >   
 > **adeptio** er offisiell partner av [Health Info Net AG](https://www.hin.ch/de/index.cfm) og har som sådan også direkte kontaktpersoner hos produsenten.  
-> [➜ Bestill en time i dag.](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)
+> [➜ Bestill en time i dag.](/no/contact)
 
 ```text
 Root-Folder:

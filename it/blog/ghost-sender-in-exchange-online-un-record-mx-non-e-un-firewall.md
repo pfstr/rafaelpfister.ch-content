@@ -218,5 +218,5 @@ Non siete sicuri se anche il vostro tenant Exchange Online abbia un ingresso sec
 
 Chi desidera far verificare o proteggere correttamente il proprio flusso di posta può fissare senza impegno un colloquio di consulenza:
 
-**[Prenota un colloquio di consulenza con adeptio](https://outlook.office.com/bookwithme/user/b4d64d6bdbca4b489074d459cd30b50c@adeptio.ch/meetingtype/3Wgk7rXJfk261852Hyovkg2?anonymous&ismsaljsauthenabled&ep=mlink)**  
+**[Prenota un colloquio di consulenza con adeptio](/it/contact)**  
 [adeptio.ch](https://adeptio.ch/)
