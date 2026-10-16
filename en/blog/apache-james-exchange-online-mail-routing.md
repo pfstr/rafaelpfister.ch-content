@@ -1,37 +1,38 @@
 ---
-title: "Understanding mail routing between totemomail and Exchange Online"
+title: "Understanding Mail Routing Between TotemoMail and Exchange Online"
 navTitle: "Apache James ↔ M365"
-description: "How totemomail stores and processes messages, how the underlying Apache James switches between processors, and what matters for a secure mail loop with Exchange Online."
+description: "How TotemoMail stores and processes messages, how the underlying Apache James switches between processors, and what matters for a secure mail loop with Exchange Online."
 date: "2026-06-17"
-kategorie: "Totemomail"
+kategorie: "TotemoMail"
 timeToRead: "10 min read"
 themen:
   - totemomail
 slug: "apache-james-exchange-online-mail-routing"
 translationOf: "totemomail-m365"
-url: "https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing"
 translationId: article-60a86616507315fa
-translatedAt: 2026-07-28T11:10:30.444Z
+translatedAt: 2026-10-14T08:57:09.086Z
 translationReview: automatic
-translationSourceHash: 8dabf54e50de750dbd1e13baf487ccb1fa9db0d7bd98afcd1933e87bdb57f0af
+translationSourceHash: d92dbf8dac2f4fe0cd6e28f70e9e5575c76b56acb4afa5c5444f9e10895b4abf
+url: https://rafaelpfister.ch/en/blog/apache-james-exchange-online-mail-routing
+translationModel: gpt-5.6-terra
 ---
 
-# Understanding mail routing between totemomail and Exchange Online
+# Understanding Mail Routing Between TotemoMail and Exchange Online
 
-In a mail loop between Exchange Online and totemomail, each system has a clearly defined role. Exchange Online provides the mailboxes. Totemomail, now known as the Kiteworks Email Protection Gateway, handles encryption, signatures, policies and special routing rules.
+In a mail loop between Exchange Online and TotemoMail, each system has a clearly defined role. Exchange Online provides the mailboxes. TotemoMail, now Kiteworks Email Protection Gateway, handles encryption, signatures, policies, and special routing rules.
 
-To create a reliable mail flow, it is not enough to configure two SMTP connectors. For troubleshooting, it must also be clear what happens inside the gateway after a message has been accepted: Where is it stored? Which rule is executed next? And why can a message wait in a queue even though the SMTP dialogue has already completed successfully?
+To achieve reliable mail flow, configuring two SMTP connectors is not enough. For troubleshooting, it must also be clear what happens within the gateway after a message has been accepted: Where is it stored? Which rule runs next? And why can a message wait in a queue even though the SMTP dialog has already completed successfully?
 
-This article therefore explains the processing model of [Apache James](https://james.apache.org/), on which totemomail is built. The specific routing configuration depends on the respective environment; however, the processors, matchers, mailets and repositories described form the technical foundation of every installation.
+This article therefore explains the processing model of [Apache James](https://james.apache.org/), which TotemoMail is built on. The specific routing configuration depends on the environment; however, the processors, matchers, mailets, and repositories described here form the technical foundation of every installation.
 
-One important security rule applies regardless of the details: If totemomail is the upstream gateway, Exchange Online must accept internet mail only from this gateway. This requires a restrictive partner connector. An MX record alone does not block the direct delivery path. The article [An MX record is not a firewall](/blog/ghost-sender-exchange-online-nebeneingang) shows how this side entrance arises and how to close it.
+One important security rule applies regardless of the details: If TotemoMail is the upstream gateway, Exchange Online must accept Internet mail only from that gateway. This requires a restrictive partner connector. An MX record alone does not block the direct delivery path. The article [An MX Record Is Not a Firewall](/blog/ghost-sender-exchange-online-nebeneingang) explains how this side entrance is created and how to close it.
 
-## From SMTP ingress to processing
+## From SMTP Intake to Processing
 
 The processing logic of Apache James consists of four components:
 
 - **Matchers** check conditions and determine which recipients a rule applies to.
-- **Mailets** perform the actual action, such as modifying headers, encrypting, delivering or ending further processing.
+- **Mailets** perform the actual action, such as modifying headers, encrypting, delivering, or ending further processing.
 - **Processors** combine matchers and mailets into ordered processing steps.
 - **Mail repositories** store messages during processing or after an error.
 
@@ -39,25 +40,25 @@ This separation is crucial for analysis: The repository answers the question of 
 
 ![Using James as an SMTP relay](../images/4CixEi383SY5WdvwMSGZ67odMU.png)
 
-The SMTP server accepts the connection and reads the message through to the end of the `DATA` section. James then creates a `MailImpl` object. It contains the MIME content as `MimeMessage` as well as the information required for processing: sender, recipients, status and further attributes.
+The SMTP server accepts the connection and reads the message through the end of the `DATA` section. James then creates a `MailImpl` object. It contains the MIME content as `MimeMessage`, along with the information required for processing: sender, recipients, status, and other attributes.
 
 With a file-based repository, James stores this information separately:
 
 - `FileStreamStore` contains the complete RFC 822/MIME message as a byte stream.
-- `FileObjectStore` contains the serialised `MailImpl` object with status and metadata.
+- `FileObjectStore` contains the serialized `MailImpl` object with status and metadata.
 
 A message may therefore already have been fully accepted and stored even though its business processing is still pending.
 
-## Repositories and queues under `/var/mail`
+## Repositories and Queues Under `/var/mail`
 
-The individual repositories appear as directories in the file system. Under normal operation, a message remains there only very briefly. If a queue backs up, this usually indicates a faulty rule, an unreachable destination or a failed backend service.
+The individual repositories appear as directories in the file system. Under normal operation, a message remains there only very briefly. If a queue backs up, this usually indicates a faulty rule, an unreachable destination, or an unavailable backend service.
 
-In addition to the standard queues, the following example also contains optional directories for a HIN connection. HIN provides the secure communication environment for the Swiss healthcare sector.
+In addition to the standard queues, the following example also includes optional directories for a HIN connection. HIN provides the secure communication environment for Swiss healthcare.
 
-> If you need support connecting the HIN mail gateway or migrating to the new HIN Stargate solution, you can find the relevant experts at [adeptio](https://adeptio.ch/).  
+> If you need assistance connecting HIN Mailgateway or migrating to the new HIN Stargate solution, you can find the relevant experts at [adeptio](https://adeptio.ch/).  
 >   
-> **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and, as such, also has direct contacts at the vendor.  
-> [➜ Book an appointment today.](/en/contact)
+> **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and therefore also has direct contacts at the vendor.  
+> [➜ Book an appointment today.](/kontakt)
 
 ```text
 Root-Folder:
@@ -88,13 +89,13 @@ Root-Folder:
 │   → Mails, die wegen Backend-/DB-Problemen nicht verarbeitet werden konnten
 ```
 
-## How a message is stored in the file system
+## How a Message Is Stored in the File System
 
 Each stored message consists of two files.
 
-### `FileStreamStore`: Message content
+### `FileStreamStore`: Message Content
 
-The `*.FileStreamStore` file contains the complete RFC 822/MIME message. With `cat`, the headers and body are readable:
+The `*.FileStreamStore` file contains the complete RFC 822/MIME message. With `cat`, the headers and body can be read:
 
 ```text
 From:
@@ -106,9 +107,9 @@ Body
 
 The underlying message format is described in [RFC 822](https://datatracker.ietf.org/doc/html/rfc822).
 
-### `FileObjectStore`: Status and metadata
+### `FileObjectStore`: Status and Metadata
 
-The `*.FileObjectStore` file is a serialised Java object of type `org.apache.james.core.MailImpl`. Its fields include:
+The `*.FileObjectStore` file is a serialized Java object of type `org.apache.james.core.MailImpl`. Its fields include:
 
 ```text
 attributes: HashMap
@@ -125,25 +126,25 @@ sender
 
 The [API documentation for `MailImpl`](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html) describes the object model in detail.
 
-## Status selects the next processor
+## Status Selects the Next Processor
 
-The directory structure shows only the repository. The actual processing state is held in the `state` field of `FileObjectStore`. Its value refers to the `name` attribute of a processor.
+The directory structure shows only the repository. The actual processing state is stored in the `state` field of the `FileObjectStore`. Its value refers to the `name` attribute of a processor.
 
 After each mailet, the SpoolManager checks this status:
 
 1. If the status remains unchanged, the next matcher-mailet pair in the same processor follows.
 2. If a mailet changes the status, James ends the current processor and jumps to the processor with the same name.
-3. The special status `ghost` ends processing completely.
+3. The special `ghost` status ends processing completely.
 
-The mandatory processors `root` and `error` have fixed tasks. New messages start in `root`; internal errors and appropriately configured mailets redirect to `error`. By contrast, the order of the `<processor>` elements in the XML file does **not** determine the execution order.
+The mandatory `root` and `error` processors have fixed roles. New messages start in `root`; internal errors and mailets configured accordingly redirect to `error`. However, the order of the `<processor>` elements in the XML file does **not** determine the execution order.
 
-## Processor structure in `totemomail_config.xml`
+## Processor Structure in `totemomail_config.xml`
 
 Before making any changes, export and back up the current `totemomail_config.xml`:
 
 ![Configuration / Open Current / Export to File](../images/kWKIN3vramf0IAuPjzioEGV4Znw.png)
 
-The various processors and the mailets they contain can be found in totemomail\_config.xml. Here is another practical example:
+The various processors and the mailets they contain can be found in totemomail\_config.xml. Here is another real-world example:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -175,7 +176,7 @@ The various processors and the mailets they contain can be found in totemomail\_
 </spoolmanager>
 ```
 
-Although `root` appears at the end of this excerpt, every new message starts there. The name is decisive, not its position in the document.
+Although `root` appears at the end of this excerpt, every new message starts there. The name is what matters, not its position in the document.
 
 The `root` processor itself contains an ordered list of matcher-mailet pairs:
 
@@ -202,37 +203,37 @@ The `root` processor itself contains an ordered list of matcher-mailet pairs:
    </processor>
 ```
 
-The XML file configures the classes but does not implement them. `SimpleLogger`, for example, is a class provided by totemomail or Kiteworks whose source code is not available in the appliance. However, the help in the admin GUI explains its parameters:
+The XML file configures the classes but does not implement them. `SimpleLogger`, for example, is a class provided by TotemoMail or Kiteworks whose source code is not publicly available in the appliance. However, the help in the admin GUI explains its parameters:
 
-- `log-message` defines the log text and is mandatory.
+- `log-message` defines the log text and is required.
 - `showSenderEmailAddress` optionally adds the sender address.
 - `showRecipientsEmailAddress` adds the recipient addresses.
 - `showSubject` adds the subject.
 
-The order **within** a processor is binding. A matcher may select no recipients, all recipients or only some recipients. For a subset, James splits the message: the matching recipients pass through the mailet, while the remaining recipients are processed separately. If a mailet then changes the status, processing immediately jumps to the specified processor; the remaining rules of the current processor are skipped.
+The order **within** a processor is binding. A matcher can select no recipients, all recipients, or only a subset. For a subset, James splits the message: matching recipients pass through the mailet, while the others are processed separately. If a mailet then changes the status, processing immediately jumps to the specified processor; the remaining rules in the current processor are skipped.
 
-This results in a reliable troubleshooting procedure:
+This results in a reliable troubleshooting workflow:
 
-1. Identify the repository and the associated `FileStreamStore`/`FileObjectStore` files.
+1. Identify the repository and the corresponding `FileStreamStore` and `FileObjectStore` files.
 2. Determine the current `state` in `FileObjectStore`.
 3. Find the processor with the same name in `totemomail_config.xml`.
-4. Check matchers and mailets in their actual order.
+4. Check the matchers and mailets in their actual order.
 5. If the status changes, continue in the target processor.
 
-This makes it possible to trace a mail flow step by step without mistakenly reading the XML file from top to bottom as a linear programme.
+This makes it possible to trace mail flow step by step without mistakenly reading the XML file from top to bottom as a linear program.
 
 ## Sources
 
-1.  [Apache James – project page](https://james.apache.org/): Open-source MTA on which totemomail or Kiteworks EPG is technically based.
+1.  [Apache James – Project Page](https://james.apache.org/): Open-source MTA that TotemoMail or Kiteworks EPG is technically based on.
     
-2.  [Apache James – “Spool Manager”](https://james.apache.org/server/head/spoolmanager.html): Processing of incoming mail, spool and queues.
+2.  [Apache James – “Spool Manager”](https://james.apache.org/server/head/spoolmanager.html): Processing incoming email, spool, and queues.
     
-3.  [Apache James – “Spool Manager Configuration”](https://james.apache.org/server/head/spoolmanager_configuration.html): Processor configuration and rule order.
+3.  [Apache James – “Spool Manager Configuration”](https://james.apache.org/server/head/spoolmanager_configuration.html): Processor configuration and order of rules.
     
-4.  [Apache James – “Mailet API”](https://james.apache.org/server/head/mailet_api.html): The mailet and matcher concept behind the rules.
+4.  [Apache James – “Mailet API”](https://james.apache.org/server/head/mailet_api.html): Mailet and matcher concept behind the rules.
     
-5.  [Apache James – “MailImpl” (API documentation)](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html): Mail object model behind FileStreamStore and FileObjectStore.
+5.  [Apache James – “MailImpl” (API Doc)](https://james.apache.org/server/3/apidocs/org/apache/james/core/MailImpl.html): Mail object model behind FileStreamStore and FileObjectStore.
     
-6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of internet text messages (headers and body).
+6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
