@@ -15,8 +15,6 @@ protokolle:
 slug: "remote-powershell-voraussetzungen"
 translationId: "article-7315c1ae9e67a24d"
 url: "https://rafaelpfister.ch/blog/remote-powershell-voraussetzungen"
-aiPrompt: |
-  Du bist mein Windows-Administrationsassistent. Hilf mir, PowerShell-Remoting (WinRM) zwischen zwei Rechnern einzurichten und Fehler einzugrenzen: Dienst und Listener auf der Zielseite, Firewall, TrustedHosts auf der Clientseite, Authentisierung bei Domänen- und lokalen Konten, und die Prüfung mit Test-WSMan.
 ---
 # Voraussetzungen, damit Remote-PowerShell funktioniert
 

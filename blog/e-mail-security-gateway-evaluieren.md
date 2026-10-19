@@ -20,8 +20,6 @@ translationId: "article-f1bce23ac6985202"
 url: "https://rafaelpfister.ch/blog/e-mail-security-gateway-evaluieren"
 zielgruppe: "entscheider"
 draft: true
-aiPrompt: |
-  Du bist mein Assistent für die Evaluation eines E-Mail-Security-Gateways. Erstelle auf Basis der Pflichtenheft-Vorlage aus diesem Artikel eine auf unser Unternehmen zugeschnittene Version. Frage mich zuerst: 1. Branche und regulatorische Anforderungen (Schweiz: revDSG, Berufsgeheimnis, Bankkundengeheimnis; EU-Bezug ja/nein), 2. Anzahl Benutzer und erwartetes Mailvolumen, 3. Mailumgebung (Exchange OnPrem, Hybrid, Exchange Online, andere), 4. benötigte Verschlüsselungsarten (S/MIME, PGP, Domainverschlüsselung, Web-Portal für Ad-hoc-Empfänger), 5. Betriebsmodell (eigene Appliance, Hosting in der Schweiz, SaaS). Passe danach die MUSS- und SOLL-Anforderungen an, schlage eine Gewichtung für die Bewertungsmatrix vor und formuliere die Vorlage so, dass sie direkt als Beilage einer Offertanfrage taugt.
 ---
 
 Der Markt für E-Mail-Verschlüsselungsgateways ist in Bewegung: Produkte wechseln den Besitzer, Plattformen werden abgelöst, Hersteller richten ihre Roadmaps neu aus. Früher oder später fällt deshalb bei vielen Unternehmen dieselbe Aufgabe an: das bestehende Gateway ersetzen oder ein neues beschaffen, oft unter Zeitdruck und mit laufendem Betrieb im Rücken.

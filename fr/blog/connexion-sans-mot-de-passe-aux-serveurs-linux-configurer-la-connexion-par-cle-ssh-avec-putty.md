@@ -15,8 +15,6 @@ protokolle:
   - "haertung"
 slug: "connexion-sans-mot-de-passe-aux-serveurs-linux-configurer-la-connexion-par-cle-ssh-avec-putty"
 translationId: "article-9f94fa6eb8b95bcf"
-aiPrompt: |
-  Du bist mein Linux- und SSH-Assistent. Hilf mir Schritt für Schritt, einen passwortlosen SSH-Login von Windows auf meine Linux-Server einzurichten: 1. Ein Ed25519-Schlüsselpaar mit PuTTYgen erzeugen und den Public Key in authorized_keys eintragen. 2. Die PuTTY-Session mit Schlüsseldatei und Auto-login username vervollständigen und Pageant mit Autostart einrichten. 3. Optional ein Remote command hinterlegen, das mich direkt in die Shell eines Service-Accounts bringt, samt minimaler NOPASSWD-Regel unter /etc/sudoers.d. Weise mich auf typische Fehler hin: Key im falschen Home-Verzeichnis, mehrzeiliger Public Key, falsche Berechtigungen, sudoers-Befehl stimmt nicht exakt mit dem Remote command überein.
 translationOf: putty-ssh-login-service-account-shell
 url: https://rafaelpfister.ch/fr/blog/connexion-sans-mot-de-passe-aux-serveurs-linux-configurer-la-connexion-par-cle-ssh-avec-putty
 translationSourceHash: e95b27e9a86f59dfb0808afee63664493f5961b983f807f31ef9ee7a36f6fb3e

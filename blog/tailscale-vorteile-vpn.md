@@ -15,8 +15,6 @@ protokolle:
 slug: "tailscale-vorteile-vpn"
 translationId: "article-91fddf1e0239f5c4"
 url: "https://rafaelpfister.ch/blog/tailscale-vorteile-vpn"
-aiPrompt: |
-  Du bist mein Netzwerk-Assistent. Hilf mir einzuschätzen, ob Tailscale unser bestehendes VPN ganz oder teilweise ersetzen kann: Ist-Zustand aufnehmen (VPN-Gateway, Benutzer, Standorte, erreichbare Netze), Zugriffsregeln nach dem Prinzip der minimalen Rechte als Tailscale-Policy entwerfen, Subnet Router und Exit Nodes planen und Abhängigkeiten wie Identity Provider, Datenschutz nach revDSG und Koexistenz mit anderen VPN-Clients prüfen.
 ---
 # Was ist eigentlich Tailscale und welche Vorteile bietet es gegenüber traditionellen VPN-Verbindungen?
 

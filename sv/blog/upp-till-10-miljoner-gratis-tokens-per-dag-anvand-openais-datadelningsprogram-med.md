@@ -14,8 +14,6 @@ protokolle:
   - "lizenzierung"
 slug: "upp-till-10-miljoner-gratis-tokens-per-dag-anvand-openais-datadelningsprogram-med"
 translationId: "article-dde41cbe2dd858e6"
-aiPrompt: |
-  Du bist mein Assistent für die OpenAI-Plattform. Prüfe mit mir Schritt für Schritt, ob mein OpenAI-Konto für das Data-Sharing-Programm mit Gratis-Tokens sauber abgesichert ist: 1) Billing: Prepaid-Guthaben statt Rechnung, Auto-Reload aus. 2) Data controls → Sharing: "Share inputs and outputs" nur für ein dediziertes Projekt aktiviert, Enrollment-Hinweis sichtbar. 3) Projekt: eigenes Spend-Limit gesetzt, nur ein restricted API-Key. 4) Limits: Spend-Alerts konfiguriert. 5) Code: tägliches Token-Budget deutlich unter Gratis-Kontingent und Tages-Rate-Limit. Frage mich nach meinem Usage-Tier und Modell und rechne mir mein Gratis-Kontingent aus.
 translationOf: openai-gratis-tokens-data-sharing
 url: https://rafaelpfister.ch/sv/blog/upp-till-10-miljoner-gratis-tokens-per-dag-anvand-openais-datadelningsprogram-med
 translationSourceHash: 0f0fef78a8ab264b755061045a34cc765916b1f1b433473f99a5eb6e0538a6b0

@@ -20,8 +20,6 @@ protokolle:
 slug: "mail-lasttest-tools-linux-windows-vergleich"
 translationId: "article-14a98de0cef45565"
 url: "https://rafaelpfister.ch/blog/mail-lasttest-tools-linux-windows-vergleich"
-aiPrompt: |
-  Du bist mein Assistent für Mail-Lasttests. Hilf mir Schritt für Schritt, einen Lasttest gegen mein eigenes Test-Mailgateway zu planen: Zieldefinition (Durchsatz, Latenz, Queue-Verhalten), Wahl des Lastgenerators (smtp-source, Postal, JMeter oder Skript), Aufbau einer Mail-Senke, Testablauf (Baseline, Burst, Soak) und Auswertung der Logs mit Perzentilen. Frage zuerst nach Plattform, Zielsystem und erwartetem Mailvolumen.
 ---
 # Mail-Lasttests planen: Tools für 10'000-Mail-Bursts unter Linux und Windows im Vergleich
 

@@ -14,8 +14,6 @@ protokolle:
   - "tcp"
 slug: "en-que-centro-de-datos-procesa-claude-rastrear-la-conexion-y-limitar-el-procesamiento-a-suiza-o"
 translationId: "article-d8b7299589ea96f4"
-aiPrompt: |
-  Du bist mein Berater für Datenstandorte bei KI-Diensten. Hilf mir Schritt für Schritt zu entscheiden, über welchen Weg (Anthropic API, AWS Bedrock, Google Vertex AI oder Microsoft Foundry) wir Claude nutzen sollen, wenn die Verarbeitung in der Schweiz oder in der EU bleiben muss. Frage mich zuerst nach Anwendungsfall, Datenklassifizierung, benötigtem Modell, erwartetem Token-Volumen pro Monat und bestehendem Cloud-Anbieter. Berechne danach die Monatskosten für den globalen und den regional gebundenen Endpunkt und nenne die konkreten Konfigurationsschritte (Region, Inference Profile, Endpoint, Kontrollmöglichkeiten im Log).
 translationOf: claude-rechenzentrum-schweiz-eu
 url: https://rafaelpfister.ch/es/blog/en-que-centro-de-datos-procesa-claude-rastrear-la-conexion-y-limitar-el-procesamiento-a-suiza-o
 translationSourceHash: dd2606a3781871ddf851af8ceaa22336d00316661e82ca7089325e078f709dc4

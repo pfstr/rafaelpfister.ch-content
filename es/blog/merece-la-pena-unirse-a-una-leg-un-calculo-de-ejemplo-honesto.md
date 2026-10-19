@@ -16,7 +16,6 @@ related:
   - leg-preisrechner
 translationId: "article-94132f7182e79a39"
 slug: "merece-la-pena-unirse-a-una-leg-un-calculo-de-ejemplo-honesto"
-aiPrompt: "Ich gebe dir die Eckdaten meiner Stromsituation (Netzbetreiber, Netztarif und Arbeitspreis in Rp./kWh, Jahresverbrauch, LEG-Abschlag 20 oder 40 Prozent, Servicegebühr des LEG-Anbieters in Rp./kWh, eigene PV ja/nein). Rechne aus: 1) Netto-Effekt pro LEG-Kilowattstunde (Abschlag minus Servicegebühr), 2) Jahreseffekt bei 20, 30 und 40 Prozent LEG-Anteil, 3) falls PV vorhanden: Vergleich LEG-Vergütung gegen Rückliefervergütung. Sag mir am Ende klar, ob sich der Beitritt finanziell lohnt. Meine Daten:"
 translationOf: lohnt-sich-leg-beitritt
 translationSourceHash: 905df00aaf04860301dea5ef5e84ba3ae42fc4eb83a3125489afaf8ac46455ee
 translationModel: gpt-5.6-terra

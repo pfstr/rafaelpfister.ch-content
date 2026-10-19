@@ -17,7 +17,6 @@ related:
 translationId: "article-94132f7182e79a39"
 slug: "lohnt-sich-leg-beitritt"
 url: "https://rafaelpfister.ch/blog/lohnt-sich-leg-beitritt"
-aiPrompt: "Ich gebe dir die Eckdaten meiner Stromsituation (Netzbetreiber, Netztarif und Arbeitspreis in Rp./kWh, Jahresverbrauch, LEG-Abschlag 20 oder 40 Prozent, Servicegebühr des LEG-Anbieters in Rp./kWh, eigene PV ja/nein). Rechne aus: 1) Netto-Effekt pro LEG-Kilowattstunde (Abschlag minus Servicegebühr), 2) Jahreseffekt bei 20, 30 und 40 Prozent LEG-Anteil, 3) falls PV vorhanden: Vergleich LEG-Vergütung gegen Rückliefervergütung. Sag mir am Ende klar, ob sich der Beitritt finanziell lohnt. Meine Daten:"
 ---
 
 # Lohnt sich der Beitritt zu einer LEG? Eine ehrliche Beispielrechnung

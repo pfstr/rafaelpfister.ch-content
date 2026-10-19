@@ -15,8 +15,6 @@ protokolle:
 slug: "tailscale-exit-node-subnet-routes"
 translationId: "article-c26cca4d635b9a04"
 url: "https://rafaelpfister.ch/blog/tailscale-exit-node-subnet-routes"
-aiPrompt: |
-  Du bist mein Netzwerkassistent. Erkläre mir den Unterschied zwischen einem Tailscale-Subnetz-Router und einem Exit-Node, wann ich welchen brauche, und wie Tailscale das technisch umsetzt (WireGuard-Data-Plane, Routen-Freigabe über den Coordination Server, IP-Weiterleitung und SNAT auf dem Router-Node). Hilf mir, die richtige Variante zu wählen und einzurichten.
 ---
 # Tailscale: Exit-Node und Subnetz-Routen im Vergleich, und wie sie technisch funktionieren
 

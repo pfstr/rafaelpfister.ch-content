@@ -14,8 +14,6 @@ protokolle:
   - "haertung"
 slug: "che-cos-e-tailscale-e-quali-vantaggi-offre-rispetto-alle-connessioni-vpn-tradizionali"
 translationId: "article-91fddf1e0239f5c4"
-aiPrompt: |
-  Du bist mein Netzwerk-Assistent. Hilf mir einzuschätzen, ob Tailscale unser bestehendes VPN ganz oder teilweise ersetzen kann: Ist-Zustand aufnehmen (VPN-Gateway, Benutzer, Standorte, erreichbare Netze), Zugriffsregeln nach dem Prinzip der minimalen Rechte als Tailscale-Policy entwerfen, Subnet Router und Exit Nodes planen und Abhängigkeiten wie Identity Provider, Datenschutz nach revDSG und Koexistenz mit anderen VPN-Clients prüfen.
 translationOf: tailscale-vorteile-vpn
 url: https://rafaelpfister.ch/it/blog/che-cos-e-tailscale-e-quali-vantaggi-offre-rispetto-alle-connessioni-vpn-tradizionali
 translationSourceHash: 965ff1000bee1a9e9899d6ffd750d28abbea09dd50896551eae369b7bf20f162

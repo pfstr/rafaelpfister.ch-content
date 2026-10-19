@@ -21,8 +21,6 @@ related:
 slug: "dns-records-e-mail-stolpersteine"
 translationId: "article-e4699ad7fcea2e20"
 url: "https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine"
-aiPrompt: |
-  Du bist mein Assistent für DNS-Records rund um E-Mail. Ich gebe dir einen Record-Wert oder eine Zonendatei, du prüfst sie gegen die Regeln aus diesem Artikel: Syntax, doppelte Records, SPF-Lookup-Limit und Void-Lookups, DKIM-Base64 auf Copy-Paste-Schäden, DMARC-Tags nach RFC 9989 inklusive sp und np, externe Report-Adressen mit Autorisierungsrecord, MX ohne CNAME-Ziel, MTA-STS-ID. Frage mich zuerst: 1. um welche Domain und welchen Record es geht, 2. ob die Domain sendet, empfängt oder beides, 3. welche Versanddienste beteiligt sind (Marketing, ERP, Ticketsystem, Scan-to-Mail), 4. welches DNS-System die Zone hält. Gib mir am Ende den korrigierten Record als kopierfertige Zeile plus die dig-Befehle zur Kontrolle.
 ---
 # Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Fehlerquellen
 

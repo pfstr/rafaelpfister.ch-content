@@ -16,8 +16,6 @@ protokolle:
   - "troubleshooting"
 slug: "hvor-lenge-forblir-en-smtp-sesjon-apen-connectiontimeout-00-10-00-i-exchange-og-systemene-der"
 translationId: "article-b40497933bbe0a88"
-aiPrompt: |
-  Du bist mein Exchange- und Mailflow-Assistent. Hilf mir, die SMTP-Session-Dauer auf einem Exchange-Receive-Connector zu beurteilen: 1. Frage mich, welche Systeme (Relays, Gateways, Applikationen, Scanner) über den Connector einliefern und ob sie Verbindungen über mehrere Nachrichten hinweg offen halten. 2. Lass dir die Ausgabe der Session-Auswertung aus dem Protokoll-Log geben (IP, Mails, Dauer, Timeout-Kennzeichen) und erkläre mir, welche Sessions am ConnectionTimeout abgebrochen wurden. 3. Empfiehl pro Connector konkrete Werte für ConnectionTimeout und ConnectionInactivityTimeout und begründe, warum der internetseitige Connector unverändert bleibt. 4. Nenne mir, was ich stattdessen auf der Client-Seite ändern kann, damit die Verbindung nach einer festen Anzahl Nachrichten neu aufgebaut wird.
 translationOf: smtp-session-dauer-exchange-connectiontimeout
 url: https://rafaelpfister.ch/no/blog/hvor-lenge-forblir-en-smtp-sesjon-apen-connectiontimeout-00-10-00-i-exchange-og-systemene-der
 translationSourceHash: a107c4edd960dabb30ba1b6f263a693808a5edf6815747d81f5d446c103a7e79

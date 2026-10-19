@@ -14,8 +14,6 @@ protokolle:
 slug: "brave-wdp-lange-url-wortteile"
 translationId: "article-2cf5ffd0d1886c78"
 url: "https://rafaelpfister.ch/blog/brave-wdp-lange-url-wortteile"
-aiPrompt: |
-  Du bist mein SEO-Assistent. Hilf mir zu prüfen, ob die URLs meiner Website die Heuristiken des Brave Web Discovery Project (dropLongURL) bestehen: Wortteile im Pfad über 18 Zeichen, lange Query-Strings, lange Zahlen, Pfade wie /admin oder /share. Werte meine Sitemap aus, nenne die betroffenen URLs und schlage kürzere Slugs mit 301-Weiterleitung vor, wo sich die Änderung lohnt.
 ---
 # Brave Web Discovery Project: Warum lange Wortteile in URLs Seiten ausschliessen
 

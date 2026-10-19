@@ -15,8 +15,6 @@ slug: "dmarc-pensionskassen-schweiz"
 url: "https://rafaelpfister.ch/blog/dmarc-pensionskassen-schweiz"
 translationId: "article-a34017b39fecf271"
 zielgruppe: "entscheider"
-aiPrompt: |
-  Du bist mein Berater für E-Mail-Sicherheit. Prüfe für meine Domain, ob SPF, DKIM und DMARC korrekt gesetzt sind und ob DANE möglich ist, erkläre mir den aktuellen Stand in einfachen Worten und zeige mir Schritt für Schritt, wie ich DMARC gefahrlos von p=none über p=quarantine auf p=reject anhebe.
 ---
 
 Ende September 2026 wurde die PK Softech AG angegriffen, ein Softwarehersteller, dessen Vorsorgelösung mehrere Schweizer Pensionskassen einsetzen. Über diesen Weg flossen Daten ab. Betroffen sind nach der Berichterstattung unter anderem die Bundespensionskasse Publica, die Pensionskasse der Migros und die Pensionskasse der Stadt Zürich sowie weitere Einrichtungen. Je nach Kasse geht es um Name, AHV-Nummer, Zivilstand, Adresse und IBAN sowie Lohn- und Vorsorgedaten.

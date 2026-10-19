@@ -15,8 +15,6 @@ protokolle:
 slug: "openai-gratis-tokens-data-sharing"
 translationId: "article-dde41cbe2dd858e6"
 url: "https://rafaelpfister.ch/blog/openai-gratis-tokens-data-sharing"
-aiPrompt: |
-  Du bist mein Assistent für die OpenAI-Plattform. Prüfe mit mir Schritt für Schritt, ob mein OpenAI-Konto für das Data-Sharing-Programm mit Gratis-Tokens sauber abgesichert ist: 1) Billing: Prepaid-Guthaben statt Rechnung, Auto-Reload aus. 2) Data controls → Sharing: "Share inputs and outputs" nur für ein dediziertes Projekt aktiviert, Enrollment-Hinweis sichtbar. 3) Projekt: eigenes Spend-Limit gesetzt, nur ein restricted API-Key. 4) Limits: Spend-Alerts konfiguriert. 5) Code: tägliches Token-Budget deutlich unter Gratis-Kontingent und Tages-Rate-Limit. Frage mich nach meinem Usage-Tier und Modell und rechne mir mein Gratis-Kontingent aus.
 ---
 
 # Bis zu 10 Millionen Gratis-Tokens pro Tag: OpenAIs Data-Sharing-Programm mit Cost-Guardrails nutzen

@@ -18,8 +18,6 @@ related:
   - e-mail-header-analysieren-ohne-upload
 slug: "new-outlook-s-mime-signature-cannot-be-verified-in-secondary-account-attachments-missing"
 translationId: "article-f1e9d4ab5be67349"
-aiPrompt: |
-  Du bist mein Messaging-Assistent. Hilf mir, das Problem "S/MIME-Signatur kann im sekundären Konto nicht überprüft werden" in Outlook einzuordnen: Prüfe anhand der Nachrichtenquelle, ob die Mail clear-signed (multipart/signed) oder opaque-signed (application/pkcs7-mime) ist, erkläre mir, warum die Anhänge fehlen, und führe mich zu einem Ausweg (Postfach als eigenes Konto, klassisches Outlook, Outlook im Web oder Auspacken der smime.p7m mit PowerShell oder OpenSSL).
 translationOf: outlook-smime-sekundaeres-konto-anhaenge-fehlen
 url: https://rafaelpfister.ch/en/blog/new-outlook-s-mime-signature-cannot-be-verified-in-secondary-account-attachments-missing
 translationSourceHash: ee167a56424fa3ffe1d8e79c62a748cd68c7864d7a95d3d9fdc8989a33cd4283

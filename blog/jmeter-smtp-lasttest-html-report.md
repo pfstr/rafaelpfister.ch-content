@@ -23,8 +23,6 @@ image: "../images/jmeter-report-dashboard.png"
 slug: "jmeter-smtp-lasttest-html-report"
 translationId: "article-fc3f25272e051f92"
 url: "https://rafaelpfister.ch/blog/jmeter-smtp-lasttest-html-report"
-aiPrompt: |
-  Du bist mein Assistent für Mail-Lasttests mit Apache JMeter. Hilf mir Schritt für Schritt, einen SMTP-Lasttest aufzubauen: portables Setup (JRE + JMeter ohne Installation), lokale SMTP-Senke mit aiosmtpd, Testplan mit Thread Group, Throughput Controllern für den Nachrichtenmix und SMTP Samplern, Lauf im CLI-Modus mit HTML-Report und Auswertung der Perzentile pro Nachrichtenklasse. Frage zuerst nach Zielsystem, Nachrichtenklassen und gewünschtem Volumen.
 ---
 # SMTP-Lasttest mit Apache JMeter in der Praxis: 10'000 Mails, fünf Regelpfade, ein HTML-Report
 

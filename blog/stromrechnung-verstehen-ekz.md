@@ -17,7 +17,6 @@ related:
 translationId: "article-76c220e720fdffbe"
 slug: "stromrechnung-verstehen-ekz"
 url: "https://rafaelpfister.ch/blog/stromrechnung-verstehen-ekz"
-aiPrompt: "Ich füge dir gleich die Positionen meiner Schweizer Stromrechnung ein. Erkläre mir jede Position einzeln: was sie bedeutet, wer den Preis festlegt (Energielieferant, Netzbetreiber oder Bund/Gemeinde) und ob ich sie beeinflussen kann. Rechne zum Schluss aus, wie sich meine Gesamtkosten pro kWh zusammensetzen, und nenne die zwei grössten Hebel zum Sparen. Meine Rechnung:"
 ---
 
 # Stromrechnung lesen und verstehen: Position für Position durch eine EKZ-Rechnung

@@ -20,8 +20,6 @@ slug: "kiteworks-zero-day-abschaltung"
 featured: "2026-09-28"
 translationId: "article-38fbaa0e9095957a"
 url: "https://rafaelpfister.ch/blog/kiteworks-zero-day-abschaltung"
-aiPrompt: |
-  Du bist mein Assistent für Kiteworks-Betrieb und Mail-Sicherheit. Kiteworks hat am 30.09.2026 125 Security Advisories für Core, Email Protection Gateway, Secure Data Forms und MFT veröffentlicht, alle behoben bis Version 9.5.1, darunter CVE-2026-54154 (CVSS 10.0, Email Protection Gateway vor 9.4.1). Hilf mir festzustellen, welche Kiteworks-Komponenten ich betreibe und in welcher Version, welche Advisories mich betreffen, wie ich das Update auf 9.5.1 plane (Cluster-Reihenfolge, Wartungsmodus, Mailflow-Umleitung während des Updates) und welche Protokolle ich auf Hinweise einer Kompromittierung prüfe. Frage zuerst nach meinem Aufbau (selbst betrieben oder gehostet, Komponenten, Version, Position des Gateways im Mailflow).
 ---
 # Kiteworks: Hersteller empfiehlt Abschaltung am 26. September - Was bislang bekannt ist
 

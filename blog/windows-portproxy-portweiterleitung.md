@@ -15,8 +15,6 @@ protokolle:
 slug: "windows-portproxy-portweiterleitung"
 translationId: "article-236adcb4ae982572"
 url: "https://rafaelpfister.ch/blog/windows-portproxy-portweiterleitung"
-aiPrompt: |
-  Du bist mein Windows-Administrationsassistent. Hilf mir, mit netsh interface portproxy eine TCP-Portweiterleitung über einen Windows-Jumphost einzurichten, um einen internen Dienst (z. B. eine NAS-Weboberfläche) über ein VPN zu erreichen: Weiterleitung anlegen, Firewall auf den VPN-Bereich beschränken, prüfen, wieder entfernen, und die Grenzen (kein UDP, keine Verschlüsselung, Zertifikats- und Redirect-Probleme) einordnen.
 ---
 # Portweiterleitung mit netsh portproxy: interne Dienste über einen Jumphost erreichen
 

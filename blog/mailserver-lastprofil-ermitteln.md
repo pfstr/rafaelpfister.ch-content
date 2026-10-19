@@ -17,8 +17,6 @@ protokolle:
 slug: "mailserver-lastprofil-ermitteln"
 translationId: "article-1ff17a188d73e289"
 url: "https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln"
-aiPrompt: |
-  Du bist mein Mailflow-Assistent. Hilf mir Schritt für Schritt, das Lastprofil meines Mailservers zu ermitteln: 1. Die richtige Datenquelle wählen (Message Tracking, Gateway-Logs) und das passende Event pro Nachricht bestimmen. 2. Raten pro Minute, Stunde und Tag berechnen und Bursts mit Dauer und Peak charakterisieren. 3. Empfängerstruktur, Domain-Verteilung und Nachrichtengrössen auswerten. Weise mich auf Doppelzählungen, Export-Limits und Zeitzonen-Fehler hin.
 ---
 # Das Lastprofil eines Mailservers ermitteln: Bursts, Spitzenraten und Empfängerstruktur aus dem Message Tracking
 

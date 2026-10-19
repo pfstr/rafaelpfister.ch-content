@@ -16,7 +16,6 @@ related:
   - leg-preisrechner
 translationId: "article-76c220e720fdffbe"
 slug: "las-och-forsta-elrakningen-rad-for-rad-i-en-ekz-rakning"
-aiPrompt: "Ich füge dir gleich die Positionen meiner Schweizer Stromrechnung ein. Erkläre mir jede Position einzeln: was sie bedeutet, wer den Preis festlegt (Energielieferant, Netzbetreiber oder Bund/Gemeinde) und ob ich sie beeinflussen kann. Rechne zum Schluss aus, wie sich meine Gesamtkosten pro kWh zusammensetzen, und nenne die zwei grössten Hebel zum Sparen. Meine Rechnung:"
 translationOf: stromrechnung-verstehen-ekz
 translationSourceHash: d81a9bfcf0e980271b4b1f54234b918f4658a44fa002a3f7572dfd80df8ba9b1
 translationModel: gpt-5.6-terra

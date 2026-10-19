@@ -13,8 +13,6 @@ protokolle:
   - "troubleshooting"
 slug: "brave-web-discovery-project-perche-le-parti-di-parole-lunghe-negli-url-escludono-le-pagine"
 translationId: "article-2cf5ffd0d1886c78"
-aiPrompt: |
-  Du bist mein SEO-Assistent. Hilf mir zu prüfen, ob die URLs meiner Website die Heuristiken des Brave Web Discovery Project (dropLongURL) bestehen: Wortteile im Pfad über 18 Zeichen, lange Query-Strings, lange Zahlen, Pfade wie /admin oder /share. Werte meine Sitemap aus, nenne die betroffenen URLs und schlage kürzere Slugs mit 301-Weiterleitung vor, wo sich die Änderung lohnt.
 translationOf: brave-wdp-lange-url-wortteile
 url: https://rafaelpfister.ch/it/blog/brave-web-discovery-project-perche-le-parti-di-parole-lunghe-negli-url-escludono-le-pagine
 translationSourceHash: a035c348521de8ab826dc9f47abbad518f9bf4d07c0ef6d99e6796a7b85afa67

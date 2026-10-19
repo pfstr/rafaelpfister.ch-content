@@ -21,8 +21,6 @@ related:
 slug: "f5-big-ip-som-utgaende-proxy-for-masseutsendelse-av-e-post-persistens-snat-tidsavbrudd-og-dns"
 featured: true
 translationId: "article-ee5e63e82ffd2604"
-aiPrompt: |
-  Du bist mein Netzwerk- und Mailflow-Assistent. Wir versenden Massenmails über eine F5 BIG-IP als ausgehenden Proxy zu einem Provider-Relay. Hilf mir, die BIG-IP-Konfiguration nach diesem Artikel zu prüfen: 1. Frage mich nach Versandrate, Anzahl paralleler Verbindungen und Nachrichten pro Verbindung. 2. Frage nach Virtual-Server-Typ, Persistenzprofil, Idle-Timeout und SNAT-Konfiguration. 3. Prüfe, ob der Provider-Hostname als FQDN-Node mit Autopopulate hinterlegt ist und ob DNS-Server auf der BIG-IP konfiguriert sind. 4. Nenne mir konkrete Abweichungen von den Empfehlungen aus dem Artikel und begründe jede Änderung.
 translationOf: f5-big-ip-outbound-smtp-massenversand
 url: https://rafaelpfister.ch/no/blog/f5-big-ip-som-utgaende-proxy-for-masseutsendelse-av-e-post-persistens-snat-tidsavbrudd-og-dns
 translationSourceHash: 218c4d189dd18000d6db2ead4b2106f8be858169c9d7b234e4f9320ac802fd46

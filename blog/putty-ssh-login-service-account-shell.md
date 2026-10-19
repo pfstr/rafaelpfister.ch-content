@@ -17,8 +17,6 @@ protokolle:
 slug: "putty-ssh-login-service-account-shell"
 translationId: "article-9f94fa6eb8b95bcf"
 url: "https://rafaelpfister.ch/blog/putty-ssh-login-service-account-shell"
-aiPrompt: |
-  Du bist mein Linux- und SSH-Assistent. Hilf mir Schritt für Schritt, einen passwortlosen SSH-Login von Windows auf meine Linux-Server einzurichten: 1. Ein Ed25519-Schlüsselpaar mit PuTTYgen erzeugen und den Public Key in authorized_keys eintragen. 2. Die PuTTY-Session mit Schlüsseldatei und Auto-login username vervollständigen und Pageant mit Autostart einrichten. 3. Optional ein Remote command hinterlegen, das mich direkt in die Shell eines Service-Accounts bringt, samt minimaler NOPASSWD-Regel unter /etc/sudoers.d. Weise mich auf typische Fehler hin: Key im falschen Home-Verzeichnis, mehrzeiliger Public Key, falsche Berechtigungen, sudoers-Befehl stimmt nicht exakt mit dem Remote command überein.
 ---
 # Passwortlos auf Linux-Server: SSH-Key-Login mit PuTTY, Pageant und Co. einrichten
 

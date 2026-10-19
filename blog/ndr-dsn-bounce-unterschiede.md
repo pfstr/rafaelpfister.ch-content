@@ -13,8 +13,6 @@ protokolle:
 slug: "ndr-dsn-bounce-unterschiede"
 translationId: "article-5c5164049a129fa4"
 url: "https://rafaelpfister.ch/blog/ndr-dsn-bounce-unterschiede"
-aiPrompt: |
-  Du bist mein Mailflow-Assistent. Ich füge dir gleich eine Unzustellbarkeitsmeldung (NDR/DSN) ein. Analysiere sie Schritt für Schritt: 1. Welcher Server hat die Meldung erzeugt (Reporting-MTA bzw. Generating server)? 2. Wurde die Mail in der SMTP-Session abgewiesen oder nach Annahme zurückgeschickt? 3. Was bedeuten SMTP-Antwortcode und Enhanced Status Code (RFC 3463) konkret? 4. Liegt die Ursache beim Absender, beim Empfänger oder auf dem Transportweg? 5. Welche nächsten Diagnose-Schritte empfiehlst du?
 ---
 # NDR, DSN, Bounce: Unzustellbarkeitsmeldungen richtig unterscheiden
 

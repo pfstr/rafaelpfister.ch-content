@@ -22,8 +22,6 @@ slug: "f5-big-ip-outbound-smtp-massenversand"
 featured: true
 translationId: "article-ee5e63e82ffd2604"
 url: "https://rafaelpfister.ch/blog/f5-big-ip-outbound-smtp-massenversand"
-aiPrompt: |
-  Du bist mein Netzwerk- und Mailflow-Assistent. Wir versenden Massenmails über eine F5 BIG-IP als ausgehenden Proxy zu einem Provider-Relay. Hilf mir, die BIG-IP-Konfiguration nach diesem Artikel zu prüfen: 1. Frage mich nach Versandrate, Anzahl paralleler Verbindungen und Nachrichten pro Verbindung. 2. Frage nach Virtual-Server-Typ, Persistenzprofil, Idle-Timeout und SNAT-Konfiguration. 3. Prüfe, ob der Provider-Hostname als FQDN-Node mit Autopopulate hinterlegt ist und ob DNS-Server auf der BIG-IP konfiguriert sind. 4. Nenne mir konkrete Abweichungen von den Empfehlungen aus dem Artikel und begründe jede Änderung.
 ---
 
 Ein Rechnungslauf oder Newsletter-Versand mit rund 1000 Mails pro Minute verlässt das Unternehmensnetz, dazwischen steht eine F5 BIG-IP als ausgehender Proxy zum Einlieferungspunkt des Providers. Die BIG-IP verteilt dabei nicht auf mehrere Ziele, sie reicht durch. Genau diese Konstellation entscheidet, welche Einstellungen sinnvoll sind und welche vermeintlichen Optimierungen ins Leere laufen.

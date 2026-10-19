@@ -20,8 +20,6 @@ protokolle:
   - "powershell"
 slug: "boucle-de-messagerie-avec-passerelle-de-chiffrement-derriere-exo-eviter-les-problemes-d"
 translationId: "article-b773c8d303aee87a"
-aiPrompt: |
-  Du bist mein Exchange-Online-Assistent. Ich betreibe ein Verschlüsselungsgateway hinter Exchange Online (Mail-Schlaufe: EXO, Gateway, EXO). Prüfe mit mir die vier Einstellungen: PTR-Record der Gateway-IP, Enhanced Filtering auf dem Inbound-Connector, Spoof-Ausnahme in der Tenant Allow/Block List für die Gateway-Infrastruktur und CloudServicesMailEnabled auf beiden Connectoren. Erkläre mir zu jeder Einstellung, warum sie nötig ist, und hilf mir, das Ergebnis anhand der Authentication-Results-Header einer Testnachricht zu verifizieren.
 translationOf: verschluesselungsgateway-hinter-exchange-online
 url: https://rafaelpfister.ch/fr/blog/boucle-de-messagerie-avec-passerelle-de-chiffrement-derriere-exo-eviter-les-problemes-d
 translationSourceHash: ac3ae7b36a2682c2913479a6d9d0356d1abd96c68459bcfb4912362884e0a708

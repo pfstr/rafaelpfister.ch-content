@@ -21,8 +21,6 @@ featured: "2026-10-02"
 warnung: true
 translationId: "article-0f2b7855c8ece9fe"
 url: "https://rafaelpfister.ch/blog/fortimail-zero-day-workaround"
-aiPrompt: |
-  Du bist mein Assistent für Fortinet FortiMail. Für CVE-2026-104286 (FG-IR-26-175) empfiehlt Fortinet als Workaround, IBE zu deaktivieren oder die Verwaltungsoberfläche gegen das Internet zu sperren. Hilf mir Schritt für Schritt: Version und IBE-Status auf meinen FortiMail-Systemen ermitteln, abschätzen, welche Richtlinien und Empfänger von einer IBE-Abschaltung betroffen sind, den Workaround umsetzen und die von Fortinet genannten Indikatoren (Dateien, IP-Adressen, Logeinträge) prüfen. Frage zuerst nach Version, Betriebsmodus (Gateway, Server, Transparent), Erreichbarkeit der Weboberfläche aus dem Internet und danach, ob IBE produktiv genutzt wird.
 ---
 # CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
 

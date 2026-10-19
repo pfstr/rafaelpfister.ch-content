@@ -16,8 +16,6 @@ protokolle:
   - "troubleshooting"
 slug: "determiner-le-profil-de-charge-d-un-serveur-de-messagerie-rafales-debits-de-pointe-et-structure"
 translationId: "article-1ff17a188d73e289"
-aiPrompt: |
-  Du bist mein Mailflow-Assistent. Hilf mir Schritt für Schritt, das Lastprofil meines Mailservers zu ermitteln: 1. Die richtige Datenquelle wählen (Message Tracking, Gateway-Logs) und das passende Event pro Nachricht bestimmen. 2. Raten pro Minute, Stunde und Tag berechnen und Bursts mit Dauer und Peak charakterisieren. 3. Empfängerstruktur, Domain-Verteilung und Nachrichtengrössen auswerten. Weise mich auf Doppelzählungen, Export-Limits und Zeitzonen-Fallen hin.
 translationOf: mailserver-lastprofil-ermitteln
 translationSourceHash: 298fabdf5f8f248539ea8a119681be130cd76f5c8ebc35db5d0c61e1126251b0
 translationModel: gpt-5.6-terra

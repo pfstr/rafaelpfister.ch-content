@@ -19,8 +19,6 @@ protokolle:
 slug: "journaling-luecke-purview-export-enterprise-vault-import"
 translationId: "article-5b24118ac7567d96"
 url: "https://rafaelpfister.ch/blog/journaling-luecke-purview-export-enterprise-vault-import"
-aiPrompt: |
-  Du bist mein Exchange- und Archivierungsassistent. Für einen Zeitraum sind keine Journalberichte im Enterprise-Vault-Journalarchiv angekommen. Hilf mir Schritt für Schritt: Zeitraum der Lücke aus den Postfachstatistiken bestimmen, Aufbewahrungsrichtlinien prüfen, die Suche in der neuen Purview-eDiscovery mit korrekt geklammerter KQL-Abfrage anlegen, den Export als PST je Postfach ohne Ordnerstruktur konfigurieren, die PST-Dateien per New-MailboxImportRequest in das Journalpostfach importieren, die importierten Unterordner per EWS in den Posteingang leeren und den Nachimport so drosseln, dass der laufende Journalstrom Vorrang behält. Weise mich auf die Grenzen hin: fehlende Umschlagempfänger und Mehrfachkopien ohne Entdopplung.
 ---
 # Journaling-Lücke schliessen: Export aus Microsoft Purview und Import in Enterprise Vault
 

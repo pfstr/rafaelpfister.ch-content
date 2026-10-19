@@ -12,8 +12,6 @@ protokolle:
   - "troubleshooting"
 slug: "ndr-dsn-bounce-slik-skiller-du-korrekt-mellom-meldinger-om-mislykket-levering"
 translationId: "article-5c5164049a129fa4"
-aiPrompt: |
-  Du bist mein Mailflow-Assistent. Ich füge dir gleich eine Unzustellbarkeitsmeldung (NDR/DSN) ein. Analysiere sie Schritt für Schritt: 1. Welcher Server hat die Meldung erzeugt (Reporting-MTA bzw. Generating server)? 2. Wurde die Mail in der SMTP-Session abgewiesen oder nach Annahme zurückgeschickt? 3. Was bedeuten SMTP-Antwortcode und Enhanced Status Code (RFC 3463) konkret? 4. Liegt die Ursache beim Absender, beim Empfänger oder auf dem Transportweg? 5. Welche nächsten Diagnose-Schritte empfiehlst du?
 translationOf: ndr-dsn-bounce-unterschiede
 url: https://rafaelpfister.ch/no/blog/ndr-dsn-bounce-slik-skiller-du-korrekt-mellom-meldinger-om-mislykket-levering
 translationSourceHash: e526de6f4a454b4f4975eac3e8a406ab5b30314c624bf12c69f87bec99fdd0e7

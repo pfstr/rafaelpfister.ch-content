@@ -16,8 +16,6 @@ hauptthema: "microsoft-teams"
 slug: "vpn-split-tunneling-microsoft-teams"
 translationId: "article-d15f1e7ff6af231c"
 url: "https://rafaelpfister.ch/blog/vpn-split-tunneling-microsoft-teams"
-aiPrompt: |
-  Du bist mein Netzwerk-Assistent. Ich will Microsoft-Teams-Medienverkehr per Split Tunneling an meinem VPN vorbeiführen. Hilf mir Schritt für Schritt: 1. Frage mich, welchen VPN-Client ich einsetze (Consumer-VPN, WireGuard, OpenVPN, Enterprise-Client) und auf welchem Betriebssystem. 2. Nenne mir die passende Konfiguration für die drei Optimize-Netze 13.107.64.0/18, 52.112.0.0/14 und 52.122.0.0/15 (UDP 3478 bis 3481, TCP 443). 3. Erkläre mir, wie ich mit Find-NetRoute oder der Anrufintegrität in Teams prüfe, ob der Medienverkehr tatsächlich am Tunnel vorbeiläuft. 4. Weise mich auf die Sicherheitsabwägungen hin, bevor ich die Ausnahme produktiv setze.
 ---
 
 Ein Teams-Anruf über eine VPN-Verbindung klingt oft schlechter als ohne: Die Stimme setzt aus, Video ruckelt, Bildschirmübertragungen bauen sich verzögert auf. Die Ursache liegt meist am Umweg, den der Echtzeitverkehr durch den VPN-Tunnel nimmt, nicht bei Teams selbst. Microsoft empfiehlt darum seit Jahren, den Teams-Medienverkehr per Split Tunneling am VPN vorbei direkt ins Internet zu führen. Dieser Ansatz funktioniert mit praktisch jedem VPN-Produkt, vom Consumer-Client bis zum Enterprise-Gateway; die Konfiguration unterscheidet sich nur im Detail.

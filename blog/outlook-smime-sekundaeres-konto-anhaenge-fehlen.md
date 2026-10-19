@@ -19,8 +19,6 @@ related:
 slug: "outlook-smime-sekundaeres-konto-anhaenge-fehlen"
 translationId: "article-f1e9d4ab5be67349"
 url: "https://rafaelpfister.ch/blog/outlook-smime-sekundaeres-konto-anhaenge-fehlen"
-aiPrompt: |
-  Du bist mein Messaging-Assistent. Hilf mir, das Problem "S/MIME-Signatur kann im sekundären Konto nicht überprüft werden" in Outlook einzuordnen: Prüfe anhand der Nachrichtenquelle, ob die Mail clear-signed (multipart/signed) oder opaque-signed (application/pkcs7-mime) ist, erkläre mir, warum die Anhänge fehlen, und führe mich zu einem Ausweg (Postfach als eigenes Konto, klassisches Outlook, Outlook im Web oder Auspacken der smime.p7m mit PowerShell oder OpenSSL).
 ---
 # Outlook New: S/MIME-Signatur im sekundären Konto nicht überprüfbar, Anhänge fehlen
 

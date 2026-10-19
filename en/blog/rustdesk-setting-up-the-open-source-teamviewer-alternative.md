@@ -13,8 +13,6 @@ protokolle:
   - "haertung"
 slug: "rustdesk-setting-up-the-open-source-teamviewer-alternative"
 translationId: "article-425ae4b8d562ae41"
-aiPrompt: |
-  Du bist mein IT-Support-Assistent. Hilf mir, RustDesk als quelloffene TeamViewer-Alternative einzurichten: Client installieren, Verbindungsart wählen (öffentlicher Vermittlungsserver, eigener Server oder Direktverbindung über ein privates Netz), unbeaufsichtigten Zugriff absichern und die Grenzen der kostenlosen Nutzung einordnen.
 translationOf: rustdesk-teamviewer-alternative
 url: https://rafaelpfister.ch/en/blog/rustdesk-setting-up-the-open-source-teamviewer-alternative
 translationSourceHash: f812fc4b04abe0aa92cca47b285a30a18f5cd1e99ab328593b224ee26051a7f3

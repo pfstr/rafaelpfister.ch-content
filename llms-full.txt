@@ -29,7 +29,7 @@ PK Softech ist dabei kein Einzelfall, sondern das deutlichste Beispiel eines Mus
 
 ## Wie geprüft wurde
 
-Die Auswertung umfasst 66 Vorsorgeeinrichtungen der zweiten Säule, von den grossen öffentlich-rechtlichen Kassen über die Sammelstiftungen der Versicherer bis zu kleineren Gemeinschaftseinrichtungen. Geprüft wurden ausschliesslich öffentliche DNS-Einträge: SPF, DKIM, DMARC, MTA-STS, TLS-RPT und die MX-Einträge. Das sind dieselben Angaben, die jedes empfangende Mailsystem bei jeder eingehenden Nachricht abfragt.
+Die Auswertung umfasst 66 Vorsorgeeinrichtungen der zweiten Säule, von den grossen öffentlich-rechtlichen Kassen über die Sammelstiftungen der Versicherer bis zu kleineren Gemeinschaftseinrichtungen. Geprüft wurden ausschliesslich öffentliche DNS-Einträge: SPF, DKIM, DMARC, die MX-Einträge sowie DNSSEC und DANE (TLSA-Einträge der Mailserver, geprüft am 19.10.2026). Das sind dieselben Angaben, die jedes empfangende Mailsystem bei jeder eingehenden Nachricht abfragt.
 
 Die Prüfung war rein passiv. Es wurde nur öffentliches DNS abgefragt, keine Verbindung zu den Systemen der Einrichtungen aufgebaut, keine Anmeldung versucht und keine personenbezogenen Daten erhoben. Die Auswertung bildet nur ab, was aus öffentlichen Quellen ohnehin für jeden ablesbar ist. Konzern-Sammelstiftungen sind auf die Hauptdomain des Trägers zusammengefasst; einzelne angeschlossene Stiftungen können abweichen.
 
@@ -45,8 +45,8 @@ Die Prüfung war rein passiv. Es wurde nur öffentliches DNS abgefragt, keine Ve
 | DMARC `p=none` (nur Beobachtung) | 14 % |
 | kein DMARC | 41 % |
 | DKIM erkennbar | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
 Drei Punkte stechen heraus.
 
@@ -56,7 +56,7 @@ Drei Punkte stechen heraus.
 
 **DMARC `p=none` ist kein Schutz.** Die 14 Prozent in dieser Gruppe haben eine DMARC-Richtlinie gesetzt, aber auf der Beobachtungsstufe belassen. Das liefert Reports, lehnt aber keine einzige gefälschte Nachricht ab. In der Praxis ist das ein Zwischenschritt, der oft über Monate oder Jahre stehen bleibt.
 
-Dazu kommt ein durchgehender Befund: MTA-STS ist mit 2 Prozent praktisch inexistent. Ohne MTA-STS wird die Transportverschlüsselung eingehender Mail nicht erzwungen, was einen Angreifer mit Zugriff auf den Transportweg begünstigt.
+Bei der Transportverschlüsselung zeigt sich ein ähnliches Bild: Nur 6 der 66 Einrichtungen (9 Prozent) sichern ihre Mailserver mit DANE ab. Damit prüft ein sendender Mailserver anhand eines per DNSSEC signierten Eintrags, ob er mit dem richtigen Empfänger verschlüsselt verbunden ist. Voraussetzung ist DNSSEC, das 38 Prozent der Einrichtungen bereits aktiviert haben. Für diese ist DANE der naheliegende nächste Schritt.
 
 ## Alle Datensätze zum Durchklicken
 
@@ -102,7 +102,7 @@ Für Einrichtungen ohne wirksamen Schutz führt ein klarer Pfad zum Ziel:
 2. **DKIM aktivieren.** Jede ausgehende Nachricht wird kryptografisch signiert. Bei Microsoft 365 und bei den gängigen Mailgateways ist das eine Einstellung, kein Projekt.
 3. **DMARC einführen und schrittweise scharf schalten.** Start mit `p=none` und aktivem Reporting, um den legitimen Mailverkehr zu erfassen. Danach `p=quarantine`, zuletzt `p=reject`. Der gesamte Weg dauert je nach Umgebung einige Wochen, nicht Monate.
 4. **Reporting auswerten.** Die DMARC-Reports zeigen, wer im Namen der Domain Mail versendet, und decken sowohl vergessene legitime Systeme als auch Missbrauch auf.
-5. **MTA-STS und TLS-RPT ergänzen.** Beide erzwingen und überwachen die Transportverschlüsselung der eingehenden Mail.
+5. **DANE zumindest prüfen und die Mailverschlüsselung anschauen.** DANE sichert die Transportverschlüsselung zwischen Mailservern über DNSSEC ab. Ob die eigene Mailplattform und der DNS-Anbieter das unterstützen, lässt sich mit wenig Aufwand klären. Für Nachrichten mit Lohn- und Vorsorgedaten gehört zudem geregelt, wie sie Ende-zu-Ende verschlüsselt verschickt werden, etwa über ein Mailgateway mit S/MIME oder eine sichere Zustellung per Webportal.
 6. **Die Dienstleister in die Pflicht nehmen.** Software-Anbieter, ausgelagerte Geschäftsführung und IT-Partner sollten denselben Stand bei SPF, DKIM und DMARC nachweisen. Das gehört in die Verträge und in die regelmässige Lieferantenprüfung.
 
 ## Fazit
@@ -17946,112 +17946,112 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
-# The attacked pension fund service provider has no DMARC record at all
+# The Attacked Pension Fund Service Provider Has No DMARC Record at All
 
 URL: https://rafaelpfister.ch/en/blog/the-attacked-pension-fund-service-provider-has-no-dmarc-record-at-all
 Datum: 2026-10-18
 
-At the end of September 2026, PK Softech AG was attacked, a software vendor whose pension solution is used by several Swiss pension funds. Data was exfiltrated through this route. According to reporting, those affected include the Publica federal pension fund, Migros Pension Fund, and the Pension Fund of the City of Zurich, as well as other institutions. Depending on the fund, the data includes names, AHV numbers, marital status, addresses, and IBANs, as well as salary and pension data.
+At the end of September 2026, PK Softech AG was attacked, a software vendor whose pension solution is used by several Swiss pension funds. Data was exfiltrated through this route. According to reporting, those affected include the federal pension fund Publica, Migros Pension Fund, and the Pension Fund of the City of Zurich, as well as other institutions. Depending on the fund, this involves names, AHV numbers, marital status, addresses, and IBANs, as well as salary and pension data.
 
-This exfiltration is serious in itself. It affects identification and financial data for a large share of the working population and, through Publica, large parts of the federal administration. Data of this volume and quality is not merely a problem for individual people. It enables identity abuse, targeted deception, and extortion on a large scale, making it a threat to public order and national security. The pension assets themselves remained unaffected, but the cybercrime police had already warned about scam calls using the stolen data.
+This exfiltration is serious in itself. It affects identification and financial data for a large part of the working population and, through Publica, large parts of the federal administration. Data of this volume and quality is not merely a problem for the individual. It enables identity abuse, targeted deception, and extortion on a large scale, making it a threat to public order and national security. The pension assets themselves remained unaffected, but the information platform Cybercrimepolice.ch already warned about fraudulent calls using the stolen data.
 
-There is also a finding that is difficult to explain for a service provider in this category: **PK Softech AG still has no DMARC record.** Its domain has a strict SPF record but no DMARC policy (checked on October 18, 2026). This means the sender address of the attacked service provider can be spoofed without a receiving mail platform reliably rejecting it. After a data exfiltration, this is the worst possible starting point. Anyone who knows an insured person's name, address, and bank details and can also spoof an email in the name of the service provider or fund can write a message that is nearly indistinguishable from a genuine one—for example, asking them to update their IBAN for the next pension payment. DMARC protects against precisely this type of spoofing.
+There is also a finding that is difficult to explain for a service provider in this category: **PK Softech AG still has no DMARC record.** Its domain has a strict SPF record but no DMARC policy (checked on October 18, 2026). This makes it possible to spoof the attacked service provider's sender address without a receiving mail platform reliably rejecting it. After a data exfiltration, this is the worst conceivable starting point. Anyone who knows an insured person's name, address, and bank details and can also spoof an email in the name of the service provider or fund can write a message that is barely distinguishable from a genuine one, such as a request to update the IBAN for the next pension payment. DMARC protects against exactly this kind of spoofing.
 
-PK Softech is not an isolated case, but rather the clearest example of a pattern. I reviewed how well Swiss pension institutions and their typical service providers are positioned for email authentication.
+PK Softech is not an isolated case, but the clearest example of a pattern. I reviewed how well Swiss pension institutions and their typical service providers are positioned for email authentication.
 
 ## How the review was conducted
 
-The analysis covers 66 second-pillar pension institutions, from large public-law funds and insurers' collective foundations to smaller collective institutions. Only public DNS records were reviewed: SPF, DKIM, DMARC, MTA-STS, TLS-RPT, and MX records. These are the same records that every receiving mail system queries for every incoming message.
+The evaluation covers 66 second-pillar pension institutions, from large public-law funds and insurers' collective foundations to smaller joint institutions. Only public DNS records were reviewed: SPF, DKIM, DMARC, MX records, as well as DNSSEC and DANE (TLSA records of the mail servers, checked on October 19, 2026). This is the same information that every receiving mail system queries for every incoming message.
 
-The review was entirely passive. Only public DNS was queried; no connection was made to the institutions' systems, no login was attempted, and no personal data was collected. The analysis reflects only what is publicly visible to anyone anyway. Corporate collective foundations are consolidated under the sponsoring entity's main domain; individual affiliated foundations may differ.
+The review was purely passive. Only public DNS was queried; no connection was made to the institutions' systems, no login was attempted, and no personal data was collected. The evaluation reflects only what can already be read from public sources by anyone. Corporate collective foundations are consolidated under the sponsor's primary domain; individual affiliated foundations may differ.
 
 ## The results
 
-| Feature | Share of 66 institutions |
+| Feature | Share of the 66 institutions |
 |---|---|
 | SPF present | 88% |
-| Strict SPF (`-all`) | 59% |
+| SPF strict (`-all`) | 59% |
 | DMARC present | 59% |
 | DMARC `p=reject` (full protection) | 20% |
 | DMARC `p=quarantine` | 26% |
 | DMARC `p=none` (monitoring only) | 14% |
-| No DMARC | 41% |
+| no DMARC | 41% |
 | DKIM detectable | 55% |
-| MTA-STS | 2% |
-| TLS-RPT | 5% |
+| DNSSEC | 38% |
+| DANE | 9% |
 
 Three points stand out.
 
-**Only 20 percent are effectively protected by DMARC `p=reject`.** Only this policy instructs a receiving mail platform to actually reject spoofed messages. For everyone else, a spoofed email will generally end up in the insured person's inbox.
+**Only 20 percent are effectively protected with DMARC `p=reject`.** Only this policy instructs a receiving mail platform to actually reject spoofed messages. In all other cases, a spoofed message will likely end up in the insured person's inbox.
 
-**41 percent have no DMARC.** Their sender domain can readily be used for fraudulent emails, and the institution will not even know about it because without DMARC, the reporting function is also absent. Notably, this includes funds that run their email on Microsoft 365, where DMARC can be set up with little effort.
+**41 percent have no DMARC.** Their sender domain can readily be used for fraudulent emails, and the institution will not even know about it because DMARC's reporting function is also absent without DMARC. Notably, this includes funds that run their email on Microsoft 365, where DMARC can be configured with little effort.
 
-**DMARC `p=none` is not protection.** The 14 percent in this group have set a DMARC policy but left it at the monitoring level. That provides reports, but does not reject a single spoofed message. In practice, this is an intermediate step that often remains in place for months or years.
+**DMARC `p=none` is not protection.** The 14 percent in this group have set a DMARC policy but left it at the monitoring stage. This provides reports but does not reject a single spoofed message. In practice, it is an interim step that often remains in place for months or years.
 
-There is also a consistent finding: at 2 percent, MTA-STS is practically nonexistent. Without MTA-STS, transport encryption for incoming email is not enforced, which favors an attacker with access to the transport path.
+Transport encryption shows a similar picture: only 6 of the 66 institutions (9 percent) protect their mail servers with DANE. This allows a sending mail server to verify, using a DNSSEC-signed record, that it is connected securely to the correct recipient. DNSSEC is a prerequisite, and 38 percent of institutions have already enabled it. For them, DANE is the logical next step.
 
-## All records at a glance
+## Browse all datasets
 
-The following infographic shows the reviewed status of all 66 pension institutions and 30 service providers. The filters allow narrowing by DMARC status, category, and mail provider, and each entry can be expanded to view the complete DNS findings.
+The following infographic shows the reviewed status of all 66 pension institutions and 30 service providers. The filters can be used to narrow results by DMARC status, category, and mail provider, and each entry can be expanded for the complete DNS findings.
 
 <div data-dmarc-infographic></div>
 
 ## For comparison: Switzerland's largest companies
 
-The [Swiss Email Security Index](/open-data/mail-security-index) shows how pension institutions compare with the rest of the economy. Using the same passive method, it reviews more than 500 of Switzerland's largest companies every day, with an interactive map by canton, comparisons by industry and mail provider, and a detailed page for each company. This also includes the banks, insurers, and IT service providers that pension institutions work with.
+The [Swiss Email Security Index](/open-data/mail-security-index) shows how pension institutions compare with the rest of the economy. Using the same passive method, it reviews more than 500 of Switzerland's largest companies daily, with an interactive map by canton, comparisons by industry and mail provider, and a detail page for each company. This also includes the banks, insurers, and IT service providers that pension institutions work with.
 
-The gap is clear: Of the 518 companies in the index, 38 percent used DMARC with `p=reject` on October 18, 2026, compared with 20 percent of pension institutions. Five percent of companies have no DMARC at all, compared with 41 percent of pension institutions.
+The gap is clear: of the 518 companies in the index, 38 percent use DMARC with `p=reject` as of October 18, 2026, compared with 20 percent of pension institutions. Just 5 percent of companies have no DMARC at all, compared with 41 percent of pension institutions.
 
 ## Suppliers are the bigger issue
 
-The incident at the end of September affected not a fund, but a shared service provider. I therefore reviewed 30 typical suppliers using the same passive method: vendors of administrative software, companies providing outsourced administration, actuarial services and consulting, custodian banks, and IT service providers.
+The incident at the end of September affected not a fund, but a shared service provider. I therefore reviewed 30 typical suppliers using the same passive method: vendors of administrative software, companies providing outsourced management, actuarial and consulting services, custodian banks, and IT service providers.
 
-On average, service providers are in a slightly better position than funds: 40 percent use DMARC with `p=reject`, compared with 20 percent of the institutions. However, the distribution across categories is crucial.
+On average, service providers are somewhat better positioned than the funds: 40 percent use DMARC with `p=reject`, compared with 20 percent of the institutions. What matters, however, is the distribution across categories.
 
-| Category | With DMARC `p=reject` |
+| Category | with DMARC `p=reject` |
 |---|---|
-| Actuarial services and consulting | good |
+| Actuarial and consulting | good |
 | Custodian banks | good |
 | IT service providers | mixed |
-| Outsourced administration | weak |
+| Outsourced management | weak |
 | Administrative software | weakest |
 
-Vendors of administrative software are the weakest group. None of the reviewed software vendors uses fully effective DMARC, and the attacked vendor PK Softech has no DMARC record at all. This is precisely the category that processes pension data and is deeply connected to funds through interfaces, and it is the category involved in the current incident.
+Vendors of administrative software are the weakest group. None of the reviewed software providers use DMARC with full effect, and the attacked vendor PK Softech has no DMARC record at all. This is precisely the category that processes pension data and is deeply connected to the funds through interfaces, and it is the category involved in the current incident.
 
-This leads to the real due-diligence point: A fund with `p=reject` is well protected as long as the attacker wants to spoof its domain. But if the attacker can instead spoof the domain of a poorly protected service provider that already communicates with insured persons, the email is just as credible. Securing one's own domain is therefore only the first step. The second is requiring the most important service providers to meet the same standard, ideally through contractual obligations.
+This leads to the central point regarding due diligence: a fund with `p=reject` is well protected as long as the attacker wants to spoof its domain. But if the attacker can instead spoof the domain of a poorly protected service provider through which communication with insured persons already takes place, the email is just as credible. Securing one's own domain is therefore only the first step. The second is requiring the most important service providers to meet the same standard, ideally by contract.
 
 ## What this means for the board of trustees
 
-Responsibility for information security rests with the pension institution's highest governing body. A data exfiltration also triggers specific obligations under the revised Data Protection Act: A breach of data security must be reported to the FDPIC if it is likely to result in a high risk for the affected individuals, and those affected must be informed where necessary for their protection.
+Responsibility for information security lies with the pension institution's supreme governing body. A data exfiltration also triggers specific obligations under the revised Data Protection Act: a security breach must be reported to the FDPIC if it is likely to result in a high risk for the affected persons, and those affected must be informed where necessary for their protection.
 
-In this situation, email authentication is the most effective individual measure requiring the least effort. SPF, DKIM, and DMARC require neither a license nor new software. They consist of DNS records and a clean configuration of the existing mail platform. The protection takes effect immediately for every insured person, without them having to do anything themselves.
+In this situation, email authentication is the most effective individual measure with the least effort. SPF, DKIM, and DMARC require no license and no new software. They consist of DNS records and a clean configuration of the existing mail platform. Protection takes effect immediately for every insured person, without requiring them to do anything themselves.
 
 ## What needs to be done
 
-For institutions without effective protection, there is a clear path to the goal:
+For institutions without effective protection, a clear path leads to the goal:
 
-1. **Review SPF and set it strictly.** The SPF record lists authorized sending systems and ends with `-all`, so all other senders are considered unauthorized.
+1. **Review SPF and set it strictly.** The SPF record lists authorized sending systems and ends with `-all`, so that all other senders are considered unauthorized.
 2. **Enable DKIM.** Every outgoing message is cryptographically signed. In Microsoft 365 and common mail gateways, this is a setting, not a project.
-3. **Introduce DMARC and tighten it gradually.** Start with `p=none` and active reporting to capture legitimate email traffic. Then use `p=quarantine`, and finally `p=reject`. Depending on the environment, the entire process takes a few weeks, not months.
-4. **Review reporting.** DMARC reports show who is sending email in the domain's name and uncover both forgotten legitimate systems and abuse.
-5. **Add MTA-STS and TLS-RPT.** Both enforce and monitor transport encryption for incoming email.
-6. **Hold service providers accountable.** Software vendors, outsourced administration providers, and IT partners should demonstrate the same standard for SPF, DKIM, and DMARC. This belongs in contracts and regular supplier reviews.
+3. **Introduce DMARC and tighten it gradually.** Start with `p=none` and active reporting to capture legitimate mail traffic. Then `p=quarantine`, and finally `p=reject`. Depending on the environment, the entire process takes a few weeks, not months.
+4. **Evaluate reporting.** DMARC reports show who sends email in the domain's name and uncover both forgotten legitimate systems and abuse.
+5. **At least assess DANE and review mail encryption.** DANE secures transport encryption between mail servers through DNSSEC. Whether the organization's own mail platform and DNS provider support it can be clarified with little effort. For messages containing salary and pension data, it should also be defined how they are sent end-to-end encrypted, for example through a mail gateway with S/MIME or secure delivery via a web portal.
+6. **Hold service providers accountable.** Software vendors, outsourced management providers, and IT partners should demonstrate the same level of SPF, DKIM, and DMARC. This belongs in contracts and regular supplier reviews.
 
 ## Conclusion
 
-The recent attacks targeted a service provider, not the funds themselves. But the resulting damage occurs wherever a sender domain is unprotected—at the fund just as much as among its suppliers. Four out of five reviewed pension institutions are not fully protected against spoofed senders, two out of five have no DMARC at all, and vendors of administrative software in particular perform the worst. The gap is known, inexpensive to close, and effective immediately. After a data exfiltration involving names, addresses, and bank details, it is not a technical side issue, but part of the highest governing body's duty of care across the entire supply chain.
+The recent attacks targeted a service provider, not the funds themselves. But the resulting damage occurs wherever a sender domain is unprotected, whether at the fund or among its suppliers. Four out of five reviewed pension institutions are not fully protected against spoofed senders, two out of five have no DMARC at all, and vendors of administrative software in particular perform worst. The gap is known, inexpensive to close, and effective immediately. After a data exfiltration involving names, addresses, and bank details, it is not a minor technical matter, but part of the supreme governing body's duty of care throughout the entire supply chain.
 
 ## Sources
 
-1.  [SRF: Federal pension fund—how could sensitive data end up at an external software company?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Background on the incident, the types of data affected, and the software supplier's role.
+1.  [SRF: Federal pension fund, how could sensitive data end up at an external software company?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Background on the incident, the types of data affected, and the role of the software supplier.
 
-2.  [cash.ch (AWP): Attack on Publica supplier; salary data may have been affected](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica identifies PK Softech AG to AWP as the attacked company.
+2.  [cash.ch (AWP): Attack on Publica supplier, salary data may have been affected](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica identifies PK Softech AG to AWP as the company attacked.
 
-3.  [Netzwoche: Publica federal pension fund reports data exfiltration](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Report on the attack against the software supplier and the data exfiltration.
+3.  [Netzwoche: Federal pension fund Publica reports data exfiltration](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Report on the attack on the software supplier and the data exfiltration.
 
-4.  [Mimikama: Swiss police warn of possible investment scam calls after data exfiltration](https://www.mimikama.org/?p=436628): Context for the warning about scam calls using the exfiltrated data.
+4.  [Mimikama: Swiss police warn of possible investment calls after data exfiltration](https://www.mimikama.org/?p=436628): Context for the warning about fraudulent calls using the exfiltrated data.
 
-5.  [FDPIC: Reporting data security breaches](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Reporting obligation under the revised Data Protection Act and procedures for data security breaches.
+5.  [FDPIC: Reporting security breaches](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Reporting obligation under the revised Data Protection Act and procedures for data security breaches.
 
 ----
 
@@ -35824,26 +35824,26 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 
 ----
 
-# Le prestataire de caisses de pension attaqué n’a aucun enregistrement DMARC
+# Le prestataire de services de caisses de pension attaqué n’a aucun enregistrement DMARC
 
 URL: https://rafaelpfister.ch/fr/blog/le-prestataire-de-caisses-de-pension-attaque-n-a-aucun-enregistrement-dmarc
 Datum: 2026-10-18
 
-Fin septembre 2026, PK Softech AG a été attaquée. Il s’agit d’un éditeur de logiciels dont plusieurs caisses de pension suisses utilisent la solution de prévoyance. Des données ont été exfiltrées par cette voie. Selon les informations publiées, les entités touchées comprennent notamment la caisse fédérale de pensions Publica, la caisse de pension de Migros et la caisse de pension de la ville de Zurich, ainsi que d’autres institutions. Selon la caisse concernée, il s’agit du nom, du numéro AVS, de l’état civil, de l’adresse et de l’IBAN, ainsi que de données salariales et de prévoyance.
+Fin septembre 2026, PK Softech AG a été attaquée, un éditeur de logiciels dont plusieurs caisses de pension suisses utilisent la solution de prévoyance. Des données ont été exfiltrées par cette voie. Selon les informations publiées, les entités concernées comprennent notamment la caisse de pension de la Confédération Publica, la caisse de pension de Migros et la caisse de pension de la ville de Zurich, ainsi que d’autres institutions. Selon la caisse, il s’agit des nom, numéro AVS, état civil, adresse et IBAN, ainsi que de données salariales et de prévoyance.
 
-Cette exfiltration est déjà grave en elle-même. Elle concerne des données d’identification et financières d’une grande partie de la population active et, via Publica, d’importantes parties de l’administration fédérale. Des données de cette quantité et de cette qualité ne constituent pas seulement un problème pour chaque personne concernée. Elles permettent l’usurpation d’identité, la fraude ciblée et l’extorsion à grande échelle, et représentent ainsi un danger pour l’ordre public et la sécurité nationale. Les avoirs de prévoyance eux-mêmes n’ont pas été touchés, mais la police de la cybercriminalité avait déjà mis en garde contre des appels frauduleux utilisant les données dérobées.
+Cette exfiltration est grave en soi. Elle concerne des données d’identification et financières d’une grande partie de la population active et, via Publica, d’une grande partie de l’administration fédérale. Des données d’une telle quantité et d’une telle qualité ne constituent pas seulement un problème pour chaque personne concernée. Elles permettent l’usurpation d’identité, la tromperie ciblée et l’extorsion à grande échelle, et représentent ainsi un danger pour l’ordre public et la sécurité nationale. Les avoirs de prévoyance eux-mêmes sont restés intacts, mais la plateforme d’information Cybercrimepolice.ch a déjà mis en garde contre des appels frauduleux utilisant les données dérobées.
 
-S’y ajoute un constat difficile à expliquer pour un prestataire de cette catégorie : **PK Softech AG n’a toujours pas d’enregistrement DMARC.** Son domaine possède un enregistrement SPF strict, mais aucune politique DMARC (vérifié le 18.10.2026). Il est donc possible d’usurper l’adresse d’expéditeur du prestataire attaqué sans qu’une plateforme de messagerie destinataire ne la rejette de manière fiable. Après une exfiltration de données, c’est la situation la plus défavorable imaginable. Quiconque connaît le nom, l’adresse et les coordonnées bancaires d’une personne assurée et peut en plus usurper un e-mail au nom du prestataire ou de la caisse peut rédiger un message presque impossible à distinguer d’un vrai, par exemple une demande de mise à jour de l’IBAN pour le prochain versement de rente. C’est précisément contre cette usurpation que DMARC protège.
+À cela s’ajoute un constat difficile à expliquer pour un prestataire de cette catégorie : **PK Softech AG n’a toujours aucun enregistrement DMARC.** Son domaine dispose d’un enregistrement SPF strict, mais d’aucune politique DMARC (vérifié le 18.10.2026). L’adresse d’expéditeur du prestataire attaqué peut ainsi être usurpée sans qu’une plateforme de messagerie destinataire ne la rejette de manière fiable. Après une exfiltration de données, c’est la situation initiale la plus défavorable imaginable. Quiconque connaît le nom, l’adresse et les coordonnées bancaires d’une personne assurée et peut en outre usurper un e-mail au nom du prestataire ou de la caisse peut rédiger un message presque impossible à distinguer d’un vrai, par exemple une demande de mise à jour de l’IBAN pour le prochain versement de rente. C’est précisément contre cette usurpation que DMARC protège.
 
-PK Softech n’est pas un cas isolé, mais l’exemple le plus frappant d’une tendance. J’ai examiné le niveau d’authentification des e-mails des institutions de prévoyance suisses et de leurs prestataires habituels.
+PK Softech n’est pas un cas isolé, mais l’exemple le plus flagrant d’un schéma récurrent. J’ai vérifié le niveau de préparation des institutions de prévoyance suisses et de leurs prestataires habituels en matière d’authentification des e-mails.
 
-## Méthode de vérification
+## Comment l’analyse a été effectuée
 
-L’évaluation porte sur 66 institutions de prévoyance du deuxième pilier, des grandes caisses de droit public aux fondations collectives des assureurs, en passant par de plus petites institutions communes. Seuls les enregistrements DNS publics ont été vérifiés : SPF, DKIM, DMARC, MTA-STS, TLS-RPT et les enregistrements MX. Ce sont les mêmes informations que chaque système de messagerie destinataire consulte pour chaque message entrant.
+L’évaluation couvre 66 institutions de prévoyance du deuxième pilier, des grandes caisses de droit public aux fondations collectives des assureurs, en passant par de plus petites institutions communes. Seuls des enregistrements DNS publics ont été examinés : SPF, DKIM, DMARC, les enregistrements MX ainsi que DNSSEC et DANE (enregistrements TLSA des serveurs de messagerie, vérifiés le 19.10.2026). Ce sont les mêmes informations que tout système de messagerie destinataire interroge pour chaque message entrant.
 
-Le contrôle était purement passif. Seul le DNS public a été interrogé ; aucune connexion aux systèmes des institutions n’a été établie, aucune tentative de connexion n’a été faite et aucune donnée personnelle n’a été collectée. L’évaluation reflète uniquement ce qui est de toute façon publiquement visible pour tous. Les fondations collectives de groupes sont regroupées sous le domaine principal de leur entité porteuse ; certaines fondations affiliées peuvent différer.
+L’analyse a été purement passive. Seul le DNS public a été interrogé, sans établir de connexion avec les systèmes des institutions, sans tenter de connexion et sans collecter de données personnelles. L’évaluation ne reflète que ce qui est de toute façon publiquement accessible à tous. Les fondations collectives de groupes sont regroupées sous le domaine principal de leur organisme responsable ; certaines fondations affiliées peuvent différer.
 
-## Résultat
+## Le résultat
 
 | Caractéristique | Part des 66 institutions |
 |---|---|
@@ -35855,81 +35855,81 @@ Le contrôle était purement passif. Seul le DNS public a été interrogé ; auc
 | DMARC `p=none` (observation uniquement) | 14 % |
 | aucun DMARC | 41 % |
 | DKIM identifiable | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
 Trois points ressortent.
 
-**Seuls 20 % sont efficacement protégés par DMARC `p=reject`.** Seule cette politique ordonne à une plateforme de messagerie destinataire de rejeter effectivement les messages falsifiés. Dans tous les autres cas, une falsification finit en cas de doute dans la boîte de réception de la personne assurée.
+**Seuls 20 % sont efficacement protégés par DMARC `p=reject`.** Seule cette politique demande à une plateforme de messagerie destinataire de rejeter effectivement les messages usurpés. Pour tous les autres, un message falsifié arrive, en cas de doute, dans la boîte de réception de la personne assurée.
 
-**41 % n’ont pas de DMARC.** Leur domaine d’expéditeur peut facilement être utilisé pour des e-mails frauduleux, et l’institution ne l’apprend même pas, car sans DMARC, la fonction de rapport fait également défaut. Il est frappant que cela concerne aussi des caisses qui exploitent leur messagerie sur Microsoft 365, où DMARC peut être configuré avec peu d’efforts.
+**41 % n’ont aucun DMARC.** Leur domaine expéditeur peut facilement être utilisé pour des e-mails frauduleux, et l’institution ne l’apprend même pas, car sans DMARC, la fonction de rapport fait également défaut. Il est frappant que cela inclue aussi des caisses qui exploitent leur messagerie avec Microsoft 365, où DMARC peut être configuré avec peu d’efforts.
 
-**DMARC `p=none` n’est pas une protection.** Les 14 % de ce groupe ont défini une politique DMARC, mais l’ont laissée au niveau de l’observation. Cela fournit des rapports, mais ne rejette aucun message falsifié. En pratique, il s’agit d’une étape intermédiaire qui reste souvent en place pendant des mois ou des années.
+**DMARC `p=none` n’est pas une protection.** Les 14 % de ce groupe ont défini une politique DMARC, mais l’ont laissée au niveau d’observation. Cela fournit des rapports, mais ne rejette pas le moindre message falsifié. En pratique, il s’agit d’une étape intermédiaire qui reste souvent en place pendant des mois, voire des années.
 
-Un constat général s’y ajoute : avec 2 %, MTA-STS est pratiquement inexistant. Sans MTA-STS, le chiffrement du transport des e-mails entrants n’est pas imposé, ce qui favorise un attaquant ayant accès au chemin de transport.
+Un constat similaire s’impose pour le chiffrement du transport : seules 6 des 66 institutions (9 %) sécurisent leurs serveurs de messagerie avec DANE. Un serveur de messagerie expéditeur vérifie ainsi, sur la base d’un enregistrement signé par DNSSEC, qu’il est connecté de manière chiffrée au bon destinataire. DNSSEC est requis à cet effet, et 38 % des institutions l’ont déjà activé. Pour elles, DANE constitue l’étape suivante logique.
 
-## Tous les jeux de données à consulter
+## Tous les jeux de données à explorer
 
-L’infographie suivante présente l’état vérifié des 66 institutions de prévoyance et 30 prestataires. Les filtres permettent de restreindre l’affichage selon le statut DMARC, la catégorie et le fournisseur de messagerie, et chaque entrée peut être dépliée pour afficher les résultats DNS complets.
+L’infographie suivante présente l’état vérifié des 66 institutions de prévoyance et 30 prestataires. Les filtres permettent de restreindre l’affichage selon le statut DMARC, la catégorie et le fournisseur de messagerie, et chaque entrée peut être dépliée pour afficher les constats DNS complets.
 
 <div data-dmarc-infographic></div>
 
 ## Comparaison : les plus grandes entreprises suisses
 
-La position des institutions de prévoyance par rapport au reste de l’économie est présentée par l’[indice suisse de sécurité des e-mails](/open-data/mail-security-index). Il vérifie quotidiennement, selon la même méthode passive, plus de 500 des plus grandes entreprises suisses, avec une carte interactive par canton, des comparaisons par secteur et fournisseur de messagerie, ainsi qu’une page détaillée pour chaque entreprise. Parmi elles figurent également les banques, assureurs et prestataires IT avec lesquels collaborent les institutions de prévoyance.
+La position des institutions de prévoyance par rapport au reste de l’économie est présentée par l’[indice suisse de sécurité des e-mails](/open-data/mail-security-index). Il examine chaque jour, selon la même méthode passive, plus de 500 des plus grandes entreprises suisses, avec une carte interactive par canton, des comparaisons par secteur et fournisseur de messagerie, ainsi qu’une page détaillée par entreprise. Il comprend également les banques, assureurs et prestataires informatiques avec lesquels les institutions de prévoyance collaborent.
 
 L’écart est net : parmi les 518 entreprises de l’indice, 38 % utilisent DMARC avec `p=reject` au 18.10.2026, contre 20 % des institutions de prévoyance. 5 % des entreprises n’ont absolument aucun DMARC, contre 41 % des institutions de prévoyance.
 
-## Les fournisseurs constituent le sujet le plus important
+## Les fournisseurs constituent le problème majeur
 
-L’incident de fin septembre n’a pas touché une caisse, mais un prestataire commun. J’ai donc vérifié 30 fournisseurs typiques selon la même méthode passive : éditeurs de logiciels d’administration, entreprises assurant la gestion externalisée, l’actuariat et le conseil, banques dépositaires et prestataires IT.
+L’incident de fin septembre n’a pas touché une caisse, mais un prestataire commun. J’ai donc examiné, selon la même méthode passive, 30 fournisseurs typiques : fabricants de logiciels de gestion, entreprises chargées de la gestion externalisée, de l’actuariat et du conseil, banques dépositaires et prestataires informatiques.
 
-En moyenne, les prestataires se situent un peu mieux que les caisses : 40 % utilisent DMARC avec `p=reject`, contre 20 % des institutions. Mais la répartition entre les catégories est déterminante.
+En moyenne, les prestataires s’en sortent un peu mieux que les caisses : 40 % utilisent DMARC avec `p=reject`, contre 20 % des institutions. La répartition entre les catégories est toutefois déterminante.
 
 | Catégorie | avec DMARC `p=reject` |
 |---|---|
 | Actuariat et conseil | bon |
 | Banques dépositaires | bon |
-| Prestataires IT | mitigé |
+| Prestataires informatiques | mitigé |
 | Gestion externalisée | faible |
-| Logiciels d’administration | le plus faible |
+| Logiciels de gestion | le plus faible |
 
-Les éditeurs de logiciels d’administration constituent le groupe le plus faible. Aucun des fournisseurs de logiciels examinés n’utilise DMARC avec pleine efficacité, et le prestataire attaqué PK Softech n’a même aucun enregistrement DMARC. C’est précisément la catégorie qui traite des données de prévoyance et qui est profondément connectée aux caisses par des interfaces, et c’est la catégorie concernée par l’incident actuel.
+Les fabricants de logiciels de gestion constituent le groupe le plus faible. Aucun des fournisseurs de logiciels examinés n’utilise DMARC avec une efficacité complète, et le fournisseur attaqué PK Softech n’a aucun enregistrement DMARC. C’est précisément la catégorie qui traite les données de prévoyance et est étroitement liée aux caisses par des interfaces, et c’est aussi la catégorie concernée par l’incident actuel.
 
-Il en découle le véritable enjeu de diligence : une caisse avec `p=reject` est bien protégée tant que l’attaquant veut usurper son domaine. S’il peut à la place usurper le domaine d’un prestataire insuffisamment protégé, par lequel s’effectue déjà la communication avec les personnes assurées, l’e-mail est tout aussi crédible. La protection de son propre domaine n’est donc que la première étape. La deuxième consiste à imposer le même niveau aux principaux prestataires, idéalement par contrat.
+Il en découle le véritable enjeu de diligence : une caisse dotée de `p=reject` est bien protégée tant que l’attaquant veut usurper son domaine. Mais s’il peut à la place usurper le domaine d’un prestataire mal protégé, par lequel des communications avec les assurés ont de toute façon lieu, l’e-mail est tout aussi crédible. La sécurisation de son propre domaine n’est donc que la première étape. La seconde consiste à imposer le même niveau aux prestataires les plus importants, idéalement par contrat.
 
 ## Ce que cela signifie pour le conseil de fondation
 
-La responsabilité de la sécurité de l’information incombe à l’organe suprême de l’institution de prévoyance. Une exfiltration de données déclenche en outre des obligations concrètes au titre de la loi révisée sur la protection des données : une violation de la sécurité des données doit être signalée au PFPDT si elle est susceptible d’entraîner un risque élevé pour les personnes concernées, et celles-ci doivent être informées lorsque cela est nécessaire à leur protection.
+La responsabilité de la sécurité de l’information incombe à l’organe suprême de l’institution de prévoyance. Une exfiltration de données entraîne en outre des obligations concrètes en vertu de la loi révisée sur la protection des données : une violation de la sécurité des données doit être annoncée au PFPDT lorsqu’elle est susceptible d’entraîner un risque élevé pour les personnes concernées, et les personnes concernées doivent être informées lorsque cela est nécessaire à leur protection.
 
-Dans cette situation, l’authentification des e-mails est la mesure individuelle la plus efficace pour l’effort le plus faible. SPF, DKIM et DMARC ne nécessitent ni licence ni nouveau logiciel. Ils reposent sur des enregistrements DNS et une configuration correcte de la plateforme de messagerie existante. La protection agit immédiatement pour chaque personne assurée, sans qu’elle ait elle-même quoi que ce soit à faire.
+Dans cette situation, l’authentification des e-mails est la mesure individuelle la plus efficace avec le moins d’efforts. SPF, DKIM et DMARC ne nécessitent ni licence ni nouveau logiciel. Ils reposent sur des enregistrements DNS et une configuration correcte de la plateforme de messagerie existante. La protection agit immédiatement pour chaque personne assurée, sans qu’elle ait elle-même quoi que ce soit à faire.
 
 ## Ce qu’il faut faire
 
-Pour les institutions sans protection efficace, un chemin clair mène à l’objectif :
+Pour les institutions qui ne disposent pas d’une protection efficace, une voie claire mène à l’objectif :
 
-1. **Vérifier SPF et le définir de manière stricte.** L’enregistrement SPF liste les systèmes d’envoi autorisés et se termine par `-all`, afin que tous les autres expéditeurs soient considérés comme non autorisés.
-2. **Activer DKIM.** Chaque message sortant est signé cryptographiquement. Dans Microsoft 365 et les passerelles de messagerie courantes, c’est un paramètre, pas un projet.
-3. **Introduire DMARC et renforcer progressivement la politique.** Commencer par `p=none` et un reporting actif afin de recenser le trafic légitime. Puis `p=quarantine`, et enfin `p=reject`. Selon l’environnement, l’ensemble du processus prend quelques semaines, pas des mois.
-4. **Évaluer les rapports.** Les rapports DMARC montrent qui envoie des e-mails au nom du domaine et révèlent aussi bien des systèmes légitimes oubliés que des abus.
-5. **Ajouter MTA-STS et TLS-RPT.** Tous deux imposent et surveillent le chiffrement du transport des e-mails entrants.
-6. **Obliger les prestataires à respecter ces exigences.** Les fournisseurs de logiciels, les prestataires de gestion externalisée et les partenaires IT devraient démontrer le même niveau de SPF, DKIM et DMARC. Cela doit figurer dans les contrats et dans l’évaluation régulière des fournisseurs.
+1. **Vérifier SPF et le définir de manière stricte.** L’enregistrement SPF répertorie les systèmes d’envoi autorisés et se termine par `-all`, afin que tous les autres expéditeurs soient considérés comme non autorisés.
+2. **Activer DKIM.** Chaque message sortant est signé cryptographiquement. Dans Microsoft 365 et les passerelles de messagerie courantes, il s’agit d’un paramètre, pas d’un projet.
+3. **Introduire DMARC et renforcer progressivement la politique.** Commencer par `p=none` avec le reporting actif afin de recenser le trafic de messagerie légitime. Puis `p=quarantine`, et enfin `p=reject`. Selon l’environnement, l’ensemble du processus prend quelques semaines, et non des mois.
+4. **Analyser les rapports.** Les rapports DMARC montrent qui envoie des e-mails au nom du domaine et révèlent tant les systèmes légitimes oubliés que les abus.
+5. **Au minimum, examiner DANE et contrôler le chiffrement des e-mails.** DANE sécurise le chiffrement du transport entre serveurs de messagerie via DNSSEC. Il est facile de déterminer si sa propre plateforme de messagerie et son fournisseur DNS le prennent en charge. Pour les messages contenant des données salariales et de prévoyance, il convient en outre de définir leur envoi chiffré de bout en bout, par exemple via une passerelle de messagerie avec S/MIME ou une livraison sécurisée via un portail web.
+6. **Responsabiliser les prestataires.** Les fournisseurs de logiciels, les gestionnaires externalisés et les partenaires informatiques devraient démontrer le même niveau de conformité en matière de SPF, DKIM et DMARC. Cela doit figurer dans les contrats et dans l’évaluation régulière des fournisseurs.
 
 ## Conclusion
 
-Les attaques récentes visaient un prestataire, non les caisses elles-mêmes. Mais les dommages consécutifs surviennent là où un domaine d’expéditeur n’est pas protégé, aussi bien chez la caisse que chez ses fournisseurs. Quatre institutions de prévoyance examinées sur cinq ne sont pas entièrement protégées contre les expéditeurs falsifiés, deux sur cinq n’ont aucun DMARC, et les éditeurs de logiciels d’administration obtiennent précisément les pires résultats. Cette lacune est connue, peu coûteuse à combler et son effet est immédiat. Après une exfiltration de données concernant le nom, l’adresse et les coordonnées bancaires, elle n’est pas un détail technique, mais fait partie du devoir de diligence de l’organe suprême, tout au long de la chaîne d’approvisionnement.
+Les attaques récentes visaient un prestataire, et non les caisses elles-mêmes. Les dommages consécutifs surviennent toutefois là où un domaine expéditeur n’est pas protégé, tant chez la caisse que chez ses fournisseurs. Quatre institutions de prévoyance examinées sur cinq ne sont pas entièrement protégées contre les expéditeurs usurpés, deux sur cinq n’ont aucun DMARC, et les fabricants de logiciels de gestion obtiennent précisément les plus mauvais résultats. La lacune est connue, peu coûteuse à combler et produit un effet immédiat. Après une exfiltration de données concernant le nom, l’adresse et les coordonnées bancaires, elle n’est pas un détail technique, mais relève du devoir de diligence de l’organe suprême, tout au long de la chaîne d’approvisionnement.
 
 ## Sources
 
-1.  [SRF : Caisse fédérale de pensions, comment des données sensibles ont-elles pu se retrouver chez une société de logiciels externe ?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Contexte de l’incident, types de données concernés et rôle du fournisseur de logiciels.
+1.  [SRF : Caisse de pension de la Confédération, comment des données sensibles ont-elles pu se retrouver chez une entreprise externe de logiciels ?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Contexte de l’incident, types de données concernés et rôle du fournisseur de logiciels.
 
-2.  [cash.ch (AWP) : attaque contre un fournisseur de Publica, des données salariales pourraient être concernées](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica désigne PK Softech AG auprès d’AWP comme l’entreprise attaquée.
+2.  [cash.ch (AWP) : Attaque contre un fournisseur de Publica, des données salariales pourraient être concernées](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica désigne PK Softech AG auprès d’AWP comme l’entreprise attaquée.
 
-3.  [Netzwoche : la caisse fédérale de pensions Publica signale une exfiltration de données](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Informations sur l’attaque contre le fournisseur de logiciels et l’exfiltration de données.
+3.  [Netzwoche : La caisse de pension de la Confédération Publica signale une exfiltration de données](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Information sur l’attaque contre le fournisseur de logiciels et sur l’exfiltration de données.
 
-4.  [Mimikama : la police suisse met en garde contre d’éventuels appels d’investissement après une exfiltration de données](https://www.mimikama.org/?p=436628): Mise en contexte de l’avertissement concernant des appels frauduleux utilisant les données exfiltrées.
+4.  [Mimikama : La police suisse met en garde contre de possibles appels d’investissement après une exfiltration de données](https://www.mimikama.org/?p=436628): Mise en contexte de l’avertissement relatif à des appels frauduleux utilisant les données exfiltrées.
 
-5.  [PFPDT : annonce des violations de la sécurité des données](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Obligation d’annonce selon la LPD révisée et procédure en cas de violation de la sécurité des données.
+5.  [PFPDT : Annonce des violations de la sécurité des données](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Obligation d’annonce en vertu de la LPD révisée et procédure en cas de violations de la sécurité des données.
 
 ----
 
@@ -53707,19 +53707,19 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 URL: https://rafaelpfister.ch/it/blog/il-fornitore-di-servizi-per-casse-pensioni-attaccato-non-ha-alcun-record-dmarc
 Datum: 2026-10-18
 
-Alla fine di settembre 2026 è stata attaccata PK Softech AG, un produttore di software la cui soluzione previdenziale è utilizzata da diverse casse pensioni svizzere. Attraverso questa via sono fuoriusciti dati. Secondo le notizie, tra gli enti colpiti figurano la cassa pensioni della Confederazione Publica, la cassa pensioni Migros e la cassa pensioni della Città di Zurigo, nonché altri istituti. A seconda della cassa, sono coinvolti nome, numero AVS, stato civile, indirizzo e IBAN, nonché dati salariali e previdenziali.
+Alla fine di settembre 2026 è stata attaccata PK Softech AG, un produttore di software la cui soluzione previdenziale è utilizzata da diverse casse pensioni svizzere. Attraverso questa via sono fuoriusciti dati. Secondo quanto riportato, tra gli interessati figurano la cassa pensioni federale Publica, la cassa pensioni Migros e la cassa pensioni della Città di Zurigo, nonché altri istituti. A seconda della cassa, sono coinvolti nome, numero AVS, stato civile, indirizzo e IBAN, oltre a dati salariali e previdenziali.
 
-Questa fuoriuscita è di per sé grave. Riguarda dati identificativi e finanziari di una larga parte della popolazione attiva e, tramite Publica, di ampie parti dell'Amministrazione federale. Dati di questa quantità e qualità non costituiscono solo un problema per le singole persone. Consentono furti d'identità, inganni mirati ed estorsioni su larga scala e rappresentano quindi un pericolo per l'ordine pubblico e la sicurezza nazionale. Gli averi previdenziali stessi non sono stati toccati, ma la polizia contro la criminalità informatica aveva già avvertito di chiamate fraudolente con i dati sottratti.
+Questa fuoriuscita è di per sé grave. Riguarda dati identificativi e finanziari di un’ampia parte della popolazione lavorativa e, tramite Publica, di vaste parti dell’amministrazione federale. Dati di tale quantità e qualità non sono soltanto un problema per le singole persone. Consentono furti d’identità, inganni mirati ed estorsioni su vasta scala e rappresentano quindi un pericolo per l’ordine pubblico e la sicurezza nazionale. Gli averi previdenziali stessi sono rimasti intatti, ma la piattaforma informativa Cybercrimepolice.ch aveva già avvertito di chiamate fraudolente effettuate con i dati sottratti.
 
-A ciò si aggiunge una constatazione difficilmente spiegabile per un fornitore di servizi di questa categoria: **PK Softech AG non dispone tuttora di alcun record DMARC.** Il suo dominio presenta un record SPF rigoroso, ma nessuna policy DMARC (verificato il 18.10.2026). Di conseguenza, l'indirizzo del mittente del fornitore di servizi attaccato può essere falsificato senza che una piattaforma di posta ricevente lo rifiuti in modo affidabile. Dopo una fuoriuscita di dati, è la situazione iniziale più sfavorevole immaginabile. Chi conosce nome, indirizzo e coordinate bancarie di una persona assicurata e può inoltre falsificare un'e-mail a nome del fornitore di servizi o della cassa può scrivere un messaggio quasi indistinguibile da uno reale, ad esempio chiedendo di aggiornare l'IBAN per il prossimo pagamento della rendita. È proprio da questa falsificazione che protegge DMARC.
+A ciò si aggiunge una constatazione difficile da spiegare per un fornitore di servizi di questa categoria: **PK Softech AG non dispone tuttora di alcun record DMARC.** Il suo dominio ha un record SPF rigoroso, ma nessuna policy DMARC (verificato il 18.10.2026). Ciò consente di falsificare l’indirizzo del mittente del fornitore attaccato senza che una piattaforma di posta ricevente lo rifiuti in modo affidabile. Dopo una fuoriuscita di dati, è la situazione iniziale peggiore immaginabile. Chi conosce nome, indirizzo e coordinate bancarie di una persona assicurata e può inoltre falsificare un’e-mail a nome del fornitore o della cassa può scrivere un messaggio quasi indistinguibile da uno autentico, ad esempio chiedendo di aggiornare l’IBAN per il prossimo versamento della rendita. DMARC protegge proprio da questo tipo di falsificazione.
 
-PK Softech non è un caso isolato, bensì l'esempio più evidente di un modello ricorrente. Ho verificato quanto siano preparati gli istituti di previdenza svizzeri e i loro tipici fornitori di servizi in materia di autenticazione delle e-mail.
+PK Softech non è un caso isolato, bensì l’esempio più evidente di uno schema ricorrente. Ho verificato quanto siano preparati gli istituti di previdenza svizzeri e i loro fornitori di servizi tipici in materia di autenticazione e-mail.
 
-## Come è stato effettuato il controllo
+## Come è stata effettuata la verifica
 
-L'analisi comprende 66 istituti di previdenza del secondo pilastro, dalle grandi casse di diritto pubblico alle fondazioni collettive degli assicuratori fino ai più piccoli istituti comuni. Sono stati controllati esclusivamente record DNS pubblici: SPF, DKIM, DMARC, MTA-STS, TLS-RPT e record MX. Si tratta delle stesse informazioni che ogni sistema di posta ricevente consulta per ogni messaggio in entrata.
+La valutazione comprende 66 istituti di previdenza del secondo pilastro, dalle grandi casse di diritto pubblico alle fondazioni collettive degli assicuratori fino ai più piccoli istituti comunitari. Sono stati verificati esclusivamente record DNS pubblici: SPF, DKIM, DMARC, record MX nonché DNSSEC e DANE (record TLSA dei server di posta, verificati il 19.10.2026). Sono le stesse informazioni che ogni sistema di posta ricevente consulta per ogni messaggio in arrivo.
 
-Il controllo è stato puramente passivo. Sono stati interrogati solo DNS pubblici, senza stabilire connessioni ai sistemi degli istituti, senza tentare alcun accesso e senza raccogliere dati personali. L'analisi riflette solo ciò che è comunque visibile a chiunque da fonti pubbliche. Le fondazioni collettive di gruppo sono ricondotte al dominio principale dell'ente promotore; singole fondazioni affiliate possono differire.
+La verifica è stata puramente passiva. Sono stati interrogati solo DNS pubblici, senza stabilire connessioni con i sistemi degli istituti, senza tentare accessi e senza raccogliere dati personali. La valutazione riproduce soltanto ciò che è comunque consultabile da chiunque attraverso fonti pubbliche. Le fondazioni collettive di gruppo sono state riunite sotto il dominio principale dell’ente promotore; singole fondazioni affiliate possono differire.
 
 ## Il risultato
 
@@ -53732,19 +53732,19 @@ Il controllo è stato puramente passivo. Sono stati interrogati solo DNS pubblic
 | DMARC `p=quarantine` | 26 % |
 | DMARC `p=none` (solo monitoraggio) | 14 % |
 | nessun DMARC | 41 % |
-| DKIM riconoscibile | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| DKIM rilevabile | 55 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
-Emergono tre punti.
+Tre aspetti risaltano.
 
-**Solo il 20 per cento è effettivamente protetto con DMARC `p=reject`.** Solo questa policy indica a una piattaforma di posta ricevente di rifiutare realmente i messaggi falsificati. In tutti gli altri casi, in caso di dubbio una falsificazione arriva nella casella di posta della persona assicurata.
+**Solo il 20 per cento è efficacemente protetto con DMARC `p=reject`.** Solo questa policy istruisce una piattaforma di posta ricevente a rifiutare effettivamente i messaggi falsificati. In tutti gli altri casi, una falsificazione finisce nel dubbio nella casella di posta della persona assicurata.
 
-**Il 41 per cento non ha DMARC.** Il dominio del mittente può essere usato senza problemi per e-mail fraudolente e l'istituto non ne viene nemmeno a conoscenza, poiché senza DMARC manca anche la funzione di reporting. Colpisce il fatto che tra questi vi siano anche casse che gestiscono la posta con Microsoft 365, dove DMARC può essere configurato con poco sforzo.
+**Il 41 per cento non ha DMARC.** Il loro dominio mittente può essere facilmente utilizzato per e-mail fraudolente e l’istituto non ne viene nemmeno a conoscenza, poiché senza DMARC manca anche la funzione di reporting. Colpisce che tra questi vi siano anche casse che gestiscono la posta con Microsoft 365, dove DMARC può essere configurato con poco sforzo.
 
-**DMARC `p=none` non è una protezione.** Il 14 per cento di questo gruppo ha impostato una policy DMARC, ma l'ha lasciata al livello di monitoraggio. Fornisce report, ma non rifiuta neppure un singolo messaggio falsificato. Nella pratica, è un passaggio intermedio che spesso rimane tale per mesi o anni.
+**DMARC `p=none` non è una protezione.** Il 14 per cento in questo gruppo ha impostato una policy DMARC, ma l’ha lasciata al livello di monitoraggio. Questo fornisce report, ma non rifiuta nemmeno un singolo messaggio falsificato. Nella pratica è un passaggio intermedio che spesso resta invariato per mesi o anni.
 
-A ciò si aggiunge una constatazione costante: con il 2 per cento, MTA-STS è praticamente inesistente. Senza MTA-STS, la cifratura del trasporto delle e-mail in entrata non è imposta, il che favorisce un aggressore con accesso al percorso di trasporto.
+Per quanto riguarda la crittografia del trasporto, il quadro è simile: solo 6 dei 66 istituti (9 per cento) proteggono i propri server di posta con DANE. In questo modo, un server di posta mittente verifica tramite un record firmato con DNSSEC se è connesso in modo cifrato al destinatario corretto. Il prerequisito è DNSSEC, già attivato dal 38 per cento degli istituti. Per questi, DANE è il passo successivo naturale.
 
 ## Tutti i dati da esplorare
 
@@ -53754,60 +53754,60 @@ La seguente infografica mostra lo stato verificato di tutti i 66 istituti di pre
 
 ## Confronto: le maggiori aziende svizzere
 
-Il [Mail-Sicherheitsindex Schweiz](/open-data/mail-security-index) mostra come gli istituti di previdenza si posizionino rispetto al resto dell'economia. Con lo stesso metodo passivo, esamina quotidianamente oltre 500 delle maggiori aziende svizzere, con una mappa interattiva per cantone, confronti per settore e fornitore di posta e una pagina di dettaglio per ogni azienda. Tra queste figurano anche le banche, gli assicuratori e i fornitori di servizi IT con cui collaborano gli istituti di previdenza.
+Il [Mail Security Index Svizzera](/open-data/mail-security-index) mostra come si posizionano gli istituti di previdenza rispetto al resto dell’economia. Con lo stesso metodo passivo verifica ogni giorno oltre 500 tra le maggiori aziende svizzere, con una mappa interattiva per cantone, confronti per settore e provider di posta e una pagina di dettaglio per ciascuna azienda. Tra queste figurano anche banche, assicuratori e fornitori di servizi IT con cui collaborano gli istituti di previdenza.
 
-La differenza è netta: delle 518 aziende nell'indice, il 18.10.2026 il 38 per cento utilizza DMARC con `p=reject`, mentre tra gli istituti di previdenza è il 20 per cento. Il 5 per cento delle aziende è completamente privo di DMARC, contro il 41 per cento degli istituti di previdenza.
+La differenza è netta: delle 518 aziende nell’indice, il 18.10.2026 il 38 per cento utilizza DMARC con `p=reject`, contro il 20 per cento degli istituti di previdenza. Il 5 per cento delle aziende è completamente privo di DMARC, rispetto al 41 per cento degli istituti di previdenza.
 
 ## I fornitori sono il tema più importante
 
-L'incidente di fine settembre non ha colpito una cassa, bensì un fornitore di servizi comune. Per questo ho verificato, con lo stesso metodo passivo, 30 fornitori tipici: produttori di software di gestione, aziende per la gestione esternalizzata, attuariato e consulenza, banche depositarie e fornitori di servizi IT.
+L’incidente di fine settembre non ha colpito una cassa, bensì un fornitore di servizi comune. Per questo motivo ho verificato, con lo stesso metodo passivo, 30 fornitori tipici: produttori di software amministrativo, società per la gestione aziendale esternalizzata, attuari e consulenti, banche depositarie e fornitori di servizi IT.
 
-In media, i fornitori di servizi si trovano in una posizione leggermente migliore rispetto alle casse: il 40 per cento utilizza DMARC con `p=reject`, contro il 20 per cento degli istituti. Determinante è però la distribuzione tra le categorie.
+In media, i fornitori di servizi sono leggermente meglio posizionati delle casse: il 40 per cento utilizza DMARC con `p=reject`, contro il 20 per cento degli istituti. Determinante è però la distribuzione tra le categorie.
 
 | Categoria | con DMARC `p=reject` |
 |---|---|
 | Attuariato e consulenza | buono |
 | Banche depositarie | buono |
 | Fornitori di servizi IT | misto |
-| Gestione esternalizzata | debole |
-| Software di gestione | i più deboli |
+| Gestione aziendale esternalizzata | debole |
+| Software amministrativo | più debole |
 
-I produttori di software di gestione sono il gruppo più debole. Nessuno dei fornitori di software esaminati utilizza DMARC con piena efficacia, e il fornitore attaccato PK Softech non ha alcun record DMARC. Si tratta proprio della categoria che tratta dati previdenziali ed è profondamente collegata alle casse tramite interfacce, nonché della categoria coinvolta nell'incidente attuale.
+I produttori di software amministrativo sono il gruppo più debole. Nessuno dei fornitori software verificati utilizza DMARC con piena efficacia, e il fornitore attaccato PK Softech non ha alcun record DMARC. Si tratta proprio della categoria che tratta dati previdenziali ed è profondamente collegata alle casse tramite interfacce, nonché della categoria coinvolta nell’incidente attuale.
 
-Da ciò deriva il punto essenziale per la diligenza: una cassa con `p=reject` è ben protetta finché l'aggressore tenta di falsificare il suo dominio. Se invece può falsificare il dominio di un fornitore di servizi scarsamente protetto, attraverso il quale avviene comunque la comunicazione con gli assicurati, l'e-mail risulta altrettanto credibile. Proteggere il proprio dominio è quindi solo il primo passo. Il secondo consiste nell'obbligare i principali fornitori di servizi a raggiungere lo stesso livello, idealmente per contratto.
+Ne consegue il punto essenziale in materia di diligenza: una cassa con `p=reject` è ben protetta finché l’aggressore vuole falsificarne il dominio. Se invece può falsificare il dominio di un fornitore poco protetto attraverso il quale avvengono comunque comunicazioni con gli assicurati, l’e-mail è altrettanto credibile. Proteggere il proprio dominio è quindi solo il primo passo. Il secondo consiste nell’obbligare i fornitori più importanti ad adottare lo stesso livello, preferibilmente per contratto.
 
 ## Cosa significa per il consiglio di fondazione
 
-La responsabilità per la sicurezza delle informazioni spetta all'organo supremo dell'istituto di previdenza. Una fuoriuscita di dati comporta inoltre obblighi concreti ai sensi della legge sulla protezione dei dati riveduta: una violazione della sicurezza dei dati deve essere notificata all'IFPDT se è presumibile che comporti un rischio elevato per le persone interessate, e le persone interessate devono essere informate nella misura necessaria alla loro protezione.
+La responsabilità della sicurezza delle informazioni spetta all’organo supremo dell’istituto di previdenza. Una fuoriuscita di dati comporta inoltre obblighi concreti ai sensi della legge sulla protezione dei dati riveduta: una violazione della sicurezza dei dati deve essere notificata all’IFPDT se comporta verosimilmente un rischio elevato per le persone interessate, e le persone interessate devono essere informate nella misura necessaria alla loro protezione.
 
-In questa situazione, l'autenticazione delle e-mail è la singola misura più efficace con il minor impegno. SPF, DKIM e DMARC non richiedono licenze né nuovo software. Consistono in record DNS e in una configurazione corretta della piattaforma di posta esistente. La protezione agisce immediatamente per ogni persona assicurata, senza che debba fare nulla.
+In questa situazione, l’autenticazione e-mail è la singola misura più efficace con il minore impegno richiesto. SPF, DKIM e DMARC non richiedono licenze né nuovo software. Consistono in record DNS e in una configurazione corretta della piattaforma di posta esistente. La protezione agisce immediatamente per ogni persona assicurata, senza che debba fare nulla.
 
 ## Cosa fare
 
-Per gli istituti senza una protezione efficace, un percorso chiaro porta all'obiettivo:
+Per gli istituti privi di una protezione efficace, un percorso chiaro porta all’obiettivo:
 
-1. **Verificare SPF e impostarlo in modo rigoroso.** Il record SPF elenca i sistemi autorizzati all'invio e termina con `-all`, affinché tutti gli altri mittenti siano considerati non autorizzati.
-2. **Attivare DKIM.** Ogni messaggio in uscita viene firmato crittograficamente. In Microsoft 365 e nei comuni gateway di posta si tratta di un'impostazione, non di un progetto.
-3. **Introdurre DMARC e renderlo progressivamente più restrittivo.** Iniziare con `p=none` e reporting attivo, per rilevare il traffico e-mail legittimo. Poi `p=quarantine`, infine `p=reject`. L'intero percorso richiede alcune settimane a seconda dell'ambiente, non mesi.
+1. **Verificare SPF e impostarlo in modo rigoroso.** Il record SPF elenca i sistemi autorizzati all’invio e termina con `-all`, affinché tutti gli altri mittenti siano considerati non autorizzati.
+2. **Attivare DKIM.** Ogni messaggio in uscita viene firmato crittograficamente. In Microsoft 365 e nei comuni mail gateway si tratta di un’impostazione, non di un progetto.
+3. **Introdurre DMARC e attivarlo gradualmente in modo rigoroso.** Iniziare con `p=none` e reporting attivo, per rilevare il traffico e-mail legittimo. Poi `p=quarantine`, infine `p=reject`. A seconda dell’ambiente, l’intero percorso richiede alcune settimane, non mesi.
 4. **Valutare il reporting.** I report DMARC mostrano chi invia e-mail a nome del dominio e rilevano sia sistemi legittimi dimenticati sia abusi.
-5. **Aggiungere MTA-STS e TLS-RPT.** Entrambi impongono e monitorano la cifratura del trasporto delle e-mail in entrata.
-6. **Responsabilizzare i fornitori di servizi.** I fornitori di software, la gestione esternalizzata e i partner IT dovrebbero dimostrare lo stesso livello in SPF, DKIM e DMARC. Ciò deve essere incluso nei contratti e nella verifica periodica dei fornitori.
+5. **Almeno verificare DANE ed esaminare la crittografia della posta.** DANE protegge la crittografia del trasporto tra server di posta tramite DNSSEC. Si può chiarire con poco sforzo se la propria piattaforma di posta e il provider DNS lo supportano. Per i messaggi contenenti dati salariali e previdenziali, occorre inoltre disciplinare come inviarli con crittografia end-to-end, ad esempio tramite un mail gateway con S/MIME o una consegna sicura attraverso un portale web.
+6. **Responsabilizzare i fornitori di servizi.** I fornitori software, la gestione aziendale esternalizzata e i partner IT dovrebbero dimostrare lo stesso livello di SPF, DKIM e DMARC. Questo va inserito nei contratti e nelle verifiche periodiche dei fornitori.
 
 ## Conclusione
 
-Gli attacchi recenti hanno preso di mira un fornitore di servizi, non le casse stesse. I danni conseguenti si verificano però laddove un dominio del mittente non è protetto, tanto presso la cassa quanto presso i suoi fornitori. Quattro dei cinque istituti di previdenza esaminati non sono completamente protetti dai mittenti falsificati, due su cinque non hanno affatto DMARC e proprio i produttori di software di gestione ottengono i risultati peggiori. La lacuna è nota, poco costosa da colmare e ha effetto immediato. Dopo una fuoriuscita di dati che riguarda nome, indirizzo e coordinate bancarie, non è una questione tecnica secondaria, bensì parte del dovere di diligenza dell'organo supremo, lungo l'intera catena di fornitura.
+Gli attacchi più recenti hanno preso di mira un fornitore di servizi, non le casse stesse. Tuttavia, i danni conseguenti si producono laddove un dominio mittente non è protetto, sia presso la cassa sia presso i suoi fornitori. Quattro dei cinque istituti di previdenza verificati non sono completamente protetti contro mittenti falsificati, due su cinque non hanno alcun DMARC e proprio i produttori di software amministrativo ottengono i risultati peggiori. La lacuna è nota, poco costosa da colmare e ha effetto immediato. Dopo una fuoriuscita di dati che riguarda nome, indirizzo e coordinate bancarie, non è una questione tecnica secondaria, bensì parte dell’obbligo di diligenza dell’organo supremo, lungo l’intera catena di fornitura.
 
 ## Fonti
 
-1.  [SRF: Cassa pensioni della Confederazione, come hanno potuto dati sensibili finire presso un'azienda esterna di software](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Contesto dell'incidente, tipi di dati coinvolti e ruolo del fornitore di software.
+1.  [SRF: Cassa pensioni della Confederazione, come hanno potuto dati sensibili finire presso una società di software esterna](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): contesto dell’incidente, tipi di dati interessati e ruolo del fornitore software.
 
-2.  [cash.ch (AWP): Attacco a un fornitore di Publica, potrebbero essere stati coinvolti dati salariali](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica indica ad AWP PK Softech AG come azienda attaccata.
+2.  [cash.ch (AWP): Attacco a un fornitore di Publica, potrebbero essere stati coinvolti dati salariali](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica indica ad AWP PK Softech AG come società attaccata.
 
-3.  [Netzwoche: La cassa pensioni della Confederazione Publica segnala una fuoriuscita di dati](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Notizia sull'attacco al fornitore di software e sulla fuoriuscita di dati.
+3.  [Netzwoche: La cassa pensioni federale Publica segnala una fuoriuscita di dati](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): notizia sull’attacco al fornitore software e sulla fuoriuscita di dati.
 
-4.  [Mimikama: La polizia svizzera avverte di possibili chiamate di investimento dopo una fuoriuscita di dati](https://www.mimikama.org/?p=436628): Contestualizzazione dell'avvertimento sulle chiamate fraudolente con i dati fuoriusciti.
+4.  [Mimikama: La polizia svizzera avverte di possibili chiamate d’investimento dopo una fuoriuscita di dati](https://www.mimikama.org/?p=436628): contestualizzazione dell’avvertimento sulle chiamate fraudolente con i dati fuoriusciti.
 
-5.  [IFPDT: Notifica di violazioni della sicurezza dei dati](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Obbligo di notifica secondo la LPD riveduta e procedura in caso di violazioni della sicurezza dei dati.
+5.  [IFPDT: Notifica di violazioni della sicurezza dei dati](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): obbligo di notifica ai sensi della LPD riveduta e procedura in caso di violazioni della sicurezza dei dati.
 
 ----
 
@@ -71580,28 +71580,28 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
-# El proveedor de servicios de cajas de pensiones atacado no tiene ningún registro DMARC
+# El proveedor de servicios de cajas de pensiones atacado ni siquiera tiene un registro DMARC
 
 URL: https://rafaelpfister.ch/es/blog/el-proveedor-de-servicios-de-cajas-de-pensiones-atacado-no-tiene-ningun-registro-dmarc
 Datum: 2026-10-18
 
-A finales de septiembre de 2026 fue atacada PK Softech AG, un fabricante de software cuya solución de previsión utilizan varias cajas de pensiones suizas. Por esta vía se filtraron datos. Según las informaciones publicadas, entre las entidades afectadas figuran la caja de pensiones federal Publica, la caja de pensiones de Migros y la caja de pensiones de la ciudad de Zúrich, así como otras instituciones. Según la caja, se trata de nombre, número AVS, estado civil, dirección e IBAN, además de datos salariales y de previsión.
+A finales de septiembre de 2026 fue atacada PK Softech AG, un fabricante de software cuya solución de previsión utilizan varias cajas de pensiones suizas. A través de esta vía se filtraron datos. Según la cobertura informativa, entre las entidades afectadas figuran la caja de pensiones federal Publica, la caja de pensiones de Migros y la caja de pensiones de la ciudad de Zúrich, así como otras instituciones. Según la caja, se trata de nombre, número AHV, estado civil, dirección e IBAN, además de datos salariales y de previsión.
 
-Esta filtración es grave por sí sola. Afecta datos de identificación y financieros de una gran parte de la población activa y, a través de Publica, de amplios sectores de la Administración federal. Datos de esta cantidad y calidad no son solo un problema para cada persona afectada. Permiten el robo de identidad, el engaño dirigido y la extorsión a gran escala, y constituyen por tanto un peligro para el orden público y la seguridad nacional. Los activos de previsión propiamente dichos no se vieron afectados, pero la policía de ciberdelincuencia ya advirtió de llamadas fraudulentas con los datos sustraídos.
+Esta filtración es grave por sí misma. Afecta a datos de identificación y financieros de una gran parte de la población trabajadora y, a través de Publica, de amplios sectores de la Administración federal. Datos de esta cantidad y calidad no son solo un problema para cada persona afectada. Permiten el robo de identidad, el engaño dirigido y la extorsión a gran escala, por lo que representan un peligro para el orden público y la seguridad nacional. Los activos de previsión propiamente dichos no se vieron afectados, pero la plataforma informativa Cybercrimepolice.ch ya advirtió de llamadas fraudulentas utilizando los datos robados.
 
-A ello se suma una constatación difícil de explicar para un proveedor de servicios de esta categoría: **PK Softech AG sigue sin tener ningún registro DMARC.** Su dominio cuenta con un registro SPF estricto, pero no con una política DMARC (verificado el 18.10.2026). Por tanto, la dirección del remitente del proveedor atacado puede falsificarse sin que una plataforma de correo receptora la rechace de forma fiable. Tras una filtración de datos, esta es la situación de partida más desfavorable imaginable. Quien conoce el nombre, la dirección y la cuenta bancaria de una persona asegurada y además puede falsificar un correo en nombre del proveedor o de la caja puede redactar un mensaje casi indistinguible de uno auténtico, por ejemplo solicitando actualizar el IBAN para el próximo pago de la pensión. DMARC protege precisamente contra esta falsificación.
+A ello se suma un hallazgo difícil de explicar para un proveedor de servicios de esta categoría: **PK Softech AG sigue sin tener un registro DMARC.** Su dominio cuenta con un registro SPF estricto, pero no con una política DMARC (comprobado el 18.10.2026). Esto permite falsificar la dirección del remitente del proveedor atacado sin que una plataforma de correo receptora lo rechace de forma fiable. Tras una filtración de datos, esta es la peor situación imaginable. Quien conoce el nombre, la dirección y los datos bancarios de una persona asegurada y además puede falsificar un correo en nombre del proveedor de servicios o de la caja puede redactar un mensaje casi indistinguible de uno auténtico, por ejemplo solicitando actualizar el IBAN para el próximo pago de pensión. Precisamente contra esta falsificación protege DMARC.
 
-PK Softech no es un caso aislado, sino el ejemplo más evidente de un patrón. He comprobado hasta qué punto están bien preparadas las entidades de previsión suizas y sus proveedores de servicios habituales en materia de autenticación de correo electrónico.
+PK Softech no es un caso aislado, sino el ejemplo más evidente de un patrón. He comprobado hasta qué punto las instituciones de previsión suizas y sus proveedores de servicios habituales están preparadas en materia de autenticación de correo electrónico.
 
 ## Cómo se realizó la comprobación
 
-El análisis abarca 66 entidades de previsión del segundo pilar, desde las grandes cajas de derecho público y las fundaciones colectivas de las aseguradoras hasta instituciones comunitarias más pequeñas. Se revisaron exclusivamente registros DNS públicos: SPF, DKIM, DMARC, MTA-STS, TLS-RPT y los registros MX. Son los mismos datos que todo sistema de correo receptor consulta para cada mensaje entrante.
+El análisis abarca 66 instituciones de previsión del segundo pilar, desde las grandes cajas de derecho público y las fundaciones colectivas de las aseguradoras hasta instituciones colectivas más pequeñas. Se examinaron exclusivamente registros DNS públicos: SPF, DKIM, DMARC, los registros MX, así como DNSSEC y DANE (registros TLSA de los servidores de correo, comprobados el 19.10.2026). Son los mismos datos que consulta cualquier sistema de correo receptor para cada mensaje entrante.
 
-La comprobación fue totalmente pasiva. Solo se consultó DNS público; no se estableció conexión con los sistemas de las entidades, no se intentó iniciar sesión y no se recopilaron datos personales. El análisis refleja únicamente lo que ya es accesible para cualquiera a partir de fuentes públicas. Las fundaciones colectivas de grupos se han agrupado bajo el dominio principal de la entidad responsable; algunas fundaciones afiliadas pueden diferir.
+La comprobación fue puramente pasiva. Solo se consultó DNS público; no se estableció ninguna conexión con los sistemas de las instituciones, no se intentó iniciar sesión ni se recopilaron datos personales. El análisis únicamente refleja lo que cualquier persona puede consultar de todos modos en fuentes públicas. Las fundaciones colectivas de grupos empresariales se han agrupado bajo el dominio principal de la entidad responsable; las fundaciones afiliadas individuales pueden diferir.
 
 ## El resultado
 
-| Característica | Proporción de las 66 entidades |
+| Característica | Proporción de las 66 instituciones |
 |---|---|
 | SPF disponible | 88 % |
 | SPF estricto (`-all`) | 59 % |
@@ -71610,80 +71610,80 @@ La comprobación fue totalmente pasiva. Solo se consultó DNS público; no se es
 | DMARC `p=quarantine` | 26 % |
 | DMARC `p=none` (solo supervisión) | 14 % |
 | sin DMARC | 41 % |
-| DKIM identificable | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| DKIM detectable | 55 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
 Destacan tres puntos.
 
-**Solo el 20 por ciento está protegido eficazmente con DMARC `p=reject`.** Solo esta política indica a una plataforma de correo receptora que debe rechazar realmente los mensajes falsificados. En todos los demás casos, una falsificación termina, en caso de duda, en el buzón de la persona asegurada.
+**Solo el 20 por ciento está protegido eficazmente con DMARC `p=reject`.** Solo esta política indica a una plataforma de correo receptora que debe rechazar realmente los mensajes falsificados. En todos los demás casos, una falsificación acaba, en caso de duda, en la bandeja de entrada de la persona asegurada.
 
-**El 41 por ciento no tiene DMARC.** Su dominio de remitente puede utilizarse sin más para correos fraudulentos, y la entidad ni siquiera se enterará, porque sin DMARC también falta la función de informes. Llama la atención que entre ellas haya cajas que operan su correo con Microsoft 365, donde DMARC puede configurarse con poco esfuerzo.
+**El 41 por ciento no tiene DMARC.** Su dominio de remitente puede utilizarse fácilmente para correos fraudulentos, y la institución ni siquiera se enterará, porque sin DMARC también falta la función de informes. Llama la atención que entre ellas haya cajas que operan su correo con Microsoft 365, donde DMARC puede configurarse con poco esfuerzo.
 
-**DMARC `p=none` no es protección.** El 14 por ciento de este grupo ha establecido una política DMARC, pero la ha dejado en el nivel de supervisión. Proporciona informes, pero no rechaza ni un solo mensaje falsificado. En la práctica, es un paso intermedio que a menudo permanece durante meses o años.
+**DMARC `p=none` no es protección.** El 14 por ciento de este grupo ha configurado una política DMARC, pero la ha dejado en el nivel de supervisión. Esto proporciona informes, pero no rechaza ni un solo mensaje falsificado. En la práctica, es un paso intermedio que a menudo permanece así durante meses o años.
 
-Además, existe una constatación generalizada: con un 2 por ciento, MTA-STS es prácticamente inexistente. Sin MTA-STS, no se obliga al cifrado de transporte del correo entrante, lo que favorece a un atacante con acceso a la ruta de transmisión.
+En el cifrado de transporte se observa una imagen similar: solo 6 de las 66 instituciones (9 por ciento) protegen sus servidores de correo con DANE. Así, un servidor de correo emisor verifica mediante un registro firmado con DNSSEC si está conectado de forma cifrada al destinatario correcto. El requisito previo es DNSSEC, que el 38 por ciento de las instituciones ya ha activado. Para ellas, DANE es el siguiente paso lógico.
 
-## Todos los registros para consultar
+## Todos los registros para explorar
 
-La siguiente infografía muestra el estado revisado de las 66 entidades de previsión y los 30 proveedores de servicios. Los filtros permiten acotar por estado de DMARC, categoría y proveedor de correo, y cada entrada puede desplegarse para consultar los resultados DNS completos.
+La siguiente infografía muestra el estado comprobado de las 66 instituciones de previsión y los 30 proveedores de servicios. Los filtros permiten delimitar por estado de DMARC, categoría y proveedor de correo, y cada entrada se puede desplegar para consultar todos los hallazgos DNS.
 
 <div data-dmarc-infographic></div>
 
 ## Comparación: las mayores empresas suizas
 
-El [Índice de seguridad del correo de Suiza](/open-data/mail-security-index) muestra cómo se sitúan las entidades de previsión frente al resto de la economía. Con el mismo procedimiento pasivo, revisa a diario más de 500 de las mayores empresas suizas, con un mapa interactivo por cantones, comparaciones por sector y proveedor de correo, y una página de detalle para cada empresa. Entre ellas se encuentran también los bancos, aseguradoras y proveedores de servicios de TI con los que colaboran las entidades de previsión.
+El [Índice de seguridad del correo de Suiza](/open-data/mail-security-index) muestra cómo se sitúan las instituciones de previsión frente al resto de la economía. Mediante el mismo procedimiento pasivo, examina diariamente más de 500 de las mayores empresas suizas, con un mapa interactivo por cantones, comparaciones por sector y proveedor de correo, y una página detallada para cada empresa. Entre ellas figuran también los bancos, aseguradoras y proveedores de servicios de TI con los que colaboran las instituciones de previsión.
 
-La diferencia es clara: de las 518 empresas del índice, el 18.10.2026 el 38 por ciento utilizaba DMARC con `p=reject`, frente al 20 por ciento de las entidades de previsión. El 5 por ciento de las empresas no tiene DMARC en absoluto, frente al 41 por ciento de las entidades de previsión.
+La diferencia es clara: de las 518 empresas del índice, el 18.10.2026 el 38 por ciento utilizaba DMARC con `p=reject`, frente al 20 por ciento de las instituciones de previsión. El 5 por ciento de las empresas carece por completo de DMARC, frente al 41 por ciento de las instituciones de previsión.
 
 ## Los proveedores son el problema mayor
 
-El incidente de finales de septiembre no afectó a una caja, sino a un proveedor compartido. Por ello, con el mismo procedimiento pasivo revisé 30 proveedores típicos: fabricantes de software de administración, empresas de gestión externalizada, actuariado y consultoría, bancos depositarios y proveedores de servicios de TI.
+El incidente de finales de septiembre no afectó a una caja, sino a un proveedor de servicios común. Por ello, mediante el mismo procedimiento pasivo, examiné 30 proveedores típicos: fabricantes de software de administración, empresas de gestión externalizada, servicios actuariales y de consultoría, bancos depositarios y proveedores de servicios de TI.
 
-En promedio, los proveedores de servicios están algo mejor posicionados que las cajas: el 40 por ciento utiliza DMARC con `p=reject`, frente al 20 por ciento de las entidades. Sin embargo, lo decisivo es la distribución entre las categorías.
+Por término medio, los proveedores de servicios están algo mejor preparados que las cajas: el 40 por ciento utiliza DMARC con `p=reject`, frente al 20 por ciento de las instituciones. Sin embargo, lo decisivo es la distribución entre las categorías.
 
 | Categoría | con DMARC `p=reject` |
 |---|---|
-| Actuariado y consultoría | bueno |
-| Bancos depositarios | bueno |
+| Actuaría y consultoría | bien |
+| Bancos depositarios | bien |
 | Proveedores de servicios de TI | mixto |
 | Gestión externalizada | débil |
-| Software de administración | el más débil |
+| Software de administración | más débil |
 
-Los fabricantes de software de administración son el grupo más débil. Ninguno de los proveedores de software revisados utiliza DMARC con plena eficacia, y el proveedor atacado PK Softech no tiene ningún registro DMARC. Precisamente esta categoría procesa datos de previsión y está estrechamente conectada con las cajas mediante interfaces, y es la categoría del incidente actual.
+Los fabricantes de software de administración son el grupo más débil. Ninguno de los proveedores de software examinados utiliza DMARC con plena eficacia, y el proveedor atacado PK Softech ni siquiera tiene un registro DMARC. Precisamente se trata de la categoría que procesa datos de previsión y está profundamente conectada con las cajas mediante interfaces, y es la categoría del incidente actual.
 
-De ello se desprende el punto esencial en materia de diligencia: una caja con `p=reject` está bien protegida mientras el atacante quiera falsificar su dominio. Pero si en su lugar puede falsificar el dominio de un proveedor mal protegido a través del cual ya se comunica con las personas aseguradas, el correo es igual de creíble. Por ello, proteger el propio dominio es solo el primer paso. El segundo es obligar a los proveedores de servicios más importantes a alcanzar el mismo nivel, idealmente por contrato.
+De ello se deriva el punto central de la diligencia debida: una caja con `p=reject` está bien protegida mientras el atacante quiera falsificar su dominio. Sin embargo, si puede falsificar el dominio de un proveedor de servicios mal protegido a través del cual ya se comunica habitualmente con las personas aseguradas, el correo será igual de creíble. Por tanto, proteger el propio dominio es solo el primer paso. El segundo es obligar a los proveedores de servicios más importantes a alcanzar el mismo nivel, preferiblemente mediante contrato.
 
-## Qué significa esto para el consejo de fundación
+## Lo que esto significa para el consejo de fundación
 
-La responsabilidad de la seguridad de la información recae en el órgano supremo de la entidad de previsión. Además, una filtración de datos activa obligaciones concretas en virtud de la Ley de Protección de Datos revisada: una violación de la seguridad de los datos debe notificarse al EDÖB si previsiblemente supone un alto riesgo para las personas afectadas, y estas deben ser informadas en la medida necesaria para su protección.
+La responsabilidad de la seguridad de la información recae en el órgano supremo de la institución de previsión. Además, una filtración de datos activa obligaciones concretas en virtud de la Ley de Protección de Datos revisada: una violación de la seguridad de los datos debe notificarse al EDÖB si previsiblemente conlleva un alto riesgo para las personas afectadas, y estas deben ser informadas cuando sea necesario para su protección.
 
-En esta situación, la autenticación de correo electrónico es la medida individual más eficaz con el menor esfuerzo. SPF, DKIM y DMARC no requieren licencias ni software nuevo. Consisten en registros DNS y una configuración correcta de la plataforma de correo existente. La protección tiene efecto inmediato para cada persona asegurada, sin que esta tenga que hacer nada.
+En esta situación, la autenticación de correo electrónico es la medida individual más eficaz con el menor esfuerzo. SPF, DKIM y DMARC no requieren licencia ni software nuevo. Consisten en registros DNS y una configuración correcta de la plataforma de correo existente. La protección actúa inmediatamente para cada persona asegurada, sin que tenga que hacer nada por sí misma.
 
-## Qué hacer
+## Qué hay que hacer
 
-Para las entidades sin protección eficaz, existe una ruta clara hacia el objetivo:
+Para las instituciones sin protección eficaz, hay un camino claro hacia el objetivo:
 
-1. **Revisar SPF y establecerlo de forma estricta.** El registro SPF enumera los sistemas de envío autorizados y termina con `-all`, de modo que todos los demás remitentes se consideran no autorizados.
+1. **Comprobar SPF y configurarlo de forma estricta.** El registro SPF enumera los sistemas de envío autorizados y termina con `-all`, de modo que todos los demás remitentes se consideren no autorizados.
 2. **Activar DKIM.** Cada mensaje saliente se firma criptográficamente. En Microsoft 365 y en las pasarelas de correo habituales, es una configuración, no un proyecto.
-3. **Introducir DMARC y endurecerlo gradualmente.** Empezar con `p=none` y la generación activa de informes para registrar el tráfico de correo legítimo. Después `p=quarantine` y, por último, `p=reject`. Todo el proceso tarda unas semanas según el entorno, no meses.
-4. **Evaluar los informes.** Los informes DMARC muestran quién envía correo en nombre del dominio y detectan tanto sistemas legítimos olvidados como usos indebidos.
-5. **Añadir MTA-STS y TLS-RPT.** Ambos obligan y supervisan el cifrado de transporte del correo entrante.
-6. **Exigir responsabilidades a los proveedores de servicios.** Los proveedores de software, de gestión externalizada y los socios de TI deben demostrar el mismo nivel en SPF, DKIM y DMARC. Esto debe incluirse en los contratos y en la revisión periódica de proveedores.
+3. **Introducir DMARC y endurecerlo gradualmente.** Comenzar con `p=none` e informes activos para identificar el tráfico de correo legítimo. Después `p=quarantine` y, por último, `p=reject`. Todo el proceso tarda unas semanas según el entorno, no meses.
+4. **Evaluar los informes.** Los informes DMARC muestran quién envía correo en nombre del dominio y revelan tanto sistemas legítimos olvidados como abusos.
+5. **Al menos comprobar DANE y revisar el cifrado del correo.** DANE protege el cifrado de transporte entre servidores de correo mediante DNSSEC. Puede determinarse con poco esfuerzo si la propia plataforma de correo y el proveedor de DNS lo admiten. Además, para los mensajes con datos salariales y de previsión debe regularse cómo se envían cifrados de extremo a extremo, por ejemplo mediante una pasarela de correo con S/MIME o entrega segura a través de un portal web.
+6. **Exigir responsabilidades a los proveedores de servicios.** Los proveedores de software, la gestión externalizada y los socios de TI deben demostrar el mismo nivel en SPF, DKIM y DMARC. Esto debe incluirse en los contratos y en la evaluación periódica de proveedores.
 
 ## Conclusión
 
-Los ataques recientes se dirigieron contra un proveedor de servicios, no contra las cajas mismas. Sin embargo, los daños posteriores se producen allí donde un dominio de remitente no está protegido, tanto en la caja como entre sus proveedores. Cuatro de cada cinco entidades de previsión revisadas no están completamente protegidas contra remitentes falsificados, dos de cada cinco no tienen DMARC en absoluto y, precisamente, los fabricantes de software de administración obtienen los peores resultados. La brecha es conocida, barata de cerrar y tiene efecto inmediato. Tras una filtración de datos que afecta al nombre, la dirección y la cuenta bancaria, no es un detalle técnico secundario, sino parte del deber de diligencia del órgano supremo, a lo largo de toda la cadena de suministro.
+Los ataques recientes se dirigieron contra un proveedor de servicios, no contra las cajas en sí mismas. Sin embargo, los daños derivados se producen allí donde un dominio de remitente está desprotegido, tanto en la caja como en sus proveedores. Cuatro de cada cinco instituciones de previsión examinadas no están completamente protegidas contra remitentes falsificados, dos de cada cinco no tienen DMARC en absoluto y precisamente los fabricantes de software de administración obtienen los peores resultados. La brecha es conocida, económica de cerrar y surte efecto de inmediato. Tras una filtración de datos que afecta al nombre, la dirección y los datos bancarios, no es un detalle técnico secundario, sino parte de la obligación de diligencia del órgano supremo, a lo largo de toda la cadena de suministro.
 
 ## Fuentes
 
-1.  [SRF: Caja de pensiones federal: cómo pudieron acabar datos sensibles en una empresa de software externa](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Contexto del incidente, tipos de datos afectados y papel del proveedor de software.
+1.  [SRF: Caja de pensiones federal: ¿cómo pudieron acabar datos sensibles en una empresa de software externa?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Contexto del incidente, tipos de datos afectados y papel del proveedor de software.
 
-2.  [cash.ch (AWP): Ataque al proveedor de Publica, los datos salariales podrían haberse visto afectados](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica identifica ante AWP a PK Softech AG como la empresa atacada.
+2.  [cash.ch (AWP): Ataque al proveedor de Publica; podrían haberse visto afectados datos salariales](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica identifica ante AWP a PK Softech AG como la empresa atacada.
 
-3.  [Netzwoche: La caja de pensiones federal Publica comunica una filtración de datos](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Noticia sobre el ataque al proveedor de software y la filtración de datos.
+3.  [Netzwoche: La caja de pensiones federal Publica notifica una filtración de datos](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Información sobre el ataque al proveedor de software y la filtración de datos.
 
-4.  [Mimikama: La policía suiza advierte de posibles llamadas de inversión tras la filtración de datos](https://www.mimikama.org/?p=436628): Contextualización de la advertencia sobre llamadas fraudulentas con los datos filtrados.
+4.  [Mimikama: La policía suiza advierte de posibles llamadas de inversión tras una filtración de datos](https://www.mimikama.org/?p=436628): Contextualización de la advertencia sobre llamadas fraudulentas con los datos filtrados.
 
 5.  [EDÖB: Notificación de violaciones de la seguridad de los datos](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Obligación de notificación conforme a la revDSG y procedimiento ante violaciones de la seguridad de los datos.
 
@@ -89458,110 +89458,110 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 
 ----
 
-# Den angripna pensionsfondsleverantören har ingen DMARC-post alls
+# Den angripna tjänsteleverantören för pensionskassor har ingen DMARC-post alls
 
 URL: https://rafaelpfister.ch/sv/blog/den-angripna-pensionsfondsleverantoren-har-ingen-dmarc-post-alls
 Datum: 2026-10-18
 
-I slutet av september 2026 angreps PK Softech AG, en programvarutillverkare vars pensionslösning används av flera schweiziska pensionsfonder. Data läckte via denna väg. Enligt rapporteringen omfattas bland annat den federala pensionskassan Publica, Migros pensionskassa och staden Zürichs pensionskassa, liksom ytterligare institutioner. Beroende på kassa handlar det om namn, AHV-nummer, civilstånd, adress och IBAN samt löne- och pensionsuppgifter.
+I slutet av september 2026 attackerades PK Softech AG, en programvarutillverkare vars pensionslösning används av flera schweiziska pensionskassor. Data läckte ut denna väg. Enligt rapporteringen berörs bland annat den federala pensionskassan Publica, Migros pensionskassa och pensionskassan för staden Zürich samt ytterligare institutioner. Beroende på pensionskassa rör det sig om namn, AHV-nummer, civilstånd, adress och IBAN samt löne- och pensionsuppgifter.
 
-Detta läckage är allvarligt i sig. Det berör identifikations- och finansuppgifter för en stor del av den arbetande befolkningen och, via Publica, stora delar av den federala förvaltningen. Data i denna omfattning och kvalitet är inte bara ett problem för den enskilda personen. De möjliggör identitetsmissbruk, riktat bedrägeri och utpressning i stor skala och utgör därmed en fara för den allmänna ordningen och den nationella säkerheten. Själva pensionsmedlen förblev opåverkade, men cyberbrottspolisen varnade redan för bedrägerisamtal med hjälp av de stulna uppgifterna.
+Detta läckage är i sig allvarligt. Det berör identitets- och finansuppgifter för en stor del av den arbetande befolkningen och, genom Publica, stora delar av den federala förvaltningen. Data i denna omfattning och kvalitet är inte bara ett problem för den enskilda personen. De möjliggör identitetsmissbruk, riktat bedrägeri och utpressning i stor skala och utgör därmed en fara för den allmänna ordningen och den nationella säkerheten. Pensionsmedlen i sig förblev orörda, men informationsplattformen Cybercrimepolice.ch varnade redan för bedrägerisamtal med de stulna uppgifterna.
 
-Därtill kommer ett konstaterande som är svårt att förklara för en tjänsteleverantör i denna kategori: **PK Softech AG har fortfarande ingen DMARC-post.** Dess domän har en strikt SPF-post, men ingen DMARC-policy (kontrollerat den 18.10.2026). Därmed kan avsändaradressen för den angripna tjänsteleverantören förfalskas utan att en mottagande e-postplattform tillförlitligt avvisar den. Efter ett dataläckage är detta den sämsta tänkbara utgångspunkten. Den som känner till en försäkrad persons namn, adress och bankuppgifter och dessutom kan förfalska ett e-postmeddelande i tjänsteleverantörens eller kassans namn kan skriva ett meddelande som knappast går att skilja från ett äkta, exempelvis en uppmaning att uppdatera IBAN för nästa pensionsutbetalning. Det är just mot denna förfalskning som DMARC skyddar.
+Därtill kommer ett konstaterande som är svårt att förklara för en tjänsteleverantör i denna kategori: **PK Softech AG har fortfarande ingen DMARC-post.** Dess domän har en strikt SPF-post, men ingen DMARC-policy (kontrollerat den 18.10.2026). Därmed kan avsändaradressen för den angripna tjänsteleverantören förfalskas utan att en mottagande e-postplattform tillförlitligt avvisar detta. Efter ett dataläckage är detta det sämsta tänkbara utgångsläget. Den som känner till en försäkrad persons namn, adress och bankuppgifter och dessutom kan förfalska ett e-postmeddelande i tjänsteleverantörens eller pensionskassans namn, kan skriva ett meddelande som knappt går att skilja från ett äkta, exempelvis en uppmaning att uppdatera IBAN för nästa pensionsutbetalning. Det är just mot denna förfalskning som DMARC skyddar.
 
-PK Softech är inte ett enskilt fall, utan det tydligaste exemplet på ett mönster. Jag har granskat hur väl schweiziska pensionsinstitutioner och deras typiska tjänsteleverantörer är rustade för e-postautentisering.
+PK Softech är inte ett enskilt fall, utan det tydligaste exemplet på ett mönster. Jag har granskat hur väl schweiziska pensionsinstitut och deras typiska tjänsteleverantörer är rustade för e-postautentisering.
 
-## Så genomfördes granskningen
+## Hur granskningen genomfördes
 
-Utvärderingen omfattar 66 pensionsinstitutioner inom den andra pelaren, från de stora offentligrättsliga kassorna och försäkringsbolagens samlingsstiftelser till mindre gemensamma institutioner. Endast offentliga DNS-poster granskades: SPF, DKIM, DMARC, MTA-STS, TLS-RPT och MX-poster. Det är samma uppgifter som varje mottagande e-postsystem frågar efter för varje inkommande meddelande.
+Utvärderingen omfattar 66 pensionsinstitut inom den andra pelaren, från stora offentligrättsliga kassor och försäkringsbolagens samlingsstiftelser till mindre gemensamma institutioner. Endast offentliga DNS-poster granskades: SPF, DKIM, DMARC, MX-poster samt DNSSEC och DANE (TLSA-poster för e-postservrar, kontrollerade den 19.10.2026). Det är samma uppgifter som varje mottagande e-postsystem frågar efter för varje inkommande meddelande.
 
-Granskningen var helt passiv. Endast offentligt DNS efterfrågades, ingen anslutning upprättades till institutionernas system, inga inloggningsförsök gjordes och inga personuppgifter samlades in. Utvärderingen återger endast sådant som ändå är offentligt tillgängligt för alla. Koncernsamlingstiftelser har sammanförts under huvuddomänen för huvudmannen; enskilda anslutna stiftelser kan avvika.
+Granskningen var helt passiv. Endast offentliga DNS-poster efterfrågades, ingen anslutning upprättades till institutionernas system, inga inloggningsförsök gjordes och inga personuppgifter samlades in. Utvärderingen återger endast det som redan är offentligt tillgängligt för alla. Koncernanknutna samlingsstiftelser har sammanförts under huvuddomänen för huvudmannen; enskilda anslutna stiftelser kan avvika.
 
 ## Resultatet
 
 | Egenskap | Andel av de 66 institutionerna |
 |---|---|
 | SPF finns | 88 % |
-| Strikt SPF (`-all`) | 59 % |
+| SPF strikt (`-all`) | 59 % |
 | DMARC finns | 59 % |
 | DMARC `p=reject` (fullständigt skydd) | 20 % |
 | DMARC `p=quarantine` | 26 % |
 | DMARC `p=none` (endast övervakning) | 14 % |
 | ingen DMARC | 41 % |
 | DKIM kan identifieras | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
 Tre punkter sticker ut.
 
 **Endast 20 procent är effektivt skyddade med DMARC `p=reject`.** Först denna policy instruerar en mottagande e-postplattform att faktiskt avvisa förfalskade meddelanden. I alla andra fall hamnar en förfalskning i tveksamma fall i den försäkrade personens inkorg.
 
-**41 procent saknar DMARC.** Deras avsändardomän kan utan vidare användas för bedrägliga e-postmeddelanden, och institutionen får inte ens veta om det eftersom rapporteringsfunktionen också saknas utan DMARC. Anmärkningsvärt är att detta även omfattar kassor som använder Microsoft 365 för sin e-post, där DMARC kan konfigureras med liten arbetsinsats.
+**41 procent har ingen DMARC.** Deras avsändardomän kan utan vidare användas för bedrägliga e-postmeddelanden, och institutionen får inte ens veta det, eftersom rapporteringsfunktionen också saknas utan DMARC. Anmärkningsvärt är att detta även omfattar kassor som använder Microsoft 365 för sin e-post, där DMARC kan konfigureras med liten arbetsinsats.
 
-**DMARC `p=none` är inget skydd.** De 14 procenten i denna grupp har satt en DMARC-policy, men lämnat den på övervakningsnivå. Det ger rapporter men avvisar inte ett enda förfalskat meddelande. I praktiken är det ett mellansteg som ofta blir kvar i månader eller år.
+**DMARC `p=none` är inget skydd.** De 14 procent i denna grupp har angett en DMARC-policy, men lämnat den på övervakningsnivån. Det ger rapporter men avvisar inte ett enda förfalskat meddelande. I praktiken är det ett mellansteg som ofta blir kvar i månader eller år.
 
-Därtill kommer ett genomgående konstaterande: med 2 procent är MTA-STS praktiskt taget obefintligt. Utan MTA-STS tvingas inte transportkryptering för inkommande e-post, vilket gynnar en angripare med åtkomst till transportvägen.
+Även för transportkryptering ser bilden liknande ut: endast 6 av de 66 institutionerna (9 procent) skyddar sina e-postservrar med DANE. Därmed kontrollerar en sändande e-postserver, med hjälp av en DNSSEC-signerad post, om den är krypterat ansluten till rätt mottagare. Förutsättningen är DNSSEC, som 38 procent av institutionerna redan har aktiverat. För dem är DANE nästa naturliga steg.
 
-## Alla dataposter att klicka igenom
+## Alla dataset att utforska
 
-Följande infografik visar den granskade statusen för samtliga 66 pensionsinstitutioner och 30 tjänsteleverantörer. Med filtren går det att begränsa efter DMARC-status, kategori och e-postleverantör, och varje post kan fällas ut för de fullständiga DNS-resultaten.
+Följande infografik visar den granskade statusen för alla 66 pensionsinstitut och 30 tjänsteleverantörer. Med filtren kan urvalet begränsas efter DMARC-status, kategori och e-postleverantör, och varje post kan expanderas för fullständiga DNS-resultat.
 
 <div data-dmarc-infographic></div>
 
 ## Jämförelse: de största schweiziska företagen
 
-Hur pensionsinstitutionerna står sig jämfört med övriga näringslivet visas av [Mail Security Index Switzerland](/open-data/mail-security-index). Det granskar varje dag över 500 av de största schweiziska företagen med samma passiva metod, med en interaktiv karta över kantoner, jämförelser efter bransch och e-postleverantör samt en detaljsida för varje företag. Bland dem finns även de banker, försäkringsbolag och IT-tjänsteleverantörer som pensionsinstitutionerna samarbetar med.
+Hur pensionsinstituten står sig jämfört med övriga näringslivet framgår av [Mail Security Index Switzerland](/open-data/mail-security-index). Den granskar dagligen över 500 av Schweiz största företag med samma passiva metod, med en interaktiv karta per kanton, jämförelser per bransch och e-postleverantör samt en detaljsida för varje företag. Där ingår även bankerna, försäkringsbolagen och IT-tjänsteleverantörerna som pensionsinstituten samarbetar med.
 
-Skillnaden är tydlig: Av de 518 företagen i indexet använder 38 procent DMARC med `p=reject` den 18.10.2026, medan andelen bland pensionsinstitutionerna är 20 procent. Helt utan DMARC är 5 procent av företagen, jämfört med 41 procent av pensionsinstitutionerna.
+Skillnaden är tydlig: Av de 518 företagen i indexet använder 38 procent DMARC med `p=reject` den 18.10.2026, medan motsvarande andel bland pensionsinstituten är 20 procent. Helt utan DMARC är 5 procent av företagen, jämfört med 41 procent av pensionsinstituten.
 
 ## Leverantörerna är den större frågan
 
-Händelsen i slutet av september drabbade inte en kassa, utan en gemensam tjänsteleverantör. Därför har jag granskat 30 typiska leverantörer med samma passiva metod: tillverkare av administrationsprogramvara, företag för outsourcad administration, aktuarietjänster och konsultverksamhet, depåbanker samt IT-tjänsteleverantörer.
+Händelsen i slutet av september drabbade inte en pensionskassa utan en gemensam tjänsteleverantör. Därför har jag med samma passiva metod granskat 30 typiska leverantörer: tillverkare av administrationsprogramvara, företag för outsourcad administration, aktuarietjänster och rådgivning, depåbanker och IT-tjänsteleverantörer.
 
-I genomsnitt är tjänsteleverantörerna något bättre rustade än kassorna: 40 procent använder DMARC med `p=reject`, jämfört med 20 procent bland institutionerna. Avgörande är dock fördelningen mellan kategorierna.
+I genomsnitt står tjänsteleverantörerna något bättre rustade än kassorna: 40 procent använder DMARC med `p=reject`, jämfört med 20 procent bland institutionerna. Avgörande är dock fördelningen mellan kategorierna.
 
 | Kategori | med DMARC `p=reject` |
 |---|---|
-| Aktuarietjänster och konsultverksamhet | bra |
+| Aktuarietjänster och rådgivning | bra |
 | Depåbanker | bra |
 | IT-tjänsteleverantörer | blandat |
 | Outsourcad administration | svagt |
 | Administrationsprogramvara | svagast |
 
-Tillverkarna av administrationsprogramvara är den svagaste gruppen. Ingen av de granskade programvaruleverantörerna använder DMARC med full verkan, och den angripna leverantören PK Softech har ingen DMARC-post alls. Det gäller just den kategori som behandlar pensionsuppgifter och är djupt integrerad med kassorna via gränssnitt, och det är kategorin för den aktuella händelsen.
+Tillverkarna av administrationsprogramvara är den svagaste gruppen. Ingen av de granskade programvaruleverantörerna använder DMARC med full effekt, och den angripna leverantören PK Softech har ingen DMARC-post alls. Det är just den kategori som behandlar pensionsuppgifter och är djupt integrerad med kassorna via gränssnitt, och det är kategorin i den aktuella händelsen.
 
-Därav följer den egentliga poängen för omsorgsplikten: En kassa med `p=reject` är väl skyddad så länge angriparen vill förfalska dess domän. Kan angriparen i stället förfalska domänen hos en dåligt skyddad tjänsteleverantör som ändå kommunicerar med de försäkrade, är e-postmeddelandet lika trovärdigt. Att skydda den egna domänen är därför bara det första steget. Det andra är att ålägga de viktigaste tjänsteleverantörerna att uppnå samma nivå, helst genom avtal.
+Därav följer den egentliga poängen för aktsamhetsplikten: En kassa med `p=reject` är väl skyddad så länge angriparen vill förfalska dess domän. Kan angriparen i stället förfalska domänen för en dåligt skyddad tjänsteleverantör genom vilken kommunikation med de försäkrade ändå sker, är e-postmeddelandet lika trovärdigt. Att säkra den egna domänen är därför bara det första steget. Det andra är att kräva samma nivå av de viktigaste tjänsteleverantörerna, helst genom avtal.
 
 ## Vad detta innebär för stiftelserådet
 
-Ansvaret för informationssäkerheten ligger hos pensionsinstitutionens högsta organ. Ett dataläckage utlöser dessutom konkreta skyldigheter enligt den reviderade dataskyddslagen: En överträdelse av datasäkerheten ska anmälas till EDÖB om den sannolikt leder till en hög risk för de berörda personerna, och de berörda ska informeras i den mån det behövs för deras skydd.
+Ansvaret för informationssäkerheten ligger hos pensionsinstitutionens högsta organ. Ett dataläckage medför dessutom konkreta skyldigheter enligt den reviderade dataskyddslagen: En överträdelse av datasäkerheten ska anmälas till EDÖB om den sannolikt medför en hög risk för de berörda personerna, och de berörda ska informeras i den mån det är nödvändigt för deras skydd.
 
-E-postautentisering är i detta läge den mest effektiva enskilda åtgärden med minst arbetsinsats. SPF, DKIM och DMARC kräver varken licens eller ny programvara. De består av DNS-poster och en korrekt konfiguration av den befintliga e-postplattformen. Skyddet fungerar omedelbart för varje försäkrad person, utan att personen själv behöver göra något.
+E-postautentisering är i denna situation den mest effektiva enskilda åtgärden med minst arbetsinsats. SPF, DKIM och DMARC kräver varken licenser eller ny programvara. De består av DNS-poster och en korrekt konfiguration av den befintliga e-postplattformen. Skyddet fungerar omedelbart för varje försäkrad person, utan att personen själv behöver göra något.
 
 ## Vad som behöver göras
 
 För institutioner utan effektivt skydd finns en tydlig väg till målet:
 
-1. **Granska SPF och gör den strikt.** SPF-posten listar de behöriga sändsystemen och avslutas med `-all`, så att alla övriga avsändare betraktas som obehöriga.
+1. **Kontrollera SPF och gör den strikt.** SPF-posten listar de behöriga sändsystemen och avslutas med `-all`, så att alla övriga avsändare betraktas som obehöriga.
 2. **Aktivera DKIM.** Varje utgående meddelande signeras kryptografiskt. I Microsoft 365 och i vanliga e-postgateways är detta en inställning, inte ett projekt.
-3. **Inför DMARC och skärp den stegvis.** Börja med `p=none` och aktiv rapportering för att registrera den legitima e-posttrafiken. Därefter `p=quarantine`, slutligen `p=reject`. Hela processen tar några veckor beroende på miljön, inte månader.
+3. **Inför DMARC och skärp den stegvis.** Börja med `p=none` och aktiv rapportering för att registrera legitim e-posttrafik. Därefter `p=quarantine`, och slutligen `p=reject`. Hela processen tar några veckor beroende på miljön, inte månader.
 4. **Utvärdera rapporteringen.** DMARC-rapporterna visar vem som skickar e-post i domänens namn och avslöjar både bortglömda legitima system och missbruk.
-5. **Komplettera med MTA-STS och TLS-RPT.** Båda tvingar fram och övervakar transportkrypteringen för inkommande e-post.
-6. **Håll tjänsteleverantörerna ansvariga.** Programvaruleverantörer, outsourcad administration och IT-partner bör kunna styrka samma nivå för SPF, DKIM och DMARC. Detta hör hemma i avtalen och i den regelbundna leverantörsgranskningen.
+5. **Utvärdera åtminstone DANE och se över e-postkrypteringen.** DANE skyddar transportkrypteringen mellan e-postservrar via DNSSEC. Om den egna e-postplattformen och DNS-leverantören har stöd för detta kan klarläggas med liten arbetsinsats. För meddelanden med löne- och pensionsuppgifter bör det dessutom regleras hur de skickas end-to-end-krypterat, exempelvis via en e-postgateway med S/MIME eller säker leverans via en webbportal.
+6. **Håll tjänsteleverantörerna ansvariga.** Programvaruleverantörer, outsourcad administration och IT-partner bör kunna visa att de uppfyller samma nivå för SPF, DKIM och DMARC. Det hör hemma i avtalen och i den regelbundna leverantörsgranskningen.
 
 ## Slutsats
 
-De senaste årens angrepp riktade sig mot en tjänsteleverantör, inte mot kassorna själva. Följdskadorna uppstår dock där en avsändardomän är oskyddad, både hos kassan och hos dess leverantörer. Fyra av fem granskade pensionsinstitutioner är inte fullt skyddade mot förfalskade avsändare, två av fem har ingen DMARC alls, och just tillverkarna av administrationsprogramvara presterar sämst. Bristen är välkänd, billig att åtgärda och får omedelbar effekt. Efter ett dataläckage som berör namn, adress och bankuppgifter är den inte en teknisk bisak, utan en del av det högsta organets omsorgsplikt, genom hela leveranskedjan.
+De senaste attackerna riktades mot en tjänsteleverantör, inte mot kassorna själva. Följdskadorna uppstår dock där en avsändardomän är oskyddad, både hos pensionskassan och dess leverantörer. Fyra av fem granskade pensionsinstitut är inte helt skyddade mot förfalskade avsändare, två av fem har ingen DMARC alls, och just tillverkarna av administrationsprogramvara presterar sämst. Bristen är känd, billig att åtgärda och får omedelbar effekt. Efter ett dataläckage som berör namn, adress och bankuppgifter är den inte en teknisk bisak, utan en del av aktsamhetsplikten för det högsta organet, genom hela leveranskedjan.
 
 ## Källor
 
 1.  [SRF: Förbundets pensionskassa – hur kunde känsliga data hamna hos ett externt programvaruföretag?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Bakgrund till händelsen, berörda datatyper och programvaruleverantörens roll.
 
-2.  [cash.ch (AWP): Angrepp mot Publicas leverantör, löneuppgifter kan ha berörts](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica uppger för AWP att PK Softech AG är det angripna företaget.
+2.  [cash.ch (AWP): Attack mot Publica-leverantör, löneuppgifter kan ha berörts](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica anger PK Softech AG som det angripna företaget för AWP.
 
-3.  [Netzwoche: Förbundets pensionskassa Publica rapporterar dataläckage](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Rapport om angreppet mot programvaruleverantören och dataläckaget.
+3.  [Netzwoche: Förbundets pensionskassa Publica rapporterar dataläckage](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Rapport om attacken mot programvaruleverantören och dataläckaget.
 
-4.  [Mimikama: Schweizisk polis varnar för möjliga investeringssamtal efter dataläckage](https://www.mimikama.org/?p=436628): Bedömning av varningen för bedrägerisamtal med de läckta uppgifterna.
+4.  [Mimikama: Schweizisk polis varnar för möjliga investeringssamtal efter dataläckage](https://www.mimikama.org/?p=436628): Kontext till varningen för bedrägerisamtal med de läckta uppgifterna.
 
 5.  [EDÖB: Anmälan av överträdelser av datasäkerheten](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Anmälningsskyldighet enligt revDSG och förfarande vid överträdelser av datasäkerheten.
 
@@ -107336,24 +107336,24 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 
 ----
 
-# Den angrepne tjenesteleverandøren for pensjonskasser har ingen DMARC-post i det hele tatt
+# Den angrepne tjenesteleverandøren for pensjonskasser har ingen DMARC-record
 
 URL: https://rafaelpfister.ch/no/blog/den-angrepne-tjenesteleverandoren-for-pensjonskasser-har-ingen-dmarc-post-i-det-hele-tatt
 Datum: 2026-10-18
 
-I slutten av september 2026 ble PK Softech AG angrepet, en programvareprodusent hvis pensjonsløsning brukes av flere sveitsiske pensjonskasser. Data ble lekket via denne veien. Ifølge medieomtalen er blant annet den føderale pensjonskassen Publica, Migros' pensjonskasse og pensjonskassen i byen Zürich, samt andre institusjoner, berørt. Avhengig av kassen gjelder det navn, AHV-nummer, sivilstatus, adresse og IBAN, samt lønns- og pensjonsdata.
+I slutten av september 2026 ble PK Softech AG angrepet, en programvareprodusent hvis pensjonsløsning brukes av flere sveitsiske pensjonskasser. Data lekket via denne veien. Ifølge medieomtalen er blant annet den føderale pensjonskassen Publica, Migros' pensjonskasse og pensjonskassen til byen Zürich, samt andre institusjoner, berørt. Avhengig av kassen dreier det seg om navn, AHV-nummer, sivilstatus, adresse og IBAN samt lønns- og pensjonsdata.
 
-Denne lekkasjen er alvorlig i seg selv. Den omfatter identifikasjons- og finansdata for en stor del av den yrkesaktive befolkningen og, via Publica, store deler av den føderale forvaltningen. Data i denne mengden og kvaliteten er ikke bare et problem for den enkelte personen. De muliggjør identitetsmisbruk, målrettet svindel og utpressing i stor skala og utgjør dermed en fare for offentlig orden og nasjonal sikkerhet. Selve pensjonsmidlene forble uberørt, men Cybercrimepolice advarte allerede mot svindelanrop med de stjålne dataene.
+Denne lekkasjen er alvorlig i seg selv. Den berører identifikasjons- og finansdata for en stor del av den yrkesaktive befolkningen og, gjennom Publica, store deler av den føderale forvaltningen. Data i denne mengden og kvaliteten er ikke bare et problem for den enkelte. De muliggjør identitetsmisbruk, målrettet svindel og utpressing i stor skala og utgjør dermed en fare for offentlig orden og nasjonal sikkerhet. Selve pensjonsmidlene forble uberørt, men informasjonsplattformen Cybercrimepolice.ch advarte allerede mot svindelanrop med de stjålne dataene.
 
-I tillegg kommer et funn som er vanskelig å forklare for en tjenesteleverandør i denne kategorien: **PK Softech AG har fortsatt ingen DMARC-post.** Domenet har en streng SPF-post, men ingen DMARC-policy (kontrollert 18.10.2026). Avsenderadressen til den angrepne tjenesteleverandøren kan dermed forfalskes uten at en mottakende e-postplattform pålitelig avviser den. Etter en datalekkasje er dette verst tenkelige utgangspunkt. Den som kjenner navn, adresse og bankforbindelse til en forsikret person og i tillegg kan forfalske en e-post i tjenesteleverandørens eller kassens navn, kan skrive en melding som knapt lar seg skille fra en ekte, for eksempel en oppfordring om å oppdatere IBAN for neste pensjonsutbetaling. Det er nettopp mot denne forfalskningen DMARC beskytter.
+I tillegg kommer et funn som er vanskelig å forklare for en tjenesteleverandør i denne kategorien: **PK Softech AG har fortsatt ingen DMARC-record.** Domenet deres har en streng SPF-oppføring, men ingen DMARC-policy (kontrollert 18.10.2026). Dermed kan avsenderadressen til den angrepne tjenesteleverandøren forfalskes uten at en mottakende e-postplattform pålitelig avviser dette. Etter en datalekkasje er dette det verst tenkelige utgangspunktet. Den som kjenner navn, adresse og bankforbindelse til en forsikret person og i tillegg kan forfalske en e-post i tjenesteleverandørens eller kassens navn, kan skrive en melding som knapt lar seg skille fra en ekte, for eksempel en oppfordring om å oppdatere IBAN for neste pensjonsutbetaling. Det er nettopp mot slik forfalskning DMARC beskytter.
 
-PK Softech er ikke et enkelttilfelle, men det tydeligste eksempelet på et mønster. Jeg har undersøkt hvor godt sveitsiske pensjonsinnretninger og deres typiske tjenesteleverandører er stilt når det gjelder e-postautentisering.
+PK Softech er ikke et enkelttilfelle, men det tydeligste eksempelet på et mønster. Jeg har undersøkt hvor godt sveitsiske pensjonsordninger og deres typiske tjenesteleverandører er rustet når det gjelder e-postautentisering.
 
-## Hvordan undersøkelsen ble gjennomført
+## Hvordan kontrollen ble gjennomført
 
-Analysen omfatter 66 pensjonsinnretninger i andre søyle, fra store offentligrettslige kasser via forsikringsselskapenes fellesstiftelser til mindre fellesinnretninger. Det ble utelukkende undersøkt offentlige DNS-poster: SPF, DKIM, DMARC, MTA-STS, TLS-RPT og MX-postene. Dette er de samme opplysningene som ethvert mottakende e-postsystem spør etter for hver innkommende melding.
+Analysen omfatter 66 pensjonsordninger i andre søyle, fra de store offentligrettslige kassene via forsikringsselskapenes fellesstiftelser til mindre fellesordninger. Kun offentlige DNS-oppføringer ble kontrollert: SPF, DKIM, DMARC, MX-oppføringer samt DNSSEC og DANE (TLSA-oppføringer for e-postserverne, kontrollert 19.10.2026). Dette er de samme opplysningene som ethvert mottakende e-postsystem forespør ved hver innkommende melding.
 
-Undersøkelsen var rent passiv. Det ble bare foretatt oppslag i offentlig DNS, ingen forbindelse til institusjonenes systemer ble opprettet, ingen innlogging forsøkt og ingen personopplysninger innhentet. Analysen gjengir bare det som uansett er offentlig tilgjengelig for alle. Konserntilknyttede fellesstiftelser er samlet under hoveddomenet til foretaket; enkelte tilknyttede stiftelser kan avvike.
+Kontrollen var rent passiv. Det ble bare gjort oppslag i offentlig DNS, det ble ikke opprettet forbindelse til institusjonenes systemer, ikke forsøkt innlogging og ikke innhentet personopplysninger. Analysen gjengir bare det som uansett er synlig for alle fra offentlige kilder. Konsernfellesstiftelser er samlet under hoveddomenet til den ansvarlige enheten; enkelte tilknyttede stiftelser kan avvike.
 
 ## Resultatet
 
@@ -107365,77 +107365,77 @@ Undersøkelsen var rent passiv. Det ble bare foretatt oppslag i offentlig DNS, i
 | DMARC `p=reject` (full beskyttelse) | 20 % |
 | DMARC `p=quarantine` | 26 % |
 | DMARC `p=none` (kun overvåking) | 14 % |
-| ingen DMARC | 41 % |
-| DKIM påvisbar | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| Ingen DMARC | 41 % |
+| DKIM påviselig | 55 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
 Tre punkter skiller seg ut.
 
 **Bare 20 prosent er effektivt beskyttet med DMARC `p=reject`.** Først denne policyen instruerer en mottakende e-postplattform om faktisk å avvise forfalskede meldinger. I alle andre tilfeller havner en forfalskning i tvilstilfeller i innboksen til den forsikrede personen.
 
-**41 prosent har ingen DMARC.** Avsenderdomenet deres kan uten videre brukes til svindel-e-post, og institusjonen får ikke engang vite om det, fordi rapporteringsfunksjonen også mangler uten DMARC. Det er påfallende at dette også omfatter kasser som bruker Microsoft 365 til e-post, der DMARC kan settes opp med liten innsats.
+**41 prosent har ingen DMARC.** Avsenderdomenet deres kan uten videre brukes til svindel-e-poster, og institusjonen får ikke engang vite om det, fordi rapporteringsfunksjonen også mangler uten DMARC. Det er påfallende at dette også omfatter kasser som bruker Microsoft 365 til e-post, der DMARC kan settes opp med liten innsats.
 
-**DMARC `p=none` er ingen beskyttelse.** De 14 prosentene i denne gruppen har satt en DMARC-policy, men latt den stå på overvåkingsnivå. Det gir rapporter, men avviser ikke én eneste forfalsket melding. I praksis er dette et mellomtrinn som ofte blir stående i måneder eller år.
+**DMARC `p=none` er ingen beskyttelse.** De 14 prosentene i denne gruppen har satt en DMARC-policy, men latt den stå på overvåkingsnivået. Det gir rapporter, men avviser ikke én eneste forfalsket melding. I praksis er dette et mellomsteg som ofte blir stående i måneder eller år.
 
-I tillegg kommer et gjennomgående funn: MTA-STS er med 2 prosent praktisk talt fraværende. Uten MTA-STS håndheves ikke transportkryptering for innkommende e-post, noe som gagner en angriper med tilgang til transportveien.
+Transportkrypteringen viser et lignende bilde: Bare 6 av de 66 institusjonene (9 prosent) sikrer e-postserverne sine med DANE. Da kontrollerer en avsendende e-postserver, ved hjelp av en oppføring signert med DNSSEC, om den er kryptert koblet til riktig mottaker. Forutsetningen er DNSSEC, som 38 prosent av institusjonene allerede har aktivert. For disse er DANE det naturlige neste steget.
 
-## Alle datasettene du kan klikke deg gjennom
+## Alle datasett klikkbart
 
-Følgende infografikk viser den undersøkte statusen for alle 66 pensjonsinnretningene og 30 tjenesteleverandørene. Med filtrene kan du avgrense etter DMARC-status, kategori og e-postleverandør, og hver oppføring kan utvides for å vise fullstendige DNS-funn.
+Følgende infografikk viser den kontrollerte statusen for alle 66 pensjonsordninger og 30 tjenesteleverandører. Med filtrene kan du avgrense etter DMARC-status, kategori og e-postleverandør, og hver oppføring kan utvides for å se de fullstendige DNS-funnene.
 
 <div data-dmarc-infographic></div>
 
 ## Til sammenligning: de største sveitsiske selskapene
 
-Hvordan pensjonsinnretningene står sammenlignet med resten av næringslivet, viser [E-postsikkerhetsindeksen Sveits](/open-data/mail-security-index). Den undersøker daglig over 500 av de største sveitsiske selskapene med samme passive metode, med et interaktivt kart over kantonene, sammenligninger etter bransje og e-postleverandør samt en detaljside for hvert selskap. Blant dem er også bankene, forsikringsselskapene og IT-tjenesteleverandørene som pensjonsinnretningene samarbeider med.
+Hvordan pensjonsordningene ligger an sammenlignet med resten av næringslivet, viser [Mail-Sicherheitsindex Schweiz](/open-data/mail-security-index). Den kontrollerer daglig over 500 av de største sveitsiske selskapene med samme passive metode, med interaktivt kart etter kantoner, sammenligninger etter bransje og e-postleverandør og en detaljside for hvert selskap. Dette omfatter også bankene, forsikringsselskapene og IT-tjenesteleverandørene som pensjonsordningene samarbeider med.
 
-Forskjellen er tydelig: Av de 518 selskapene i indeksen bruker 38 prosent DMARC med `p=reject` per 18.10.2026, mot 20 prosent blant pensjonsinnretningene. Helt uten DMARC er 5 prosent av selskapene, mot 41 prosent blant pensjonsinnretningene.
+Forskjellen er tydelig: Av de 518 selskapene i indeksen bruker 38 prosent DMARC med `p=reject` per 18.10.2026, mens andelen blant pensjonsordningene er 20 prosent. Helt uten DMARC er 5 prosent av selskapene, mot 41 prosent av pensjonsordningene.
 
 ## Leverandørene er det større temaet
 
-Hendelsen i slutten av september rammet ikke en kasse, men en felles tjenesteleverandør. Derfor har jeg undersøkt 30 typiske leverandører med samme passive metode: produsenter av administrasjonsprogramvare, selskaper for outsourcet forretningsadministrasjon, aktuarvirksomhet og rådgivning, depotbanker og IT-tjenesteleverandører.
+Hendelsen i slutten av september rammet ikke en kasse, men en felles tjenesteleverandør. Derfor har jeg kontrollert 30 typiske underleverandører med samme passive metode: produsenter av administrasjonsprogramvare, selskaper for utkontraktert administrasjon, aktuarvirksomhet og rådgivning, depotbanker og IT-tjenesteleverandører.
 
-I gjennomsnitt står tjenesteleverandørene noe bedre enn kassene: 40 prosent bruker DMARC med `p=reject`, mot 20 prosent blant institusjonene. Det avgjørende er imidlertid fordelingen mellom kategoriene.
+I gjennomsnitt står tjenesteleverandørene noe bedre rustet enn kassene: 40 prosent bruker DMARC med `p=reject`, mot 20 prosent blant institusjonene. Det avgjørende er imidlertid fordelingen mellom kategoriene.
 
 | Kategori | med DMARC `p=reject` |
 |---|---|
 | Aktuarvirksomhet og rådgivning | god |
 | Depotbanker | god |
 | IT-tjenesteleverandører | blandet |
-| Outsourcet forretningsadministrasjon | svak |
+| Utkontraktert administrasjon | svak |
 | Administrasjonsprogramvare | svakest |
 
-Produsentene av administrasjonsprogramvare er den svakeste gruppen. Ingen av de undersøkte programvareleverandørene bruker DMARC med full effekt, og den angrepne leverandøren PK Softech har ingen DMARC-post i det hele tatt. Dette er nettopp kategorien som behandler pensjonsdata og er tett koblet til kassene gjennom grensesnitt, og det er kategorien for den aktuelle hendelsen.
+Produsentene av administrasjonsprogramvare er den svakeste gruppen. Ingen av de kontrollerte programvareleverandørene bruker DMARC med full effekt, og den angrepne leverandøren PK Softech har ingen DMARC-record i det hele tatt. Dette er nettopp kategorien som behandler pensjonsdata og er tett integrert med kassene gjennom grensesnitt, og det er kategorien i den aktuelle hendelsen.
 
-Dette leder til det egentlige punktet for aktsomhet: En kasse med `p=reject` er godt beskyttet så lenge angriperen vil forfalske dens domene. Kan angriperen i stedet forfalske domenet til en dårlig beskyttet tjenesteleverandør som uansett kommuniserer med de forsikrede, er e-posten like troverdig. Sikring av eget domene er derfor bare første steg. Det andre er å forplikte de viktigste tjenesteleverandørene til samme nivå, helst kontraktsmessig.
+Dette leder til det egentlige poenget når det gjelder aktsomhet: En kasse med `p=reject` er godt beskyttet så lenge angriperen vil forfalske domenet dens. Kan angriperen i stedet forfalske domenet til en dårlig beskyttet tjenesteleverandør som uansett kommuniserer med de forsikrede, er e-posten like troverdig. Sikring av eget domene er derfor bare første steg. Det andre er å forplikte de viktigste tjenesteleverandørene til samme nivå, helst kontraktsmessig.
 
 ## Hva dette betyr for stiftelsesrådet
 
-Ansvaret for informasjonssikkerhet ligger hos det øverste organet i pensjonsinnretningen. En datalekkasje utløser dessuten konkrete plikter etter den reviderte personvernloven: Et brudd på datasikkerheten skal meldes til EDÖB dersom det sannsynligvis medfører høy risiko for de berørte personene, og de berørte skal informeres i den grad det er nødvendig for deres beskyttelse.
+Ansvaret for informasjonssikkerheten ligger hos det øverste organet i pensjonsordningen. En datalekkasje utløser dessuten konkrete plikter etter den reviderte personvernloven: Et brudd på datasikkerheten skal meldes til EDÖB dersom det sannsynligvis medfører høy risiko for de berørte personene, og de berørte skal informeres i den grad det er nødvendig for deres beskyttelse.
 
-E-postautentisering er i denne situasjonen det mest effektive enkelttiltaket med minst innsats. SPF, DKIM og DMARC krever ingen lisens og ingen ny programvare. De består av DNS-poster og en korrekt konfigurasjon av den eksisterende e-postplattformen. Beskyttelsen virker umiddelbart for hver forsikrede person, uten at vedkommende selv må gjøre noe.
+E-postautentisering er i denne situasjonen det mest effektive enkelttiltaket med minst innsats. SPF, DKIM og DMARC krever ingen lisens og ingen ny programvare. De består av DNS-oppføringer og en korrekt konfigurasjon av den eksisterende e-postplattformen. Beskyttelsen virker umiddelbart for hver forsikret person, uten at vedkommende selv må gjøre noe.
 
 ## Hva som må gjøres
 
-For institusjoner uten effektiv beskyttelse fører en klar vei til målet:
+For institusjoner uten effektiv beskyttelse finnes det en klar vei til målet:
 
-1. **Kontroller SPF og sett den strengt.** SPF-posten lister opp de autoriserte utsendelsessystemene og avsluttes med `-all`, slik at alle øvrige avsendere anses som uautoriserte.
-2. **Aktiver DKIM.** Hver utgående melding signeres kryptografisk. I Microsoft 365 og vanlige e-postgatewayer er dette en innstilling, ikke et prosjekt.
-3. **Innfør DMARC og stram den gradvis inn.** Start med `p=none` og aktiv rapportering for å registrere legitim e-posttrafikk. Deretter `p=quarantine`, til slutt `p=reject`. Hele prosessen tar, avhengig av miljøet, noen uker, ikke måneder.
-4. **Analyser rapporteringen.** DMARC-rapportene viser hvem som sender e-post på vegne av domenet, og avdekker både glemte legitime systemer og misbruk.
-5. **Suppler med MTA-STS og TLS-RPT.** Begge håndhever og overvåker transportkrypteringen for innkommende e-post.
-6. **Hold tjenesteleverandørene ansvarlige.** Programvareleverandører, outsourcet forretningsadministrasjon og IT-partnere bør dokumentere samme nivå for SPF, DKIM og DMARC. Dette hører hjemme i kontraktene og i den regelmessige leverandørkontrollen.
+1. **Kontroller SPF og sett det strengt.** SPF-oppføringen lister opp de autoriserte utsendingssystemene og avsluttes med `-all`, slik at alle øvrige avsendere anses som ikke autoriserte.
+2. **Aktiver DKIM.** Hver utgående melding signeres kryptografisk. I Microsoft 365 og i de vanlige e-postgatewayene er dette en innstilling, ikke et prosjekt.
+3. **Innfør DMARC og skjerp den trinnvis.** Start med `p=none` og aktiv rapportering for å registrere legitim e-posttrafikk. Deretter `p=quarantine`, til slutt `p=reject`. Hele prosessen tar, avhengig av miljøet, noen uker, ikke måneder.
+4. **Evaluer rapporteringen.** DMARC-rapportene viser hvem som sender e-post på vegne av domenet, og avdekker både glemte legitime systemer og misbruk.
+5. **Vurder i det minste DANE og se på e-postkrypteringen.** DANE sikrer transportkrypteringen mellom e-postservere via DNSSEC. Om egen e-postplattform og DNS-leverandøren støtter dette, kan avklares med liten innsats. For meldinger med lønns- og pensjonsdata bør det dessuten fastsettes hvordan de sendes ende-til-ende-kryptert, for eksempel via en e-postgateway med S/MIME eller sikker levering via en nettportal.
+6. **Hold tjenesteleverandørene ansvarlige.** Programvareleverandører, utkontraktert administrasjon og IT-partnere bør dokumentere samme nivå for SPF, DKIM og DMARC. Dette hører hjemme i kontraktene og i den regelmessige leverandørkontrollen.
 
 ## Konklusjon
 
-Angrepene i den senere tiden var rettet mot en tjenesteleverandør, ikke mot kassene selv. Følgeskadene oppstår imidlertid der et avsenderdomene er ubeskyttet, både hos kassen og hos dens leverandører. Fire av fem undersøkte pensjonsinnretninger er ikke fullt beskyttet mot forfalskede avsendere, to av fem har ingen DMARC i det hele tatt, og nettopp produsentene av administrasjonsprogramvare kommer dårligst ut. Gapet er kjent, rimelig å lukke og virker umiddelbart. Etter en datalekkasje som omfatter navn, adresse og bankforbindelse, er det ikke en teknisk detalj, men en del av aktsomhetsplikten til det øverste organet, langs hele leverandørkjeden.
+Angrepene i den senere tiden var rettet mot en tjenesteleverandør, ikke mot kassene selv. Følgeskadene oppstår imidlertid der et avsenderdomene er ubeskyttet, både hos kassen og dens underleverandører. Fire av fem kontrollerte pensjonsordninger er ikke fullt beskyttet mot forfalskede avsendere, to av fem har ingen DMARC i det hele tatt, og nettopp produsentene av administrasjonsprogramvare kommer dårligst ut. Gapet er kjent, rimelig å lukke og har umiddelbar effekt. Etter en datalekkasje som berører navn, adresse og bankforbindelse, er dette ikke en teknisk detalj, men en del av aktsomhetsplikten til det øverste organet, langs hele leverandørkjeden.
 
 ## Kilder
 
-1.  [SRF: Den føderale pensjonskassen – hvordan kunne sensitive data havne hos et eksternt programvareselskap](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Bakgrunn om hendelsen, berørte datatyper og programvareleverandørens rolle.
+1.  [SRF: Den føderale pensjonskassen – hvordan kunne sensitive data havne hos et eksternt programvareselskap?](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Bakgrunn om hendelsen, berørte datatyper og programvareleverandørens rolle.
 
-2.  [cash.ch (AWP): Angrep på Publica-leverandør, lønnsdata kan ha vært berørt](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica oppgir PK Softech AG som det angrepne selskapet overfor AWP.
+2.  [cash.ch (AWP): Angrep på Publicas leverandør, lønnsdata kan ha vært berørt](https://www.cash.ch/news/top-news/angriff-auf-publica-lieferanten-lohndaten-konnten-betroffen-sein-975247): Publica oppgir overfor AWP at PK Softech AG er selskapet som ble angrepet.
 
 3.  [Netzwoche: Den føderale pensjonskassen Publica melder om datalekkasje](https://www.netzwoche.ch/news/2026-10-08/bundespensionskasse-publica-meldet-datenabfluss): Melding om angrepet på programvareleverandøren og datalekkasjen.
 

@@ -24,8 +24,6 @@ zielgruppe: "entscheider"
 blueprint: true
 blueprintId: "BP-001"
 draft: true
-aiPrompt: |
-  Du bist mein Assistent für die Einführung von DMARC in unserem Unternehmen. Arbeite mit Blueprint BP-001 aus diesem Artikel entlang seiner Logik: Zielarchitektur und Massnahmen M1 bis M6 verstehen, Eignung und Annahmen prüfen, dann Umsetzung, Betrieb, Recht, Messgrössen und Entscheidungsvorlage auf uns zuschneiden. Frage mich zuerst: 1. Firmenname und Branche, 2. Anzahl Maildomains und ob Newsletter- oder Rechnungsversand über Dienstleister läuft, 3. aktueller Stand von SPF, DKIM und DMARC (falls unbekannt: weise mich auf den Mail-DNS-Check unter https://rafaelpfister.ch/tools/mail-check hin), 4. ob es bereits Spoofing- oder Phishing-Vorfälle mit unserer Domain gab, 5. interne oder externe Umsetzung. Kennzeichne rechtliche Aussagen nach Schweizer Recht (revDSG); EU-Recht nur als markierten EU-Hinweis.
 ---
 
 Kriminelle können im Namen Ihrer Domain E-Mails verschicken, solange Ihre Domain das nicht technisch unterbindet. Genau das leistet DMARC im Zusammenspiel mit SPF und DKIM: Es legt fest, wie fremde Mailserver mit Nachrichten umgehen sollen, die vorgeben, von Ihnen zu stammen, und liefert Ihnen Berichte über jeden Missbrauchsversuch. Trotzdem scheitern DMARC-Projekte selten an der Technik, sondern am fehlenden Auftrag: Ohne Budget, Verantwortlichkeiten und Rückendeckung der Geschäftsleitung bleibt die Domain im Dauerzustand "Monitoring", der niemanden schützt.

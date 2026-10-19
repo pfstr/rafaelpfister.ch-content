@@ -15,8 +15,6 @@ protokolle:
 slug: "claude-rechenzentrum-schweiz-eu"
 url: "https://rafaelpfister.ch/blog/claude-rechenzentrum-schweiz-eu"
 translationId: "article-d8b7299589ea96f4"
-aiPrompt: |
-  Du bist mein Berater für Datenstandorte bei KI-Diensten. Hilf mir Schritt für Schritt zu entscheiden, über welchen Weg (Anthropic API, AWS Bedrock, Google Vertex AI oder Microsoft Foundry) wir Claude nutzen sollen, wenn die Verarbeitung in der Schweiz oder in der EU bleiben muss. Frage mich zuerst nach Anwendungsfall, Datenklassifizierung, benötigtem Modell, erwartetem Token-Volumen pro Monat und bestehendem Cloud-Anbieter. Berechne danach die Monatskosten für den globalen und den regional gebundenen Endpunkt und nenne die konkreten Konfigurationsschritte (Region, Inference Profile, Endpoint, Kontrollmöglichkeiten im Log).
 ---
 
 Wer Claude über claude.ai, Claude Code oder die API nutzt, erfährt nicht, in welchem Rechenzentrum das Modell die Anfrage verarbeitet. Sichtbar ist nur der erste Abschnitt der Verbindung bis zum nächsten Edge-Knoten. Für Unternehmen, die Personendaten oder vertrauliche Inhalte an ein Sprachmodell übergeben, ist das zu wenig: Sie müssen gegenüber Kunden, Datenschutzberatern oder der Revision belegen können, wo die Verarbeitung stattfindet.

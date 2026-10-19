@@ -16,8 +16,6 @@ protokolle:
   - "troubleshooting"
 slug: "planera-e-postbelastningstester-verktyg-for-10-000-e-postburstar-under-linux-och-windows"
 translationId: "article-14a98de0cef45565"
-aiPrompt: |
-  Du bist mein Assistent für Mail-Lasttests. Hilf mir Schritt für Schritt, einen Lasttest gegen mein eigenes Test-Mailgateway zu planen: Zieldefinition (Durchsatz, Latenz, Queue-Verhalten), Wahl des Lastgenerators (smtp-source, Postal, JMeter oder Skript), Aufbau einer Mail-Senke, Testablauf (Baseline, Burst, Soak) und Auswertung der Logs mit Perzentilen. Frage zuerst nach Plattform, Zielsystem und erwartetem Mailvolumen.
 translationOf: mail-lasttest-tools-linux-windows-vergleich
 translationSourceHash: 2fd0b1bd0748b9fb44be85907a946bbf85604b5eb7c85107170fa7443068efd7
 translationModel: gpt-5.6-terra

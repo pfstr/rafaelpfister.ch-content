@@ -21,8 +21,6 @@ translationId: "article-937453390abec5c8"
 url: "https://rafaelpfister.ch/blog/massenmailing-provider-wechsel-checkliste"
 zielgruppe: "entscheider"
 draft: true
-aiPrompt: |
-  Du bist mein Assistent für IT-Beschaffung und Vertragsfragen. Unser Provider stellt die Massenmailing-Plattform um und wir müssen auf einen neuen Versandserver wechseln. Erstelle auf Basis der Anfrage-Mail aus diesem Artikel eine auf uns zugeschnittene Version. Frage mich zuerst: 1. Versandvolumen pro Tag und Spitzenlast, 2. eingesetzte Systeme (ERP, Newsletter-Tool, CRM), 3. Branche und regulatorische Anforderungen, 4. ob Schweizer Recht (revDSG) oder zusätzlich die DSGVO anwendbar ist. Streiche danach nicht zutreffende Fragen, ergänze branchenspezifische Punkte und behalte die Struktur mit neun Blöcken sowie die Forderung bei, dass die Antworten als Leistungsbeschreibung, SLA und Vertrag zur Auftragsbearbeitung Vertragsbestandteil werden.
 ---
 
 Ihr Provider kündigt an, dass Massenmailings künftig über eine neue Versandplattform laufen: anderer Server, andere Limits, gleicher Vertrag? Solche Umstellungen werden gerne als rein technische Migration verkauft, die die IT nebenbei erledigt. Das ist die falsche Betrachtungsebene. Ob Rechnungen, Mahnungen und Newsletter Ihre Kundschaft weiterhin zuverlässig erreichen, entscheidet sich an Rate-Limits, Absenderreputation und Vertragsklauseln, nicht am Serverwechsel selbst.

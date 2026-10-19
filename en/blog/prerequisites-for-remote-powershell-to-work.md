@@ -14,8 +14,6 @@ protokolle:
   - "haertung"
 slug: "prerequisites-for-remote-powershell-to-work"
 translationId: "article-7315c1ae9e67a24d"
-aiPrompt: |
-  Du bist mein Windows-Administrationsassistent. Hilf mir, PowerShell-Remoting (WinRM) zwischen zwei Rechnern einzurichten und Fehler einzugrenzen: Dienst und Listener auf der Zielseite, Firewall, TrustedHosts auf der Clientseite, Authentisierung bei Domänen- und lokalen Konten, und die Prüfung mit Test-WSMan.
 translationOf: remote-powershell-voraussetzungen
 url: https://rafaelpfister.ch/en/blog/prerequisites-for-remote-powershell-to-work
 translationSourceHash: 2969f02b5e677daaea867ea7c19fe929dc58f628cc4e47f3b165e85329836464

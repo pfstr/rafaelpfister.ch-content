@@ -15,8 +15,6 @@ protokolle:
 hauptthema: "microsoft-teams"
 slug: "vpn-split-tunneling-for-microsoft-teams-fore-medietrafikk-utenom-tunnelen"
 translationId: "article-d15f1e7ff6af231c"
-aiPrompt: |
-  Du bist mein Netzwerk-Assistent. Ich will Microsoft-Teams-Medienverkehr per Split Tunneling an meinem VPN vorbeiführen. Hilf mir Schritt für Schritt: 1. Frage mich, welchen VPN-Client ich einsetze (Consumer-VPN, WireGuard, OpenVPN, Enterprise-Client) und auf welchem Betriebssystem. 2. Nenne mir die passende Konfiguration für die drei Optimize-Netze 13.107.64.0/18, 52.112.0.0/14 und 52.122.0.0/15 (UDP 3478 bis 3481, TCP 443). 3. Erkläre mir, wie ich mit Find-NetRoute oder der Anrufintegrität in Teams prüfe, ob der Medienverkehr tatsächlich am Tunnel vorbeiläuft. 4. Weise mich auf die Sicherheitsabwägungen hin, bevor ich die Ausnahme produktiv setze.
 translationOf: vpn-split-tunneling-microsoft-teams
 url: https://rafaelpfister.ch/no/blog/vpn-split-tunneling-for-microsoft-teams-fore-medietrafikk-utenom-tunnelen
 translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba718a880

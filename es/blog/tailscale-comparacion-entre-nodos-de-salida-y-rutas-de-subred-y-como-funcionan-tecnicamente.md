@@ -14,8 +14,6 @@ protokolle:
   - "haertung"
 slug: "tailscale-comparacion-entre-nodos-de-salida-y-rutas-de-subred-y-como-funcionan-tecnicamente"
 translationId: "article-c26cca4d635b9a04"
-aiPrompt: |
-  Du bist mein Netzwerkassistent. Erkläre mir den Unterschied zwischen einem Tailscale-Subnetz-Router und einem Exit-Node, wann ich welchen brauche, und wie Tailscale das technisch umsetzt (WireGuard-Data-Plane, Routen-Freigabe über den Coordination Server, IP-Weiterleitung und SNAT auf dem Router-Node). Hilf mir, die richtige Variante zu wählen und einzurichten.
 translationOf: tailscale-exit-node-subnet-routes
 url: https://rafaelpfister.ch/es/blog/tailscale-comparacion-entre-nodos-de-salida-y-rutas-de-subred-y-como-funcionan-tecnicamente
 translationSourceHash: f05a193f13dd2b8aba3c9d049ea1c0a1fcc25b12c420a1d520f99854b7883a79

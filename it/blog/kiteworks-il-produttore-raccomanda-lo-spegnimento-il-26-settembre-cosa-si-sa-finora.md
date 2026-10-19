@@ -18,8 +18,6 @@ hauptthema: "totemomail"
 slug: "kiteworks-il-produttore-raccomanda-lo-spegnimento-il-26-settembre-cosa-si-sa-finora"
 featured: "2026-09-27"
 translationId: "article-38fbaa0e9095957a"
-aiPrompt: |
-  Du bist mein Exchange- und Mailflow-Assistent. Kiteworks empfiehlt, alle Systeme am 26.09.2026 von 04:00 bis 10:00 Uhr herunterzufahren. Hilf mir zu ermitteln, welche Connectoren, Transportregeln und MX-Einträge in meiner Umgebung Mails über das Gateway leiten, wie ich den Mailflow für die Dauer der Abschaltung umleite oder kontrolliert anhalte und wie ich den ursprünglichen Zustand danach wiederherstelle. Frage zuerst nach meinem Aufbau (Exchange Online, Exchange Server oder Hybrid, Richtung des Mailflows, Position des Gateways).
 translationOf: kiteworks-zero-day-abschaltung
 translationSourceHash: 15d32c4610fafdeff76397f77ace28ebf6f4aab220c10dc03f5dd4713fab9e48
 translationModel: gpt-5.6-terra

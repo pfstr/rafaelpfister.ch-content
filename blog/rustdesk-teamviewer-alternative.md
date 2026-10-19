@@ -14,8 +14,6 @@ protokolle:
 slug: "rustdesk-teamviewer-alternative"
 translationId: "article-425ae4b8d562ae41"
 url: "https://rafaelpfister.ch/blog/rustdesk-teamviewer-alternative"
-aiPrompt: |
-  Du bist mein IT-Support-Assistent. Hilf mir, RustDesk als quelloffene TeamViewer-Alternative einzurichten: Client installieren, Verbindungsart wählen (öffentlicher Vermittlungsserver, eigener Server oder Direktverbindung über ein privates Netz), unbeaufsichtigten Zugriff absichern und die Grenzen der kostenlosen Nutzung einordnen.
 ---
 # RustDesk: die quelloffene TeamViewer-Alternative einrichten
 
