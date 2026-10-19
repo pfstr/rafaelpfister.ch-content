@@ -25,6 +25,35 @@ Dieser Beitrag zeigt, wie weit sich die Verbindung selbst nachverfolgen lässt, 
 
 **EU-Hinweis:** Für Unternehmen mit Sitz in der EU gelten stattdessen die Art. 44 ff. DSGVO. Die EU-Kommission hat der Schweiz ein angemessenes Datenschutzniveau bescheinigt (Angemessenheitsbeschluss 2000/518/EG, im Januar 2024 bestätigt); eine Verarbeitung in Zürich ist für EU-Unternehmen also kein Drittlandtransfer im problematischen Sinn.
 
+<aside class="pilot-card">
+  <span class="pilot-card__tag">Neu von adeptio · Pilotunternehmen gesucht</span>
+  <p class="pilot-card__titel">Claude und OpenAI nutzen, ohne dass Personendaten die Schweiz verlassen</p>
+  <p class="pilot-card__lead">Unsere Zwischenschicht steht zwischen Ihren Anwendungen in der Schweiz und den Modellen von Anthropic und OpenAI und anonymisiert jede Anfrage, bevor sie das Land verlässt. Für den Live-Betrieb suchen wir Unternehmen, die das Produkt im Alltag einsetzen.</p>
+  <div class="pilot-card__spalten">
+    <div class="pilot-card__spalte">
+      <p class="pilot-card__spalte-titel">Ihr Unternehmen</p>
+      <ul>
+        <li>Personendaten verlassen die Schweiz nur anonymisiert</li>
+        <li>Einfachere Begründung gegenüber Datenschutz und Revision</li>
+        <li>Zugang vor der allgemeinen Verfügbarkeit und Mitsprache bei den Funktionen</li>
+        <li>Direkter Kontakt zu den Entwicklern</li>
+      </ul>
+    </div>
+    <div class="pilot-card__spalte">
+      <p class="pilot-card__spalte-titel">adeptio</p>
+      <ul>
+        <li>Erkenntnisse aus echten Prompts statt aus Testdaten</li>
+        <li>Messwerte zu Latenz und Antwortqualität unter realer Last</li>
+        <li>Referenzen aus dem Schweizer Markt</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pilot-card__aktionen">
+    <a class="pilot-card__cta" href="/kontakt">Als Pilotunternehmen melden</a>
+    <a class="pilot-card__mehr" href="#anonymisierung-vor-dem-modell-pilotunternehmen-gesucht">Details und rechtliche Einordnung</a>
+  </div>
+</aside>
+
 ## Welche Stationen eine Anfrage an Claude durchläuft
 
 Eine Anfrage an `claude.ai` oder `api.anthropic.com` läuft über drei Stationen:
