@@ -55,7 +55,7 @@ Les différents référentiels apparaissent dans le système de fichiers sous fo
 
 L’exemple suivant contient, en plus des files d’attente standard, des répertoires facultatifs pour une connexion HIN. HIN fournit l’espace de communication sécurisé du secteur suisse de la santé.
 
-> Si vous avez besoin d’aide pour connecter HIN-Mailgateway ou pour migrer vers la nouvelle solution HIN-Stargate, vous trouverez les experts compétents chez [adeptio](https://adeptio.ch/).  
+> Si vous avez besoin d’aide pour connecter HIN-Mailgateway ou pour migrer vers la nouvelle solution HIN-Stargate, vous trouverez les experts compétents chez [adeptio](https://adeptio.ch/en).  
 >   
 > **adeptio** est partenaire officiel de [Health Info Net AG](https://www.hin.ch/de/index.cfm) et dispose à ce titre de contacts directs auprès du fabricant.  
 > [➜ Réservez encore aujourd’hui un rendez-vous.](/kontakt)

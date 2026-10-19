@@ -55,7 +55,7 @@ Los distintos repositorios aparecen en el sistema de archivos como directorios. 
 
 El siguiente ejemplo contiene, además de las colas estándar, directorios opcionales para una conexión HIN. HIN proporciona el espacio de comunicación seguro para el sector sanitario suizo.
 
-> Si necesita ayuda para conectar HIN-Mailgateway o para migrar a la nueva solución HIN-Stargate, encontrará los expertos correspondientes en [adeptio](https://adeptio.ch/).  
+> Si necesita ayuda para conectar HIN-Mailgateway o para migrar a la nueva solución HIN-Stargate, encontrará los expertos correspondientes en [adeptio](https://adeptio.ch/en).  
 >   
 > **adeptio** es socio oficial de [Health Info Net AG](https://www.hin.ch/de/index.cfm) y, como tal, también dispone de contactos directos con el fabricante.  
 > [➜ Reserve una cita hoy mismo.](/kontakt)

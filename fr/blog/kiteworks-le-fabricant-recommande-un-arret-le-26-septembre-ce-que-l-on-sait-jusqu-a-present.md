@@ -268,7 +268,7 @@ La recommandation d’arrêt est levée et les failles connues sont corrigées d
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Assistance pour la mise à jour</p>
-<p>Si vous avez besoin d’aide pour mettre à jour une passerelle Kiteworks ou Totemomail, notamment pour rediriger le flux de messagerie pendant la fenêtre de maintenance ou analyser les journaux, veuillez utiliser le <a href="https://adeptio.ch/">formulaire de contact sur adeptio.ch</a>.</p>
+<p>Si vous avez besoin d’aide pour mettre à jour une passerelle Kiteworks ou Totemomail, notamment pour rediriger le flux de messagerie pendant la fenêtre de maintenance ou analyser les journaux, veuillez utiliser le <a href="https://adeptio.ch/en">formulaire de contact sur adeptio.ch</a>.</p>
 </div>
 
 ## Sources

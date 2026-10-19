@@ -55,7 +55,7 @@ De enkelte repositoriene vises som kataloger i filsystemet. Ved normal drift bli
 
 Eksempelet nedenfor inneholder, i tillegg til standardkøene, også valgfrie kataloger for en HIN-tilkobling. HIN tilbyr et sikkert kommunikasjonsområde for det sveitsiske helsevesenet.
 
-> Hvis du trenger hjelp med tilkobling av HIN-Mailgateway eller migrering til den nye HIN-Stargate-løsningen, finner du de riktige ekspertene hos [adeptio](https://adeptio.ch/).  
+> Hvis du trenger hjelp med tilkobling av HIN-Mailgateway eller migrering til den nye HIN-Stargate-løsningen, finner du de riktige ekspertene hos [adeptio](https://adeptio.ch/en).  
 >   
 > **adeptio** er offisiell partner for [Health Info Net AG](https://www.hin.ch/de/index.cfm) og har dermed også direkte kontaktpersoner hos produsenten.  
 > [➜ Bestill en time i dag.](/kontakt)

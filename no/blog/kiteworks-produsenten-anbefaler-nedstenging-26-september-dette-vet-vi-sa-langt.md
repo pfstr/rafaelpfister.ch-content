@@ -268,7 +268,7 @@ Anbefalingen om nedstenging er opphevet, og de kjente sårbarhetene er rettet i 
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Hjelp med oppdateringen</p>
-<p>Hvis du trenger hjelp med oppdatering av en Kiteworks- eller Totemomail-gateway, for eksempel med omdirigering av e-postflyten under vedlikeholdsvinduet eller med evaluering av logger, kan du bruke <a href="https://adeptio.ch/">kontaktskjemaet på adeptio.ch</a>.</p>
+<p>Hvis du trenger hjelp med oppdatering av en Kiteworks- eller Totemomail-gateway, for eksempel med omdirigering av e-postflyten under vedlikeholdsvinduet eller med evaluering av logger, kan du bruke <a href="https://adeptio.ch/en">kontaktskjemaet på adeptio.ch</a>.</p>
 </div>
 
 ## Kilder

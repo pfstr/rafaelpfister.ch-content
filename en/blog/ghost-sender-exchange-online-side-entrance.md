@@ -219,4 +219,4 @@ Not sure whether your Exchange Online tenant also has an open side entrance? **a
 Anyone who would like their mail flow reviewed or properly secured can schedule a no-obligation consultation:
 
 **[Book a consultation with adeptio](/kontakt)**  
-[adeptio.ch](https://adeptio.ch/)
+[adeptio.ch](https://adeptio.ch/en)

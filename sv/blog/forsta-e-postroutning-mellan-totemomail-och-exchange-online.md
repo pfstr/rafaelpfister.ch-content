@@ -55,7 +55,7 @@ De enskilda repositories visas i filsystemet som kataloger. Under normal drift s
 
 Följande exempel innehåller, utöver standardköerna, även valfria kataloger för en HIN-anslutning. HIN tillhandahåller den säkra kommunikationsmiljön för det schweiziska hälso- och sjukvårdsväsendet.
 
-> Om du behöver hjälp med anslutningen av HIN-Mailgateway eller med migreringen till den nya HIN-Stargate-lösningen hittar du rätt experter hos [adeptio](https://adeptio.ch/).  
+> Om du behöver hjälp med anslutningen av HIN-Mailgateway eller med migreringen till den nya HIN-Stargate-lösningen hittar du rätt experter hos [adeptio](https://adeptio.ch/en).  
 >   
 > **adeptio** är officiell partner till [Health Info Net AG](https://www.hin.ch/de/index.cfm) och har som sådan även direkta kontaktpersoner hos tillverkaren.  
 > [➜ Boka ett möte redan i dag.](/kontakt)

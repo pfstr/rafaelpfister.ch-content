@@ -268,7 +268,7 @@ The shutdown recommendation has been lifted, and the known vulnerabilities are f
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Support with the update</p>
-<p>If you need help updating a Kiteworks or Totemomail gateway, such as redirecting mail flow during the maintenance window or reviewing logs, please use the <a href="https://adeptio.ch/">contact form on adeptio.ch</a>.</p>
+<p>If you need help updating a Kiteworks or Totemomail gateway, such as redirecting mail flow during the maintenance window or reviewing logs, please use the <a href="https://adeptio.ch/en">contact form on adeptio.ch</a>.</p>
 </div>
 
 ## Sources

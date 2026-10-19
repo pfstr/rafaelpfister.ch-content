@@ -268,7 +268,7 @@ Rekommendationen om avstängning har upphävts och de kända sårbarheterna är 
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Hjälp med uppdateringen</p>
-<p>Om du behöver hjälp med att uppdatera en Kiteworks- eller Totemomail-gateway, till exempel med att omdirigera e-postflödet under underhållsfönstret eller utvärdera loggarna, använd <a href="https://adeptio.ch/">kontaktformuläret på adeptio.ch</a>.</p>
+<p>Om du behöver hjälp med att uppdatera en Kiteworks- eller Totemomail-gateway, till exempel med att omdirigera e-postflödet under underhållsfönstret eller utvärdera loggarna, använd <a href="https://adeptio.ch/en">kontaktformuläret på adeptio.ch</a>.</p>
 </div>
 
 ## Källor

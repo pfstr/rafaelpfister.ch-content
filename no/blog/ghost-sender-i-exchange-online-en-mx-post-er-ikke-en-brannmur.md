@@ -219,4 +219,4 @@ Usikker på om Exchange Online-tenant-en din også har en åpen sideinngang? **a
 Den som ønsker å få kontrollert eller sikret e-postflyten sin på en god måte, kan gjerne avtale en uforpliktende rådgivningssamtale:
 
 **[Bestill en rådgivningssamtale med adeptio](/kontakt)**  
-[adeptio.ch](https://adeptio.ch/)
+[adeptio.ch](https://adeptio.ch/en)

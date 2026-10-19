@@ -219,4 +219,4 @@ La parte útil de la publicación es la llamada de atención: al parecer, muchas
 Quien desee revisar su flujo de correo o protegerlo correctamente puede concertar una consulta inicial sin compromiso:
 
 **[Reservar una consulta con adeptio](/kontakt)**  
-[adeptio.ch](https://adeptio.ch/)
+[adeptio.ch](https://adeptio.ch/en)

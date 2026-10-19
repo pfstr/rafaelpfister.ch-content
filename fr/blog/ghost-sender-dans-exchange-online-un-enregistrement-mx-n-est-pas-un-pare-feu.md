@@ -219,4 +219,4 @@ Vous ne savez pas si votre tenant Exchange Online possède lui aussi une entrée
 Pour faire vérifier ou sécuriser correctement votre flux de messagerie, vous pouvez volontiers convenir d’un entretien de conseil sans engagement :
 
 **[Réserver un entretien de conseil avec adeptio](/kontakt)**  
-[adeptio.ch](https://adeptio.ch/)
+[adeptio.ch](https://adeptio.ch/en)

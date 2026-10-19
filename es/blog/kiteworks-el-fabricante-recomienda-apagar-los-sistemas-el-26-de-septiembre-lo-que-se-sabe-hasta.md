@@ -268,7 +268,7 @@ La recomendación de apagado ha sido retirada y las vulnerabilidades conocidas e
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Ayuda con la actualización</p>
-<p>Si necesita ayuda para actualizar un gateway de Kiteworks o Totemomail, por ejemplo para redirigir el flujo de correo durante la ventana de mantenimiento o para analizar los registros, utilice el <a href="https://adeptio.ch/">formulario de contacto de adeptio.ch</a>.</p>
+<p>Si necesita ayuda para actualizar un gateway de Kiteworks o Totemomail, por ejemplo para redirigir el flujo de correo durante la ventana de mantenimiento o para analizar los registros, utilice el <a href="https://adeptio.ch/en">formulario de contacto de adeptio.ch</a>.</p>
 </div>
 
 ## Fuentes

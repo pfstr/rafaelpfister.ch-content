@@ -55,7 +55,7 @@ The individual repositories appear as directories in the file system. Under norm
 
 In addition to the standard queues, the following example also includes optional directories for a HIN connection. HIN provides the secure communication environment for Swiss healthcare.
 
-> If you need assistance connecting HIN Mailgateway or migrating to the new HIN Stargate solution, you can find the relevant experts at [adeptio](https://adeptio.ch/).  
+> If you need assistance connecting HIN Mailgateway or migrating to the new HIN Stargate solution, you can find the relevant experts at [adeptio](https://adeptio.ch/en).  
 >   
 > **adeptio** is an official partner of [Health Info Net AG](https://www.hin.ch/de/index.cfm) and therefore also has direct contacts at the vendor.  
 > [➜ Book an appointment today.](/kontakt)

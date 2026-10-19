@@ -219,4 +219,4 @@ Non siete sicuri che anche il vostro tenant Exchange Online abbia un ingresso se
 Chi desidera far verificare o proteggere correttamente il proprio flusso di posta può fissare senza impegno un colloquio di consulenza:
 
 **[Prenota un colloquio di consulenza con adeptio](/kontakt)**  
-[adeptio.ch](https://adeptio.ch/)
+[adeptio.ch](https://adeptio.ch/en)

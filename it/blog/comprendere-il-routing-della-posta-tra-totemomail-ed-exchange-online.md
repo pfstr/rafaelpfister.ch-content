@@ -55,7 +55,7 @@ I singoli repository appaiono nel file system come directory. In condizioni norm
 
 L'esempio seguente contiene, oltre alle code standard, anche directory opzionali per una connessione HIN. HIN fornisce lo spazio di comunicazione sicuro per il settore sanitario svizzero.
 
-> Se avete bisogno di supporto per la connessione al gateway di posta HIN o per la migrazione alla nuova soluzione HIN-Stargate, troverete gli esperti giusti presso [adeptio](https://adeptio.ch/).  
+> Se avete bisogno di supporto per la connessione al gateway di posta HIN o per la migrazione alla nuova soluzione HIN-Stargate, troverete gli esperti giusti presso [adeptio](https://adeptio.ch/en).  
 >   
 > **adeptio** è partner ufficiale di [Health Info Net AG](https://www.hin.ch/de/index.cfm) e, in quanto tale, dispone anche di interlocutori diretti presso il produttore.  
 > [➜ Prenotate oggi stesso un appuntamento.](/kontakt)

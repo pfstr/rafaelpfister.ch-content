@@ -268,7 +268,7 @@ La raccomandazione di spegnimento è stata ritirata e le vulnerabilità note son
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Supporto per l'aggiornamento</p>
-<p>Se avete bisogno di aiuto per aggiornare un gateway Kiteworks o Totemomail, ad esempio per reindirizzare il flusso di posta durante la finestra di manutenzione o per analizzare i log, utilizzate il <a href="https://adeptio.ch/">modulo di contatto su adeptio.ch</a>.</p>
+<p>Se avete bisogno di aiuto per aggiornare un gateway Kiteworks o Totemomail, ad esempio per reindirizzare il flusso di posta durante la finestra di manutenzione o per analizzare i log, utilizzate il <a href="https://adeptio.ch/en">modulo di contatto su adeptio.ch</a>.</p>
 </div>
 
 ## Fonti
