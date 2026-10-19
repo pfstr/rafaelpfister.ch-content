@@ -102,7 +102,7 @@ Für Einrichtungen ohne wirksamen Schutz führt ein klarer Pfad zum Ziel:
 2. **DKIM aktivieren.** Jede ausgehende Nachricht wird kryptografisch signiert. Bei Microsoft 365 und bei den gängigen Mailgateways ist das eine Einstellung, kein Projekt.
 3. **DMARC einführen und schrittweise scharf schalten.** Start mit `p=none` und aktivem Reporting, um den legitimen Mailverkehr zu erfassen. Danach `p=quarantine`, zuletzt `p=reject`. Der gesamte Weg dauert je nach Umgebung einige Wochen, nicht Monate.
 4. **Reporting auswerten.** Die DMARC-Reports zeigen, wer im Namen der Domain Mail versendet, und decken sowohl vergessene legitime Systeme als auch Missbrauch auf.
-5. **MTA-STS und TLS-RPT ergänzen.** Beide erzwingen und überwachen die Transportverschlüsselung der eingehenden Mail.
+5. **DANE zumindest prüfen und die Mailverschlüsselung anschauen.** DANE sichert die Transportverschlüsselung zwischen Mailservern über DNSSEC ab. Ob die eigene Mailplattform und der DNS-Anbieter das unterstützen, lässt sich mit wenig Aufwand klären. Für Nachrichten mit Lohn- und Vorsorgedaten gehört zudem geregelt, wie sie Ende-zu-Ende verschlüsselt verschickt werden, etwa über ein Mailgateway mit S/MIME oder eine sichere Zustellung per Webportal.
 6. **Die Dienstleister in die Pflicht nehmen.** Software-Anbieter, ausgelagerte Geschäftsführung und IT-Partner sollten denselben Stand bei SPF, DKIM und DMARC nachweisen. Das gehört in die Verträge und in die regelmässige Lieferantenprüfung.
 
 ## Fazit
