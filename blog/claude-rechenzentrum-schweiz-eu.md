@@ -255,6 +255,27 @@ Microsoft bietet Claude in Foundry in zwei Varianten an. „Hosted on Azure" rec
 
 Ein Weg, der die Verarbeitung von Claude garantiert auf die Schweiz beschränkt, existiert derzeit bei keinem Anbieter. Am nächsten kommt AWS Bedrock mit Quellregion Zürich und EU-Profil. Muss zusätzlich ausgeschlossen sein, dass Daten die EU verlassen (etwa wegen vertraglicher Zusagen an EU-Kunden), lässt sich das EU-Profil aus einer EU-Region wie Frankfurt aufrufen; Zürich ist dann kein Ziel mehr.
 
+## Anonymisierung vor dem Modell: Pilotunternehmen gesucht
+
+Der Verarbeitungsort ist in den meisten Fällen nur deshalb relevant, weil Personendaten oder vertrauliche Angaben im Prompt stehen. An diesem Punkt setzt ein neues Produkt meiner Firma, der adeptio gmbh, an: Es steht als Zwischenschicht zwischen den Anwendungen in der Schweiz und den Modellen von Anthropic und OpenAI und anonymisiert die Anfragen, bevor sie die Schweiz verlassen. Das Modell erhält nur noch Inhalte ohne Personenbezug, in welchem Rechenzentrum es auch rechnet.
+
+**Schweiz-Fokus:** Angaben, die sich keiner bestimmten oder bestimmbaren Person mehr zuordnen lassen, sind keine Personendaten im Sinn von Art. 5 lit. a revDSG. Die Regeln zur Bekanntgabe ins Ausland (Art. 16 f. revDSG) greifen für solche Inhalte nicht. Ob eine Anonymisierung diese Schwelle erreicht, hängt von der Umsetzung und den konkreten Daten ab; genau das wollen wir im Live-Betrieb belegen.
+
+Für die Einführung suchen wir Unternehmen, die Claude oder Modelle von OpenAI produktiv nutzen oder die Einführung planen und das Produkt als Pilotunternehmen im Alltag einsetzen. Davon profitieren beide Seiten:
+
+| Ihr Unternehmen | adeptio |
+|---|---|
+| Personendaten und vertrauliche Angaben verlassen die Schweiz nur anonymisiert. Die Begründung gegenüber Datenschutzberatung, Kunden und Revision wird einfacher. | Erkenntnisse aus echten Prompts und Arbeitsabläufen statt aus Testdaten: welche Angaben erkannt werden müssen und wo die Anonymisierung zu viel oder zu wenig entfernt. |
+| Die Wahl zwischen Anthropic, OpenAI, Bedrock oder Vertex AI richtet sich wieder nach Modellangebot und Preis statt allein nach dem Verarbeitungsort. | Messwerte zu Latenz und Antwortqualität unter realer Last. |
+| Zugang zum Produkt vor der allgemeinen Verfügbarkeit und Einfluss darauf, welche Datentypen und Anwendungsfälle es zuerst abdeckt. | Rückmeldungen aus Datenschutz und Revision, an denen sich die Nachweise des Produkts ausrichten. |
+| Direkter Kontakt zu den Entwicklern statt eines Ticket-Supports. | Referenzen aus dem Schweizer Markt für die allgemeine Verfügbarkeit. |
+
+<aside class="offer-box">
+  <span class="offer-box__tag">Pilotunternehmen gesucht</span>
+  <p><strong>Nutzen Sie Claude oder OpenAI mit Personendaten?</strong> Setzen Sie die Anonymisierungsschicht von adeptio im Live-Betrieb ein und bestimmen Sie die Weiterentwicklung mit.</p>
+  <a class="offer-box__cta" href="/kontakt">Kontakt aufnehmen</a>
+</aside>
+
 ## Was die regionale Bindung kostet
 
 Alle drei Cloud-Anbieter und Anthropic selbst verrechnen für eine Bindung an eine Region oder Geografie einen Aufschlag von 10 % gegenüber dem globalen Endpunkt. Die Preise richten sich bei Bedrock nach der Quellregion; Zürich, Frankfurt und North Virginia kosten dasselbe. Das Routing zwischen Regionen ist nicht zusätzlich kostenpflichtig.
