@@ -1,10 +1,10 @@
 ---
 title: "Exchange-Ausfälle nach den Windows-Server-Updates vom Oktober 2026: MapiExceptionMdbOffline (ec=1142)"
 navTitle: "Exchange-Ausfall 10/2026"
-description: "Nach den Windows-Server-Updates vom 13. Oktober 2026 melden Exchange-Server nach rund 24 Stunden MapiExceptionMdbOffline (ec=1142): OWA schlägt fehl, Warteschlangen wachsen, DAG-Kopien replizieren nicht mehr. Microsoft bestätigt den Zusammenhang mit den Windows-Updates, ein Fix fehlt noch. Symptome, betroffene KBs, Prüfbefehle und Vorgehen."
+description: "Nach den Windows-Server-Updates vom 13. Oktober 2026 melden Exchange-Server nach rund 24 Stunden MapiExceptionMdbOffline (ec=1142): OWA schlägt fehl, Warteschlangen wachsen, DAG-Kopien replizieren nicht mehr. Ursache ist eine neue Grenze im RPC Endpoint Mapper; Microsoft empfiehlt seit dem 17. Oktober 2026 den Registry-Wert EpmapSavedContextCap, ein Fix fehlt noch. Symptome, betroffene KBs, Prüfbefehle und Vorgehen."
 date: "2026-10-16"
 kategorie: "Exchange OnPrem / Hybrid"
-timeToRead: "7 Min. Lesezeit"
+timeToRead: "10 Min. Lesezeit"
 themen:
   - "exchange-updates"
   - "exchange-onprem-hybrid"
@@ -21,12 +21,77 @@ warnung: true
 translationId: "article-8fdf2b2744bdbd41"
 url: "https://rafaelpfister.ch/blog/exchange-windows-updates-oktober-2026"
 aiPrompt: |
-  Du bist mein Assistent für Exchange Server On-Premises. Seit den Windows-Server-Updates vom Oktober 2026 (KB5126646, KB5126655, KB5126651, KB5126868) melden Exchange-Server MapiExceptionMdbOffline (hr=0x80004005, ec=1142), Event ID 1006, wachsende Warteschlangen und nicht replizierende DAG-Kopien. Hilf mir Schritt für Schritt: ermitteln, welche Oktober-Updates (Windows, .NET Framework, Exchange SU) auf jedem Exchange-Server installiert sind, den Zustand von Datenbanken, Kopien und Warteschlangen prüfen, den Betrieb mit kontrollierten Neustarts überbrücken und die Windows-Updates auf noch nicht betroffenen Servern zurückstellen. Frage zuerst nach Exchange-Version, Windows-Server-Version, Anzahl Server, ob eine DAG im Einsatz ist und wie Updates verteilt werden (WSUS, Intune, manuell).
+  Du bist mein Assistent für Exchange Server On-Premises. Seit den Windows-Server-Updates vom Oktober 2026 (KB5126646, KB5126655, KB5126651, KB5126868) melden Exchange-Server MapiExceptionMdbOffline (hr=0x80004005, ec=1142), Event ID 1006, wachsende Warteschlangen und nicht replizierende DAG-Kopien. Hilf mir Schritt für Schritt: ermitteln, welche Oktober-Updates (Windows, .NET Framework, Exchange SU) auf jedem Exchange-Server installiert sind, den Zustand von Datenbanken, Kopien und Warteschlangen prüfen, die von Microsoft empfohlene Registry-Gegenmassnahme (HKLM\SOFTWARE\Microsoft\Rpc, EpmapSavedContextCap = 65536, danach Neustart) auf allen Exchange-Servern setzen und kontrollieren und in einer DAG die Neustarts nacheinander durchführen. Frage zuerst nach Exchange-Version, Windows-Server-Version, Anzahl Server, ob eine DAG im Einsatz ist und wie Updates verteilt werden (WSUS, Intune, manuell).
 ---
 
 # Exchange-Ausfälle nach den Windows-Server-Updates vom Oktober 2026: MapiExceptionMdbOffline (ec=1142)
 
-Seit dem Patchday vom 13. Oktober 2026 fallen Exchange-Server nach rund 24 Stunden Laufzeit aus: Clients verlieren die Verbindung zum Postfach, OWA meldet `MapiExceptionMdbOffline: Unable to make connection to the server. (hr=0x80004005, ec=1142)`, Mails bleiben in den Warteschlangen liegen, und in DAGs replizieren die Datenbankkopien nicht mehr. Microsoft hat die Ankündigung der Oktober-Exchange-SUs am 15. Oktober 2026 um einen Hinweis ergänzt: Auslöser sind die Oktober-Updates für Windows Server, die Installation des Exchange-SUs ist für das Problem nicht erforderlich. Einen Fix oder offiziellen Workaround gibt es noch nicht (Stand 16. Oktober 2026).
+Seit dem Patchday vom 13. Oktober 2026 fallen Exchange-Server nach rund 24 Stunden Laufzeit aus: Clients verlieren die Verbindung zum Postfach, OWA meldet `MapiExceptionMdbOffline: Unable to make connection to the server. (hr=0x80004005, ec=1142)`, Mails bleiben in den Warteschlangen liegen, und in DAGs replizieren die Datenbankkopien nicht mehr. Microsoft hat die Ankündigung der Oktober-Exchange-SUs am 15. Oktober 2026 um einen Hinweis ergänzt: Auslöser sind die Oktober-Updates für Windows Server, die Installation des Exchange-SUs ist für das Problem nicht erforderlich. Seit dem 17. Oktober 2026 sind die Ursache und eine offizielle Gegenmassnahme per Registry bekannt; einen Fix gibt es noch nicht. Details im folgenden Abschnitt.
+
+## Update 19. Oktober 2026: Ursache und Registry-Gegenmassnahme
+
+Das Exchange-Team hat am 17. Oktober 2026 einen eigenen Beitrag zum Problem veröffentlicht. In den Release Notes der Windows-Updates (z. B. KB5126646) steht das Problem jetzt als Known Issue mit dem Status «ungelöst».
+
+### Ursache
+
+Die Oktober-Updates begrenzen den Speicher, den der RPC Endpoint Mapper für Endpoint-Lookup-Aufrufe verwendet. Standardmässig sind nur noch 512 gespeicherte Kontexte erlaubt; laut Microsoft reicht das für Lasten wie Exchange nicht. Exchange sammelt diese Kontexte im Betrieb an, bis die Grenze erreicht ist. Danach schlagen die RPC-Verbindungen zur Postfachdatenbank fehl, und OWA meldet `MapiExceptionMdbOffline`. Ein Leser bei Born hat den neuen Konfigurationswert `EpmapSavedContextCap` in der `RpcEpMap.dll` der Oktober-Updates nachgewiesen. Frankys Web ordnet die Grenze der am selben Patchday geschlossenen Denial-of-Service-Lücke CVE-2026-96300 im RPC Endpoint Mapper zu.
+
+Damit sind mehrere Beobachtungen aus den ersten Tagen erklärt:
+
+- Der Ausfall tritt erst nach Stunden auf, und der Zeitpunkt hängt von der Last ab. Laut Microsoft sind manche Server nie betroffen.
+- Ein Neustart des Servers setzt den Zähler zurück und hilft deshalb nur, bis die Grenze erneut erreicht ist. Ein Neustart nur der Exchange-Dienste gibt den belegten Speicher laut einem Leser bei Born nicht frei.
+- Die Grenze steckt in den kumulativen Windows-Updates. Exchange-SU und .NET-Update sind nicht beteiligt.
+- Der vermutete Zusammenhang mit den Datenbank-Wartungsaufgaben und dem Replikationsdienst ist damit nicht die Ursache.
+
+### Gegenmassnahme
+
+Microsoft empfiehlt, die Grenze per Registry anzuheben und den Server anschliessend neu zu starten. In einer Eingabeaufforderung mit Administratorrechten:
+
+```cmd
+reg add "HKLM\SOFTWARE\Microsoft\Rpc" /v EpmapSavedContextCap /t REG_DWORD /d 65536 /f
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `"HKLM\SOFTWARE\Microsoft\Rpc"` | Registry-Schlüssel der RPC-Konfiguration. |
+| `/v EpmapSavedContextCap` | Name des Werts, der die Grenze für gespeicherte Endpoint-Mapper-Kontexte festlegt (ohne Eintrag gilt 512). |
+| `/t REG_DWORD` | Datentyp: 32-Bit-Zahl. |
+| `/d 65536` | Neue Grenze, wie von Microsoft empfohlen. |
+| `/f` | Überschreibt einen vorhandenen Wert ohne Rückfrage. |
+
+</details>
+
+Der Endpoint Mapper liest den Wert nur beim Start; ohne Neustart des Servers wirkt die Änderung nicht. Tritt das Problem danach erneut auf, empfiehlt Microsoft, den Wert weiter zu erhöhen. Nach Microsofts Angaben hat die Massnahme das Problem in den bisher betreuten Kundenfällen gelöst. Laut Born bezeichnet Nino Bilic (Microsoft) den Eintrag als vorübergehende Abhilfe, die kein Sicherheitsrisiko darstellt, aber nicht die endgültige Lösung ist. Ein Leser bei Born meldet einen Server, der mit 65536 seit über 26 Stunden ohne Unterbrechung läuft. Einzelne Administratoren setzen höhere Werte wie 16777215; einen belegten Fall, in dem 65536 nach einem Neustart nicht ausgereicht hat, gibt es bisher nicht.
+
+Ob der Wert gesetzt ist, zeigt diese Abfrage in PowerShell:
+
+```powershell
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Rpc" -Name EpmapSavedContextCap
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Path "HKLM:\SOFTWARE\Microsoft\Rpc"` | Registry-Schlüssel, in dem der Wert liegt. |
+| `-Name EpmapSavedContextCap` | Liest nur diesen Wert; fehlt er, meldet PowerShell einen Fehler, und es gilt die Standardgrenze von 512. |
+
+</details>
+
+Setzen Sie den Wert auf allen Exchange-Servern, auch auf solchen, die bisher nicht ausgefallen sind. Auf Servern, die die Oktober-Updates noch nicht haben, können Sie den Wert vor der Installation setzen; der Neustart nach der Installation aktiviert ihn dann. In einer DAG starten Sie die Mitglieder wie unten beschrieben nacheinander neu. Frankys Web stellt zusätzlich ein PowerShell-Script bereit, das den Wert setzt, den bisherigen Zustand sichert und sich mit `-Remove` zurücknehmen lässt.
+
+Die Windows-Updates sollen laut Microsoft ausdrücklich nicht deinstalliert werden. Ein Leser bei Frankys Web berichtet nach der Deinstallation von KB5126868 zudem von RDP-Anmeldeproblemen (CredSSP). Reicht die Registry-Massnahme nicht, bietet Microsoft über den Support for business eine weitere Gegenmassnahme an. Sobald ein Fix erscheint, sollten Sie den Registry-Wert wieder entfernen, weil die höhere Grenze den Schutz gegen CVE-2026-96300 abschwächt.
+
+### Offene Punkte
+
+- **Fix**: Microsoft nennt keinen Termin. Ein Leser bei Born vermutet, dass Microsoft die Grenze über ein Known Issue Rollback (Feature-ID 63096240) zurücknehmen könnte; bestätigt ist das nicht.
+- **Wert**: Ob 65536 auch in grossen Umgebungen bis zum nächsten Patchday reicht, ist offen. Überwachen Sie die Event ID 1006 deshalb weiter.
+- **Andere Serverrollen**: Ein Leser bei Born sieht auch Server ohne Exchange betroffen. Microsoft äussert sich nur zu Exchange.
+- **Backup**: Ob der gemeldete VSS-Writer-Fehler eine Folge des Ausfalls ist, ist ungeklärt.
 
 ## Symptome
 
@@ -38,7 +103,7 @@ Die bisher berichteten Symptome:
 - In DAGs replizieren die Datenbankkopien nicht mehr; Switchover beim Wechsel in den Wartungsmodus schlagen laut Leserberichten bei Born fehl.
 - Das Exchange Admin Center zeigt die Datenbanken trotzdem als gemountet an (Frankys Web).
 
-Der Fehler tritt nicht direkt nach der Installation auf, sondern laut Berichten nach etwa 22 bis 30 Stunden Laufzeit. Ein Neustart des Servers stellt den Betrieb wieder her, der Ausfall wiederholt sich aber nach ungefähr derselben Zeit. In Kommentaren bei Born wird beobachtet, dass sich der Postfach-Replikationsdienst während oder nach den Datenbank-Wartungsaufgaben beendet und die MdbOffline-Fehler danach einsetzen; bestätigt ist das nicht.
+Der Fehler tritt nicht direkt nach der Installation auf, sondern laut Berichten nach etwa 22 bis 30 Stunden Laufzeit. Ein Neustart des Servers stellt den Betrieb wieder her, der Ausfall wiederholt sich aber nach ungefähr derselben Zeit. In Kommentaren bei Born wird beobachtet, dass sich der Postfach-Replikationsdienst während oder nach den Datenbank-Wartungsaufgaben beendet und die MdbOffline-Fehler danach einsetzen; nach der inzwischen bekannten Ursache ist das eine Begleiterscheinung, nicht der Auslöser.
 
 ## Betroffene Updates
 
@@ -114,9 +179,9 @@ Event ID 1006 protokollieren mehrere Exchange-Komponenten; entscheidend ist der 
 
 ## Vorgehen bis zum Fix
 
-Microsoft untersucht das Problem nach eigener Aussage zusammen mit dem Windows-Team und nennt bisher weder Workaround noch Rollback. Für die Zwischenzeit:
+Die folgenden Punkte stammen vom 16. Oktober 2026, als es noch keine offizielle Gegenmassnahme gab. Seit dem 17. Oktober 2026 steht die Registry-Massnahme aus dem Update oben an erster Stelle; die Punkte 3 bis 6 bleiben als Rückfallebene gültig.
 
-1. **Noch nicht aktualisierte Exchange-Server**: Stellen Sie die Windows-Oktober-Updates (und das .NET-Update vom selben Tag) auf Exchange-Servern zurück, in WSUS, Intune oder der eigenen Updateverwaltung. Das ist eine Abwägung: Die Windows-Updates schliessen ebenfalls Sicherheitslücken. Exchange-Server, die aus dem Internet erreichbar sind, sollten Sie deshalb besonders eng begleiten.
+1. **Noch nicht aktualisierte Exchange-Server**: Ursprünglich lautete die Empfehlung, die Windows-Oktober-Updates zurückzustellen. Mit der Registry-Massnahme ist das nicht mehr nötig: Setzen Sie den Wert und installieren Sie die Updates, die ebenfalls Sicherheitslücken schliessen.
 
 2. **Exchange-SU trotzdem installieren**: Das Exchange-SU KB5128895 (bzw. die ESU-Pakete für 2016/2019) ist laut Microsoft nicht der Auslöser und schliesst eine kritische Lücke, die ohne Konto per E-Mail ausnutzbar ist.
 
@@ -128,9 +193,9 @@ Microsoft untersucht das Problem nach eigener Aussage zusammen mit dem Windows-T
 
 6. **Backup prüfen**: Ein Leser bei Born meldet nach dem Ausfall einen fehlgeschlagenen VSS-Writer im Backup. Kontrollieren Sie die Sicherungen der letzten Nächte.
 
-Zur Deinstallation der Windows-Updates: Seit 2021 liefert Microsoft das kumulative Update zusammen mit dem Servicing Stack Update als kombiniertes Paket aus. `wusa /uninstall` entfernt ein solches Paket nicht; dafür ist `DISM /Online /Remove-Package` mit dem Paketnamen aus `DISM /Online /Get-Packages` nötig. Microsoft hat die Deinstallation als Workaround nicht freigegeben, und Berichte über einen erfolgreichen Rollback mit anschliessend stabilem Betrieb liegen bisher nicht vor. Testen Sie das, wenn überhaupt, zuerst auf einem einzelnen Server.
+Zur Deinstallation der Windows-Updates: Seit 2021 liefert Microsoft das kumulative Update zusammen mit dem Servicing Stack Update als kombiniertes Paket aus. `wusa /uninstall` entfernt ein solches Paket nicht; dafür ist `DISM /Online /Remove-Package` mit dem Paketnamen aus `DISM /Online /Get-Packages` nötig. Microsoft rät seit dem 17. Oktober 2026 ausdrücklich von der Deinstallation ab; mit der Registry-Massnahme besteht dafür auch kein Grund mehr.
 
-Laut Frankys Web führt Microsoft das Problem bei den Windows-Updates noch nicht als Known Issue (Stand 16. Oktober 2026). Behalten Sie die Microsoft-Ankündigung im Blick; Microsoft führt Ergänzungen dort am Ende unter «Updates to this blog post». Dieser Artikel wird nachgeführt, sobald ein Fix oder ein offizieller Workaround vorliegt.
+Microsoft führt das Problem inzwischen als Known Issue in den Release Notes der Windows-Updates (Stand 19. Oktober 2026, ungelöst). Dieser Artikel wird nachgeführt, sobald ein Fix vorliegt.
 
 ## Quellen
 
@@ -142,4 +207,12 @@ Laut Frankys Web führt Microsoft das Problem bei den Windows-Updates noch nicht
 
 4.  [Oktober-Updates setzen Exchange-Server ausser Betrieb – IT Magazine](https://www.itmagazine.ch/artikel/88263/Oktober-Updates_setzen_Exchange-Server_ausser_Betrieb.html): Schweizer Zusammenfassung der Microsoft-Bestätigung.
 
-5.  [Exchange-Sicherheitsupdates vom Oktober 2026 – rafaelpfister.ch](/blog/exchange-security-updates-oktober-2026): Inhalt des Exchange-SUs KB5128895 und der ESU-Pakete, Schwachstellen und Installationshinweise.
+5.  [Exchange servers may become unstable after installation of October 2026 Windows updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/exchange-servers-may-become-unstable-after-installation-of-october-2026-windows-/4565382): Beitrag des Exchange-Teams vom 17. Oktober 2026 mit dem Registry-Wert EpmapSavedContextCap, der Empfehlung, die Windows-Updates nicht zu deinstallieren, und dem Hinweis auf lastabhängige Auswirkungen.
+
+6.  [October 13, 2026: KB5126646 (OS Build 26100.33650) – Microsoft Support](https://support.microsoft.com/en-us/servicing/os/windows-server/2026/10/kb5126646-windows-server-2025-security-update): Known Issue mit der Grenze von 512 Endpoint-Lookup-Aufrufen, Status ungelöst, weitere Gegenmassnahme über Microsoft Support for business.
+
+7.  [Microsoft analysiert Exchange-Server-Probleme durch Windows-Oktober-2026-Updates – Borns IT- und Windows-Blog](https://borncity.com/blog/2026/10/17/microsoft-analysiert-exchange-server-probleme-durch-windows-oktober-2026-updates/): Leseranalyse der RpcEpMap.dll (EpmapSavedContextCap, Feature-ID), Aussage von Nino Bilic, Erfahrungen mit 65536 und höheren Werten.
+
+8.  [CVE-2026-96300 – OpenCVE](https://app.opencve.io/cve/CVE-2026-96300): RPC Endpoint Mapper Service Denial of Service Vulnerability, CWE-770, veröffentlicht am 13. Oktober 2026.
+
+9.  [Exchange-Sicherheitsupdates vom Oktober 2026 – rafaelpfister.ch](/blog/exchange-security-updates-oktober-2026): Inhalt des Exchange-SUs KB5128895 und der ESU-Pakete, Schwachstellen und Installationshinweise.
