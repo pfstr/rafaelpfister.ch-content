@@ -64,7 +64,7 @@ Die folgende Infografik zeigt den geprüften Stand aller 66 Vorsorgeeinrichtunge
 
 ## Zum Vergleich: die grössten Schweizer Unternehmen
 
-Wie die Vorsorgeeinrichtungen im Vergleich zur übrigen Wirtschaft dastehen, zeigt der [Mail-Sicherheitsindex Schweiz](/open-data/mail-security-index). Er prüft mit demselben passiven Verfahren täglich über 500 der grössten Schweizer Unternehmen, mit interaktiver Karte nach Kantonen, Vergleichen nach Branche und Mail-Anbieter und einer Detailseite je Unternehmen. Darunter sind auch die Banken, Versicherer und IT-Dienstleister, mit denen Vorsorgeeinrichtungen zusammenarbeiten.
+Wie die Vorsorgeeinrichtungen im Vergleich zur übrigen Wirtschaft dastehen, zeigt der [Mail-Sicherheitsindex Schweiz](/open-data/mail-security-index). Er prüft mit demselben passiven Verfahren täglich über 1000 der grössten Schweizer Unternehmen sowie Bund, Kantone und Gemeinden, mit interaktiver Karte nach Kantonen, Vergleichen nach Branche und Mail-Anbieter und einer Detailseite je Organisation. Alle hier geprüften Vorsorgeeinrichtungen und Dienstleister sind dort mit eigenem Profil enthalten, in der Branche [Vorsorgeeinrichtungen](/open-data/mail-security-index/branche/vorsorgeeinrichtungen) zusammengefasst und täglich aktualisiert. In der Infografik oben führt der Link im aufgeklappten Eintrag direkt zum jeweiligen Profil.
 
 Der Abstand ist deutlich: Von den 518 Unternehmen im Index nutzen am 18.10.2026 38 Prozent DMARC mit `p=reject`, bei den Vorsorgeeinrichtungen sind es 20 Prozent. Ganz ohne DMARC sind 5 Prozent der Unternehmen, bei den Vorsorgeeinrichtungen 41 Prozent.
 
