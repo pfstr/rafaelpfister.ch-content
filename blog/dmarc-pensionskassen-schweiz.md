@@ -16,7 +16,7 @@ url: "https://rafaelpfister.ch/blog/dmarc-pensionskassen-schweiz"
 translationId: "article-a34017b39fecf271"
 zielgruppe: "entscheider"
 aiPrompt: |
-  Du bist mein Berater für E-Mail-Sicherheit. Prüfe für meine Domain, ob SPF, DKIM, DMARC und MTA-STS korrekt gesetzt sind, erkläre mir den aktuellen Stand in einfachen Worten und zeige mir Schritt für Schritt, wie ich DMARC gefahrlos von p=none über p=quarantine auf p=reject anhebe.
+  Du bist mein Berater für E-Mail-Sicherheit. Prüfe für meine Domain, ob SPF, DKIM und DMARC korrekt gesetzt sind und ob DANE möglich ist, erkläre mir den aktuellen Stand in einfachen Worten und zeige mir Schritt für Schritt, wie ich DMARC gefahrlos von p=none über p=quarantine auf p=reject anhebe.
 ---
 
 Ende September 2026 wurde die PK Softech AG angegriffen, ein Softwarehersteller, dessen Vorsorgelösung mehrere Schweizer Pensionskassen einsetzen. Über diesen Weg flossen Daten ab. Betroffen sind nach der Berichterstattung unter anderem die Bundespensionskasse Publica, die Pensionskasse der Migros und die Pensionskasse der Stadt Zürich sowie weitere Einrichtungen. Je nach Kasse geht es um Name, AHV-Nummer, Zivilstand, Adresse und IBAN sowie Lohn- und Vorsorgedaten.
@@ -29,7 +29,7 @@ PK Softech ist dabei kein Einzelfall, sondern das deutlichste Beispiel eines Mus
 
 ## Wie geprüft wurde
 
-Die Auswertung umfasst 66 Vorsorgeeinrichtungen der zweiten Säule, von den grossen öffentlich-rechtlichen Kassen über die Sammelstiftungen der Versicherer bis zu kleineren Gemeinschaftseinrichtungen. Geprüft wurden ausschliesslich öffentliche DNS-Einträge: SPF, DKIM, DMARC, MTA-STS, TLS-RPT und die MX-Einträge. Das sind dieselben Angaben, die jedes empfangende Mailsystem bei jeder eingehenden Nachricht abfragt.
+Die Auswertung umfasst 66 Vorsorgeeinrichtungen der zweiten Säule, von den grossen öffentlich-rechtlichen Kassen über die Sammelstiftungen der Versicherer bis zu kleineren Gemeinschaftseinrichtungen. Geprüft wurden ausschliesslich öffentliche DNS-Einträge: SPF, DKIM, DMARC, die MX-Einträge sowie DNSSEC und DANE (TLSA-Einträge der Mailserver, geprüft am 19.10.2026). Das sind dieselben Angaben, die jedes empfangende Mailsystem bei jeder eingehenden Nachricht abfragt.
 
 Die Prüfung war rein passiv. Es wurde nur öffentliches DNS abgefragt, keine Verbindung zu den Systemen der Einrichtungen aufgebaut, keine Anmeldung versucht und keine personenbezogenen Daten erhoben. Die Auswertung bildet nur ab, was aus öffentlichen Quellen ohnehin für jeden ablesbar ist. Konzern-Sammelstiftungen sind auf die Hauptdomain des Trägers zusammengefasst; einzelne angeschlossene Stiftungen können abweichen.
 
@@ -45,8 +45,8 @@ Die Prüfung war rein passiv. Es wurde nur öffentliches DNS abgefragt, keine Ve
 | DMARC `p=none` (nur Beobachtung) | 14 % |
 | kein DMARC | 41 % |
 | DKIM erkennbar | 55 % |
-| MTA-STS | 2 % |
-| TLS-RPT | 5 % |
+| DNSSEC | 38 % |
+| DANE | 9 % |
 
 Drei Punkte stechen heraus.
 
@@ -56,7 +56,7 @@ Drei Punkte stechen heraus.
 
 **DMARC `p=none` ist kein Schutz.** Die 14 Prozent in dieser Gruppe haben eine DMARC-Richtlinie gesetzt, aber auf der Beobachtungsstufe belassen. Das liefert Reports, lehnt aber keine einzige gefälschte Nachricht ab. In der Praxis ist das ein Zwischenschritt, der oft über Monate oder Jahre stehen bleibt.
 
-Dazu kommt ein durchgehender Befund: MTA-STS ist mit 2 Prozent praktisch inexistent. Ohne MTA-STS wird die Transportverschlüsselung eingehender Mail nicht erzwungen, was einen Angreifer mit Zugriff auf den Transportweg begünstigt.
+Bei der Transportverschlüsselung zeigt sich ein ähnliches Bild: Nur 6 der 66 Einrichtungen (9 Prozent) sichern ihre Mailserver mit DANE ab. Damit prüft ein sendender Mailserver anhand eines per DNSSEC signierten Eintrags, ob er mit dem richtigen Empfänger verschlüsselt verbunden ist. Voraussetzung ist DNSSEC, das 38 Prozent der Einrichtungen bereits aktiviert haben. Für diese ist DANE der naheliegende nächste Schritt.
 
 ## Alle Datensätze zum Durchklicken
 
