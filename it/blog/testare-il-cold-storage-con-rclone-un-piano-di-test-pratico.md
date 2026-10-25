@@ -19,6 +19,7 @@ translatedAt: 2026-09-03T08:20:23.034Z
 translationReview: required
 translationSourceHash: 27bc45a50d8e84fc785eaf04ec6814054e327f516587d0f9f9a101c989ce2aa1
 url: https://rafaelpfister.ch/it/blog/testare-il-cold-storage-con-rclone-un-piano-di-test-pratico
+aktualisiert: 2026-10-25
 ---
 
 Un mount Rclone si configura rapidamente. Il remote appare come una directory, `ls` mostra i file e il primo test funzionale è superato. Tuttavia, questo dice ancora poco sull'uso in produzione.

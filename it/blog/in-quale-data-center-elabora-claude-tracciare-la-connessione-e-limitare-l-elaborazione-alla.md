@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-10-20T08:45:48.882Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/in-quale-data-center-elabora-claude-tracciare-la-connessione-e-limitare-l-elaborazione-alla
+aktualisiert: 2026-10-25
 ---
 
 Chi utilizza Claude tramite claude.ai, Claude Code o l’API non scopre in quale data center il modello elabora la richiesta. È visibile solo il primo tratto della connessione fino al nodo edge più vicino. Per le aziende che trasmettono dati personali o contenuti riservati a un modello linguistico, questo non basta: devono poter dimostrare a clienti, consulenti della protezione dei dati o revisori dove avviene l’elaborazione.

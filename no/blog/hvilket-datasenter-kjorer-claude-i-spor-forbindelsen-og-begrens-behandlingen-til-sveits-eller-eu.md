@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-10-20T08:49:31.466Z
 translationReview: required
 url: https://rafaelpfister.ch/no/blog/hvilket-datasenter-kjorer-claude-i-spor-forbindelsen-og-begrens-behandlingen-til-sveits-eller-eu
+aktualisiert: 2026-10-25
 ---
 
 When using Claude via claude.ai, Claude Code or the API, you cannot find out which data center processes the request. Only the first part of the connection to the nearest edge node is visible. For companies that submit personal data or confidential content to a language model, this is insufficient: they need to be able to document for customers, data protection advisers or auditors where processing takes place.

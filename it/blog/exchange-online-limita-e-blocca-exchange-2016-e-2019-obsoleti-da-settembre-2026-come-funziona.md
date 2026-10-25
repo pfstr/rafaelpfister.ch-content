@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-08T08:13:24.964Z
 translationReview: required
 url: https://rafaelpfister.ch/it/blog/exchange-online-limita-e-blocca-exchange-2016-e-2019-obsoleti-da-settembre-2026-come-funziona
+aktualisiert: 2026-10-25
 ---
 
 # Exchange Online rallenta e blocca i server Exchange 2016 e 2019 obsoleti da settembre 2026: come funziona il Transport Enforcement

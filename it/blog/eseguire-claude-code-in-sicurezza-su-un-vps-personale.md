@@ -15,6 +15,7 @@ translationSourceHash: 011d5e16cec877d14e68e11ff48caee9b6ee849ee6235c889676cfe64
 translatedAt: 2026-09-04T08:44:10.413Z
 url: https://rafaelpfister.ch/it/blog/eseguire-claude-code-in-sicurezza-su-un-vps-personale
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 Su un computer personale, una sessione di Claude Code termina involontariamente al più tardi quando il laptop va in sospensione o la connessione di rete si interrompe. Un VPS continua a funzionare ed è raggiungibile da più dispositivi. Al tempo stesso, resta permanentemente collegato a Internet pubblico e viene sottoposto a scansioni automatizzate già poco dopo l'avvio.

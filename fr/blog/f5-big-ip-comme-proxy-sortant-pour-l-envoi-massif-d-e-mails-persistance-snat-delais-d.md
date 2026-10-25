@@ -27,6 +27,7 @@ translationSourceHash: 218c4d189dd18000d6db2ead4b2106f8be858169c9d7b234e4f9320ac
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:28:29.322Z
 translationReview: required
+aktualisiert: 2026-10-25
 ---
 
 Un traitement de factures ou l’envoi d’une newsletter d’environ 1 000 e-mails par minute quitte le réseau de l’entreprise, avec une F5 BIG-IP placée entre les deux comme proxy sortant vers le point de dépôt du fournisseur. La BIG-IP ne répartit pas le trafic entre plusieurs destinations, elle le transmet. C’est précisément cette configuration qui détermine quels réglages sont pertinents et quelles optimisations supposées restent sans effet.

@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:02:49.283Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/causas-habituales-de-los-bucles-de-correo-y-como-resolverlos
+aktualisiert: 2026-10-25
 ---
 
 # Causas típicas de los bucles de correo y cómo solucionarlos

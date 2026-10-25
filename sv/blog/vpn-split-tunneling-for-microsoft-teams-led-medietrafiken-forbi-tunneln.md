@@ -21,6 +21,7 @@ translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:33:08.640Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 Ett Teams-samtal över en VPN-anslutning låter ofta sämre än utan: rösten hackar, videon rycker och skärmdelningar laddas långsamt. Orsaken är oftast omvägen som realtidstrafiken tar genom VPN-tunneln, inte Teams i sig. Microsoft har därför i flera år rekommenderat att Teams medietrafik leds direkt till internet förbi VPN:t med hjälp av split tunneling. Detta tillvägagångssätt fungerar med i princip alla VPN-produkter, från konsumentklienter till företagsgatewayar; konfigurationen skiljer sig bara åt i detaljerna.

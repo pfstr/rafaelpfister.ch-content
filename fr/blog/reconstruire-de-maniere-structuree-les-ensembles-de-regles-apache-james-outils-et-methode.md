@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:01:39.390Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/reconstruire-de-maniere-structuree-les-ensembles-de-regles-apache-james-outils-et-methode
+aktualisiert: 2026-10-25
 ---
 
 # Reconstruire de manière structurée les ensembles de règles Apache James : outils et méthode

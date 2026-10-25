@@ -19,6 +19,7 @@ translatedAt: 2026-09-03T08:21:28.421Z
 translationReview: automatic
 translationSourceHash: 27bc45a50d8e84fc785eaf04ec6814054e327f516587d0f9f9a101c989ce2aa1
 url: https://rafaelpfister.ch/es/blog/probar-cold-storage-con-rclone-un-plan-de-pruebas-practico
+aktualisiert: 2026-10-25
 ---
 
 Un montaje de Rclone se configura rápidamente. El remoto aparece como un directorio, `ls` muestra archivos y la primera prueba funcional se ha superado. Sin embargo, eso dice poco sobre el funcionamiento en producción.

@@ -15,6 +15,7 @@ translationSourceHash: ad0542d870d48ea7cdb659d03b119c51a3056c0f8e48290ecc95a7832
 translatedAt: 2026-09-05T07:55:45.331Z
 url: https://rafaelpfister.ch/it/blog/accedere-a-exchange-online-con-powershell-sostituire-ews-con-microsoft-graph
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Accedere a Exchange Online con PowerShell: sostituire EWS con Microsoft Graph

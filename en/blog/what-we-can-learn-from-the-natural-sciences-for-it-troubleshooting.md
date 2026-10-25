@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:15:13.834Z
 translationReview: automatic
 url: https://rafaelpfister.ch/en/blog/what-we-can-learn-from-the-natural-sciences-for-it-troubleshooting
+aktualisiert: 2026-10-25
 ---
 
 # What We Can Learn from Science for IT Troubleshooting

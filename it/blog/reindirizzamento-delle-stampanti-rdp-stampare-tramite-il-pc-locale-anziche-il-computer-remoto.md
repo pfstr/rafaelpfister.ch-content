@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-30T09:29:31.920Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/reindirizzamento-delle-stampanti-rdp-stampare-tramite-il-pc-locale-anziche-il-computer-remoto
+aktualisiert: 2026-10-25
 ---
 
 # Reindirizzamento della stampante RDP: stampare tramite il PC locale anziché il computer remoto

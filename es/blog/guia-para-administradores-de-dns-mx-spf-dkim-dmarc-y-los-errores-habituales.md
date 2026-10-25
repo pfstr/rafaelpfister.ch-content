@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:07:40.281Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/guia-para-administradores-de-dns-mx-spf-dkim-dmarc-y-los-errores-habituales
+aktualisiert: 2026-10-25
 ---
 
 # Guía para administradores de DNS: MX, SPF, DKIM, DMARC y los errores habituales

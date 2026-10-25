@@ -19,6 +19,7 @@ translationSourceHash: 51d48e038c5eb870c77828f954ce1ad1d27bc4758889cb492c872eeae
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-28T15:29:04.068Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # Sending mail through a relay: Checking TLS and authentication

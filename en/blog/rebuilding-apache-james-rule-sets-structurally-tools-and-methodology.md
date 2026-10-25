@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:01:00.989Z
 translationReview: automatic
 url: https://rafaelpfister.ch/en/blog/rebuilding-apache-james-rule-sets-structurally-tools-and-methodology
+aktualisiert: 2026-10-25
 ---
 
 # Rebuilding Apache James Rule Sets in a Structured Way: Tools and Method

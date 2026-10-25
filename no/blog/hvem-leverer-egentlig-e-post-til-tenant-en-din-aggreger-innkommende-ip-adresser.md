@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:07:20.989Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/hvem-leverer-egentlig-e-post-til-tenant-en-din-aggreger-innkommende-ip-adresser
+aktualisiert: 2026-10-25
 ---
 
 # Who is actually delivering mail into your tenant? Aggregating inbound IP addresses

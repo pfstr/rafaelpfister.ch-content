@@ -32,6 +32,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:12:05.086Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/analizar-el-flujo-de-correo-de-exchange-message-tracking-registros-smtp-y-conectores-de
+aktualisiert: 2026-10-25
 ---
 
 # Análisis del flujo de correo de Exchange: seguimiento de mensajes, registros SMTP y conectores de recepción

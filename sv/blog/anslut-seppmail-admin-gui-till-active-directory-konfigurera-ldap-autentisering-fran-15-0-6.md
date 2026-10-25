@@ -16,6 +16,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:24:22.072Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/anslut-seppmail-admin-gui-till-active-directory-konfigurera-ldap-autentisering-fran-15-0-6
+aktualisiert: 2026-10-25
 ---
 
 # Anslut SEPPmail Admin-GUI till Active Directory: konfigurera LDAP-autentisering från 15.0.6

@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-30T09:29:43.475Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/redireccion-de-impresoras-rdp-imprimir-mediante-el-pc-local-en-lugar-del-equipo-remoto
+aktualisiert: 2026-10-25
 ---
 
 # Redirección de impresoras RDP: imprimir a través del PC local en lugar del equipo remoto

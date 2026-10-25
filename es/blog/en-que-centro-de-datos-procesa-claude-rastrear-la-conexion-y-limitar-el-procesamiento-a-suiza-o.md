@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-10-20T08:47:41.025Z
 translationReview: required
 url: https://rafaelpfister.ch/es/blog/en-que-centro-de-datos-procesa-claude-rastrear-la-conexion-y-limitar-el-procesamiento-a-suiza-o
+aktualisiert: 2026-10-25
 ---
 
 Quien utiliza Claude a través de claude.ai, Claude Code o la API no sabe en qué centro de datos el modelo procesa la solicitud. Solo es visible el primer tramo de la conexión hasta el nodo edge más cercano. Para las empresas que transmiten datos personales o contenido confidencial a un modelo de lenguaje, esto no basta: deben poder demostrar ante clientes, asesores de protección de datos o auditoría dónde tiene lugar el procesamiento.

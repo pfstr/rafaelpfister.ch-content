@@ -21,6 +21,7 @@ translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:32:07.961Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 Una chiamata Teams tramite connessione VPN spesso ha una qualità peggiore rispetto a una senza VPN: l’audio si interrompe, il video scatta e le condivisioni dello schermo si caricano in ritardo. La causa risiede generalmente nel percorso indiretto che il traffico in tempo reale compie attraverso il tunnel VPN, non in Teams stesso. Per questo Microsoft raccomanda da anni di instradare direttamente in Internet il traffico multimediale di Teams, aggirando la VPN tramite Split Tunneling. Questo approccio funziona con praticamente qualsiasi prodotto VPN, dal client consumer al gateway enterprise; la configurazione differisce solo nei dettagli.

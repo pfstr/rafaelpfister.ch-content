@@ -15,6 +15,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-29T10:23:53.072Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/le-crash-gpu-0x060c201e-dans-l-application-de-bureau-claude-enquete-jusqu-au-minidump
+aktualisiert: 2026-10-25
 ---
 
 L’application Claude Desktop sous Windows se ferme sans message d’erreur, toutes les sessions Claude Code en cours disparaissent, et il arrive que l’application ne redémarre qu’après une « Réparation » dans les paramètres Windows. Cette ligne apparaît alors dans le journal de l’application :

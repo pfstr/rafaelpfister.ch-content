@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:04:12.724Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/strukturert-gjenoppbygging-av-apache-james-regelverk-verktoy-og-metode
+aktualisiert: 2026-10-25
 ---
 
 # Strukturert nyoppbygging av Apache James-regelverk: Verktøy og metode

@@ -17,6 +17,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:15:12.039Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/tester-smtp-sous-linux-de-la-connexion-tcp-a-l-e-mail-delivre
+aktualisiert: 2026-10-25
 ---
 
 # Tester SMTP sous Linux : de la connexion TCP à l’e-mail délivré

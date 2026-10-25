@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:03:57.687Z
 translationReview: required
 url: https://rafaelpfister.ch/sv/blog/vanliga-orsaker-till-e-postloopar-och-hur-de-atgardas
+aktualisiert: 2026-10-25
 ---
 
 # Vanliga orsaker till e-postloopar och hur de åtgärdas

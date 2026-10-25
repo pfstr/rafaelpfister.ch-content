@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-26T09:07:07.470Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/mailheaderanalyzer-analysera-e-posthuvuden-i-powershell-utan-natverksatkomst
+aktualisiert: 2026-10-25
 ---
 
 # MailHeaderAnalyzer: Analysera e-posthuvuden i PowerShell utan nätverksåtkomst

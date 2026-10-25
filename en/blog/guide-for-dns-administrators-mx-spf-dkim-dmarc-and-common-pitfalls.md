@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:17:43.598Z
 translationReview: required
 url: https://rafaelpfister.ch/en/blog/guide-for-dns-administrators-mx-spf-dkim-dmarc-and-common-pitfalls
+aktualisiert: 2026-10-25
 ---
 
 # Guide for DNS Administrators: MX, SPF, DKIM, DMARC, and Common Pitfalls

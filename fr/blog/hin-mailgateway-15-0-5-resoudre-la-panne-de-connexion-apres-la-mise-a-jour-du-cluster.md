@@ -16,6 +16,7 @@ translationSourceHash: 03805a55e2acb45a3453acda621e39cc3ddce6ae00cfe85f76ca2cc32
 translatedAt: 2026-09-05T08:02:45.999Z
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/fr/blog/hin-mailgateway-15-0-5-resoudre-la-panne-de-connexion-apres-la-mise-a-jour-du-cluster
+aktualisiert: 2026-10-25
 ---
 
 # HIN Mailgateway 15.0.5 : corriger la panne de connexion après la mise à jour du cluster

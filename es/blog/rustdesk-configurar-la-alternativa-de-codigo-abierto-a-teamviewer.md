@@ -19,6 +19,7 @@ translationSourceHash: f812fc4b04abe0aa92cca47b285a30a18f5cd1e99ab328593b224ee26
 translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:49:29.674Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # RustDesk: configurar la alternativa de código abierto a TeamViewer

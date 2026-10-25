@@ -15,6 +15,7 @@ translationSourceHash: 011d5e16cec877d14e68e11ff48caee9b6ee849ee6235c889676cfe64
 translatedAt: 2026-09-04T08:48:30.739Z
 url: https://rafaelpfister.ch/no/blog/kjor-claude-code-sikkert-pa-din-egen-vps
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 På din egen datamaskin avsluttes en Claude Code-økt ufrivillig senest når den bærbare datamaskinen går i dvale eller nettverksforbindelsen brytes. En VPS fortsetter å kjøre og er tilgjengelig fra flere enheter. Samtidig er den permanent koblet til det offentlige internettet og blir automatisk skannet kort tid etter oppstart.

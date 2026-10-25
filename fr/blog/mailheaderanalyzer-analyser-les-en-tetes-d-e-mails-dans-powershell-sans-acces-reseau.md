@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-26T08:56:50.337Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/mailheaderanalyzer-analyser-les-en-tetes-d-e-mails-dans-powershell-sans-acces-reseau
+aktualisiert: 2026-10-25
 ---
 
 # MailHeaderAnalyzer : analyser les en-têtes d’e-mails dans PowerShell, sans accès réseau

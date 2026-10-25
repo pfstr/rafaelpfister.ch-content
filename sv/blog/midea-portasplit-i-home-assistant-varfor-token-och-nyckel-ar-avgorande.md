@@ -19,6 +19,7 @@ translationSourceHash: c72a9e3147727e1ec8bb37ab078eb3a73c3cc5a4c92a38fc4b3f84596
 translatedAt: 2026-10-09T10:59:01.886Z
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/sv/blog/midea-portasplit-i-home-assistant-varfor-token-och-nyckel-ar-avgorande
+aktualisiert: 2026-10-25
 ---
 
 <aside class="article-update">

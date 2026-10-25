@@ -18,6 +18,7 @@ translationSourceHash: e526de6f4a454b4f4975eac3e8a406ab5b30314c624bf12c69f87bec9
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-28T15:32:56.683Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # NDR, DSN, Bounce: distinguere correttamente le notifiche di mancata consegna

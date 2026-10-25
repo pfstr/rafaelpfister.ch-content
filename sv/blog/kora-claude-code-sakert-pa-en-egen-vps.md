@@ -15,6 +15,7 @@ translationSourceHash: 011d5e16cec877d14e68e11ff48caee9b6ee849ee6235c889676cfe64
 translatedAt: 2026-09-04T08:47:19.076Z
 url: https://rafaelpfister.ch/sv/blog/kora-claude-code-sakert-pa-en-egen-vps
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 På den egna datorn avslutas en Claude Code-session oavsiktligt senast när laptopen går i vila eller nätverksanslutningen bryts. En VPS fortsätter att köra och kan nås från flera enheter. Samtidigt är den ständigt ansluten till det offentliga internet och skannas automatiskt kort efter start.

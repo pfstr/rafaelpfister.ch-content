@@ -15,6 +15,7 @@ translationSourceHash: ad0542d870d48ea7cdb659d03b119c51a3056c0f8e48290ecc95a7832
 translatedAt: 2026-09-05T07:56:56.550Z
 url: https://rafaelpfister.ch/no/blog/fa-tilgang-til-exchange-online-med-powershell-erstatt-ews-med-microsoft-graph
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Få tilgang til Exchange Online med PowerShell: Erstatt EWS med Microsoft Graph

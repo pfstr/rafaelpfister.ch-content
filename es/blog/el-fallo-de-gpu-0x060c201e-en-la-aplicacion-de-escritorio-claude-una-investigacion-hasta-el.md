@@ -15,6 +15,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-29T10:25:48.853Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/el-fallo-de-gpu-0x060c201e-en-la-aplicacion-de-escritorio-claude-una-investigacion-hasta-el
+aktualisiert: 2026-10-25
 ---
 
 La aplicación Claude Desktop en Windows se cierra sin mostrar ningún mensaje de error, todas las sesiones de Claude Code en curso desaparecen y, a veces, la aplicación solo vuelve a iniciarse después de «Repararla» desde la configuración de Windows. En el registro de la aplicación aparece entonces esta línea:

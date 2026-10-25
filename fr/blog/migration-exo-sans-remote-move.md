@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:19:46.261Z
 translationReview: required
 url: https://rafaelpfister.ch/fr/blog/migration-exo-sans-remote-move
+aktualisiert: 2026-10-25
 ---
 
 # Migration EXO sans Remote Move

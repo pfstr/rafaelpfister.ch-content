@@ -15,6 +15,7 @@ translationSourceHash: e3ae37a51d159128640441aba3bc6993b47b8c5d10968228c05281452
 translatedAt: 2026-09-05T08:01:44.593Z
 url: https://rafaelpfister.ch/sv/blog/totemomail-licensgrans-nadd-rensa-upp-overgivna-anvandare-via-ldap
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Totemomail-licensgränsen nådd: rensa upp övergivna användare via LDAP

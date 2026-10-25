@@ -14,6 +14,7 @@ translationId: article-845fb4bd0e4c592a
 translatedAt: 2026-07-28T11:10:30.445Z
 translationReview: automatic
 translationSourceHash: 39ecd30339131eb74d0748f4bfb31ead3f98aefbd47621974b1e032f1a96b345
+aktualisiert: 2026-10-25
 ---
 
 # Backing up and restoring the HIN Mail Gateway after a failure

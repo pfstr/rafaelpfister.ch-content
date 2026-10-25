@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:05:07.297Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/vanlige-arsaker-til-e-postsloyfer-og-hvordan-de-loses
+aktualisiert: 2026-10-25
 ---
 
 # Vanlige årsaker til e-postsløyfer og hvordan de løses

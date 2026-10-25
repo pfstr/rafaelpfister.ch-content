@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-27T09:26:18.887Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/mailheaderanalyzer-analizzare-le-intestazioni-e-mail-in-powershell-senza-accesso-alla-rete
+aktualisiert: 2026-10-25
 ---
 
 # MailHeaderAnalyzer: analizzare le intestazioni e-mail in PowerShell senza accesso alla rete

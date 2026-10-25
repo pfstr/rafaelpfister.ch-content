@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:01:55.513Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/cause-tipiche-dei-mail-loop-e-come-risolverle
+aktualisiert: 2026-10-25
 ---
 
 # Cause tipiche dei mail loop e come risolverle

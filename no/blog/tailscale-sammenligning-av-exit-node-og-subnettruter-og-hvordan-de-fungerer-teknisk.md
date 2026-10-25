@@ -20,6 +20,7 @@ translationSourceHash: f05a193f13dd2b8aba3c9d049ea1c0a1fcc25b12c420a1d520f99854b
 translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:02:09.618Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # Tailscale: Sammenligning av Exit Node og subnettruter, og hvordan de fungerer teknisk

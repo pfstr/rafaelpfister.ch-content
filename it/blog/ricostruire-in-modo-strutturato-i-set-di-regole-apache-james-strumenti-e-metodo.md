@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:02:16.992Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/ricostruire-in-modo-strutturato-i-set-di-regole-apache-james-strumenti-e-metodo
+aktualisiert: 2026-10-25
 ---
 
 # Ristrutturare le regole di Apache James: strumenti e metodo

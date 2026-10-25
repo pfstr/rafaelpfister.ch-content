@@ -19,6 +19,7 @@ translatedAt: 2026-09-03T08:19:15.650Z
 translationReview: required
 translationSourceHash: 27bc45a50d8e84fc785eaf04ec6814054e327f516587d0f9f9a101c989ce2aa1
 url: https://rafaelpfister.ch/fr/blog/tester-le-stockage-a-froid-avec-rclone-un-plan-de-test-pratique
+aktualisiert: 2026-10-25
 ---
 
 Un montage Rclone se met rapidement en place. Le remote apparaît comme un répertoire, `ls` affiche des fichiers et le premier test fonctionnel est réussi. Cela ne dit toutefois pas grand-chose sur l’exploitation en production.

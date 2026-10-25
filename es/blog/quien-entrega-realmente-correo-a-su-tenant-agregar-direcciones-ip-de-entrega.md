@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:06:15.492Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/quien-entrega-realmente-correo-a-su-tenant-agregar-direcciones-ip-de-entrega
+aktualisiert: 2026-10-25
 ---
 
 # ¿Quién entrega realmente correo a su tenant? Agregar direcciones IP de entrega

@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:19:19.735Z
 translationReview: required
 url: https://rafaelpfister.ch/fr/blog/guide-pour-administrateurs-dns-mx-spf-dkim-dmarc-et-les-pieges-courants
+aktualisiert: 2026-10-25
 ---
 
 # Guide pour les administrateurs DNS : MX, SPF, DKIM, DMARC et les sources d’erreurs habituelles

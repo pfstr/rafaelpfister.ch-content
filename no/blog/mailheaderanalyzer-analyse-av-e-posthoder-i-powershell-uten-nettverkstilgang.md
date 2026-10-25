@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-26T09:11:28.013Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/mailheaderanalyzer-analyse-av-e-posthoder-i-powershell-uten-nettverkstilgang
+aktualisiert: 2026-10-25
 ---
 
 # MailHeaderAnalyzer: analyser e-posthoder i PowerShell uten nettverkstilgang

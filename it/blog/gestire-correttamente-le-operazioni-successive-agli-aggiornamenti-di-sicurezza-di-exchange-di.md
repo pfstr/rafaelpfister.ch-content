@@ -16,6 +16,7 @@ translationSourceHash: e5d9295515965d3e7801752cd605f6d2a78cacfc9fb965e0f63d64565
 translatedAt: 2026-09-05T07:52:13.087Z
 url: https://rafaelpfister.ch/it/blog/gestire-correttamente-le-operazioni-successive-agli-aggiornamenti-di-sicurezza-di-exchange-di
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Gestire correttamente le operazioni successive agli aggiornamenti di sicurezza Exchange di luglio 2026

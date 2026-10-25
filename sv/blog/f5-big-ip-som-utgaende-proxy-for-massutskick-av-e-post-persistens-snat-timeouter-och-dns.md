@@ -27,6 +27,7 @@ translationSourceHash: 218c4d189dd18000d6db2ead4b2106f8be858169c9d7b234e4f9320ac
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:30:07.300Z
 translationReview: required
+aktualisiert: 2026-10-25
 ---
 
 En faktureringskörning eller ett nyhetsbrevsutskick med omkring 1 000 e-postmeddelanden per minut lämnar företagsnätverket, med en F5 BIG-IP som utgående proxy till leverantörens inlämningspunkt däremellan. BIG-IP belastningsfördelar inte mellan flera mål, utan vidarebefordrar trafiken. Just denna konstellation avgör vilka inställningar som är meningsfulla och vilka påstådda optimeringar som inte ger någon effekt.

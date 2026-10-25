@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:59:51.430Z
 translationReview: required
 url: https://rafaelpfister.ch/en/blog/common-causes-of-mail-loops-and-how-to-fix-them
+aktualisiert: 2026-10-25
 ---
 
 # Common Causes of Mail Loops and How to Fix Them

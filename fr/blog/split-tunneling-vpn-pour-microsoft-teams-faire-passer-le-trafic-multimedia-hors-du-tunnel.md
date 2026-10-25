@@ -21,6 +21,7 @@ translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:31:38.253Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 Un appel Teams via une connexion VPN sonne souvent moins bien que sans VPN : la voix se coupe, la vidéo saccade, les partages d’écran s’affichent avec retard. La cause réside généralement dans le détour que le trafic temps réel effectue via le tunnel VPN, et non dans Teams lui-même. Microsoft recommande donc depuis des années de faire passer directement le trafic multimédia Teams vers Internet, hors du VPN, au moyen du Split Tunneling. Cette approche fonctionne avec pratiquement tous les produits VPN, du client grand public à la passerelle d’entreprise ; seule la configuration diffère dans les détails.

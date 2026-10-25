@@ -32,6 +32,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:14:53.436Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/analyse-av-e-postflyt-i-exchange-message-tracking-smtp-protokoller-og-receive-connectors
+aktualisiert: 2026-10-25
 ---
 
 # Analyse av Exchange-e-postflyt: Message Tracking, SMTP-protokoller og Receive Connectors

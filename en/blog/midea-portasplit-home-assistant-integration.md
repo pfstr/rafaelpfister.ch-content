@@ -19,6 +19,7 @@ translationReview: automatic
 translationSourceHash: c72a9e3147727e1ec8bb37ab078eb3a73c3cc5a4c92a38fc4b3f845966e2f405
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/en/blog/midea-portasplit-home-assistant-integration
+aktualisiert: 2026-10-25
 ---
 
 <aside class="article-update">

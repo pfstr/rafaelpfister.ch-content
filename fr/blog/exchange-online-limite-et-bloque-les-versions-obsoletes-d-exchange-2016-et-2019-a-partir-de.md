@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-08T08:12:33.215Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/exchange-online-limite-et-bloque-les-versions-obsoletes-d-exchange-2016-et-2019-a-partir-de
+aktualisiert: 2026-10-25
 ---
 
 # Exchange Online limite et bloque les serveurs Exchange 2016 et 2019 obsolètes à partir de septembre 2026 : fonctionnement du transport enforcement

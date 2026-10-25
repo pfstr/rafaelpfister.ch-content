@@ -15,6 +15,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-29T10:27:15.855Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/gpu-krasjet-0x060c201e-i-claude-skrivebordsappen-feilsoking-helt-frem-til-minidumpen
+aktualisiert: 2026-10-25
 ---
 
 Claude Desktop-appen på Windows avsluttes uten feilmelding, alle aktive Claude Code-økter forsvinner, og noen ganger starter appen deretter først igjen etter en «Reparer» via Windows-innstillingene. I apploggen står da denne linjen:

@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:16:22.067Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/cosa-possiamo-imparare-dalle-scienze-naturali-per-la-ricerca-guasti-in-ambito-it
+aktualisiert: 2026-10-25
 ---
 
 # Cosa possiamo imparare dalle scienze naturali per la ricerca guasti nell'IT

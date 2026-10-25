@@ -20,6 +20,7 @@ translationSourceHash: a4888a85b953fbf7b2248232b7b7361e752300872cdb570d6fd15b1cb
 translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:03:26.181Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # Inoltro porte con netsh portproxy: raggiungere servizi interni tramite un jumphost

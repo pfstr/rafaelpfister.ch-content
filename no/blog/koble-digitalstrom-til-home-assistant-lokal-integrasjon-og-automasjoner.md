@@ -22,6 +22,7 @@ translationSourceHash: 3eb347c3b61cdbf39b6aad2c7b4e99ca0b364c68a4c632de652726ff9
 translationModel: gpt-5.6-terra
 translatedAt: 2026-10-07T10:25:59.754Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 I digitalSTROM-installasjoner er lys, persienner og andre forbrukere koblet til klemmer i sikringsskapet, styrt via brytere og en digitalSTROM-server (dSS20). Når flere systemer som Philips Hue, Sonos og en FRITZ!Box kommer til, er det nærliggende å samle alt lokalt i Home Assistant, uten skykonto og uten å lagre passordet til dSS i Home Assistant. Derfor har jeg skrevet en liten integrasjon og publisert den sammen med passende automasjoner som [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local) under MIT-lisens.

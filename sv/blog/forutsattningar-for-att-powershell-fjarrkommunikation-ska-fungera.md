@@ -20,6 +20,7 @@ translationSourceHash: 2969f02b5e677daaea867ea7c19fe929dc58f628cc4e47f3b165e8532
 translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:47:25.924Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # Förutsättningar för att PowerShell-fjärrkommunikation ska fungera

@@ -17,6 +17,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:17:12.740Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/probar-smtp-en-linux-desde-la-conexion-tcp-hasta-el-correo-entregado
+aktualisiert: 2026-10-25
 ---
 
 # Probar SMTP en Linux: desde la conexión TCP hasta el correo entregado

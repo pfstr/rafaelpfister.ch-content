@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:15:48.498Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/ce-que-les-sciences-naturelles-peuvent-nous-apprendre-sur-le-depannage-informatique
+aktualisiert: 2026-10-25
 ---
 
 # Ce que la recherche des erreurs en informatique peut apprendre des sciences naturelles

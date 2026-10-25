@@ -16,6 +16,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:23:50.538Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/conectar-la-gui-de-administracion-de-seppmail-a-active-directory-configurar-la-autenticacion
+aktualisiert: 2026-10-25
 ---
 
 # Conectar la GUI de administración de SEPPmail a Active Directory: configurar la autenticación LDAP a partir de la versión 15.0.6

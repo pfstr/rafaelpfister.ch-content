@@ -15,6 +15,7 @@ translationReview: automatic
 translationSourceHash: 011d5e16cec877d14e68e11ff48caee9b6ee849ee6235c889676cfe64ae81628
 url: https://rafaelpfister.ch/en/blog/securing-a-debian-vps-for-claude-code
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 On your own computer, a Claude Code session ends unexpectedly at the latest when the laptop goes to sleep or the network connection drops. A VPS keeps running and can be reached from multiple devices. At the same time, it is permanently connected to the public internet and is automatically scanned shortly after startup.

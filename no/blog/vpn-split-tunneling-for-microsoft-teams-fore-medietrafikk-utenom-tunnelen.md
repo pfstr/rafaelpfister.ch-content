@@ -21,6 +21,7 @@ translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:33:40.420Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 En Teams-samtale over en VPN-forbindelse høres ofte dårligere ut enn uten: Stemmen faller ut, video hakker, og skjermdeling bygges opp med forsinkelse. Årsaken er som regel omveien sanntidstrafikken tar gjennom VPN-tunnelen, ikke Teams selv. Microsoft har derfor i mange år anbefalt å føre Teams-medietrafikk direkte til internett utenom VPN-et ved hjelp av split tunneling. Denne tilnærmingen fungerer med praktisk talt alle VPN-produkter, fra forbrukerklienter til enterprise-gatewayer; konfigurasjonen varierer bare i detaljene.

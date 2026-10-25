@@ -32,6 +32,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:10:58.725Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/analizzare-il-flusso-di-posta-in-exchange-message-tracking-protocolli-smtp-e-connettori-di
+aktualisiert: 2026-10-25
 ---
 
 # Analizzare il flusso di posta in Exchange: Message Tracking, protocolli SMTP e connettori di ricezione

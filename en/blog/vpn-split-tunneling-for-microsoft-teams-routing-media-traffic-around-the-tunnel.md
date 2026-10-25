@@ -21,6 +21,7 @@ translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:31:07.882Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 A Teams call over a VPN connection often sounds worse than one without: audio cuts out, video stutters, and screen sharing takes longer to load. The cause is usually the detour that real-time traffic takes through the VPN tunnel, not Teams itself. Microsoft has therefore recommended for years that Teams media traffic be routed directly to the internet around the VPN using split tunneling. This approach works with virtually any VPN product, from consumer clients to enterprise gateways; only the configuration details differ.

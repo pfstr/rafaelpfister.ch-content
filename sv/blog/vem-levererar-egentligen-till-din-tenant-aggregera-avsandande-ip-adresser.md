@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:06:56.374Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/vem-levererar-egentligen-till-din-tenant-aggregera-avsandande-ip-adresser
+aktualisiert: 2026-10-25
 ---
 
 # Vem levererar egentligen till din tenant? Aggregera avsändande IP-adresser

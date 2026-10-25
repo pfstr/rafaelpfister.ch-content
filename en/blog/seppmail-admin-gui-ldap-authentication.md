@@ -16,6 +16,7 @@ translatedAt: 2026-09-02T08:22:28.309Z
 translationReview: automatic
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/en/blog/seppmail-admin-gui-ldap-authentication
+aktualisiert: 2026-10-25
 ---
 
 # Connect the SEPPmail Admin GUI to Active Directory: Configure LDAP Authentication Starting with 15.0.6

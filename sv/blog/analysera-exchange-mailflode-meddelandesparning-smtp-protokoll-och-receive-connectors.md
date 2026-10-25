@@ -32,6 +32,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:13:28.664Z
 translationReview: required
 url: https://rafaelpfister.ch/sv/blog/analysera-exchange-mailflode-meddelandesparning-smtp-protokoll-och-receive-connectors
+aktualisiert: 2026-10-25
 ---
 
 # Analysera Exchange-e-postflödet: meddelandespårning, SMTP-loggar och Receive Connectors

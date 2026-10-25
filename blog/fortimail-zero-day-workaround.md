@@ -19,7 +19,6 @@ protokolle:
 hauptthema: "fortimail"
 slug: "fortimail-zero-day-workaround"
 featured: "2026-10-02"
-warnung: true
 translationId: "article-0f2b7855c8ece9fe"
 url: "https://rafaelpfister.ch/blog/fortimail-zero-day-workaround"
 ---

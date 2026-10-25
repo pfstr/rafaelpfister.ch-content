@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:18:18.027Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/hva-vi-kan-laere-av-naturvitenskapen-for-feilsoking-i-it
+aktualisiert: 2026-10-25
 ---
 
 # Hva vi kan lære av naturvitenskapen for feilsøking i IT

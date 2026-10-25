@@ -32,6 +32,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:09:45.097Z
 translationReview: required
 url: https://rafaelpfister.ch/fr/blog/analyser-le-flux-de-messagerie-exchange-suivi-des-messages-journaux-smtp-et-connecteurs-de
+aktualisiert: 2026-10-25
 ---
 
 # Analyser le flux de messagerie Exchange : suivi des messages, journaux SMTP et connecteurs de réception

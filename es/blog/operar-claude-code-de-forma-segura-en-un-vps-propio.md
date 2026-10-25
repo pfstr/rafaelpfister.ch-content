@@ -15,6 +15,7 @@ translationSourceHash: 011d5e16cec877d14e68e11ff48caee9b6ee849ee6235c889676cfe64
 translatedAt: 2026-09-04T08:46:04.834Z
 url: https://rafaelpfister.ch/es/blog/operar-claude-code-de-forma-segura-en-un-vps-propio
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 En el propio ordenador, una sesión de Claude Code termina involuntariamente como muy tarde cuando el portátil entra en reposo o se interrumpe la conexión de red. Un VPS sigue funcionando y es accesible desde varios dispositivos. Al mismo tiempo, permanece conectado permanentemente a la Internet pública y se escanea de forma automatizada poco después de iniciarse.

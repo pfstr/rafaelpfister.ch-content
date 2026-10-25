@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:02:48.679Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/reestructurar-las-reglas-de-apache-james-herramientas-y-metodo
+aktualisiert: 2026-10-25
 ---
 
 # Reestructurar las reglas de Apache James: herramientas y método

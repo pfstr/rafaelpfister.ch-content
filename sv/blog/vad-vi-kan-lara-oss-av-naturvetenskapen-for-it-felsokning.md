@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:17:35.036Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/vad-vi-kan-lara-oss-av-naturvetenskapen-for-it-felsokning
+aktualisiert: 2026-10-25
 ---
 
 # Vad vi kan lära oss av naturvetenskapen för felsökning inom IT

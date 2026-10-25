@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:16:52.691Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/lo-que-podemos-aprender-de-las-ciencias-naturales-para-la-resolucion-de-problemas-de-ti
+aktualisiert: 2026-10-25
 ---
 
 # Lo que podemos aprender de las ciencias naturales para la resolución de problemas de TI

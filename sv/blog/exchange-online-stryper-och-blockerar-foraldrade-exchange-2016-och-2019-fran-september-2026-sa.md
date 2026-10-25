@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-08T08:15:09.111Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/exchange-online-stryper-och-blockerar-foraldrade-exchange-2016-och-2019-fran-september-2026-sa
+aktualisiert: 2026-10-25
 ---
 
 # Exchange Online stryper och blockerar föråldrade Exchange 2016- och 2019-servrar från september 2026: Så fungerar Transport Enforcement

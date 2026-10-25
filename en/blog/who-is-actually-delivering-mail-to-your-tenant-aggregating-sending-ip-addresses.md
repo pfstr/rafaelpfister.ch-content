@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:04:35.771Z
 translationReview: automatic
 url: https://rafaelpfister.ch/en/blog/who-is-actually-delivering-mail-to-your-tenant-aggregating-sending-ip-addresses
+aktualisiert: 2026-10-25
 ---
 
 # Who Is Actually Delivering to Your Tenant? Aggregating Sending IP Addresses

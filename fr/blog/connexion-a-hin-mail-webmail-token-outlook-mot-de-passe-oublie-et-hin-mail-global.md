@@ -24,6 +24,7 @@ translationSourceHash: 8f863faa139fd22182bf59e849447e241e339e4fcc4e6a073e6c1a893
 translationModel: gpt-5.6-terra
 translatedAt: 2026-10-06T10:39:12.105Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # Connexion à HIN Mail : webmail, token Outlook, mot de passe oublié et HIN Mail Global

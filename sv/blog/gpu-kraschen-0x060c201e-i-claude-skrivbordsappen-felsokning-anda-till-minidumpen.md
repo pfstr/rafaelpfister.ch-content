@@ -15,6 +15,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-29T10:26:33.340Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/gpu-kraschen-0x060c201e-i-claude-skrivbordsappen-felsokning-anda-till-minidumpen
+aktualisiert: 2026-10-25
 ---
 
 Claude Desktop-appen i Windows avslutas utan felmeddelande, alla pågående Claude Code-sessioner försvinner och ibland startar appen därefter först igen efter en ”Reparera” via Windows-inställningarna. I appens logg står då denna rad:

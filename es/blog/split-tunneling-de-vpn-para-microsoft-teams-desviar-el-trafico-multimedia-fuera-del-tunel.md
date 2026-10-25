@@ -21,6 +21,7 @@ translationSourceHash: 95e3cefa4946676022602866d6ef21ab92ef25ec8c5dd3ff4ab0219ba
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:32:34.773Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 Una llamada de Teams a través de una conexión VPN suele sonar peor que sin ella: la voz se entrecorta, el vídeo va a tirones y las transmisiones de pantalla tardan en cargarse. La causa suele ser el desvío que realiza el tráfico en tiempo real a través del túnel VPN, no Teams en sí. Por ello, Microsoft recomienda desde hace años dirigir el tráfico multimedia de Teams directamente a Internet mediante split tunneling, evitando la VPN. Este enfoque funciona con prácticamente cualquier producto VPN, desde clientes de consumo hasta puertas de enlace empresariales; la configuración solo difiere en los detalles.

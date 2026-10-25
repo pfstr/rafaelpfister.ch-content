@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T09:00:51.880Z
 translationReview: required
 url: https://rafaelpfister.ch/fr/blog/causes-typiques-des-boucles-de-messagerie-et-comment-les-resoudre
+aktualisiert: 2026-10-25
 ---
 
 # Causes typiques des boucles de messagerie et comment les résoudre

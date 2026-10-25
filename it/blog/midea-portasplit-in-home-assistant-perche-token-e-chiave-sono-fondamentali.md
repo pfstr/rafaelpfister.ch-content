@@ -19,6 +19,7 @@ translationSourceHash: c72a9e3147727e1ec8bb37ab078eb3a73c3cc5a4c92a38fc4b3f84596
 translatedAt: 2026-10-09T10:57:34.398Z
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/it/blog/midea-portasplit-in-home-assistant-perche-token-e-chiave-sono-fondamentali
+aktualisiert: 2026-10-25
 ---
 
 <aside class="article-update">

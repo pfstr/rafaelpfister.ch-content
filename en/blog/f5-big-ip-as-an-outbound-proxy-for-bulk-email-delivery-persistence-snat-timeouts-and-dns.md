@@ -27,6 +27,7 @@ translationSourceHash: 218c4d189dd18000d6db2ead4b2106f8be858169c9d7b234e4f9320ac
 translationModel: gpt-5.6-terra
 translatedAt: 2026-08-27T14:27:46.844Z
 translationReview: required
+aktualisiert: 2026-10-25
 ---
 
 An invoice run or newsletter delivery of around 1,000 emails per minute leaves the corporate network, with an F5 BIG-IP acting as an outbound proxy to the provider's submission endpoint. The BIG-IP does not distribute traffic across multiple destinations; it passes it through. This exact setup determines which settings make sense and which supposed optimizations lead nowhere.

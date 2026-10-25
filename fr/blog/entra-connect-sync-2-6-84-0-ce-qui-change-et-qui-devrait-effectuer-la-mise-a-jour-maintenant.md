@@ -17,6 +17,7 @@ translationSourceHash: da16eeec10c227af5ba6f33ae138e0148db5b34736874eeed6b2b60c0
 translatedAt: 2026-09-04T08:49:49.972Z
 url: https://rafaelpfister.ch/fr/blog/entra-connect-sync-2-6-84-0-ce-qui-change-et-qui-devrait-effectuer-la-mise-a-jour-maintenant
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Entra Connect Sync 2.6.84.0 : ce qui change et qui devrait effectuer la mise à jour maintenant

@@ -24,6 +24,7 @@ translationSourceHash: 532fe3454abb44c445145c6fd3e7424685e8bc5a28dfa18d25cff8a7f
 translationModel: gpt-5.6-terra
 translatedAt: 2026-09-24T08:39:50.612Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 # Colmare una lacuna di journaling: esportazione da Microsoft Purview e importazione in Enterprise Vault

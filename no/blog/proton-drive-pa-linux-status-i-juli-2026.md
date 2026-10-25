@@ -20,6 +20,7 @@ translatedAt: 2026-10-02T10:03:23.149Z
 translationReview: automatic
 translationSourceHash: 73500e1be526e5e93bbd7bf789b1cc500976140cb4cb9542404e1e7a56b40ce0
 url: https://rafaelpfister.ch/no/blog/proton-drive-pa-linux-status-i-juli-2026
+aktualisiert: 2026-10-25
 ---
 
 For Windows og macOS har Proton Drive tilbudt egne synkroniseringsklienter siden 2023. På Linux finnes foreløpig nettgrensesnittet, fellesskapsverktøy og siden juni 2026 et offisielt kommandolinjeprogram, men fortsatt ingen synkroniseringsklient. På en server er situasjonen enda vanskeligere, fordi verken synkronisering for skrivebord eller interaktiv pålogging passer godt der.

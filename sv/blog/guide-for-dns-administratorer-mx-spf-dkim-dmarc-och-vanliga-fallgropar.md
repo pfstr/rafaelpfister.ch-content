@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:09:21.458Z
 translationReview: required
 url: https://rafaelpfister.ch/sv/blog/guide-for-dns-administratorer-mx-spf-dkim-dmarc-och-vanliga-fallgropar
+aktualisiert: 2026-10-25
 ---
 
 # Guide för DNS-administratörer: MX, SPF, DKIM, DMARC och vanliga felkällor

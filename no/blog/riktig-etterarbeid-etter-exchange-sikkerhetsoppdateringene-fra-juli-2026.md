@@ -16,6 +16,7 @@ translationSourceHash: e5d9295515965d3e7801752cd605f6d2a78cacfc9fb965e0f63d64565
 translatedAt: 2026-09-05T07:54:05.296Z
 url: https://rafaelpfister.ch/no/blog/riktig-etterarbeid-etter-exchange-sikkerhetsoppdateringene-fra-juli-2026
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Riktig oppfølging av Exchange-sikkerhetsoppdateringene fra juli 2026

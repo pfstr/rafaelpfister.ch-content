@@ -15,6 +15,7 @@ translationSourceHash: e3ae37a51d159128640441aba3bc6993b47b8c5d10968228c05281452
 translatedAt: 2026-09-05T08:00:55.598Z
 url: https://rafaelpfister.ch/es/blog/limite-de-licencias-de-totemomail-alcanzado-limpiar-usuarios-huerfanos-mediante-ldap
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Límite de licencias de Totemomail alcanzado: limpiar usuarios huérfanos mediante LDAP

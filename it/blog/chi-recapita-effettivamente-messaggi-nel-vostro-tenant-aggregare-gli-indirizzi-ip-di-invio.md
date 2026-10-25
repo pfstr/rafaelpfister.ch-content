@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:05:45.210Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/chi-recapita-effettivamente-messaggi-nel-vostro-tenant-aggregare-gli-indirizzi-ip-di-invio
+aktualisiert: 2026-10-25
 ---
 
 # Chi sta effettivamente inviando messaggi al vostro tenant? Aggregare gli indirizzi IP di invio

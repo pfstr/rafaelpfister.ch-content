@@ -16,6 +16,7 @@ translationSourceHash: 03805a55e2acb45a3453acda621e39cc3ddce6ae00cfe85f76ca2cc32
 translatedAt: 2026-09-05T08:02:55.283Z
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/it/blog/hin-mailgateway-15-0-5-risolvere-l-errore-di-accesso-dopo-l-aggiornamento-del-cluster
+aktualisiert: 2026-10-25
 ---
 
 # HIN Mailgateway 15.0.5: risolvere il guasto di accesso dopo l’aggiornamento del cluster

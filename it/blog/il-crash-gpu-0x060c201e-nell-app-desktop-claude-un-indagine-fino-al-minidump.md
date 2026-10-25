@@ -15,6 +15,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-29T10:24:34.663Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/il-crash-gpu-0x060c201e-nell-app-desktop-claude-un-indagine-fino-al-minidump
+aktualisiert: 2026-10-25
 ---
 
 L'app Claude Desktop su Windows si chiude senza messaggi di errore, tutte le sessioni Claude Code in corso vanno perse e, talvolta, l'app riparte solo dopo una «Riparazione» dalle impostazioni di Windows. Nel log dell'app compare quindi questa riga:

@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-30T09:29:04.306Z
 translationReview: automatic
 url: https://rafaelpfister.ch/en/blog/rdp-printer-redirection-print-through-the-local-pc-instead-of-the-remote-computer
+aktualisiert: 2026-10-25
 ---
 
 # RDP Printer Redirection: Print Through the Local PC Instead of the Remote Computer

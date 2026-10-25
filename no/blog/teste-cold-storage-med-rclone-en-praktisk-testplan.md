@@ -19,6 +19,7 @@ translatedAt: 2026-09-03T08:23:39.236Z
 translationReview: automatic
 translationSourceHash: 27bc45a50d8e84fc785eaf04ec6814054e327f516587d0f9f9a101c989ce2aa1
 url: https://rafaelpfister.ch/no/blog/teste-cold-storage-med-rclone-en-praktisk-testplan
+aktualisiert: 2026-10-25
 ---
 
 An Rclone mount is quick to set up. The remote appears as a directory, `ls` shows files, and the first functional test has passed. That says little about production use.

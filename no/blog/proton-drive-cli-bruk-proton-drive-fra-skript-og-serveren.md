@@ -23,6 +23,7 @@ translationSourceHash: e71e82deea6466312d0d95edc2c96890fc0810219a21308b4cb9346df
 translationModel: gpt-5.6-terra
 translatedAt: 2026-10-02T10:01:06.119Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 Den 9. juni 2026 lanserte Proton **Proton Drive CLI**, et offisielt kommandolinjeverktøy for Windows, macOS og Linux. Det er basert på samme SDK som de offisielle Drive-appene, har ende-til-ende-kryptering og er tilgjengelig som én enkelt kjørbar fil `proton-drive`. Kildekoden ligger i det offentlige SDK-repositoriet på `cli/`.

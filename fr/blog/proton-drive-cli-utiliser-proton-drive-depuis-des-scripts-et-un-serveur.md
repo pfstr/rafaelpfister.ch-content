@@ -23,6 +23,7 @@ translationSourceHash: e71e82deea6466312d0d95edc2c96890fc0810219a21308b4cb9346df
 translationModel: gpt-5.6-terra
 translatedAt: 2026-10-02T09:58:14.437Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 Le 9 juin 2026, Proton a publié **Proton Drive CLI**, un outil officiel en ligne de commande pour Windows, macOS et Linux. Il repose sur le même SDK que les applications Drive officielles, chiffre de bout en bout et est disponible sous la forme d’un unique fichier exécutable `proton-drive`. Le code source se trouve dans le dépôt public du SDK, sous `cli/`.

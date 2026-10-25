@@ -19,6 +19,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:11:44.598Z
 translationReview: automatic
 url: https://rafaelpfister.ch/it/blog/rinnovo-della-piattaforma-hin-2026-access-gateway-client-e-scadenze-fino-al-14-settembre
+aktualisiert: 2026-10-25
 ---
 
 # Rinnovo della piattaforma HIN 2026: Access Gateway, Client e scadenze fino al 14 settembre

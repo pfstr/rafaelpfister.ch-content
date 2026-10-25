@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-10-20T08:44:46.332Z
 translationReview: required
 url: https://rafaelpfister.ch/fr/blog/dans-quel-centre-de-donnees-claude-effectue-t-il-ses-calculs-suivre-la-connexion-et-limiter-le
+aktualisiert: 2026-10-25
 ---
 
 Toute personne qui utilise Claude via claude.ai, Claude Code ou l’API ne sait pas dans quel centre de données le modèle traite sa requête. Seule la première partie de la connexion, jusqu’au nœud edge le plus proche, est visible. Pour les entreprises qui transmettent des données personnelles ou des contenus confidentiels à un modèle de langage, cela ne suffit pas : elles doivent pouvoir démontrer à leurs clients, conseillers en protection des données ou à l’audit où le traitement a lieu.

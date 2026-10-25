@@ -30,6 +30,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-31T10:05:09.899Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/qui-remet-reellement-des-e-mails-a-votre-tenant-agreger-les-adresses-ip-d-envoi
+aktualisiert: 2026-10-25
 ---
 
 # Qui remet réellement des e-mails à votre tenant ? Agréger les adresses IP d’envoi

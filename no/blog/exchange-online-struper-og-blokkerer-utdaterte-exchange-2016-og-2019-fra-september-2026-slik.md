@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-08T08:16:04.852Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/exchange-online-struper-og-blokkerer-utdaterte-exchange-2016-og-2019-fra-september-2026-slik
+aktualisiert: 2026-10-25
 ---
 
 # Exchange Online begrenser og blokkerer utdaterte Exchange 2016- og 2019-servere fra september 2026: Slik fungerer Transport Enforcement

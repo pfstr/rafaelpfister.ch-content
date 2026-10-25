@@ -16,6 +16,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-03T08:15:57.947Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/seppmail-15-0-6-och-15-0-6-1-sakerhetskorrigeringar-och-nya-adminfunktioner
+aktualisiert: 2026-10-25
 ---
 
 # SEPPmail 15.0.6 och 15.0.6.1: säkerhetskorrigeringar och nya adminfunktioner

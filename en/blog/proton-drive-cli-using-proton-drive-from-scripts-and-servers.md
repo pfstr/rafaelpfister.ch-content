@@ -23,6 +23,7 @@ translationSourceHash: e71e82deea6466312d0d95edc2c96890fc0810219a21308b4cb9346df
 translationModel: gpt-5.6-terra
 translatedAt: 2026-10-02T09:57:33.327Z
 translationReview: automatic
+aktualisiert: 2026-10-25
 ---
 
 On June 9, 2026, Proton released the **Proton Drive CLI**, an official command-line tool for Windows, macOS, and Linux. It is based on the same SDK as the official Drive apps, provides end-to-end encryption, and is available as a single executable file `proton-drive`. The source code is available in the public SDK repository at `cli/`.

@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-08-30T09:29:58.079Z
 translationReview: automatic
 url: https://rafaelpfister.ch/sv/blog/rdp-skrivaromdirigering-skriv-ut-via-den-lokala-datorn-i-stallet-for-via-fjarrdatorn
+aktualisiert: 2026-10-25
 ---
 
 # RDP-skrivaromdirigering: Skriv ut via den lokala datorn i stället för via fjärrdatorn

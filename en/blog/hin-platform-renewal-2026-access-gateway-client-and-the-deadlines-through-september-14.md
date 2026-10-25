@@ -24,6 +24,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:10:46.302Z
 translationReview: required
 url: https://rafaelpfister.ch/en/blog/hin-platform-renewal-2026-access-gateway-client-and-the-deadlines-through-september-14
+aktualisiert: 2026-10-25
 ---
 
 # HIN Platform Renewal 2026: Access Gateway, Client, and Deadlines Through September 14

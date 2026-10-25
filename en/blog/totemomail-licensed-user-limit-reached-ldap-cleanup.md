@@ -15,6 +15,7 @@ translationReview: required
 translationSourceHash: e3ae37a51d159128640441aba3bc6993b47b8c5d10968228c05281452940756d
 url: https://rafaelpfister.ch/en/blog/totemomail-licensed-user-limit-reached-ldap-cleanup
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Totemomail license limit reached: clean up orphaned users via LDAP

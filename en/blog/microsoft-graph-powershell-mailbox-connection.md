@@ -15,6 +15,7 @@ translationReview: required
 translationSourceHash: ad0542d870d48ea7cdb659d03b119c51a3056c0f8e48290ecc95a7832a435aab
 url: https://rafaelpfister.ch/en/blog/microsoft-graph-powershell-mailbox-connection
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 # Access Exchange Online with PowerShell: Replace EWS with Microsoft Graph

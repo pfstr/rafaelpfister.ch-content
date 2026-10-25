@@ -26,6 +26,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-08T08:11:39.744Z
 translationReview: automatic
 url: https://rafaelpfister.ch/en/blog/exchange-online-throttles-and-blocks-outdated-exchange-2016-and-2019-starting-in-september-2026
+aktualisiert: 2026-10-25
 ---
 
 # Exchange Online throttles and blocks outdated Exchange 2016 and 2019 servers starting in September 2026: How transport enforcement works

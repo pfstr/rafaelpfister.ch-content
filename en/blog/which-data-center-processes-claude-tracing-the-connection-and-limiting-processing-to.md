@@ -20,6 +20,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-10-19T15:29:18.766Z
 translationReview: required
 url: https://rafaelpfister.ch/en/blog/which-data-center-processes-claude-tracing-the-connection-and-limiting-processing-to
+aktualisiert: 2026-10-25
 ---
 
 When using Claude via claude.ai, Claude Code, or the API, you cannot determine which data center processes the request. Only the first segment of the connection to the nearest edge node is visible. For companies that submit personal data or confidential content to a language model, that is not enough: they must be able to demonstrate to customers, data protection advisors, or auditors where processing takes place.

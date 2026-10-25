@@ -28,6 +28,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-26T09:04:48.878Z
 translationReview: automatic
 url: https://rafaelpfister.ch/es/blog/mailheaderanalyzer-analizar-encabezados-de-correo-electronico-en-powershell-sin-acceso-a-la-red
+aktualisiert: 2026-10-25
 ---
 
 # MailHeaderAnalyzer: analizar encabezados de correo electrónico en PowerShell sin acceso a red

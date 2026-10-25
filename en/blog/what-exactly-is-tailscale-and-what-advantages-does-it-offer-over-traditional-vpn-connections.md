@@ -20,6 +20,7 @@ translationSourceHash: 965ff1000bee1a9e9899d6ffd750d28abbea09dd50896551eae369b7b
 translationModel: gpt-5.6-terra
 translatedAt: 2026-10-02T10:03:52.553Z
 translationReview: required
+aktualisiert: 2026-10-25
 ---
 
 # What exactly is Tailscale, and what advantages does it offer over traditional VPN connections?

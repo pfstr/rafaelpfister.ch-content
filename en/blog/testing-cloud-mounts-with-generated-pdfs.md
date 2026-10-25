@@ -19,6 +19,7 @@ translationReview: automatic
 translationSourceHash: 27bc45a50d8e84fc785eaf04ec6814054e327f516587d0f9f9a101c989ce2aa1
 url: https://rafaelpfister.ch/en/blog/testing-cloud-mounts-with-generated-pdfs
 translationModel: gpt-5.6-terra
+aktualisiert: 2026-10-25
 ---
 
 An Rclone mount is quick to set up. The remote appears as a directory, `ls` shows files, and the first functional test passes. That says little about production use.

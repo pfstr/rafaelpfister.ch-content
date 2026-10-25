@@ -17,6 +17,7 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-02T08:19:46.129Z
 translationReview: automatic
 url: https://rafaelpfister.ch/no/blog/teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post
+aktualisiert: 2026-10-25
 ---
 
 # Teste SMTP under Linux: fra TCP-forbindelsen til levert e-post
