@@ -3,6 +3,7 @@ title: "Apache-James-Regelwerke strukturiert neu aufbauen: Werkzeuge und Methode
 navTitle: "Regelwerk neu aufbauen"
 description: "Gewachsene Mailet-Regelwerke enthalten nach Jahren tote Pfade, die niemand mehr erkennt. Wie Sie das Regelwerk als Graph auswerten, unerreichbaren Code zuverlässig finden, und den Umbau so bauen, dass ein einziges Mailet den Rückweg offen hält."
 date: "2026-08-11"
+aktualisiert: "2026-10-25"
 kategorie: "Totemomail"
 timeToRead: "16 Min. Lesezeit"
 themen:
@@ -31,7 +32,7 @@ draft: false
 
 Mailgateways auf Basis von Apache James, darunter Totemomail, steuern ihren gesamten Nachrichtenfluss über ein Regelwerk in XML. Nach einigen Jahren Betrieb hat dieses Regelwerk eine Eigenschaft, die kaum jemand bemerkt: Ein erheblicher Teil davon wird nie ausgeführt. Regeln kamen hinzu, Weichen wurden davorgesetzt, Zweige liefen ins Leere, und weil nichts kaputtging, blieb alles stehen.
 
-Das Problem daran ist nicht der Plattenplatz. Es ist, dass niemand mehr sagen kann, welche Regel tatsächlich greift. Wer eine Änderung plant, liest eine Datei mit Hunderten von Mailets und weiss nicht, welche davon überhaupt relevant sind. Genau das lässt sich mechanisch beantworten.
+Das Problem daran ist nicht der Speicherplatz. Es ist, dass niemand mehr sagen kann, welche Regel tatsächlich greift. Wer eine Änderung plant, liest eine Datei mit Hunderten von Mailets und weiss nicht, welche davon überhaupt relevant sind. Genau das lässt sich mechanisch beantworten.
 
 Dieser Artikel beschreibt die Methode und die Werkzeuge dazu: das Regelwerk als gerichteten Graphen auswerten, unerreichbaren Code zuverlässig finden, und den Umbau so anlegen, dass ein einziges Mailet den Rückweg offen hält.
 
@@ -342,8 +343,6 @@ Für den Umbau selbst ist der Parallelbaum mit einer einzigen Weiche die Methode
 
 1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): Aufbau des Spoolmanagers, Prozessoren, Mailets und Matcher sowie die Verarbeitungsreihenfolge.
 
-2.  [Apache James: Provided mailets](https://james.apache.org/server/dev-provided-mailets.html): Referenz der mitgelieferten Mailets inklusive ToProcessor und der Parameter für Weitergabe und Konsum.
+2.  [Apache James: Mailets and Matchers Reference](https://james.apache.org/mailet/standard/mailet-report.html): Referenz der mitgelieferten Mailets inklusive ToProcessor und der Matcher, unter anderem All, HostIsLocal und RecipientIs.
 
-3.  [Apache James: Provided matchers](https://james.apache.org/server/dev-provided-matchers.html): Referenz der Matcher, unter anderem All, HostIsLocal und die empfängerbezogenen Varianten.
-
-4.  [Apache James: Mailet API](https://james.apache.org/server/dev-mailet-api.html): Vertrag zwischen Mailet und Container, Grundlage für das Verständnis von Konsum und Weitergabe.
+3.  [Apache James: Mailet API](https://james.apache.org/mailet/api/index.html): Beschreibung der Mailet-Schnittstelle und der Ausführung im Mailet-Container, Grundlage für das Verständnis von Konsum und Weitergabe.

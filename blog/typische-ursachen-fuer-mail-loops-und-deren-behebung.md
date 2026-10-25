@@ -3,6 +3,7 @@ title: "Typische Ursachen für Mail-Loops und deren Behebung"
 navTitle: "Mail-Loops beheben"
 description: "Wie sich SMTP-Mail-Loops in Exchange Online, Hybrid-Umgebungen und vorgeschalteten Mailgateways anhand von NDR, Headern, Message Trace, Empfängerobjekten und Connectors systematisch finden und beheben lassen."
 date: "2026-08-07"
+aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "12 Min. Lesezeit"
 themen:
@@ -408,7 +409,7 @@ Get-SendConnector |
 
 </details>
 
-Subdomains verdienen eine eigene Prüfung. Microsoft dokumentiert Fälle, in denen eine Anwendungs-Subdomain explizit als Internal-Relay-Domain angelegt und zu den Edge-Systemen synchronisiert werden muss:
+Subdomains verdienen eine eigene Prüfung. Microsoft hat in einem inzwischen zurückgezogenen Support-Artikel Fälle dokumentiert, in denen eine Anwendungs-Subdomain explizit als Internal-Relay-Domain angelegt und zu den Edge-Systemen synchronisiert werden muss:
 
 ```powershell
 New-AcceptedDomain `
@@ -484,4 +485,4 @@ Ein behobener Mail-Loop ist erst dann abgeschlossen, wenn nicht nur die Testmail
 
 9. [Microsoft Learn – Search message tracking logs](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/search-message-tracking-logs): Lokale Nachrichtenverfolgung über alle Exchange-Server.
 
-10. [Microsoft Learn – Hop count exceeded for an on-premises application subdomain](https://learn.microsoft.com/en-us/troubleshoot/exchange/mailflow/hop-count-exceeded-possible-mail-loop): Dokumentiertes Subdomain-/EdgeSync-Szenario mit expliziter Internal-Relay-Domain.
+10. [Microsoft Learn – Hop count exceeded for an on-premises application subdomain (archivierte Fassung vom 19. April 2026)](https://web.archive.org/web/20260419203247/https://learn.microsoft.com/en-us/troubleshoot/exchange/mailflow/hop-count-exceeded-possible-mail-loop): Dokumentiertes Subdomain-/EdgeSync-Szenario mit expliziter Internal-Relay-Domain; Microsoft hat den Artikel inzwischen zurückgezogen.

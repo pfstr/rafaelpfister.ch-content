@@ -3,6 +3,7 @@ title: "Journaling-Lücke schliessen: Export aus Microsoft Purview und Import in
 navTitle: "Journaling-Lücke"
 description: "Fallen Journalberichte aus Exchange Online für einige Tage aus, lassen sie sich nicht nachträglich erzeugen. Der Inhalt liegt aber noch in den Postfächern. Wie Sie ihn über die neue Purview-eDiscovery als PST exportieren, warum der PST-Migrator von Enterprise Vault dafür meist nicht in Frage kommt und wie der Nachimport über das Journalpostfach läuft, ohne den laufenden Journalstrom zu verdrängen, mit zwei generischen Skripten für Import, Verschieben und Protokoll."
 date: "2026-09-22"
+aktualisiert: "2026-10-25"
 kategorie: "Archivierung und Journaling"
 timeToRead: "18 Min. Lesezeit"
 themen:
@@ -490,4 +491,4 @@ Danach das Aufräumen. Die leeren Unterordner und die liegen gebliebenen Entwür
 
 7.  [Veritas: Enterprise Vault PST Migration, wizard-assisted migration](https://www.veritas.com/support/en_US/doc/95955885-161896939-0/v11744603-161896939): Ablauf des PST-Migrators, Zugriffsanforderungen des Storage Service und die zulässigen Zielarchivtypen.
 
-8.  [Veritas VOX: Import PST to a Journal Archive](https://vox.veritas.com/t5/Enterprise-Vault/Import-PST-to-a-Journal-Archive/td-p/272928): Erfahrungen aus der Community, warum der Assistent Journalarchive nicht anbietet und wie EVPM mit `ArchiveName` arbeitet.
+8.  [Enterprise Vault Support: Unable to migrate a Personal Store (PST) into a Journal Archive](https://supportenterprisevault.cloud.com/external/article/100029869/unable-to-migrate-a-personal-store-pst-i.html): Der PST-Import in ein Journalarchiv wird nicht unterstützt; als Alternativen nennt der Artikel ein Shared Archive oder das Kopieren der Nachrichten in den Posteingang des Journalpostfachs.

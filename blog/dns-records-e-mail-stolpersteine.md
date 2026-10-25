@@ -3,6 +3,7 @@ title: "Guide für DNS-Admins: MX, SPF, DKIM, DMARC und die üblichen Fehlerquel
 navTitle: "E-Mail-DNS-Records"
 description: "Wer eine Zone betreut, bekommt Mail-Records meist fertig geliefert und soll sie nur noch publizieren. Was dabei regelmässig schiefgeht: die 255-Byte-Grenze bei DKIM, doppelte SPF-Records, das Lookup-Limit, MX auf einem CNAME, der automatisch angehängte Zonen-Suffix und Policies, die niemand mehr durchsetzt."
 date: "2026-08-04"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "15 Min. Lesezeit"
 themen:
@@ -463,4 +464,4 @@ Drei Regeln verhindern die meisten dieser Fälle. Erstens: vor jedem neuen Recor
 
 12.  [Google: Richtlinien für E-Mail-Absender](https://support.google.com/a/answer/81126): Anforderungen an Absender, unter anderem PTR-Pflicht für sendende IPv6-Adressen und die seit Februar 2024 geltenden Vorgaben für Massenversender.
 
-13.  [Microsoft: Strengthening Email Ecosystem, Outlook's New Requirements for High-Volume Senders](https://techcommunity.microsoft.com/blog/microsoft-defender-for-office365-blog/strengthening-email-ecosystem-outlook%E2%80%99s-new-requirements-for-high%E2%80%90volume-senders/4399008): Anforderungen für Versender ab 5000 Nachrichten pro Tag, gültig seit Mai 2025.
+13.  [Microsoft: Strengthening Email Ecosystem, Outlook's New Requirements for High-Volume Senders](https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog/strengthening-email-ecosystem-outlook%E2%80%99s-new-requirements-for-high%E2%80%90volume-senders/4399730): Anforderungen für Versender ab 5000 Nachrichten pro Tag, gültig seit Mai 2025.

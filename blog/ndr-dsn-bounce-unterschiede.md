@@ -3,6 +3,7 @@ title: "NDR, DSN, Bounce: Unzustellbarkeitsmeldungen richtig unterscheiden"
 navTitle: "NDR & Bounces"
 description: "NDR, DSN, Bounce, Reject, Backscatter: Die Begriffe rund um fehlgeschlagene Zustellung werden oft synonym verwendet, bezeichnen aber unterschiedliche Dinge. Was die RFCs definieren, wer welche Meldung erzeugt, wie eine DSN aufgebaut ist und warum der Unterschied zwischen Reject und Bounce über Backscatter entscheidet."
 date: "2026-08-28"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "10 Min. Lesezeit"
 themen:
@@ -134,7 +135,7 @@ Liegt eine Meldung vor, klären Sie in dieser Reihenfolge:
 3. Was sagen Status und Diagnostic-Code? Klasse 4 gegen Klasse 5 trennt temporär von endgültig, das Subjekt (`x.1` Adresse, `x.2` Postfach, `x.4` Netz, `x.7` Richtlinie) grenzt die Ursache ein, der Freitext der Gegenstelle liefert die Details.
 4. Fehlt jede Meldung, obwohl die Mail nicht ankommt: Message Tracking auf dem eigenen System prüfen und an Quarantäne oder stille Filterung auf der Gegenseite denken.
 
-Wie sich einzelne Zustellwege danach gezielt nachstellen lassen, zeigen die Beiträge zum [Message Tracking und zur SMTP-Diagnose im Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) sowie der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/mail-header-analyzer) für die Auswertung des Transportwegs einer angekommenen Mail.
+Wie sich einzelne Zustellwege danach gezielt nachstellen lassen, zeigen die Beiträge zum [Message Tracking und zur SMTP-Diagnose im Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) sowie der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/header-analyzer) für die Auswertung des Transportwegs einer angekommenen Mail.
 
 ## Quellen
 
@@ -150,6 +151,6 @@ Wie sich einzelne Zustellwege danach gezielt nachstellen lassen, zeigen die Beit
 
 6.  [RFC 3834: Recommendations for Automatic Responses to Electronic Mail](https://www.rfc-editor.org/rfc/rfc3834): Regeln für Autoresponder wie Abwesenheitsnotizen.
 
-7.  [Microsoft Learn: Email non-delivery reports and SMTP errors in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/non-delivery-reports-in-exchange-online/non-delivery-reports-in-exchange-online): NDR-Aufbau und Codeliste aus Sicht von Exchange Online.
+7.  [Microsoft Learn: Email non-delivery reports and SMTP errors in Exchange Online](https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/non-delivery-reports-in-exchange-online): NDR-Aufbau und Codeliste aus Sicht von Exchange Online.
 
 8.  [UCEPROTECT Backscatterer](https://www.backscatterer.org/): Blockliste für Systeme, die Backscatter erzeugen; erklärt die Listungskriterien.

@@ -3,6 +3,7 @@ title: "RustDesk: die quelloffene TeamViewer-Alternative einrichten"
 navTitle: "RustDesk einrichten"
 description: "RustDesk ist eine quelloffene Fernwartungssoftware unter AGPL, kostenlos und selbst hostbar. Wie Sie den Client unter Windows installieren (auch unbeaufsichtigt per MSI), wie die Verbindung über den öffentlichen Vermittlungsserver, einen eigenen Server oder eine Direktverbindung zustande kommt, welche Funktionen der Support-Alltag braucht und wo die Grenzen der kostenlosen Nutzung liegen."
 date: "2026-09-01"
+aktualisiert: "2026-10-25"
 kategorie: "Fernwartung und Support"
 timeToRead: "9 Min. Lesezeit"
 themen:
@@ -35,10 +36,10 @@ Der öffentliche Server ist ausdrücklich für Tests und den privaten Gebrauch g
 
 ## Installation unter Windows
 
-Den Installer laden Sie von der offiziellen Quelle, den GitHub-Releases des Projekts (`github.com/rustdesk/rustdesk`). Für Windows gibt es eine ausführbare Datei und ein MSI-Paket. Für die interaktive Installation genügt ein Doppelklick. Wollen Sie RustDesk auf mehreren Rechnern oder im Hintergrund ausbringen, nutzen Sie das MSI mit einer stillen Installation:
+Den Installer laden Sie von der offiziellen Quelle, den GitHub-Releases des Projekts (`github.com/rustdesk/rustdesk`). Für Windows gibt es eine ausführbare Datei und ein MSI-Paket. Für die interaktive Installation genügt ein Doppelklick. Wollen Sie RustDesk auf mehreren Rechnern oder im Hintergrund ausbringen, nutzen Sie das MSI mit einer stillen Installation. Der Dateiname enthält die Versionsnummer; aktuell ist seit dem 30. September 2026 die Version 1.5.0:
 
 ```powershell
-msiexec /i rustdesk-1.4.9-x86_64.msi /qn /norestart
+msiexec /i rustdesk-1.5.0-x86_64.msi /qn /norestart
 ```
 
 <details class="options-details">

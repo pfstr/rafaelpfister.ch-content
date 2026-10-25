@@ -3,6 +3,7 @@ title: "Der angegriffene Pensionskassen-Dienstleister hat gar keinen DMARC-Recor
 navTitle: "DMARC Pensionskassen"
 description: "Der Ende September 2026 angegriffene Pensionskassen-Dienstleister PK Softech hat bis heute keinen DMARC-Record. Eine passive Prüfung von 66 Vorsorgeeinrichtungen und 30 Dienstleistern zeigt, dass das kein Einzelfall ist: besonders die Hersteller der Verwaltungssoftware sind ungeschützt."
 date: "2026-10-18"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "9 min to read"
 themen:
@@ -117,4 +118,4 @@ Die Angriffe der jüngsten Zeit zielten auf einen Dienstleister, nicht auf die K
 
 4.  [Mimikama: Schweizer Polizei warnt nach Datenabfluss vor möglichen Anlageanrufen](https://www.mimikama.org/?p=436628): Einordnung der Warnung vor Betrugsanrufen mit den abgeflossenen Daten.
 
-5.  [EDÖB: Meldung von Verletzungen der Datensicherheit](https://www.edoeb.admin.ch/de/meldung-von-verletzungen-der-datensicherheit): Meldepflicht nach revDSG und Vorgehen bei Datensicherheitsverletzungen.
+5.  [EDÖB: DataBreach](https://www.edoeb.admin.ch/de/databreach): Meldepflicht nach Art. 24 DSG, Meldeportal und Leitfaden zum Vorgehen bei Datensicherheitsverletzungen.

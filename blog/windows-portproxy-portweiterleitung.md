@@ -3,6 +3,7 @@ title: "Portweiterleitung mit netsh portproxy: interne Dienste über einen Jumph
 navTitle: "netsh portproxy"
 description: "Windows bringt mit netsh interface portproxy eine eingebaute TCP-Portweiterleitung mit. Zusammen mit einem VPN wie Tailscale erreichen Sie damit einen internen Dienst, etwa eine NAS-Oberfläche, von aussen, ohne ihn öffentlich zu exponieren. Wie Sie die Weiterleitung einrichten, absichern und wieder entfernen, und wo ihre Grenzen liegen: kein UDP, keine zusätzliche Verschlüsselung, Zertifikats- und Redirect-Fallstricke."
 date: "2026-09-02"
+aktualisiert: "2026-10-25"
 kategorie: "Windows und Netzwerk"
 timeToRead: "9 Min. Lesezeit"
 themen:
@@ -109,7 +110,7 @@ Die Regeln liegen in der Registry unter `HKLM\SYSTEM\CurrentControlSet\Services\
 
 Ein SSH-Tunnel mit lokaler Weiterleitung (`ssh -L 5000:10.0.0.245:5000 benutzer@jumphost`) verschlüsselt die Strecke bis zum Jumphost selbst und läuft plattformübergreifend. Er braucht einen SSH-Server auf dem Jumphost und besteht nur, solange die SSH-Sitzung läuft.
 
-Ein Tailscale-Subnetz-Router (`tailscale up --advertise-routes=10.0.0.0/24`) macht das gesamte interne Subnetz für Ihre VPN-Geräte erreichbar. Dann adressieren Sie den internen Dienst direkt unter seiner echten IP, ohne Weiterleitung pro Port. Das ist der geradlinigste Weg, wenn Sie mehrere interne Geräte erreichen wollen, verlangt aber eine Freigabe der Route in der Tailscale-Verwaltung.
+Ein Tailscale-Subnetz-Router (`tailscale set --advertise-routes=10.0.0.0/24`) macht das gesamte interne Subnetz für Ihre VPN-Geräte erreichbar. Dann adressieren Sie den internen Dienst direkt unter seiner echten IP, ohne Weiterleitung pro Port. Das ist der geradlinigste Weg, wenn Sie mehrere interne Geräte erreichen wollen, verlangt aber eine Freigabe der Route in der Tailscale-Verwaltung.
 
 ## Grenzen
 
@@ -135,8 +136,8 @@ Eine Portweiterleitung ist ein Werkzeug für den gezielten, zeitlich begrenzten 
 
 ## Quellen
 
-1.  [netsh interface portproxy (Microsoft Learn)](https://learn.microsoft.com/en-us/windows-server/networking/technologies/netsh/netsh-interface-portproxy): Referenz der Unterbefehle, Protokollvarianten und der Abhängigkeit vom IP-Helper-Dienst.
+1.  [netsh interface (Microsoft Learn)](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/netsh-interface): Befehlsreferenz von `netsh interface` mit der Syntax der portproxy-Unterbefehle und Protokollvarianten.
 
-2.  [New-NetFirewallRule (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule): Parameter der Firewallregel, inklusive Einschränkung auf Adressbereiche über RemoteAddress.
+2.  [New-NetFirewallRule (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule?view=windowsserver2025-ps): Parameter der Firewallregel, inklusive Einschränkung auf Adressbereiche über RemoteAddress.
 
-3.  [Tailscale: Subnet routers](https://tailscale.com/kb/1019/subnets): Ein ganzes Subnetz über das VPN erreichbar machen, als Alternative zur Weiterleitung pro Port.
+3.  [Tailscale: Subnet routers](https://tailscale.com/docs/features/subnet-routers): Ein ganzes Subnetz über das VPN erreichbar machen, als Alternative zur Weiterleitung pro Port; Routen werden mit `tailscale set --advertise-routes` angekündigt.

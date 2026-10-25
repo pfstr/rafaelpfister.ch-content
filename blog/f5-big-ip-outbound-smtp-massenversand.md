@@ -3,6 +3,7 @@ title: "F5 BIG-IP als Outbound-Proxy für den Mail-Massenversand: Persistenz, SN
 navTitle: "F5 Massenversand"
 description: "Ein Massenversand mit 1000 Mails pro Minute läuft über eine BIG-IP als ausgehenden Proxy zum Provider-Relay. Der Artikel klärt, warum Sticky Sessions hier nichts bringen, wie der Provider-Hostname sauber per FQDN-Node aufgelöst wird und welche Einstellungen bei SNAT, Timeouts und Verbindungs-Limits den Durchsatz tatsächlich bestimmen."
 date: "2026-08-26"
+aktualisiert: "2026-10-25"
 kategorie: "Loadbalancer"
 timeToRead: "9 Min. Lesezeit"
 themen:
@@ -50,7 +51,7 @@ Wichtig in beiden Fällen: kein Profil aktivieren, das in die Verbindung hineins
 
 Der Provider hat einen Hostnamen geliefert, keine IP-Adresse. Der naheliegende Reflex, die IP einmal aufzulösen und statisch als Node einzutragen, ist die schlechteste Variante: Wechselt der Provider die Adresse (Wartung, Umzug, DR-Fall), steht der Versand, bis jemand die BIG-IP-Konfiguration anpasst. Genau dafür gibt es FQDN-Nodes.
 
-Ein FQDN-Node hinterlegt den Hostnamen statt der Adresse. Die BIG-IP löst den Namen selbst auf, legt für jede zurückgelieferte Adresse ein sogenanntes Ephemeral-Node an und aktualisiert diese automatisch, wenn sich die DNS-Antwort ändert. Standardmässig fragt sie den Namen nach Ablauf der DNS-TTL erneut ab; alternativ lässt sich ein festes Abfrageintervall setzen. Mit aktiviertem Autopopulate übernimmt der Pool auch mehrere A-Records automatisch als Mitglieder: Sollte der Provider seine Einlieferung später auf mehrere Adressen erweitern, folgt die BIG-IP ohne Konfigurationsänderung.
+Ein FQDN-Node hinterlegt den Hostnamen statt der Adresse. Die BIG-IP löst den Namen selbst auf, legt für jede zurückgelieferte Adresse ein sogenanntes Ephemeral-Node an und aktualisiert diese automatisch, wenn sich die DNS-Antwort ändert. Standardmässig fragt sie den Namen alle 3600 Sekunden (eine Stunde) erneut ab; mit `interval ttl` richtet sie sich stattdessen nach der TTL der DNS-Antwort, alternativ lässt sich ein anderes festes Abfrageintervall setzen. Mit aktiviertem Autopopulate übernimmt der Pool auch mehrere A-Records automatisch als Mitglieder: Sollte der Provider seine Einlieferung später auf mehrere Adressen erweitern, folgt die BIG-IP ohne Konfigurationsänderung.
 
 Zwei Voraussetzungen werden dabei gerne vergessen. Erstens braucht die BIG-IP dafür funktionierende DNS-Server in der Systemkonfiguration (System, Configuration, Device, DNS); FQDN-Nodes nutzen die System-Resolver, nicht etwa einen DNS-Cache aus einem Listener-Profil. Zweitens sollten diese Resolver aus dem Management- beziehungsweise TMM-Kontext tatsächlich erreichbar sein, sonst bleibt der Node im Status unresolved und der Pool leer.
 
@@ -121,8 +122,10 @@ Die kurze Antwort auf die Ausgangsfrage lautet also: Nein, Sticky Sessions sind 
 
 2.  [K7820: Overview of SNAT features](https://my.f5.com/manage/s/article/K7820): F5-Grundlagenartikel zu SNAT, SNAT-Pools und der Portübersetzung pro Ziel.
 
-3.  [tmsh-Referenz: ltm node](https://clouddocs.f5.com/cli/tmsh-reference/latest/modules/ltm/ltm_node.html): dokumentiert die FQDN-Optionen (name, autopopulate, interval) für Nodes und damit für Pool-Member.
+3.  [tmsh-Referenz: ltm node](https://clouddocs.f5.com/cli/tmsh-reference/latest/modules/ltm/ltm_node.html): dokumentiert die FQDN-Optionen (name, autopopulate, interval) für Nodes und damit für Pool-Member, inklusive Standardintervall von 3600 Sekunden und dem Wert `ttl`.
 
 4.  [smtp-source(1), Postfix](https://www.postfix.org/smtp-source.1.html): Lastgenerator, der das Bulk-Sender-Verbindungsprofil (wenige Sessions, viele Nachrichten) nachbildet.
 
 5.  [Das Lastprofil eines Mailservers ermitteln](https://rafaelpfister.ch/blog/mailserver-lastprofil-ermitteln): eigene Anleitung, wie Verbindungen pro Minute und Nachrichten pro Verbindung aus dem Message Tracking ausgewertet werden.
+
+6.  [F5 Bug ID 746657: tmsh help for FQDN node or pool member shows incorrect default for fqdn interval](https://cdn.f5.com/product/bugtracker/ID746657.html): bestätigt 3600 Sekunden als tatsächlichen Standardwert des FQDN-Abfrageintervalls; die frühere Hilfe-Angabe TTL war falsch.

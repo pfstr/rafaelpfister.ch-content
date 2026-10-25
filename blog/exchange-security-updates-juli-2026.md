@@ -3,6 +3,7 @@ title: "Exchange-Sicherheitsupdates vom Juli 2026 richtig nachbereiten"
 navTitle: "Exchange SU 07/2026"
 description: "Nach der Installation sind zwei Aufräumarbeiten nötig: die alte CVE-2026-42897-Mitigation kontrolliert entfernen und überprivilegierte Legacy-Gruppen im Active Directory prüfen."
 date: "2026-07-14"
+aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 Min. Lesezeit"
 themen:
@@ -32,9 +33,9 @@ Die SUs stehen für folgende Versionen zur Verfügung:
 - **Exchange Server 2019 CU14 und CU15**: nur für Organisationen, die im **Period-2-ESU-Programm** eingeschrieben sind.
 - **Exchange Server 2016 CU23**: ebenfalls nur über Period 2 ESU.
 
-Exchange 2016 und 2019 sind out of support. Wer nicht im Period-2-ESU-Programm ist (gültig von Mai bis Oktober 2026), erhält diese Updates nicht mehr und sollte den Wechsel auf Exchange SE nicht länger aufschieben. Exchange-Online-Umgebungen sind bereits geschützt; in Hybrid-Setups muss das SU trotzdem auf allen Exchange-Servern eingespielt werden, auch auf reinen Management-Servern. Welche konkreten CVEs adressiert werden, steht wie üblich im Security Update Guide (Filter «Server Software» für Exchange SE bzw. «ESU» für 2016/2019).
+Exchange 2016 und 2019 sind out of support. Wer nicht im Period-2-ESU-Programm ist (gültig von Mai bis Oktober 2026), erhält diese Updates nicht mehr und sollte den Wechsel auf Exchange SE nicht länger aufschieben. Mit den Updates vom 13. Oktober 2026 hat Microsoft die letzten Sicherheitsupdates für Exchange 2016 und 2019 veröffentlicht, auch für Kunden im Period-2-ESU-Programm; seither erscheinen Updates nur noch für Exchange SE. Exchange-Online-Umgebungen sind bereits geschützt; in Hybrid-Setups muss das SU trotzdem auf allen Exchange-Servern eingespielt werden, auch auf reinen Management-Servern. Welche konkreten CVEs adressiert werden, steht wie üblich im Security Update Guide (Filter «Server Software» für Exchange SE bzw. «ESU» für 2016/2019).
 
-Ein bekanntes Problem gibt es im aktuellen Release: In Hybrid-Umgebungen können sogenannte *Wrapper-Nachrichten* im Posteingang von freigegebenen Postfächern auftauchen. Details dazu im entsprechenden Microsoft-Support-Artikel.
+Ein bekanntes Problem gab es im Juli-Release: In Hybrid-Umgebungen konnten sogenannte *Wrapper-Nachrichten* im Posteingang von freigegebenen Postfächern auftauchen. Microsoft hat es mit den Sicherheitsupdates vom 8. September 2026 behoben (für Exchange SE KB5121608). Wurde als Workaround der SettingOverride `DisableBlockSharedAndUserMailboxHeaders` gesetzt, lässt er sich nach der Installation laut Support-Artikel mit `Remove-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"` entfernen.
 
 ## CVE-2026-42897-Mitigation nach der Installation entfernen
 
@@ -131,3 +132,7 @@ Kurz zusammengefasst der praktische Ablauf: Zuerst mit dem Health Checker den Be
 6.  [Exchange On-premises Mitigation Tool (EOMT) – Microsoft CSS-Exchange](https://microsoft.github.io/CSS-Exchange/Security/EOMT/): Das EOMT-Skript inklusive Rollback-Schalter und CVE-spezifischer JSON-Sicherung des IIS-Ausgangszustands.
 
 7.  [CVE-2026-42897 Detail – NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-42897): Technische Beschreibung und Bewertung der Schwachstelle in der National Vulnerability Database.
+
+8.  [Wrapper messages appear in shared mailbox in hybrid environments after installing the June 2026 Security Update – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Behebung mit den Updates vom 8. September 2026 und Entfernen des SettingOverrides.
+
+9.  [Released: October 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-october-2026-exchange-server-security-updates/4563014): Letzte Sicherheitsupdates für Exchange 2016 und 2019 im Period-2-ESU-Programm.

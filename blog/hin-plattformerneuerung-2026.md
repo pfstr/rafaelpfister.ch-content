@@ -1,8 +1,9 @@
 ---
-title: "HIN Plattformerneuerung 2026: Access Gateway, Client und die Fristen bis 14. September"
+title: "HIN Plattformerneuerung 2026: Access Gateway, Client und die Fristen bis 26. Oktober"
 navTitle: "Access Gateway 2026"
-description: "Firewall-Freigabe bis 14. August, Access Gateway Version 4 ab 17. August, SAML-Endpunkte, Hardware-Token und HIN Client bis 14. September. Das Mailgateway ist nicht betroffen und wird separat abgelöst."
+description: "Firewall-Freigabe bis 31. August, Access Gateway Version 4 ab September, SAML-Endpunkte bis 12. Oktober, Hardware-Token und HIN Client 4.0 bis 26. Oktober. Das Mailgateway ist nicht betroffen und wird separat abgelöst."
 date: "2026-08-01"
+aktualisiert: "2026-10-25"
 kategorie: "HIN-Gateway"
 timeToRead: "5 Min. Lesezeit"
 themen:
@@ -21,9 +22,9 @@ translationId: "article-106aa61d54408397"
 url: "https://rafaelpfister.ch/blog/hin-plattformerneuerung-2026"
 ---
 
-# HIN Plattformerneuerung 2026: Access Gateway, Client und die Fristen bis 14. September
+# HIN Plattformerneuerung 2026: Access Gateway, Client und die Fristen bis 26. Oktober
 
-HIN erneuert 2026 die Plattform für Identität und Zugriff. Die erste Frist läuft am 14. August 2026 ab, die grosse Umstellung folgt am 14. September 2026.
+HIN erneuert 2026 die Plattform für Identität und Zugriff. HIN hat die Fristen am 27. August 2026 neu festgelegt: Die erste Frist lief am 31. August 2026 ab, die alten SAML-Endpunkte sind seit dem 12. Oktober 2026 nicht mehr nutzbar, die grosse Umstellung folgt am 26. Oktober 2026.
 
 **Betroffen sind das HIN Access Gateway (AGW), der HIN Client und die Authentisierungsmittel. Das HIN Mailgateway ist nicht betroffen.** Es wird ebenfalls abgelöst, aber in einem separaten Vorhaben mit eigenem Fahrplan.
 
@@ -44,13 +45,14 @@ HIN erneuert 2026 die Plattform für Identität und Zugriff. Die erste Frist lä
 
 | Datum | Massnahme | Betrifft |
 |---|---|---|
-| 14.08.2026 | Firewall-Freigabe für `idp.id.hin.ch` (`185.154.38.46`, `193.168.215.45`) | AGW-Betreiber |
-| 17.08.2026 | Automatische Installation AGW Version 4 | AGW-Betreiber |
-| ab Mitte August | Manuelle Installation HIN Client 4.0 empfohlen | Alle Client-Nutzer |
-| 14.09.2026 | SAML-Endpunkte migriert | Föderationen, EPD-Anbindungen |
-| 14.09.2026 | Hardware-Token und Testidentitäten verfallen | Token-Nutzer, Integration |
-| 14.09.2026 | Authenticator App neu konfigurieren | App-Nutzer |
-| 14.09.2026 | Zwangsupdate auf HIN Client 4.0 | Alle Client-Nutzer |
+| 31.08.2026 | Firewall-Freigabe für `idp.id.hin.ch` und `cdn.hin.ch` (443/tcp) | AGW-Betreiber |
+| ab September 2026 | Automatische Installation AGW Version 4 (ohne Cluster-Installationen) | AGW-Betreiber |
+| September bis 26.10.2026 | Automatisches Update auf HIN Client 4.0 in Tranchen | Alle Client-Nutzer |
+| 12.10.2026 | Alte SAML-Endpunkte nicht mehr nutzbar | Föderationen, EPD-Anbindungen |
+| 26.10.2026 | Hardware-Token und Test-Identitäten für den EPD-Zugang verfallen | Token-Nutzer, Integration |
+| 26.10.2026 | Bisherige Authenticator App letztmals nutzbar, Neueinrichtung ab 27.10.2026 | App-Nutzer |
+| 26.10.2026 | HIN Client 4.0 erforderlich | Alle Client-Nutzer |
+| ab Anfang November 2026 | Login über den Browser im HIN Client | Alle Client-Nutzer |
 
 ## Access Gateway ist nicht Mailgateway
 
@@ -58,11 +60,11 @@ Beide tragen Gateway im Namen und werden regelmässig verwechselt. Das Access Ga
 
 ## Access Gateway: Firewall und Version 4
 
-Bis 14. August muss das AGW `idp.id.hin.ch` erreichen können. Das ist eine Firewall-Änderung, keine Einstellung im Gateway, und liegt damit oft beim Netzwerkverantwortlichen statt beim Gateway-Betreuer.
+Bis 31. August 2026 musste das AGW `idp.id.hin.ch` und `cdn.hin.ch` über 443/tcp erreichen können. HIN empfiehlt, die Regel auf die Hostnamen statt auf IP-Adressen zu setzen, weil sich die IP-Adressen ändern können. Das ist eine Firewall-Änderung, keine Einstellung im Gateway, und liegt damit oft beim Netzwerkverantwortlichen statt beim Gateway-Betreuer.
 
-Ab 17. August wird Version 4 automatisch installiert. Voraussetzung: AGW auf Version 3.1.50 oder höher, und Kerberos als Authentisierungsmethode aktiv. Für die Anbindung ans Active Directory braucht es ein LDAP-Konto mit Leserechten.
+Seit September 2026 wird Version 4 automatisch installiert; Cluster-Installationen sind ausgenommen, mit diesen Kunden nimmt HIN direkt Kontakt auf. Voraussetzung: AGW auf Version 3.1.50 oder höher, und Kerberos als Authentisierungsmethode aktiv. Für die Anbindung ans Active Directory braucht es ein LDAP-Konto mit Leserechten.
 
-Wer die Voraussetzungen nicht erfüllt, wird nicht aktualisiert, und das fällt erfahrungsgemäss erst auf, wenn sich niemand mehr anmelden kann. Den Versionsstand prüfen Sie deshalb besser jetzt als im September.
+Wer die Voraussetzungen nicht erfüllt, wird nicht aktualisiert, und das fällt erfahrungsgemäss erst auf, wenn sich niemand mehr anmelden kann. Den Versionsstand prüfen Sie deshalb besser jetzt als erst bei einer Störung.
 
 ## SAML: neue Endpunkte, weniger Attribute
 
@@ -76,19 +78,19 @@ EPD-Zugang
 
 Mit dem Wechsel ändern sich Attributformate und Bindings. Die Attributmenge wird auf GLN, Name, Geburtsdatum und Geschlecht reduziert.
 
-Das ist der Punkt, an dem Integrationen scheitern. Jede Anwendung, die weitere Attribute für Rollen oder Mandantentrennung verwertet, bekommt sie nach dem 14. September nicht mehr. Der Fehler zeigt sich nicht als Anmeldefehler, sondern als fehlende Berechtigung im Zielsystem.
+Das ist der Punkt, an dem Integrationen scheitern. Jede Anwendung, die weitere Attribute für Rollen oder Mandantentrennung verwertet, bekommt sie über die neuen Endpunkte nicht mehr; die alten sind seit dem 12. Oktober 2026 nicht mehr nutzbar. Der Fehler zeigt sich nicht als Anmeldefehler, sondern als fehlende Berechtigung im Zielsystem.
 
-Testidentitäten verfallen am selben Datum, wer die Umstellung also in einer Integrationsumgebung erproben möchte, sollte das vorher tun.
+Test-Identitäten für den EPD-Zugang verlieren am 26. Oktober 2026 ihre Gültigkeit und müssen neu beantragt werden. Für die EPD-Integration verlangt HIN per Videoidentifikation geprüfte Identitäten, eine Testumgebung ist noch nicht verfügbar. Ab dem 26. Oktober 2026 können zudem Assertions ohne GLN eintreffen.
 
 Wer eine Föderation betreibt, betreibt fast immer auch eigene Mailinfrastruktur. Für diese Organisationen fällt die Plattformerneuerung mit der [Mailgateway-Ablösung durch «Stargate»](/stargate) ins selbe Jahr: technisch unabhängig, aber um dieselben Personen und Wartungsfenster konkurrierend.
 
 ## Token, App und HIN Client 4.0
 
-Hardware-Token werden nicht mehr ausgegeben und verfallen am 14. September. Alternativen: HIN Client, SMS-Code oder Authenticator App. Die App selbst ist bis zum 14. September gültig und danach über das Self-Service-Portal neu zu konfigurieren.
+Hardware-Token werden nicht mehr ausgegeben und verfallen am 26. Oktober 2026. Alternativen: HIN Client, SMS-Code oder Authenticator App. Die bisherige Authenticator App ist bis zum 26. Oktober 2026 einsetzbar; die neue App lässt sich ab dem 27. Oktober 2026 im Self-Service-Portal als zweiter Faktor einrichten. HIN empfiehlt, vorher das Login mit Passwort und SMS-Code als Notfallzugang einzurichten.
 
-Der HIN Client wird spätestens am 14. September automatisch auf Version 4.0 aktualisiert, manuelle Installation ab Mitte August über `download.hin.ch`. Der Login läuft neu über den Browser.
+Der HIN Client wird von September bis 26. Oktober 2026 tranchenweise automatisch auf Version 4.0 aktualisiert. Zeigt der Client am 26. Oktober nicht Version 4.0 an, ist er manuell über `download.hin.ch` zu installieren. Der Login über den Browser folgt ab Anfang November 2026.
 
-Der kritische Punkt sind die Systemvoraussetzungen: **Version 4.0 setzt Windows 11 oder macOS 14 voraus.** Ältere Geräte müssen vorher aktualisiert oder ersetzt werden. Für einen Teil der Praxen ist die Frist damit keine Software-, sondern eine Beschaffungsaufgabe. Wer das erst im September merkt, kämpft mit Lieferzeiten und Neuinstallation der Praxissoftware.
+Der kritische Punkt sind die Systemvoraussetzungen: **Version 4.0 setzt Windows 11 mit TPM oder macOS 14 voraus**, bei Intel-Macs zusätzlich einen Security Chip; ohne TPM bleibt das Login mit SMS-Code. Ältere Geräte müssen vorher aktualisiert oder ersetzt werden. Für einen Teil der Praxen ist die Frist damit keine Software-, sondern eine Beschaffungsaufgabe. Wer das erst kurz vor dem 26. Oktober merkt, kämpft mit Lieferzeiten und Neuinstallation der Praxissoftware.
 
 ## Fünf Fragen zur Standortbestimmung
 
@@ -114,9 +116,9 @@ Der Aufwand liegt damit auf einer ganz anderen Ebene. Die Plattformerneuerung ve
 
 ## Quellen
 
-1.  [HIN Plattformerneuerung: Diese technischen Anpassungen sind für HIN Mitglieder erforderlich](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): Fristen im August und September, SAML-Endpunkte, reduzierte Attributmenge, Firewall-Freigaben.
+1.  [HIN Plattformerneuerung: Diese technischen Anpassungen sind für HIN Mitglieder erforderlich](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): Fristen von August bis Oktober 2026 (Stand 27. August 2026), SAML-Endpunkte, reduzierte Attributmenge, Firewall-Freigaben, Authenticator App und Hardware-Token.
 
-2.  [Der neue HIN Client ist da: das ändert sich für HIN Mitglieder](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): Version 4.0, Betriebssystemvoraussetzungen, browserbasierte Anmeldung.
+2.  [Der neue HIN Client ist da: das ändert sich für HIN Mitglieder](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): Version 4.0, Rollout bis 26. Oktober 2026, Betriebssystem- und TPM-Voraussetzungen, browserbasierte Anmeldung ab November 2026.
 
 3.  [HIN Gateway: Sichere Kommunikation innerhalb der HIN Community](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm): Ablösung des Mailgateway, Architektur, Betriebsmodelle, Migration in gebuchten Zeitfenstern.
 

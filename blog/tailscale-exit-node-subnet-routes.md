@@ -3,6 +3,7 @@ title: "Tailscale: Exit-Node und Subnetz-Routen im Vergleich, und wie sie techni
 navTitle: "Exit-Node vs. Subnetz"
 description: "Exit-Node und Subnetz-Router sind bei Tailscale zwei verwandte, aber unterschiedliche Betriebsarten. Ein Subnetz-Router öffnet gezielt bestimmte IP-Bereiche, ein Exit-Node leitet den gesamten Internetverkehr über sich. Was der Unterschied praktisch bedeutet, wie Tailscale das über WireGuard, die Routen-Freigabe und SNAT umsetzt, und wo die Grenzen jeder Variante liegen."
 date: "2026-09-02"
+aktualisiert: "2026-10-25"
 kategorie: "Netzwerk und VPN"
 timeToRead: "11 Min. Lesezeit"
 themen:
@@ -105,9 +106,9 @@ Für den gezielten Zugriff auf interne Dienste ist der Subnetz-Router fast immer
 
 ## Quellen
 
-1.  [Tailscale: Subnet routers](https://tailscale.com/kb/1019/subnets): Routen advertisen, Freigabe, SNAT-Verhalten und Hochverfügbarkeit mit mehreren Routern.
+1.  [Tailscale: Subnet routers](https://tailscale.com/docs/features/subnet-routers): Routen advertisen, Freigabe, SNAT-Verhalten und Hochverfügbarkeit mit mehreren Routern.
 
-2.  [Tailscale: Exit nodes](https://tailscale.com/kb/1103/exit-nodes): Standardroute advertisen, Auswahl auf dem Client und der Zugriff auf das eigene lokale Netz.
+2.  [Tailscale: Exit nodes](https://tailscale.com/docs/features/exit-nodes): Standardroute advertisen, Auswahl auf dem Client und der Zugriff auf das eigene lokale Netz.
 
 3.  [Tailscale: How Tailscale works](https://tailscale.com/blog/how-tailscale-works): Zusammenspiel von WireGuard-Data-Plane, Coordination Server und DERP-Relays.
 

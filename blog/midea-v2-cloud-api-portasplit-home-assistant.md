@@ -3,6 +3,7 @@ title: "Midea V2, V3 und Cloud-API: Was für die PortaSplit tatsächlich gemeint
 navTitle: "Midea V2 Cloud-API"
 description: "Lokales Geräteprotokoll, private App-Endpunkte und offizielle Partner-API verwenden ähnliche Versionsnamen. Die Quellenanalyse trennt diese Ebenen und ordnet die Abschaltungswarnung ein."
 date: "2026-07-25"
+aktualisiert: "2026-10-25"
 kategorie: "Home Assistant und IoT"
 timeToRead: "11 Min. Lesezeit"
 themen:
@@ -27,7 +28,7 @@ Das Projekt `Midea AC LAN` warnt in seiner [README](https://github.com/wuwentao/
 
 > Eine offizielle Midea Cloud-to-Cloud API V2 existiert. Sie ist aber nicht identisch mit der von Home Assistant verwendeten Token-Schnittstelle und auch nicht mit dem lokalen V2- oder V3-Geräteprotokoll. Eine offiziell angekündigte Abschaltung der lokalen PortaSplit-Steuerung mit einem konkreten Termin ist nicht dokumentiert. Im Juni 2026 wurde zudem nachgewiesen, dass die vermeintlich abgeschaltete SmartHome-Token-API weiterhin funktionierte – der bisherige Request der Community-Bibliothek war lediglich unvollständig.
 
-Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Juli 2026.
+Dies ist Teil 3 der Serie; [Teil 1](/blog/midea-portasplit-home-assistant) beschreibt die Einrichtung bis zum Dashboard, [Teil 2](/blog/midea-portasplit-home-assistant-absichern) die Absicherung von Token, Key und Heimnetz. Stand dieses Artikels ist der 25. Oktober 2026.
 
 ![Home-Assistant-Dashboard der Midea PortaSplit im Kühlbetrieb: Kennzahlen oben, Thermostat auf 22 °C, Verläufe von Raumtemperatur, Leistungsaufnahme, Tagesenergie, Kompressorfrequenz, Kompressorbetrieb und Lüfterstufe, darunter technische Werte und Status.](../images/midea-portasplit-home-assistant/portasplit-dashboard.png)
 
@@ -144,13 +145,15 @@ Auch im aktuellen Quellcode wird weiterhin genau dieser Endpunkt verwendet:
 
 Zusätzlich wird nun `applianceCodes` mitgesendet. Das ist im aktuellen [`midealocal/cloud.py`](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py) direkt nachvollziehbar.
 
-Die gegenwärtige Version von `Midea AC LAN` bindet `midea-local==6.11.0` ein und deklariert sich weiterhin als `local_push`-Integration. Beides steht im aktuellen [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json).
+Seit dem 12. August 2026 verwendet `Midea AC LAN` statt `midea-local` die eigene Bibliothek `midea-lan`; die aktuelle Version bindet `midea-lan==2026.10.0` ein und deklariert sich weiterhin als `local_push`-Integration. Beides steht im aktuellen [`manifest.json`](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json). Auch `midea-lan` fragt Token und Key bei der SmartHome-Cloud über `/v1/iot/secure/getToken` mit `applianceCodes` ab, wie im [`midealan/cloud.py`](https://github.com/wuwentao/midea-lan/blob/main/midealan/cloud.py) nachvollziehbar ist.
 
 Die pauschale Aussage, die SmartHome-Token-API sei geschlossen worden, ist damit mindestens für die im Juni 2026 getesteten Konten und Geräte widerlegt. Korrekt wäre:
 
 > Die bisherige Token-Abfrage funktionierte nach einer Änderung des erwarteten Request-Formats nicht mehr. Nach Anpassung an das von der offiziellen App verwendete Format lieferte derselbe V1-Endpunkt wieder gültige lokale Zugangsdaten.
 
 Regionale Unterschiede, abweichende Konten oder nicht unterstützte Gerätetypen sind damit nicht ausgeschlossen. Eine globale Abschaltung war es aber offensichtlich nicht.
+
+Bei anderen Midea-Clouds hat sich die Lage seither verändert. Die chinesische Meiju-Cloud beantwortet `/v1/iot/secure/getToken` seit August 2026 mit dem Fehler `40404`; Token und Key liefert dort nur noch der App-Endpunkt `/v2/iot/secure/getToken`, der zusätzlich eine `homegroupId` verlangt. Die Bibliotheken wurden Ende August 2026 entsprechend angepasst, dokumentiert in [`midea-local` Pull Request #717](https://github.com/midea-lan/midea-local/pull/717). Über NetHome-Plus-Konten lassen sich laut [README von `Midea AC LAN`](https://github.com/wuwentao/midea_ac_lan#1-important-notice) derzeit keine Tokens mehr abrufen; nutzbar sind nur persönliche Meiju- und SmartHome-Konten, an die das Gerät gebunden ist. Auch dieser Wechsel betrifft einen privaten App-Endpunkt und nicht die offizielle Cloud-to-Cloud API V2.
 
 ## Warum „V2" hier so leicht missverstanden wird
 
@@ -308,7 +311,7 @@ Die nüchterne Schlussfolgerung lautet deshalb:
 
 9.  [Aktueller midea-local Cloud-Code](https://github.com/midea-lan/midea-local/blob/main/midealocal/cloud.py): Weiterhin verwendeter Endpunkt `/v1/iot/secure/getToken` und aktuelles Request-Feld `applianceCodes`.
 
-10.  [Aktuelles Manifest von Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): Verwendete Version von `midea-local` und Einstufung als lokale Push-Integration.
+10.  [Aktuelles Manifest von Midea AC LAN](https://github.com/wuwentao/midea_ac_lan/blob/main/custom_components/midea_ac_lan/manifest.json): Verwendete Version von `midea-lan` und Einstufung als lokale Push-Integration.
 
 11.  [Midea Smart AC](https://github.com/mill1000/midea-ac-py): Dokumentation der lokalen Steuerung, des einmaligen Cloud-Abrufs für V3-Geräte und der manuellen Konfiguration mit Token und Key.
 
@@ -319,3 +322,7 @@ Die nüchterne Schlussfolgerung lautet deshalb:
 14.  [Offizielle Midea Cloud-to-Cloud API V1](https://mis-cdn.smartmidea.net/docs/control-midea-cloud-devices/cloud-2-cloud-api.html): Offizieller Hinweis, dass die alte `/v1/open/...`-Partnerschnittstelle nicht mehr empfohlen wird und zukünftig abgeschaltet werden könnte.
 
 15.  [Midea Auto Cloud](https://github.com/sususweet/midea_auto_cloud) und [aktueller Cloud-Code](https://github.com/sususweet/midea_auto_cloud/blob/master/custom_components/midea_auto_cloud/core/cloud.py): Community-Integration für vollständige Cloudsteuerung und die dabei tatsächlich verwendeten privaten V1-App-Endpunkte.
+
+16.  [midea-local PR #717](https://github.com/midea-lan/midea-local/pull/717): Wechsel der Meiju-Cloud von `/v1/iot/secure/getToken` (Fehler 40404) auf `/v2/iot/secure/getToken` mit `homegroupId`.
+
+17.  [Aktueller midea-lan Cloud-Code](https://github.com/wuwentao/midea-lan/blob/main/midealan/cloud.py): Von Midea AC LAN seit August 2026 verwendete Bibliothek, SmartHome-Token-Abfrage über `/v1/iot/secure/getToken` mit `applianceCodes`.

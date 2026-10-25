@@ -3,6 +3,7 @@ title: "Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Re
 navTitle: "Mailfluss analysieren"
 description: "Wie Sie in Exchange OnPrem, Hybrid und Exchange Online systematisch herausfinden, wo eine Nachricht geblieben ist: die Abfragen mit Beispielausgaben, das SMTP-Protokoll richtig lesen, und die Punkte, die regelmässig zu Fehlschlüssen führen."
 date: "2026-08-11"
+aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "22 Min. Lesezeit"
 themen:
@@ -576,7 +577,7 @@ Im Tenant gelten andere Regeln, und das ist der Punkt, an dem gewohnte Vorgehens
 | Connector sichtbar | ja (mit Einschränkung, siehe oben) | **nein** |
 | Serverbezug | ja, pro Server abfragen | entfällt |
 | SMTP-Protokoll | vorhanden | **nicht verfügbar** |
-| Aufbewahrung | Ihre Konfiguration | rund 10 Tage über das Cmdlet |
+| Aufbewahrung | Ihre Konfiguration | 90 Tage über das Cmdlet, höchstens 10 Tage je Abfrage |
 | Verzögerung | nahezu sofort | einige Minuten |
 
 Die drei praktisch wichtigsten Konsequenzen: Es gibt **keine Connector-Zuordnung**, Sie behelfen sich mit `FromIP` und `ToIP`. Es gibt **kein SMTP-Protokoll**, die SMTP-Konversation ist nicht rekonstruierbar. Und die Daten erscheinen **verzögert**, eine gerade versendete Nachricht taucht nicht sofort auf.
@@ -641,7 +642,7 @@ Dort stehen die Verarbeitungsschritte im Dienst, etwa Regelanwendungen, Filteren
 
 ### Über zehn Tage hinaus
 
-Das Cmdlet reicht rund zehn Tage zurück. Für ältere Zeiträume gibt es die historische Suche, die asynchron läuft und das Ergebnis als CSV bereitstellt, mit einem Bereich von bis zu 90 Tagen:
+`Get-MessageTraceV2` liefert Daten der letzten 90 Tage, je Abfrage aber höchstens 10 Tage; längere Zeiträume teilen Sie auf mehrere Abfragen auf. Alternativ gibt es die historische Suche, die asynchron läuft und das Ergebnis als CSV bereitstellt, mit einem Bereich von bis zu 90 Tagen:
 
 ```powershell
 Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
@@ -705,6 +706,6 @@ Die häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine abgesch
 
 5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): Bindungen, Berechtigungsgruppen und Authentifizierungsmechanismen.
 
-6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Nachfolger von Get-MessageTrace inklusive Seitenlogik und Feldliste.
+6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2): Nachfolger von Get-MessageTrace inklusive Seitenlogik, Feldliste und Abfragebereich (90 Tage, höchstens 10 Tage je Abfrage).
 
-7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): asynchrone Nachrichtenverfolgung über bis zu 90 Tage.
+7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/start-historicalsearch): asynchrone Nachrichtenverfolgung über bis zu 90 Tage.

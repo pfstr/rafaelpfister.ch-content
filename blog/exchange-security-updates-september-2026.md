@@ -3,6 +3,7 @@ title: "Exchange-Sicherheitsupdates vom September 2026: neun Schwachstellen, Wra
 navTitle: "Exchange SU 09/2026"
 description: "Das September-SU schliesst neun Schwachstellen in Exchange SE und 2019 (acht in Exchange 2016), darunter eine Spoofing-Lücke mit CVSS 9.3, und behebt das Wrapper-Problem in Hybrid-Umgebungen. Am 2. Oktober folgte eine v2 mit einer zusätzlichen CVE; dazu kommen drei Known Issues mit Workarounds und ein SettingOverride, der jetzt entfernt werden soll."
 date: "2026-10-07"
+aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "11 Min. Lesezeit"
 themen:
@@ -97,7 +98,7 @@ Für Exchange SE behebt das SU zusätzlich einen Fehler bei Hybrid-Frei/Gebucht-
 
 ## Bekannte Probleme
 
-**Veröffentlichte Kalender (.ics) liefern HTTP 500 an Kalender-Apps.** Das Problem besteht seit dem August-SU (Exchange SE ab Build 15.2.2562.46 sowie Exchange 2019 und 2016) und ist auch im September-SU und in v2 nicht behoben. Abonnements anonym veröffentlichter Kalender aktualisieren sich nicht mehr; im Browser funktioniert dieselbe URL. Ursache laut Microsoft: Exchange erkennt Clients am User-Agent, Kalender-Apps landen ohne Browser-Kennung in einem Codepfad, den das August-SU deaktiviert hat. Als Workaround beschreibt Microsoft eine URL-Rewrite-Regel auf der Site «Exchange Back End» im IIS, die bei .ics-Anfragen unter `/owa/calendar/` den Parameter `layout=premium` anhängt; dafür muss das IIS-Modul URL Rewrite installiert sein. Die genauen Schritte (über den IIS-Manager oder direkt in der `applicationHost.config`) stehen im [Support-Artikel KB5126672](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672). Einen Termin für den Fix nennt Microsoft nicht (Stand 7. Oktober 2026).
+**Veröffentlichte Kalender (.ics) liefern HTTP 500 an Kalender-Apps.** Das Problem besteht seit dem August-SU (Exchange SE ab Build 15.2.2562.46 sowie Exchange 2019 und 2016) und ist auch im September-SU und in v2 nicht behoben. Abonnements anonym veröffentlichter Kalender aktualisieren sich nicht mehr; im Browser funktioniert dieselbe URL. Ursache laut Microsoft: Exchange erkennt Clients am User-Agent, Kalender-Apps landen ohne Browser-Kennung in einem Codepfad, den das August-SU deaktiviert hat. Als Workaround beschreibt Microsoft eine URL-Rewrite-Regel auf der Site «Exchange Back End» im IIS, die bei .ics-Anfragen unter `/owa/calendar/` den Parameter `layout=premium` anhängt; dafür muss das IIS-Modul URL Rewrite installiert sein. Die genauen Schritte (über den IIS-Manager oder direkt in der `applicationHost.config`) stehen im [Support-Artikel KB5126672](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672). Seit dem 13. Oktober 2026 ist das Problem laut KB5126672 mit den Oktober-SUs behoben (KB5128895 für Exchange SE, KB5128896 bis KB5128898 für 2019 und 2016); nach deren Installation soll die Rewrite-Regel wieder entfernt werden.
 
 **Frei/Gebucht für delegierte Postfächer in Hybrid-Umgebungen (nur Exchange SE).** Ist die Verfügbarkeitsabfrage ausschliesslich über die Graph API konfiguriert, schlagen Abfragen für Exchange-Online-Postfächer über delegierten On-Premises-Zugriff fehl. Outlook meldet «Your server location could not be determined», OWA zeigt «No information», in den EWS-Logs erscheint `(403) Forbidden`. Der dokumentierte Workaround leitet die Abfragen wieder über EWS statt über Graph:
 
@@ -118,9 +119,26 @@ Get-ExchangeDiagnosticInfo -Process Microsoft.Exchange.Directory.TopologyService
 
 </details>
 
-In der Ankündigung zu v2 führt Microsoft dieses Problem unter den behobenen Problemen. Wer den Workaround gesetzt hat, sollte nach der Installation von v2 im [Support-Artikel KB5127092](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092) prüfen, ob er zurückgenommen werden soll; eine Anleitung dazu stand dort zum Stand 7. Oktober 2026 noch nicht.
+In der Ankündigung zu v2 führt Microsoft dieses Problem unter den behobenen Problemen. Inzwischen meldet der [Support-Artikel KB5127092](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092), dass das Problem im Dienst behoben ist. Haben Sie den Workaround gesetzt, nehmen Sie ihn laut KB5127092 zurück:
 
-**ContentEngine-Deadlock wegen fehlender koreanischer WordBreaker-Dateien (nur Exchange SE).** Mit dem September-SU (Build 15.2.2562.49 und v2-Build 15.2.2562.53) werden die Regeldateien für den aktualisierten koreanischen WordBreaker nicht mitinstalliert. Die Folgen: fehlende Suchergebnisse, verzögerte Mailzustellung, Outlook- bzw. MAPI-Clients, die hängen oder die Verbindung verlieren. [KB5130098](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) nennt als betroffen Umgebungen, die Mails mit koreanischsprachigem Inhalt verarbeiten. Das hängt nicht von der Sprache der eigenen Benutzer ab: Nachrichten mit koreanischem Text erreichen auch Organisationen ohne koreanische Korrespondenz, etwa als Spam oder Newsletter. Schweizer Umgebungen sind deshalb nicht von vornherein ausgenommen. Microsoft untersucht das Problem noch; Prüfung und Workaround stehen im nächsten Abschnitt.
+```powershell
+Get-SettingOverride -Identity EnableRouteThroughMSGraphFeature
+Set-SettingOverride -Identity EnableRouteThroughMSGraphFeature -Parameters "Enabled=True"
+Get-ExchangeDiagnosticInfo -Process Microsoft.Exchange.Directory.TopologyService -Component VariantConfiguration -Argument Refresh
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Get-SettingOverride -Identity EnableRouteThroughMSGraphFeature` | Zeigt, ob der Override gesetzt ist und welchen Wert er hat. |
+| `-Parameters "Enabled=True"` | Schaltet den Graph-Pfad für die Verfügbarkeitsabfragen wieder ein. |
+| `-Component VariantConfiguration -Argument Refresh` | Lädt die Variant Configuration neu, damit die Änderung ohne Warten greift. |
+
+</details>
+
+**ContentEngine-Deadlock wegen fehlender koreanischer WordBreaker-Dateien (nur Exchange SE).** Mit dem September-SU (Build 15.2.2562.49 und v2-Build 15.2.2562.53) werden die Regeldateien für den aktualisierten koreanischen WordBreaker nicht mitinstalliert. Die Folgen: fehlende Suchergebnisse, verzögerte Mailzustellung, Outlook- bzw. MAPI-Clients, die hängen oder die Verbindung verlieren. [KB5130098](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) nennt als betroffen Umgebungen, die Mails mit koreanischsprachigem Inhalt verarbeiten. Das hängt nicht von der Sprache der eigenen Benutzer ab: Nachrichten mit koreanischem Text erreichen auch Organisationen ohne koreanische Korrespondenz, etwa als Spam oder Newsletter. Schweizer Umgebungen sind deshalb nicht von vornherein ausgenommen. Seit dem 13. Oktober 2026 ist das Problem laut KB5130098 mit KB5128895 (Build 15.2.2562.56) oder einem neueren Update behoben; danach sind laut Microsoft keine weiteren Schritte nötig, auch nicht auf Servern, auf denen der manuelle Workaround angewendet wurde. Prüfung und Workaround im nächsten Abschnitt betreffen nur noch Server, die auf dem September-SU oder v2 stehen.
 
 ## Workaround für den WordBreaker-Deadlock
 
@@ -286,13 +304,13 @@ Nach der Installation stehen drei Nacharbeiten an:
 
 2. Auf Exchange SE mit dem Prüfskript aus dem [WordBreaker-Abschnitt](#workaround-für-den-wordbreaker-deadlock) kontrollieren, ob die beiden Regeldateien fehlen, und prüfen, ob das Frei/Gebucht-Problem auftritt. Die Workarounds nur anwenden, wenn die jeweiligen Bedingungen erfüllt sind.
 
-3. Bei veröffentlichten Kalendern mit externen Abonnenten die URL-Rewrite-Regel aus KB5126672 einrichten, falls das noch nicht seit dem August-SU geschehen ist.
+3. Bei veröffentlichten Kalendern mit externen Abonnenten die URL-Rewrite-Regel aus KB5126672 einrichten, falls das noch nicht seit dem August-SU geschehen ist und die Oktober-SUs noch nicht installiert sind.
 
 Aus dem Juli bleibt zudem die Kontrolle, ob die CVE-2026-42897-Mitigation (M2.1.0) noch aktiv ist; wie Sie sie entfernen, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
 
 ## Empfohlenes Vorgehen
 
-Installieren Sie auf allen Exchange-Servern und Management-Tools-Maschinen direkt die v2-Builds vom 2. Oktober; Server mit dem SU vom 8. September brauchen v2 für CVE-2026-96940 zusätzlich. Die Spoofing-Lücke mit CVSS 9.3 und die Postfachübernahme über ein Benutzerkonto mit geringen Rechten (CVE-2026-69380) sind Grund genug, nicht auf den nächsten Patchday zu warten. Entfernen Sie danach den Wrapper-Override, prüfen Sie die drei Known Issues und lassen Sie den Health Checker laufen. Die fehlenden WordBreaker-Dateien meldet der Health Checker nicht; dafür ist das Prüfskript aus dem WordBreaker-Abschnitt nötig. Für Exchange 2016 und 2019 endet das ESU-Programm im Oktober 2026; die Migration auf Exchange SE lässt sich nicht weiter verschieben.
+Seit dem 13. Oktober 2026 ersetzen die Oktober-SUs laut KB-Artikeln die September-SUs (Exchange SE: KB5128895, Build 15.2.2562.56). Da SUs kumulativ sind, installieren Sie auf allen Exchange-Servern und Management-Tools-Maschinen direkt das Oktober-SU; Details im [Artikel zum Oktober-SU](/blog/exchange-security-updates-oktober-2026). Wo das noch nicht möglich ist, braucht ein Server mit dem SU vom 8. September mindestens v2 für CVE-2026-96940. Die Spoofing-Lücke mit CVSS 9.3 und die Postfachübernahme über ein Benutzerkonto mit geringen Rechten (CVE-2026-69380) sind Grund genug, nicht auf den nächsten Patchday zu warten. Entfernen Sie danach den Wrapper-Override, prüfen Sie die drei Known Issues und lassen Sie den Health Checker laufen. Die fehlenden WordBreaker-Dateien meldet der Health Checker nicht; dafür ist das Prüfskript aus dem WordBreaker-Abschnitt nötig. Für Exchange 2016 und 2019 endet das ESU-Programm im Oktober 2026; die Migration auf Exchange SE lässt sich nicht weiter verschieben.
 
 ## Quellen
 
@@ -316,11 +334,11 @@ Installieren Sie auf allen Exchange-Servern und Management-Tools-Maschinen direk
 
 10. [Wrapper messages appear in shared mailbox in hybrid environments after installing the June 2026 Security Update – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Fix im September-SU und Anleitung zum Entfernen des SettingOverrides.
 
-11. [Published calendar (.ics) returns HTTP 500 for calendar applications – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672): Ursache und URL-Rewrite-Workaround.
+11. [Published calendar (.ics) returns HTTP 500 for calendar applications – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672): Ursache, URL-Rewrite-Workaround und Fix mit den Oktober-SUs vom 13. Oktober 2026.
 
-12. [Availability (free/busy) fails for delegated mailboxes in Exchange hybrid deployments using Graph API only – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092): Symptome und SettingOverride-Workaround für Exchange SE.
+12. [Availability (free/busy) fails for delegated mailboxes in Exchange hybrid deployments using Graph API only – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092): Symptome, SettingOverride-Workaround für Exchange SE, Korrektur im Dienst und Befehle zum Zurücksetzen.
 
-13. [ContentEngine deadlock because of missing Korean WordBreaker rule files – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098): Betroffene SE-Builds, Prüfkriterien, erwartete Dateigrössen und Hashes, Beschaffung aus SQL Server 2025 Express, Dienstneustart und Kontrolle.
+13. [ContentEngine deadlock because of missing Korean WordBreaker rule files – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098): Betroffene SE-Builds, Prüfkriterien, erwartete Dateigrössen und Hashes, Beschaffung aus SQL Server 2025 Express, Dienstneustart, Kontrolle und Fix mit KB5128895.
 
 14. [Hybrid free/busy through Microsoft Graph incorrectly shifts busy times by requester timezone – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5125804): Der mit dem September-SU behobene Zeitzonenfehler in Exchange SE.
 
@@ -329,3 +347,5 @@ Installieren Sie auf allen Exchange-Servern und Management-Tools-Maschinen direk
 16. [Exchange Server: Sicherheitsupdates 8. September 2026 – Borns Tech and Windows World](https://borncity.com/blog/?p=329371): Deutschsprachige Zusammenfassung mit Hinweisen auf das spätere Ersatz-Update.
 
 17. [microsoft/CSS-Exchange – GitHub](https://github.com/microsoft/CSS-Exchange): Quellcode des Exchange Health Checker; Release v26.10.02 vom 2. Oktober 2026 ohne Prüfung der WordBreaker-Dateien (Stand 9. Oktober 2026).
+
+18. [Description of the security update for Microsoft Exchange Server Subscription Edition RTM October 13, 2026 (KB5128895) – Microsoft Support](https://support.microsoft.com/help/5128895): Oktober-SU, das das September-SU ersetzt und den .ics-Fehler sowie den WordBreaker-Deadlock behebt.

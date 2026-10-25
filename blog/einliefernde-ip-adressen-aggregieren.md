@@ -3,6 +3,7 @@ title: "Wer liefert eigentlich in Ihren Tenant ein? Einliefernde IP-Adressen agg
 navTitle: "Einliefernde IPs"
 description: "Eine einzige Auswertung zeigt, welche Systeme tatsächlich Mail in Ihren Tenant einliefern: vergessene Connectoren, direkt sendende Anwendungen und Dienstleister, die niemand dokumentiert hat, inklusive der typischen Auswertungsfehler bei Seitenlogik und Interpretation."
 date: "2026-08-11"
+aktualisiert: "2026-10-25"
 kategorie: "Microsoft 365 / Exchange"
 timeToRead: "12 Min. Lesezeit"
 themen:
@@ -117,7 +118,12 @@ do {
     }
 
     $alle += $seite
-    $naechster = if ($seite.Count -eq 5000) { $seite[-1].RecipientAddress } else { $null }
+    if ($seite.Count -eq 5000) {
+        $naechster = $seite[-1].RecipientAddress
+        $ende      = $seite[-1].Received
+    } else {
+        $naechster = $null
+    }
     Write-Host "Gesammelt: $($alle.Count)"
 } while ($naechster)
 
@@ -131,7 +137,7 @@ $alle | Group-Object FromIP | Sort-Object Count -Descending |
 | Option | Wirkung |
 |---|---|
 | `-StartDate` / `-EndDate` | Abfragefenster, hier die letzten 24 Stunden |
-| `-StartingRecipientAddress` | Fortsetzungspunkt der Seitenlogik: die Empfängeradresse, ab der die nächste Seite beginnt |
+| `-StartingRecipientAddress` | Fortsetzungspunkt der Seitenlogik: die Empfängeradresse des letzten Eintrags der Vorseite; zusammen mit `-EndDate` = dessen Empfangszeit (`Received`) beginnt dort die nächste Seite |
 | `-ResultSize 5000` | Seitengrösse; eine volle Seite signalisiert, dass weitere Ergebnisse folgen |
 | `Group-Object FromIP` | gruppiert den Gesamtbestand nach der einliefernden IP-Adresse |
 | `Sort-Object Count -Descending` | sortiert die Gruppen absteigend nach Nachrichtenzahl |
@@ -139,7 +145,7 @@ $alle | Group-Object FromIP | Sort-Object Count -Descending |
 
 </details>
 
-Die Schleife ruft so lange weitere Seiten ab, wie eine Seite mit genau 5000 Zeilen zurückkommt, und setzt dabei jeweils mit der letzten Empfängeradresse der Vorseite fort; erst der vollständige Bestand wird gruppiert.
+Die Schleife ruft so lange weitere Seiten ab, wie eine Seite mit genau 5000 Zeilen zurückkommt, und setzt dabei jeweils mit Empfängeradresse und Empfangszeit des letzten Eintrags der Vorseite fort, wie es die Dokumentation von `Get-MessageTraceV2` vorsieht; erst der vollständige Bestand wird gruppiert.
 
 Rechnen Sie bei 24 Stunden in einer mittleren Umgebung mit einigen Minuten Laufzeit. Für eine einmalige Bestandsaufnahme ist das gut investiert.
 
@@ -251,7 +257,7 @@ Keiner dieser Funde ist dramatisch für sich genommen. Zusammen ergeben sie das 
 
 Drei Einschränkungen sollten Sie kennen.
 
-Die Nachrichtenverfolgung reicht über das Cmdlet nur rund zehn Tage zurück. Für längere Zeiträume brauchen Sie die historische Suche, die asynchron läuft und bis zu 90 Tage abdeckt. Seltene Systeme, die monatlich senden, entgehen Ihnen sonst.
+`Get-MessageTraceV2` deckt die letzten 90 Tage ab, liefert pro Abfrage aber höchstens zehn Tage. Für längere Zeiträume fragen Sie deshalb in mehreren Zeitfenstern ab oder nutzen die historische Suche, die asynchron läuft und ebenfalls bis zu 90 Tage abdeckt. Seltene Systeme, die monatlich senden, entgehen Ihnen sonst.
 
 `FromIP` bedeutet nicht überall dasselbe. Bei Mail aus dem Internet ist es die Adresse des einliefernden Servers. Bei Hybrid-Mail ist es die Adresse Ihres lokalen Transportservers, nicht die des ursprünglichen Absenders. Die Auswertung zeigt Ihnen also die **letzte Station vor dem Dienst**, nicht die Herkunft.
 
@@ -267,7 +273,7 @@ Wie Sie einzelne auffällige Nachrichten weiterverfolgen, steht in [Exchange-Mai
 
 ## Quellen
 
-1.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Feldliste inklusive FromIP und ToIP sowie die Seitenlogik mit StartingRecipientAddress.
+1.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Feldliste inklusive FromIP und ToIP, Abfragezeitraum (90 Tage, höchstens zehn Tage pro Abfrage) sowie die Fortsetzung mit StartingRecipientAddress und EndDate.
 
 2.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): asynchrone Nachrichtenverfolgung über bis zu 90 Tage für ältere Zeiträume.
 

@@ -5,6 +5,7 @@ title: "HIN Mailgateway 15.0.5: Login-Ausfall nach dem Cluster-Update beheben"
 navTitle: Login-Fehler 15.0.5
 description: "Nach dem Update eines HIN-Mailgateway-Clusters auf Version 15.0.5 fällt die Anmeldung nach wenigen Minuten auf beiden Knoten aus. Dieses Vorgehen bringt die Appliances kontrolliert wieder in Betrieb."
 date: 2026-06-19
+aktualisiert: "2026-10-25"
 kategorie: HIN-Gateway
 timeToRead: 3 Min. Lesezeit
 themen:
@@ -47,5 +48,5 @@ Dieses Verfahren verhindert, dass eine fehlerhafte Konfiguration während des Up
 ## Quellen
 
 1. [SEPPmail-Dokumentation – «Cluster / Hochverfügbarkeit»](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html): Cluster-Typen und Replikation der Konfiguration über alle Knoten.
-2. [SEPPmail-Dokumentation – «Administration»](https://docs.seppmail.com/de/07_mi_11_adm__administration.html): Update-Reihenfolge im Cluster (Frontend vor Backend) und die Anforderung identischer Versionsstände.
+2. [SEPPmail-Dokumentation – «Administration»](https://docs.seppmail.com/de/07_mi_11_adm__administration.html): Update-Reihenfolge im Cluster (Backend vor Frontend) und die Anforderung identischer Versionsstände.
 3. [HIN Mailgateway: Backup & Disaster Recovery im Cluster](/blog/hin-mailgateway-backup-disaster-recovery): vertiefende Betrachtung von Cluster-Replikation, Backup und Restore.

@@ -1,8 +1,9 @@
 ---
 title: "CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung"
 navTitle: "FortiMail Zero-Day"
-description: "Fortinet meldet eine kritische, bereits ausgenutzte Path-Traversal-Lücke in FortiMail 7.2 bis 8.0 (CVE-2026-104286, CVSS 9.8). Ein Patch fehlt bislang. Der Workaround deaktiviert IBE oder sperrt die Verwaltungsoberfläche gegen das Internet; dazu kommen Indikatoren für eine Prüfung auf Kompromittierung."
+description: "Fortinet meldet eine kritische, bereits ausgenutzte Path-Traversal-Lücke in FortiMail 7.2 bis 8.0 (CVE-2026-104286, CVSS 9.8). Seit dem 2. bzw. 3. Oktober sind die Fixversionen 7.6.7, 7.4.9 und 8.0.2 verfügbar. Bis zum Update deaktiviert der Workaround IBE oder sperrt die Webmail-Oberfläche gegen das Internet; dazu kommen Indikatoren für eine Prüfung auf Kompromittierung."
 date: "2026-10-02"
+aktualisiert: "2026-10-25"
 kategorie: "FortiMail"
 timeToRead: "8 Min. Lesezeit"
 themen:
@@ -24,7 +25,7 @@ url: "https://rafaelpfister.ch/blog/fortimail-zero-day-workaround"
 ---
 # CVE-2026-104286: FortiMail-Zero-Day wird ausgenutzt - Workaround und Prüfung auf Kompromittierung
 
-Fortinet hat am 1. Oktober 2026 das Advisory FG-IR-26-175 zu einer kritischen Lücke in FortiMail veröffentlicht. Über präparierte HTTP- oder HTTPS-Anfragen kann ein Angreifer ohne Anmeldung beliebige Dateien auf das darunterliegende System schreiben und damit Code ausführen. Die Lücke trägt die Kennung CVE-2026-104286 und eine CVSS-Bewertung von 9.8. Fortinet bestätigt, dass sie bereits ausgenutzt wird; die US-Behörde CISA hat sie am selben Tag in ihren Katalog ausgenutzter Schwachstellen (KEV) aufgenommen. Ein Update gibt es Stand 2. Oktober noch nicht, nur einen Workaround.
+Fortinet hat am 1. Oktober 2026 das Advisory FG-IR-26-175 zu einer kritischen Lücke in FortiMail veröffentlicht. Über präparierte HTTP- oder HTTPS-Anfragen kann ein Angreifer ohne Anmeldung beliebige Dateien auf das darunterliegende System schreiben und damit Code ausführen. Die Lücke trägt die Kennung CVE-2026-104286 und eine CVSS-Bewertung von 9.8. Fortinet bestätigt, dass sie bereits ausgenutzt wird; die US-Behörde CISA hat sie am selben Tag in ihren Katalog ausgenutzter Schwachstellen (KEV) aufgenommen. Zum Zeitpunkt des Advisorys gab es nur einen Workaround. Seit dem 2. Oktober 2026 ist FortiMail 7.6.7 verfügbar, seit dem 3. Oktober 2026 auch 7.4.9 und 8.0.2; Fortinet führt diese Versionen seit dem 5. Oktober im Advisory als Lösung.
 
 <div class="notfall-hinweis">
 <p class="notfall-hinweis__titel">Unterstützung bei Workaround und Prüfung</p>
@@ -50,8 +51,8 @@ Fortinet hat am 1. Oktober 2026 das Advisory FG-IR-26-175 zu einer kritischen L�
 | Voraussetzung | keine Anmeldung, Zugriff per HTTP oder HTTPS auf die Weboberfläche |
 | Komponente laut Advisory | GUI |
 | Ausnutzung | bestätigt; CISA KEV seit 1. Oktober 2026 |
-| Update | angekündigt, Stand 2. Oktober nicht verfügbar |
-| Workaround | IBE deaktivieren oder Verwaltungsoberfläche gegen das Internet sperren |
+| Update | 7.6.7 (seit 2. Oktober), 7.4.9 und 8.0.2 (seit 3. Oktober); kein Fix für 7.2 |
+| Workaround | IBE deaktivieren, Webmail-Oberfläche gegen das Internet sperren oder per WAF filtern |
 | Entdeckt durch | Fortinet intern (Gwendal Guégniaud) |
 
 ## Chronologie
@@ -74,10 +75,25 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 <p class="timeline__titel">Aufnahme in den CISA-Katalog</p>
 <p>CISA nimmt CVE-2026-104286 in den Katalog Known Exploited Vulnerabilities auf. US-Bundesbehörden sollen laut BleepingComputer und The Hacker News bis zum 4. Oktober Updates oder Workarounds umsetzen.</p>
 </li>
+<li class="timeline__item">
+<p class="timeline__zeit">Do, 2. Oktober</p>
+<p class="timeline__titel">FortiMail 7.6.7 erscheint</p>
+<p>Fortinet veröffentlicht die Release Notes zu FortiMail 7.6.7.</p>
+</li>
+<li class="timeline__item">
+<p class="timeline__zeit">Fr, 3. Oktober</p>
+<p class="timeline__titel">FortiMail 7.4.9 und 8.0.2 erscheinen</p>
+<p>Fortinet veröffentlicht die Release Notes zu FortiMail 7.4.9 und 8.0.2. Bis zu diesem Tag hat Fortinet zudem das Advisory ohne Eintrag in der Revisionshistorie geändert: Die alternative Sperre bezieht sich nun auf die Webmail-Oberfläche statt auf die Verwaltungsoberfläche, eine WAF-Regel ist hinzugekommen, und die Liste der Dateien mit Hashwerten ist entfallen.</p>
+</li>
+<li class="timeline__item">
+<p class="timeline__zeit">Mo, 5. Oktober</p>
+<p class="timeline__titel">Advisory mit Lösung, FortiMail Cloud korrigiert</p>
+<p>Fortinet ergänzt im Advisory die Fixversionen als Lösung. FortiMail Cloud hat Fortinet laut Advisory am selben Tag auf 7.6.7 bzw. 8.0.2 aktualisiert; Cloud-Kunden müssen nichts tun.</p>
+</li>
 <li class="timeline__item timeline__item--offen">
-<p class="timeline__zeit">Stand Do, 2. Oktober</p>
+<p class="timeline__zeit">Stand So, 25. Oktober</p>
 <p class="timeline__titel">Weiterhin offen</p>
-<p>Die Fixversionen 8.0.2, 7.6.7 und 7.4.9 sind angekündigt, aber nicht veröffentlicht. Zum Umfang der Angriffe, zu betroffenen Organisationen und zur Herkunft der Angreifer gibt es keine Angaben.</p>
+<p>Zum Umfang der Angriffe, zu betroffenen Organisationen und zur Herkunft der Angreifer enthält das Advisory keine Angaben.</p>
 </li>
 </ol>
 
@@ -85,12 +101,12 @@ Alle Zeiten in mitteleuropäischer Sommerzeit (MESZ). Wo keine Uhrzeit angegeben
 
 | Zweig | Betroffen | Lösung laut Advisory |
 |---|---|---|
-| FortiMail 8.0 | 8.0.0 bis 8.0.1 | Update auf 8.0.2 oder neuer (angekündigt) |
-| FortiMail 7.6 | 7.6.0 bis 7.6.6 | Update auf 7.6.7 oder neuer (angekündigt) |
-| FortiMail 7.4 | 7.4.0 bis 7.4.8 | Update auf 7.4.9 oder neuer (angekündigt) |
+| FortiMail 8.0 | 8.0.0 bis 8.0.1 | Update auf 8.0.2 oder neuer |
+| FortiMail 7.6 | 7.6.0 bis 7.6.6 | Update auf 7.6.7 oder neuer |
+| FortiMail 7.4 | 7.4.0 bis 7.4.8 | Update auf 7.4.9 oder neuer |
 | FortiMail 7.2 | 7.2.0 bis 7.2.9 | kein Fix im Zweig 7.2; Wechsel auf 7.4 oder neuer |
 
-Für den Zweig 7.2 erscheint kein Update; diese Systeme müssen auf 7.4 oder neuer wechseln. Den Upgrade-Pfad aus den Release Notes jetzt zu planen verkürzt die Zeit bis zum Update, sobald die Fixversion erscheint. Bis dahin bleibt nur der Workaround.
+Für den Zweig 7.2 erscheint kein Update; diese Systeme müssen auf 7.4 oder neuer wechseln. Den Upgrade-Pfad zur Fixversion entnehmen Sie den Release Notes des jeweiligen Zweigs. Bis das Update eingespielt ist, bleibt der Workaround nötig.
 
 Die aktuelle Version zeigt die CLI mit:
 
@@ -100,11 +116,11 @@ get system status
 
 ## Sofortmassnahme: Workaround umsetzen
 
-Fortinet nennt zwei Varianten. Eine davon genügt laut Advisory; wo es der Betrieb zulässt, sind beide sinnvoll.
+Fortinet nennt zwei Varianten. Eine davon genügt laut Advisory; wo es der Betrieb zulässt, sind beide sinnvoll. Der Workaround ist nur bis zur Installation der Fixversion nötig.
 
 ### Variante 1: IBE deaktivieren
 
-IBE (Identity-Based Encryption) ist die Funktion, mit der FortiMail Nachrichten an externe Empfänger verschlüsselt zustellt: Der Empfänger erhält die Nachricht als verschlüsselten Anhang (Push) oder ruft sie über das Webportal von FortiMail ab (Pull). Fortinet nennt die IBE-Funktion als Workaround, die Angriffe laufen also über einen Codepfad dieser Funktion. Die Abschaltung erfolgt in der CLI:
+IBE (Identity-Based Encryption) ist die Funktion, mit der FortiMail Nachrichten an externe Empfänger verschlüsselt zustellt: Der Empfänger erhält die Nachricht als verschlüsselten Anhang (Push) oder ruft sie über das Webportal von FortiMail ab (Pull). Fortinet nennt die IBE-Funktion als Workaround, die Angriffe laufen also über einen Codepfad dieser Funktion. Die Abschaltung erfolgt in der GUI unter Encryption > IBE (IBE Service auf «off») oder in der CLI:
 
 ```
 config system encryption ibe
@@ -137,11 +153,11 @@ Die Abschaltung hat Folgen für den Mailverkehr. Fortinet beschreibt sie im Advi
 
 3.  **Wer betroffen ist:** Externe Empfänger, die Nachrichten im IBE-Portal abrufen, und Benutzer, die verschlüsselt versenden, sollten informiert werden.
 
-### Variante 2: Verwaltungsoberfläche gegen das Internet sperren
+### Variante 2: Webmail-Oberfläche gegen das Internet sperren
 
-Die zweite Variante sperrt den Zugriff aus dem Internet auf die Verwaltungsoberfläche oder beschränkt ihn auf vertrauenswürdige private Netze, etwa ein Managementnetz oder ein VPN. Umsetzen lässt sich das auf einer vorgelagerten Firewall oder über die Zugriffseinstellungen der Schnittstellen in FortiMail (Administrative Access).
+Die zweite Variante sperrt den Zugriff aus dem Internet auf die Webmail-Oberfläche oder beschränkt ihn auf vertrauenswürdige private Netze, etwa ein Managementnetz oder ein VPN. In der ersten Fassung des Advisorys vom 1. Oktober nannte Fortinet an dieser Stelle die Verwaltungsoberfläche; die aktuelle Fassung nennt die Webmail-Oberfläche. Umsetzen lässt sich das auf einer vorgelagerten Firewall oder über die Zugriffseinstellungen der Schnittstellen in FortiMail (Administrative Access). Steht vor FortiMail eine Web Application Firewall, nennt das Advisory als weitere Möglichkeit, POST-Anfragen an `/ibe` zu blockieren, die `../` enthalten.
 
-Webmail, Quarantäne-Zugriff der Benutzer und das IBE-Portal laufen ebenfalls über HTTPS. Liegen sie auf derselben Schnittstelle wie die Verwaltung, sperrt eine pauschale HTTPS-Sperre auch diese Dienste. In diesem Fall ist Variante 1 der direktere Weg. SMTP auf Port 25 ist von beiden Varianten nicht betroffen; der Mailfluss läuft weiter.
+Quarantäne-Zugriff der Benutzer, das IBE-Portal und die Verwaltung laufen ebenfalls über HTTPS. Liegen sie auf derselben Schnittstelle wie Webmail, sperrt eine pauschale HTTPS-Sperre auch diese Dienste. In diesem Fall ist Variante 1 der direktere Weg. SMTP auf Port 25 ist von beiden Varianten nicht betroffen; der Mailfluss läuft weiter.
 
 ## Auf Kompromittierung prüfen
 
@@ -149,7 +165,7 @@ Da die Lücke vor dem Advisory ausgenutzt wurde, schliesst der Workaround einen 
 
 ### Dateien
 
-Folgende Dateien hat Fortinet auf kompromittierten Systemen gefunden. Das Advisory nennt dazu Hashwerte; massgebend für den Abgleich ist die Liste im Advisory.
+Folgende Dateien nannte Fortinet in der ersten Fassung des Advisorys vom 1. Oktober als Funde auf kompromittierten Systemen, jeweils mit MD5- und SHA256-Hash. Die aktuelle Fassung führt nur noch IP-Adressen und Logeinträge; die ursprüngliche Liste mit den Hashwerten ist über die archivierte Fassung des Advisorys einsehbar (siehe Quellen).
 
 | Pfad |
 |---|
@@ -196,17 +212,17 @@ Ende September hat zudem Kiteworks seine Kunden wegen einer Warnung von Strafver
 
 2.  **Indikatoren prüfen** und Logs sichern, bevor Änderungen am System erfolgen.
 
-3.  **Workaround umsetzen:** IBE deaktivieren oder die Verwaltungsoberfläche gegen das Internet sperren, nach Abklärung der Folgen für verschlüsselte Zustellungen.
+3.  **Workaround umsetzen**, bis das Update installiert ist: IBE deaktivieren oder die Webmail-Oberfläche gegen das Internet sperren, nach Abklärung der Folgen für verschlüsselte Zustellungen.
 
 4.  **IP-Adressen sperren** und in den Firewall-Logs rückwirkend suchen.
 
-5.  **Update planen:** Fixversion einspielen, sobald sie erscheint; Systeme auf 7.2 auf 7.4 oder neuer heben.
+5.  **Update einspielen:** 8.0.2, 7.6.7 oder 7.4.9 (oder neuer) installieren; Systeme auf 7.2 auf 7.4 oder neuer heben.
 
 6.  **Advisory beobachten:** Fortinet ergänzt FG-IR-26-175 bei neuen Erkenntnissen; die Revisionshistorie steht am Ende des Advisorys.
 
 ## Quellen
 
-1.  [Fortinet PSIRT: FG-IR-26-175](https://fortiguard.fortinet.com/psirt/FG-IR-26-175): Advisory mit Beschreibung, CVSS-Vektor, betroffenen Versionen, Workaround und Indikatoren (Dateien, Hashes, IP-Adressen, Logeinträge).
+1.  [Fortinet PSIRT: FG-IR-26-175](https://fortiguard.fortinet.com/psirt/FG-IR-26-175): Advisory mit Beschreibung, CVSS-Vektor, betroffenen Versionen, Fixversionen, Workaround, Indikatoren (IP-Adressen, Logeinträge) und Hinweis zu FortiMail Cloud.
 
 2.  [heise online: FortiMail: Angriffe auf Zero-Day-Lücke laufen, Workaround verfügbar](https://www.heise.de/news/FortiMail-Angriffe-auf-Zero-Day-Luecke-laufen-Workaround-verfuegbar-11473599.html): Meldung vom 1. Oktober 2026 mit Workaround und Hinweis auf fehlende Updates.
 
@@ -223,3 +239,7 @@ Ende September hat zudem Kiteworks seine Kunden wegen einer Warnung von Strafver
 8.  [Fortinet Document Library: FortiMail](https://docs.fortinet.com/product/fortimail): Release Notes und Administration Guide, darunter die CLI-Referenz zu `system encryption ibe`.
 
 9.  [Credly: Fortinet FortiMail 7.4 Administrator](https://www.credly.com/badges/90a9e1d5-1f57-4762-99cc-4b35a9079ca5): Verifikation der Zertifizierung des Autors.
+
+10. [Internet Archive: FG-IR-26-175, Fassung vom 2. Oktober 2026](https://web.archive.org/web/20261002064604/https://fortiguard.fortinet.com/psirt/FG-IR-26-175): erste Fassung des Advisorys mit der Dateiliste samt MD5- und SHA256-Hashes und dem Workaround für die Verwaltungsoberfläche.
+
+11. [Fortinet Document Library: FortiMail 7.6.7 Release Notes, Change Log](https://docs.fortinet.com/document/fortimail/7.6.7/release-notes/4/change-log): Erstveröffentlichung am 2. Oktober 2026; die Release Notes zu [7.4.9](https://docs.fortinet.com/document/fortimail/7.4.9/release-notes/4/change-log) und [8.0.2](https://docs.fortinet.com/document/fortimail/8.0.2/release-notes/4/change-log) erschienen am 3. Oktober 2026.

@@ -3,6 +3,7 @@ title: "Was ist eigentlich Tailscale und welche Vorteile bietet es gegenüber tr
 navTitle: "Tailscale vs. VPN"
 description: "Tailscale baut auf WireGuard ein Mesh-VPN auf, in dem sich Geräte direkt verbinden statt über einen zentralen VPN-Konzentrator. Wie Coordination Server, NAT-Traversal und DERP-Relays zusammenspielen, worin die Vorteile gegenüber IPsec- und SSL-VPN liegen und welche Abhängigkeiten und Grenzen Sie vor dem Einsatz kennen sollten."
 date: "2026-10-01"
+aktualisiert: "2026-10-25"
 kategorie: "VPN und Fernzugriff"
 timeToRead: "11 Min. Lesezeit"
 themen:
@@ -195,17 +196,17 @@ Zum Testen genügt es, den Client auf zwei Geräten zu installieren und sich mit
 
 2.  [Tailscale: How NAT traversal works](https://tailscale.com/blog/how-nat-traversal-works): ausführliche Erklärung von STUN, UDP Hole Punching und den Fällen, in denen ein Relay nötig wird.
 
-3.  [Tailscale Docs: DERP servers](https://tailscale.com/kb/1232/derp-servers): Funktion und Verschlüsselung der Relay-Server.
+3.  [Tailscale Docs: DERP servers](https://tailscale.com/docs/reference/derp-servers): Funktion und Verschlüsselung der Relay-Server.
 
-4.  [Tailscale Docs: Tailscale Peer Relays](https://tailscale.com/kb/1591/peer-relays): eigene Geräte als Relay mit Vorrang vor DERP.
+4.  [Tailscale Docs: Tailscale Peer Relays](https://tailscale.com/docs/features/peer-relay): eigene Geräte als Relay mit Vorrang vor DERP.
 
-5.  [Tailscale Docs: Grants](https://tailscale.com/kb/1324/grants): Syntax der Zugriffsregeln in der Policy-Datei.
+5.  [Tailscale Docs: Grants](https://tailscale.com/docs/features/access-control/grants): Syntax der Zugriffsregeln in der Policy-Datei.
 
-6.  [Tailscale Docs: Subnet routers](https://tailscale.com/kb/1019/subnets): Einrichtung von Subnet Routern inklusive IP-Forwarding und Freigabe der Routen.
+6.  [Tailscale Docs: Subnet routers](https://tailscale.com/docs/features/subnet-routers): Einrichtung von Subnet Routern inklusive IP-Forwarding und Freigabe der Routen.
 
-7.  [Tailscale Docs: Exit nodes](https://tailscale.com/kb/1103/exit-nodes): gesamten Internetverkehr über ein Gerät im Tailnet leiten.
+7.  [Tailscale Docs: Exit nodes](https://tailscale.com/docs/features/exit-nodes): gesamten Internetverkehr über ein Gerät im Tailnet leiten.
 
-8.  [Tailscale Docs: Tailnet Lock](https://tailscale.com/kb/1226/tailnet-lock): Signatur neuer Geräte durch eigene, vertrauenswürdige Nodes.
+8.  [Tailscale Docs: Tailnet Lock](https://tailscale.com/docs/features/tailnet-lock): Signatur neuer Geräte durch eigene, vertrauenswürdige Nodes.
 
 9.  [Tailscale: Pricing](https://tailscale.com/pricing): Tarife und Limits, abgerufen am 1. Oktober 2026.
 

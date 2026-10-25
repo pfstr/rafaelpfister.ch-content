@@ -3,6 +3,7 @@ title: "HIN Mailgateway sichern und nach einem Ausfall wiederherstellen"
 navTitle: "Backup & Recovery"
 description: "Ein Cluster schützt das HIN Mailgateway vor einem Knotenausfall, ersetzt aber kein Backup. Entscheidend sind Konfiguration, Schlüsselmaterial, Restore-Reihenfolge und die Änderungen durch Stargate."
 date: "2026-07-08"
+aktualisiert: "2026-10-25"
 kategorie: "HIN-Gateway"
 timeToRead: "15 Min. Lesezeit"
 themen:
@@ -144,7 +145,7 @@ HIN ersetzt das bisherige Mailgateway schrittweise durch das [neue HIN Gateway](
     
 -   **Resilienz aus dem Netz**: Fällt ein Knoten aus, bleibt das Mesh funktionsfähig.
     
--   **Offene Referenzimplementierung**: Die [Vereign Client Library (vcl)](https://code.vereign.com/code/vcl/-/tree/0.4-rc1) ist unter AGPLv3 quelloffen einsehbar.
+-   **Offenes Deployment-Repository**: Das Repository [Stargate Deployment](https://code.vereign.com/svdh/stargate-deployment) mit den Diensten eines Stargate-Nodes ist unter AGPLv3 öffentlich einsehbar; die Vereign Client Library (vcl) ist dagegen nur noch nach Anmeldung abrufbar.
     
 
 Zeitplan: Die dezentrale Infrastruktur ist im Schweizer Gesundheitswesen [seit April 2025 produktiv im Einsatz](https://www.vereign.com/); für 2026 sind die schrittweise Ablösung der bisherigen Mailgateways und ein breiter Rollout vorgesehen. Organisationen mit HIN-eigenen Domains (`@hin.ch`, `@verband-hin.ch`) laufen auf HIN-Infrastruktur und sind von der Umstellung kaum betroffen.
@@ -177,4 +178,6 @@ Solange das HIN MGW auf SEPPmail-Technik läuft, gilt: Der Cluster kompensiert H
     
 8.  [HIN AG – «Vom Mailgateway zum Data Mesh»](https://www.hin.ch/de/blog/2025/vom-mailgateway-zum-data-mesh.cfm): HIN-Kommunikation zum Nachfolger Stargate: dezentrale Nodes, Data-Mesh-Konzept, Zeitplan, Ende-zu-Ende-Verschlüsselung.
     
-9.  [Vereign AG – «Verimesh» / Vereign Client Library (vcl, Tag 0.4-rc1)](https://code.vereign.com/code/vcl/-/tree/0.4-rc1): Technische Grundlage von Stargate: dezentrales Schlüsselmanagement (DKMS), Ende-zu-Ende-Verschlüsselung mit Nachrichtenfragmentierung, quelloffen unter AGPLv3.
+9.  [Vereign AG – «Verimesh»](https://vereign.com/): Verimesh (früher Projekt Stargate) im produktiven Einsatz im Schweizer Gesundheitswesen seit April 2025.
+    
+10. [Vereign GitLab – Stargate Deployment](https://code.vereign.com/svdh/stargate-deployment): Öffentliches Deployment-Repository unter AGPLv3 mit den Diensten eines Stargate-Nodes und Verweis auf die [Deployment-Dokumentation](https://health-info-net-ag.github.io/Stargate-deployment/).

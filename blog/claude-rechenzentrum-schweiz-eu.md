@@ -3,6 +3,7 @@ title: "In welchem Rechenzentrum rechnet Claude? Verbindung nachverfolgen und Ve
 navTitle: "Claude-Rechenzentrum"
 description: "Welche Stationen eine Anfrage an Claude durchläuft, warum die Spur am Cloudflare-Edge endet und was Anthropic über seine Rechenzentren offenlegt. Dazu der Vergleich der Wege mit festem Verarbeitungsort (Anthropic API, AWS Bedrock, Google Vertex AI, Microsoft Foundry), die Grenzen für einen reinen Schweiz-Betrieb und was die regionale Bindung kostet."
 date: "2026-10-02"
+aktualisiert: "2026-10-25"
 kategorie: "Claude"
 timeToRead: "12 min to read"
 themen:
@@ -19,7 +20,7 @@ translationId: "article-d8b7299589ea96f4"
 
 Wer Claude über claude.ai, Claude Code oder die API nutzt, erfährt nicht, in welchem Rechenzentrum das Modell die Anfrage verarbeitet. Sichtbar ist nur der erste Abschnitt der Verbindung bis zum nächsten Edge-Knoten. Für Unternehmen, die Personendaten oder vertrauliche Inhalte an ein Sprachmodell übergeben, ist das zu wenig: Sie müssen gegenüber Kunden, Datenschutzberatern oder der Revision belegen können, wo die Verarbeitung stattfindet.
 
-Dieser Beitrag zeigt, wie weit sich die Verbindung selbst nachverfolgen lässt, was über Anthropics Rechenzentren öffentlich bekannt ist und über welche Wege sich die Verarbeitung verbindlich auf die EU oder den Raum EU plus Schweiz beschränken lässt. Die Preise und Regionen entsprechen dem Stand vom 2. Oktober 2026.
+Dieser Beitrag zeigt, wie weit sich die Verbindung selbst nachverfolgen lässt, was über Anthropics Rechenzentren öffentlich bekannt ist und über welche Wege sich die Verarbeitung verbindlich auf die EU oder den Raum EU plus Schweiz beschränken lässt. Die Preise und Regionen entsprechen dem Stand vom 25. Oktober 2026.
 
 **Schweiz-Fokus:** Massgebend ist das revidierte Datenschutzgesetz (revDSG). Eine Bekanntgabe von Personendaten ins Ausland ist nach Art. 16 revDSG zulässig, wenn der Bundesrat dem Zielstaat einen angemessenen Schutz attestiert (Anhang 1 der Datenschutzverordnung, DSV) oder geeignete Garantien wie Standardvertragsklauseln bestehen. Die EU- und EWR-Staaten stehen auf dieser Liste, die USA nur für Unternehmen, die nach dem Swiss-U.S. Data Privacy Framework zertifiziert sind. Ein Verarbeitungsort in der EU vereinfacht die Begründung deshalb erheblich, ersetzt aber nicht die übrigen Pflichten (Auftragsbearbeitungsvertrag, Information der betroffenen Personen, Datensicherheit).
 
@@ -169,7 +170,7 @@ AWS Bedrock betreibt Claude auf AWS-Infrastruktur. Anthropic hat laut AWS keinen
 | Geographic Cross-Region Inference | `eu.` | Nur Regionen innerhalb der Geografie |
 | In-Region | ohne Präfix | Nur die aufgerufene Region |
 
-Für die Schweiz ist die Region `eu-central-2` (Zürich) massgebend. Dort sind Opus 5.5, Sonnet 5.5 und Haiku 4.5 verfügbar, allerdings nur als Global- oder EU-Profil und nicht In-Region. Ein Profil, das ausschliesslich in Zürich rechnet, existiert nicht. Wird das EU-Profil aus Zürich aufgerufen, verteilt AWS die Anfragen laut Modellkarte (belegt für Haiku 4.5 und Sonnet 4.6) auf diese Regionen:
+Für die Schweiz ist die Region `eu-central-2` (Zürich) massgebend. Dort sind Opus 5.5, Sonnet 5.5, Haiku 4.5 und seit dem 7. Oktober 2026 Haiku 5.5 verfügbar, allerdings nur als Global- oder EU-Profil und nicht In-Region. Ein Profil, das ausschliesslich in Zürich rechnet, existiert nicht. Wird das EU-Profil aus Zürich aufgerufen, verteilt AWS die Anfragen laut Modellkarte (belegt für Opus 5.5, Sonnet 5.5, Haiku 5.5, Haiku 4.5 und Sonnet 4.6) auf diese Regionen:
 
 | Region | Standort |
 |---|---|
@@ -181,7 +182,7 @@ Für die Schweiz ist die Region `eu-central-2` (Zürich) massgebend. Dort sind O
 | `eu-west-1` | Irland |
 | `eu-west-3` | Paris |
 
-Zürich ist nur dann ein mögliches Ziel, wenn die Anfrage aus Zürich stammt. Die Verarbeitung bleibt damit im Raum EU plus Schweiz. Für Opus 5.5 und Sonnet 5.5 nennt die Modellkarte die Zielregionen nicht; die tatsächliche Liste gibt die API zurück:
+Zürich ist nur dann ein mögliches Ziel, wenn die Anfrage aus Zürich stammt. Die Verarbeitung bleibt damit im Raum EU plus Schweiz. Verbindlich ist die Liste, die die API für die eigene Quellregion zurückgibt:
 
 ```bash
 aws bedrock get-inference-profile \
@@ -259,7 +260,7 @@ Auf Google Cloud (Vertex AI, inzwischen unter dem Namen Gemini Enterprise Agent 
 | Endpunkt | Modelle (Auswahl) | Verarbeitungsort |
 |---|---|---|
 | `global` | alle | Beliebige Google-Cloud-Region, ohne Zusicherung |
-| Multi-Region `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | Nur EU-Mitgliedstaaten |
+| Multi-Region `eu` (`aiplatform.eu.rep.googleapis.com`) | Opus 5.5, Sonnet 5.5, Haiku 5.5, Opus 5, Sonnet 5, Opus 4.8, Opus 4.7 | Nur EU-Mitgliedstaaten |
 | Region `europe-west1` (Belgien) | Haiku 4.5, Sonnet 4.6, Opus 4.6 und ältere | Laut Modellseite Multi-Region Europa |
 | Region `europe-west6` (Zürich) | keine | Claude nicht verfügbar |
 
@@ -315,6 +316,7 @@ Listenpreise in USD pro 1 Mio. Token (Input / Output):
 |---|---|---|---|---|
 | Opus 5.5 | 4.00 / 20.00 | 4.40 / 22.00 | 4.00 / 20.00 | 4.40 / 22.00 |
 | Sonnet 5.5 | 2.00 / 10.00 | 2.20 / 11.00 | 2.00 / 10.00 | 2.20 / 11.00 |
+| Haiku 5.5 (Prompts bis 100 000 Token) | 0.10 / 0.50 | 0.11 / 0.55 | 0.10 / 0.50 | 0.11 / 0.55 |
 | Haiku 4.5 | 1.00 / 5.00 | nicht verfügbar | 1.00 / 5.00 | 1.10 / 5.50 |
 | Sonnet 4.6 | 3.00 / 15.00 | 3.30 / 16.50 | 3.00 / 15.00 | 3.30 / 16.50 |
 
@@ -351,7 +353,7 @@ Neben dem Ort zählt, wie lange Daten gespeichert werden:
 
 7.  [AWS: Modellkarte Claude Sonnet 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html): Zielregionen des EU-Profils je Quellregion, inklusive Zürich.
 
-8.  [AWS: Modellkarte Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): Verfügbarkeit in `eu-central-2` nur als Geo- und Global-Profil.
+8.  [AWS: Modellkarte Claude Sonnet 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html): Verfügbarkeit in `eu-central-2` nur als Geo- und Global-Profil, Zielregionen des EU-Profils ab Zürich.
 
 9.  [AWS: Geographic cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/geographic-cross-region-inference.html): Datenverbleib in der Geografie, Speicherort, Sperren von Zielregionen per SCP.
 
@@ -365,11 +367,11 @@ Neben dem Ort zählt, wie lange Daten gespeichert werden:
 
 14.  [Claude Code Docs: Amazon Bedrock](https://code.claude.com/docs/en/amazon-bedrock): Umgebungsvariablen und automatisches Präfix `eu.` in EU-Regionen.
 
-15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations): Standorttabelle der Claude-Modelle, keine Verfügbarkeit in `europe-west6`.
+15.  [Google Cloud: Generative AI locations](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/locations): Standorttabelle der Claude-Modelle, keine Verfügbarkeit in `europe-west6`.
 
-16.  [Google Cloud: Data residency](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency): EU-Multi-Region nur für EU-Mitgliedstaaten, Schweiz und UK ausgeschlossen.
+16.  [Google Cloud: Data residency](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/data-residency): EU-Multi-Region nur für EU-Mitgliedstaaten, Schweiz und UK ausgeschlossen.
 
-17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing): Listenpreise global, EU-Multi-Region und `europe-west1`.
+17.  [Google Cloud: Vertex AI Pricing](https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing): Listenpreise global, EU-Multi-Region und `europe-west1`.
 
 18.  [Microsoft Learn: Claude models hosting comparison](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/claude-models-hosting-comparison): Hosted on Azure und Hosted on Anthropic, Data Zone nur USA.
 
@@ -386,3 +388,7 @@ Neben dem Ort zählt, wie lange Daten gespeichert werden:
 24.  [llmlatency.dev: Anthropic](https://llmlatency.dev/provider/anthropic): Antwortzeiten am Edge nach Messstandort.
 
 25.  [Fedlex: Datenschutzverordnung (DSV), Anhang 1](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Liste der Staaten mit angemessenem Datenschutz, inklusive EU/EWR und USA für zertifizierte Unternehmen.
+
+26.  [Anthropic: Claude Haiku 5.5](https://www.anthropic.com/news/claude-haiku-5-5): Veröffentlichung am 7. Oktober 2026, Verfügbarkeit bei AWS, Google Cloud und Microsoft, Preise mit Stufe ab 100 000 Token.
+
+27.  [AWS: Modellkarte Claude Haiku 5.5](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-5-5.html): Verfügbarkeit in `eu-central-2` als Geo- und Global-Profil und Zielregionen des EU-Profils ab Zürich.

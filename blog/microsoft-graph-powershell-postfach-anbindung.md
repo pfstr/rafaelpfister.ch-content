@@ -1,8 +1,9 @@
 ---
 title: "Mit PowerShell auf Exchange Online zugreifen: EWS durch Microsoft Graph ersetzen"
 navTitle: "Graph in PowerShell"
-description: "EWS endet in Exchange Online am 1. Oktober 2026. So registrieren Sie eine App, melden ein PowerShell-Skript per Zertifikat an, beschränken den Zugriff auf einzelne Postfächer und verarbeiten Nachrichten und Anhänge über Microsoft Graph."
+description: "Microsoft schaltet EWS in Exchange Online seit Oktober 2026 schrittweise ab, vollständig im April 2027. So registrieren Sie eine App, melden ein PowerShell-Skript per Zertifikat an, beschränken den Zugriff auf einzelne Postfächer und verarbeiten Nachrichten und Anhänge über Microsoft Graph."
 date: "2026-07-11"
+aktualisiert: "2026-10-25"
 kategorie: "Totemomail"
 timeToRead: "5 Min. Lesezeit"
 themen:
@@ -20,7 +21,7 @@ url: "https://rafaelpfister.ch/blog/microsoft-graph-powershell-postfach-anbindun
 
 # Mit PowerShell auf Exchange Online zugreifen: EWS durch Microsoft Graph ersetzen
 
-Microsoft stellt Exchange Web Services (EWS) in Exchange Online am **1. Oktober 2026** ein. Skripte, die Nachrichten oder Anhänge aus einem Postfach abholen, müssen deshalb auf Microsoft Graph wechseln.
+Microsoft schaltet Exchange Web Services (EWS) in Exchange Online seit **Oktober 2026** schrittweise ab; im **April 2027** ist EWS vollständig deaktiviert. Skripte, die Nachrichten oder Anhänge aus einem Postfach abholen, müssen deshalb auf Microsoft Graph wechseln.
 
 Das Beispiel in diesem Beitrag läuft ohne Benutzeranmeldung: Es lädt ZIP-Anhänge aus einem Postfach, entpackt sie, verschiebt verarbeitete Nachrichten und versendet anschliessend einen Bericht. Dafür braucht es eine App-Registrierung, ein Zertifikat und zwei Graph-Berechtigungen. Werte wie `example.com`, Tenant-ID und App-ID sind Platzhalter.
 
@@ -87,7 +88,7 @@ Die exportierte `.cer`\-Datei in der App-Registrierung unter Certificates & secr
 
 ## 4\. Zugriff auf einzelne Postfächer einschränken
 
-Application Permissions gelten zunächst für alle Postfächer im Tenant. Begrenzen Sie die App deshalb mit einer Application Access Policy auf eine mailaktivierte Sicherheitsgruppe. Dieser Schritt wird einmalig in Exchange Online PowerShell ausgeführt:
+Application Permissions gelten zunächst für alle Postfächer im Tenant. Begrenzen Sie die App deshalb mit einer Application Access Policy auf eine mailaktivierte Sicherheitsgruppe. Dieser Schritt wird einmalig in Exchange Online PowerShell ausgeführt. Microsoft bezeichnet RBAC for Applications inzwischen als Ersatz für Application Access Policies; dort wird der Geltungsbereich über eine Management Scope oder eine Administrative Unit festgelegt und die Berechtigung in Exchange Online statt in Entra ID vergeben.
 
 ```powershell
 New-ApplicationAccessPolicy -AppId "<App-ID>" `
@@ -254,8 +255,10 @@ Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf Gi
 
 ## Quellen
 
-1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440): Ankündigung und Stichtag (1. Oktober 2026) für das Ende von EWS in Exchange Online.
+1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440): Ankündigung von 2023 mit dem ursprünglichen Stichtag Oktober 2026 für das Ende von EWS in Exchange Online.
     
 2.  [Microsoft Learn – «Get access without a user (App-only)»](https://learn.microsoft.com/en-us/graph/auth-v2-service): App-Only-Authentifizierung gegen Microsoft Graph mit Zertifikat.
     
-3.  [Microsoft Learn – «Limiting application permissions to specific mailboxes»](https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access): Application Access Policy zur Einschränkung der App auf einzelne Postfächer.
+3.  [Microsoft Learn – «Role Based Access Control for Applications in Exchange Online»](https://learn.microsoft.com/en-us/exchange/permissions-exo/application-rbac): Einschränkung einer App auf einzelne Postfächer; RBAC for Applications ersetzt die Application Access Policies, inklusive Migrationsschritten.
+    
+4.  [Microsoft Learn – «Deprecation of Exchange Web Services in Exchange Online»](https://learn.microsoft.com/en-us/exchange/clients-and-mobile-in-exchange-online/deprecation-of-ews-exchange-online): aktueller Zeitplan, schrittweise Abschaltung ab Oktober 2026, vollständige Deaktivierung im April 2027.

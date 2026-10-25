@@ -3,6 +3,7 @@ title: "Proton Drive unter Linux: Stand der Dinge im Oktober 2026"
 navTitle: "Proton Drive & Linux"
 description: "Der offizielle Linux-Client ist angekündigt, aber noch nicht verfügbar. Für Skripte und Server gibt es seit Juni 2026 die offizielle Proton Drive CLI; einhängen lässt sich Proton Drive weiterhin nur mit Rclone. Was fehlt, ist ein auf einzelne Ordner oder Aufgaben beschränkter Maschinenzugang."
 date: "2026-10-01"
+aktualisiert: "2026-10-25"
 kategorie: "Proton Drive"
 timeToRead: "8 Min. Lesezeit"
 themen:
@@ -51,7 +52,7 @@ Wie sich so ein Mount in Docker-Umgebungen verhält, inklusive zweier undokument
 
 ## Die offizielle CLI deckt Skripte und Sicherungen ab
 
-Am 9. Juni 2026 hat Proton die **Proton Drive CLI** veröffentlicht, eine einzelne ausführbare Datei `proton-drive` für Windows, macOS und Linux. Sie basiert auf demselben SDK wie die offiziellen Apps; der Quellcode liegt im öffentlichen SDK-Repository. Aktuell ist Version 0.8.0 vom 13. August 2026, mit Builds für x86-64 (auch ohne AVX2), ARM64 und musl-Distributionen wie Alpine.
+Am 9. Juni 2026 hat Proton die **Proton Drive CLI** veröffentlicht, eine einzelne ausführbare Datei `proton-drive` für Windows, macOS und Linux. Sie basiert auf demselben SDK wie die offiziellen Apps; der Quellcode liegt im öffentlichen SDK-Repository. Aktuell ist Version 0.9.0 vom 5. Oktober 2026, mit Builds für x86-64 (auch ohne AVX2), ARM64 und musl-Distributionen wie Alpine.
 
 Das Anmeldemodell ist sauberer als das des Rclone-Backends:
 
@@ -59,7 +60,7 @@ Das Anmeldemodell ist sauberer als das des Rclone-Backends:
 - die Session landet im **Schlüsselspeicher des Betriebssystems** (Keychain, Credential Manager, libsecret) oder, seit Version 0.6.0, im Passwortmanager `pass`, der auf Servern ohne Desktop-Sitzung praktikabler ist
 - danach: Dateien hoch- und herunterladen, verschieben, in den Papierkorb legen, Freigaben, Einladungen und öffentliche Links verwalten, Proton Photos bedienen; jeweils mit `--json` für maschinenlesbare Ausgabe
 
-Passwort und TOTP-Schlüssel müssen so nicht auf dem Server liegen. Für Sicherungen und Build-Artefakte ist die CLI deshalb heute die bessere Wahl als Rclone. Zwei Grenzen bleiben: Die CLI kann **kein Dateisystem einhängen** und **keinen Spiegel mit Löschungen** herstellen; sie lädt hoch und herunter, gleicht aber nicht ab. Ein Befehl `takeout` für einen vollständigen lokalen Export ist im Repository bereits enthalten, aber noch nicht veröffentlicht.
+Passwort und TOTP-Schlüssel müssen so nicht auf dem Server liegen. Für Sicherungen und Build-Artefakte ist die CLI deshalb heute die bessere Wahl als Rclone. Zwei Grenzen bleiben: Die CLI kann **kein Dateisystem einhängen** und **keinen Spiegel mit Löschungen** herstellen; sie lädt hoch und herunter, gleicht aber nicht ab. Seit Version 0.9.0 vom 5. Oktober 2026 ist zudem der Befehl `takeout` für einen vollständigen lokalen Export veröffentlicht.
 
 Das SDK selbst stuft Proton weiterhin nicht als produktionsreif für Drittanwendungen ein; die Freigabe ist für Ende 2026 bis Anfang 2027 vorgesehen. Die CLI ist davon nicht betroffen, weil Proton sie selbst herausgibt.
 
@@ -89,11 +90,11 @@ Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst
 
 2.  [Proton: Product roadmaps for spring and summer 2026](https://proton.me/blog/2026-spring-summer-roadmaps): die Roadmap mit dem Linux-Client ohne Zeitfenster und dem SDK als Fundament der eigenen Apps.
 
-3.  [ProtonDriveApps/sdk auf GitHub](https://github.com/ProtonDriveApps/sdk): das öffentliche SDK-Repository samt Quellcode und Changelog der CLI.
+3.  [ProtonDriveApps/sdk auf GitHub](https://github.com/ProtonDriveApps/sdk): das öffentliche SDK-Repository samt Quellcode und Changelog der CLI (unter anderem mit dem `takeout`-Befehl in Version 0.9.0).
 
 4.  [Proton: Introducing Proton Drive CLI](https://proton.me/blog/proton-drive-cli): die offizielle Veröffentlichung der CLI am 9. Juni 2026.
 
-5.  [Proton Drive CLI: Downloads](https://proton.me/download/drive/cli/index.html): aktuelle Version 0.8.0 vom 13. August 2026 mit allen Plattform-Builds.
+5.  [Proton Drive CLI: Downloads](https://proton.me/download/drive/cli/index.html): aktuelle Version 0.9.0 vom 5. Oktober 2026 mit allen Plattform-Builds.
 
 6.  [Proton Drive SDK preview](https://proton.me/blog/proton-drive-sdk-preview): Protons eigene Einordnung: noch nicht produktionsreif für Drittanwendungen.
 

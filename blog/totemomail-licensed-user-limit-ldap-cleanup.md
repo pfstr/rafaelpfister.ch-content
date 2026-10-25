@@ -3,6 +3,7 @@ title: "Totemomail-Lizenzlimit erreicht: verwaiste Benutzer per LDAP bereinigen"
 navTitle: "Lizenzlimit erreicht"
 description: "Deaktivierte AD-Konten bleiben in totemomail bestehen und belegen weiter Lizenzen. Mit einem geprüften LDAPS-Zugang und dem Cleanup-Agent wird das Active Directory zur führenden Quelle."
 date: "2026-06-26"
+aktualisiert: "2026-10-25"
 kategorie: "Totemomail"
 timeToRead: "9 Min. Lesezeit"
 themen:
@@ -458,7 +459,7 @@ Wer diese Reihenfolge einhält, löst das akute Lizenzproblem und verhindert, da
 
 ## Quellen
 
-1.  [totemo / Kiteworks – totemomail (Email Protection Gateway)](https://totemo.com/en/resources/downloads): Produktdokumentation zu totemomail (Lizenzmodell, LDAP-Anbindung, Cleanup-Agent); die Technologie wird bei Kiteworks als Email Protection Gateway weitergeführt.
+1.  [Kiteworks – «Unlocking the Power of Kiteworks Email Protection Gateway (EPG) with totemo Integration»](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Übernahme von totemo durch Kiteworks und Weiterführung der Technologie als Email Protection Gateway (EPG); die frühere Download- und Dokumentationsseite auf totemo.com leitet inzwischen auf die Startseite von kiteworks.com um.
     
 2.  [Microsoft Learn – «UserAccountControl property flags»](https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/useraccountcontrol-manipulate-account-properties): Bedeutung der Flags, u. a. `ACCOUNTDISABLE` (0x0002) und `NORMAL_ACCOUNT`.
     

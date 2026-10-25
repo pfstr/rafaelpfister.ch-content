@@ -3,6 +3,7 @@ title: "SMTP unter Linux testen: von der TCP-Verbindung bis zur zugestellten Mai
 navTitle: "SMTP testen"
 description: "Wenn eine Appliance keine Mails mehr ausliefert, hilft ein manueller SMTP-Test mehr als jedes Log. Wie Sie mit Bordmitteln Schicht für Schicht prüfen, welche Fehlerbilder was bedeuten und warum ein Load Balancer die Diagnose verfälscht."
 date: "2026-07-31"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "10 Min. Lesezeit"
 themen:
@@ -406,7 +407,7 @@ Der manuelle SMTP-Test ist kein Notbehelf für Umgebungen ohne Werkzeuge, sonder
 
 3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Aufbau und Auswertung des SPF-Records für die Autorisierung sendender Systeme.
 
-4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Regelt Alignment zwischen Envelope- und Header-Absender sowie die Policy-Auswertung.
+4.  [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989): Regelt Alignment zwischen Envelope- und Header-Absender, den Tag `aspf` sowie die Policy-Auswertung; ersetzt seit Mai 2026 RFC 7489.
 
 5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Referenz zu den verwendeten Optionen, unter anderem `-starttls`, `-servername` und `-verify_hostname`.
 

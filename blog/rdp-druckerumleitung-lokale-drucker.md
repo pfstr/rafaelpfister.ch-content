@@ -3,6 +3,7 @@ title: "RDP-Druckerumleitung: Drucken über den lokalen PC statt über den Remot
 navTitle: "RDP-Druckerumleitung"
 description: "Druckaufträge aus der RDP-Sitzung sollen auf dem Drucker neben dem Anwender landen, nicht auf dem fernen Rechner. Die Einstellung dafür sitzt an drei Stellen: im RDP-Client, in der .rdp-Datei und auf dem Zielsystem. Dazu der Umgang mit der Warnung «Unbekannter Herausgeber» und eine Troubleshooting-Checkliste."
 date: "2026-08-24"
+aktualisiert: "2026-10-25"
 kategorie: "Windows-Client"
 timeToRead: "5 Min. Lesezeit"
 themen:
@@ -62,7 +63,9 @@ In derselben GPO-Kategorie finden sich zwei weitere nützliche Einstellungen: **
 
 Beim Öffnen einer unsignierten .rdp-Datei, die Geräteumleitungen anfordert, zeigt der Client eine Sicherheitswarnung mit Checkboxen für die einzelnen Ressourcen. Dort gesetzte oder entfernte Haken gelten nur für diesen einen Verbindungsstart, landen aber im oben erwähnten `LocalDevices`-Schlüssel und wirken so still in künftige Verbindungen hinein. Wer sich wundert, warum der Drucker-Haken trotz korrekter .rdp-Datei immer wieder fehlt, findet die Ursache fast immer dort.
 
-Für den Umgang mit der Warnung gibt es drei Wege, in aufsteigendem Aufwand. Erstens: die Verbindung per `mstsc /v:hostname` statt über die .rdp-Datei starten; ohne Datei gibt es keine Herausgeber-Prüfung, die Einstellungen kommen aus der `Default.rdp`. Zweitens: die Umleitungen für den Zielrechner per Registry vorab genehmigen, dann entfällt der Ressourcen-Teil des Dialogs:
+Seit dem Sicherheitsupdate vom April 2026 (CVE-2026-26151) zeigt die Remotedesktopverbindung bei jedem Öffnen einer .rdp-Datei einen neuen Sicherheitsdialog, bevor die Verbindung aufgebaut wird. Alle Umleitungen, die die Datei anfordert, also auch die Drucker, sind darin standardmässig ausgeschaltet und müssen einzeln aktiviert werden. Unsignierte Dateien erhalten zusätzlich den Hinweis «Caution: Unknown remote connection». Verbindungen, die direkt mit einem Rechnernamen in der Remotedesktopverbindung gestartet werden, sind laut Microsoft nicht betroffen. Als vorübergehende Ausweichlösung dokumentiert Microsoft den Registry-Wert `RedirectionWarningDialogVersion` (DWORD, Wert 1) unter `HKLM\Software\Policies\Microsoft\Windows NT\Terminal Services\Client`, der den bisherigen Dialog zurückbringt; die Unterstützung dafür kann mit einem künftigen Update entfallen.
+
+Für den Umgang mit der Warnung gibt es drei Wege, in aufsteigendem Aufwand. Erstens: die Verbindung per `mstsc /v:hostname` statt über die .rdp-Datei starten; ohne Datei gibt es keine Herausgeber-Prüfung, die Einstellungen kommen aus der `Default.rdp`. Auch der seit April 2026 eingeführte Sicherheitsdialog erscheint dabei nicht. Zweitens: die Umleitungen für den Zielrechner per Registry vorab genehmigen, dann entfällt der Ressourcen-Teil des bisherigen Dialogs. Ob diese Vorabgenehmigung auch für den neuen Sicherheitsdialog seit April 2026 gilt, dokumentiert Microsoft nicht:
 
 ```powershell
 $key = "HKCU:\Software\Microsoft\Terminal Server Client\LocalDevices"
@@ -78,7 +81,7 @@ Wenn der Drucker in der Sitzung nicht auftaucht, in dieser Reihenfolge prüfen:
 
 1. **Neu verbunden?** Die Umleitung greift nur beim Verbindungsaufbau, nicht in einer bestehenden Sitzung.
 2. **Richtige Datei?** Bei Verknüpfungen prüfen, welche .rdp-Datei tatsächlich geöffnet wird; bei `mstsc /v:` zählt die `Default.rdp`.
-3. **Gespeicherte Auswahl?** `LocalDevices`-Schlüssel auf dem Client kontrollieren oder löschen.
+3. **Gespeicherte Auswahl?** `LocalDevices`-Schlüssel auf dem Client kontrollieren oder löschen. Bei Start über eine .rdp-Datei zusätzlich prüfen, ob der Drucker im Sicherheitsdialog aktiviert wurde; seit April 2026 ist er dort standardmässig ausgeschaltet.
 4. **Client-Sperre?** `DisablePrinterRedirection` unter `HKLM\Software\Microsoft\Terminal Server Client` darf nicht auf 1 stehen.
 5. **Server-Sperre?** GPO «Clientdruckerumleitung nicht zulassen» bzw. `fDisableCpm` auf dem Zielsystem prüfen.
 6. **Spooler?** Dienst Druckwarteschlange auf dem Zielsystem muss laufen.
@@ -91,3 +94,5 @@ Wenn der Drucker in der Sitzung nicht auftaucht, in dieser Reihenfolge prüfen:
 2.  [Configure printer redirection over the Remote Desktop Protocol](https://learn.microsoft.com/en-us/azure/virtual-desktop/redirection-configure-printers): Easy Print, GPO- und Intune-Konfiguration, DisablePrinterRedirection und der Test mit Get-Printer.
 
 3.  [rdpsign](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/rdpsign): Kommandoreferenz zum Signieren von .rdp-Dateien per Zertifikats-Fingerabdruck.
+
+4.  [Understanding security warnings when opening Remote Desktop (RDP) files](https://learn.microsoft.com/en-us/windows-server/remote/remote-desktop-services/remotepc/understanding-security-warnings): Neuer Sicherheitsdialog seit dem Update vom April 2026, standardmässig ausgeschaltete Umleitungen und der Registry-Wert RedirectionWarningDialogVersion.

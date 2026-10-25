@@ -5,6 +5,7 @@ title: "Entra Connect Sync 2.6.84.0: Was sich ändert und wer jetzt aktualisiere
 navTitle: Entra Connect 2.6.84
 description: "Das Sicherheitsrelease bringt Passkey-Support und Änderungen an App-Authentifizierung, PowerShell und Password Hash Sync. Die Vorgängerversion wurde zurückgezogen; deshalb braucht das Update eine abgestufte Entscheidung."
 date: 2026-07-17
+aktualisiert: "2026-10-25"
 kategorie: Microsoft Entra
 timeToRead: 11 Min. Lesezeit
 themen:
@@ -19,7 +20,7 @@ draft: false
 ---
 # Entra Connect Sync 2.6.84.0: Was sich ändert und wer jetzt aktualisieren sollte
 
-Microsoft hat Entra Connect Sync 2.6.84.0 am 7. Juli 2026 als Sicherheitsrelease veröffentlicht und empfiehlt ein rasches Upgrade. Gleichzeitig wurde der direkte Vorgänger 2.6.79.0 wegen eines nachträglich entdeckten Installer-Problems zurückgezogen. Die Konsequenz ist weder «sofort überall installieren» noch «abwarten und ignorieren»: Betroffene und bald aus dem Support fallende Systeme sollten zügig wechseln, alle anderen können das Update zuerst kontrolliert erproben.
+Microsoft hat Entra Connect Sync 2.6.84.0 am 7. Juli 2026 als Sicherheitsrelease veröffentlicht und empfiehlt ein rasches Upgrade. Gleichzeitig wurde der direkte Vorgänger 2.6.79.0 wegen eines nachträglich entdeckten Installer-Problems zurückgezogen. Die Konsequenz ist weder «sofort überall installieren» noch «abwarten und ignorieren»: Betroffene und bald aus dem Support fallende Systeme sollten zügig wechseln, alle anderen können das Update zuerst kontrolliert erproben. Inzwischen sind mit 2.6.91.0 (16. September 2026) und dem Hotfix 2.6.92.0 (23. September 2026) zwei Nachfolger erschienen, die bekannte Probleme von 2.6.84.0 beheben. Für Upgrades ist deshalb heute 2.6.92.0 die Zielversion; die in diesem Artikel beschriebenen Änderungen von 2.6.84.0 sind darin enthalten.
 
 ## Warum dieses Release besondere Vorsicht verdient
 
@@ -27,15 +28,15 @@ Die 2.6er-Linie von Entra Connect Sync hat einen holprigen Start hinter sich. Ei
 
 - **2.6.1.0** (Februar 2026) behob unter anderem einen Fehler, bei dem das Bearbeiten der Entra-ID-Connector-Konfiguration im Synchronization Service Manager die Parameter der Application-Based Authentication löschte, mit der Folge, dass Wizard und Zertifikatsrotation fehlschlugen. Für alle 2.5er-Versionen galt deshalb die bemerkenswerte Empfehlung, die Verwaltungsoberfläche des Produkts schlicht nicht zu benutzen.
 - **2.6.3.0** (März 2026) war ein Hotfix für ein Problem, bei dem Auto-Upgrade den Entra-Connect-Server unerwartet stoppen konnte. Die Notlösung damals: Auto-Upgrade erkennt manuell veränderte Konfigurationsdateien und überspringt solche Server einfach.
-- **2.6.79.0** (Juni 2026) wurde nach der Veröffentlichung komplett zurückgezogen. Der Installer ist nicht mehr verfügbar; wer die Version installiert hat, soll sie laut Microsoft deinstallieren und 2.6.84.0 installieren. Was genau das Problem war, dokumentiert Microsoft nicht.
+- **2.6.79.0** (Juni 2026) wurde nach der Veröffentlichung komplett zurückgezogen. Der Installer ist nicht mehr verfügbar; wer die Version installiert hat, soll sie laut Microsoft deinstallieren und die neueste verfügbare Version installieren (Stand Oktober 2026: 2.6.92.0). Was genau das Problem war, dokumentiert Microsoft nicht.
 
-Version 2.6.84.0 ist Stand heute nur als Download über das Microsoft Entra Admin Center verfügbar («Released for download»). Ein Auto-Upgrade-Rollout wurde noch nicht angekündigt. Auch das ist ein Signal: Microsoft selbst verteilt die Version noch nicht flächendeckend auf Bestandsinstallationen.
+Version 2.6.84.0 ist nur als Download über das Microsoft Entra Admin Center verfügbar («Released for download»). Dasselbe gilt für die Nachfolger 2.6.91.0 und 2.6.92.0; ein Auto-Upgrade-Rollout wurde auch für sie bis Ende Oktober 2026 nicht angekündigt. Auch das ist ein Signal: Microsoft selbst verteilt die Version noch nicht flächendeckend auf Bestandsinstallationen.
 
 ## Neue Funktionen
 
 ### Phishing-resistente Anmeldung im Setup-Wizard (Preview)
 
-Der Setup-Wizard unterstützt neu die Anmeldung mit Passkeys und FIDO2-Security-Keys über den Windows Web Account Manager (WAM). Der Hintergrund: Microsoft erzwingt seit 2024/2025 schrittweise MFA für Anmeldungen an Azure- und Entra-Verwaltungsoberflächen, und viele Organisationen haben ihre Admin-Konten per Conditional Access auf phishing-resistente Methoden (FIDO2, Passkeys, zertifikatsbasierte Authentifizierung) eingeschränkt. Genau diese sauber abgesicherten Konten konnten sich bisher im Entra-Connect-Wizard nicht anmelden, weil der eingebettete Anmeldedialog die Methoden nicht unterstützte. In der Praxis führte das zu unschönen Workarounds: etwa eigenen «Setup-Konten» mit schwächeren Auth-Anforderungen, nur damit der Wizard durchläuft. Diese Lücke schliesst sich jetzt, wenn auch vorerst als Preview.
+Der Setup-Wizard unterstützt neu die Anmeldung mit Passkeys und FIDO2-Security-Keys über den Windows Web Account Manager (WAM). Der Hintergrund: Microsoft erzwingt seit 2024/2025 schrittweise MFA für Anmeldungen an Azure- und Entra-Verwaltungsoberflächen, und viele Organisationen haben ihre Admin-Konten per Conditional Access auf phishing-resistente Methoden (FIDO2, Passkeys, zertifikatsbasierte Authentifizierung) eingeschränkt. Genau diese sauber abgesicherten Konten konnten sich bisher im Entra-Connect-Wizard nicht anmelden, weil der eingebettete Anmeldedialog die Methoden nicht unterstützte. In der Praxis führte das zu unschönen Workarounds: etwa eigenen «Setup-Konten» mit schwächeren Auth-Anforderungen, nur damit der Wizard durchläuft. Diese Lücke schliesst sich jetzt, in 2.6.84.0 noch als Preview. Seit Version 2.6.91.0 ist die Anmeldung über WAM allgemein verfügbar und standardmässig aktiviert; der Dialog unterstützt Passkeys, FIDO2-Security-Keys und Passwörter.
 
 ### Unterstützung für die französische Sovereign Cloud
 
@@ -76,7 +77,7 @@ Ergänzend wurde die TPM-Behandlung verbessert: Das Setup testet die Signierfäh
 
 Eine Änderung, die Skript-Betreiber kennen müssen: Die Cmdlets `Set-ADSyncAADCompanyFeature` und `Set-ADSyncAADPasswordSyncState`, die Cloud-Konfiguration verändern, verlangen neu den Parameter `-AADUsername` für eine interaktive Admin-Authentifizierung. Auch der Wizard selbst schreibt Cloud-Änderungen nicht mehr mit gespeicherten Dienst-Credentials, sondern über eine interaktive MSAL-Anmeldung. Und der Uninstall-Wizard fragt für das Aufräumen der Cloud-Konfiguration nach Admin-Credentials; überspringt man das, wird nur lokal aufgeräumt.
 
-Der Hintergrund ist derselbe rote Faden wie bei ABA: Aktionen gegen den Tenant sollen einer echten, nachvollziehbaren Administrator-Identität zugeordnet sein statt einem anonymen Dienstkonto. Das passt zu einem Bugfix im selben Release: Bisher protokollierte das Admin-Audit-Logging bei Änderungen an Synchronisationsregeln die Identität des Dienstkontos statt des tatsächlich handelnden Administrators: ein Audit-Trail, der seinen Zweck verfehlt. Beides zusammen ergibt erst ein brauchbares Auditing. Die praktische Konsequenz: Wer diese Cmdlets bisher unbeaufsichtigt in Skripten aufgerufen hat, muss diese Abläufe umbauen: interaktive Authentifizierung und Automation vertragen sich nicht.
+Der Hintergrund ist derselbe rote Faden wie bei ABA: Aktionen gegen den Tenant sollen einer echten, nachvollziehbaren Administrator-Identität zugeordnet sein statt einem anonymen Dienstkonto. Das passt zu einem Bugfix im selben Release: Bisher protokollierte das Admin-Audit-Logging bei Änderungen an Synchronisationsregeln die Identität des Dienstkontos statt des tatsächlich handelnden Administrators: ein Audit-Trail, der seinen Zweck verfehlt. Beides zusammen ergibt erst ein brauchbares Auditing. Die praktische Konsequenz: Wer diese Cmdlets bisher unbeaufsichtigt in Skripten aufgerufen hat, muss diese Abläufe umbauen: interaktive Authentifizierung und Automation vertragen sich nicht. Mit Version 2.6.91.0 hat Microsoft das Verhalten angepasst: `-AADUserName` ist nicht mehr zwingend. Fehlt der Parameter, leitet Entra Connect einen Anmeldehinweis aus der Connector-Konfiguration ab und öffnet eine interaktive Anmeldung. Das gilt neben den beiden genannten Cmdlets auch für `Enable-ADSyncExportDeletionThreshold`, `Set-ADSyncScheduler` und `Set-ADSyncDirSyncConfiguration`. Die interaktive Anmeldung selbst bleibt bestehen.
 
 ### PHS-Self-Healing entfernt
 
@@ -118,8 +119,11 @@ Seit März 2023 gilt für Entra Connect Sync 2.x eine strikte Retirement-Politik
 | 2.5.190.0 | 2. Februar 2027 |
 | 2.6.1.0 | 10. März 2027 |
 | 2.6.3.0 | 7. Juli 2027 |
+| 2.6.84.0 | 16. September 2027 |
+| 2.6.91.0 | 23. September 2027 |
+| 2.6.92.0 | noch offen (aktuelle Version) |
 
-Wer noch auf 2.5.3.0 unterwegs ist, hat also nur noch zwei Wochen Support-Frist. Hier ist die Frage nicht ob, sondern nur auf welche Version aktualisiert wird. Microsoft betont zudem, dass ausser Support geratene Versionen «unexpectedly» aufhören können zu funktionieren; bei den abgekündigten 1.x-Versionen ist die Synchronisation inzwischen tatsächlich serverseitig abgeschaltet. Die Mindestvoraussetzungen bleiben .NET Framework 4.7.2 und TLS 1.2; den Installer gibt es ausschliesslich im Entra Admin Center (Entra ID → Entra Connect → Get started), nicht mehr im Download Center.
+Die Versionen 2.5.3.0, 2.5.76.0 und 2.5.79.0 sind damit seit dem 23. Oktober 2026 alle ausser Support. Wer noch auf einer dieser Versionen unterwegs ist, muss aktualisieren; offen ist nur noch die Zielversion. Zusätzlich verlangt Microsoft bis zum 7. April 2027 ein Upgrade auf 2.6.84.0 oder neuer und die Umstellung auf Application-Based Authentication: Die Legacy-Authentifizierung über das Directory Synchronization Account wird abgeschaltet, danach funktioniert die Synchronisation auf nicht umgestellten Servern nicht mehr. Microsoft betont zudem, dass ausser Support geratene Versionen «unexpectedly» aufhören können zu funktionieren; bei den abgekündigten 1.x-Versionen ist die Synchronisation inzwischen tatsächlich serverseitig abgeschaltet. Die Mindestvoraussetzungen bleiben .NET Framework 4.7.2 und TLS 1.2; den Installer gibt es ausschliesslich im Entra Admin Center (Entra ID → Entra Connect → Get started), nicht mehr im Download Center.
 
 ## Empfehlung nach Ausgangsversion
 
@@ -127,19 +131,22 @@ Microsoft empfiehlt, «so schnell wie möglich» zu aktualisieren. Diese Empfehl
 
 Meine Einordnung für typische Umgebungen:
 
+Die folgende Abwägung stammt aus der Zeit, als 2.6.84.0 die neueste Version war. Sie hat sich inzwischen bestätigt: Microsoft dokumentiert für 2.6.84.0 drei bekannte Probleme. Installation oder Upgrade mit einer bestehenden ADSync-Datenbank kann mit dem Fehler `0xE0474352` fehlschlagen, der Synchronization Service Manager kann beim Auflisten der Verzeichnispartitionen in den Connector Properties abstürzen, und beim erneuten Öffnen des Wizards kann eine vollständig abgewählte Domäne in der Domänen- und OU-Filterung wieder ausgewählt werden, womit nach Abschluss des Wizards die ganze Domäne synchronisiert wird. Alle drei sind in 2.6.91.0 behoben. Wer heute aktualisiert, installiert deshalb direkt 2.6.92.0 statt 2.6.84.0.
+
 **Einige Wochen warten ist vertretbar**, wenn Sie auf einer noch unterstützten Version (2.5.190.0 oder neuer) laufen, keines der behobenen Probleme Sie akut trifft und keine der neuen Funktionen gebraucht wird. Die behobenen Sicherheitslücken stecken nach Lage der Release Notes in mitgelieferten Drittkomponenten; ein Entra-Connect-Server sollte ohnehin so abgeschottet sein (kein Internetzugriff ausser zu den Microsoft-Endpunkten, keine interaktiven Anmeldungen, Tier-0-Behandlung), dass sich das Zeitfenster verantworten lässt. Bleibt die Version einige Wochen ohne Rückruf und startet Microsoft den Auto-Upgrade-Rollout, ist das ein deutlich besseres Qualitätssignal als jede Ankündigung.
 
 **Zügig handeln sollten Sie**, wenn einer dieser Punkte zutrifft:
 
-- **Sie haben 2.6.79.0 installiert.** Dann ist die Anweisung eindeutig: deinstallieren und 2.6.84.0 installieren, nicht warten.
-- **Sie laufen auf 2.5.3.0** (Support-Ende 31. Juli 2026) oder einer noch älteren, bereits abgelaufenen Version.
+- **Sie haben 2.6.79.0 installiert.** Dann ist die Anweisung eindeutig: deinstallieren und die neueste Version (2.6.92.0) installieren, nicht warten.
+- **Sie laufen auf 2.5.79.0** (Support-Ende 23. Oktober 2026) oder einer noch älteren, bereits abgelaufenen Version.
+- **Ihr Server nutzt noch das Legacy-Dienstkonto.** Bis zum 7. April 2027 müssen Version 2.6.84.0 oder neuer installiert und Application-Based Authentication konfiguriert sein.
 - **Eines der behobenen Probleme trifft Sie konkret**, etwa die ABA-Einrichtung auf TPM-Servern, der GSQL-Connector oder die Audit-Anforderung, dass Regeländerungen dem richtigen Administrator zugeordnet werden.
 
-Für das Upgrade selbst gilt das übliche Vorgehen, das bei dieser Release-Historie besonders zu empfehlen ist: Konfiguration vorher exportieren (der Wizard bietet **View or export current configuration**), das Update zuerst auf einem Staging-Mode-Server einspielen und dort Sync-Zyklen, Wizard und Zertifikatsrotation prüfen, erst danach der aktive Server. Wer eine angepasste `miiserver.exe.config` hat, sichert sie vor dem Update und kontrolliert danach, ob der neue Merge-Mechanismus die Anpassungen korrekt übernommen hat. Und wer Skripte mit `Set-ADSyncAADCompanyFeature` oder `Set-ADSyncAADPasswordSyncState` betreibt, testet diese vor dem Produktions-Rollout; sie brechen sonst am neuen Pflichtparameter.
+Für das Upgrade selbst gilt das übliche Vorgehen, das bei dieser Release-Historie besonders zu empfehlen ist: Konfiguration vorher exportieren (der Wizard bietet **View or export current configuration**), das Update zuerst auf einem Staging-Mode-Server einspielen und dort Sync-Zyklen, Wizard und Zertifikatsrotation prüfen, erst danach der aktive Server. Wer eine angepasste `miiserver.exe.config` hat, sichert sie vor dem Update und kontrolliert danach, ob der neue Merge-Mechanismus die Anpassungen korrekt übernommen hat. Und wer Skripte mit `Set-ADSyncAADCompanyFeature` oder `Set-ADSyncAADPasswordSyncState` betreibt, testet diese vor dem Produktions-Rollout; in 2.6.84.0 brechen sie am neuen Pflichtparameter, ab 2.6.91.0 öffnen sie eine interaktive Anmeldung, die in unbeaufsichtigten Abläufen ebenfalls nicht durchläuft.
 
 ## Quellen
 
-1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history): Offizielle Release Notes zu 2.6.84.0 samt Rückruf-Hinweis zu 2.6.79.0, Retirement-Tabelle und dem bekannten Problem mit modifizierter miiserver.exe.config.
+1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history): Offizielle Release Notes zu 2.6.84.0, 2.6.91.0 und 2.6.92.0 samt Rückruf-Hinweis zu 2.6.79.0, Retirement-Tabelle, Frist 7. April 2027 für Application-Based Authentication und den bekannten Problemen mit modifizierter miiserver.exe.config und Fehler 0xE0474352.
 1. [Microsoft Entra Connect: Upgrade from a previous version to the latest – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-upgrade-previous-version): Upgrade-Verfahren inklusive Swing-Migration über einen Staging-Mode-Server.
 1. [Authenticate to Microsoft Entra ID by using application identity – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/authenticate-application-id): Funktionsweise der Application-Based Authentication, die das Legacy-Dienstkonto ablöst.
 1. [Microsoft Entra Connect: Phishing-resistant authentication – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/how-to-connect-passwordless-authentication): Die neue Passkey-/FIDO2-Anmeldung im Setup-Wizard über den Windows Web Account Manager.

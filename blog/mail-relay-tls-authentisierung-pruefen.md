@@ -3,6 +3,7 @@ title: "Mailversand über ein Relay: TLS und Authentisierung prüfen"
 navTitle: "Relay: TLS prüfen"
 description: "Ein Onepager für Application Manager, deren Applikation Mails über ein Relay versendet: Welche drei Einstellungen in der Applikation zählen (Port, TLS-Modus, Anmeldung), wie die Optionen in gängigen Umgebungen heissen und wie eine einzige Testmail per Received-Header belegt, dass die Verbindung tatsächlich verschlüsselt und authentisiert läuft."
 date: "2026-08-28"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "5 Min. Lesezeit"
 themen:
@@ -97,6 +98,6 @@ Bleibt der Header unklar oder stempelt ein vorgelagerter Loadbalancer die Verbin
 
 3.  [RFC 8314: Cleartext Considered Obsolete](https://www.rfc-editor.org/rfc/rfc8314): empfiehlt implizites TLS auf Port 465 für die Einlieferung durch Clients.
 
-4.  [IANA: Mail Transmission Types](https://www.iana.org/assignments/mail-parameters/mail-parameters.xhtml#mail-parameters-7): Registry der `with`-Kennungen im Received-Header (ESMTPS, ESMTPA, ESMTPSA).
+4.  [IANA: Mail Transmission Types](https://www.iana.org/assignments/smtp/smtp.xhtml#smtp-mail-transmission-types): Registry der `with`-Kennungen im Received-Header (ESMTPS, ESMTPA, ESMTPSA).
 
-5.  [Jakarta Mail: Package com.sun.mail.smtp](https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/com/sun/mail/smtp/package-summary): dokumentiert die Properties mail.smtp.starttls.enable, starttls.required und ssl.enable.
+5.  [Eclipse Angus Mail: Package org.eclipse.angus.mail.smtp](https://eclipse-ee4j.github.io/angus-mail/docs/api/org.eclipse.angus.mail/org/eclipse/angus/mail/smtp/package-summary.html): SMTP-Provider der Jakarta-Mail-Implementierung, dokumentiert die Properties mail.smtp.starttls.enable, starttls.required und ssl.enable.

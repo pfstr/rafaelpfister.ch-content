@@ -3,6 +3,7 @@ title: "Proton Drive CLI: Proton Drive aus Skripten und vom Server bedienen"
 navTitle: "Proton Drive CLI"
 description: "Seit Juni 2026 bietet Proton ein offizielles Kommandozeilenwerkzeug für Proton Drive an. Der Artikel beschreibt Befehle, Anmeldung auf Servern ohne Desktop, Konfliktstrategien für Skripte und die Grenzen gegenüber Rclone."
 date: "2026-10-01"
+aktualisiert: "2026-10-25"
 kategorie: "Proton Drive"
 timeToRead: "9 Min. Lesezeit"
 themen:
@@ -22,7 +23,7 @@ url: "https://rafaelpfister.ch/blog/proton-drive-cli"
 
 Am 9. Juni 2026 hat Proton die **Proton Drive CLI** veröffentlicht, ein offizielles Kommandozeilenwerkzeug für Windows, macOS und Linux. Es basiert auf demselben SDK wie die offiziellen Drive-Apps, verschlüsselt Ende-zu-Ende und ist als einzelne ausführbare Datei `proton-drive` verfügbar. Der Quellcode liegt im öffentlichen SDK-Repository unter `cli/`.
 
-Die CLI ist für einzelne, zeitlich bestimmte Vorgänge gedacht: Dateien nach einem Build hochladen, einen Ordner per Zeitplan sichern, Freigaben prüfen oder entziehen. Sie synchronisiert nicht im Hintergrund und hängt kein Dateisystem ein. Aktuell ist Version **0.8.0 vom 13. August 2026**; die Versionsnummer zeigt, dass sich Befehle und Optionen noch ändern können (Version 0.8.0 hat die Konfliktstrategien mit einer inkompatiblen Änderung neu benannt).
+Die CLI ist für einzelne, zeitlich bestimmte Vorgänge gedacht: Dateien nach einem Build hochladen, einen Ordner per Zeitplan sichern, Freigaben prüfen oder entziehen. Sie synchronisiert nicht im Hintergrund und hängt kein Dateisystem ein. Aktuell ist Version **0.9.0 vom 5. Oktober 2026**; die Versionsnummer zeigt, dass sich Befehle und Optionen noch ändern können (Version 0.8.0 hat die Konfliktstrategien mit einer inkompatiblen Änderung neu benannt).
 
 Die Einordnung in die übrigen Linux-Optionen (Rclone, angekündigter Desktop-Client) steht im Statusartikel [Proton Drive unter Linux](/blog/proton-drive-linux-status).
 
@@ -48,6 +49,7 @@ Die Befehle sind in Gruppen organisiert: `proton-drive <gruppe> <befehl> [option
 | `sharing leave` / `report` | Eine mit Ihnen geteilte Freigabe verlassen bzw. als Missbrauch melden |
 | `invitation list` / `accept` / `reject` | Eingegangene Einladungen verwalten |
 | `album …`, `photo timeline`, `photo upload`, `photo download` | Proton Photos: Alben und Zeitleiste |
+| `takeout run` | Offline-Kopie des Kontos in einen lokalen Ordner exportieren (seit 0.9.0) |
 | `version` | Versionen von CLI und SDK anzeigen |
 | `--json` (`-j`) | Maschinenlesbare JSON-Ausgabe, bei jedem Befehl |
 | `--verbose` (`-v`) | Protokollausgabe direkt auf der Konsole |
@@ -212,13 +214,13 @@ proton-drive sharing set-url \
 
 Ein auf der Kommandozeile übergebenes Passwort steht in der Shell-History und ist während der Ausführung in der Prozessliste sichtbar. In Skripten sollte es deshalb aus einer Variablen oder einem Secret-Speicher kommen. `sharing remove-url` entfernt den Link wieder, ohne direkte Mitglieder zu betreffen; `sharing remove --user …` entzieht einzelnen Personen den Zugriff.
 
-## In Arbeit: Takeout
+## Takeout: Export des Kontos
 
-Im SDK-Repository ist seit dem 10. September 2026 ein weiterer Befehl `takeout run` enthalten. Er exportiert eine Offline-Kopie des Kontos in einen lokalen Ordner, wahlweise mit `--include my-files`, `devices`, `photos` und `revisions` (alle früheren Dateiversionen). Zu jedem Ordner schreibt er eine `manifest.json`, die den Export beschreibt; am Konto ändert er nichts. In der veröffentlichten Version 0.8.0 ist der Befehl noch nicht enthalten. Sobald er erscheint, ist er der naheliegende Weg für eine vollständige lokale Sicherung des Proton-Drive-Inhalts.
+Seit Version 0.9.0 vom 5. Oktober 2026 enthält die CLI den Befehl `takeout run`. Er exportiert eine Offline-Kopie des Kontos in einen lokalen Ordner, wahlweise mit `--include my-files`, `devices`, `photos` und `revisions` (alle früheren Dateiversionen). Ohne mindestens eine `--include`-Angabe exportiert er nichts, und `revisions` setzt `my-files` oder `devices` voraus. Zu jedem Ordner schreibt er eine `manifest.json`, die den Export beschreibt; am Konto ändert er nichts. Proton Docs und Proton Sheets unterstützt der Befehl noch nicht. Für eine vollständige lokale Sicherung des Proton-Drive-Inhalts ist er der naheliegende Weg.
 
 ## Grenzen im Vergleich mit Rclone
 
-| Anforderung | Proton Drive CLI 0.8.0 | Rclone (`protondrive`-Backend) |
+| Anforderung | Proton Drive CLI 0.9.0 | Rclone (`protondrive`-Backend) |
 |---|---|---|
 | Offiziell unterstützt | Ja, von Proton, Open Source | Nein, Reverse Engineering, Beta |
 | Anmeldung | Browser, auch auf anderem Gerät; Session im Schlüsselspeicher oder `pass` | Passwort und TOTP-Schlüssel in der Konfigurationsdatei |
@@ -237,13 +239,13 @@ Für Sicherungen, Build-Artefakte und Freigabeverwaltung ist die CLI die bessere
 
 2.  [Proton Support: Using Proton Drive CLI](https://proton.me/support/drive-cli): Anleitung für Download, Anmeldung und Grundbefehle.
 
-3.  [Proton Drive CLI: Downloads](https://proton.me/download/drive/cli/index.html): aktuelle Version 0.8.0, alle Plattform-Builds mit SHA-512-Prüfsummen.
+3.  [Proton Drive CLI: Downloads](https://proton.me/download/drive/cli/index.html): aktuelle Version 0.9.0, alle Plattform-Builds mit SHA-512-Prüfsummen.
 
 4.  [ProtonDriveApps/sdk: cli/README.md](https://github.com/ProtonDriveApps/sdk/blob/main/cli/README.md): Umgebungsvariablen, Speicherorte, Credential-Stores und der Hinweis zum `x64-baseline`-Build.
 
-5.  [ProtonDriveApps/sdk: cli/CHANGELOG.md](https://github.com/ProtonDriveApps/sdk/blob/main/cli/CHANGELOG.md): Versionsverlauf von 0.4.2 bis 0.8.0, u. a. `pass`-Unterstützung (0.6.0) und das Überspringen unveränderter Dateien (0.7.0).
+5.  [ProtonDriveApps/sdk: cli/CHANGELOG.md](https://github.com/ProtonDriveApps/sdk/blob/main/cli/CHANGELOG.md): Versionsverlauf von 0.4.2 bis 0.9.0, u. a. `pass`-Unterstützung (0.6.0), das Überspringen unveränderter Dateien (0.7.0) und den Takeout-Befehl (0.9.0).
 
-6.  [ProtonDriveApps/sdk: cli/src/commands](https://github.com/ProtonDriveApps/sdk/tree/main/cli/src/commands): Quellcode der Befehle mit Optionen, Konfliktstrategien und dem noch unveröffentlichten Takeout-Befehl.
+6.  [ProtonDriveApps/sdk: cli/src/commands](https://github.com/ProtonDriveApps/sdk/tree/main/cli/src/commands): Quellcode der Befehle mit Optionen, Konfliktstrategien und dem Takeout-Befehl.
 
 7.  [Proton for Business: Proton Drive CLI](https://proton.me/business/drive/cli): Protons Einsatzszenarien für Unternehmen, etwa Freigaben beim Austritt von Mitarbeitenden entziehen.
 

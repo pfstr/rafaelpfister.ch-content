@@ -3,6 +3,7 @@ title: "Voraussetzungen, damit Remote-PowerShell funktioniert"
 navTitle: "Remote-PowerShell"
 description: "PowerShell-Remoting scheitert selten am Befehl, sondern an den Voraussetzungen: WinRM-Dienst, Listener, Firewall, Authentisierung und die Besonderheiten bei lokalen Konten. Was auf Ziel- und Clientseite eingerichtet sein muss, wie Sie es mit Test-WSMan prüfen, und warum Access denied meist nichts mit dem Passwort zu tun hat."
 date: "2026-09-01"
+aktualisiert: "2026-10-25"
 kategorie: "Windows und PowerShell"
 timeToRead: "10 Min. Lesezeit"
 themen:
@@ -172,4 +173,4 @@ Eine Einschränkung bleibt auch bei vollständiger Konfiguration bestehen und l�
 
 3.  [about_Remote_Troubleshooting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_troubleshooting): TrustedHosts, Authentisierung ausserhalb der Domäne und die häufigen Fehlermeldungen.
 
-4.  [Making the second hop in PowerShell Remoting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/scripting/learn/remoting/ps-remoting-second-hop): Ursache des Double-Hop-Problems und die Lösungsansätze mit ihren Abwägungen.
+4.  [Making the second hop in PowerShell Remoting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/scripting/security/remoting/ps-remoting-second-hop): Ursache des Double-Hop-Problems und die Lösungsansätze mit ihren Abwägungen.

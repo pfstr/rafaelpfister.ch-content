@@ -3,6 +3,7 @@ title: "DMARC einführen: der komplette Blueprint für Entscheider"
 navTitle: "DMARC-Blueprint"
 description: "DMARC schützt Ihre Domain vor Missbrauch und wird von grossen Mailempfängern zunehmend vorausgesetzt. Blueprint BP-001 liefert das komplette Pattern: Zielarchitektur mit Massnahmenkatalog, Eignungsprüfung, Umsetzungs- und Betriebsplan, Governance-Checkliste nach revDSG und die kopierfertige Entscheidungsvorlage."
 date: "2026-08-03"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP und Mailflow"
 timeToRead: "16 Min. Lesezeit"
 themen:
@@ -42,7 +43,7 @@ Dieser Beitrag ist deshalb als Blueprint aufgebaut, ein katalogisiertes Umsetzun
 | Autor | Rafael Pfister |
 | Zielgruppe | CIO, CTO, IT-Leitung; umsetzbar durch Mailadministration |
 | Geltungsbereich | Alle eigenen Maildomains inklusive Neben- und Marketingdomains |
-| Standards | RFC 7489 (DMARC), RFC 7208 (SPF), RFC 6376 (DKIM), Senderrichtlinien von Google, Yahoo und Microsoft |
+| Standards | RFC 9989 (DMARC, löst seit Mai 2026 RFC 7489 ab), RFC 7208 (SPF), RFC 6376 (DKIM), Senderrichtlinien von Google, Yahoo und Microsoft |
 | Rechtsrahmen (Schweiz) | Art. 8, 9, 12, 24 revDSG; Art. 1 bis 6 DSV |
 
 ## Der Blueprint im Überblick
@@ -76,7 +77,7 @@ Die Architektur hat eine entscheidende Besonderheit: Die Durchsetzung passiert n
 1. **Sichtbarkeit vor Durchsetzung.** Keine Policy-Verschärfung ohne vorherige Auswertung der DMARC-Berichte. Wer blind auf reject stellt, verliert legitime Mails; wer nie verschärft, hat keinen Schutz.
 2. **Alle Domains im Geltungsbereich.** Haupt-, Neben-, Park- und Marketingdomains werden gleich behandelt. Angreifer wählen die schwächste Domain, nicht die wichtigste.
 3. **Jede Versandquelle authentifiziert selbst.** Jedes System bekommt eine eigene DKIM-Signatur statt pauschaler SPF-Freigaben. Das hält Quellen unterscheidbar, kündbar und auditierbar.
-4. **Jeder Schritt ist umkehrbar.** Verschärfungen erfolgen pro Domain und mit Prozentsatz-Staffelung (pct), sodass ein Fehlgriff innert Minuten zurückgenommen werden kann.
+4. **Jeder Schritt ist umkehrbar.** Verschärfungen erfolgen pro Domain und stufenweise (quarantine, dann reject), jeweils bei Bedarf zuerst im Testmodus (t=y), sodass ein Fehlgriff innert Minuten zurückgenommen werden kann. Den Prozentsatz-Tag pct aus RFC 7489 hat RFC 9989 im Mai 2026 gestrichen; an seine Stelle tritt der Tag t=y, mit dem Empfänger gebeten werden, die publizierte Policy eine Stufe milder anzuwenden.
 5. **Betrieb vor Projektende.** Die Durchsetzung wird erst aktiviert, wenn die Betriebsprozesse (Kapitel 6) stehen und Verantwortliche benannt sind.
 6. **Dienstleister vertraglich eingebunden.** Versanddienstleister liefern eigene DKIM-Selektoren, kündigen Änderungen an und sind zur Mitwirkung verpflichtet.
 
@@ -92,7 +93,7 @@ Die sechs Massnahmen sind die referenzierbaren Bausteine des Blueprints; Umsetzu
 
 ### Durchsetzung und Sichtbarkeit (M3, M4)
 
-**M3: DMARC-Policy mit Reporting.** Der DMARC-Record verlangt Alignment, definiert die Policy (Zielzustand p=reject) und bestellt die Aggregatberichte an eine kontrollierte Adresse (rua). Verortung: DNS. Referenz: RFC 7489.
+**M3: DMARC-Policy mit Reporting.** Der DMARC-Record verlangt Alignment, definiert die Policy (Zielzustand p=reject) und bestellt die Aggregatberichte an eine kontrollierte Adresse (rua). Verortung: DNS. Referenz: RFC 9989.
 
 **M4: Report-Auswertung.** Die täglichen XML-Berichte werden werkzeuggestützt ausgewertet: legitime Nachzügler erkennen, Missbrauch beziffern, Verschärfungsentscheide begründen. Ohne M4 bleibt M3 blind. Verortung: Auswertung und Betrieb. Referenz: Art. 8 revDSG (Nachweis der Wirksamkeit).
 
@@ -131,7 +132,7 @@ Die Roadmap für die Geschäftsleitung: fünf Phasen, jede mit einem messbaren E
 | 1. Inventar | Alle Domains und alle legitimen Versandquellen erfassen (Mailserver, ERP, Newsletter-Dienst, Ticketing, Gerätemails) | 2 bis 4 Wochen | Vollständige Liste der Versandquellen, Verantwortliche benannt |
 | 2. Grundlagen | M1 und M2 umsetzen, M3 mit p=none aktivieren, M4 einrichten | 2 bis 6 Wochen | Alle bekannten Quellen bestehen SPF- und DKIM-Prüfung |
 | 3. Monitoring | Berichte auswerten (M4), unbekannte Quellen klären: legitim nachrüsten oder als Missbrauch einstufen | 4 bis 8 Wochen | Über 98 Prozent des legitimen Volumens besteht die DMARC-Prüfung |
-| 4. Durchsetzung | Policy schrittweise verschärfen: quarantine mit steigendem Prozentsatz, danach reject (M3) | 4 bis 12 Wochen | p=reject auf allen Domains, keine Verluste legitimer Mails |
+| 4. Durchsetzung | Policy schrittweise verschärfen: zuerst quarantine, danach reject, jeweils bei Bedarf mit vorgeschaltetem Testmodus t=y (M3) | 4 bis 12 Wochen | p=reject auf allen Domains, keine Verluste legitimer Mails |
 | 5. Betrieb | Übergabe in die Regelprozesse (M5), Dokumentation, Regelreporting | dauerhaft | Prozesse aktiv, Verantwortung geregelt, erstes Regelreporting erfolgt |
 
 Die Arbeitspakete zum Kopieren in Ihre Projektablage; jedes zahlt auf eine Massnahme ein. Die Richtaufwände gelten für ein mittleres Unternehmen mit einer Handvoll Domains und externem Newsletter-Versand.
@@ -147,7 +148,7 @@ Die Arbeitspakete zum Kopieren in Ihre Projektablage; jedes zahlt auf eine Massn
 | 2.4 | Report-Auswertung einrichten (M4) | Projektleitung | 0.5 bis 1 Tag |
 | 3.1 | Wöchentliche Report-Analyse: unbekannte Quellen identifizieren und klassifizieren (M4) | Mailadministration | 1 bis 2 Stunden pro Woche |
 | 3.2 | Legitime Nachzügler-Quellen nachrüsten (zurück zu AP 2.2) | Mailadministration | nach Befund |
-| 4.1 | Policy-Verschärfung pro Domain: quarantine mit pct-Staffelung, dann reject (M3) | Mailadministration | wenige Stunden, über Wochen verteilt |
+| 4.1 | Policy-Verschärfung pro Domain: quarantine, dann reject, jeweils bei Bedarf zuerst mit t=y (M3) | Mailadministration | wenige Stunden, über Wochen verteilt |
 | 4.2 | Abnahme: Exit-Kriterien prüfen, Restrisiken dokumentieren, Projektabschluss | Projektleitung mit Auftraggeber | 0.5 Tage |
 | 5.1 | Übergabe in den Betrieb: Prozesse aktivieren (M5), Dokumentation, Schulung Stellvertretung | Projektleitung an IT-Betrieb | 0.5 bis 1 Tag |
 
@@ -168,7 +169,7 @@ DMARC ist nach dem Projekt nicht fertig, sondern in Betrieb (M5). Diese Regelpro
 
 | Risiko | Wirkung | Gegenmassnahme im Blueprint |
 | --- | --- | --- |
-| Legitime Mails gehen bei der Verschärfung verloren | Rechnungen, Offerten oder Systemmails erreichen Empfänger nicht | Prinzip 1 und 4: Verschärfung erst nach 98-Prozent-Kriterium, pct-Staffelung, sofortige Umkehrbarkeit |
+| Legitime Mails gehen bei der Verschärfung verloren | Rechnungen, Offerten oder Systemmails erreichen Empfänger nicht | Prinzip 1 und 4: Verschärfung erst nach 98-Prozent-Kriterium, stufenweise Verschärfung mit Testmodus t=y, sofortige Umkehrbarkeit |
 | Vergessene Versandquellen tauchen spät auf | Verzögerung der Durchsetzung, Frust in Fachbereichen | AP 1.2 mit Fachbereichsbefragung, Monitoring-Phase als Sicherheitsnetz, Quellen-Onboarding (M5) für die Zukunft |
 | Dienstleister unterstützt keine eigenen DKIM-Selektoren | Quelle bleibt schwach authentifiziert | M6: vertragliche Anforderung, notfalls Anbieterwechsel über die Provider-Checkliste |
 | Report-Flut wird nicht ausgewertet | Schutz stagniert bei p=none, Missbrauch bleibt unsichtbar | M4 als eigenes Arbeitspaket budgetieren, Report-Review als fester Betriebsprozess |
@@ -259,7 +260,7 @@ Der [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) liefert den Ist-
 | DKIM | Kryptografische Signatur, mit der eine Versandquelle jede Mail als echt kennzeichnet. |
 | DMARC | Regelwerk, das Empfängern sagt, was mit Mails geschehen soll, die SPF- und DKIM-Prüfung nicht bestehen, inklusive Berichtsfunktion. |
 | Policy (p=none/quarantine/reject) | Die drei Durchsetzungsstufen: nur beobachten, in den Spam stellen, abweisen. |
-| pct | Prozentsatz der Mails, auf den die Policy angewendet wird; ermöglicht die schrittweise Verschärfung. |
+| t (Testmodus) | Signal an Empfänger, die publizierte Policy noch eine Stufe milder anzuwenden; ersetzt seit RFC 9989 (Mai 2026) den früheren Prozentsatz-Tag pct. |
 | Alignment | Prüfung, ob die sichtbare Absenderdomain zur technisch geprüften Domain passt; erst das macht die Absenderzeile fälschungssicher. |
 | Aggregatbericht (RUA) | Täglicher XML-Bericht grosser Empfänger darüber, wer alles im Namen Ihrer Domain gesendet hat. |
 | Versandquelle | Jedes System, das Mails mit Ihrer Absenderdomain verschickt: Mailserver, ERP, Newsletter-Dienst, Ticketing, Multifunktionsgeräte. |
@@ -270,7 +271,7 @@ DMARC schützt nur Ihre Domain vor Fälschung, nicht Ihre Mitarbeitenden vor Phi
 
 ## Quellen
 
-1.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Technische Spezifikation von Policy-Stufen, Alignment und Reporting (M3)
+1.  [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989.html): Technische Spezifikation von Policy-Stufen, Alignment und Reporting (M3); löst seit Mai 2026 RFC 7489 ab, streicht den Tag pct und führt den Testmodus-Tag t ein
 
 2.  [RFC 7208: Sender Policy Framework (SPF)](https://datatracker.ietf.org/doc/html/rfc7208): Autorisierung der Versandsysteme im DNS, inklusive der Lookup-Limite aus M1
 

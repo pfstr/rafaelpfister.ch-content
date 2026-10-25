@@ -3,6 +3,7 @@ title: "VPN-Split-Tunneling für Microsoft Teams: Medienverkehr am Tunnel vorbei
 navTitle: "Teams Split Tunneling"
 description: "Teams-Anrufe über ein VPN leiden unter Latenz, Jitter und dem Umweg über das VPN-Gateway. Der Artikel zeigt, welche Microsoft-Netze und Ports für den Medienverkehr zuständig sind, warum IP-basiertes Split Tunneling dem App-Ausschluss überlegen ist und wie die Umsetzung in Consumer-VPNs, WireGuard, OpenVPN und Enterprise-Clients aussieht."
 date: "2026-08-26"
+aktualisiert: "2026-10-25"
 kategorie: "Microsoft Teams"
 timeToRead: "8 Min. Lesezeit"
 themen:
@@ -30,14 +31,13 @@ Für den übrigen Teams-Verkehr (Anmeldung, Chat, Dateizugriff) spielt das alles
 
 ## Die relevanten Netze und Ports
 
-Microsoft publiziert alle Microsoft-365-Endpunkte maschinenlesbar und teilt sie in die Kategorien Optimize, Allow und Default ein. Für Split Tunneling relevant ist die Kategorie Optimize: Sie umfasst die wenigen, latenzkritischen Endpunkte mit festen IP-Netzen, die zusammen den grössten Teil des Volumens ausmachen. Für Teams-Medien sind das die Endpunkt-IDs 11 und 12 der offiziellen Liste:
+Microsoft publiziert alle Microsoft-365-Endpunkte maschinenlesbar und teilt sie in die Kategorien Optimize, Allow und Default ein. Für Split Tunneling relevant ist die Kategorie Optimize: Sie umfasst die wenigen, latenzkritischen Endpunkte mit festen IP-Netzen, die zusammen den grössten Teil des Volumens ausmachen. Für Teams-Medien ist das die Endpunkt-ID 11 der offiziellen Liste. Die ID 12 umfasst dieselben IPv4-Netze und weitere IPv6-Netze für TCP 443 und 80 sowie UDP 443, steht aber in der Kategorie Allow. Das früher ebenfalls aufgeführte Netz `13.107.64.0/18` hat Microsoft 2024 aus beiden Einträgen entfernt (Version 2024053000 für ID 12, 2024073100 für ID 11):
 
 | Netz | Protokoll und Ports | Zweck |
 |---|---|---|
-| `13.107.64.0/18` | UDP 3478 bis 3481, TCP 443 | Teams-Medien (Audio, Video, Bildschirmübertragung) |
-| `52.112.0.0/14` | UDP 3478 bis 3481, TCP 443 | Teams-Medien und Transport-Relays |
-| `52.122.0.0/15` | UDP 3478 bis 3481, TCP 443 | Teams-Medien und Transport-Relays |
-| `2603:1063::/38` | UDP 3478 bis 3481, TCP 443 | dieselben Dienste über IPv6 |
+| `52.112.0.0/14` | UDP 3478 bis 3481 (ID 11), TCP 443 (ID 12) | Teams-Medien und Transport-Relays |
+| `52.122.0.0/15` | UDP 3478 bis 3481 (ID 11), TCP 443 (ID 12) | Teams-Medien und Transport-Relays |
+| `2603:1063::/38` | UDP 3478 bis 3481 (ID 11), TCP 443 (ID 12) | dieselben Dienste über IPv6 |
 
 Die vier UDP-Ports stehen für die Medienklassen Audio (3478), Video (3479 und 3480) und Bildschirmübertragung (3481); TCP 443 ist der Rückfallweg. Wer IPv6 im Einsatz hat, sollte das IPv6-Netz mit ausnehmen, sonst läuft ein Teil der Verbindungen doch wieder durch den Tunnel.
 
@@ -53,16 +53,15 @@ Der IP-basierte Ausschluss greift dagegen auf Netzwerkebene und ist damit unabh�
 
 ## Umsetzung in gängigen VPN-Produkten
 
-Das Prinzip ist überall gleich: Die drei IPv4-Netze (und bei Bedarf das IPv6-Netz) werden vom Tunnel ausgenommen, sodass die Betriebssystem-Routen für diese Ziele auf das physische Interface zeigen.
+Das Prinzip ist überall gleich: Die beiden IPv4-Netze (und bei Bedarf das IPv6-Netz) werden vom Tunnel ausgenommen, sodass die Betriebssystem-Routen für diese Ziele auf das physische Interface zeigen.
 
-**Consumer-VPNs (Proton VPN, NordVPN, Surfshark und ähnliche):** Die Windows- und Android-Clients bieten meist einen Menüpunkt wie „Split Tunneling" mit einer Ausschlussliste für IP-Adressen oder Subnetze. Dort die drei Netze in CIDR-Notation eintragen und die VPN-Verbindung neu aufbauen, damit die Routen greifen. Auf macOS und iOS fehlt die Funktion bei den meisten Anbietern, weil die System-APIs dort kein anwendungsgesteuertes Split Tunneling in dieser Form zulassen.
+**Consumer-VPNs (Proton VPN, NordVPN, Surfshark und ähnliche):** Die Windows- und Android-Clients bieten meist einen Menüpunkt wie „Split Tunneling" mit einer Ausschlussliste für IP-Adressen oder Subnetze. Dort die Netze in CIDR-Notation eintragen und die VPN-Verbindung neu aufbauen, damit die Routen greifen. Auf macOS und iOS fehlt die Funktion bei den meisten Anbietern, weil die System-APIs dort kein anwendungsgesteuertes Split Tunneling in dieser Form zulassen.
 
-**WireGuard:** WireGuard kennt keine Ausschlussliste, sondern nur die `AllowedIPs`-Angabe, die festlegt, was in den Tunnel geht. Ausnahmen entstehen, indem `0.0.0.0/0` durch die Liste aller Netze ersetzt wird, die den Ausschluss-Bereich nicht enthalten. Diese Komplementärliste rechnet niemand von Hand; Online-Rechner wie der WireGuard AllowedIPs Calculator nehmen `0.0.0.0/0` als Basis, die drei Microsoft-Netze als „Disallowed IPs" und liefern die fertige Zeile für die Konfigurationsdatei.
+**WireGuard:** WireGuard kennt keine Ausschlussliste, sondern nur die `AllowedIPs`-Angabe, die festlegt, was in den Tunnel geht. Ausnahmen entstehen, indem `0.0.0.0/0` durch die Liste aller Netze ersetzt wird, die den Ausschluss-Bereich nicht enthalten. Diese Komplementärliste rechnet niemand von Hand; Online-Rechner wie der WireGuard AllowedIPs Calculator nehmen `0.0.0.0/0` als Basis, die Microsoft-Netze als „Disallowed IPs" und liefern die fertige Zeile für die Konfigurationsdatei.
 
-**OpenVPN:** Bei aktivem `redirect-gateway` gewinnen spezifischere Routen. Drei zusätzliche Zeilen in der Client-Konfiguration leiten die Microsoft-Netze am Tunnel vorbei:
+**OpenVPN:** Bei aktivem `redirect-gateway` gewinnen spezifischere Routen. Zwei zusätzliche Zeilen in der Client-Konfiguration leiten die Microsoft-Netze am Tunnel vorbei:
 
 ```text
-route 13.107.64.0 255.255.192.0 net_gateway
 route 52.112.0.0 255.252.0.0 net_gateway
 route 52.122.0.0 255.254.0.0 net_gateway
 ```
@@ -98,12 +97,14 @@ Bleibt der Verkehr trotz korrekter Route im Tunnel, lohnt ein Blick auf die Reih
 
 ## Quellen
 
-1.  [Microsoft: Office 365 URLs and IP address ranges](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges): offizielle Endpunktliste; die Teams-Medien-Netze stehen unter den IDs 11 und 12 in der Kategorie Optimize.
+1.  [Microsoft: Office 365 URLs and IP address ranges](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges): offizielle Endpunktliste; die Teams-Medien-Netze stehen unter der ID 11 in der Kategorie Optimize, die ID 12 mit denselben Netzen in der Kategorie Allow.
 
-2.  [Microsoft: Implementing VPN split tunneling for Microsoft 365](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-vpn-implement-split-tunnel): Microsofts Umsetzungsleitfaden für Enterprise-VPNs inklusive Begründung der Risikobewertung.
+2.  [Microsoft: Implementing VPN split tunneling for Microsoft 365](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-vpn-implement-split-tunnel): Microsofts Umsetzungsleitfaden für Enterprise-VPNs inklusive Begründung der Risikobewertung und Beispiel mit den Teams-Medien-Netzen `52.112.0.0/14`, `52.122.0.0/15` und `2603:1063::/38`.
 
 3.  [Microsoft: Microsoft 365 network connectivity principles](https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-network-connectivity-principles): die Grundsätze hinter dem lokalen Internet-Ausstieg, inklusive der Latenz-Zielwerte für Echtzeitmedien.
 
 4.  [Proton VPN: How to use split tunneling](https://protonvpn.com/support/protonvpn-split-tunneling/): Beispiel eines Consumer-Clients mit IP- und App-basiertem Split Tunneling unter Windows und Android.
 
 5.  [WireGuard AllowedIPs Calculator](https://www.procustodibus.com/blog/2021/03/wireguard-allowedips-calculator/): Rechner für die Komplementärliste, wenn Ausnahmen über AllowedIPs abgebildet werden müssen.
+
+6.  [Microsoft 365 IP and URL web service: Änderungen Worldwide](https://endpoints.office.com/changes/worldwide/2024010100?clientrequestid=b10c5ed1-bad1-445f-b386-b919946339a7): Änderungsprotokoll der Endpunktliste, darunter die Entfernung von `13.107.64.0/18` aus den IDs 12 (Version 2024053000) und 11 (Version 2024073100).

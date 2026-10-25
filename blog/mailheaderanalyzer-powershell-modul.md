@@ -3,6 +3,7 @@ title: "MailHeaderAnalyzer: E-Mail-Header in PowerShell auswerten, ohne Netzwerk
 navTitle: "MailHeaderAnalyzer (PowerShell)"
 description: "Referenz zum PowerShell-Modul MailHeaderAnalyzer: Parameterübersicht, Syntax, Beschreibung, Beispiele und Parametereigenschaften von Get-MailHeaderAnalysis und ConvertTo-MailHeaderReport, dazu das Ausgabeobjekt mit Zustellkette, Authentifizierungsergebnissen, Exchange-Online-Klassifizierung und allen Finding-Codes."
 date: "2026-09-24"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP & Mailflow"
 timeToRead: "16 Min. Lesezeit"
 themen:
@@ -621,7 +622,7 @@ Fehler und Erweiterungswünsche nehme ich als [Issue auf GitHub](https://github.
 
 8.  [RFC 8301: Cryptographic Algorithm and Key Usage Update to DKIM](https://www.rfc-editor.org/rfc/rfc8301): Einstufung von `rsa-sha1` als veraltet.
 
-9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Strict und Relaxed Alignment.
+9.  [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989): Strict und Relaxed Alignment; ersetzt seit Mai 2026 RFC 7489.
 
 10.  [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617): Aufbau der Kette aus `ARC-Seal`, `ARC-Message-Signature` und `ARC-Authentication-Results`, Instanznummern und `cv=`-Werte.
 

@@ -3,6 +3,7 @@ title: "Claude Desktop stürzt ständig ab: „GPU process gone“ mit Exit-Code
 navTitle: "Claude-Desktop-Absturz"
 description: "Die Claude-Desktop-App unter Windows beendet sich komplett mit „GPU process gone: exitCode 101457950“ (0x060C201E), oft gefolgt vom Reparatur-Dialog der Store-App. Die vollständige Ursachenkette: Code Integrity blockiert vk_swiftshader.dll, Chromiums Fallback-Kette läuft leer, der eingebaute Selbstabbruch beendet die App. Mit dauerhafter Lösung (Wechsel auf die klassische Installation ohne MSIX), Selbstdiagnose per Event-Log und der Analyse bis zum Minidump."
 date: "2026-08-25"
+aktualisiert: "2026-10-25"
 kategorie: "Claude"
 timeToRead: "10 min to read"
 themen:
@@ -32,7 +33,7 @@ GPU process gone: {
 
 ## Die Lösung in Kürze: Wechsel auf die klassische Installation
 
-Der eigentliche Fehler liegt im MSIX-Installationspaket und kann nur von Anthropic behoben werden (Stand 27.08.2026 offen, Issue [#81341](https://github.com/anthropics/claude-code/issues/81341); betroffen ist auch die aktuelle Version 1.37937.3). Dieselbe App gibt es aber zusätzlich als klassische Installation ohne MSIX, und die unterliegt der AppX-Signaturprüfung nicht, die den GPU-Prozess beendet. Der Wechsel ist damit die einzige Massnahme, die den Absturz vollständig beseitigt; er ist sowohl im Issue [#81341](https://github.com/anthropics/claude-code/issues/81341) als auch auf dem hier untersuchten System bestätigt. Die Feature-Ausstattung ist identisch, der Update-Feed liefert für beide Varianten dieselben Versionen.
+Der eigentliche Fehler liegt im MSIX-Installationspaket und kann nur von Anthropic behoben werden (Issue [#81341](https://github.com/anthropics/claude-code/issues/81341) ist Stand 25.10.2026 weiterhin offen; Anfang September 2026 bestätigten Meldungen im Issue den Fehler auch in Version 1.40609.1). Dieselbe App gibt es aber zusätzlich als klassische Installation ohne MSIX, und die unterliegt der AppX-Signaturprüfung nicht, die den GPU-Prozess beendet. Der Wechsel ist damit die einzige Massnahme, die den Absturz vollständig beseitigt; er ist sowohl im Issue [#81341](https://github.com/anthropics/claude-code/issues/81341) als auch auf dem hier untersuchten System bestätigt. Die Feature-Ausstattung ist identisch, der Update-Feed liefert für beide Varianten dieselben Versionen.
 
 **Schritt 1: Klassischen Installer laden und ausführen.** Der Download auf [claude.com/download](https://claude.com/download) liefert einen Squirrel-Installer, der die App nach `%LOCALAPPDATA%\AnthropicClaude` installiert (kein Administratorrecht nötig). Per Kommandozeile:
 
@@ -246,7 +247,7 @@ Der Code-Integrity-Fehlschlag hat eine Nebenwirkung, die viele Betroffene für e
 
 ## Stand der Meldungen
 
-Die Paketierungs-Ursache ist als [#81341](https://github.com/anthropics/claude-code/issues/81341) gemeldet, der Sammel-Thread mit den Community-Belegen ist [#81698](https://github.com/anthropics/claude-code/issues/81698), die Minidump-Analyse mit der Fallback-Ketten-Erklärung ist [#89250](https://github.com/anthropics/claude-code/issues/89250), ein weiterer ausführlicher Report inklusive der Reparatur-Schleife ist [#80444](https://github.com/anthropics/claude-code/issues/80444). Der eigentliche Fix, ein vollständiger Signatur-Katalog im MSIX-Paket, liegt bei Anthropic und steht auch in 1.37937.3 noch aus. Bis dahin gilt: auf die klassische Installation wechseln; wer beim MSIX-Paket bleiben muss, schliesst den Browser-Bereich diszipliniert und schaltet bei Bedarf WebGPU per Flag ab. Auf dem hier untersuchten System ist die App seit dem Wechsel auf die klassische Installation absturzfrei, ohne ein einziges weiteres Event 3033.
+Die Paketierungs-Ursache ist als [#81341](https://github.com/anthropics/claude-code/issues/81341) gemeldet, der Sammel-Thread mit den Community-Belegen ist [#81698](https://github.com/anthropics/claude-code/issues/81698), die Minidump-Analyse mit der Fallback-Ketten-Erklärung ist [#89250](https://github.com/anthropics/claude-code/issues/89250), ein weiterer ausführlicher Report inklusive der Reparatur-Schleife ist [#80444](https://github.com/anthropics/claude-code/issues/80444). Der eigentliche Fix, ein vollständiger Signatur-Katalog im MSIX-Paket, liegt bei Anthropic. Stand 25.10.2026 ist #81341 weiterhin offen, und Meldungen von Anfang September 2026 bestätigen den Fehler auch in Version 1.40609.1. #80444 wurde am 15. September 2026 ohne Angabe einer behobenen Version geschlossen, #89250 am 20. Oktober 2026 automatisch wegen Inaktivität; einen Fix nennt keines der beiden Issues. Bis dahin gilt: auf die klassische Installation wechseln; wer beim MSIX-Paket bleiben muss, schliesst den Browser-Bereich diszipliniert und schaltet bei Bedarf WebGPU per Flag ab. Auf dem hier untersuchten System ist die App seit dem Wechsel auf die klassische Installation absturzfrei, ohne ein einziges weiteres Event 3033.
 
 ## Quellen
 

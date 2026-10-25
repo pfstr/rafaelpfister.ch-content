@@ -3,6 +3,7 @@ title: "digitalSTROM mit Home Assistant verbinden: lokale Integration und Automa
 navTitle: "digitalSTROM und HA"
 description: "Eine lokale Home-Assistant-Integration für den digitalSTROM-Server, dazu Bewegungslicht, Duschmodus, Musik per 4× Tippen und automatisches Gehen per FRITZ!Box. Mit den Problemen, die in der Praxis aufgetreten sind."
 date: "2026-10-06"
+aktualisiert: "2026-10-25"
 kategorie: "Home Assistant und IoT"
 timeToRead: "13 Min. Lesezeit"
 themen:
@@ -132,6 +133,6 @@ Die Szenen-Tabellen der Klemmen lassen sich über die API auslesen und ändern, 
 
 7.  [Home Assistant: Blueprints](https://www.home-assistant.io/docs/automation/using_blueprints/): Import und Verwendung von Blueprints.
 
-8.  [FRITZ! Wissensdatenbank: FRITZ!-Steckdose verliert Verbindung](https://lu.fritz.com/service/wissensdatenbank/dok/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): Hinweise zu DECT-Reichweite und -Funkleistung bei Smart-Home-Steckdosen.
+8.  [FRITZ! Wissensdatenbank: FRITZ!-Steckdose verliert Verbindung](https://fritz.com/de-lu/apps/knowledge-base/FRITZ-Smart-Energy-200/3538_FRITZ-Steckdose-verliert-haufig-die-Verbindung-zur-FRITZ-Box/): Hinweise zu DECT-Reichweite und -Funkleistung bei Smart-Home-Steckdosen.
 
 9.  [Radio Browser](https://www.radio-browser.info/): freies Verzeichnis von Radiostreams, in Home Assistant als Medienquelle eingebunden.

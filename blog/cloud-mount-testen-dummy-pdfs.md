@@ -3,6 +3,7 @@ title: "Cold Storage mit Rclone testen: ein praxistauglicher Testplan"
 navTitle: "Rclone testen"
 description: "Bevor ein Dienst seine Dateien über einen Rclone-Mount aus der Cloud liest, sollten Sie mehr als den Verzeichniszugriff prüfen. Dieser Testplan deckt Cold Reads, Warm Reads, Schreibvorgänge, Cache-Verhalten, Dateiintegrität und Ausfälle ab."
 date: "2026-07-26"
+aktualisiert: "2026-10-25"
 kategorie: "Rclone"
 timeToRead: "11 Min. Lesezeit"
 themen:
@@ -401,7 +402,7 @@ find /var/cache/rclone-test/vfs -type f | wc -l
 |---|---|
 | `du -s` | Fasst den Platzverbrauch zu einer Summenzeile zusammen, statt jedes Unterverzeichnis aufzulisten |
 | `du -h` | Ausgabe in menschenlesbaren Einheiten (K, M, G) |
-| `du --apparent-size` | Zeigt die logische Dateigrösse statt des tatsächlich belegten Plattenplatzes |
+| `du --apparent-size` | Zeigt die logische Dateigrösse statt des tatsächlich belegten Speicherplatzes |
 | `find … -type f` | Berücksichtigt nur reguläre Dateien, keine Verzeichnisse |
 | `wc -l` | Zählt die Zeilen der Ausgabe, hier also die Anzahl Cache-Dateien |
 
@@ -433,7 +434,7 @@ docker kill --signal KILL <rclone-container>
 
 | Option | Wirkung |
 |---|---|
-| `--signal KILL` | Sendet SIGKILL statt des Standardsignals SIGTERM; der Prozess erhält keine Gelegenheit zum Aufräumen |
+| `--signal KILL` | Sendet SIGKILL (bei `docker kill` ohnehin der Standard, hier zur Verdeutlichung angegeben); der Prozess erhält keine Gelegenheit zum Aufräumen |
 | `<rclone-container>` | Name oder ID des Rclone-Containers |
 
 </details>

@@ -3,6 +3,7 @@ title: "SEPPmail Admin-GUI an Active Directory anbinden: LDAP-Authentifizierung 
 navTitle: "Admin-LDAP-Login"
 description: "Seit Firmware 15.0.6 können sich Administratoren der SEPPmail-Appliance gegen einen externen LDAP-Server wie Active Directory authentifizieren, inklusive Gruppen-Mapping auf die lokale admin-Gruppe. Die Einrichtung unter User > Advanced Settings, Schritt für Schritt."
 date: "2026-07-29"
+aktualisiert: "2026-10-25"
 kategorie: "SEPPmail"
 timeToRead: "7 Min. Lesezeit"
 themen:
@@ -38,7 +39,7 @@ Ob das HIN Mailgateway die LDAP-Anmeldung ebenfalls erhalten hat, teste ich noch
 
 Vor der Einrichtung sollten drei Dinge bereitstehen:
 
-- **Firmware 15.0.6.1:** Das Feature kommt mit 15.0.6; wegen der beiden RuleEngine-Fehler des Releases ist direkt der Hotfix 15.0.6.1 die richtige Wahl.
+- **Firmware 15.0.7 oder neuer:** Das Feature kommt mit 15.0.6. Seit dem 2. September 2026 ist das Patch-Release 15.0.7 verfügbar, das unter anderem eine Umgehung der MFA-Pflicht (SEC-100) und eine Command Injection in der Konfigurationsverarbeitung (CVE-2026-84830) behebt. Mindestens diesen Stand sollte die Appliance haben; der Feature-Zweig 15.1 (aktuell Hotfix 15.1.0.1 vom 29. September 2026) enthält die Funktion ebenfalls.
 - **Ein LDAP-fähiges Verzeichnis:** Ein Active Directory, OpenLDAP oder Vergleichbares. Liegen die Benutzer nur in Entra ID, das selbst kein LDAP spricht, schlägt [Microsoft Entra Domain Services](/blog/microsoft-entra-domain-services-ldap-kerberos) die Brücke.
 - **Ein Bind-Konto im Verzeichnis:** Ein dediziertes, unprivilegiertes Servicekonto mit Lesezugriff, mit dem die Appliance die LDAP-Suche ausführt. Kein Domänen-Administrator.
 - **Eine AD-Gruppe für die Gateway-Administratoren:** Zum Beispiel eine Sicherheitsgruppe SEPPmail-Admins, die später auf die lokale Gruppe admin gemappt wird. Die Mitgliedschaft in dieser Gruppe entscheidet dann über den administrativen Vollzugriff.
@@ -106,7 +107,7 @@ Hinweise zu OpenLDAP: Benutzer liegen in typischen Setups als inetOrgPerson unte
 Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in die Appliance wird:
 
 - **Lokalen Notfallzugang behalten.** Die Passwörter externer Benutzer liegen im LDAP-Server. Ist das Verzeichnis nicht erreichbar (Netzwerkproblem, AD-Wartung, oder das Gateway soll gerade ein Problem mit ebendiesem Netzwerk beheben), braucht es weiterhin ein lokales Administratorkonto mit sicher hinterlegtem Passwort. Der Standardbenutzer admin sollte also nicht abgeschafft, sondern als dokumentierter Notfallzugang gepflegt werden.
-- **MFA bleibt relevant.** 15.0.6 hat auch die MFA-Anmeldung überarbeitet: Der zweite Faktor wird nicht mehr ans Passwort angehängt, sondern in einem eigenen Feld abgefragt. Externe Authentifizierung ersetzt den zweiten Faktor nicht.
+- **MFA bleibt relevant.** 15.0.6 hat auch die MFA-Anmeldung überarbeitet: Der zweite Faktor wird nicht mehr ans Passwort angehängt, sondern in einem eigenen Feld abgefragt. Externe Authentifizierung ersetzt den zweiten Faktor nicht. Eine Schwachstelle, über die unter bestimmten Bedingungen ein Zugriff vor Abschluss aller MFA-Schritte möglich war, ist erst mit 15.0.7 behoben.
 - **Offboarding über das Verzeichnis.** Der eigentliche Gewinn der Anbindung: Verlässt ein Administrator das Unternehmen, genügt das Deaktivieren des AD-Kontos beziehungsweise das Entfernen aus der gemappten Gruppe. Das bisher nötige Nachpflegen lokaler Konten auf jeder Appliance entfällt. Die lokal sichtbaren, extern authentifizierten Benutzerobjekte sollten dennoch periodisch mit dem Verzeichnis abgeglichen werden.
 
 ## Fazit
@@ -115,12 +116,12 @@ Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der
 
 ## Quellen
 
-1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Eintrag zur Admin-GUI-Authentifizierung mit Funktionsbeschreibung, Konfigurationsort und dem Verhalten extern authentifizierter Benutzer.
+1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Eintrag zur Admin-GUI-Authentifizierung mit Funktionsbeschreibung, Konfigurationsort und dem Verhalten extern authentifizierter Benutzer; Sicherheitskorrekturen von 15.0.7 (SEC-100, CVE-2026-84830).
 
 2.  [SEPPmail-Dokumentation – «User > Advanced Settings»](https://docs.seppmail.com/ch/07_mi_15_usr_04_advanced-settings.html): Referenz der Felder des External-Authentication-Abschnitts (Connection, User Attributes, Group Attributes, Mapping, Login Test).
 
 3.  [SEPPmail-Dokumentation – «Groups»](https://docs.seppmail.com/ch/07_mi_16_groups.html): Vordefinierte Gruppen der Appliance; Mitglieder der Gruppe admin haben uneingeschränkten administrativen Zugang.
 
-4.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 mit dem Eintrag zur Admin-GUI-Authentifizierung gegen externe LDAP-Server.
+4.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 mit dem Eintrag zur Admin-GUI-Authentifizierung gegen externe LDAP-Server sowie zu den Folgereleases 15.0.7, 15.1.0 und 15.1.0.1.
 
 5.  [SEPPmail 15.0.6 und 15.0.6.1: Sicherheitskorrekturen und neue Admin-Funktionen](/blog/seppmail-releases-15-0-6-und-15-0-6-1): Überblick über alle Änderungen der beiden Releases.

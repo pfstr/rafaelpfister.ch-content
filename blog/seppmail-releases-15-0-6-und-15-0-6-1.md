@@ -3,6 +3,7 @@ title: "SEPPmail 15.0.6 und 15.0.6.1: Sicherheitskorrekturen und neue Admin-Funk
 navTitle: "SEPPmail 15.0.6"
 description: "SEPPmail hat im Juli 2026 das Patch-Release 15.0.6 und den Hotfix 15.0.6.1 veröffentlicht. Neben behobenen Schwachstellen in PDF-Generierung und PGP-Verarbeitung bringen die Releases ein separates MFA-Feld, LDAP-Authentifizierung für die Admin-GUI und Korrekturen an RuleEngine, Webmail und REST-API."
 date: "2026-07-29"
+aktualisiert: "2026-10-25"
 kategorie: "SEPPmail"
 timeToRead: "5 Min. Lesezeit"
 themen:
@@ -25,7 +26,7 @@ SEPPmail hat am 21. Juli 2026 das Patch-Release 15.0.6 und einen Tag später den
 
 Der Hotfix behebt zwei Punkte in der RuleEngine. Erstens verhinderte ein undefinierter Wert im Message-Objekt, dass Logeinträge ins Mail-Log geschrieben wurden. Betroffene Nachrichten liefen damit ohne Protokollierung durch das System. Zweitens erkennt die RuleEngine nun die Richtung archivierter E-Mails, damit deren Zustellung korrekt behandelt wird.
 
-Wer 15.0.6 bereits installiert hat oder das Update plant, sollte direkt auf 15.0.6.1 gehen.
+Wer 15.0.6 bereits installiert hat, sollte nicht auf diesem Stand bleiben. Seit dem 2. September 2026 steht mit 15.0.7 zudem ein neueres Patch-Release des 15.0-Zweigs bereit (siehe Einordnung).
 
 Die HIN-Appliances haben den Hotfix offenbar ebenfalls erhalten: Ein HIN Mailgateway mit installierter Version 15.0.6-RC-42-g278c81f84 meldet inzwischen 15.0.6-RC-88-g916e513cc als nächste Version im 15.0-Zweig. Die RC-Bezeichnungen der HIN-Firmware lassen sich nicht direkt einem SEPPmail-Release zuordnen, der Zeitpunkt des Angebots spricht aber für den Hotfix.
 
@@ -73,10 +74,12 @@ Im Mail-Log wurde die Datumssortierung korrigiert, die bisher alphabetisch statt
 
 ## Einordnung
 
-Die beiden RuleEngine-Fehler aus dem Hotfix sprechen dafür, 15.0.6 zu überspringen und direkt 15.0.6.1 einzusetzen. Erstellen Sie bei Clustern vor dem Update Snapshots beider Knoten und halten Sie die Update-Reihenfolge der Herstellerdokumentation ein. Der Login-Ausfall unter 15.0.5 hat gezeigt, weshalb diese Vorbereitung kein Formalismus ist.
+Die beiden RuleEngine-Fehler aus dem Hotfix sprechen dafür, 15.0.6 nicht ohne 15.0.6.1 zu betreiben. Erstellen Sie bei Clustern vor dem Update Snapshots beider Knoten und halten Sie die Update-Reihenfolge der Herstellerdokumentation ein. Der Login-Ausfall unter 15.0.5 hat gezeigt, weshalb diese Vorbereitung kein Formalismus ist.
+
+Seit dem 2. September 2026 ist 15.0.7 verfügbar. Es ist laut Hersteller das letzte Release im 15.0-Zweig und Voraussetzung für das Update auf 15.1. Es schliesst drei weitere Schwachstellen (CVE-2026-84830, CVE-2026-84831 und CVE-2026-84832, CVSS 7.7 bis 8.6), darunter eine, bei der der Zugriff vor Abschluss aller MFA-Schritte gewährt werden konnte, und aktualisiert OpenSSL auf 3.0.22. Am 28. September 2026 folgte das Feature-Release 15.1.0, am 29. September der Hotfix 15.1.0.1. In den Release Notes zu 15.1.0 führt SEPPmail ausserdem eine Autorisierungsschwachstelle in der Krypto-Management-API (CVSS 9.9) auf, die Versionen vor 15.0.6.1 betrifft. Für Systeme auf 15.0.6 oder 15.0.6.1 ist damit 15.0.7 der nächste Schritt, danach 15.1.0.1.
 
 ## Quellen
 
-1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 und 15.0.6.1 mit allen Einzelpunkten.
+1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 und 15.0.6.1 mit allen Einzelpunkten, ebenso zu 15.0.7, 15.1.0 und 15.1.0.1.
 
 2.  [HIN Mailgateway 15.0.5: Login-Ausfall nach dem Cluster-Update beheben](/blog/hin-update-issue-version-15.0.5): Weshalb Snapshots und die korrekte Update-Reihenfolge im Cluster entscheidend sind.

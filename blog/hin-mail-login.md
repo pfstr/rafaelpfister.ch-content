@@ -3,6 +3,7 @@ title: "HIN Mail Login: Webmail, Outlook-Token, Passwort vergessen und HIN Mail 
 navTitle: "HIN Mail Login"
 description: "Wo und wie Sie sich bei HIN Mail anmelden: Webmail unter webmail.hin.ch, Mail-Token für Outlook und Smartphone, Login ohne HIN Client per SMS-Code oder Authenticator App, Passwort-Reset und das Öffnen von HIN Mail Global als Empfänger ohne HIN-Konto."
 date: "2026-10-05"
+aktualisiert: "2026-10-25"
 kategorie: "HIN-Gateway"
 timeToRead: "7 Min. Lesezeit"
 themen:
@@ -36,7 +37,7 @@ Hinter der Suche nach «HIN Mail Login» stehen meist drei verschiedene Situatio
 
 Das Webmail erreichen Sie unter `https://webmail.hin.ch`. Sie melden sich mit Ihrer HIN ID (dem HIN-Loginnamen, z. B. `hmuster`) und Ihrem HIN-Passwort an. Den zweiten Faktor liefert eine der folgenden Methoden:
 
-- **HIN Client:** Läuft der Client auf dem Arbeitsplatz und ist angemeldet, öffnet sich das Webmail ohne weitere Abfrage. Mit HIN Client 4.0 erfolgt die Anmeldung direkt im Browser: Sie geben die HIN-geschützte Adresse ein und werden zur Anmeldung weitergeleitet.
+- **HIN Client:** Läuft der Client auf dem Arbeitsplatz und ist angemeldet, öffnet sich das Webmail ohne weitere Abfrage. Mit HIN Client 4.0 erfolgt die Anmeldung ab Anfang November 2026 direkt im Browser: Sie geben die HIN-geschützte Adresse ein und werden zur Anmeldung weitergeleitet.
 - **SMS-Code (mTAN):** Nach dem Passwort erhalten Sie einen Code auf die hinterlegte Mobilnummer. Diese Methode eignet sich für Geräte ohne HIN Client, etwa einen privaten Laptop.
 - **HIN Authenticator App:** Die App (App Store und Google Play, «HIN Authenticator») bestätigt die Anmeldung auf dem Smartphone.
 
@@ -132,7 +133,7 @@ Bei Problemen mit HIN Mail Global hilft der HIN-Mail-Support unter +41 58 670 48
 
 ## HIN Client 4.0: was sich am Login ändert
 
-HIN verteilt den HIN Client 4.0 bis zum 26. Oktober 2026 automatisch; wer kein automatisches Update erhält, lädt ihn unter `download.hin.ch` herunter. Das bestehende Passwort bleibt gültig und wird bei der ersten Anmeldung mit der neuen Version einmal bestätigt. Die Anmeldung an HIN-geschützten Diensten wie dem Webmail erfolgt danach direkt im Browser.
+HIN verteilt den HIN Client 4.0 bis zum 26. Oktober 2026 automatisch; wer kein automatisches Update erhält, lädt ihn unter `download.hin.ch` herunter. Das bestehende Passwort bleibt gültig; bei der ersten Anmeldung mit der neuen Version werden Sie einmalig aufgefordert, es zu ändern. Die Anmeldung an HIN-geschützten Diensten wie dem Webmail erfolgt ab Anfang November 2026 direkt im Browser.
 
 Version 4.0 setzt Windows 11 mit TPM oder macOS 14 mit Security Chip voraus. Geräte, die diese Anforderungen nicht erfüllen, können den Client nicht mehr nutzen. Der Zugang zum Webmail bleibt dort über SMS-Code oder Authenticator App möglich, der Mailabruf in Outlook über das Mail-Token. Details zu den Fristen der Plattformerneuerung stehen im Artikel [HIN Plattformerneuerung 2026](/blog/hin-plattformerneuerung-2026).
 
@@ -164,6 +165,6 @@ Organisationen mit eigenem HIN Mailgateway melden sich nicht bei HIN Mail an. Di
 
 8.  [HIN: HIN Mail Global](https://www.hin.ch/services/hin-mail/hin-mail-global/): Versand verschlüsselter Mails an Empfänger ohne HIN-Mitgliedschaft.
 
-9.  [HIN Blog: Der neue HIN Client ist da](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): Browser-Login, Systemvoraussetzungen mit TPM bzw. Security Chip, Rollout bis 26. Oktober 2026.
+9.  [HIN Blog: Der neue HIN Client ist da](https://www.hin.ch/de/blog/2026/neuer-hin-client.cfm): Browser-Login ab Anfang November 2026, Passwortänderung bei der ersten Anmeldung, Systemvoraussetzungen mit TPM bzw. Security Chip, Rollout bis 26. Oktober 2026.
 
 10.  [HIN Authenticator im App Store](https://apps.apple.com/ch/app/hin-authenticator/id1535944002): App für den zweiten Faktor.

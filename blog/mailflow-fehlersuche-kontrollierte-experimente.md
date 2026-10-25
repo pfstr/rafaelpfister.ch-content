@@ -3,6 +3,7 @@ title: "Was wir aus der Naturwissenschaft für die Fehlersuche in der IT lernen 
 navTitle: "Kontrollierte Experimente"
 description: "Falsifizierbarkeit, Kontrollgruppe, Störvariablen und Stichprobenverzerrung: Die Methode, mit der Naturwissenschaften seit Jahrhunderten arbeiten, löst genau die Probleme, an denen IT-Fehlersuche regelmässig scheitert, durchgespielt an Beispielen aus dem Mailfluss."
 date: "2026-08-11"
+aktualisiert: "2026-10-25"
 kategorie: "SMTP / Mailfluss"
 timeToRead: "15 Min. Lesezeit"
 themen:
@@ -141,10 +142,10 @@ Die konkreten Abfragen dazu stehen in [Exchange-Mailfluss analysieren: Message T
 
 ## Quellen
 
-1.  [Karl Popper: Logik der Forschung](https://www.mohrsiebeck.com/buch/logik-der-forschung-9783161584350): Ursprung des Falsifikationsprinzips, wonach eine Aussage nur dann wissenschaftlich ist, wenn sie widerlegbar bleibt.
+1.  [Karl Popper: Logik der Forschung](https://www.mohrsiebeck.com/buch/logik-der-forschung-9783161484100/): Ursprung des Falsifikationsprinzips, wonach eine Aussage nur dann wissenschaftlich ist, wenn sie widerlegbar bleibt.
 
 2.  [RFC 3463: Enhanced Mail System Status Codes](https://www.rfc-editor.org/rfc/rfc3463): erklärt, warum erweiterte Statuscodes bewusst grobe Klassen sind und denselben Code für verschiedene Ursachen zulassen.
 
 3.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Ereignistypen und Felder, Grundlage für die Bestimmung des letzten Verarbeitungsschritts.
 
-4.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Seitenlogik der Nachrichtenverfolgung, die Stichprobenfehler begünstigt.
+4.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2): Seitenlogik der Nachrichtenverfolgung, die Stichprobenfehler begünstigt.

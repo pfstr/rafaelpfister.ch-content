@@ -3,6 +3,7 @@ title: "Claude Code auf einem eigenen VPS sicher betreiben"
 navTitle: "VPS für Claude"
 description: "Ein gehärteter Debian-VPS hält Claude-Code-Sitzungen dauerhaft erreichbar. Die Anleitung führt von Benutzerkonto und SSH-Schlüsseln bis zu Firewall, Datenhygiene, tmux und sicherem Zugriff vom iPhone."
 date: "2026-07-21"
+aktualisiert: "2026-10-25"
 kategorie: "Claude"
 timeToRead: "12 Min. Lesezeit"
 themen:
@@ -291,7 +292,7 @@ Die Antwort sollte `0 loaded units listed` lauten, kein einziger fehlgeschlagene
 
 ## 8. Claude Code installieren und betreiben
 
-Claude Code braucht eine aktuelle Node.js-Laufzeitumgebung. Nach deren Installation die CLI gemäss der offiziellen Anleitung einrichten und auf dem Server frisch authentifizieren, nicht die lokalen Zugangsdaten hochladen (dazu gleich mehr).
+Claude Code benötigt keine separate Node.js-Laufzeitumgebung. Anthropic empfiehlt den nativen Installer (`curl -fsSL https://claude.ai/install.sh | bash`), der Claude Code im Hintergrund selbst aktualisiert; für Debian steht alternativ ein signiertes apt-Repository bereit, das über die normalen Systemupdates aktualisiert wird. Nach der Installation die CLI auf dem Server frisch authentifizieren, nicht die lokalen Zugangsdaten hochladen (dazu gleich mehr).
 
 Für den dauerhaften Betrieb `tmux`:
 
@@ -399,4 +400,6 @@ Nach dieser Einrichtung ist von aussen nur SSH auf dem festgelegten Port erreich
 
 4.  [ss(8) – iproute2 Manpage](https://man7.org/linux/man-pages/man8/ss.8.html): Optionen von `ss`, um lauschende Sockets samt Prozess und Bindungsadresse aufzulisten.
 
-5.  [Claude Code – Offizielle Dokumentation](https://docs.claude.com/en/docs/claude-code/overview): Installation, Authentifizierung und Betrieb von Claude Code.
+5.  [Claude Code – Offizielle Dokumentation](https://code.claude.com/docs/en/overview): Installation, Authentifizierung und Betrieb von Claude Code.
+
+6.  [Claude Code – Advanced setup](https://code.claude.com/docs/en/setup): Systemanforderungen, nativer Installer, apt-Repository und Auto-Updates.

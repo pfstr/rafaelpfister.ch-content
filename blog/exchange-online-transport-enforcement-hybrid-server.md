@@ -3,6 +3,7 @@ title: "Exchange Online drosselt und blockiert ab September 2026 veraltete Excha
 navTitle: "EXO-Enforcement 09/2026"
 description: "Ab der zweiten Septemberwoche 2026 verlangt Exchange Online von Hybrid-Servern mindestens das Oktober-2025-SU, sonst wird der Mailfluss gedrosselt und später blockiert. Hintergründe zum Transport-Enforcement seit 2023, die Eskalationsstufen mit SMTP-Codes, der Report im Admin Center, die 90-Tage-Pause per PowerShell und warum die nächste Anhebung nur noch ESU-Kunden und Exchange SE durchlässt."
 date: "2026-09-07"
+aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "9 Min. Lesezeit"
 themen:
@@ -144,15 +145,15 @@ Die Pause ist ausserdem nur für die aktuelle Untergrenze eine Lösung. Hebt Mic
 
 ## Warum die nächste Anhebung die eigentliche Frist ist
 
-Exchange 2016 und 2019 sind seit dem 14. Oktober 2025 out of support. Microsoft hat danach zwei kostenpflichtige ESU-Perioden aufgelegt: Periode 1 bis April 2026, Periode 2 von Mai bis Oktober 2026. Mit der Ankündigung von Periode 2 am 15. April 2026 hat das Exchange-Team klargestellt, dass es keine weitere Verlängerung gibt. Die SUs von Dezember 2025 bis August 2026 (zuletzt Build 15.2.1748.49 für 2019 CU15 und 15.1.2507.72 für 2016 CU23) sind ausschliesslich für ESU-Kunden verfügbar und werden nicht öffentlich zum Download angeboten.
+Exchange 2016 und 2019 sind seit dem 14. Oktober 2025 out of support. Microsoft hat danach zwei kostenpflichtige ESU-Perioden aufgelegt: Periode 1 bis April 2026, Periode 2 von Mai bis Oktober 2026. Mit der Ankündigung von Periode 2 am 15. April 2026 hat das Exchange-Team klargestellt, dass es keine weitere Verlängerung gibt. Die SUs von Dezember 2025 bis Oktober 2026 (zuletzt Build 15.2.1748.55 für 2019 CU15 und 15.1.2507.77 für 2016 CU23, beide vom 13. Oktober 2026) sind ausschliesslich für ESU-Kunden verfügbar und werden nicht öffentlich zum Download angeboten.
 
 Damit ergibt sich folgende Lage:
 
 - **Heute** erfüllt ein Server mit dem Oktober-2025-SU die Untergrenze, ob mit oder ohne ESU.
 - **Bei der nächsten Anhebung** liegt die Untergrenze laut Microsoft oberhalb des Oktober-2025-Stands. Ohne ESU-Vertrag gibt es keinen legalen Weg, diesen Stand zu erreichen. Der Hybrid-Mailfluss dieser Server wird dann gedrosselt und blockiert, unabhängig davon, wie sauber der Rest der Umgebung betrieben wird.
-- **Am 31. Oktober 2026** endet auch Periode 2. Danach gibt es für Exchange 2016 und 2019 keine SUs mehr, für niemanden. Spätestens die übernächste Anhebung trifft also auch ESU-Kunden.
+- **Am 31. Oktober 2026** endet auch Periode 2. Die letzten Updates für Exchange 2016 und 2019 hat Microsoft mit dem Oktober-SU vom 13. Oktober 2026 veröffentlicht; danach gibt es keine SUs mehr, für niemanden. Spätestens die übernächste Anhebung trifft also auch ESU-Kunden.
 
-Das ESU-Programm kauft damit im besten Fall wenige Monate. Der einzige dauerhafte Stand, den das Enforcement durchlässt, ist Exchange Server SE. Microsoft hat zudem angekündigt, dass Exchange SE CU2 (geplant für die zweite Jahreshälfte 2026) die Koexistenz mit Exchange 2016 und 2019 beendet: Die Installation bricht ab, wenn ältere Server in der Organisation gefunden werden. Die Migration ist also nicht nur wegen des Mailflusses fällig, sondern auch, um überhaupt weiter Updates für SE einspielen zu können.
+Das ESU-Programm kauft damit im besten Fall wenige Monate. Der einzige dauerhafte Stand, den das Enforcement durchlässt, ist Exchange Server SE. Microsoft hat zudem angekündigt, dass Exchange SE CU2 (ursprünglich für die zweite Jahreshälfte 2026 geplant; da Microsoft für das vorausgehende CU1 derzeit keinen Termin nennt, steht auch für CU2 kein Datum fest) die Koexistenz mit Exchange 2016 und 2019 beendet: Die Installation bricht ab, wenn ältere Server in der Organisation gefunden werden. Die Migration ist also nicht nur wegen des Mailflusses fällig, sondern auch, um überhaupt weiter Updates für SE einspielen zu können.
 
 Für Umgebungen, die Exchange On-Premises nur noch für die Verwaltung von Attributen in einer Hybrid-Konstellation behalten, ist die Alternative das Entfernen des letzten Servers: Seit Exchange 2019 CU12 lassen sich die Empfängerattribute mit den Management Tools ohne laufenden Exchange-Server pflegen. Dann gibt es keinen On-Premises-Mailfluss mehr und das Enforcement ist gegenstandslos.
 
@@ -203,7 +204,7 @@ Liegt die Version unter `15.2.1748.39` (2019 CU15) beziehungsweise `15.1.2507.61
 
 3.  [How to pause throttling and blocking of out-of-date on-premises Exchange Servers – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/how-to-pause-throttling-and-blocking-of-out-of-date-on-premises-exchange-servers/4007169): Die Cmdlets `Get-OnPremServerReportInfo`, `Get-TenantExemptionInfo` und `New-TenantExemptionInfo` samt Bericht im Exchange Admin Center und dem Jahreskontingent von 90 Tagen.
 
-4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Build-Nummern der Oktober-2025-SUs und der nachfolgenden ESU-Updates bis August 2026; enthält auch den Hinweis, dass SUs ab Dezember 2025 nur ESU-Kunden erhalten.
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Build-Nummern der Oktober-2025-SUs und der nachfolgenden ESU-Updates bis Oktober 2026; enthält auch den Hinweis, dass SUs ab Dezember 2025 nur ESU-Kunden erhalten.
 
 5.  [Description of the security update for Microsoft Exchange Server 2019 CU15: October 14, 2025 (KB5066367) – Microsoft Support](https://support.microsoft.com/en-us/topic/description-of-the-security-update-for-microsoft-exchange-server-2019-cu15-october-14-2025-kb5066367-19a1091c-e0b3-4078-be6b-312463063d05): Der KB-Artikel zum Mindeststand für Exchange 2019 CU15.
 
@@ -213,8 +214,10 @@ Liegt die Version unter `15.2.1748.39` (2019 CU15) beziehungsweise `15.1.2507.61
 
 8.  [Announcing Exchange 2016 / 2019 Extended Security Update program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-exchange-2016--2019-extended-security-update-program/4433495): Bedingungen der ersten ESU-Periode.
 
-9.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Laufzeit Mai bis Oktober 2026 und die Aussage, dass keine weitere Verlängerung folgt.
+9.  [Announcing Period 2 Exchange 2016/2019 Extended Security Update (ESU) program – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/announcing-period-2-exchange-20162019-extended-security-update-esu-program/4511603): Laufzeit Mai bis Oktober 2026, die Aussage, dass keine weitere Verlängerung folgt, und der Nachtrag vom 13. Oktober 2026 zu den letzten Updates für Exchange 2016 und 2019.
 
 10. [Exchange Online transport enforcement system explained – CodeTwo Admin's Blog](https://www.codetwo.com/admins-blog/persistently-vulnerable-exchange-server/): Tabellarische Aufschlüsselung der acht Enforcement-Stufen und der Rollout-Daten je Exchange-Version; Drittquelle.
 
 11. [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventarisierung von CU/SU-Ständen und offenen manuellen Schritten.
+
+12. [Where is Exchange SE CU1 anyway? – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/where-is-exchange-se-cu1-anyway/4546837): Das Exchange-Team zur Verschiebung von Exchange SE CU1 ohne Zieldatum.

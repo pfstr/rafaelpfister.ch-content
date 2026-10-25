@@ -3,6 +3,7 @@ title: "EXO-Migration ohne Remote Move"
 navTitle: "EXO-Migration ohne Remote Move"
 description: "Wie lokale Exchange-Mailboxen kontrolliert als neue, leere Exchange-Online-Mailboxen bereitgestellt werden: PST-Sicherung, CSV-Freigabe, RemoteMailbox, Synchronisation, Validierung und Rollback."
 date: "2026-08-07"
+aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "12 Min. Lesezeit"
 themen:
@@ -446,7 +447,7 @@ Wenn Hybrid Remote Moves nicht erlaubt sind und keine Postfachdaten in Exchange 
 
 ## Quellen
 
-1. [Microsoft Learn – Enable-RemoteMailbox](https://learn.microsoft.com/en-us/powershell/module/exchange/enable-remotemailbox?view=exchange-ps): Aktiviert einen bestehenden lokalen AD-Benutzer für eine Mailbox im cloudbasierten Dienst und dokumentiert die Schalter für Benutzer-, Shared-, Raum- und Gerätepostfächer.
+1. [Microsoft Learn – Enable-RemoteMailbox](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/enable-remotemailbox?view=exchange-ps): Aktiviert einen bestehenden lokalen AD-Benutzer für eine Mailbox im cloudbasierten Dienst und dokumentiert die Schalter für Benutzer-, Shared-, Raum- und Gerätepostfächer.
 
 2. [Microsoft Learn – New-MailboxExportRequest](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/new-mailboxexportrequest?view=exchange-ps): Referenz für den Export primärer und archivierter lokaler Postfächer in PST-Dateien.
 
