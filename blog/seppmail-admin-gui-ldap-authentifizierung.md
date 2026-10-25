@@ -114,6 +114,10 @@ Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in di
 
 Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der Appliance lange bestand: Administratorzugänge lassen sich nun zentral im Verzeichnis steuern statt pro Gerät. Zusammen mit dem separaten MFA-Feld verbessert 15.0.6 die Anmeldung an der Administrationsoberfläche damit in einem einzigen Release deutlich. Wer die Funktion einführt, sollte das Gruppen-Mapping bewusst restriktiv halten und den lokalen Notfallzugang beibehalten.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Empfohlener Mindeststand von 15.0.6.1 auf 15.0.7 angehoben, das eine Umgehung der MFA-Pflicht (SEC-100) und CVE-2026-84830 behebt. Ergänzt: Der Feature-Zweig 15.1 (aktuell 15.1.0.1) enthält die Funktion ebenfalls.
+
 ## Quellen
 
 1.  [SEPPmail Extended Release Notes 15.0](https://downloads.seppmail.com/extrelnotes/150/ERN15.0.html): Eintrag zur Admin-GUI-Authentifizierung mit Funktionsbeschreibung, Konfigurationsort und dem Verhalten extern authentifizierter Benutzer; Sicherheitskorrekturen von 15.0.7 (SEC-100, CVE-2026-84830).

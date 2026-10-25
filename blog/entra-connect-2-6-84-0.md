@@ -144,6 +144,10 @@ Die folgende Abwägung stammt aus der Zeit, als 2.6.84.0 die neueste Version war
 
 Für das Upgrade selbst gilt das übliche Vorgehen, das bei dieser Release-Historie besonders zu empfehlen ist: Konfiguration vorher exportieren (der Wizard bietet **View or export current configuration**), das Update zuerst auf einem Staging-Mode-Server einspielen und dort Sync-Zyklen, Wizard und Zertifikatsrotation prüfen, erst danach der aktive Server. Wer eine angepasste `miiserver.exe.config` hat, sichert sie vor dem Update und kontrolliert danach, ob der neue Merge-Mechanismus die Anpassungen korrekt übernommen hat. Und wer Skripte mit `Set-ADSyncAADCompanyFeature` oder `Set-ADSyncAADPasswordSyncState` betreibt, testet diese vor dem Produktions-Rollout; in 2.6.84.0 brechen sie am neuen Pflichtparameter, ab 2.6.91.0 öffnen sie eine interaktive Anmeldung, die in unbeaufsichtigten Abläufen ebenfalls nicht durchläuft.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Nachfolgeversionen 2.6.91.0 und 2.6.92.0 (aktuelle Zielversion), die bekannten Probleme von 2.6.84.0, das Support-Ende der 2.5er-Versionen am 23. Oktober 2026 und die Frist 7. April 2027 für Application-Based Authentication.
+
 ## Quellen
 
 1. [Microsoft Entra Connect: Version release history – Microsoft Learn](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-version-history): Offizielle Release Notes zu 2.6.84.0, 2.6.91.0 und 2.6.92.0 samt Rückruf-Hinweis zu 2.6.79.0, Retirement-Tabelle, Frist 7. April 2027 für Application-Based Authentication und den bekannten Problemen mit modifizierter miiserver.exe.config und Fehler 0xE0474352.

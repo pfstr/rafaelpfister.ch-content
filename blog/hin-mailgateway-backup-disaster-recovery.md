@@ -160,6 +160,10 @@ Für das Betriebshandbuch bedeutet das: Die klassische Disziplin «Appliance-Kon
 
 Solange das HIN MGW auf SEPPmail-Technik läuft, gilt: Der Cluster kompensiert Hardware-Ausfälle, die Verantwortung für Konfigurations- und Schlüsselintegrität verbleibt jedoch beim Betreiber. Das schlanke Konfigurations-Backup gehört unabhängig vom Cluster gesichert (per SCP, versioniert, mit getrennt verwahrtem Passwort), Snapshots ersetzen es im Cluster nicht, die Versionsstände bleiben synchron, und der Restore wird regelmässig isoliert getestet. Der Umstieg auf Stargate sollte frühzeitig in die DR-Planung einfliessen, da er Resilienz und Schlüsselverwahrung in das dezentrale Netz verlagert.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Die Vereign Client Library ist nur noch nach Anmeldung abrufbar; als öffentlich einsehbare Quelle unter AGPLv3 ist nun das Repository Stargate Deployment angegeben.
+
 ## Quellen
 
 1.  [SEPPmail-Dokumentation – «Backup / Restore»](https://docs.seppmail.com/de/03_wp_03_sa_07_sm_03_backup-restore.html): Backup-Inhalt (nur Konfiguration und Schlüsselmaterial), nächtliche Erstellung, automatische Cluster-Wiederherstellung per Replikation.

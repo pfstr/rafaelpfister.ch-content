@@ -390,6 +390,10 @@ Zusammengefasst der komplette Ablauf:
 
 Nach dieser Einrichtung ist von aussen nur SSH auf dem festgelegten Port erreichbar, und auch dort ausschliesslich mit einem passphrasengeschützten Schlüssel. Claude Code läuft unabhängig vom Endgerät in `tmux`; Web-Vorschauen bleiben über SSH-Tunnel zugänglich, ohne einen zusätzlichen Port zu öffnen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Claude Code benötigt keine separate Node.js-Laufzeitumgebung; ergänzt sind der empfohlene native Installer und das signierte apt-Repository für Debian. Quellenlinks auf die neuen Adressen der Claude-Code-Dokumentation aktualisiert.
+
 ## Quellen
 
 1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config): Referenz aller sshd-Direktiven, darunter `PermitRootLogin`, `PasswordAuthentication` und `PubkeyAuthentication`.

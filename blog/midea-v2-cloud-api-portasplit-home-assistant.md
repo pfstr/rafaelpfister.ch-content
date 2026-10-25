@@ -291,6 +291,10 @@ Die nüchterne Schlussfolgerung lautet deshalb:
 
 > Backup erstellen, Integrationen beobachten und Cloudabhängigkeiten im Hinterkopf behalten – aber die lokale PortaSplit-Steuerung nicht aufgrund einer unbestätigten Abschaltungsannahme vorschnell abschreiben.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Midea AC LAN verwendet seit August 2026 die Bibliothek midea-lan (aktuell 2026.10.0), und die Meiju-Cloud liefert Token und Key nur noch über den Endpunkt /v2/iot/secure/getToken mit homegroupId. Stand des Artikels auf den 25. Oktober 2026 nachgeführt, Quellen ergänzt.
+
 ## Quellen
 
 1.  [Midea AC LAN: aktuelle README und Abschaltungswarnung](https://github.com/wuwentao/midea_ac_lan#1-important-notice): Wortlaut der Warnung, Empfehlung zum Backup und Unterscheidung zwischen älteren V2- und neueren V3-Geräten.

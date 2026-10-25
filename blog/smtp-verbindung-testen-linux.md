@@ -399,6 +399,10 @@ In `smtplib` heisst das schlicht, dasselbe Verbindungsobjekt mehrfach zu verwend
 
 Der manuelle SMTP-Test ist kein Notbehelf für Umgebungen ohne Werkzeuge, sondern die präziseste Diagnose, die im Mailbetrieb zur Verfügung steht. Er trennt Namensauflösung, Erreichbarkeit, Protokolldialog und Verschlüsselung sauber voneinander und liefert für jede Ebene ein eindeutiges Ergebnis. Wer zuerst nur lauscht, dann den Dialog von Hand führt und die Antwortcodes ernst nimmt, kommt in wenigen Minuten zu einer Aussage, mit der sich ein Ticket beim Netzwerk- oder Providerteam belegen lässt: mit Quelladresse, Zielport, beobachtetem Verhalten und Exit-Code.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quelle RFC 7489 durch RFC 9989 ersetzt, das die DMARC-Spezifikation seit Mai 2026 ablöst.
+
 ## Quellen
 
 1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Definiert den SMTP-Dialog, die Kommandoreihenfolge und die Bedeutung der Antwortcodes.

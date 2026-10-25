@@ -114,6 +114,10 @@ Der Aufwand liegt damit auf einer ganz anderen Ebene. Die Plattformerneuerung ve
   <a class="offer-box__cta" href="/stargate">Jetzt registrieren</a>
 </aside>
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Fristen gemäss Neufestlegung durch HIN vom 27. August 2026 aktualisiert: Firewall-Freigabe (neu auch für cdn.hin.ch) bis 31. August, alte SAML-Endpunkte bis 12. Oktober, Hardware-Token, bisherige Authenticator App und HIN Client 4.0 bis 26. Oktober 2026. Ergänzt: TPM-Voraussetzung für HIN Client 4.0 und Browser-Login ab Anfang November 2026.
+
 ## Quellen
 
 1.  [HIN Plattformerneuerung: Diese technischen Anpassungen sind für HIN Mitglieder erforderlich](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): Fristen von August bis Oktober 2026 (Stand 27. August 2026), SAML-Endpunkte, reduzierte Attributmenge, Firewall-Freigaben, Authenticator App und Hardware-Token.

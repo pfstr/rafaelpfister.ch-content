@@ -137,6 +137,10 @@ Liegt eine Meldung vor, klären Sie in dieser Reihenfolge:
 
 Wie sich einzelne Zustellwege danach gezielt nachstellen lassen, zeigen die Beiträge zum [Message Tracking und zur SMTP-Diagnose im Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) sowie der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/header-analyzer) für die Auswertung des Transportwegs einer angekommenen Mail.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Link zum Mail-Header-Analyzer auf die richtige Adresse gesetzt. Quellenlink auf die neue Adresse von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [RFC 3461: SMTP Service Extension for Delivery Status Notifications](https://www.rfc-editor.org/rfc/rfc3461): SMTP-Erweiterung, mit der Absender DSNs anfordern und steuern.

@@ -337,6 +337,10 @@ Neben dem Ort zählt, wie lange Daten gespeichert werden:
 - **AWS Bedrock:** Inhalte gehen nicht an Anthropic. Die Aufbewahrung ist pro Modell zwischen `none`, `default` und `aws_review` wählbar; Fable verlangt `aws_review` mit bis zu 30 Tagen Speicherung zur Prüfung durch AWS.
 - **Google Vertex AI:** Google verwendet die Daten nur mit vorheriger Zustimmung für Training oder Fine-Tuning.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Haiku 5.5 (seit 7. Oktober 2026) mit Verfügbarkeit in Zürich und in der EU-Multi-Region von Google Cloud sowie Preisen; die Zielregionen des EU-Profils sind nun auch für Opus 5.5 und Sonnet 5.5 belegt, Stand der Preise und Regionen 25. Oktober 2026. Quellenlinks auf die neuen Adressen der Google-Cloud-Dokumentation aktualisiert.
+
 ## Quellen
 
 1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): Parameter `inference_geo`, Werte `us` und `global`, Workspace geo, unterstützte Modelle, Feld `usage.inference_geo`.

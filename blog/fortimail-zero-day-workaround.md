@@ -219,6 +219,10 @@ Ende September hat zudem Kiteworks seine Kunden wegen einer Warnung von Strafver
 
 6.  **Advisory beobachten:** Fortinet ergänzt FG-IR-26-175 bei neuen Erkenntnissen; die Revisionshistorie steht am Ende des Advisorys.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Fixversionen 7.6.7 (2. Oktober 2026), 7.4.9 und 8.0.2 (3. Oktober 2026) sowie die Aktualisierung von FortiMail Cloud. Gemäss geänderter Advisory-Fassung betrifft die Sperre die Webmail- statt der Verwaltungsoberfläche, ergänzt um eine WAF-Regel; die Dateiliste mit Hashwerten ist nur noch in der archivierten Fassung enthalten.
+
 ## Quellen
 
 1.  [Fortinet PSIRT: FG-IR-26-175](https://fortiguard.fortinet.com/psirt/FG-IR-26-175): Advisory mit Beschreibung, CVSS-Vektor, betroffenen Versionen, Fixversionen, Workaround, Indikatoren (IP-Adressen, Logeinträge) und Hinweis zu FortiMail Cloud.

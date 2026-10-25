@@ -457,6 +457,10 @@ Das Erreichen des Lizenzlimits ist kein technischer Defekt, sondern die Folge ei
 
 Wer diese Reihenfolge einhält, löst das akute Lizenzproblem und verhindert, dass es wiederkommt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quelle ersetzt: Die frühere Dokumentationsseite auf totemo.com leitet auf kiteworks.com um; neu wird auf die Kiteworks-Seite zur Weiterführung von totemo als Email Protection Gateway verwiesen.
+
 ## Quellen
 
 1.  [Kiteworks – «Unlocking the Power of Kiteworks Email Protection Gateway (EPG) with totemo Integration»](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Übernahme von totemo durch Kiteworks und Weiterführung der Technologie als Email Protection Gateway (EPG); die frühere Download- und Dokumentationsseite auf totemo.com leitet inzwischen auf die Startseite von kiteworks.com um.

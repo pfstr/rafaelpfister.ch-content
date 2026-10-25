@@ -45,6 +45,10 @@ Die folgenden Schritte verändern die Cluster-Konfiguration. Vorher müssen aktu
 
 Dieses Verfahren verhindert, dass eine fehlerhafte Konfiguration während des Updates erneut zwischen den Knoten repliziert wird.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Die Update-Reihenfolge im Cluster lautet laut SEPPmail-Dokumentation Backend vor Frontend, nicht umgekehrt.
+
 ## Quellen
 
 1. [SEPPmail-Dokumentation – «Cluster / Hochverfügbarkeit»](https://docs.seppmail.com/ch/04_com_09_cl_01_general.html): Cluster-Typen und Replikation der Konfiguration über alle Knoten.

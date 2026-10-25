@@ -95,6 +95,10 @@ Erscheint hier das physische Interface (Ethernet oder WLAN) statt des VPN-Adapte
 
 Bleibt der Verkehr trotz korrekter Route im Tunnel, lohnt ein Blick auf die Reihenfolge der Netzwerkadapter und auf Client-Eigenheiten: Einige VPN-Clients erzwingen ihre Routen mit niedrigerer Metrik nach jedem Verbindungsaufbau neu, und eine veraltete Ausschlussliste fällt erst auf, wenn Microsoft ein Netz ergänzt. Der Abgleich mit der offiziellen Endpunktliste gehört darum in denselben Rhythmus wie andere wiederkehrende Netzwerk-Prüfungen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Das Netz 13.107.64.0/18 hat Microsoft 2024 aus der Endpunktliste entfernt; es ist aus Tabelle und OpenVPN-Beispiel gestrichen. Ebenfalls korrigiert: Nur die ID 11 gehört zur Kategorie Optimize, die ID 12 zur Kategorie Allow.
+
 ## Quellen
 
 1.  [Microsoft: Office 365 URLs and IP address ranges](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges): offizielle Endpunktliste; die Teams-Medien-Netze stehen unter der ID 11 in der Kategorie Optimize, die ID 12 mit denselben Netzen in der Kategorie Allow.

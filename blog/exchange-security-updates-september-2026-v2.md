@@ -85,6 +85,10 @@ Aus den Vormonaten bleiben diese Nacharbeiten offen, falls noch nicht erledigt: 
 
 Installieren Sie zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen v2 oder das neuere Oktober-SU, auch dort, wo das September-SU bereits läuft: Das erste September-SU schliesst CVE-2026-96940 nicht, ein einzelnes kompromittiertes Benutzerkonto genügt für den Zugriff auf fremde Postfächer, und Microsoft hält eine Ausnutzung für wahrscheinlicher als bei allen anderen September-CVEs. Prüfen Sie anschliessend mit dem Health Checker den Build-Stand, und nehmen Sie nach dem Oktober-SU die Workarounds für die Known Issues wie oben beschrieben zurück. Für Exchange 2016 und 2019 ist das Oktober-SU vom 13. Oktober 2026 das letzte Update; danach erscheinen für diese Versionen keine Sicherheitsupdates mehr.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Oktober-SUs vom 13. Oktober 2026 mit Buildnummern, die auch CVE-2026-96940 schliessen und für Exchange 2016 und 2019 das letzte Update sind. Alle drei Known Issues sind inzwischen behoben, die Rücknahme der Workarounds ist beschrieben.
+
 ## Quellen
 
 1.  [Released: September 2026 V2 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/t5/exchange-team-blog/released-september-2026-v2-exchange-server-security-updates/ba-p/4561718): Ankündigung der v2 vom 2. Oktober 2026 mit dem Unterschied zur ersten Fassung, der FAQ zur vorgezogenen Veröffentlichung, Known Issues, behobenen Problemen und Installationsablauf (eingesehen über den RSS-Feed des Exchange Team Blogs).

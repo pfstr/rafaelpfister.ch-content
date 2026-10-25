@@ -147,6 +147,10 @@ Organisationen mit eigenem HIN Mailgateway melden sich nicht bei HIN Mail an. Di
   <a class="offer-box__cta" href="/stargate">Jetzt registrieren</a>
 </aside>
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Bei der ersten Anmeldung mit HIN Client 4.0 muss das Passwort einmalig geändert werden, und die Anmeldung im Browser gilt erst ab Anfang November 2026.
+
 ## Quellen
 
 1.  [HIN Support: HIN Mail und Mobile](https://support.hin.ch/de/thema/hin-mail-mobile/): Übersicht mit Webmail-Adresse und Anleitungen für Outlook, Apple Mail, Thunderbird, iOS und Android.

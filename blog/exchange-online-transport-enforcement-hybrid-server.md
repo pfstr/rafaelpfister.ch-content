@@ -196,6 +196,10 @@ Liegt die Version unter `15.2.1748.39` (2019 CU15) beziehungsweise `15.1.2507.61
 
 5. **Migration nach Exchange SE terminieren.** Ohne ESU-Vertrag ist die nächste Anhebung die harte Frist, mit ESU der 31. Oktober 2026. Exchange 2019 CU15 lässt sich per In-Place-Upgrade auf SE bringen; Exchange 2016 braucht den Umweg über eine SE-Neuinstallation und Postfach- beziehungsweise Rollenverschiebung. Wer Exchange nur noch für die Attributverwaltung betreibt, entfernt den letzten Server und arbeitet mit den Management Tools weiter.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Die Oktober-SUs vom 13. Oktober 2026 (Builds 15.2.1748.55 und 15.1.2507.77) sind die letzten Updates für Exchange 2016 und 2019. Für Exchange SE CU2 steht wegen des verschobenen CU1 kein Datum fest.
+
 ## Quellen
 
 1.  [Exchange 2016/2019: Throttling and Blocking up to the Final Public Update Baseline – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/exchange-20162019-throttling-and-blocking-up-to-the-final-public-update-baseline/4552717): Die Ankündigung vom 2. September 2026 mit der neuen Untergrenze (Oktober-2025-SU), dem Starttermin in der zweiten Septemberwoche und dem Hinweis auf die kommende Anhebung über das letzte öffentliche Update hinaus.

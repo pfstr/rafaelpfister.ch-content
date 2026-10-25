@@ -269,6 +269,10 @@ Der [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) liefert den Ist-
 
 DMARC schützt nur Ihre Domain vor Fälschung, nicht Ihre Mitarbeitenden vor Phishing von ähnlich klingenden Fremddomains, und es ersetzt weder Schulung noch technische Mailhygiene. Es ist aber die eine Massnahme in der E-Mail-Sicherheit, die gleichzeitig Betrug erschwert, die Zustellbarkeit sichert und pro Monat messbar ausweist, was sie verhindert. Mit diesem Blueprint lässt sie sich der Geschäftsleitung sauber beantragen und ohne Abschaltrisiko umsetzen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: RFC 9989 löst seit Mai 2026 RFC 7489 ab. Die stufenweise Verschärfung beschreibt nun den Testmodus t=y anstelle des gestrichenen Tags pct.
+
 ## Quellen
 
 1.  [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989.html): Technische Spezifikation von Policy-Stufen, Alignment und Reporting (M3); löst seit Mai 2026 RFC 7489 ab, streicht den Tag pct und führt den Testmodus-Tag t ein

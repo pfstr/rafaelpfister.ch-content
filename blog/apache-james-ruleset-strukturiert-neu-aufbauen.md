@@ -339,6 +339,10 @@ Behandeln Sie das Regelwerk als Graphen, nicht als Textdatei. Eine Breitensuche 
 
 Für den Umbau selbst ist der Parallelbaum mit einer einzigen Weiche die Methode mit dem besten Verhältnis von Aufwand zu Sicherheit. Und die Erreichbarkeitsanalyse liefert Ihnen gleich das Abnahmekriterium dazu.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen der Apache-James-Dokumentation aktualisiert; die Referenzen zu Mailets und Matchern sind nun in einer Quelle zusammengefasst.
+
 ## Quellen
 
 1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): Aufbau des Spoolmanagers, Prozessoren, Mailets und Matcher sowie die Verarbeitungsreihenfolge.

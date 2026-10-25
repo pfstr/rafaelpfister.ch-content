@@ -253,6 +253,10 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
 
 Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf GitHub: [pfstr/ecall-log-analyzer](https://github.com/pfstr/ecall-log-analyzer).
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: EWS in Exchange Online wird seit Oktober 2026 schrittweise abgeschaltet und erst im April 2027 vollständig deaktiviert. Ergänzt: RBAC for Applications als Microsofts Ersatz für Application Access Policies, mit neuer Quelle und aktuellem Zeitplan.
+
 ## Quellen
 
 1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440): Ankündigung von 2023 mit dem ursprünglichen Stichtag Oktober 2026 für das Ende von EWS in Exchange Online.

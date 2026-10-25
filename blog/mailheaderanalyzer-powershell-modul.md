@@ -604,6 +604,10 @@ Version 0.2.0 vom 26. September 2026 hat das Herkunftsmodell nach einem Review-H
 
 Fehler und Erweiterungswünsche nehme ich als [Issue auf GitHub](https://github.com/pfstr/MailHeaderAnalyzer/issues) entgegen. Testheader für Fehlerberichte bitte vorher anonymisieren; die mitgelieferten Testfälle verwenden ausschliesslich Beispieldomänen nach RFC 2606 und Adressen nach RFC 5737.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quelle RFC 7489 durch RFC 9989 ersetzt, das die DMARC-Spezifikation seit Mai 2026 ablöst.
+
 ## Quellen
 
 1.  [MailHeaderAnalyzer in der PowerShell Gallery](https://www.powershellgallery.com/packages/MailHeaderAnalyzer): Paketseite mit Installationsbefehl und Versionsverlauf.

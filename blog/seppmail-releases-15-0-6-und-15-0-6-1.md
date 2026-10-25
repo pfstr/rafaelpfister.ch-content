@@ -78,6 +78,10 @@ Die beiden RuleEngine-Fehler aus dem Hotfix sprechen dafür, 15.0.6 nicht ohne 1
 
 Seit dem 2. September 2026 ist 15.0.7 verfügbar. Es ist laut Hersteller das letzte Release im 15.0-Zweig und Voraussetzung für das Update auf 15.1. Es schliesst drei weitere Schwachstellen (CVE-2026-84830, CVE-2026-84831 und CVE-2026-84832, CVSS 7.7 bis 8.6), darunter eine, bei der der Zugriff vor Abschluss aller MFA-Schritte gewährt werden konnte, und aktualisiert OpenSSL auf 3.0.22. Am 28. September 2026 folgte das Feature-Release 15.1.0, am 29. September der Hotfix 15.1.0.1. In den Release Notes zu 15.1.0 führt SEPPmail ausserdem eine Autorisierungsschwachstelle in der Krypto-Management-API (CVSS 9.9) auf, die Versionen vor 15.0.6.1 betrifft. Für Systeme auf 15.0.6 oder 15.0.6.1 ist damit 15.0.7 der nächste Schritt, danach 15.1.0.1.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Patch-Release 15.0.7 vom 2. September 2026 mit drei Sicherheitskorrekturen als letztes Release des 15.0-Zweigs, die Releases 15.1.0 und 15.1.0.1 sowie eine Schwachstelle in der Krypto-Management-API vor 15.0.6.1. Update-Empfehlung entsprechend angepasst.
+
 ## Quellen
 
 1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 und 15.0.6.1 mit allen Einzelpunkten, ebenso zu 15.0.7, 15.1.0 und 15.1.0.1.

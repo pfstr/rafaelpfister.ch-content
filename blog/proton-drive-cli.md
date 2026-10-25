@@ -233,6 +233,10 @@ Seit Version 0.9.0 vom 5. Oktober 2026 enthält die CLI den Befehl `takeout run`
 
 Für Sicherungen, Build-Artefakte und Freigabeverwaltung ist die CLI die bessere Wahl, weil sie offiziell unterstützt wird und ohne gespeichertes Passwort auskommt. Für einen Mount, wie ihn etwa eine [Paperless-Dokumentablage](/blog/paperless-dokumente-clouddienst-auslagern) braucht, und für Spiegelungen mit Löschungen bleibt Rclone vorerst notwendig. Die grösste Lücke bleibt in beiden Fällen dieselbe: Proton bietet keinen Maschinenzugang, der sich auf einzelne Ordner oder Lesezugriff beschränken lässt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Auf Version 0.9.0 vom 5. Oktober 2026 nachgeführt. Ergänzt: Der Befehl takeout run ist damit veröffentlicht, inklusive Hinweisen zu den nötigen --include-Angaben und der fehlenden Unterstützung für Proton Docs und Sheets.
+
 ## Quellen
 
 1.  [Proton: Introducing Proton Drive CLI](https://proton.me/blog/proton-drive-cli): die Ankündigung vom 9. Juni 2026 mit Einsatzzweck und JSON-Ausgabe.

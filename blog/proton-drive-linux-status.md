@@ -84,6 +84,10 @@ Bei einem Ende-zu-Ende-verschlüsselten Dienst ist das schwieriger als bei S3, w
 
 Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst Rclone verwenden. Auf Servern übernimmt die offizielle CLI inzwischen Sicherungen und Automatisierung; für einen Mount bleibt Rclone die einzige praktikable Lösung. Aus einem funktionierenden Behelf wird jedoch erst dann eine belastbare Plattform, wenn Proton begrenzte Maschinenzugänge und einen offiziell unterstützten Mount anbietet.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Auf Proton Drive CLI 0.9.0 vom 5. Oktober 2026 nachgeführt, mit der nun veröffentlichten takeout-Funktion für einen vollständigen lokalen Export.
+
 ## Quellen
 
 1.  [OMG Ubuntu: Proton Drive client is (finally) coming to Linux](https://www.omgubuntu.co.uk/2026/06/proton-drive-linux-client): die Bestätigung vom Juni 2026, dass der Linux-Client in Entwicklung ist, ohne Termin.

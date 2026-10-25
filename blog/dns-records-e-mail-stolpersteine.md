@@ -438,6 +438,10 @@ Mail-Records unterscheiden sich von allen anderen DNS-Einträgen darin, dass ein
 
 Drei Regeln verhindern die meisten dieser Fälle. Erstens: vor jedem neuen Record prüfen, was bereits vorhanden ist, statt einen zweiten danebenzustellen. Zweitens: nach jeder Änderung gegen einen öffentlichen Resolver kontrollieren und den Wert zeichenweise gegen die Vorlage vergleichen, nicht nur optisch. Drittens: bei Umstellungen immer erst das Neue publizieren, dann umschalten, dann das Alte entfernen. Wer diese Reihenfolge einhält, hat bei Mail-Records jederzeit einen Rückweg.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse von Microsoft aktualisiert.
+
 ## Quellen
 
 1.  [RFC 1035: Domain Names, Implementation and Specification](https://www.rfc-editor.org/rfc/rfc1035): Definiert unter anderem die 255-Byte-Grenze einer einzelnen `character-string` in TXT-Records.

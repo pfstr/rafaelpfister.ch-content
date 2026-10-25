@@ -271,6 +271,10 @@ Wenn Sie dabei ohnehin die Mailkonfiguration Ihrer Domänen prüfen: Der [Mail-D
 
 Wie Sie einzelne auffällige Nachrichten weiterverfolgen, steht in [Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren).
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Die Seitenlogik von Get-MessageTraceV2 setzt mit Empfängeradresse und Empfangszeit (EndDate) des letzten Eintrags fort. Korrigiert: Das Cmdlet deckt die letzten 90 Tage ab, liefert pro Abfrage aber höchstens zehn Tage.
+
 ## Quellen
 
 1.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Feldliste inklusive FromIP und ToIP, Abfragezeitraum (90 Tage, höchstens zehn Tage pro Abfrage) sowie die Fortsetzung mit StartingRecipientAddress und EndDate.

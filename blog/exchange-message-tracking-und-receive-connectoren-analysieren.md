@@ -694,6 +694,10 @@ Zusammengefasst hat sich diese Reihenfolge als schnellste erwiesen. Nachricht ü
 
 Die häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine abgeschnittene Tabelle statt der vollständigen Fehlermeldung, man hält Schattenkopien für Verarbeitungsschritte, man glaubt der `ConnectorId` im Tracking, und man hält eine leere Stichprobe für einen Beweis. Wer diese vier kennt, kommt in der Regel in wenigen Minuten zur richtigen Ebene.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Get-MessageTraceV2 liefert Daten der letzten 90 Tage, je Abfrage aber höchstens 10 Tage. Quellenlinks auf die neuen Adressen von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Feldbeschreibung und vollständige Liste der Ereignistypen im Message Tracking.

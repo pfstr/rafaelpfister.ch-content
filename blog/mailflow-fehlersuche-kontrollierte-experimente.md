@@ -140,6 +140,10 @@ Formulieren Sie Hypothesen so, dass sie scheitern können, und fragen Sie sich v
 
 Die konkreten Abfragen dazu stehen in [Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren). Wer die Befehle lieber zusammenklickt als abtippt, findet sie im [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder).
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von Mohr Siebeck und Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [Karl Popper: Logik der Forschung](https://www.mohrsiebeck.com/buch/logik-der-forschung-9783161484100/): Ursprung des Falsifikationsprinzips, wonach eine Aussage nur dann wissenschaftlich ist, wenn sie widerlegbar bleibt.

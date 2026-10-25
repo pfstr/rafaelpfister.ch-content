@@ -104,6 +104,10 @@ Beide Varianten haben Grenzen, die die Wahl beeinflussen:
 
 Für den gezielten Zugriff auf interne Dienste ist der Subnetz-Router fast immer die richtige Wahl: Er öffnet nur, was nötig ist. Den Exit-Node nehmen Sie, wenn Sie bewusst den gesamten ausgehenden Verkehr über einen bestimmten Standort führen wollen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von Tailscale aktualisiert.
+
 ## Quellen
 
 1.  [Tailscale: Subnet routers](https://tailscale.com/docs/features/subnet-routers): Routen advertisen, Freigabe, SNAT-Verhalten und Hochverfügbarkeit mit mehreren Routern.

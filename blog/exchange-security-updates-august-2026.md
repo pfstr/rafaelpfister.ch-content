@@ -101,6 +101,10 @@ Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (
 
 Kurz zusammengefasst: Das August-SU oder ein neueres SU (inzwischen das Oktober-SU) zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann: OWA Light lässt sich manuell als Sofortmassnahme gegen CVE-2026-62914 deaktivieren. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Das Wrapper-Problem ist seit den SUs vom 8. September 2026 behoben, der SettingOverride kann danach entfernt werden. Aktueller Stand ist das Oktober-SU vom 13. Oktober 2026 (Exchange SE KB5128895), das letzte SU für Exchange 2016 und 2019.
+
 ## Quellen
 
 1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Offizielle Release-Ankündigung mit unterstützten Versionen, OWA-Light-Hinweis, Known Issues und FAQ; in den Kommentaren die Bestätigungen zum Pwn2Own-Fix (CVE-2026-62911) und zum fortbestehenden Wrapper-SettingOverride.

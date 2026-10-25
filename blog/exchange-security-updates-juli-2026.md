@@ -117,6 +117,10 @@ Eine detaillierte Anleitung zum Entfernen der Gruppen hat Hayes Jupe in seinem B
 
 Kurz zusammengefasst der praktische Ablauf: Zuerst mit dem Health Checker den Bestand inventarisieren (er zeigt fehlende CUs/SUs, offene manuelle Schritte *und* neu die Legacy-Gruppen). Dann das aktuelle CU sowie das Juli-SU einspielen, den Server neu starten und prüfen, ob alle Exchange-Dienste sauber gestartet sind. Danach den Health Checker erneut laufen lassen, die CVE-2026-42897-Mitigation entfernen (nach dem 16. Juli bzw. mit vorherigem Block der ID M2.1.0) und schliesslich die deprecierten Sicherheitsgruppen bereinigen. SUs sind kumulativ: Wer auf einem unterstützten CU sitzt, muss nicht jedes Zwischen-SU nachziehen, sondern installiert direkt das neueste.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Das Wrapper-Problem ist seit den SUs vom 8. September 2026 behoben; mit den Updates vom 13. Oktober 2026 sind die letzten Sicherheitsupdates für Exchange 2016 und 2019 erschienen.
+
 ## Quellen
 
 1.  [Released: July 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-july-2026-exchange-server-security-updates/4534146): Offizielle Ankündigung des Juli-Releases mit den unterstützten Versionen und dem bekannten Wrapper-Nachrichten-Problem.

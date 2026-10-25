@@ -465,6 +465,10 @@ Die technische Abnahme umfasst mindestens:
 
 Ein behobener Mail-Loop ist erst dann abgeschlossen, wenn nicht nur die Testmail ankommt, sondern auch unbekannte Empfänger und alternative Mailflow-Pfade definiert enden. Genau dort liegen die meisten Rückfälle.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Microsoft hat den Support-Artikel zum Subdomain- und EdgeSync-Szenario zurückgezogen; die Quelle verweist neu auf die archivierte Fassung vom 19. April 2026.
+
 ## Quellen
 
 1. [Microsoft Learn – Fix NDR error 5.4.6 or 5.4.14 in Exchange Online](https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/fix-error-code-5-4-6-through-5-4-20-in-exchange-online): Bedeutung der Exchange-NDRs und typische Ursachen in Accepted Domains und Hybrid-Connectoren.

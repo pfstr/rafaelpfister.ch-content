@@ -134,6 +134,10 @@ Remove-NetFirewallRule -DisplayName "NAS-Proxy (VPN)"
 
 Eine Portweiterleitung ist ein Werkzeug für den gezielten, zeitlich begrenzten Zugriff, nicht für einen dauerhaft offenen Kanal. Für den Dauerbetrieb eines internen Dienstes über das Internet ist ein Reverse-Proxy mit gültigem Zertifikat oder ein VPN mit Subnetz-Routing die sauberere Lösung.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Subnetz-Routen werden mit tailscale set --advertise-routes statt tailscale up angekündigt. Quellenlinks auf die neuen Adressen von Microsoft Learn und Tailscale aktualisiert.
+
 ## Quellen
 
 1.  [netsh interface (Microsoft Learn)](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/netsh-interface): Befehlsreferenz von `netsh interface` mit der Syntax der portproxy-Unterbefehle und Protokollvarianten.

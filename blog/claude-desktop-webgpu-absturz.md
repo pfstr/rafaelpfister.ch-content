@@ -249,6 +249,10 @@ Der Code-Integrity-Fehlschlag hat eine Nebenwirkung, die viele Betroffene für e
 
 Die Paketierungs-Ursache ist als [#81341](https://github.com/anthropics/claude-code/issues/81341) gemeldet, der Sammel-Thread mit den Community-Belegen ist [#81698](https://github.com/anthropics/claude-code/issues/81698), die Minidump-Analyse mit der Fallback-Ketten-Erklärung ist [#89250](https://github.com/anthropics/claude-code/issues/89250), ein weiterer ausführlicher Report inklusive der Reparatur-Schleife ist [#80444](https://github.com/anthropics/claude-code/issues/80444). Der eigentliche Fix, ein vollständiger Signatur-Katalog im MSIX-Paket, liegt bei Anthropic. Stand 25.10.2026 ist #81341 weiterhin offen, und Meldungen von Anfang September 2026 bestätigen den Fehler auch in Version 1.40609.1. #80444 wurde am 15. September 2026 ohne Angabe einer behobenen Version geschlossen, #89250 am 20. Oktober 2026 automatisch wegen Inaktivität; einen Fix nennt keines der beiden Issues. Bis dahin gilt: auf die klassische Installation wechseln; wer beim MSIX-Paket bleiben muss, schliesst den Browser-Bereich diszipliniert und schaltet bei Bedarf WebGPU per Flag ab. Auf dem hier untersuchten System ist die App seit dem Wechsel auf die klassische Installation absturzfrei, ohne ein einziges weiteres Event 3033.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Issue #81341 ist Stand 25.10.2026 weiterhin offen, der Fehler ist auch in Version 1.40609.1 bestätigt. Die Issues #80444 und #89250 wurden ohne Nennung eines Fixes geschlossen.
+
 ## Quellen
 
 1.  [GitHub-Issue #81698: GPU process crash kills entire app](https://github.com/anthropics/claude-code/issues/81698): Der Sammel-Thread mit den Community-Belegen zur Code-Integrity-Kette, den Hersteller-übergreifenden Datenpunkten und der Browser-Pane-Korrelation.

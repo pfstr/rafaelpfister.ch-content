@@ -117,6 +117,10 @@ Eine Gerätesuche an der Hue-Bridge nimmt alle Geräte auf, die sich gerade im K
 
 Die Szenen-Tabellen der Klemmen lassen sich über die API auslesen und ändern, etwa mit `device/getSceneMode` und `device/saveScene`. Jeder dieser Aufrufe geht über den Bus. Sichern Sie vor Änderungen die alten Werte, zum Beispiel in einer CSV-Datei, um sie bei Bedarf wiederherstellen zu können.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse der FRITZ!-Wissensdatenbank aktualisiert.
+
 ## Quellen
 
 1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): Integration und Blueprints aus diesem Artikel, MIT-Lizenz.

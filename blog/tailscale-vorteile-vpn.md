@@ -190,6 +190,10 @@ Weniger geeignet ist es, wenn Vorgaben eine vollständig selbst betriebene Infra
 
 Zum Testen genügt es, den Client auf zwei Geräten zu installieren und sich mit demselben Konto anzumelden. Mit `tailscale status` sehen Sie anschliessend alle Geräte im Tailnet, mit `tailscale ping <gerät>` prüfen Sie, ob eine direkte Verbindung oder ein Relay verwendet wird.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von Tailscale aktualisiert.
+
 ## Quellen
 
 1.  [Tailscale: How Tailscale works](https://tailscale.com/blog/how-tailscale-works): Architektur mit Coordination Server, WireGuard-Mesh und lokaler Durchsetzung der Regeln.

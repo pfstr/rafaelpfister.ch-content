@@ -125,6 +125,10 @@ RustDesk ersetzt TeamViewer in vielen Fällen, hat aber Grenzen, die Sie vor dem
 
 Für den privaten Gebrauch und den Support einzelner Geräte reicht die kostenlose Fassung mit dem öffentlichen Server oder einer Direktverbindung. Sobald Sie viele Geräte verwalten, gewerblich arbeiten oder volle Datenhoheit brauchen, benötigen Sie einen eigenen Server, mit dem entsprechenden Betriebsaufwand als Gegenleistung für die Unabhängigkeit.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Installationsbeispiel auf RustDesk 1.5.0 vom 30. September 2026 nachgeführt.
+
 ## Quellen
 
 1.  [RustDesk auf GitHub](https://github.com/rustdesk/rustdesk): Quellcode, Releases mit den Installern und die Lizenz AGPL-3.0.

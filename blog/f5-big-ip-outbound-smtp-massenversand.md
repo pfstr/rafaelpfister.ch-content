@@ -116,6 +116,10 @@ Ein Monitor auf dem Pool-Member ist sinnvoll, damit die BIG-IP einen Ausfall der
 
 Die kurze Antwort auf die Ausgangsfrage lautet also: Nein, Sticky Sessions sind nicht besser, sie sind in dieser Konstellation wirkungslos bis schädlich. Die Qualität der Lösung entscheidet sich an der DNS-Auflösung des Provider-Hostnamens, an einer stabilen SNAT-Adresse, an zum Lastprofil passenden Timeouts und daran, dass die Versandsysteme ihre 1000 Mails pro Minute über wenige stehende Verbindungen einliefern statt über tausend einzelne.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Das Standardintervall für die Namensauflösung von FQDN-Nodes beträgt 3600 Sekunden, nicht die DNS-TTL; nach der TTL richtet sich die BIG-IP nur mit der Einstellung interval ttl.
+
 ## Quellen
 
 1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Abschnitt 4.5.4 und das Transaktionsmodell zeigen, dass mehrere Mail-Transaktionen über eine Verbindung der vorgesehene Normalfall sind.

@@ -445,6 +445,10 @@ Die disconnected mailboxes sollten erst nach Ablauf des vereinbarten Rollback-Fe
 
 Wenn Hybrid Remote Moves nicht erlaubt sind und keine Postfachdaten in Exchange Online übernommen werden müssen, lässt sich ein bestehender synchronisierter AD-Benutzer kontrolliert von einer lokalen Mailbox auf eine neue Cloud-Mailbox umstellen. Der kritische Teil ist nicht `Enable-RemoteMailbox`, sondern die Prozesskontrolle darum herum: vollständige Inventarisierung, verifizierte PST-Sicherung, explizite Freigaben, Erhalt der Proxy- und X500-Adressen, ein kontrollierter Mailflow sowie ein echtes Rollback-Fenster.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1. [Microsoft Learn – Enable-RemoteMailbox](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/enable-remotemailbox?view=exchange-ps): Aktiviert einen bestehenden lokalen AD-Benutzer für eine Mailbox im cloudbasierten Dienst und dokumentiert die Schalter für Benutzer-, Shared-, Raum- und Gerätepostfächer.

@@ -165,6 +165,10 @@ Gibt dieser Aufruf den Rechnernamen der Gegenstelle zurück, sind alle Vorausset
 
 Eine Einschränkung bleibt auch bei vollständiger Konfiguration bestehen und lässt sich nur umgehen: Standardmässig kann eine Remote-Sitzung Ihre Anmeldedaten nicht an ein drittes System weiterreichen. Greifen Sie in einer Sitzung auf dem Zielrechner auf eine Netzwerkfreigabe oder einen weiteren Server zu, scheitert das an fehlenden Anmeldedaten. Dieses Double-Hop-Problem ist eine Sicherheitseigenschaft, keine Fehlkonfiguration. Für die meisten Support-Aufgaben genügt es, den Befehl direkt auf dem Zielrechner auszuführen. Wo die Weitergabe wirklich nötig ist, kommen CredSSP oder eine eingeschränkte Delegierung ins Spiel, beide mit eigenen Sicherheitsabwägungen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [about_Remote_Requirements (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_requirements): Voraussetzungen für PowerShell-Remoting, Rechte und Netzwerkprofile.

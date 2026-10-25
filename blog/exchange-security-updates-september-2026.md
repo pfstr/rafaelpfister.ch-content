@@ -312,6 +312,10 @@ Aus dem Juli bleibt zudem die Kontrolle, ob die CVE-2026-42897-Mitigation (M2.1.
 
 Seit dem 13. Oktober 2026 ersetzen die Oktober-SUs laut KB-Artikeln die September-SUs (Exchange SE: KB5128895, Build 15.2.2562.56). Da SUs kumulativ sind, installieren Sie auf allen Exchange-Servern und Management-Tools-Maschinen direkt das Oktober-SU; Details im [Artikel zum Oktober-SU](/blog/exchange-security-updates-oktober-2026). Wo das noch nicht möglich ist, braucht ein Server mit dem SU vom 8. September mindestens v2 für CVE-2026-96940. Die Spoofing-Lücke mit CVSS 9.3 und die Postfachübernahme über ein Benutzerkonto mit geringen Rechten (CVE-2026-69380) sind Grund genug, nicht auf den nächsten Patchday zu warten. Entfernen Sie danach den Wrapper-Override, prüfen Sie die drei Known Issues und lassen Sie den Health Checker laufen. Die fehlenden WordBreaker-Dateien meldet der Health Checker nicht; dafür ist das Prüfskript aus dem WordBreaker-Abschnitt nötig. Für Exchange 2016 und 2019 endet das ESU-Programm im Oktober 2026; die Migration auf Exchange SE lässt sich nicht weiter verschieben.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Die Oktober-SUs vom 13. Oktober 2026 ersetzen die September-SUs und beheben den .ics-Fehler sowie den WordBreaker-Deadlock. Für das Frei/Gebucht-Problem meldet Microsoft eine Korrektur im Dienst; die Befehle zum Zurücksetzen des SettingOverrides sind ergänzt.
+
 ## Quellen
 
 1.  [Released: September 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-september-2026-exchange-server-security-updates/4554411): Offizielle Release-Ankündigung mit unterstützten Versionen, ESU-Hinweis, Known Issues, behobenen Problemen und Installationsablauf (eingesehen über den RSS-Feed des Exchange Team Blogs).

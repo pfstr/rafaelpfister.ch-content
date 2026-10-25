@@ -87,6 +87,10 @@ Wenn der Drucker in der Sitzung nicht auftaucht, in dieser Reihenfolge prüfen:
 6. **Spooler?** Dienst Druckwarteschlange auf dem Zielsystem muss laufen.
 7. **Kontrolle in der Sitzung:** `Get-Printer | Where-Object DriverName -eq "Remote Desktop Easy Print"` listet die umgeleiteten Drucker samt Sitzungs-ID.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Seit dem Sicherheitsupdate vom April 2026 (CVE-2026-26151) zeigt ein neuer Dialog beim Öffnen von .rdp-Dateien alle Umleitungen, auch Drucker, standardmässig ausgeschaltet an; dazu der Registry-Wert RedirectionWarningDialogVersion und ein zusätzlicher Prüfschritt.
+
 ## Quellen
 
 1.  [Supported RDP properties](https://learn.microsoft.com/en-us/azure/virtual-desktop/rdp-properties): Referenz aller .rdp-Eigenschaften, darunter redirectprinters mit Werten und Default.

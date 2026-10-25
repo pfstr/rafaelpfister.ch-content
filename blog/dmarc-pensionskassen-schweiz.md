@@ -108,6 +108,10 @@ Für Einrichtungen ohne wirksamen Schutz führt ein klarer Pfad zum Ziel:
 
 Die Angriffe der jüngsten Zeit zielten auf einen Dienstleister, nicht auf die Kassen selbst. Die Folgeschäden entstehen aber dort, wo eine Absenderdomain ungeschützt ist, bei der Kasse ebenso wie bei ihren Zulieferern. Vier von fünf geprüften Vorsorgeeinrichtungen sind gegen gefälschte Absender nicht vollständig geschützt, zwei von fünf haben gar kein DMARC, und gerade die Hersteller der Verwaltungssoftware schneiden am schlechtesten ab. Die Lücke ist bekannt, günstig zu schliessen und wirkt sofort. Nach einem Datenabfluss, der Name, Adresse und Bankverbindung betrifft, ist sie keine technische Nebensache, sondern Teil der Sorgfaltspflicht des obersten Organs, und zwar entlang der ganzen Lieferkette.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse des EDÖB aktualisiert.
+
 ## Quellen
 
 1.  [SRF: Pensionskasse des Bundes, wie konnten heikle Daten bei externer Softwarefirma landen](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Hintergrund zum Vorfall, betroffene Datenarten und Rolle des Softwarelieferanten.

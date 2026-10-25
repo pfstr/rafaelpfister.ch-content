@@ -90,6 +90,10 @@ Bleibt der Header unklar oder stempelt ein vorgelagerter Loadbalancer die Verbin
 5. Received-Header der Testmail zeigt `ESMTPSA` (mit Konto) bzw. `ESMTPS` (mit IP-Freischaltung); `ESMTPA` und `ESMTP` sind Befunde.
 6. Falls die Verschlüsselung bis zum Empfänger gefordert ist: als Anforderung an das Mail-Team adressiert, denn die Strecke ab Relay liegt ausserhalb der Applikation.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von IANA aktualisiert; die Jakarta-Mail-Quelle verweist neu auf die Dokumentation von Eclipse Angus Mail.
+
 ## Quellen
 
 1.  [RFC 3207: SMTP Service Extension for Secure SMTP over Transport Layer Security](https://www.rfc-editor.org/rfc/rfc3207): definiert STARTTLS und das Umschalten der Klartextverbindung auf TLS.

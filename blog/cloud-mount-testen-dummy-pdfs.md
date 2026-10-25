@@ -509,6 +509,10 @@ Ein Cold-Storage-Mount ist einsatzbereit, wenn Sie diese Fragen mit Ja beantwort
 
 Wenn eine Antwort fehlt, wissen Sie immerhin genau, woran Sie weiterarbeiten müssen. Das ist wesentlich hilfreicher als ein Mount, der beim ersten `ls` gut aussah und erst im Betrieb seine Grenzen zeigt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Bei docker kill ist SIGKILL bereits das Standardsignal; die Option --signal KILL dient nur der Verdeutlichung.
+
 ## Quellen
 
 1.  [Rclone test makefiles](https://rclone.org/commands/rclone_test_makefiles/): reproduzierbare Testdateien und Verzeichnisstrukturen mit konfigurierbaren Grössen.

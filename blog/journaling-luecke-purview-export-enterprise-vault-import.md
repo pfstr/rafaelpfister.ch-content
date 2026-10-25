@@ -475,6 +475,10 @@ Am Ende des Nachimports stehen drei Dateien und eine Suche. `items.csv` aus dem 
 
 Danach das Aufräumen. Die leeren Unterordner und die liegen gebliebenen Entwürfe werden aus dem Journalpostfach entfernt, die Freigabe mit den PST-Dateien wird entfernt, die PST-Dateien werden gelöscht, sobald der Abgleich abgeschlossen ist. Die Rollenzuweisung *Mailbox Import Export* wird zurückgenommen, die Task-Einstellungen bleiben, wenn der Betrieb die Messwerte kennt. Und der Vorfall selbst bekommt eine Überwachung der Journalzustellung, denn die Lücke fiel über eine Zufallsmeldung auf, nicht über ein Monitoring.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Community-Quelle zum PST-Import in Journalarchive durch einen Enterprise-Vault-Supportartikel ersetzt, der die fehlende Unterstützung bestätigt und Shared Archive oder das Kopieren ins Journalpostfach als Alternativen nennt.
+
 ## Quellen
 
 1.  [Microsoft Learn: Export search results in eDiscovery](https://learn.microsoft.com/en-us/purview/edisc-search-export): vollständige Liste der Exportoptionen der neuen eDiscovery, Paketgrössen, Verhalten von *Organize data* und *Include folder and path*, 14-Tage-Ablauf der Pakete.
