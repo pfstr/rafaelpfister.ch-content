@@ -109,6 +109,10 @@ Für Einrichtungen ohne wirksamen Schutz führt ein klarer Pfad zum Ziel:
 
 Die Angriffe der jüngsten Zeit zielten auf einen Dienstleister, nicht auf die Kassen selbst. Die Folgeschäden entstehen aber dort, wo eine Absenderdomain ungeschützt ist, bei der Kasse ebenso wie bei ihren Zulieferern. Vier von fünf geprüften Vorsorgeeinrichtungen sind gegen gefälschte Absender nicht vollständig geschützt, zwei von fünf haben gar kein DMARC, und gerade die Hersteller der Verwaltungssoftware schneiden am schlechtesten ab. Die Lücke ist bekannt, günstig zu schliessen und wirkt sofort. Nach einem Datenabfluss, der Name, Adresse und Bankverbindung betrifft, ist sie keine technische Nebensache, sondern Teil der Sorgfaltspflicht des obersten Organs, und zwar entlang der ganzen Lieferkette.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse des EDÖB aktualisiert.
+
 ## Quellen
 
 1.  [SRF: Pensionskasse des Bundes, wie konnten heikle Daten bei externer Softwarefirma landen](https://www.srf.ch/news/schweiz/pensionskasse-des-bundes-wie-konnten-heikle-daten-bei-externer-softwarefirma-landen): Hintergrund zum Vorfall, betroffene Datenarten und Rolle des Softwarelieferanten.
@@ -585,6 +589,10 @@ Das Update schliesst die Lücke, macht aber eine bereits ausgeführte Schadsoftw
 Die Windows Shell ist Bestandteil jeder Windows-Installation; CrowdStrike zählt deshalb praktisch die gesamte Windows-Basis zu den betroffenen Systemen. Das Angriffsszenario setzt beim Benutzer an: Ein Anhang oder Link per E-Mail oder Chat genügt, wenn das Opfer ihn öffnet. Mark of the Web ist die Grundlage mehrerer Schutzfunktionen von Windows und Office; eine Umgehung entfernt Warnungen, die Benutzer sonst vor dem Öffnen einer Datei sehen.
 Eine Meldung des Nationalen Zentrums für Cybersicherheit (NCSC) oder anderer europäischer CERTs zu CVE-2026-96951 war bis zum 14. Oktober 2026 nicht auffindbar.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Status des NVD-Eintrags nachgeführt: seit dem 16. Oktober 2026 «Analyzed».
+
 ## Quellen
 
 1.  [Microsoft Security Update Guide: CVE-2026-96951](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-96951): Advisory mit CVSS-Vektor, Ausnutzungsstatus, FAQ zum Angriffsszenario, betroffenen Produkten, KB-Nummern und Builds.
@@ -1038,6 +1046,10 @@ Aus dem Juli bleibt zudem die Kontrolle, ob die CVE-2026-42897-Mitigation (M2.1.
 
 Seit dem 13. Oktober 2026 ersetzen die Oktober-SUs laut KB-Artikeln die September-SUs (Exchange SE: KB5128895, Build 15.2.2562.56). Da SUs kumulativ sind, installieren Sie auf allen Exchange-Servern und Management-Tools-Maschinen direkt das Oktober-SU; Details im [Artikel zum Oktober-SU](/blog/exchange-security-updates-oktober-2026). Wo das noch nicht möglich ist, braucht ein Server mit dem SU vom 8. September mindestens v2 für CVE-2026-96940. Die Spoofing-Lücke mit CVSS 9.3 und die Postfachübernahme über ein Benutzerkonto mit geringen Rechten (CVE-2026-69380) sind Grund genug, nicht auf den nächsten Patchday zu warten. Entfernen Sie danach den Wrapper-Override, prüfen Sie die drei Known Issues und lassen Sie den Health Checker laufen. Die fehlenden WordBreaker-Dateien meldet der Health Checker nicht; dafür ist das Prüfskript aus dem WordBreaker-Abschnitt nötig. Für Exchange 2016 und 2019 endet das ESU-Programm im Oktober 2026; die Migration auf Exchange SE lässt sich nicht weiter verschieben.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Die Oktober-SUs vom 13. Oktober 2026 ersetzen die September-SUs und beheben den .ics-Fehler sowie den WordBreaker-Deadlock. Für das Frei/Gebucht-Problem meldet Microsoft eine Korrektur im Dienst; die Befehle zum Zurücksetzen des SettingOverrides sind ergänzt.
+
 ## Quellen
 
 1.  [Released: September 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-september-2026-exchange-server-security-updates/4554411): Offizielle Release-Ankündigung mit unterstützten Versionen, ESU-Hinweis, Known Issues, behobenen Problemen und Installationsablauf (eingesehen über den RSS-Feed des Exchange Team Blogs).
@@ -1149,6 +1161,10 @@ Aus den Vormonaten bleiben diese Nacharbeiten offen, falls noch nicht erledigt: 
 ## Empfohlenes Vorgehen
 
 Installieren Sie zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen v2 oder das neuere Oktober-SU, auch dort, wo das September-SU bereits läuft: Das erste September-SU schliesst CVE-2026-96940 nicht, ein einzelnes kompromittiertes Benutzerkonto genügt für den Zugriff auf fremde Postfächer, und Microsoft hält eine Ausnutzung für wahrscheinlicher als bei allen anderen September-CVEs. Prüfen Sie anschliessend mit dem Health Checker den Build-Stand, und nehmen Sie nach dem Oktober-SU die Workarounds für die Known Issues wie oben beschrieben zurück. Für Exchange 2016 und 2019 ist das Oktober-SU vom 13. Oktober 2026 das letzte Update; danach erscheinen für diese Versionen keine Sicherheitsupdates mehr.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Oktober-SUs vom 13. Oktober 2026 mit Buildnummern, die auch CVE-2026-96940 schliessen und für Exchange 2016 und 2019 das letzte Update sind. Alle drei Known Issues sind inzwischen behoben, die Rücknahme der Workarounds ist beschrieben.
 
 ## Quellen
 
@@ -1371,6 +1387,10 @@ Ein Treffer bedeutet, dass das System als kompromittiert gilt. Sichern Sie Logs 
 ## Einordnung
 
 Betroffen sind Organisationen, die Zimbra als eigenen Mailserver betreiben und Mail direkt aus dem Internet annehmen. Die Lücke ist über den regulären Mailempfang erreichbar, ohne Anmeldung und ohne Zutun eines Benutzers. Die Einschränkung auf `zimbra-snmp` mit aktiven Benachrichtigungen reduziert die Zahl der angreifbaren Systeme; wer SNMP-Überwachung eingerichtet hat, ist aber genau in dieser Konfiguration. Laut SecurityWeek führt CISA im KEV-Katalog 18 Zimbra-Lücken, vier davon aus dem Jahr 2026; frühere Kampagnen gegen Zimbra wurden staatlich unterstützten Gruppen und finanziell motivierten Kriminellen zugeordnet. CERT-FR hat die Lücke am 19. August 2026 zusammen mit drei weiteren in Zimbra behobenen CVEs gemeldet. Eine Meldung des NCSC Schweiz zu CVE-2026-73570 lag bei der Recherche nicht vor.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Seit dem 24. September 2026 ist Zimbra 10.1.21 verfügbar, das weitere Lücken schliesst, darunter vorhersagbare Codes bei der Passwort-Wiederherstellung; ein Update kann direkt auf diese Version erfolgen.
 
 ## Quellen
 
@@ -1873,6 +1893,10 @@ Eine Gerätesuche an der Hue-Bridge nimmt alle Geräte auf, die sich gerade im K
 
 Die Szenen-Tabellen der Klemmen lassen sich über die API auslesen und ändern, etwa mit `device/getSceneMode` und `device/saveScene`. Jeder dieser Aufrufe geht über den Bus. Sichern Sie vor Änderungen die alten Werte, zum Beispiel in einer CSV-Datei, um sie bei Bedarf wiederherstellen zu können.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse der FRITZ!-Wissensdatenbank aktualisiert.
+
 ## Quellen
 
 1.  [pfstr/ha-digitalstrom-local](https://github.com/pfstr/ha-digitalstrom-local): Integration und Blueprints aus diesem Artikel, MIT-Lizenz.
@@ -1998,6 +2022,10 @@ Ein Update entfernt keine bereits eingerichteten Änderungen eines Angreifers. F
 Betroffen sind Organisationen, die Cisco Secure Email Gateway als Mail-Gateway vor ihrem Mailserver betreiben, unabhängig von dessen Konfiguration. Weil der Angriff über den eingehenden Mailfluss läuft und Cisco alle Konfigurationen als betroffen einstuft, ist jede Installation angreifbar, die E-Mails von aussen annimmt. Das Gateway verarbeitet sämtliche Nachrichten einer Organisation und hält Zugangsdaten und Schlüsselmaterial; eine Befehlsausführung als `root` gibt einem Angreifer Zugriff auf beides.
 
 AsyncOS war bereits früher Ziel: Laut BleepingComputer wurde die AsyncOS-Lücke CVE-2025-20393 seit November 2025 ausgenutzt und im Januar gepatcht. In Europa haben unter anderem das deutsche BSI (Cybersicherheitswarnung vom 14. September 2026) und CERT-FR (Avis vom 15. September 2026) zu CVE-2026-76461 gewarnt.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse des CERT-FR aktualisiert.
 
 ## Quellen
 
@@ -2152,6 +2180,10 @@ Organisationen mit eigenem HIN Mailgateway melden sich nicht bei HIN Mail an. Di
   <p><strong>Betreiben Sie ein eigenes HIN Mailgateway?</strong> Ich prüfe Ihre Umgebung und sage Ihnen, was vor der Migration auf «Stargate» zu erledigen ist.</p>
   <a class="offer-box__cta" href="/stargate">Jetzt registrieren</a>
 </aside>
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Bei der ersten Anmeldung mit HIN Client 4.0 muss das Passwort einmalig geändert werden, und die Anmeldung im Browser gilt erst ab Anfang November 2026.
 
 ## Quellen
 
@@ -2378,6 +2410,10 @@ Ende September hat zudem Kiteworks seine Kunden wegen einer Warnung von Strafver
 5.  **Update einspielen:** 8.0.2, 7.6.7 oder 7.4.9 (oder neuer) installieren; Systeme auf 7.2 auf 7.4 oder neuer heben.
 
 6.  **Advisory beobachten:** Fortinet ergänzt FG-IR-26-175 bei neuen Erkenntnissen; die Revisionshistorie steht am Ende des Advisorys.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Fixversionen 7.6.7 (2. Oktober 2026), 7.4.9 und 8.0.2 (3. Oktober 2026) sowie die Aktualisierung von FortiMail Cloud. Gemäss geänderter Advisory-Fassung betrifft die Sperre die Webmail- statt der Verwaltungsoberfläche, ergänzt um eine WAF-Regel; die Dateiliste mit Hashwerten ist nur noch in der archivierten Fassung enthalten.
 
 ## Quellen
 
@@ -2729,6 +2765,10 @@ Neben dem Ort zählt, wie lange Daten gespeichert werden:
 - **AWS Bedrock:** Inhalte gehen nicht an Anthropic. Die Aufbewahrung ist pro Modell zwischen `none`, `default` und `aws_review` wählbar; Fable verlangt `aws_review` mit bis zu 30 Tagen Speicherung zur Prüfung durch AWS.
 - **Google Vertex AI:** Google verwendet die Daten nur mit vorheriger Zustimmung für Training oder Fine-Tuning.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Haiku 5.5 (seit 7. Oktober 2026) mit Verfügbarkeit in Zürich und in der EU-Multi-Region von Google Cloud sowie Preisen; die Zielregionen des EU-Profils sind nun auch für Opus 5.5 und Sonnet 5.5 belegt, Stand der Preise und Regionen 25. Oktober 2026. Quellenlinks auf die neuen Adressen der Google-Cloud-Dokumentation aktualisiert.
+
 ## Quellen
 
 1.  [Claude Platform Docs: Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency): Parameter `inference_geo`, Werte `us` und `global`, Workspace geo, unterstützte Modelle, Feld `usage.inference_geo`.
@@ -2965,6 +3005,10 @@ Weniger geeignet ist es, wenn Vorgaben eine vollständig selbst betriebene Infra
 
 Zum Testen genügt es, den Client auf zwei Geräten zu installieren und sich mit demselben Konto anzumelden. Mit `tailscale status` sehen Sie anschliessend alle Geräte im Tailnet, mit `tailscale ping <gerät>` prüfen Sie, ob eine direkte Verbindung oder ein Relay verwendet wird.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von Tailscale aktualisiert.
+
 ## Quellen
 
 1.  [Tailscale: How Tailscale works](https://tailscale.com/blog/how-tailscale-works): Architektur mit Coordination Server, WireGuard-Mesh und lokaler Durchsetzung der Regeln.
@@ -3061,6 +3105,10 @@ Bei einem Ende-zu-Ende-verschlüsselten Dienst ist das schwieriger als bei S3, w
 | Skript-Automatisierung, Freigaben verwalten | Proton Drive CLI mit `--json`; Versionsstand 0.x, Befehle können sich noch ändern |
 
 Auf dem Linux-Desktop kann man auf den angekündigten Client warten oder vorerst Rclone verwenden. Auf Servern übernimmt die offizielle CLI inzwischen Sicherungen und Automatisierung; für einen Mount bleibt Rclone die einzige praktikable Lösung. Aus einem funktionierenden Behelf wird jedoch erst dann eine belastbare Plattform, wenn Proton begrenzte Maschinenzugänge und einen offiziell unterstützten Mount anbietet.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Auf Proton Drive CLI 0.9.0 vom 5. Oktober 2026 nachgeführt, mit der nun veröffentlichten takeout-Funktion für einen vollständigen lokalen Export.
 
 ## Quellen
 
@@ -3296,6 +3344,10 @@ Seit Version 0.9.0 vom 5. Oktober 2026 enthält die CLI den Befehl `takeout run`
 | Zugang mit begrenztem Umfang | Nein | Nein |
 
 Für Sicherungen, Build-Artefakte und Freigabeverwaltung ist die CLI die bessere Wahl, weil sie offiziell unterstützt wird und ohne gespeichertes Passwort auskommt. Für einen Mount, wie ihn etwa eine [Paperless-Dokumentablage](/blog/paperless-dokumente-clouddienst-auslagern) braucht, und für Spiegelungen mit Löschungen bleibt Rclone vorerst notwendig. Die grösste Lücke bleibt in beiden Fällen dieselbe: Proton bietet keinen Maschinenzugang, der sich auf einzelne Ordner oder Lesezugriff beschränken lässt.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Auf Version 0.9.0 vom 5. Oktober 2026 nachgeführt. Ergänzt: Der Befehl takeout run ist damit veröffentlicht, inklusive Hinweisen zu den nötigen --include-Angaben und der fehlenden Unterstützung für Proton Docs und Sheets.
 
 ## Quellen
 
@@ -4895,6 +4947,10 @@ Version 0.2.0 vom 26. September 2026 hat das Herkunftsmodell nach einem Review-H
 
 Fehler und Erweiterungswünsche nehme ich als [Issue auf GitHub](https://github.com/pfstr/MailHeaderAnalyzer/issues) entgegen. Testheader für Fehlerberichte bitte vorher anonymisieren; die mitgelieferten Testfälle verwenden ausschliesslich Beispieldomänen nach RFC 2606 und Adressen nach RFC 5737.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quelle RFC 7489 durch RFC 9989 ersetzt, das die DMARC-Spezifikation seit Mai 2026 ablöst.
+
 ## Quellen
 
 1.  [MailHeaderAnalyzer in der PowerShell Gallery](https://www.powershellgallery.com/packages/MailHeaderAnalyzer): Paketseite mit Installationsbefehl und Versionsverlauf.
@@ -5575,6 +5631,10 @@ Am Ende des Nachimports stehen drei Dateien und eine Suche. `items.csv` aus dem 
 
 Danach das Aufräumen. Die leeren Unterordner und die liegen gebliebenen Entwürfe werden aus dem Journalpostfach entfernt, die Freigabe mit den PST-Dateien wird entfernt, die PST-Dateien werden gelöscht, sobald der Abgleich abgeschlossen ist. Die Rollenzuweisung *Mailbox Import Export* wird zurückgenommen, die Task-Einstellungen bleiben, wenn der Betrieb die Messwerte kennt. Und der Vorfall selbst bekommt eine Überwachung der Journalzustellung, denn die Lücke fiel über eine Zufallsmeldung auf, nicht über ein Monitoring.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Community-Quelle zum PST-Import in Journalarchive durch einen Enterprise-Vault-Supportartikel ersetzt, der die fehlende Unterstützung bestätigt und Shared Archive oder das Kopieren ins Journalpostfach als Alternativen nennt.
+
 ## Quellen
 
 1.  [Microsoft Learn: Export search results in eDiscovery](https://learn.microsoft.com/en-us/purview/edisc-search-export): vollständige Liste der Exportoptionen der neuen eDiscovery, Paketgrössen, Verhalten von *Organize data* und *Include folder and path*, 14-Tage-Ablauf der Pakete.
@@ -5771,6 +5831,10 @@ Liegt die Version unter `15.2.1748.39` (2019 CU15) beziehungsweise `15.1.2507.61
 4. **Pause nur als Überbrückung nutzen.** Wenn das Update nicht in der ersten Septemberhälfte gelingt, `New-TenantExemptionInfo` mit knapper Laufzeit anlegen und die Pause nicht als Planungsreserve für die nächste Anhebung verstehen.
 
 5. **Migration nach Exchange SE terminieren.** Ohne ESU-Vertrag ist die nächste Anhebung die harte Frist, mit ESU der 31. Oktober 2026. Exchange 2019 CU15 lässt sich per In-Place-Upgrade auf SE bringen; Exchange 2016 braucht den Umweg über eine SE-Neuinstallation und Postfach- beziehungsweise Rollenverschiebung. Wer Exchange nur noch für die Attributverwaltung betreibt, entfernt den letzten Server und arbeitet mit den Management Tools weiter.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Die Oktober-SUs vom 13. Oktober 2026 (Builds 15.2.1748.55 und 15.1.2507.77) sind die letzten Updates für Exchange 2016 und 2019. Für Exchange SE CU2 steht wegen des verschobenen CU1 kein Datum fest.
 
 ## Quellen
 
@@ -6421,6 +6485,10 @@ Remove-NetFirewallRule -DisplayName "NAS-Proxy (VPN)"
 
 Eine Portweiterleitung ist ein Werkzeug für den gezielten, zeitlich begrenzten Zugriff, nicht für einen dauerhaft offenen Kanal. Für den Dauerbetrieb eines internen Dienstes über das Internet ist ein Reverse-Proxy mit gültigem Zertifikat oder ein VPN mit Subnetz-Routing die sauberere Lösung.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Subnetz-Routen werden mit tailscale set --advertise-routes statt tailscale up angekündigt. Quellenlinks auf die neuen Adressen von Microsoft Learn und Tailscale aktualisiert.
+
 ## Quellen
 
 1.  [netsh interface (Microsoft Learn)](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/netsh-interface): Befehlsreferenz von `netsh interface` mit der Syntax der portproxy-Unterbefehle und Protokollvarianten.
@@ -6522,6 +6590,10 @@ Beide Varianten haben Grenzen, die die Wahl beeinflussen:
 - **Ablaufende Schlüssel legen die Weiterleitung still.** Läuft der Schlüssel des Router-Node ab, ist das ganze dahinterliegende Netz nicht mehr erreichbar. Für einen dauerhaften Router-Node deaktivieren Sie den Schlüsselablauf in der Verwaltung.
 
 Für den gezielten Zugriff auf interne Dienste ist der Subnetz-Router fast immer die richtige Wahl: Er öffnet nur, was nötig ist. Den Exit-Node nehmen Sie, wenn Sie bewusst den gesamten ausgehenden Verkehr über einen bestimmten Standort führen wollen.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von Tailscale aktualisiert.
 
 ## Quellen
 
@@ -6648,6 +6720,10 @@ RustDesk ersetzt TeamViewer in vielen Fällen, hat aber Grenzen, die Sie vor dem
 - Manche Sicherheitsprogramme melden Fernwartungssoftware als potenziell unerwünscht. Pflegen Sie bei Bedarf eine Ausnahme und dokumentieren Sie, warum die Software installiert ist.
 
 Für den privaten Gebrauch und den Support einzelner Geräte reicht die kostenlose Fassung mit dem öffentlichen Server oder einer Direktverbindung. Sobald Sie viele Geräte verwalten, gewerblich arbeiten oder volle Datenhoheit brauchen, benötigen Sie einen eigenen Server, mit dem entsprechenden Betriebsaufwand als Gegenleistung für die Unabhängigkeit.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Installationsbeispiel auf RustDesk 1.5.0 vom 30. September 2026 nachgeführt.
 
 ## Quellen
 
@@ -6812,6 +6888,10 @@ Gibt dieser Aufruf den Rechnernamen der Gegenstelle zurück, sind alle Vorausset
 
 Eine Einschränkung bleibt auch bei vollständiger Konfiguration bestehen und lässt sich nur umgehen: Standardmässig kann eine Remote-Sitzung Ihre Anmeldedaten nicht an ein drittes System weiterreichen. Greifen Sie in einer Sitzung auf dem Zielrechner auf eine Netzwerkfreigabe oder einen weiteren Server zu, scheitert das an fehlenden Anmeldedaten. Dieses Double-Hop-Problem ist eine Sicherheitseigenschaft, keine Fehlkonfiguration. Für die meisten Support-Aufgaben genügt es, den Befehl direkt auf dem Zielrechner auszuführen. Wo die Weitergabe wirklich nötig ist, kommen CredSSP oder eine eingeschränkte Delegierung ins Spiel, beide mit eigenen Sicherheitsabwägungen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [about_Remote_Requirements (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_requirements): Voraussetzungen für PowerShell-Remoting, Rechte und Netzwerkprofile.
@@ -6900,6 +6980,10 @@ Prüfen Sie, ob Extended Protection auf allen Endpunkten aktiv und korrekt konfi
 Beschränken Sie den Zugriff aus dem Internet auf die webbasierten Exchange-Dienste. Ein Server, dessen Verwaltungs- und Replikationsendpunkte nicht offen aus dem Netz erreichbar sind, etwa weil sie nur über VPN zugänglich sind, entzieht diesem Angriff die Grundlage. Das ersetzt das Update nicht, verkleinert aber die Angriffsfläche spürbar.
 
 Und die eigentliche Konsequenz aus den BSI-Zahlen: Planen Sie die Migration weg von Exchange 2016/2019. Das ESU-Programm war eine Brücke bis Oktober 2026, kein Dauerzustand: Mit dem Oktober-SU vom 13. Oktober 2026 hat Microsoft die letzten Updates für Exchange 2016 und 2019 veröffentlicht, weitere Sicherheitsupdates erscheinen nur noch für Exchange SE. Wer im ESU-Programm gepatcht hat, hat damit Zeit für den geordneten Wechsel auf Exchange SE oder nach Exchange Online gewonnen, nicht mehr. Jeder weitere Monat auf einer nicht mehr unterstützten Version verlängert die Zeit, in der die nächste Lücke ohne verfügbaren Patch trifft.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Das Oktober-SU vom 13. Oktober 2026 (Exchange SE KB5128895, Build 15.2.2562.56) enthält den Fix ebenfalls und ist das letzte Update für Exchange 2016 und 2019.
 
 ## Quellen
 
@@ -7536,6 +7620,10 @@ Liegt eine Meldung vor, klären Sie in dieser Reihenfolge:
 
 Wie sich einzelne Zustellwege danach gezielt nachstellen lassen, zeigen die Beiträge zum [Message Tracking und zur SMTP-Diagnose im Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) sowie der [Mail-Header-Analyzer](https://rafaelpfister.ch/tools/header-analyzer) für die Auswertung des Transportwegs einer angekommenen Mail.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Link zum Mail-Header-Analyzer auf die richtige Adresse gesetzt. Quellenlink auf die neue Adresse von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [RFC 3461: SMTP Service Extension for Delivery Status Notifications](https://www.rfc-editor.org/rfc/rfc3461): SMTP-Erweiterung, mit der Absender DSNs anfordern und steuern.
@@ -7634,6 +7722,10 @@ Bleibt der Header unklar oder stempelt ein vorgelagerter Loadbalancer die Verbin
 4. Anmeldemodell geklärt: SMTP AUTH mit Servicekonto und Secret-Ablage, oder IP-Freischaltung laut Relay-Freigabe.
 5. Received-Header der Testmail zeigt `ESMTPSA` (mit Konto) bzw. `ESMTPS` (mit IP-Freischaltung); `ESMTPA` und `ESMTP` sind Befunde.
 6. Falls die Verschlüsselung bis zum Empfänger gefordert ist: als Anforderung an das Mail-Team adressiert, denn die Strecke ab Relay liegt ausserhalb der Applikation.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von IANA aktualisiert; die Jakarta-Mail-Quelle verweist neu auf die Dokumentation von Eclipse Angus Mail.
 
 ## Quellen
 
@@ -8406,6 +8498,10 @@ Erscheint hier das physische Interface (Ethernet oder WLAN) statt des VPN-Adapte
 
 Bleibt der Verkehr trotz korrekter Route im Tunnel, lohnt ein Blick auf die Reihenfolge der Netzwerkadapter und auf Client-Eigenheiten: Einige VPN-Clients erzwingen ihre Routen mit niedrigerer Metrik nach jedem Verbindungsaufbau neu, und eine veraltete Ausschlussliste fällt erst auf, wenn Microsoft ein Netz ergänzt. Der Abgleich mit der offiziellen Endpunktliste gehört darum in denselben Rhythmus wie andere wiederkehrende Netzwerk-Prüfungen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Das Netz 13.107.64.0/18 hat Microsoft 2024 aus der Endpunktliste entfernt; es ist aus Tabelle und OpenVPN-Beispiel gestrichen. Ebenfalls korrigiert: Nur die ID 11 gehört zur Kategorie Optimize, die ID 12 zur Kategorie Allow.
+
 ## Quellen
 
 1.  [Microsoft: Office 365 URLs and IP address ranges](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges): offizielle Endpunktliste; die Teams-Medien-Netze stehen unter der ID 11 in der Kategorie Optimize, die ID 12 mit denselben Netzen in der Kategorie Allow.
@@ -8598,6 +8694,10 @@ Ein Monitor auf dem Pool-Member ist sinnvoll, damit die BIG-IP einen Ausfall der
 | Sender-Konfiguration | wenige parallele Verbindungen, viele Nachrichten pro Verbindung; Wiederverwendung aktiv |
 
 Die kurze Antwort auf die Ausgangsfrage lautet also: Nein, Sticky Sessions sind nicht besser, sie sind in dieser Konstellation wirkungslos bis schädlich. Die Qualität der Lösung entscheidet sich an der DNS-Auflösung des Provider-Hostnamens, an einer stabilen SNAT-Adresse, an zum Lastprofil passenden Timeouts und daran, dass die Versandsysteme ihre 1000 Mails pro Minute über wenige stehende Verbindungen einliefern statt über tausend einzelne.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Das Standardintervall für die Namensauflösung von FQDN-Nodes beträgt 3600 Sekunden, nicht die DNS-TTL; nach der TTL richtet sich die BIG-IP nur mit der Einstellung interval ttl.
 
 ## Quellen
 
@@ -9564,6 +9664,10 @@ Der Code-Integrity-Fehlschlag hat eine Nebenwirkung, die viele Betroffene für e
 
 Die Paketierungs-Ursache ist als [#81341](https://github.com/anthropics/claude-code/issues/81341) gemeldet, der Sammel-Thread mit den Community-Belegen ist [#81698](https://github.com/anthropics/claude-code/issues/81698), die Minidump-Analyse mit der Fallback-Ketten-Erklärung ist [#89250](https://github.com/anthropics/claude-code/issues/89250), ein weiterer ausführlicher Report inklusive der Reparatur-Schleife ist [#80444](https://github.com/anthropics/claude-code/issues/80444). Der eigentliche Fix, ein vollständiger Signatur-Katalog im MSIX-Paket, liegt bei Anthropic. Stand 25.10.2026 ist #81341 weiterhin offen, und Meldungen von Anfang September 2026 bestätigen den Fehler auch in Version 1.40609.1. #80444 wurde am 15. September 2026 ohne Angabe einer behobenen Version geschlossen, #89250 am 20. Oktober 2026 automatisch wegen Inaktivität; einen Fix nennt keines der beiden Issues. Bis dahin gilt: auf die klassische Installation wechseln; wer beim MSIX-Paket bleiben muss, schliesst den Browser-Bereich diszipliniert und schaltet bei Bedarf WebGPU per Flag ab. Auf dem hier untersuchten System ist die App seit dem Wechsel auf die klassische Installation absturzfrei, ohne ein einziges weiteres Event 3033.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Issue #81341 ist Stand 25.10.2026 weiterhin offen, der Fehler ist auch in Version 1.40609.1 bestätigt. Die Issues #80444 und #89250 wurden ohne Nennung eines Fixes geschlossen.
+
 ## Quellen
 
 1.  [GitHub-Issue #81698: GPU process crash kills entire app](https://github.com/anthropics/claude-code/issues/81698): Der Sammel-Thread mit den Community-Belegen zur Code-Integrity-Kette, den Hersteller-übergreifenden Datenpunkten und der Browser-Pane-Korrelation.
@@ -9659,6 +9763,10 @@ Wenn der Drucker in der Sitzung nicht auftaucht, in dieser Reihenfolge prüfen:
 5. **Server-Sperre?** GPO «Clientdruckerumleitung nicht zulassen» bzw. `fDisableCpm` auf dem Zielsystem prüfen.
 6. **Spooler?** Dienst Druckwarteschlange auf dem Zielsystem muss laufen.
 7. **Kontrolle in der Sitzung:** `Get-Printer | Where-Object DriverName -eq "Remote Desktop Easy Print"` listet die umgeleiteten Drucker samt Sitzungs-ID.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Seit dem Sicherheitsupdate vom April 2026 (CVE-2026-26151) zeigt ein neuer Dialog beim Öffnen von .rdp-Dateien alle Umleitungen, auch Drucker, standardmässig ausgeschaltet an; dazu der Registry-Wert RedirectionWarningDialogVersion und ein zusätzlicher Prüfschritt.
 
 ## Quellen
 
@@ -10492,6 +10600,10 @@ Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (
 
 Kurz zusammengefasst: Das August-SU oder ein neueres SU (inzwischen das Oktober-SU) zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann: OWA Light lässt sich manuell als Sofortmassnahme gegen CVE-2026-62914 deaktivieren. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Das Wrapper-Problem ist seit den SUs vom 8. September 2026 behoben, der SettingOverride kann danach entfernt werden. Aktueller Stand ist das Oktober-SU vom 13. Oktober 2026 (Exchange SE KB5128895), das letzte SU für Exchange 2016 und 2019.
+
 ## Quellen
 
 1.  [Released: August 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-august-2026-exchange-server-security-updates/4543951): Offizielle Release-Ankündigung mit unterstützten Versionen, OWA-Light-Hinweis, Known Issues und FAQ; in den Kommentaren die Bestätigungen zum Pwn2Own-Fix (CVE-2026-62911) und zum fortbestehenden Wrapper-SettingOverride.
@@ -10635,6 +10747,10 @@ Das ist übrigens auch der Punkt, an dem sich Wissenschaft und Betrieb sauber tr
 Formulieren Sie Hypothesen so, dass sie scheitern können, und fragen Sie sich vorher, welches Ergebnis sie widerlegen würde. Vergleichen Sie nie zwei zufällig vorliegende Fälle, sondern bauen Sie den Vergleich mit genau einer geänderten Variable. Reproduzieren Sie den Fehler im Kontrollversuch, bevor Sie dem Gegenversuch glauben. Behandeln Sie Widerlegungen als Fortschritt und halten Sie sie schriftlich fest. Prüfen Sie bei jeder Abfrage, ob Sie die Gesamtheit oder eine Stichprobe sehen. Und richten Sie die geforderte Beweistiefe danach aus, wie leicht sich der geplante Eingriff zurücknehmen lässt.
 
 Die konkreten Abfragen dazu stehen in [Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren). Wer die Befehle lieber zusammenklickt als abtippt, findet sie im [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder).
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen von Mohr Siebeck und Microsoft Learn aktualisiert.
 
 ## Quellen
 
@@ -11317,6 +11433,10 @@ Zusammengefasst hat sich diese Reihenfolge als schnellste erwiesen. Nachricht ü
 
 Die häufigsten Zeitfresser sind dagegen immer dieselben: Man liest eine abgeschnittene Tabelle statt der vollständigen Fehlermeldung, man hält Schattenkopien für Verarbeitungsschritte, man glaubt der `ConnectorId` im Tracking, und man hält eine leere Stichprobe für einen Beweis. Wer diese vier kennt, kommt in der Regel in wenigen Minuten zur richtigen Ebene.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Get-MessageTraceV2 liefert Daten der letzten 90 Tage, je Abfrage aber höchstens 10 Tage. Quellenlinks auf die neuen Adressen von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Feldbeschreibung und vollständige Liste der Ereignistypen im Message Tracking.
@@ -11582,6 +11702,10 @@ Diese Auswertung eignet sich gut als Quartalsroutine. Legen Sie das Ergebnis ab 
 Wenn Sie dabei ohnehin die Mailkonfiguration Ihrer Domänen prüfen: Der [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) zeigt SPF, DKIM, DMARC und die übrigen Mailstandards für beliebige Domänen direkt im Browser, auch für Neben- und Marketingdomänen, die bei solchen Bestandsaufnahmen erfahrungsgemäss vergessen gehen. Und für die Abfragen selbst liefert der [Befehls-Generator](https://rafaelpfister.ch/tools/command-builder) fertige Bausteine für PowerShell und Unix-Shell.
 
 Wie Sie einzelne auffällige Nachrichten weiterverfolgen, steht in [Exchange-Mailfluss analysieren: Message Tracking, SMTP-Protokolle und Receive-Connectoren](https://rafaelpfister.ch/blog/exchange-message-tracking-und-receive-connectoren-analysieren).
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Die Seitenlogik von Get-MessageTraceV2 setzt mit Empfängeradresse und Empfangszeit (EndDate) des letzten Eintrags fort. Korrigiert: Das Cmdlet deckt die letzten 90 Tage ab, liefert pro Abfrage aber höchstens zehn Tage.
 
 ## Quellen
 
@@ -11912,6 +12036,10 @@ Besonders unangenehm ist der Fall, dass eine Änderung zwar läuft, aber nicht p
 Behandeln Sie das Regelwerk als Graphen, nicht als Textdatei. Eine Breitensuche ab dem Einstiegspunkt trennt in wenigen Zeilen Code Lebendes von Totem, und die Analyse innerhalb der Ketten findet zusätzlich die Regeln, die zwar dastehen, aber nach einem unbedingten Abgang nie erreicht werden.
 
 Für den Umbau selbst ist der Parallelbaum mit einer einzigen Weiche die Methode mit dem besten Verhältnis von Aufwand zu Sicherheit. Und die Erreichbarkeitsanalyse liefert Ihnen gleich das Abnahmekriterium dazu.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlinks auf die neuen Adressen der Apache-James-Dokumentation aktualisiert; die Referenzen zu Mailets und Matchern sind nun in einer Quelle zusammengefasst.
 
 ## Quellen
 
@@ -12367,6 +12495,10 @@ Die technische Abnahme umfasst mindestens:
 
 Ein behobener Mail-Loop ist erst dann abgeschlossen, wenn nicht nur die Testmail ankommt, sondern auch unbekannte Empfänger und alternative Mailflow-Pfade definiert enden. Genau dort liegen die meisten Rückfälle.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Microsoft hat den Support-Artikel zum Subdomain- und EdgeSync-Szenario zurückgezogen; die Quelle verweist neu auf die archivierte Fassung vom 19. April 2026.
+
 ## Quellen
 
 1. [Microsoft Learn – Fix NDR error 5.4.6 or 5.4.14 in Exchange Online](https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/fix-error-code-5-4-6-through-5-4-20-in-exchange-online): Bedeutung der Exchange-NDRs und typische Ursachen in Accepted Domains und Hybrid-Connectoren.
@@ -12815,6 +12947,10 @@ Die disconnected mailboxes sollten erst nach Ablauf des vereinbarten Rollback-Fe
 
 Wenn Hybrid Remote Moves nicht erlaubt sind und keine Postfachdaten in Exchange Online übernommen werden müssen, lässt sich ein bestehender synchronisierter AD-Benutzer kontrolliert von einer lokalen Mailbox auf eine neue Cloud-Mailbox umstellen. Der kritische Teil ist nicht `Enable-RemoteMailbox`, sondern die Prozesskontrolle darum herum: vollständige Inventarisierung, verifizierte PST-Sicherung, explizite Freigaben, Erhalt der Proxy- und X500-Adressen, ein kontrollierter Mailflow sowie ein echtes Rollback-Fenster.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse von Microsoft Learn aktualisiert.
+
 ## Quellen
 
 1. [Microsoft Learn – Enable-RemoteMailbox](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/enable-remotemailbox?view=exchange-ps): Aktiviert einen bestehenden lokalen AD-Benutzer für eine Mailbox im cloudbasierten Dienst und dokumentiert die Schalter für Benutzer-, Shared-, Raum- und Gerätepostfächer.
@@ -13253,6 +13389,10 @@ Mail-Records unterscheiden sich von allen anderen DNS-Einträgen darin, dass ein
 
 Drei Regeln verhindern die meisten dieser Fälle. Erstens: vor jedem neuen Record prüfen, was bereits vorhanden ist, statt einen zweiten danebenzustellen. Zweitens: nach jeder Änderung gegen einen öffentlichen Resolver kontrollieren und den Wert zeichenweise gegen die Vorlage vergleichen, nicht nur optisch. Drittens: bei Umstellungen immer erst das Neue publizieren, dann umschalten, dann das Alte entfernen. Wer diese Reihenfolge einhält, hat bei Mail-Records jederzeit einen Rückweg.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quellenlink auf die neue Adresse von Microsoft aktualisiert.
+
 ## Quellen
 
 1.  [RFC 1035: Domain Names, Implementation and Specification](https://www.rfc-editor.org/rfc/rfc1035): Definiert unter anderem die 255-Byte-Grenze einer einzelnen `character-string` in TXT-Records.
@@ -13684,6 +13824,10 @@ Der Aufwand liegt damit auf einer ganz anderen Ebene. Die Plattformerneuerung ve
   <a class="offer-box__cta" href="/stargate">Jetzt registrieren</a>
 </aside>
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Fristen gemäss Neufestlegung durch HIN vom 27. August 2026 aktualisiert: Firewall-Freigabe (neu auch für cdn.hin.ch) bis 31. August, alte SAML-Endpunkte bis 12. Oktober, Hardware-Token, bisherige Authenticator App und HIN Client 4.0 bis 26. Oktober 2026. Ergänzt: TPM-Voraussetzung für HIN Client 4.0 und Browser-Login ab Anfang November 2026.
+
 ## Quellen
 
 1.  [HIN Plattformerneuerung: Diese technischen Anpassungen sind für HIN Mitglieder erforderlich](https://www.hin.ch/de/blog/2026/technische-anpassungen.cfm): Fristen von August bis Oktober 2026 (Stand 27. August 2026), SAML-Endpunkte, reduzierte Attributmenge, Firewall-Freigaben, Authenticator App und Hardware-Token.
@@ -14079,6 +14223,10 @@ In `smtplib` heisst das schlicht, dasselbe Verbindungsobjekt mehrfach zu verwend
 
 Der manuelle SMTP-Test ist kein Notbehelf für Umgebungen ohne Werkzeuge, sondern die präziseste Diagnose, die im Mailbetrieb zur Verfügung steht. Er trennt Namensauflösung, Erreichbarkeit, Protokolldialog und Verschlüsselung sauber voneinander und liefert für jede Ebene ein eindeutiges Ergebnis. Wer zuerst nur lauscht, dann den Dialog von Hand führt und die Antwortcodes ernst nimmt, kommt in wenigen Minuten zu einer Aussage, mit der sich ein Ticket beim Netzwerk- oder Providerteam belegen lässt: mit Quelladresse, Zielport, beobachtetem Verhalten und Exit-Code.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quelle RFC 7489 durch RFC 9989 ersetzt, das die DMARC-Spezifikation seit Mai 2026 ablöst.
+
 ## Quellen
 
 1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Definiert den SMTP-Dialog, die Kommandoreihenfolge und die Bedeutung der Antwortcodes.
@@ -14239,6 +14387,10 @@ Die beiden RuleEngine-Fehler aus dem Hotfix sprechen dafür, 15.0.6 nicht ohne 1
 
 Seit dem 2. September 2026 ist 15.0.7 verfügbar. Es ist laut Hersteller das letzte Release im 15.0-Zweig und Voraussetzung für das Update auf 15.1. Es schliesst drei weitere Schwachstellen (CVE-2026-84830, CVE-2026-84831 und CVE-2026-84832, CVSS 7.7 bis 8.6), darunter eine, bei der der Zugriff vor Abschluss aller MFA-Schritte gewährt werden konnte, und aktualisiert OpenSSL auf 3.0.22. Am 28. September 2026 folgte das Feature-Release 15.1.0, am 29. September der Hotfix 15.1.0.1. In den Release Notes zu 15.1.0 führt SEPPmail ausserdem eine Autorisierungsschwachstelle in der Krypto-Management-API (CVSS 9.9) auf, die Versionen vor 15.0.6.1 betrifft. Für Systeme auf 15.0.6 oder 15.0.6.1 ist damit 15.0.7 der nächste Schritt, danach 15.1.0.1.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Patch-Release 15.0.7 vom 2. September 2026 mit drei Sicherheitskorrekturen als letztes Release des 15.0-Zweigs, die Releases 15.1.0 und 15.1.0.1 sowie eine Schwachstelle in der Krypto-Management-API vor 15.0.6.1. Update-Empfehlung entsprechend angepasst.
+
 ## Quellen
 
 1.  [SEPPmail-Dokumentation – «Revision History»](https://docs.seppmail.com/ch/20_revision-history.html): Offizielle Release Notes zu 15.0.6 und 15.0.6.1 mit allen Einzelpunkten, ebenso zu 15.0.7, 15.1.0 und 15.1.0.1.
@@ -14346,6 +14498,10 @@ Drei Punkte verdienen Beachtung, bevor die LDAP-Anmeldung zum einzigen Weg in di
 ## Fazit
 
 Die LDAP-Authentifizierung für die Admin-GUI schliesst eine Lücke, die bei der Appliance lange bestand: Administratorzugänge lassen sich nun zentral im Verzeichnis steuern statt pro Gerät. Zusammen mit dem separaten MFA-Feld verbessert 15.0.6 die Anmeldung an der Administrationsoberfläche damit in einem einzigen Release deutlich. Wer die Funktion einführt, sollte das Gruppen-Mapping bewusst restriktiv halten und den lokalen Notfallzugang beibehalten.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Empfohlener Mindeststand von 15.0.6.1 auf 15.0.7 angehoben, das eine Umgehung der MFA-Pflicht (SEC-100) und CVE-2026-84830 behebt. Ergänzt: Der Feature-Zweig 15.1 (aktuell 15.1.0.1) enthält die Funktion ebenfalls.
 
 ## Quellen
 
@@ -15101,6 +15257,10 @@ Ein Cold-Storage-Mount ist einsatzbereit, wenn Sie diese Fragen mit Ja beantwort
 
 Wenn eine Antwort fehlt, wissen Sie immerhin genau, woran Sie weiterarbeiten müssen. Das ist wesentlich hilfreicher als ein Mount, der beim ersten `ls` gut aussah und erst im Betrieb seine Grenzen zeigt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Bei docker kill ist SIGKILL bereits das Standardsignal; die Option --signal KILL dient nur der Verdeutlichung.
+
 ## Quellen
 
 1.  [Rclone test makefiles](https://rclone.org/commands/rclone_test_makefiles/): reproduzierbare Testdateien und Verzeichnisstrukturen mit konfigurierbaren Grössen.
@@ -15388,6 +15548,10 @@ Auch die offizielle Midea Cloud-to-Cloud API V2 existiert. Sie ist aber eine äl
 Die nüchterne Schlussfolgerung lautet deshalb:
 
 > Backup erstellen, Integrationen beobachten und Cloudabhängigkeiten im Hinterkopf behalten – aber die lokale PortaSplit-Steuerung nicht aufgrund einer unbestätigten Abschaltungsannahme vorschnell abschreiben.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Midea AC LAN verwendet seit August 2026 die Bibliothek midea-lan (aktuell 2026.10.0), und die Meiju-Cloud liefert Token und Key nur noch über den Endpunkt /v2/iot/secure/getToken mit homegroupId. Stand des Artikels auf den 25. Oktober 2026 nachgeführt, Quellen ergänzt.
 
 ## Quellen
 
@@ -15926,6 +16090,10 @@ Midea PortaSplit
 
 So betrieben ist die lokale Steuerung unter Sicherheitsgesichtspunkten vertretbar: Token und Key bleiben geheim und gesichert, das Gerät ist nur für Home Assistant erreichbar, und Updates von Firmware und Integration werden kontrolliert eingespielt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Seit der README-Überarbeitung vom September 2026 verlangt Midea AC LAN für den Token-Abruf ein persönliches Meiju- oder SmartHome-Konto, an das das Gerät gebunden ist; NetHome Plus und migrierte SmartHome-Konten liefern keine Tokens.
+
 ## Quellen
 
 1.  <a class="gh-badge" href="https://github.com/wuwentao/midea_ac_lan" rel="noopener"><span class="gh-badge__label"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub</span><span class="gh-badge__name">wuwentao/midea_ac_lan</span></a>: Integration `Midea AC LAN` mit der „Important Notice" (seit 19. Mai 2025, überarbeitet am 3. und 9. September 2026), der Begründung über nicht ablaufende Tokens und der Beschreibung des cloudbasierten Token-Bezugs über ein persönliches Meiju- oder SmartHome-Konto.
@@ -16452,6 +16620,10 @@ Zusammengefasst der komplette Ablauf:
 
 Nach dieser Einrichtung ist von aussen nur SSH auf dem festgelegten Port erreichbar, und auch dort ausschliesslich mit einem passphrasengeschützten Schlüssel. Claude Code läuft unabhängig vom Endgerät in `tmux`; Web-Vorschauen bleiben über SSH-Tunnel zugänglich, ohne einen zusätzlichen Port zu öffnen.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Claude Code benötigt keine separate Node.js-Laufzeitumgebung; ergänzt sind der empfohlene native Installer und das signierte apt-Repository für Debian. Quellenlinks auf die neuen Adressen der Claude-Code-Dokumentation aktualisiert.
+
 ## Quellen
 
 1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config): Referenz aller sshd-Direktiven, darunter `PermitRootLogin`, `PasswordAuthentication` und `PubkeyAuthentication`.
@@ -16598,6 +16770,10 @@ Die folgende Abwägung stammt aus der Zeit, als 2.6.84.0 die neueste Version war
 - **Eines der behobenen Probleme trifft Sie konkret**, etwa die ABA-Einrichtung auf TPM-Servern, der GSQL-Connector oder die Audit-Anforderung, dass Regeländerungen dem richtigen Administrator zugeordnet werden.
 
 Für das Upgrade selbst gilt das übliche Vorgehen, das bei dieser Release-Historie besonders zu empfehlen ist: Konfiguration vorher exportieren (der Wizard bietet **View or export current configuration**), das Update zuerst auf einem Staging-Mode-Server einspielen und dort Sync-Zyklen, Wizard und Zertifikatsrotation prüfen, erst danach der aktive Server. Wer eine angepasste `miiserver.exe.config` hat, sichert sie vor dem Update und kontrolliert danach, ob der neue Merge-Mechanismus die Anpassungen korrekt übernommen hat. Und wer Skripte mit `Set-ADSyncAADCompanyFeature` oder `Set-ADSyncAADPasswordSyncState` betreibt, testet diese vor dem Produktions-Rollout; in 2.6.84.0 brechen sie am neuen Pflichtparameter, ab 2.6.91.0 öffnen sie eine interaktive Anmeldung, die in unbeaufsichtigten Abläufen ebenfalls nicht durchläuft.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Nachfolgeversionen 2.6.91.0 und 2.6.92.0 (aktuelle Zielversion), die bekannten Probleme von 2.6.84.0, das Support-Ende der 2.5er-Versionen am 23. Oktober 2026 und die Frist 7. April 2027 für Application-Based Authentication.
 
 ## Quellen
 
@@ -16924,6 +17100,10 @@ Eine detaillierte Anleitung zum Entfernen der Gruppen hat Hayes Jupe in seinem B
 
 Kurz zusammengefasst der praktische Ablauf: Zuerst mit dem Health Checker den Bestand inventarisieren (er zeigt fehlende CUs/SUs, offene manuelle Schritte *und* neu die Legacy-Gruppen). Dann das aktuelle CU sowie das Juli-SU einspielen, den Server neu starten und prüfen, ob alle Exchange-Dienste sauber gestartet sind. Danach den Health Checker erneut laufen lassen, die CVE-2026-42897-Mitigation entfernen (nach dem 16. Juli bzw. mit vorherigem Block der ID M2.1.0) und schliesslich die deprecierten Sicherheitsgruppen bereinigen. SUs sind kumulativ: Wer auf einem unterstützten CU sitzt, muss nicht jedes Zwischen-SU nachziehen, sondern installiert direkt das neueste.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Das Wrapper-Problem ist seit den SUs vom 8. September 2026 behoben; mit den Updates vom 13. Oktober 2026 sind die letzten Sicherheitsupdates für Exchange 2016 und 2019 erschienen.
+
 ## Quellen
 
 1.  [Released: July 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-july-2026-exchange-server-security-updates/4534146): Offizielle Ankündigung des Juli-Releases mit den unterstützten Versionen und dem bekannten Wrapper-Nachrichten-Problem.
@@ -17185,6 +17365,10 @@ Register-ScheduledTask -TaskName "eCall-Graph-Import" -Action $action -Trigger $
 
 Das vollständige Beispiel mit Protokollierung und Fehlerbehandlung liegt auf GitHub: [pfstr/ecall-log-analyzer](https://github.com/pfstr/ecall-log-analyzer).
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: EWS in Exchange Online wird seit Oktober 2026 schrittweise abgeschaltet und erst im April 2027 vollständig deaktiviert. Ergänzt: RBAC for Applications als Microsofts Ersatz für Application Access Policies, mit neuer Quelle und aktuellem Zeitplan.
+
 ## Quellen
 
 1.  [Microsoft – «Retirement of Exchange Web Services in Exchange Online»](https://techcommunity.microsoft.com/blog/exchange/retirement-of-exchange-web-services-in-exchange-online/3924440): Ankündigung von 2023 mit dem ursprünglichen Stichtag Oktober 2026 für das Ende von EWS in Exchange Online.
@@ -17344,6 +17528,10 @@ Für das Betriebshandbuch bedeutet das: Die klassische Disziplin «Appliance-Kon
 ## Die wichtigste Trennung
 
 Solange das HIN MGW auf SEPPmail-Technik läuft, gilt: Der Cluster kompensiert Hardware-Ausfälle, die Verantwortung für Konfigurations- und Schlüsselintegrität verbleibt jedoch beim Betreiber. Das schlanke Konfigurations-Backup gehört unabhängig vom Cluster gesichert (per SCP, versioniert, mit getrennt verwahrtem Passwort), Snapshots ersetzen es im Cluster nicht, die Versionsstände bleiben synchron, und der Restore wird regelmässig isoliert getestet. Der Umstieg auf Stargate sollte frühzeitig in die DR-Planung einfliessen, da er Resilienz und Schlüsselverwahrung in das dezentrale Netz verlagert.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Ergänzt: Die Vereign Client Library ist nur noch nach Anmeldung abrufbar; als öffentlich einsehbare Quelle unter AGPLv3 ist nun das Repository Stargate Deployment angegeben.
 
 ## Quellen
 
@@ -17812,6 +18000,10 @@ Das Erreichen des Lizenzlimits ist kein technischer Defekt, sondern die Folge ei
 
 Wer diese Reihenfolge einhält, löst das akute Lizenzproblem und verhindert, dass es wiederkommt.
 
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Quelle ersetzt: Die frühere Dokumentationsseite auf totemo.com leitet auf kiteworks.com um; neu wird auf die Kiteworks-Seite zur Weiterführung von totemo als Email Protection Gateway verwiesen.
+
 ## Quellen
 
 1.  [Kiteworks – «Unlocking the Power of Kiteworks Email Protection Gateway (EPG) with totemo Integration»](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Übernahme von totemo durch Kiteworks und Weiterführung der Technologie als Email Protection Gateway (EPG); die frühere Download- und Dokumentationsseite auf totemo.com leitet inzwischen auf die Startseite von kiteworks.com um.
@@ -17857,6 +18049,10 @@ Die folgenden Schritte verändern die Cluster-Konfiguration. Vorher müssen aktu
 7. Erst wenn beide Systeme einzeln funktionieren und denselben Versionsstand haben, den Cluster gemäss Herstellerdokumentation wieder aufbauen.
 
 Dieses Verfahren verhindert, dass eine fehlerhafte Konfiguration während des Updates erneut zwischen den Knoten repliziert wird.
+
+## Änderungsverlauf
+
+- **25. Oktober 2026:** Korrigiert: Die Update-Reihenfolge im Cluster lautet laut SEPPmail-Dokumentation Backend vor Frontend, nicht umgekehrt.
 
 ## Quellen
 

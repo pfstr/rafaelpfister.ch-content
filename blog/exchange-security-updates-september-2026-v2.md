@@ -3,7 +3,6 @@ title: "Exchange-Sicherheitsupdate September 2026 v2: vorgezogener Fix für CVE-
 navTitle: "Exchange SU 09/2026 v2"
 description: "Am 2. Oktober 2026 hat Microsoft eine Version 2 der September-SUs für Exchange SE, 2019 und 2016 veröffentlicht. Sie schliesst zusätzlich CVE-2026-96940, eine Elevation-of-Privilege-Lücke mit CVSS 8.8 und der Einschätzung «Exploitation More Likely». Microsoft empfiehlt, v2 so bald wie möglich zu installieren, auch auf Servern mit dem ersten September-SU."
 date: "2026-10-07"
-aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "5 Min. Lesezeit"
 themen:
@@ -20,7 +19,7 @@ url: https://rafaelpfister.ch/blog/exchange-security-updates-september-2026-v2
 
 # Exchange-Sicherheitsupdate September 2026 v2: vorgezogener Fix für CVE-2026-96940
 
-Microsoft hat am 2. Oktober 2026 eine **Version 2 (v2)** der Sicherheitsupdates (SUs) vom September für Exchange Server SE, Exchange 2019 und Exchange 2016 veröffentlicht. Laut Ankündigung besteht der einzige Unterschied zur ersten Fassung vom 8. September darin, dass v2 zusätzlich **CVE-2026-96940** schliesst. Die Lücke ist weder öffentlich bekannt noch wird sie ausgenutzt; Microsoft hat sie intern gefunden. Ungewöhnlich ist zweierlei: Microsoft hat dieses Update nach eigener Aussage früher als geplant veröffentlicht, und der Security Update Guide stuft die Ausnutzung als **«Exploitation More Likely»** ein. Die neun Schwachstellen der ersten Fassung, das behobene Wrapper-Problem und die Known Issues sind im [Artikel zum September-SU](/blog/exchange-security-updates-september-2026) beschrieben; dieser Artikel behandelt, was mit v2 neu ist. Seit dem 13. Oktober 2026 ist das [Oktober-SU](/blog/exchange-security-updates-oktober-2026) verfügbar; da SUs laut Microsoft kumulativ sind, enthält es auch den Fix für CVE-2026-96940.
+Microsoft hat am 2. Oktober 2026 eine **Version 2 (v2)** der Sicherheitsupdates (SUs) vom September für Exchange Server SE, Exchange 2019 und Exchange 2016 veröffentlicht. Laut Ankündigung besteht der einzige Unterschied zur ersten Fassung vom 8. September darin, dass v2 zusätzlich **CVE-2026-96940** schliesst. Die Lücke ist weder öffentlich bekannt noch wird sie ausgenutzt; Microsoft hat sie intern gefunden. Ungewöhnlich ist zweierlei: Microsoft hat dieses Update nach eigener Aussage früher als geplant veröffentlicht, und der Security Update Guide stuft die Ausnutzung als **«Exploitation More Likely»** ein. Die neun Schwachstellen der ersten Fassung, das behobene Wrapper-Problem und die Known Issues sind im [Artikel zum September-SU](/blog/exchange-security-updates-september-2026) beschrieben; dieser Artikel behandelt, was mit v2 neu ist.
 
 ## Für welche Exchange-Versionen das Update verfügbar ist
 
@@ -32,8 +31,6 @@ Die v2-SUs vom 2. Oktober 2026 stehen für folgende Versionen bereit:
 - **Exchange Server 2016 CU23**: KB5129958, Build 15.1.2507.75; nur über Period 2 ESU.
 
 Die Updates sind CU-spezifisch: Das Paket für CU15 lässt sich nicht auf CU14 installieren. Exchange 2016 und 2019 sind out of support. Laut FAQ der Ankündigung erhalten nur Organisationen im Period-2-ESU-Programm, das von Mai bis Oktober 2026 gilt, nach Mai 2026 veröffentlichte Updates für diese Versionen; allen anderen empfiehlt Microsoft den Wechsel auf Exchange SE so bald wie möglich. Für Hybrid-Umgebungen mit veralteten Servern kommt das [Transport-Enforcement von Exchange Online](/blog/exchange-online-transport-enforcement-hybrid-server) hinzu.
-
-Neuer als v2 sind die Oktober-SUs vom 13. Oktober 2026: KB5128895 (SE, Build 15.2.2562.56), KB5128896 (2019 CU15, 15.2.1748.55), KB5128897 (2019 CU14, 15.2.1544.50) und KB5128898 (2016 CU23, 15.1.2507.77). Laut Oktober-Ankündigung ist es für Exchange 2016 und 2019 das letzte Sicherheitsupdate, auch im Period-2-ESU-Programm; danach erscheinen Updates nur noch für Exchange SE.
 
 Ob Ihre Server bereits auf dem v2-Stand sind, können Sie mit der Übersicht der [Exchange-Buildnummern](/tools/exchange-builds) prüfen.
 
@@ -55,9 +52,9 @@ In der FAQ der Ankündigung beantwortet Microsoft die Frage nach der ungewöhnli
 
 Daraus ergibt sich für die Praxis:
 
-1. **Server mit dem SU vom 8. September** (Builds 15.2.2562.49, 15.2.1748.51, 15.2.1544.46, 15.1.2507.73) sind gegen CVE-2026-96940 nicht geschützt. Der Security Update Guide führt für diese CVE ausschliesslich die vier v2-Builds als Fix. Diese Server brauchen v2 oder, seit dem 13. Oktober 2026, das Oktober-SU.
+1. **Server mit dem SU vom 8. September** (Builds 15.2.2562.49, 15.2.1748.51, 15.2.1544.46, 15.1.2507.73) sind gegen CVE-2026-96940 nicht geschützt. Der Security Update Guide führt für diese CVE ausschliesslich die vier v2-Builds als Fix. Diese Server brauchen v2.
 
-2. **Server mit einem älteren Stand** können direkt das neueste SU installieren, inzwischen das Oktober-SU. Laut FAQ sind SUs kumulativ; wer auf einem unterstützten CU ist, installiert nur das neueste SU.
+2. **Server mit einem älteren Stand** können direkt v2 installieren. Laut FAQ sind SUs kumulativ; wer auf einem unterstützten CU ist, installiert nur das neueste SU.
 
 3. **Maschinen mit den Exchange Management Tools** und reine Management-Server erhalten v2 ebenfalls; das empfiehlt Microsoft für alle SUs, auch in Hybrid-Umgebungen.
 
@@ -65,13 +62,13 @@ Die Installationsdatei für Exchange SE heisst laut KB5129955 `ExchangeSubscript
 
 ## Bekannte Probleme
 
-Die Known Issues der ersten Fassung gelten auch für v2. Für alle drei gibt es inzwischen eine Lösung (Stand 25. Oktober 2026):
+Die Known Issues der ersten Fassung gelten auch für v2. Stand 7. Oktober 2026:
 
-**Veröffentlichte Kalender (.ics) liefern HTTP 500 an Kalender-Apps** (alle Versionen). Das Problem besteht seit dem August-SU und steht in allen vier v2-KBs weiter als Known Issue. Die v2 behebt es nicht; laut [Support-Artikel KB5126672](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672) ist es mit den Oktober-SUs vom 13. Oktober 2026 (KB5128895 bis KB5128898) oder neueren Updates behoben. Haben Sie als Workaround die URL-Rewrite-Regel auf der Site «Exchange Back End» eingerichtet (siehe [Artikel zum September-SU](/blog/exchange-security-updates-september-2026)), entfernen Sie sie laut KB5126672 nach der Installation des Updates mit den dort beschriebenen Rollback-Schritten; die Regel kann in der applicationHost.config oder in der web.config von Exchange stehen.
+**Veröffentlichte Kalender (.ics) liefern HTTP 500 an Kalender-Apps** (alle Versionen). Das Problem besteht seit dem August-SU und steht in allen vier v2-KBs weiter als Known Issue. Microsoft untersucht es noch und beschreibt als vorübergehenden Workaround eine URL-Rewrite-Regel auf der Site «Exchange Back End»; die Schritte stehen im [Support-Artikel KB5126672](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672) und im [Artikel zum September-SU](/blog/exchange-security-updates-september-2026). Die Regel ist auf jedem Server einzurichten und laut Microsoft nach künftigen Updates erneut zu prüfen.
 
-**ContentEngine-Deadlock wegen fehlender koreanischer WordBreaker-Dateien** (nur Exchange SE). Betroffen sind laut [KB5130098](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) ausdrücklich beide Fassungen, Build 15.2.2562.49 und der v2-Build 15.2.2562.53. Die v2 behebt das Problem also nicht. Symptome sind fehlende Suchergebnisse, verzögerte Mailzustellung und hängende oder getrennte Outlook- bzw. MAPI-Clients. Betroffen sind laut KB Umgebungen, die Mails mit koreanischsprachigem Inhalt verarbeiten; das hängt nicht von der Sprache der eigenen Benutzer ab, denn koreanischer Text erreicht auch Organisationen ohne koreanische Korrespondenz, etwa als Spam. Der Health Checker erkennt die fehlenden Dateien nicht. Laut KB5130098 ist das Problem mit dem Oktober-SU KB5128895 vom 13. Oktober 2026 oder einem neueren Update behoben; wer den manuellen Workaround aus dem [Artikel zum September-SU](/blog/exchange-security-updates-september-2026#workaround-für-den-wordbreaker-deadlock) angewendet hat, muss danach laut Microsoft nichts weiter tun.
+**ContentEngine-Deadlock wegen fehlender koreanischer WordBreaker-Dateien** (nur Exchange SE). Betroffen sind laut [KB5130098](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) ausdrücklich beide Fassungen, Build 15.2.2562.49 und der v2-Build 15.2.2562.53. Die v2 behebt das Problem also nicht. Symptome sind fehlende Suchergebnisse, verzögerte Mailzustellung und hängende oder getrennte Outlook- bzw. MAPI-Clients. Betroffen sind laut KB Umgebungen, die Mails mit koreanischsprachigem Inhalt verarbeiten; das hängt nicht von der Sprache der eigenen Benutzer ab, denn koreanischer Text erreicht auch Organisationen ohne koreanische Korrespondenz, etwa als Spam. Der Health Checker erkennt die fehlenden Dateien nicht. Prüfskript, Voraussetzungen und den manuellen Workaround Schritt für Schritt finden Sie im [Artikel zum September-SU](/blog/exchange-security-updates-september-2026#workaround-für-den-wordbreaker-deadlock); Microsoft untersucht das Problem weiter.
 
-**Frei/Gebucht für delegierte Postfächer in Hybrid-Umgebungen mit reiner Graph-API-Konfiguration** (nur Exchange SE). Bei Veröffentlichung von v2 widersprachen sich die Quellen: Die v2-Ankündigung führte das Problem unter den behobenen Problemen, KB5129955 als Known Issue. Inzwischen meldet der [Support-Artikel KB5127092](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092) «The issue has been fixed in the service». Haben Sie den SettingOverride `EnableRouteThroughMSGraphFeature` deaktiviert, setzen Sie ihn laut KB5127092 wieder auf `Enabled=True`; die Befehle stehen im [Artikel zum Oktober-SU](/blog/exchange-security-updates-oktober-2026).
+**Frei/Gebucht für delegierte Postfächer in Hybrid-Umgebungen mit reiner Graph-API-Konfiguration** (nur Exchange SE). Hier widersprechen sich die Quellen: Die v2-Ankündigung führt das Problem unter den behobenen Problemen, KB5129955 listet es weiterhin als Known Issue, und der [Support-Artikel KB5127092](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092) meldet den Stand «Microsoft is investigating this issue» ohne Hinweis auf einen Fix. Haben Sie den dort beschriebenen SettingOverride `EnableRouteThroughMSGraphFeature` als Workaround gesetzt, nehmen Sie ihn nach der Installation von v2 nur nach einem Test zurück, solange Microsoft keine Anleitung dazu veröffentlicht.
 
 ## Installation und Nachbereitung
 
@@ -83,11 +80,7 @@ Aus den Vormonaten bleiben diese Nacharbeiten offen, falls noch nicht erledigt: 
 
 ## Empfohlenes Vorgehen
 
-Installieren Sie zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen v2 oder das neuere Oktober-SU, auch dort, wo das September-SU bereits läuft: Das erste September-SU schliesst CVE-2026-96940 nicht, ein einzelnes kompromittiertes Benutzerkonto genügt für den Zugriff auf fremde Postfächer, und Microsoft hält eine Ausnutzung für wahrscheinlicher als bei allen anderen September-CVEs. Prüfen Sie anschliessend mit dem Health Checker den Build-Stand, und nehmen Sie nach dem Oktober-SU die Workarounds für die Known Issues wie oben beschrieben zurück. Für Exchange 2016 und 2019 ist das Oktober-SU vom 13. Oktober 2026 das letzte Update; danach erscheinen für diese Versionen keine Sicherheitsupdates mehr.
-
-## Änderungsverlauf
-
-- **25. Oktober 2026:** Ergänzt: Oktober-SUs vom 13. Oktober 2026 mit Buildnummern, die auch CVE-2026-96940 schliessen und für Exchange 2016 und 2019 das letzte Update sind. Alle drei Known Issues sind inzwischen behoben, die Rücknahme der Workarounds ist beschrieben.
+Installieren Sie v2 zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen, auch dort, wo das September-SU bereits läuft: Nur die v2-Builds schliessen CVE-2026-96940, ein einzelnes kompromittiertes Benutzerkonto genügt für den Zugriff auf fremde Postfächer, und Microsoft hält eine Ausnutzung für wahrscheinlicher als bei allen anderen September-CVEs. Prüfen Sie anschliessend mit dem Health Checker den Build-Stand, kontrollieren Sie auf Exchange SE mit dem Prüfskript aus dem September-Artikel, ob die WordBreaker-Dateien fehlen, und behalten Sie bestehende Workarounds bei, bis Microsoft deren Rücknahme dokumentiert. Für Exchange 2016 und 2019 endet das ESU-Programm im Oktober 2026; danach erscheinen für diese Versionen keine Updates mehr.
 
 ## Quellen
 
@@ -103,16 +96,12 @@ Installieren Sie zeitnah auf allen Exchange-Servern und Management-Tools-Maschin
 
 6.  [Description of version 2 of the security update for Microsoft Exchange Server 2016 CU23 October 2, 2026 (KB5129958) – Microsoft Support](https://support.microsoft.com/help/5129958): KB-Artikel für Exchange 2016 CU23.
 
-7.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Buildnummern der September-SUs, der v2 vom 2. Oktober 2026 und der Oktober-SUs vom 13. Oktober 2026.
+7.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Buildnummern der September-SUs und der v2 vom 2. Oktober 2026.
 
-8.  [Published calendar (.ics) returns HTTP 500 for calendar applications – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672): Betroffene Versionen, Fix mit den Oktober-SUs und Rückbau des URL-Rewrite-Workarounds.
+8.  [Published calendar (.ics) returns HTTP 500 for calendar applications – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672): Betroffene Versionen, Status und URL-Rewrite-Workaround.
 
-9.  [ContentEngine deadlock because of missing Korean WordBreaker rule files – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098): Betroffene SE-Builds einschliesslich v2, Fix mit KB5128895, keine weiteren Schritte nach manuellem Workaround.
+9.  [ContentEngine deadlock because of missing Korean WordBreaker rule files – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098): Betroffene SE-Builds einschliesslich v2, Prüfkriterien und manueller Workaround.
 
-10. [Availability (free/busy) fails for delegated mailboxes in Exchange hybrid deployments using Graph API only – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092): Symptome, Korrektur im Dienst und Befehle zum SettingOverride.
+10. [Availability (free/busy) fails for delegated mailboxes in Exchange hybrid deployments using Graph API only – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092): Symptome, SettingOverride-Workaround und Stand der Untersuchung.
 
 11. [V2 Security Updates Exchange 2016-SE (Sep2026) – EighTwOne](https://eightwone.com/2026/10/03/v2-security-updates-exchange-2016-se-sep2026/): Übersicht der v2-Builds und KBs, Hinweis auf CU-spezifische Pakete.
-
-12. [Released: October 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/t5/exchange-team-blog/released-october-2026-exchange-server-security-updates/ba-p/4563014): Oktober-SU als letztes Update für Exchange 2016 und 2019, behobene Known Issues (eingesehen über den RSS-Feed des Exchange Team Blogs).
-
-13. [Description of the security update for Microsoft Exchange Server Subscription Edition RTM October 13, 2026 (KB5128895) – Microsoft Support](https://support.microsoft.com/help/5128895): CVE-Liste und behobene Probleme des Oktober-SUs für Exchange SE.

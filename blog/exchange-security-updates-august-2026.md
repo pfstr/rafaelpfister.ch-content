@@ -3,7 +3,6 @@ title: "Exchange-Sicherheitsupdates vom August 2026: Pwn2Own-Lücke geschlossen,
 navTitle: "Exchange SU 08/2026"
 description: "Das August-SU schliesst sieben Schwachstellen, darunter den an der Pwn2Own 2026 demonstrierten Exchange-Exploit, und deaktiviert OWA Light endgültig. Dazu erklärt Microsoft, warum Exchange-SUs jetzt monatlich erscheinen und Exchange SE CU1 weiter auf sich warten lässt."
 date: "2026-08-19"
-aktualisiert: "2026-10-25"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "6 Min. Lesezeit"
 themen:
@@ -34,7 +33,7 @@ Die SUs stehen für folgende Versionen bereit:
 
 Es gilt dieselbe Lage wie im Juli: Exchange 2016 und 2019 sind out of support. Die SUs von Mai bis Oktober 2026 erhält nur, wer im Period-2-ESU-Programm eingeschrieben ist. Alle anderen bleiben ungepatcht auf einem Stand mit inzwischen vierzehn offenen, teils hochbewerteten Schwachstellen; der Wechsel auf Exchange SE duldet dort keinen Aufschub mehr. Exchange Online ist bereits geschützt; in Hybrid-Umgebungen muss das SU trotzdem auf alle Exchange-Server, auch auf reine Management-Server und auf Maschinen, auf denen nur die Exchange Management Tools installiert sind.
 
-Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von Hybrid-Umgebungen besteht auch mit dem August-SU weiter; der Fix ist laut Microsoft für ein kommendes Update vorgesehen. Immerhin gibt es eine Entwarnung aus dem Kommentarbereich der Release-Ankündigung: Wer den dokumentierten SettingOverride als Workaround gesetzt hat, muss ihn nach der Installation des August-SUs **nicht** neu anlegen. Das Update lässt den Override unangetastet, wie das Exchange-Team dort bestätigt. Behoben ist das Problem seit den SUs vom 8. September 2026 (für Exchange SE KB5121608). Nach deren Installation sollte ein gesetzter Override `DisableBlockSharedAndUserMailboxHeaders` mit `Get-SettingOverride` gesucht und mit `Remove-SettingOverride` entfernt werden.
+Das bekannte Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern von Hybrid-Umgebungen besteht auch mit dem August-SU weiter; der Fix ist laut Microsoft für ein kommendes Update vorgesehen. Immerhin gibt es eine Entwarnung aus dem Kommentarbereich der Release-Ankündigung: Wer den dokumentierten SettingOverride als Workaround gesetzt hat, muss ihn nach der Installation des August-SUs **nicht** neu anlegen. Das Update lässt den Override unangetastet, wie das Exchange-Team dort bestätigt.
 
 ## Die sieben Schwachstellen im Überblick
 
@@ -93,17 +92,13 @@ Für die Praxis heisst das zweierlei. Erstens: Auf CU1 zu warten ist keine Strat
 
 Der Ablauf bleibt der bewährte: Zuerst mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server auf welchem CU/SU-Stand sind und ob manuelle Schritte offen sind. Dann das SU installieren (bei veraltetem CU-Stand zeigt der [Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) den Pfad), den Server neu starten und kontrollieren, ob alle Exchange-Dienste sauber gestartet sind. Stehen Dienste auf *deaktiviert*, wurde die Installation unterbrochen; dann hilft der dokumentierte Workaround im Microsoft-Support-Artikel zum File-Version-Fehler bzw. das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Zum Abschluss den Health Checker erneut laufen lassen.
 
-SUs sind kumulativ: Wer das Juli-SU übersprungen hat, kann direkt das August-SU installieren. Seit dem 13. Oktober 2026 ist das Oktober-SU der aktuelle Stand (für Exchange SE KB5128895, Build 15.2.2562.56); es enthält die Korrekturen des August-SUs, und wer das August-SU noch nicht installiert hat, kann direkt dieses einspielen. Für Exchange 2016 und 2019 ist es das letzte SU des Period-2-ESU-Programms. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
+SUs sind kumulativ: Wer das Juli-SU übersprungen hat, kann direkt das August-SU installieren. Und für Hybrid-Umgebungen gilt der bekannte Zusatz: Wird nach der SU-Installation das Auth-Zertifikat gewechselt, sollte der Hybrid Configuration Wizard erneut ausgeführt werden.
 
 Eine Nacharbeit aus dem Juli bleibt aktuell: Wer die CVE-2026-42897-Mitigation (M2.1.0) immer noch aktiv hat, sollte sie jetzt entfernen; wie das sauber geht, steht im [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026).
 
 ## Empfohlenes Vorgehen
 
-Kurz zusammengefasst: Das August-SU oder ein neueres SU (inzwischen das Oktober-SU) zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann: OWA Light lässt sich manuell als Sofortmassnahme gegen CVE-2026-62914 deaktivieren. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
-
-## Änderungsverlauf
-
-- **25. Oktober 2026:** Ergänzt: Das Wrapper-Problem ist seit den SUs vom 8. September 2026 behoben, der SettingOverride kann danach entfernt werden. Aktueller Stand ist das Oktober-SU vom 13. Oktober 2026 (Exchange SE KB5128895), das letzte SU für Exchange 2016 und 2019.
+Kurz zusammengefasst: Das August-SU zeitnah auf allen Exchange-Servern und Management-Tools-Maschinen einspielen: die Pwn2Own-Lücke und die 8.8er-RCE sind Grund genug, nicht auf den nächsten Patchday zu warten. Wer nicht sofort patchen kann: OWA Light lässt sich manuell als Sofortmassnahme gegen CVE-2026-62914 deaktivieren. Vor der OWA-Light-Abschaltung betroffene Nutzergruppen identifizieren und informieren (alte Bookmarks, Kiosk-Browser, Barrierefreiheits-Workflows). Danach Health Checker laufen lassen, offene Nacharbeiten aus dem Juli erledigen, und ein monatliches Exchange-Wartungsfenster einplanen, denn der Rhythmus bleibt.
 
 ## Quellen
 
@@ -124,7 +119,3 @@ Kurz zusammengefasst: Das August-SU oder ein neueres SU (inzwischen das Oktober-
 8.  [Set-OwaMailboxPolicy (ExchangePowerShell) – Microsoft Learn](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/set-owamailboxpolicy): Der Parameter `OWALightEnabled` zur manuellen Deaktivierung der Light-Version.
 
 9.  [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventarisierung von CU/SU-Ständen und offenen manuellen Schritten vor und nach der Installation.
-
-10.  [Security update for Exchange Server SE RTM: September 8, 2026 (KB5121608) – Microsoft Support](https://support.microsoft.com/help/5121608): September-SU mit der Korrektur des Wrapper-Problems in freigegebenen Postfächern.
-
-11.  [Security update for Exchange Server SE RTM: October 13, 2026 (KB5128895) – Microsoft Support](https://support.microsoft.com/help/5128895): Oktober-SU, das die vorherigen SUs ersetzt.
