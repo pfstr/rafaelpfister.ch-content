@@ -16,7 +16,6 @@ translatedAt: 2026-09-03T08:14:31.540Z
 translationReview: automatic
 translationModel: gpt-5.6-terra
 url: https://rafaelpfister.ch/en/blog/seppmail-releases-15-0-6-and-15-0-6-1
-aktualisiert: 2026-10-25
 ---
 
 # SEPPmail 15.0.6 and 15.0.6.1: Security Fixes and New Admin Features

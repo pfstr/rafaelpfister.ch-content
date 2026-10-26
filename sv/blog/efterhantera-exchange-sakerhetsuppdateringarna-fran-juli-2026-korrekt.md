@@ -16,7 +16,6 @@ translationSourceHash: e5d9295515965d3e7801752cd605f6d2a78cacfc9fb965e0f63d64565
 translatedAt: 2026-09-05T07:53:35.066Z
 url: https://rafaelpfister.ch/sv/blog/efterhantera-exchange-sakerhetsuppdateringarna-fran-juli-2026-korrekt
 translationModel: gpt-5.6-terra
-aktualisiert: 2026-10-25
 ---
 
 # Efterbearbeta Exchange-säkerhetsuppdateringarna från juli 2026 korrekt

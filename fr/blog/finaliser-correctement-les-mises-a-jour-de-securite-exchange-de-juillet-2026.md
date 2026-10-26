@@ -16,7 +16,6 @@ translationSourceHash: e5d9295515965d3e7801752cd605f6d2a78cacfc9fb965e0f63d64565
 translatedAt: 2026-09-05T07:51:47.644Z
 url: https://rafaelpfister.ch/fr/blog/finaliser-correctement-les-mises-a-jour-de-securite-exchange-de-juillet-2026
 translationModel: gpt-5.6-terra
-aktualisiert: 2026-10-25
 ---
 
 # Assurer correctement le suivi des mises à jour de sécurité Exchange de juillet 2026

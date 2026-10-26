@@ -21,7 +21,6 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:55:12.323Z
 translationReview: required
 url: https://rafaelpfister.ch/it/blog/aggiornamenti-di-sicurezza-di-exchange-di-agosto-2026-chiusa-la-falla-di-pwn2own-disattivato
-aktualisiert: 2026-10-25
 ---
 
 # Aggiornamenti di sicurezza di Exchange dell’agosto 2026: chiusa la falla Pwn2Own, disattivato OWA Light

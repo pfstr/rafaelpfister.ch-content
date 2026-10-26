@@ -16,7 +16,6 @@ translationSourceHash: e5d9295515965d3e7801752cd605f6d2a78cacfc9fb965e0f63d64565
 translatedAt: 2026-09-05T07:52:34.748Z
 url: https://rafaelpfister.ch/es/blog/aplicar-correctamente-las-actualizaciones-de-seguridad-de-exchange-de-julio-de-2026
 translationModel: gpt-5.6-terra
-aktualisiert: 2026-10-25
 ---
 
 # Realizar correctamente las tareas posteriores a las actualizaciones de seguridad de Exchange de julio de 2026

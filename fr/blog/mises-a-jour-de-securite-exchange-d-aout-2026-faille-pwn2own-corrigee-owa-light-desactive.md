@@ -21,7 +21,6 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:54:36.926Z
 translationReview: required
 url: https://rafaelpfister.ch/fr/blog/mises-a-jour-de-securite-exchange-d-aout-2026-faille-pwn2own-corrigee-owa-light-desactive
-aktualisiert: 2026-10-25
 ---
 
 # Mises à jour de sécurité Exchange d’août 2026 : faille Pwn2Own corrigée, OWA Light désactivé

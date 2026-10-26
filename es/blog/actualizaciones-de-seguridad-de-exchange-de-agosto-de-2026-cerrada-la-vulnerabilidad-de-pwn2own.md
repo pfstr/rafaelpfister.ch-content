@@ -21,7 +21,6 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:55:45.886Z
 translationReview: required
 url: https://rafaelpfister.ch/es/blog/actualizaciones-de-seguridad-de-exchange-de-agosto-de-2026-cerrada-la-vulnerabilidad-de-pwn2own
-aktualisiert: 2026-10-25
 ---
 
 # Actualizaciones de seguridad de Exchange de agosto de 2026: cerrada la vulnerabilidad de Pwn2Own, desactivado OWA Light

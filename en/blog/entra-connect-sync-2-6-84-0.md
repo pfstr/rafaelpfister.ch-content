@@ -17,7 +17,6 @@ translationReview: required
 translationSourceHash: da16eeec10c227af5ba6f33ae138e0148db5b34736874eeed6b2b60c0b469a81
 url: https://rafaelpfister.ch/en/blog/entra-connect-sync-2-6-84-0
 translationModel: gpt-5.6-terra
-aktualisiert: 2026-10-25
 ---
 
 # Entra Connect Sync 2.6.84.0: What’s Changing and Who Should Update Now

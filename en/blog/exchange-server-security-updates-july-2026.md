@@ -16,7 +16,6 @@ translationReview: automatic
 translationSourceHash: e5d9295515965d3e7801752cd605f6d2a78cacfc9fb965e0f63d645658b39e9b
 url: https://rafaelpfister.ch/en/blog/exchange-server-security-updates-july-2026
 translationModel: gpt-5.6-terra
-aktualisiert: 2026-10-25
 ---
 
 # Properly follow up on the July 2026 Exchange security updates

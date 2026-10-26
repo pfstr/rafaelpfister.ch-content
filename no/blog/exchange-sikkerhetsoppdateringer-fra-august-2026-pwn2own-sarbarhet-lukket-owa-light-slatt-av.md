@@ -21,7 +21,6 @@ translationModel: gpt-5.6-terra
 translatedAt: 2026-09-01T08:57:11.888Z
 translationReview: required
 url: https://rafaelpfister.ch/no/blog/exchange-sikkerhetsoppdateringer-fra-august-2026-pwn2own-sarbarhet-lukket-owa-light-slatt-av
-aktualisiert: 2026-10-25
 ---
 
 # Exchange-sikkerhetsoppdateringer fra august 2026: Pwn2Own-sårbarhet lukket, OWA Light deaktivert
