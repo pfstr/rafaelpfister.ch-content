@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
+  <rect width="920" height="520" fill="#ffffff"/>
+  <text x="20" y="30" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">SIND MASSNAHMEN NÖTIG? ENTSCHEIDEND IST, WER HINTER DEMSELBEN NAT SITZT</text>
+
+  <!-- Achse -->
+  <line x1="40" y1="70" x2="880" y2="70" stroke="#d9d4cc" stroke-width="6" stroke-linecap="round"/>
+  <line x1="40" y1="70" x2="300" y2="70" stroke="#286983" stroke-width="6" stroke-linecap="round"/>
+  <line x1="600" y1="70" x2="880" y2="70" stroke="#7a2f16" stroke-width="6" stroke-linecap="round"/>
+  <text x="40" y="96" font-size="11" fill="#286983" font-weight="600">nur eigene, vertrauenswürdige Geräte</text>
+  <text x="880" y="96" font-size="11" fill="#7a2f16" font-weight="600" text-anchor="end">fremde Nutzer oder Workloads am selben NAT</text>
+
+  <!-- Spalte 1 -->
+  <rect x="20" y="116" width="280" height="384" rx="10" fill="#ffffff" stroke="#286983"/>
+  <rect x="20" y="116" width="280" height="40" rx="10" fill="#286983"/>
+  <rect x="20" y="140" width="280" height="16" fill="#286983"/>
+  <text x="160" y="142" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">Kein Handlungsdruck</text>
+  <text x="36" y="182" font-size="11.5" font-weight="600" fill="#222222">Typische Umgebungen</text>
+  <text x="36" y="202" font-size="11" fill="#222222">• Heimnetz mit Familiengeräten</text>
+  <text x="36" y="220" font-size="11" fill="#222222">• Kleinbüro ohne Gästezugang</text>
+  <text x="36" y="238" font-size="11" fill="#222222">• Docker-Host mit nur eigenen,</text>
+  <text x="48" y="254" font-size="11" fill="#222222">geprüften Images</text>
+  <text x="36" y="290" font-size="11.5" font-weight="600" fill="#222222">Empfehlung</text>
+  <text x="36" y="310" font-size="11" fill="#222222">• Firmware und Kernel aktuell halten</text>
+  <text x="36" y="328" font-size="11" fill="#222222">• HTTPS und verschlüsseltes DNS</text>
+  <text x="48" y="344" font-size="11" fill="#222222">verwenden (ohnehin Standard)</text>
+  <text x="36" y="380" font-size="10.5" fill="#757087">Ein Angreifer müsste bereits ein</text>
+  <text x="36" y="396" font-size="10.5" fill="#757087">Gerät im eigenen Netz kontrollieren.</text>
+  <text x="36" y="412" font-size="10.5" fill="#757087">Dann bestehen ohnehin einfachere</text>
+  <text x="36" y="428" font-size="10.5" fill="#757087">Angriffswege.</text>
+
+  <!-- Spalte 2 -->
+  <rect x="320" y="116" width="280" height="384" rx="10" fill="#ffffff" stroke="#757087"/>
+  <rect x="320" y="116" width="280" height="40" rx="10" fill="#757087"/>
+  <rect x="320" y="140" width="280" height="16" fill="#757087"/>
+  <text x="460" y="142" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">Prüfen und härten</text>
+  <text x="336" y="182" font-size="11.5" font-weight="600" fill="#222222">Typische Umgebungen</text>
+  <text x="336" y="202" font-size="11" fill="#222222">• KMU mit Gäste-WLAN oder BYOD,</text>
+  <text x="348" y="218" font-size="11" fill="#222222">getrennt per VLAN, gleiche Firewall</text>
+  <text x="336" y="236" font-size="11" fill="#222222">• Hyper-V- oder KVM-Host mit</text>
+  <text x="348" y="252" font-size="11" fill="#222222">NAT-Netz für Test-VMs</text>
+  <text x="336" y="270" font-size="11" fill="#222222">• interne Dienste ohne TLS</text>
+  <text x="336" y="290" font-size="11.5" font-weight="600" fill="#222222">Empfehlung</text>
+  <text x="336" y="310" font-size="11" fill="#222222">• Herstellerstatus prüfen, Updates</text>
+  <text x="336" y="328" font-size="11" fill="#222222">• Anti-Spoofing und Verbindungs-</text>
+  <text x="348" y="344" font-size="11" fill="#222222">limit pro Client aktivieren</text>
+  <text x="336" y="362" font-size="11" fill="#222222">• TLS für interne Protokolle,</text>
+  <text x="348" y="378" font-size="11" fill="#222222">auch SMTP-Relays und IMAP</text>
+  <text x="336" y="414" font-size="10.5" fill="#757087">Gäste und Firmengeräte teilen</text>
+  <text x="336" y="430" font-size="10.5" fill="#757087">sich die NAT-Tabelle der Firewall,</text>
+  <text x="336" y="446" font-size="10.5" fill="#757087">auch wenn die VLANs getrennt sind.</text>
+
+  <!-- Spalte 3 -->
+  <rect x="620" y="116" width="280" height="384" rx="10" fill="#ffffff" stroke="#7a2f16"/>
+  <rect x="620" y="116" width="280" height="40" rx="10" fill="#7a2f16"/>
+  <rect x="620" y="140" width="280" height="16" fill="#7a2f16"/>
+  <text x="760" y="142" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">Massnahmen notwendig</text>
+  <text x="636" y="182" font-size="11.5" font-weight="600" fill="#222222">Typische Umgebungen</text>
+  <text x="636" y="202" font-size="11" fill="#222222">• Gäste und Mitarbeitende im</text>
+  <text x="648" y="218" font-size="11" fill="#222222">selben Subnetz (Hotel, Praxis)</text>
+  <text x="636" y="236" font-size="11" fill="#222222">• Kubernetes oder Docker mit</text>
+  <text x="648" y="252" font-size="11" fill="#222222">fremden oder ungeprüften Workloads</text>
+  <text x="636" y="270" font-size="11" fill="#222222">• Hosting, Schulen, Co-Working</text>
+  <text x="636" y="290" font-size="11.5" font-weight="600" fill="#222222">Empfehlung</text>
+  <text x="636" y="310" font-size="11" fill="#222222">• Mandanten trennen, eigenes NAT</text>
+  <text x="648" y="326" font-size="11" fill="#222222">oder eigene Node pro Vertrauenszone</text>
+  <text x="636" y="344" font-size="11" fill="#222222">• NET_RAW entziehen, kein root</text>
+  <text x="636" y="362" font-size="11" fill="#222222">• Loose-Mode abschalten, wo</text>
+  <text x="648" y="378" font-size="11" fill="#222222">betrieblich möglich</text>
+  <text x="636" y="396" font-size="11" fill="#222222">• NAT-Tabelle überwachen</text>
+  <text x="636" y="430" font-size="10.5" fill="#757087">Hier ist die Voraussetzung des</text>
+  <text x="636" y="446" font-size="10.5" fill="#757087">Angriffs, ein Gerät hinter dem NAT,</text>
+  <text x="636" y="462" font-size="10.5" fill="#757087">von vornherein erfüllt.</text>
+</svg>

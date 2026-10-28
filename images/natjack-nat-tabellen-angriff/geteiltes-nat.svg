@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#222222"/>
+    </marker>
+    <marker id="arrowWarn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7a2f16"/>
+    </marker>
+  </defs>
+  <rect width="920" height="600" fill="#ffffff"/>
+
+  <!-- Upstream -->
+  <rect x="20" y="16" width="880" height="96" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="36" y="40" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">UPSTREAM (INTERNET ODER WAN)</text>
+  <rect x="300" y="50" width="320" height="48" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="460" y="71" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Zielserver, z. B. Webserver oder DNS-Resolver</text>
+  <text x="460" y="88" font-size="10.5" fill="#757087" text-anchor="middle">sieht nur die externe Adresse 203.0.113.10</text>
+
+  <line x1="460" y1="112" x2="460" y2="150" stroke="#222222" stroke-width="1.6" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+
+  <!-- NAT -->
+  <rect x="20" y="152" width="880" height="190" rx="10" fill="#ffffff" stroke="#286983" stroke-width="1.5"/>
+  <text x="36" y="176" font-size="12" font-weight="700" letter-spacing="1.5" fill="#286983">GETEILTES NAT-GERÄT: ROUTER, FIREWALL, VSWITCH, DOCKER-BRIDGE, CLOUD-NAT</text>
+  <text x="36" y="196" font-size="11" fill="#757087">Die NAT-Tabelle entscheidet, an welches interne Gerät eine Antwort von aussen geht.</text>
+
+  <rect x="36" y="208" width="848" height="26" rx="4" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="52" y="225" font-size="11" font-weight="700" fill="#222222">Intern</text>
+  <text x="300" y="225" font-size="11" font-weight="700" fill="#222222">Extern</text>
+  <text x="520" y="225" font-size="11" font-weight="700" fill="#222222">Ziel</text>
+  <text x="720" y="225" font-size="11" font-weight="700" fill="#222222">Antwort geht an</text>
+
+  <rect x="36" y="238" width="848" height="28" rx="4" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="52" y="256" font-size="11" fill="#222222">10.0.10.21:51344</text>
+  <text x="300" y="256" font-size="11" fill="#222222">203.0.113.10:51344</text>
+  <text x="520" y="256" font-size="11" fill="#222222">Zielserver:443</text>
+  <text x="720" y="256" font-size="11" fill="#286983" font-weight="600">Opfer (korrekt)</text>
+
+  <rect x="36" y="272" width="848" height="56" rx="4" fill="#fbf1ec" stroke="#7a2f16" stroke-dasharray="5 4"/>
+  <text x="52" y="292" font-size="11" fill="#7a2f16" font-weight="600">Nach NatJack: derselbe externe Port, aber der Eintrag zeigt auf 10.0.20.66</text>
+  <text x="52" y="312" font-size="10.5" fill="#7a2f16">Der Eintrag des Opfers wurde entfernt und durch einen Eintrag des Angreifers ersetzt. Antworten des Zielservers</text>
+  <text x="52" y="325" font-size="10.5" fill="#7a2f16">gehen an den Angreifer, der Zielserver bemerkt den Wechsel nicht.</text>
+
+  <!-- Downstream -->
+  <line x1="20" y1="372" x2="900" y2="372" stroke="#7a2f16" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="36" y="366" font-size="10.5" font-weight="600" fill="#7a2f16">ANNAHME BISHER: GETRENNTE VLANS UND SUBNETZE SIND AUCH HINTER DEM NAT GETRENNT</text>
+
+  <line x1="230" y1="342" x2="230" y2="404" stroke="#222222" stroke-width="1.6" marker-start="url(#arrow)"/>
+  <line x1="690" y1="342" x2="690" y2="404" stroke="#7a2f16" stroke-width="1.6" marker-start="url(#arrowWarn)" stroke-dasharray="5 4"/>
+
+  <rect x="20" y="406" width="430" height="176" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="36" y="430" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">VERTRAUENSWÜRDIG (VLAN 10)</text>
+  <rect x="36" y="444" width="398" height="52" rx="8" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="235" y="466" font-size="12.5" font-weight="600" fill="#222222" text-anchor="middle">Opfer 10.0.10.21</text>
+  <text x="235" y="484" font-size="10.5" fill="#757087" text-anchor="middle">Mitarbeiter-PC, Server-VM, Container mit Kundendaten</text>
+  <text x="36" y="522" font-size="11" fill="#222222">Hält eine bestehende Verbindung zum Zielserver</text>
+  <text x="36" y="540" font-size="11" fill="#222222">oder wartet auf eine DNS-Antwort.</text>
+  <text x="36" y="564" font-size="10.5" fill="#757087">Ohne TLS sind die übernommenen Daten lesbar.</text>
+
+  <rect x="470" y="406" width="430" height="176" rx="10" fill="#ffffff" stroke="#d9d4cc"/>
+  <text x="486" y="430" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">NICHT VERTRAUENSWÜRDIG (VLAN 20)</text>
+  <rect x="486" y="444" width="398" height="52" rx="8" fill="#fbf1ec" stroke="#7a2f16"/>
+  <text x="685" y="466" font-size="12.5" font-weight="600" fill="#7a2f16" text-anchor="middle">Angreifer 10.0.20.66</text>
+  <text x="685" y="484" font-size="10.5" fill="#7a2f16" text-anchor="middle">Gäste-WLAN, kompromittierter Container, fremde VM</text>
+  <text x="486" y="522" font-size="11" fill="#222222">Kein Zugriff auf VLAN 10, kein ARP-Spoofing nötig.</text>
+  <text x="486" y="540" font-size="11" fill="#222222">Gemeinsam ist nur das NAT-Gerät.</text>
+  <text x="486" y="564" font-size="10.5" fill="#757087">Je nach Variante mit Hilfe eines externen Servers.</text>
+</svg>

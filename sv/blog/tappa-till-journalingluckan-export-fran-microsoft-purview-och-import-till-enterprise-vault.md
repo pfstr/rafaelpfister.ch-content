@@ -1,7 +1,7 @@
 ---
-title: "Täppa till journalingluckan: export från Microsoft Purview och import till Enterprise Vault"
+title: "Täppa till journalingluckan: Export från Microsoft Purview och import till Enterprise Vault"
 navTitle: "Journalinglucka"
-description: "Om journalrapporter från Exchange Online uteblir under några dagar går de inte att skapa i efterhand. Innehållet finns dock fortfarande kvar i postlådorna. Så exporterar du det som PST via nya Purview eDiscovery, varför PST Migrator i Enterprise Vault oftast inte är ett alternativ och hur efterimporten via journalpostlådan fungerar utan att tränga undan det löpande journalflödet, med två generiska skript för import, flytt och loggning."
+description: "Om journalrapporter från Exchange Online uteblir i några dagar kan de inte skapas i efterhand. Innehållet finns dock fortfarande i postlådorna. Så exporterar du det som PST via den nya Purview-eDiscovery, varför Enterprise Vaults PST Migrator oftast inte är ett alternativ och hur efterimporten via journalpostlådan fungerar utan att tränga undan det löpande journalflödet, med två generiska skript för import, flyttning och loggning."
 date: "2026-09-22"
 kategorie: "Arkivering och journaling"
 timeToRead: "18 min lästid"
@@ -19,25 +19,25 @@ protokolle:
 slug: "tappa-till-journalingluckan-export-fran-microsoft-purview-och-import-till-enterprise-vault"
 translationId: "article-5b24118ac7567d96"
 translationOf: journaling-luecke-purview-export-enterprise-vault-import
-url: https://rafaelpfister.ch/sv/blog/tappa-till-journalingluckan-export-fran-microsoft-purview-och-import-till-enterprise-vault
-translationSourceHash: 532fe3454abb44c445145c6fd3e7424685e8bc5a28dfa18d25cff8a7f5516094
+translationSourceHash: b22e076002b1662f409633c5b0b15584b7ef1d41cbe4d86f768096e0973f9d7c
 translationModel: gpt-5.6-terra
-translatedAt: 2026-09-24T08:42:07.249Z
+translatedAt: 2026-10-27T09:41:56.927Z
 translationReview: automatic
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/sv/blog/tappa-till-journalingluckan-export-fran-microsoft-purview-och-import-till-enterprise-vault
 ---
 
-# Täppa till journalingluckan: export från Microsoft Purview och import till Enterprise Vault
+# Täppa till journalingluckan: Export från Microsoft Purview och import till Enterprise Vault
 
-Journaling är en transportprocess. Exchange skapar journalrapporten när meddelandet passerar transporten och levererar den till journalpostlådan. Om denna leverans misslyckas, till exempel eftersom en anslutning eller ett mottagarobjekt är felkonfigurerat, finns det ingen funktion som hämtar rapporten i efterhand. Det som passerade transporten under den perioden saknas i arkivet.
+Journaling är en transportprocess. Exchange skapar journalrapporten i det ögonblick då meddelandet passerar transporten och levererar den till journalpostlådan. Om denna leverans misslyckas, exempelvis för att en anslutning eller ett mottagarobjekt är felkonfigurerat, finns ingen funktion som hämtar rapporten i efterhand. Det som passerade transporten under denna period saknas i arkivet.
 
-Meddelandeinnehållet finns dock fortfarande i de berördas postlådor och, med en bevarandeprincip utan utgångstid, även om användarna har raderat meddelandena. Därmed återstår den enda genomförbara vägen för komplettering: exportera perioden från alla postlådor och importera kopiorna till journalarkivet. Följande procedur använder nya eDiscovery i Microsoft Purview på exportsidan och Veritas Enterprise Vault 15 på importsidan. Mätvärdena kommer från en efterimport av flera hundra tusen meddelanden, och de två skripten skapades i samband med detta.
+Meddelandenas innehåll finns dock fortfarande i de berördas postlådor och, med en bevarandeprincip utan utgångsdatum, även om användarna har raderat meddelandena. Därmed återstår endast en möjlig väg för att komplettera: exportera perioden från alla postlådor och importera kopiorna till journalarkivet. Följande process använder den nya eDiscovery i Microsoft Purview på exportsidan och Veritas Enterprise Vault 15 på importsidan; mätvärdena kommer från en efterimport av flera hundra tusen meddelanden, och de två skripten skapades i samband med detta.
 
 ## Vad en export kan ersätta och vad den inte kan
 
-En journalrapport består av kuvertet och innehållet. Kuvertet innehåller de mottagare som transporten faktiskt levererade till: även hemliga kopior och de upplösta medlemmarna i distributionslistor. En postlådekopia innehåller inte dessa uppgifter. Vem som fick ett meddelande som hemlig kopia går inte längre att fastställa efter efterimporten. Själva innehållet kan däremot rekonstrueras fullständigt, förutsatt att två villkor är uppfyllda.
+En journalrapport består av kuvertet och innehållet. Kuvertet innehåller de mottagare som transporten faktiskt levererade till: även hemliga kopior och upplösta medlemmar i distributionslistor. En postlådekopia innehåller inte dessa uppgifter. Vem som fick ett meddelande som hemlig kopia går inte längre att fastställa efter efterimporten. Själva innehållet kan däremot rekonstrueras fullständigt, förutsatt att två villkor är uppfyllda.
 
-För det första måste det finnas bevarande över postlådorna, så att även raderade meddelanden fortfarande finns bland återställningsbara objekt. Detta kontrollerar du i Security & Compliance-PowerShell:
+För det första måste postlådorna omfattas av bevarande, så att även raderade meddelanden fortfarande finns i de återställningsbara objekten. Det kontrollerar du i Security & Compliance PowerShell:
 
 ```powershell
 Connect-IPPSSession
@@ -47,9 +47,9 @@ Get-RetentionComplianceRule |
   Format-List Name, Policy, RetentionComplianceAction, RetentionDuration
 ```
 
-En princip med `RetentionComplianceAction: Keep` och `RetentionDuration: Unlimited` via `ExchangeLocation: All` säkrar innehållet fullständigt. Undantagslistan i `ExchangeLocationException` anger de postlådor som detta inte gäller för. För dessa kan endast det som fortfarande finns kvar rekonstrueras.
+En princip med `RetentionComplianceAction: Keep` och `RetentionDuration: Unlimited` via `ExchangeLocation: All` säkrar innehållet fullständigt. Undantagslistan i `ExchangeLocationException` anger de postlådor som detta inte gäller för. För dem kan bara det som fortfarande finns kvar rekonstrueras.
 
-För det andra räknar en export postlådekopior, inte meddelanden. Ett meddelande till femton interna mottagare förekommer femton gånger i resultatet. I det beskrivna fallet motsvarade 98'131 kopior för en enskild dag omkring 6'800 unika meddelanden, fastställda med meddelandespårning. Hur dessa kopior ska hanteras avgörs av Compliance, inte IT (se avsnittet om deduplicering).
+För det andra räknar en export postlådekopior, inte meddelanden. Ett meddelande till femton interna mottagare finns femton gånger i resultatet. I det beskrivna fallet motsvarade 98'131 kopior för en enskild dag omkring 6'800 unika meddelanden, fastställda med meddelandespårning. Hur dessa kopior ska hanteras avgörs av compliance, inte IT (se avsnittet om dubbletteliminering).
 
 ## Fastställa perioden
 
@@ -61,7 +61,7 @@ Get-MailboxFolderStatistics "journal@example.com" -IncludeOldestAndNewestItems |
   Format-Table Name, ItemsInFolder, OldestItemReceivedDate, NewestItemReceivedDate -AutoSize
 ```
 
-Detsamma gäller postlådan som anges i `JournalingReportNdrTo` i transportkonfigurationen. Den samlar olevererbara journalrapporter, och dess senaste post bekräftar tidpunkten. Slutet på luckan är den tidpunkt då journalregeln ändrades till det reparerade målet. Mellan dessa ligger exportperioden, i UTC.
+Detsamma gäller postlådan som finns i `JournalingReportNdrTo` i transportkonfigurationen. Den samlar journalrapporter som inte kan levereras, och dess senaste post bekräftar tidpunkten. Slutet på luckan är tidpunkten då journalregeln ändrades till det reparerade målet. Mellan dessa två tidpunkter ligger exportperioden, i UTC.
 
 Meddelandespårningen ger målvärdet för avstämningen: en rad per mottagare och meddelande, med `MessageId`. En historisk rapport täcker hela perioden:
 
@@ -77,24 +77,24 @@ $bericht = @{
 Start-HistoricalSearch @bericht
 ```
 
-De unika `MessageId`-värdena från denna rapport är det antal som efterimporten till slut mäts mot.
+De unika `MessageId`-värdena i denna rapport är antalet som efterimporten slutligen mäts mot.
 
-## Export från nya eDiscovery
+## Export från den nya eDiscovery
 
-Microsoft stängde av de klassiska gränssnitten för Content Search och eDiscovery (Standard) den 31 augusti 2025. Det som fortfarande anges i många instruktioner, särskilt alternativet för deduplicering vid export, finns inte längre i nya eDiscovery. Processen i Purview-portalen:
+Microsoft stängde av de klassiska gränssnitten för Content Search och eDiscovery (Standard) den 31 augusti 2025. Det som fortfarande anges i många anvisningar, särskilt alternativet för dubbletteliminering vid export, finns inte längre i den nya eDiscovery. Processen i Purview-portalen:
 
-1. Skapa eller öppna ett ärende under *eDiscovery*. För exporten behöver det utförande kontot rollen *eDiscovery Manager* och en Microsoft 365 E3- eller E5-licens.
-2. Skapa en sökning. Datakälla: alla postlådor eller, för en testkörning, en enskild postlåda.
-3. Använd KQL som fråga. Parenteserna är avgörande eftersom `AND` har starkare bindning än `OR`:
+1. Skapa eller öppna ett ärende under *eDiscovery*. För export kräver det konto som utför åtgärden rollen *eDiscovery Manager* och en Microsoft 365 E3- eller E5-licens.
+2. Skapa en sökning. Datakälla: alla postlådor, eller en enskild postlåda för en testkörning.
+3. Använd KQL som fråga. Parenteserna är avgörande eftersom `AND` har högre prioritet än `OR`:
 
 ```text
 kind:email AND ((received>=2026-09-10 AND received<2026-09-12)
              OR (sent>=2026-09-10 AND sent<2026-09-12))
 ```
 
-Utan `kind:email` räknar sökningen även kalenderposter, kontakter och uppgifter. I det beskrivna fallet innebar detta skillnaden mellan 473'725 och 98'131 träffar för en dag. Utan de yttre parenteserna gäller det andra datumvillkoret endast för `sent`, och resultatet innehåller meddelanden från hela postlådans innehåll.
+Utan `kind:email` räknar sökningen även kalenderposter, kontakter och uppgifter. I det beskrivna fallet utgjorde detta skillnaden mellan 473'725 och 98'131 träffar för en dag. Utan de yttre parenteserna gäller det andra datumvillkoret bara för `sent`, och resultatet innehåller meddelanden från hela postlådebeståndet.
 
-4. Kör *Generate statistics*. Vid sökningar i hela klientorganisationen påskyndar detta exporten avsevärt eftersom endast postlådor med träffar behandlas. Platser som avslutas med fel ska hämtas in via *Retry failed locations* innan exporten sker, annars saknas de i resultatet och detta märks först efter nedladdningen.
+4. Kör *Generate statistics*. Vid klientomfattande sökningar snabbar detta upp exporten avsevärt, eftersom endast postlådor med träffar sedan bearbetas. Kör *Retry failed locations* för platser som avslutas med fel innan exporten påbörjas; annars saknas de i resultatet, vilket märks först efter nedladdningen.
 5. Välj *Export* med följande inställningar.
 
 | Alternativ | Effekt |
@@ -102,40 +102,40 @@ Utan `kind:email` räknar sökningen även kalenderposter, kontakter och uppgift
 | *Export type: Export items with items report* | Meddelanden plus `items.csv`; den rena rapporten innehåller inget innehåll |
 | *Export format: Create PSTs for messages* | En PST per postlåda i stället för enskilda `.msg`-filer |
 | *Maximum PST package size* | Vid denna storlek delas en PST upp i delar (`.001.pst`, `.002.pst`) |
-| *Maximum .zip package size* | Storlek på nedladdningspaketen; måste minst motsvara PST-storleken |
+| *Maximum .zip package size* | Storleken på nedladdningspaketen; måste minst motsvara PST-storleken |
 | *Organize data from different locations into separate folders or PSTs* | **Aktivera**: en fil per postlåda, med namnet `<smtp-adresse>.001.pst` |
-| *Include folder and path of the source* | **Inaktivera**: alla meddelanden hamnar i mappen `Items` i PST-filen i stället för i postlådans mappstruktur |
+| *Include folder and path of the source* | **Inaktivera**: alla meddelanden hamnar i PST:ens mapp `Items` i stället för i postlådans mappstruktur |
 | *Give each item a friendly name* | Saknar effekt vid PST-export |
 
-Inställningen *Include folder and path of the source* avgör den senare importen. Med mappstruktur skapar importen i journalpostlådan mapparna för varje postlåda, på respektive användares språk: `Posteingang`, `Posta in arrivo`, `Boîte de réception`. Utan mappstruktur ligger allt i en enda mapp `Items`, och efterimporten har en enda plats att arbeta vidare från.
+Inställningen *Include folder and path of the source* avgör den senare importen. Med mappstruktur skapar importen varje postlådas mappar i journalpostlådan, på respektive användares språk: `Posteingang`, `Posta in arrivo`, `Boîte de réception`. Utan mappstruktur ligger allt i en mapp `Items`, och efterimporten har en enda plats att fortsätta från.
 
-Nedladdningen ger Zip-paket. Microsoft rekommenderar 7-Zip eller ett jämförbart verktyg i stället för Windows Explorer. Paketen upphör att gälla 14 dagar efter att de skapats. Filen `items.csv` från exportens processrapport (under *Process manager*, Export, Rapporter) är beviset på vad exporten innehåller och vad som hoppades över; den hör till underlaget.
+Nedladdningen ger Zip-paket. Microsoft rekommenderar 7-Zip eller ett jämförbart verktyg i stället för Windows Explorer. Paketen upphör att gälla 14 dagar efter att de skapats. Filen `items.csv` från exportens processrapport (under *Process manager*, Export, Rapporter) är beviset på vad exporten innehåller och vad som hoppades över; den ska ingå i underlaget.
 
-### Deduplicering
+### Dubbletteliminering
 
-Den klassiska Content Search hade kryssrutan *Enable de-duplication*: meddelanden med samma `InternetMessageId`, `ConversationTopic` och `BodyTagInfo` exporterades bara en gång, medan övriga fyndplatser fanns i `Results.csv`. Nya eDiscovery erbjuder inte detta vid direkt export från en sökning. Den enda dokumenterade vägen är ett *Review Set*: läs in sökresultaten, kör Analytics, använd det automatiskt skapade filtret *For Review*, som utesluter dubbletter, och exportera från Review Set. Detta kräver eDiscovery Premium och därmed en E5-licens för den utförande användaren. Flera användare rapporterar i Microsoft Q&A om dubbletter trots denna procedur. En testkörning med en dag rekommenderas före full export.
+Den klassiska Content Search hade kryssrutan *Enable de-duplication*: meddelanden med samma `InternetMessageId`, `ConversationTopic` och `BodyTagInfo` exporterades bara en gång, medan övriga fyndplatser angavs i `Results.csv`. Den nya eDiscovery erbjuder inte detta vid direkt export från en sökning. Den enda dokumenterade vägen är ett *Review Set*: läs in sökresultaten, kör Analytics, använd det automatiskt skapade filtret *For Review*, som utesluter dubbletter, och exportera från Review Set. Detta kräver eDiscovery Premium och därmed en E5-licens för den användare som utför åtgärden. Flera användare rapporterar i Microsoft Q&A om dubbletter trots detta arbetssätt; en testkörning med en dag rekommenderas före full export.
 
-Utan deduplicering gäller följande: Enterprise Vault deduplicerar på lagringsnivå (identiska bilagor och meddelandetexter lagras en gång), men inte på objektnivå. Varje postlådekopia blir en egen arkivpost, en egen träff i sökningen och en egen räknare. Räkningen för bevisning kan då inte härledas från arkivet utan endast från `items.csv` jämfört med meddelandespårningen. Beslutet att acceptera kopior eller exportera på nytt via ett Review Set fattas före importen, inte efteråt.
+Utan dubbletteliminering gäller följande: Enterprise Vault eliminerar dubbletter på lagringsnivå (identiska bilagor och meddelandetexter lagras en gång), men inte på objektnivå. Varje postlådekopia blir en egen arkivpost, en egen träff i sökningen och en egen räknare. Räkningen för verifieringen kan då inte härledas från arkivet, utan endast från `items.csv` mot meddelandespårningen. Beslutet att acceptera kopior eller exportera på nytt via ett Review Set fattas före importen, inte efteråt.
 
 ## Vägarna in i Enterprise Vault
 
-Enterprise Vault innehåller PST Migrator för PST-filer, både som guide i administrationskonsolen (*Archives*, högerklick, *Import PST*) och som skriptbar variant via Policy Manager EVPM. För efterimport till ett journalarkiv har denna väg tre begränsningar.
+Enterprise Vault innehåller PST Migrator för PST-filer, som en guide i administrationskonsolen (*Archives*, högerklicka, *Import PST*) och som en skriptbar variant via Policy Manager EVPM. För efterimport till ett journalarkiv har denna väg tre begränsningar.
 
-För det första licensen. Migrator kräver funktionen `EVPSTM` (*Exchange PST Migrator*). I en Site som endast använder journaling är den ofta inte licensierad, och guiden avbryts på första sidan med *Required license not installed*. Policy Manager använder samma Migrator och visar samma meddelande.
+För det första licensen. Migrator kräver funktionen `EVPSTM` (*Exchange PST Migrator*). På en site som endast använder journaling är den ofta inte licensierad, och guiden avbryts på första sidan med *Required license not installed*. Policy Manager använder samma migrator och rapporterar samma sak.
 
-För det andra målet. Guiden erbjuder inte journalarkiv som mål, utan endast postlådearkiv och Internet Mail Archives. Import direkt till journalarkivet är endast möjlig via EVPM med `ArchiveName`, och då kringgås Journaling Tasks bearbetningsregler. Som mål återstår ett eget Shared Archive i journalens Vault Store, som sökningen omfattar tillsammans med journalarkivet.
+För det andra målet. Guiden erbjuder inte journalarkiv som mål, endast postlådearkiv och Internet Mail-arkiv. Import direkt till journalarkivet är endast möjlig via EVPM med `ArchiveName`, och då kringgås Journaling Tasks bearbetningsregler. Som mål återstår ett eget Shared Archive i journalens Vault Store, som sökningen täcker tillsammans med journalarkivet.
 
-För det tredje spårbarheten: Migrator skriver till PST-filen (den markerar migrerade objekt), vilket innebär att underlaget ändras, och migreringsrapporterna per fil måste stämmas av mot exportsiffrorna.
+För det tredje spårbarheten: Migrator skriver till PST-filen (den markerar migrerade objekt), så beståndet ändras, och migrationsrapporterna per fil måste stämmas av mot exportsiffrorna.
 
-Den andra vägen kräver ingen extra licens: Exchange Journaling Task i Enterprise Vault arkiverar inte bara journalrapporter. Om den identifierar ett objekt som en journalrapport packar den upp det och tar över kuvertdata. Ett vanligt objekt arkiverar den direkt, precis som den alltid har gjort under tider med enkel Exchange-journaling utan kuvert. Den som importerar PST-filerna till journalpostlådan får meddelandena skrivna av den reguljära tasken till det reguljära journalarkivet, med samma bevarandekategori, samma indexering och utan förändring av arkiveringslandskapet.
+Den andra vägen kräver ingen ytterligare licens: Exchange Journaling Task i Enterprise Vault arkiverar inte bara journalrapporter. Om den känner igen ett objekt som en journalrapport packar den upp det och tar över kuvertdata. Ett vanligt objekt arkiverar den direkt, precis som den alltid gjorde under tiden med enkel Exchange-journaling utan kuvert. Den som importerar PST-filerna till journalpostlådan får meddelandena skrivna till det vanliga journalarkivet av den ordinarie tasken, med samma bevarandekategori, samma indexering och utan ändringar i arkiveringsmiljön.
 
-Detta kan bevisas med ett enskilt testmeddelande till journalpostlådan: om det kort därefter inte längre finns i någon mapp, inte heller i *Invalid Journal Report*, och sökningen hittar det i journalarkivet, arkiverar tasken vanliga meddelanden.
+Det kan bevisas med ett enskilt testmeddelande till journalpostlådan: om det kort därefter inte längre finns i någon mapp, inte heller i *Invalid Journal Report*, och sökningen hittar det i journalarkivet, arkiverar tasken vanliga meddelanden.
 
-Denna väg har två egenskaper som styr proceduren. Tasken bearbetar enbart den översta nivån i Inkorgen, inga undermappar. Det kan utläsas i journalpostlådan: sökmappen *Initial Trawl With Pending* under *Enterprise Vault Search Folders* räknar exakt objekten i Inkorgen, utan undermappar. Och import via Exchange skapar alltid mappar; hur framgår av nästa avsnitt.
+Denna väg har två egenskaper som avgör processen. Tasken bearbetar enbart den översta nivån i Inkorgen, inga undermappar. Detta kan läsas av i journalpostlådan: sökmappen *Initial Trawl With Pending* under *Enterprise Vault Search Folders* räknar exakt objekten i Inkorgen, undermappar ingår inte. Och import via Exchange skapar alltid mappar; hur beskrivs i nästa avsnitt.
 
 ## Import till journalpostlådan
 
-`New-MailboxImportRequest` importerar en PST-fil på serversidan via Mailbox Replication Service. Filen måste ligga på en utdelning där *Exchange Trusted Subsystem* har fullständig behörighet, och det utförande kontot behöver rollen *Mailbox Import Export*, som som standard inte är tilldelad någon:
+`New-MailboxImportRequest` importerar en PST-fil på serversidan via Mailbox Replication Service. Filen måste ligga på en utdelning där *Exchange Trusted Subsystem* har fullständig åtkomst, och det konto som utför åtgärden kräver rollen *Mailbox Import Export*, som som standard inte är tilldelad någon:
 
 ```powershell
 Get-ManagementRoleAssignment -Role "Mailbox Import Export" |
@@ -157,43 +157,43 @@ New-MailboxImportRequest @import
 ```
 
 <details class="options-details">
-<summary>Förklaring av alternativ</summary>
+<summary>Alternativ förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Mailbox` | Målpostlåda, här journalpostlådan |
 | `-FilePath` | UNC-sökväg till PST-filen; lokala sökvägar avvisas |
 | `-TargetRootFolder` | Mapp där PST-innehållet placeras; utan angivelse mappas PST-mappar till postlådemappar med samma namn |
-| `-SourceRootFolder` | Mapp i PST-filen från vilken importen börjar; i praktiken skapas själva mappen ändå (se texten) |
-| `-Name` | Unikt namn på jobbet; härlett från filnamnet vid tusentals filer |
+| `-SourceRootFolder` | Mapp i PST-filen från vilken importen startar; i praktiken skapas själva mappen ändå (se texten) |
+| `-Name` | Unikt namn på jobbet; härlett från filnamnet för tusentals filer |
 | `-BatchName` | Gruppering för frågor och statistik |
 
 </details>
 
-Tre observationer från testkörningen styr den fortsatta processen. Utan `TargetRootFolder` och med en strukturerad PST (mappstruktur exporterad) skapar MRS PST-filens rot som en egen mapp bredvid Inkorgen, i fallet med en tysk postlåda `Oberste-Ebene-des-Informationsspeichers` med undermapparna `Posteingang`, `Gesendete-Elemente` och så vidare, samt `Recoverable-Items` med `Deletions`. Med `TargetRootFolder "Inbox"` och en platt PST hamnar alla meddelanden i `/Inbox/Items`. Och `SourceRootFolder "Items"` i kombination med `TargetRootFolder "Inbox"` gav i testet också `/Inbox/Items`; nivån skalades inte bort.
+Tre observationer från testkörningen avgör den fortsatta processen. Utan `TargetRootFolder` och med en strukturerad PST (mappstruktur exporterad) skapar MRS PST:ens rot som en egen mapp bredvid Inkorgen, i fallet med en tysk postlåda `Oberste-Ebene-des-Informationsspeichers` med undermapparna `Posteingang`, `Gesendete-Elemente` och så vidare, samt `Recoverable-Items` med `Deletions`. Med `TargetRootFolder "Inbox"` och en platt PST hamnar alla meddelanden i `/Inbox/Items`. Och `SourceRootFolder "Items"` i kombination med `TargetRootFolder "Inbox"` gav i testet också `/Inbox/Items`; nivån togs inte bort.
 
-I samtliga tre fall ligger meddelandena utanför Journaling Tasks synfält. Det sista steget, att flytta dem platt till Inkorgen, kan inte utföras med inbyggda Exchange-funktioner; det sker via EWS. EWS Managed API finns som `Microsoft.Exchange.WebServices.dll` i installationskatalogen för Enterprise Vault, och Vault Service Account har fullständig behörighet till journalpostlådan, så ingen ytterligare behörighet krävs. Skriptet körs på EV-servern i Windows PowerShell 5.1 eftersom biblioteket bygger på .NET Framework.
+I samtliga tre fall ligger meddelandena utanför Journaling Tasks synfält. Det sista steget, att flytta dem platt till Inkorgen, kan inte utföras med Exchange inbyggda verktyg; det sker via EWS. EWS Managed API finns som `Microsoft.Exchange.WebServices.dll` i installationskatalogen för Enterprise Vault, och Vault Service Account har fullständig åtkomst till journalpostlådan, så ingen ytterligare behörighet behövs. Skriptet körs på EV-servern i Windows PowerShell 5.1 eftersom biblioteket bygger på .NET Framework.
 
-Detta flyttsteg är samtidigt strypningen för hela proceduren: det avgör hur många meddelanden tasken ser åt gången.
+Detta flyttningssteg är samtidigt strypningen för hela processen: det avgör hur många meddelanden tasken ser på en gång.
 
 ## Testkörningen med en postlåda
 
-Innan tusentals filer körs kan hela vägen kontrolleras med en enda postlåda. Lämpligen används postlådan för den person som genomförde exporten: personen har mandatet, det är egna data och filen är liten. Processen:
+Innan tusentals filer körs kan hela processen testas med en enda postlåda. Postlådan för den person som utförde exporten är lämplig: personen har mandatet, det är dennes egna data och filen är liten. Processen:
 
-1. Kopiera PST-filen till en egen mapp och spara SHA-256-hashen för originalet i en CSV-fil.
-2. Importera med `TargetRootFolder "Inbox"`, ta fram statistik med `Get-MailboxImportRequestStatistics`: `ItemsTransferred` är målvärdet.
-3. Ta fram mappstatistik för journalpostlådan: var ligger objekten?
+1. Kopiera PST-filen till en egen mapp, skriv originalets SHA-256-hash i en CSV-fil.
+2. Importera med `TargetRootFolder "Inbox"`, hämta statistik med `Get-MailboxImportRequestStatistics`: `ItemsTransferred` är målvärdet.
+3. Hämta mappstatistik för journalpostlådan: Var finns objekten?
 4. Flytta från `/Inbox/Items` till Inkorgen via EWS.
-5. Räkna gamla objekt i Inkorgen med några minuters mellanrum: objekt med `DateTimeReceived` före början av det löpande flödet är de importerade. När antalet minskar arkiverar tasken.
-6. Stäm av: sök i journalarkivet (i Discovery Accelerator eller EV-sökningen) med period och postlådeägare, och jämför antalet träffar med `ItemsTransferred`.
+5. Räkna de gamla objekten i Inkorgen var några minut: objekt med `DateTimeReceived` före början av det löpande flödet är de importerade. När antalet sjunker arkiverar tasken.
+6. Stäm av: sök i journalarkivet (i Discovery Accelerator eller EV-sökningen) med tidsperiod och postlådeägare, och jämför antalet träffar med `ItemsTransferred`.
 
-I det beskrivna fallet importerades 128 objekt och 126 arkiverades. De två återstående var ett utkast och ett objekt utan avsändare; tasken lämnar objekt utan avsändare kvar. Utkast har aldrig passerat transporten och hör inte hemma i något journalarkiv, därför utesluter flyttskriptet dem via flaggan `IsDraft`, språkoberoende. Objekt från mapparna *Versions* och *Konflikte* (tidigare versioner under bevarande, synkroniseringsrester) flyttas inte heller.
+I det beskrivna fallet importerades 128 objekt och 126 arkiverades. De två återstående var ett utkast och ett objekt utan avsändare; tasken lämnar objekt utan avsändare. Utkast har aldrig passerat transporten och hör inte hemma i något journalarkiv, därför utesluter flyttskriptet dem språkoberoende via flaggan `IsDraft`. Objekt från mapparna *Versions* och *Konflikte* (tidigare versioner under bevarande, synkroniseringsrester) flyttas inte heller.
 
-Händelseloggen `Veritas Enterprise Vault` visar efter testkörningen vad tasken avvisade. Händelse 3071 (*could not be archived as it may be corrupt*) och 3288 (*no longer archive pending*) upprepas vid varje genomgång för samma objekt; sådana objekt bör flyttas till en mapp utanför Inkorgen så att tasken inte försöker igen vid varje genomgång.
+Händelseloggen `Veritas Enterprise Vault` visar efter testkörningen vad tasken avvisade. Händelse 3071 (*could not be archived as it may be corrupt*) och 3288 (*no longer archive pending*) upprepas för samma objekt vid varje körning; sådana objekt bör flyttas till en mapp utanför Inkorgen så att tasken inte försöker igen vid varje körning.
 
 ## Skript 1: Import i batchar
 
-Det första skriptet körs i Exchange Management Shell på en Exchange-server. Det skapar importjobb i batchar, väntar, loggar status och `ItemsTransferred` per fil i en CSV-fil och tar bort slutförda jobb. Upprepade körningar hoppar över filer som redan finns i loggen. Prefixet `NI` står för efterimport.
+Det första skriptet körs i Exchange Management Shell på en Exchange-server. Det skapar importjobb i batchar, väntar, loggar status och `ItemsTransferred` per fil till en CSV-fil och tar bort slutförda jobb. Upprepade körningar hoppar över filer som redan finns i loggen. Prefixet `NI` står för efterimport.
 
 ```powershell
 $NIPostfach  = "journal@example.com"
@@ -291,25 +291,25 @@ function Get-NIImportStand {
 ```
 
 <details class="options-details">
-<summary>Förklaring av funktioner</summary>
+<summary>Funktioner förklarade</summary>
 
 | Funktion | Effekt |
 |---|---|
-| `Get-NIDateien` | Lista över alla PST-filer från källmapparna med härlett jobbnamn; samma filnamn i olika mappar (exempelvis en export per dag) förblir särskiljbara |
+| `Get-NIDateien` | Lista över alla PST-filer från källmapparna med härlett jobbnamn; identiska filnamn i olika mappar (till exempel en export per dag) förblir särskiljbara |
 | `Start-NICharge -Anzahl` | Skapar upp till N importjobb för filer som ännu inte har loggats |
-| `Wait-NICharge` | Väntar tills inga jobb längre körs, skriver status och `ItemsTransferred` till loggen och tar bort slutförda jobb; misslyckade jobb lämnas kvar för analys. Statistik och borttagning körs via pipelinen eftersom `-Identity` i ett fjärranslutet skal inte accepterar det deserialiserade Identity-objektet |
+| `Wait-NICharge` | Väntar tills inget jobb längre körs, skriver status och `ItemsTransferred` till loggen, tar bort slutförda jobb; misslyckade jobb lämnas kvar för analys. Statistik och borttagning körs via pipeline eftersom `-Identity` i ett fjärranslutet skal inte accepterar det deserialiserade Identity-objektet |
 | `Resume-NICharge -Anzahl -MaxLager` | Frisläpper pausade jobb endast om färre än `MaxLager` meddelanden väntar i Inkorgens undermappar |
 | `Get-NIImportStand` | Sammanfattning per status, summa av importerade objekt, totalt antal filer |
 
 </details>
 
-Du bör känna till två beteenden hos MRS. Exchange tillåter som standard tio samtidiga jobb till samma målpostlåda; alla övriga står med en orsak som `StalledDueToTarget_MailboxCapacityExceeded` eller `StalledDueToTarget_MdbReplication` i kön och flyttas fram senare. Det är arbetsbelastningshantering, inte ett kapacitetsproblem, även om namnet antyder det. Och `Get-MailboxImportRequest` visar status med fördröjning; statistiken är mer aktuell.
+Du bör känna till två beteenden hos MRS. Exchange tillåter som standard tio samtidiga jobb mot samma målpostlåda; alla ytterligare hamnar med en orsak som `StalledDueToTarget_MailboxCapacityExceeded` eller `StalledDueToTarget_MdbReplication` i kön och går vidare senare. Det är arbetsbelastningsstyrning, inte ett kapacitetsproblem, även om namnet antyder det. Och `Get-MailboxImportRequest` visar status med fördröjning; statistiken är aktuellare.
 
-Genomströmningen låg på omkring sex PST-filer per minut vid en genomsnittlig storlek på några få megabyte. MRS är därmed betydligt snabbare än Enterprise Vault. Allt som importerats ligger i journalpostlådan tills tasken arkiverar och raderar det. `Resume-NICharge` kopplar därför frisläppningen av ytterligare jobb till mängden som ännu inte har flyttats, så att postlådan inte växer till storleken på hela exporten.
+Genomströmningen var omkring sex PST-filer per minut vid en genomsnittlig storlek på några megabyte. MRS är därmed betydligt snabbare än Enterprise Vault. Allt som importerats ligger i journalpostlådan tills tasken arkiverar och raderar det. `Resume-NICharge` kopplar därför frisläppandet av ytterligare jobb till mängden som ännu inte har flyttats, så att postlådan inte växer till hela exportens storlek.
 
-## Skript 2: Flytt och takt
+## Skript 2: Flyttning och takt
 
-Det andra skriptet körs som Vault Service Account på EV-servern i Windows PowerShell 5.1. Det flyttar meddelanden från alla undermappar i Inkorgen platt till Inkorgen, utelämnar utkast samt mapparna *Versions* och *Konflikte*, och fyller endast på när Inkorgen ligger under ett tröskelvärde.
+Det andra skriptet körs som Vault Service Account på EV-servern i Windows PowerShell 5.1. Det flyttar meddelanden från alla Inkorgens undermappar platt till Inkorgen, utelämnar utkast samt mapparna *Versions* och *Konflikte*, och fyller bara på när Inkorgen ligger under en tröskel.
 
 ```powershell
 Add-Type -Path "C:\Program Files (x86)\Enterprise Vault\Microsoft.Exchange.WebServices.dll"
@@ -406,27 +406,27 @@ function Get-NIMoveStand {
 ```
 
 <details class="options-details">
-<summary>Förklaring av funktioner</summary>
+<summary>Funktioner förklarade</summary>
 
 | Funktion | Effekt |
 |---|---|
 | `Get-NIRueckstand` | Antal objekt i Inkorgen och antal objekt som är äldre än två timmar; de senare är de efterimporterade eftersom det löpande journalflödet endast har aktuella mottagningstider |
-| `Get-NIUnterordner` | Alla innehållande undermappar i Inkorgen, utan *Versions* och *Konflikte* |
-| `Move-NIPortion -Max` | Flyttar upp till N meddelanden utan utkastflagga till Inkorgen, sidvis med 100 via `MoveItems` med en typad `ItemId`-lista; en PowerShell-array passar inte signaturen |
-| `Start-NIDauerlauf -Portion -MaxPosteingang` | Oändlig slinga: mäter Inkorgen var femte minut och fyller endast på när den ligger under tröskelvärdet; avslutas så snart filen `STOP.txt` finns |
-| `Get-NIMoveStand` | Summa av flyttade objekt, antal fel, aktuellt eftersläp |
+| `Get-NIUnterordner` | Alla Inkorgens undermappar med innehåll, utom *Versions* och *Konflikte* |
+| `Move-NIPortion -Max` | Flyttar upp till N meddelanden utan utkastflagga till Inkorgen, sidvis i grupper om 100 via `MoveItems` med en typad `ItemId`-lista; en PowerShell-array passar inte signaturen |
+| `Start-NIDauerlauf -Portion -MaxPosteingang` | Oändlig slinga: mäter Inkorgen var femte minut, fyller bara på när den ligger under tröskeln; avslutas så snart filen `STOP.txt` finns |
+| `Get-NIMoveStand` | Summa av flyttade objekt, antal fel, aktuell återstående mängd |
 
 </details>
 
-Tröskelvärdet `MaxPosteingang` är procedurens viktigaste siffra. Det måste ligga över taskens normala arbetslager (i det beskrivna fallet omkring 1'500 rapporter vid 100 meddelanden per minut och omkring 20 minuters fördröjning) och så lågt att tasken aldrig lämnar det löpande flödet kvar. Varför detta behövs visas i nästa avsnitt.
+Tröskeln `MaxPosteingang` är processens viktigaste siffra. Den måste ligga över taskens normala arbetsförråd (i det beskrivna fallet omkring 1'500 rapporter vid 100 meddelanden per minut och cirka 20 minuters fördröjning) och så lågt att tasken aldrig lämnar det löpande flödet obearbetat. Varför detta behövs visar nästa avsnitt.
 
 ## Mätvärden och strypningen
 
-Med Journaling Tasks standardinställningar (5 samtidiga anslutningar till Exchange-servern, 1'000 objekt per genomgång) arkiverade Enterprise Vault de efterimporterade meddelandena den första natten med omkring 5'600 per timme. På morgonen visade mappstatistiken vad detta hade kostat: Inkorgen låg på 16'500 i stället för 1'500. Det löpande journalflödet, omkring 6'000 rapporter per timme, låg mer än två timmar efter. Tasken hade bearbetat de gamla meddelandena och prioriterat ned de aktuella rapporterna.
+Med standardinställningarna för Journaling Task (5 samtidiga anslutningar till Exchange-servern, 1'000 objekt per körning) arkiverade Enterprise Vault de efterimporterade meddelandena den första natten med omkring 5'600 per timme. På morgonen visade mappstatistiken vad det kostade: Inkorgen stod på 16'500 i stället för 1'500. Det löpande journalflödet, omkring 6'000 rapporter per timme, låg mer än två timmar efter. Tasken hade också bearbetat de gamla meddelandena och gett de aktuella rapporterna lägre prioritet.
 
-Taskens kapacitet är summan av båda flödena. Efterimporten får endast använda den del som återstår efter den dagliga verksamheten. Därför mäter den kontinuerliga körningen själva Inkorgen, inte antalet gamla objekt, och fyller endast på när flödet är aktuellt.
+Taskens kapacitet är summan av båda flödena. Efterimporten får endast använda den del som återstår efter den dagliga verksamheten. Därför mäter den kontinuerliga körningen själva Inkorgen, inte antalet gamla objekt, och fyller bara på när flödet är aktuellt.
 
-Tre mätningar visar var taskens gräns ligger. Köerna mellan tasken och Storage Service är MSMQ-köer; om Storage Services köer är tomma medan taskens är fyllda bromsar tasken vid läsning från Exchange, inte lagringen:
+Tre mätningar visar var taskens gräns går. Köerna mellan tasken och Storage Service är MSMQ-köer; om Storage Services köer är tomma medan taskens är fyllda bromsar tasken vid läsningen från Exchange, inte lagringen:
 
 ```powershell
 Get-Counter -Counter '\MSMQ Queue(*)\Messages in Queue' -SampleInterval 5 -MaxSamples 6 |
@@ -438,7 +438,7 @@ Get-Counter -Counter '\MSMQ Queue(*)\Messages in Queue' -SampleInterval 5 -MaxSa
   }
 ```
 
-På Exchange-sidan räknar RPC-latensen per klienttyp, inte antalet förfrågningar; värden under 10 ms innebär att servern har reserver:
+På Exchange-sidan räknas RPC-latens per klienttyp, inte antalet förfrågningar; värden under 10 ms betyder att servern har reserver:
 
 ```powershell
 $zaehler = @('\MSExchangeIS Client Type(*)\RPC Average Latency', '\Processor(_Total)\% Processor Time')
@@ -457,44 +457,48 @@ Get-ThrottlingPolicyAssociation -Identity "svc-ev" | Format-List ThrottlingPolic
 Get-ThrottlingPolicy | Format-Table Name, IsServiceAccount, RcaMaxConcurrency, EwsMaxConcurrency -AutoSize
 ```
 
-Om tasken bromsar finns den relevanta inställningen i taskegenskaperna (*Enterprise Vault Servers*, server, *Tasks*, Journaling Task, fliken *Settings*):
+Om tasken bromsar finns rätt inställning i taskegenskaperna (*Enterprise Vault Servers*, Server, *Tasks*, Journaling Task, fliken *Settings*):
 
 | Inställning | Standard | Effekt |
 |---|---|---|
-| *Number of concurrent connections to Exchange Server* | 5 | Trådar som parallellt läser från postlådan; verkar linjärt så länge Exchange-latens och Storage-köer förblir opåverkade |
-| *Maximum number of items per target per pass* | 1000 | Objekt per genomgång; vid stort eftersläp behöver arbetet påbörjas mer sällan |
+| *Number of concurrent connections to Exchange Server* | 5 | Trådar som läser parallellt från postlådan; ger linjär effekt så länge Exchange-latens och Storage-köer är obemärkta |
+| *Maximum number of items per target per pass* | 1000 | Objekt per körning; vid stor eftersläpning behövs färre nya starter |
 
-Ändringar gäller efter omstart av tasken (högerklicka, *Stop*, sedan *Start*). Det är lämpligt att fördubbla och sedan mäta med tidsstämplarna i flyttloggen, därefter gå till nästa steg. En andra Journaling Task mot samma postlåda är inte möjlig; en journalpostlåda är tilldelad exakt en task. Verklig parallellism uppnås med en andra journalpostlåda och en egen task på en andra EV-server, till vars arkiv den andra hälften av filerna importeras. Detta är en förändring av arkiveringslandskapet och måste samordnas med driften.
+Ändringar gäller efter att tasken har startats om (högerklicka, *Stop*, sedan *Start*). Det är lämpligt att dubbla värdet och därefter mäta med tidsstämplarna i flyttloggen, och sedan ta nästa steg. En andra Journaling Task mot samma postlåda är inte möjlig; en journalpostlåda är tilldelad exakt en task. Verklig parallellitet uppnås med en andra journalpostlåda och en egen task på en andra EV-server, till vars arkiv den andra hälften av filerna importeras. Det är en ändring i arkiveringsmiljön och ska samordnas med driften.
 
-## Vad som framträder i utkanten
+## Iakttagelser i utkanten
 
-En efterimport i denna storlek blottlägger sådant som ingen tidigare har tittat på. Två exempel från det beskrivna fallet, eftersom de sannolikt återkommer.
+En efterimport i denna storlek avslöjar sådant som ingen tidigare har tittat på. Två från det beskrivna fallet, eftersom de sannolikt återkommer.
 
-Övervakningen rapporterade *RPC Requests/sec* över tröskelvärdet på Exchange-servern, med standardvärdena 60 och 70 förfrågningar per sekund från kontrollmallen. Serverns grundbelastning låg redan över den kritiska tröskeln utan import. Förfrågningar per sekund är ett belastningsvärde; hälsovärdet är latensen, och den låg under en millisekund. Tröskelvärdet bör sättas om baserat på grundbelastningen i övervakningshistoriken, till exempel till två och tre gånger den typiska dagstoppen, medan latensgränsen behålls.
+Övervakningen rapporterade på Exchange-servern *RPC Requests/sec* över tröskeln, med förinställda värden på 60 och 70 förfrågningar per sekund från kontrollmallen. Serverns grundbelastning låg redan över den kritiska tröskeln utan import. Förfrågningar per sekund är ett belastningsvärde; hälsovärdet är latensen, och den låg under en millisekund. Tröskeln bör sättas om utifrån grundbelastningen i övervakningshistoriken, exempelvis till det dubbla och tredubbla av den typiska toppbelastningen dagtid, medan latenströskeln behålls.
 
 
-I journalpostlådans Inkorg låg sedan åratal fyra objekt som tasken försökte behandla på nytt vid varje genomgång och avvisade med händelse 3071. De hade inte uppmärksammats i någon utvärdering eftersom ingen regelbundet läste händelseloggen `Veritas Enterprise Vault`. Detsamma gällde uppsamlingspostlådan från `JournalingReportNdrTo`: 117'000 olevererbara journalrapporter sedan 2020, en indikation på att arkiveringen redan före den aktuella luckan upprepade gånger hade förlorat rapporter.
+I journalpostlådans Inkorg låg fyra objekt sedan flera år som tasken försökte bearbeta igen vid varje körning och avvisade med händelse 3071. De hade inte uppmärksammats i någon utvärdering eftersom ingen regelbundet läste händelseloggen `Veritas Enterprise Vault`. Detsamma gällde uppsamlingspostlådan från `JournalingReportNdrTo`: 117'000 journalrapporter som inte kunde levereras sedan 2020, ett tecken på att arkiveringen upprepade gånger hade förlorat rapporter redan före den aktuella luckan.
 
-## Bevisning och avslut
+## Verifiering och avslutning
 
-I slutet av efterimporten finns tre filer och en sökning. `items.csv` från Purview-exporten bevisar vad som exporterades. `import-protokoll.csv` innehåller per fil vad Exchange tog emot. `verschieben-protokoll.csv` innehåller vad som överlämnades till tasken och när. Sökningen i journalarkivet med luckans tidsperiod, uppdelad per dag, ger antalet i arkivet. Skillnaderna mellan dessa siffror är förklarliga: utkast, objekt utan avsändare, mapparna *Versions* och *Konflikte*, postlådor utanför bevarande. Just denna förklaring är budskapet till Compliance, tillsammans med de två begränsningar som ingen efterimport upphäver: saknade kuvertmottagare och, utan deduplicering, kopior i stället för meddelanden.
+I slutet av efterimporten finns tre filer och en sökning. `items.csv` från Purview-exporten bevisar vad som exporterades. `import-protokoll.csv` innehåller per fil vad Exchange tog emot. `verschieben-protokoll.csv` innehåller vad som överlämnades till tasken och när. Sökningen i journalarkivet med perioden för luckan, uppdelad per dag, ger antalet i arkivet. Skillnaderna mellan dessa antal kan förklaras: utkast, objekt utan avsändare, mapparna *Versions* och *Konflikte*, postlådor utanför bevarandet. Just denna förklaring är underlaget för compliance, tillsammans med de två begränsningar som ingen efterimport kan undanröja: saknade kuvertmottagare och, utan dubbletteliminering, kopior i stället för meddelanden.
 
-Därefter återstår upprensningen. De tomma undermapparna och kvarlämnade utkasten tas bort från journalpostlådan, utdelningen med PST-filerna tas bort och PST-filerna raderas så snart avstämningen är klar. Rolltilldelningen *Mailbox Import Export* tas tillbaka, medan taskinställningarna lämnas kvar om driften känner till mätvärdena. Och själva incidenten får övervakning av journalleveransen, eftersom luckan upptäcktes genom ett slumpmässigt meddelande, inte genom övervakning.
+Därefter återstår städningen. De tomma undermapparna och kvarlämnade utkasten tas bort från journalpostlådan, utdelningen med PST-filerna tas bort, PST-filerna raderas när avstämningen är klar. Rolltilldelningen *Mailbox Import Export* återkallas, taskinställningarna behålls om driften känner till mätvärdena. Och själva incidenten får övervakning av journalleveransen, eftersom luckan upptäcktes genom en slumpmässig avisering, inte genom övervakning.
+
+## Ändringshistorik
+
+- **25 oktober 2026:** Community-källan om PST-import till journalarkiv ersattes med en Enterprise Vault-supportartikel som bekräftar avsaknaden av stöd och nämner Shared Archive eller kopiering till journalpostlådan som alternativ.
 
 ## Källor
 
-1.  [Microsoft Learn: Export search results in eDiscovery](https://learn.microsoft.com/en-us/purview/edisc-search-export): fullständig lista över exportalternativ i nya eDiscovery, paketstorlekar, beteendet för *Organize data* och *Include folder and path*, paketens utgång efter 14 dagar.
+1.  [Microsoft Learn: Export search results in eDiscovery](https://learn.microsoft.com/en-us/purview/edisc-search-export): fullständig lista över exportalternativen i den nya eDiscovery, paketstorlekar, beteende för *Organize data* och *Include folder and path*, paketens utgång efter 14 dagar.
 
-2.  [Microsoft Learn: Deduplication in eDiscovery search results](https://learn.microsoft.com/en-us/purview/ediscovery-de-duplication-in-search-results): jämförelseegenskaper för klassisk deduplicering och hänvisningen till att de klassiska gränssnitten stängdes av den 31 augusti 2025.
+2.  [Microsoft Learn: Deduplication in eDiscovery search results](https://learn.microsoft.com/en-us/purview/ediscovery-de-duplication-in-search-results): jämförelseegenskaper för klassisk dubbletteliminering och informationen om att de klassiska gränssnitten stängdes av den 31 augusti 2025.
 
-3.  [Microsoft Learn: Export items from a review set in eDiscovery](https://learn.microsoft.com/en-us/purview/edisc-review-set-export): exportvägen via ett Review Set, som i nya eDiscovery är den enda som utesluter dubbletter.
+3.  [Microsoft Learn: Export items from a review set in eDiscovery](https://learn.microsoft.com/en-us/purview/edisc-review-set-export): exportvägen via ett Review Set, som i den nya eDiscovery är den enda som utesluter dubbletter.
 
-4.  [Microsoft Q&A: eDiscovery cases, deduplication on export](https://learn.microsoft.com/en-us/answers/questions/2201291/ediscovery-cases-deduplication-on-export): bekräftelse på att direkt export inte längre erbjuder deduplicering, med erfarenhetsrapporter om Review Set-vägen.
+4.  [Microsoft Q&A: eDiscovery cases, deduplication on export](https://learn.microsoft.com/en-us/answers/questions/2201291/ediscovery-cases-deduplication-on-export): bekräftelse på att direktexporten inte längre erbjuder dubbletteliminering, med erfarenhetsrapporter om Review Set-vägen.
 
 5.  [Microsoft Learn: New-MailboxImportRequest](https://learn.microsoft.com/en-us/powershell/module/exchange/new-mailboximportrequest): parametrar för importjobbet, förutsättningar för utdelning och rollen *Mailbox Import Export*.
 
-6.  [Microsoft Learn: Mailboxes are stalled during a migration](https://learn.microsoft.com/en-us/troubleshoot/exchange/migration/mailboxes-stalled-during-migration): arbetsbelastningshantering med tio samtidiga jobb per mål och `StalledDueToTarget`-tillstånden som förväntat beteende.
+6.  [Microsoft Learn: Mailboxes are stalled during a migration](https://learn.microsoft.com/en-us/troubleshoot/exchange/migration/mailboxes-stalled-during-migration): arbetsbelastningsstyrning med tio samtidiga jobb per mål och `StalledDueToTarget`-tillstånden som förväntat beteende.
 
-7.  [Veritas: Enterprise Vault PST Migration, wizard-assisted migration](https://www.veritas.com/support/en_US/doc/95955885-161896939-0/v11744603-161896939): PST Migrators process, Storage Services åtkomstkrav och tillåtna målarkivtyper.
+7.  [Veritas: Enterprise Vault PST Migration, wizard-assisted migration](https://www.veritas.com/support/en_US/doc/95955885-161896939-0/v11744603-161896939): processen för PST Migrator, åtkomstkrav för Storage Service och tillåtna målarkivtyper.
 
-8.  [Veritas VOX: Import PST to a Journal Archive](https://vox.veritas.com/t5/Enterprise-Vault/Import-PST-to-a-Journal-Archive/td-p/272928): erfarenheter från communityn om varför guiden inte erbjuder journalarkiv och hur EVPM arbetar med `ArchiveName`.
+8.  [Enterprise Vault Support: Unable to migrate a Personal Store (PST) into a Journal Archive](https://supportenterprisevault.cloud.com/external/article/100029869/unable-to-migrate-a-personal-store-pst-i.html): PST-import till ett journalarkiv stöds inte; artikeln nämner Shared Archive eller kopiering av meddelandena till journalpostlådans Inkorg som alternativ.

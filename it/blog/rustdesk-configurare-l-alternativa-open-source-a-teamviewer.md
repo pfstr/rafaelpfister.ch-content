@@ -1,7 +1,7 @@
 ---
-title: "RustDesk: configurare l'alternativa open source a TeamViewer"
+title: "RustDesk: configurare l’alternativa open source a TeamViewer"
 navTitle: "Configurare RustDesk"
-description: "RustDesk è un software di assistenza remota open source con licenza AGPL, gratuito e self-hosted. Come installare il client su Windows (anche senza supervisione tramite MSI), come stabilire la connessione tramite il server di mediazione pubblico, un server proprio o una connessione diretta, quali funzioni servono nel supporto quotidiano e dove si trovano i limiti dell'utilizzo gratuito."
+description: "RustDesk è un software di assistenza remota open source con licenza AGPL, gratuito e self-hostable. Come installare il client su Windows (anche senza supervisione tramite MSI), come si stabilisce la connessione tramite il server pubblico di mediazione, un server proprio o una connessione diretta, quali funzioni servono nell’assistenza quotidiana e dove sono i limiti dell’utilizzo gratuito."
 date: "2026-09-01"
 kategorie: "Assistenza remota e supporto"
 timeToRead: "9 min di lettura"
@@ -14,38 +14,38 @@ protokolle:
 slug: "rustdesk-configurare-l-alternativa-open-source-a-teamviewer"
 translationId: "article-425ae4b8d562ae41"
 translationOf: rustdesk-teamviewer-alternative
-url: https://rafaelpfister.ch/it/blog/rustdesk-configurare-l-alternativa-open-source-a-teamviewer
-translationSourceHash: f812fc4b04abe0aa92cca47b285a30a18f5cd1e99ab328593b224ee26051a7f3
+translationSourceHash: 3c44a4d5fc03c777c33f77525bcaebe75596ddde249f697041599b54e77cae2b
 translationModel: gpt-5.6-terra
-translatedAt: 2026-09-01T08:49:08.139Z
+translatedAt: 2026-10-28T09:59:24.740Z
 translationReview: automatic
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/it/blog/rustdesk-configurare-l-alternativa-open-source-a-teamviewer
 ---
 
-# RustDesk: configurare l'alternativa open source a TeamViewer
+# RustDesk: configurare l’alternativa open source a TeamViewer
 
-TeamViewer e AnyDesk offrono un'assistenza remota affidabile, ma per l'uso commerciale richiedono una licenza e i prezzi aumentano con il numero di dispositivi gestiti. RustDesk è un'alternativa con licenza AGPL-3.0: open source, gratuita e senza obbligo di licenza. Il client funziona su Windows, macOS, Linux, Android e iOS, oltre che nel browser. È scritto in Rust e l'interfaccia è realizzata in Flutter.
+TeamViewer e AnyDesk coprono in modo affidabile l’assistenza remota, ma richiedono una licenza per l’uso commerciale e i prezzi aumentano con il numero di dispositivi gestiti. RustDesk è un’alternativa con licenza AGPL-3.0: open source, gratuita e senza obbligo di licenza. Il client funziona su Windows, macOS, Linux, Android e iOS, nonché nel browser. È scritto in Rust, mentre l’interfaccia è realizzata in Flutter.
 
-La differenza decisiva rispetto ai prodotti commerciali sta nella mediazione: RustDesk separa il client dall'infrastruttura server. È possibile utilizzare il server di mediazione pubblico gratuito, gestire un proprio server oppure stabilire una connessione diretta senza alcun server di mediazione. In questo modo RustDesk può essere utilizzato dalla singola postazione fino a una piattaforma di supporto self-hosted, senza che i dati di connessione debbano transitare attraverso un fornitore.
+La differenza decisiva rispetto ai prodotti commerciali sta nella mediazione: RustDesk separa il client dall’infrastruttura server. Potete utilizzare il server pubblico di mediazione gratuito, gestire un server proprio oppure stabilire una connessione diretta senza alcun server di mediazione. In questo modo RustDesk può essere utilizzato dalla singola postazione fino a una piattaforma di supporto self-hosted, senza che i dati di connessione debbano transitare attraverso un fornitore.
 
 ## I tre tipi di connessione
 
-Prima di installare, è opportuno definire il tipo di connessione, poiché da questo dipendono la configurazione e le porte aperte.
+Prima dell’installazione, dovreste definire il tipo di connessione, poiché da esso dipendono la configurazione e le porte da aprire.
 
 | Tipo di connessione | Come funziona | Quando è utile |
 |---|---|---|
-| Server di mediazione pubblico | Due client si trovano tramite l'ID (numero di nove cifre) sul server RustDesk; la connessione avviene direttamente o tramite un relay | Avvio rapido, test, supporto occasionale privato |
-| Server proprio (self-hosted) | Si gestiscono autonomamente i componenti server `hbbs` (mediazione) e `hbbr` (relay), e tutti i client ne inseriscono l'indirizzo | Uso commerciale, molti dispositivi, pieno controllo dei dati |
-| Connessione diretta (Direct IP Access) | Il client si connette direttamente all'indirizzo IP della controparte senza server di mediazione | Entrambi i dispositivi sono raggiungibili nella stessa rete o tramite VPN |
+| Server pubblico di mediazione | Due client si trovano tramite l’ID (numero di nove cifre) sul server RustDesk; la connessione avviene direttamente o tramite un relay | Avvio rapido, test, supporto privato occasionale |
+| Server proprio (self-hosted) | Gestite autonomamente i componenti server `hbbs` (mediazione) e `hbbr` (relay); tutti i client ne inseriscono l’indirizzo | Uso commerciale, molti dispositivi, pieno controllo sui dati |
+| Connessione diretta (Direct IP Access) | Il client si connette direttamente all’indirizzo IP della controparte senza server di mediazione | Entrambi i dispositivi sono raggiungibili nella stessa rete o tramite VPN |
 
-Il server pubblico è espressamente destinato ai test e all'uso privato. Per l'uso produttivo e commerciale, il progetto raccomanda un server proprio, anche perché il servizio pubblico è soggetto a limitazioni e non offre alcuna garanzia di disponibilità.
+Il server pubblico è espressamente destinato ai test e all’uso privato. Per l’esercizio produttivo e commerciale, il progetto consiglia un server proprio, anche perché il servizio pubblico è soggetto a limitazioni e non offre garanzie di disponibilità.
 
 ## Installazione su Windows
 
-L'installer si scarica dalla fonte ufficiale, le release del progetto su GitHub (`github.com/rustdesk/rustdesk`). Per Windows sono disponibili un file eseguibile e un pacchetto MSI. Per l'installazione interattiva è sufficiente un doppio clic. Per distribuire RustDesk su più computer o in background, utilizzare l'MSI con un'installazione silenziosa:
+Potete scaricare l’installer dalla fonte ufficiale, le release GitHub del progetto (`github.com/rustdesk/rustdesk`). Per Windows sono disponibili un file eseguibile e un pacchetto MSI. Per l’installazione interattiva è sufficiente un doppio clic. Se volete distribuire RustDesk su più computer o in background, utilizzate l’MSI con un’installazione silenziosa. Il nome del file contiene il numero di versione; dal 30 settembre 2026 la versione attuale è la 1.5.0:
 
 ```powershell
-msiexec /i rustdesk-1.4.9-x86_64.msi /qn /norestart
+msiexec /i rustdesk-1.5.0-x86_64.msi /qn /norestart
 ```
 
 <details class="options-details">
@@ -53,19 +53,19 @@ msiexec /i rustdesk-1.4.9-x86_64.msi /qn /norestart
 
 | Opzione | Effetto |
 |---|---|
-| `/i <paket>` | Installa il pacchetto MSI specificato |
-| `/qn` | Nessuna interfaccia, nessuna finestra di dialogo (silenziosa) |
-| `/norestart` | Impedisce il riavvio automatico dopo l'installazione |
+| `/i <paket>` | Installa il pacchetto MSI indicato |
+| `/qn` | Nessuna interfaccia, nessuna finestra di dialogo (silenzioso) |
+| `/norestart` | Impedisce un riavvio automatico dopo l’installazione |
 
 </details>
 
-L'installazione silenziosa configura il servizio `RustDesk`, che viene eseguito all'avvio del sistema e consente l'accesso non supervisionato. Dopo l'installazione è possibile leggere l'ID del dispositivo dalla riga di comando, senza aprire l'interfaccia:
+L’installazione silenziosa configura il servizio `RustDesk`, che si avvia all’avvio del sistema e consente l’accesso non supervisionato. Dopo l’installazione, potete leggere l’ID del dispositivo dalla riga di comando senza aprire l’interfaccia:
 
 ```powershell
 & 'C:\Program Files\RustDesk\rustdesk.exe' --get-id
 ```
 
-Anche la password fissa per l'accesso non supervisionato può essere impostata dalla riga di comando. Assegnare una password indipendente e sufficientemente lunga, non la password di accesso dell'utente:
+Potete impostare dalla riga di comando anche una password fissa per l’accesso non supervisionato. Assegnate una password autonoma e sufficientemente lunga, non la password di accesso dell’utente:
 
 ```powershell
 & 'C:\Program Files\RustDesk\rustdesk.exe' --password "IhrLangesEinmalpasswort"
@@ -76,17 +76,17 @@ Anche la password fissa per l'accesso non supervisionato può essere impostata d
 
 | Opzione | Effetto |
 |---|---|
-| `--get-id` | Mostra l'ID RustDesk di nove cifre del dispositivo |
-| `--password <wert>` | Imposta la password fissa per l'accesso non supervisionato |
+| `--get-id` | Mostra l’ID RustDesk di nove cifre del dispositivo |
+| `--password <wert>` | Imposta la password fissa per l’accesso non supervisionato |
 | `--silent-install` | Installa la versione eseguibile (`.exe`) come servizio senza interfaccia |
 
 </details>
 
 ## Inserire un server proprio
 
-Se si gestisce un proprio server di mediazione, i client devono contenere il relativo indirizzo e la chiave pubblica. Nell'interfaccia queste impostazioni si trovano nelle impostazioni di rete come server ID, server relay e chiave. Per la distribuzione di massa, la configurazione può essere definita anche tramite file o variabili d'ambiente, in modo che ogni client si avvii già preconfigurato.
+Se gestite un server di mediazione proprio, inserite nei client il suo indirizzo e la chiave pubblica. Nell’interfaccia, questi parametri si trovano nelle impostazioni di rete come server ID, server relay e chiave. Per la distribuzione di massa, la configurazione può essere definita anche tramite file o variabili d’ambiente, affinché ogni client si avvii già preconfigurato.
 
-Un server proprio richiede i due componenti `hbbs` e `hbbr`, che di norma vengono eseguiti come container Docker. Entrambi richiedono porte aperte affinché i client possano registrarsi e utilizzare un relay.
+Un server proprio richiede i due componenti `hbbs` e `hbbr`, che di solito vengono eseguiti come container Docker. Entrambi richiedono porte aperte affinché i client possano registrarsi e utilizzare un relay.
 
 | Porta | Protocollo | Componente e scopo |
 |---|---|---|
@@ -96,45 +96,49 @@ Un server proprio richiede i due componenti `hbbs` e `hbbr`, che di norma vengon
 | 21117 | TCP | `hbbr`, traffico relay |
 | 21118, 21119 | TCP | Supporto per client web |
 
-Aprite solo le porte effettivamente necessarie per il vostro tipo di connessione e limitate tramite firewall l'accesso alle reti da cui viene fornito il supporto.
+Aprite solo le porte effettivamente necessarie al vostro tipo di connessione e limitate l’accesso tramite firewall alle reti da cui viene fornita assistenza.
 
 ## Connessione diretta senza server di mediazione
 
-Se entrambi i dispositivi sono raggiungibili nella stessa rete o tramite VPN, RustDesk funziona completamente senza server di mediazione. A tal fine, attivate sul dispositivo di destinazione l'accesso diretto (nell'interfaccia, alla voce sicurezza, come "Abilita accesso diretto IP", internamente l'interruttore `direct-server`). Il client resta quindi in ascolto sulla porta standard 21118 (TCP). Nella finestra di connessione, inserite l'indirizzo IP della controparte al posto dell'ID.
+Se entrambi i dispositivi sono raggiungibili nella stessa rete o tramite VPN, RustDesk funziona interamente senza server di mediazione. A tal fine, attivate sul dispositivo di destinazione l’accesso diretto (nell’interfaccia, in Sicurezza, come "Abilita accesso IP diretto"; internamente l’opzione `direct-server`). Il client resta quindi in ascolto sulla porta standard 21118 (TCP). Nella finestra di connessione, inserite l’indirizzo IP della controparte anziché l’ID.
 
-Limitate l'accesso diretto tramite firewall alla rete dalla quale accedete. Se l'accesso avviene tramite VPN, abilitate la porta solo per l'intervallo di indirizzi VPN, non per l'intera Internet.
+Limitate l’accesso diretto tramite firewall alla rete dalla quale effettuate l’accesso. Se l’accesso avviene tramite VPN, abilitate la porta solo per l’intervallo di indirizzi della VPN, non per l’intera Internet.
 
-## Funzioni nel supporto quotidiano
+## Funzioni nell’assistenza quotidiana
 
-RustDesk offre le funzioni necessarie per l'assistenza remota quotidiana:
+RustDesk copre le funzioni necessarie per l’assistenza remota quotidiana:
 
-- Trasmissione dello schermo e controllo remoto di tastiera e mouse, con selezione del monitor in presenza di più schermi.
-- Trasferimento file in entrambe le direzioni tramite una finestra divisa in due.
+- Trasmissione dello schermo e controllo remoto di tastiera e mouse, con selezione del monitor in caso di più schermi.
+- Trasferimento di file in entrambe le direzioni tramite una finestra divisa in due.
 - Chat di testo durante la sessione.
 - Accesso non supervisionato tramite password fissa, per dispositivi senza un utente presente.
 - Registrazione della sessione come file video, automaticamente se desiderato.
 - Tunnel TCP e inoltro per raggiungere localmente singoli servizi della controparte.
-- Rubrica e più dispositivi salvati: locali nella versione gratuita, condivisi lato server nella versione Pro.
+- Rubrica e più dispositivi salvati, localmente nella versione gratuita e condivisi lato server nella versione Pro.
 
-Per il supporto assistito è importante sapere che, per impostazione predefinita, RustDesk chiede alla controparte se accettare la connessione e mostra durante la sessione che è in corso un accesso. La persona al dispositivo ne è quindi informata. Solo una password fissa per l'accesso non supervisionato elimina la richiesta di conferma. Utilizzate l'accesso non supervisionato solo su dispositivi i cui utenti sanno che il software è installato e a cosa serve.
+Per il supporto assistito è importante quanto segue: per impostazione predefinita, RustDesk chiede sul lato opposto se la connessione debba essere accettata e indica durante la sessione che è in corso un accesso. La persona al dispositivo ne è quindi informata. Solo una password fissa per l’accesso non supervisionato elimina la richiesta di conferma. Utilizzate l’accesso non supervisionato solo sui dispositivi i cui utenti sanno che il software è installato e a quale scopo serve.
 
 ## Limitazioni e confini
 
-RustDesk sostituisce TeamViewer in molti casi, ma presenta limiti che è bene conoscere prima dell'uso:
+RustDesk sostituisce TeamViewer in molti casi, ma presenta limiti che dovreste conoscere prima dell’utilizzo:
 
-- Il server di mediazione pubblico è soggetto a limitazioni, non offre garanzie di disponibilità e non è pensato per il funzionamento commerciale continuativo. Chi vuole lavorare in modo affidabile deve ospitare autonomamente il servizio.
-- Un server proprio comporta oneri operativi: container, porte aperte, certificati e aggiornamenti sono di vostra responsabilità.
-- Una rubrica condivisa lato server, la gestione centralizzata degli utenti e l'interfaccia web di amministrazione fanno parte della versione Pro, che diventa a pagamento a partire da un certo numero di dispositivi. Il client stesso e il funzionamento di base restano gratuiti.
-- Senza password fissa non è possibile l'accesso non supervisionato, il che è corretto per il supporto assistito ma impedisce l'accesso spontaneo a un dispositivo non presidiato.
-- L'ampiezza delle funzioni e la stabilità delle singole piattaforme, in particolare sui dispositivi mobili, non raggiungono i prodotti commerciali in ogni dettaglio. Verificate le funzioni importanti per voi prima di effettuare la migrazione.
-- Alcuni programmi di sicurezza segnalano i software di assistenza remota come potenzialmente indesiderati. Se necessario, configurate un'eccezione e documentate perché il software è installato.
+- Il server pubblico di mediazione è soggetto a limitazioni, non offre garanzie di disponibilità e non è previsto per un funzionamento commerciale continuativo. Chi vuole lavorare in modo affidabile ospita autonomamente il servizio.
+- Un server proprio comporta oneri operativi: container, porte aperte, certificati e aggiornamenti sono a vostro carico.
+- Una rubrica condivisa lato server, la gestione centralizzata degli utenti e l’interfaccia web per l’amministrazione fanno parte della versione Pro, che diventa a pagamento a partire da un determinato numero di dispositivi. Il client stesso e il funzionamento di base restano gratuiti.
+- Senza password fissa non è possibile l’accesso non supervisionato; ciò è corretto per il supporto assistito, ma impedisce l’accesso spontaneo a un dispositivo non presidiato.
+- L’ampiezza delle funzioni e la stabilità delle singole piattaforme, soprattutto sui dispositivi mobili, non raggiungono in ogni dettaglio i prodotti commerciali. Verificate le funzioni importanti per voi prima di effettuare la migrazione.
+- Alcuni programmi di sicurezza segnalano il software di assistenza remota come potenzialmente indesiderato. Se necessario, configurate un’eccezione e documentate il motivo per cui il software è installato.
 
-Per l'uso privato e il supporto di singoli dispositivi è sufficiente la versione gratuita con il server pubblico o una connessione diretta. Non appena gestite molti dispositivi, lavorate in ambito commerciale o avete bisogno del pieno controllo dei dati, vi serve un server proprio, con il relativo onere operativo in cambio dell'indipendenza.
+Per l’uso privato e il supporto di singoli dispositivi, la versione gratuita con il server pubblico o una connessione diretta è sufficiente. Non appena gestite molti dispositivi, lavorate in ambito commerciale o necessitate del pieno controllo sui dati, avete bisogno di un server proprio, con il relativo onere operativo in cambio dell’indipendenza.
+
+## Cronologia delle modifiche
+
+- **25 ottobre 2026:** aggiornato l’esempio di installazione a RustDesk 1.5.0 del 30 settembre 2026.
 
 ## Fonti
 
 1.  [RustDesk su GitHub](https://github.com/rustdesk/rustdesk): codice sorgente, release con gli installer e licenza AGPL-3.0.
 
-2.  [Documentazione RustDesk](https://rustdesk.com/docs/): installazione, server proprio, porte e configurazione dei client.
+2.  [Documentazione di RustDesk](https://rustdesk.com/docs/): installazione, server proprio, porte e configurazione dei client.
 
 3.  [rustdesk-server su GitHub](https://github.com/rustdesk/rustdesk-server): componenti server `hbbs` e `hbbr`, inclusa la panoramica delle porte per la gestione autonoma.

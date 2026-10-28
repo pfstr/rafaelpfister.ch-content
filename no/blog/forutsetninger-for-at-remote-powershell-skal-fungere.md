@@ -1,10 +1,10 @@
 ---
-title: "Forutsetninger for at Remote PowerShell skal fungere"
+title: "Requirements for Remote PowerShell to work"
 navTitle: "Remote PowerShell"
-description: "PowerShell-Remoting mislykkes sjelden på grunn av kommandoen, men på grunn av forutsetningene: WinRM-tjeneste, lytter, brannmur, autentisering og særegenhetene ved lokale kontoer. Hva som må være konfigurert på mål- og klientsiden, hvordan du kontrollerer det med Test-WSMan, og hvorfor Access denied som regel ikke har noe med passordet å gjøre."
+description: "PowerShell remoting rarely fails because of the command itself, but rather because of the prerequisites: the WinRM service, listener, firewall, authentication and the specifics of local accounts. What needs to be configured on the target and client sides, how to check it with Test-WSMan, and why Access denied usually has nothing to do with the password."
 date: "2026-09-01"
-kategorie: "Windows og PowerShell"
-timeToRead: "10 min lesetid"
+kategorie: "Windows and PowerShell"
+timeToRead: "10 min read"
 themen:
   - windows-client
 produkte:
@@ -15,168 +15,172 @@ protokolle:
 slug: "forutsetninger-for-at-remote-powershell-skal-fungere"
 translationId: "article-7315c1ae9e67a24d"
 translationOf: remote-powershell-voraussetzungen
-url: https://rafaelpfister.ch/no/blog/forutsetninger-for-at-remote-powershell-skal-fungere
-translationSourceHash: 2969f02b5e677daaea867ea7c19fe929dc58f628cc4e47f3b165e85329836464
+translationSourceHash: edebb6e6be909c38c0d70f1bf09aaac37328f86bf2def4e23a26a34456b3492f
 translationModel: gpt-5.6-terra
-translatedAt: 2026-09-01T08:47:58.218Z
+translatedAt: 2026-10-28T09:58:27.397Z
 translationReview: automatic
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/no/blog/forutsetninger-for-at-remote-powershell-skal-fungere
 ---
 
-# Forutsetninger for at Remote PowerShell skal fungere
+# Requirements for Remote PowerShell to work
 
-`Invoke-Command` og `Enter-PSSession` er raske å skrive, men forbindelsen opprettes først når forutsetningene er oppfylt på begge sider. PowerShell-Remoting bygger på WS-Management (WinRM), en SOAP-basert administrasjonstjeneste over HTTP. Hvis en økt mislykkes, skyldes det nesten aldri selve cmdleten, men en manglende tjeneste, en lukket port, en brannmurregel eller autentiseringen. Denne artikkelen går gjennom forutsetningene i rekkefølge og viser hvordan du kan kontrollere hver enkelt.
+`Invoke-Command` and `Enter-PSSession` are quick to type, but the connection is only established when the prerequisites are met on both sides. PowerShell remoting is based on WS-Management (WinRM), a SOAP-based management service over HTTP. When a session fails, it is almost never due to the cmdlet itself, but rather a missing service, a closed port, a firewall rule or authentication. This article covers the prerequisites in order and shows how to check each one.
 
-Først begrepene: Målmaskinen er maskinen kommandoene skal kjøres på; klienten er maskinen du kobler til fra. WinRM lytter som standard på port 5985 (HTTP) og, hvis konfigurert, på port 5986 (HTTPS). HTTP-trafikken på 5985 er kryptert på meldingsnivå så snart autentiseringen skjer via Kerberos eller NTLM.
+First, the terminology: the target computer is the computer on which the commands are to run; the client is the computer from which you connect. WinRM listens on port 5985 (HTTP) by default and, if configured, on port 5986 (HTTPS). HTTP traffic on 5985 is encrypted at the message level as soon as authentication uses Kerberos or NTLM.
 
-## Oversikt over cmdletene
+## The cmdlets at a glance
 
-Her er cmdletene som brukes i denne artikkelen:
+For reference, here are the cmdlets used in this article:
 
 <details class="options-details">
-<summary>Oversikt over alternativer</summary>
+<summary>Options at a glance</summary>
 
-| Cmdlet | Formål |
+| Cmdlet | Purpose |
 |---|---|
-| `Enable-PSRemoting` | Konfigurerer WinRM på målsiden: tjeneste, lytter, brannmurregel |
-| `Test-WSMan` | Kontrollerer om WinRM-tjenesten på motparten svarer |
-| `Enter-PSSession` | Åpner en interaktiv ekstern økt mot en maskin |
-| `Invoke-Command` | Kjører en kommandoblokk på én eller flere maskiner |
-| `Set-Item WSMan:\localhost\Client\TrustedHosts` | Legger til klarerte motparter for autentisering utenfor et domene |
-| `Get-Service WinRM` | Viser status og oppstartstype for WinRM-tjenesten |
+| `Enable-PSRemoting` | Configures WinRM on the target side: service, listener, firewall rule |
+| `Test-WSMan` | Checks whether the remote WinRM service responds |
+| `Enter-PSSession` | Opens an interactive remote session to a computer |
+| `Invoke-Command` | Runs a command block on one or more computers |
+| `Set-Item WSMan:\localhost\Client\TrustedHosts` | Adds trusted remote hosts for authentication outside a domain |
+| `Get-Service WinRM` | Shows the status and startup type of the WinRM service |
 
 </details>
 
-## Målsiden: Konfigurer WinRM
+## Target side: configuring WinRM
 
-På målmaskinen konfigurerer én enkelt kommando tjenesten, lytteren og brannmurregelen. Kjør den i PowerShell med administratorrettigheter:
+On the target computer, a single command configures the service, listener and firewall rule. Run it in PowerShell with administrator privileges:
 
 ```powershell
 Enable-PSRemoting -Force
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-Force` | Kjører uten spørsmål |
-| `-SkipNetworkProfileCheck` | Konfigurerer også Remoting når en nettverkstilkobling er klassifisert som offentlig |
+| `-Force` | Runs without prompting |
+| `-SkipNetworkProfileCheck` | Configures remoting even when a network connection is classified as public |
 
 </details>
 
-`Enable-PSRemoting` starter WinRM-tjenesten, setter oppstartstypen til automatisk, oppretter en HTTP-lytter og legger til den riktige brannmurregelen. Ett forbehold gjelder nettverksprofilen: Hvis et nettverkskort er klassifisert som offentlig, nekter kommandoen som standard å konfigurere dette. På servere eller i kontrollerte nettverk hjelper `-SkipNetworkProfileCheck`, slik at konfigurasjonen likevel fullføres.
+`Enable-PSRemoting` starts the WinRM service, sets its startup type to automatic, creates an HTTP listener and adds the appropriate firewall rule. One caveat concerns the network profile: if a network adapter is classified as public, the command refuses to configure it by default. On servers or in controlled networks, `-SkipNetworkProfileCheck` ensures that configuration still completes.
 
-Det er viktig å være oppmerksom på brannmurregelens virkeområde. For offentlige nettverksprofiler begrenser standardregelen tilgangen til det lokale delnettet. Kobler du til via et annet nettverk, for eksempel et VPN, gjelder denne begrensningen, og forbindelsen mislykkes selv om tjenesten kjører. Åpne da regelen målrettet for det nødvendige adresseområdet, ikke generelt for alle adresser:
+The scope of the firewall rule is important. For public network profiles, the default rule restricts access to the local subnet. If you connect through another network, such as a VPN, this restriction applies and the connection fails despite the service running. Then open the rule specifically for the required address range, not indiscriminately for all addresses:
 
 ```powershell
 Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP*' -RemoteAddress 100.64.0.0/10
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-Name 'WINRM-HTTP-In-TCP*'` | Velger WinRM-HTTP-reglene opprettet av Enable-PSRemoting via navnemønsteret |
-| `-RemoteAddress <Bereich>` | Begrenses tillatte kildeadresser til det angitte området (her en CIDR-blokk); `Any` tillater alle adresser |
+| `-Name 'WINRM-HTTP-In-TCP*'` | Selects the WinRM HTTP rules created by Enable-PSRemoting using the name pattern |
+| `-RemoteAddress <Bereich>` | Restricts permitted source addresses to the specified range (here, a CIDR block); `Any` allows any address |
 
 </details>
 
-## Klientsiden: TrustedHosts og tjeneste
+## Client side: TrustedHosts and service
 
-På klienten må WinRM-tjenesten kjøre, ellers mislykkes allerede innstilling av konfigurasjon. Kontroller dette først:
+The WinRM service must be running on the client; otherwise, even setting configuration values will fail. Check this first:
 
 ```powershell
 Get-Service WinRM
 ```
 
-Hvis tjenesten står som Stopped, starter du den med `Start-Service WinRM` (administratorrettigheter kreves). Oppstartstypen er ofte manuell på klienter, slik at tjenesten er stoppet igjen etter omstart. Hvis du jevnlig får tilgang fra denne maskinen, setter du oppstartstypen til automatisk.
+If the service is Stopped, start it with `Start-Service WinRM` (administrator privileges required). The startup type is often manual on clients, meaning that the service is stopped again after a restart. If you access systems regularly from this computer, set the startup type to automatic.
 
-Det andre punktet gjelder autentisering utenfor et domene. Kobler du til via IP-adresse eller i en arbeidsgruppe, kan ikke klienten kontrollere motparten med Kerberos og faller tilbake til NTLM. Av sikkerhetsgrunner nekter WinRM dette så lenge motparten ikke er registrert som klarert. Legg målmaskinens adresse til i TrustedHosts (administratorrettigheter kreves):
+The second point concerns authentication outside a domain. If you connect by IP address or in a workgroup, the client cannot verify the remote computer through Kerberos and falls back to NTLM. For security reasons, WinRM refuses this as long as the remote computer has not been added as trusted. Add the target address to TrustedHosts (administrator privileges required):
 
 ```powershell
 Set-Item WSMan:\localhost\Client\TrustedHosts -Value '100.105.207.14' -Force
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-Value <Liste>` | Klarerte motparter (IP eller navn), flere atskilt med komma, `*` som jokertegn |
-| `-Force` | Angir verdien uten spørsmål |
-| `-Concatenate` | Legger til i den eksisterende listen i stedet for å erstatte den |
+| `-Value <Liste>` | Trusted remote hosts (IP or name), multiple entries separated by commas, `*` as a wildcard |
+| `-Force` | Sets the value without prompting |
+| `-Concatenate` | Appends to the existing list instead of replacing it |
 
 </details>
 
-TrustedHosts er en innstilling på klienten, ikke målmaskinen, og gjelder klientens sikkerhet: De oppførte motpartene anses som klarerte uten at identiteten deres kontrolleres kryptografisk. Legg derfor inn konkrete adresser, ikke jokertegnet `*`. I et domene med Kerberos er oppføringen ikke nødvendig; den ryddige løsningen utenfor et domene uten TrustedHosts er en HTTPS-lytter med et sertifikat klienten stoler på.
+TrustedHosts is a client setting, not a target computer setting, and affects client security: the listed remote hosts are treated as trusted without their identity being verified cryptographically. Therefore, enter specific addresses rather than the wildcard `*`. In a domain with Kerberos, this entry is not required; the proper approach outside a domain without TrustedHosts is an HTTPS listener with a certificate trusted by the client.
 
-## Autentisering: hvorfor Access denied sjelden skyldes passordet
+## Authentication: why Access denied is rarely caused by the password
 
-Et vanlig feilbilde med lokale kontoer er meldingen Access denied, selv om passordet stemmer. Årsaken er ekstern UAC-filtrering: For lokale kontoer (ikke den innebygde Administrator-kontoen) fjerner Windows som standard administratorrettighetene ved tilgang over nettverket. Innloggingen lykkes, men enhver handling med utvidede rettigheter avvises. Hvis motparten melder Access denied i stedet for feil påloggingsinformasjon, er dette den sannsynlige årsaken.
+A common issue with local accounts is the Access denied message even though the password is correct. The reason is Remote UAC filtering: for local accounts (other than the built-in Administrator), Windows removes administrative privileges by default when access is over the network. The login succeeds, but every action requiring elevated privileges is denied. If the remote computer reports Access denied instead of invalid credentials, this is the likely reason.
 
-Dette kan løses på målmaskinen med en registerverdi som gir lokale administratorer fullstendige rettigheter over nettverket:
+You can fix this on the target computer with a registry value that grants local administrators full rights over the network:
 
 ```powershell
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' -Name LocalAccountTokenFilterPolicy -Value 1 -Type DWord
 ```
 
-Dette er en bevisst oppmykning: Lokale administratorkontoer får dermed fullstendige rettigheter over nettverket. Angi verdien kun i kontrollerte nettverk og med sterke passord. I et domene er det bedre å bruke en domenekonto; da oppstår ikke spørsmålet.
+This is a deliberate relaxation: local administrator accounts are thereby granted full rights over the network. Set this value only on controlled networks and with strong passwords. In a domain, it is better to use a domain account, in which case this issue does not arise.
 
-Når du oppretter forbindelsen, oppgir du brukernavnet for lokale kontoer med maskinnavnet foran, slik at målsystemet løser kontoen lokalt:
+When connecting, specify the user name for local accounts with the computer name in front of it so that the target system resolves the account locally:
 
 ```powershell
 $cred = Get-Credential
 Enter-PSSession -ComputerName 100.105.207.14 -Credential $cred
 ```
 
-I påloggingsdialogen angir du brukeren som `RECHNERNAME\Benutzer` for lokale kontoer, og som `DOMAENE\Benutzer` for domenekontoer. En PIN-kode fra Windows-påloggingen fungerer ikke over nettverket; du trenger kontopassordet. For en Microsoft-konto er dette passordet til kontoen, og kontonavnet kan avvike fra visningsnavnet.
+In the sign-in dialog, enter the user as `RECHNERNAME\Benutzer` and domain accounts as `DOMAENE\Benutzer`. A PIN used for Windows sign-in does not work over the network; you need the account password. For a Microsoft account, this is its password, and the account name may differ from the display name.
 
-## Kontroller i riktig rekkefølge
+## Checking in the right order
 
-Avgrens feil nedenfra og opp, så ser du raskt hvilken forutsetning som mangler.
+Narrow down errors from the bottom up to quickly identify which prerequisite is missing.
 
-Kontroller først at porten er tilgjengelig:
+First, check whether the port is reachable:
 
 ```powershell
 Test-NetConnection -ComputerName 100.105.207.14 -Port 5985
 ```
 
-Hvis porten ikke svarer, mangler lytteren eller brannmuren blokkerer. Hvis den svarer, kontrollerer du WinRM-tjenesten på motparten:
+If the port does not respond, the listener is missing or the firewall is blocking it. If it responds, check the WinRM service on the remote computer:
 
 ```powershell
 Test-WSMan -ComputerName 100.105.207.14
 ```
 
-Et svar med protokollversjon og produsent betyr at tjenesten og lytteren er på plass. Først deretter tester du med påloggingsinformasjon:
+A response with a protocol version and manufacturer means that the service and listener are in place. Only then test with credentials:
 
 ```powershell
 Invoke-Command -ComputerName 100.105.207.14 -Credential $cred -ScriptBlock { $env:COMPUTERNAME }
 ```
 
-Hvis dette kallet returnerer maskinnavnet til motparten, er alle forutsetningene oppfylt.
+If this call returns the remote computer's name, all prerequisites are met.
 
-## Vanlige feil og årsakene til dem
+## Common errors and their causes
 
-| Melding eller symptom | Sannsynlig årsak | Tiltak |
+| Message or symptom | Likely cause | Approach |
 |---|---|---|
-| Port 5985 ikke tilgjengelig | Ingen lytter eller brannmuren blokkerer | `Enable-PSRemoting`, kontroller brannmurregel og virkeområde |
-| WinRM cannot complete the operation | Tjenesten på målsiden er av, eller tilgang er bare tillatt fra det lokale delnettet | Start tjenesten, åpne brannmurregelen for det nødvendige adresseområdet |
-| The WinRM client cannot process the request … TrustedHosts | Tilkobling utenfor domene uten TrustedHosts-oppføring | Legg målmaskinens adresse til i TrustedHosts på klienten, eller bruk HTTPS |
-| Access is denied (til tross for korrekt passord) | Ekstern UAC-filtrering for lokal konto | Sett `LocalAccountTokenFilterPolicy` til 1, eller bruk en domenekonto |
-| Tilgang til en annen ressurs mislykkes i økten | Double-hop: Påloggingsinformasjon videresendes ikke | Utfør oppgaven direkte på målet, eller bruk CredSSP eller separat pålogging |
+| Port 5985 unreachable | No listener or firewall is blocking it | Check `Enable-PSRemoting`, the firewall rule and its scope |
+| WinRM cannot complete the operation | Service is stopped on the target side, or access is permitted only from the local subnet | Start the service, open the firewall rule for the required address range |
+| The WinRM client cannot process the request … TrustedHosts | Non-domain connection without a TrustedHosts entry | Add the target address to TrustedHosts on the client, or use HTTPS |
+| Access is denied (despite the correct password) | Remote UAC filtering for a local account | Set `LocalAccountTokenFilterPolicy` to 1, or use a domain account |
+| Accessing a second resource fails in the session | Double hop: credentials are not forwarded | Run the task directly on the target, or use CredSSP or delegated credentials |
 
-## Begrensninger: Double-hop-problemet
+## Limitations: the double-hop problem
 
-En begrensning består også ved fullstendig konfigurasjon og kan bare omgås: Som standard kan ikke en ekstern økt videresende påloggingsinformasjonen din til et tredje system. Hvis du i en økt på målmaskinen får tilgang til en nettverksressurs eller en annen server, mislykkes dette på grunn av manglende påloggingsinformasjon. Dette double-hop-problemet er en sikkerhetsegenskap, ikke en feilkonfigurasjon. For de fleste supportoppgaver er det nok å kjøre kommandoen direkte på målmaskinen. Der videresending faktisk er nødvendig, kan CredSSP eller begrenset delegering brukes, begge med egne sikkerhetsavveininger.
+One limitation remains even with a complete configuration and can only be worked around: by default, a remote session cannot forward your credentials to a third system. If you access a network share or another server in a session on the target computer, it fails due to missing credentials. This double-hop problem is a security feature, not a misconfiguration. For most support tasks, running the command directly on the target computer is sufficient. Where forwarding is genuinely required, CredSSP or constrained delegation come into play, both with their own security trade-offs.
 
-## Kilder
+## Change log
 
-1.  [about_Remote_Requirements (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_requirements): Forutsetninger for PowerShell-Remoting, rettigheter og nettverksprofiler.
+- **25 October 2026:** Updated the source link to the new Microsoft Learn address.
 
-2.  [Enable-PSRemoting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/enable-psremoting): Hva kommandoen konfigurerer, inkludert forbeholdet for nettverksprofil og brannmurregel.
+## Sources
 
-3.  [about_Remote_Troubleshooting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_troubleshooting): TrustedHosts, autentisering utenfor domenet og vanlige feilmeldinger.
+1.  [about_Remote_Requirements (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_requirements): Requirements for PowerShell remoting, permissions and network profiles.
 
-4.  [Making the second hop in PowerShell Remoting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/scripting/learn/remoting/ps-remoting-second-hop): Årsaken til double-hop-problemet og løsningsmetodene med deres avveininger.
+2.  [Enable-PSRemoting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/enable-psremoting): What the command configures, including the network profile caveat and firewall rule.
+
+3.  [about_Remote_Troubleshooting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_troubleshooting): TrustedHosts, authentication outside the domain and common error messages.
+
+4.  [Making the second hop in PowerShell Remoting (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/scripting/security/remoting/ps-remoting-second-hop): Cause of the double-hop problem and solution approaches with their trade-offs.

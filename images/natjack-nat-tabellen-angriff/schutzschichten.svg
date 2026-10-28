@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 470" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
+  <rect width="920" height="470" fill="#ffffff"/>
+  <text x="20" y="30" font-size="12" font-weight="700" letter-spacing="1.5" fill="#757087">SCHUTZSCHICHTEN GEGEN NATJACK UND WAS SIE JEWEILS ABDECKEN</text>
+
+  <rect x="20" y="44" width="560" height="26" rx="4" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="36" y="61" font-size="11" font-weight="700" fill="#222222">Schicht</text>
+  <rect x="590" y="44" width="100" height="26" rx="4" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="640" y="61" font-size="11" font-weight="700" fill="#222222" text-anchor="middle">Hijacking</text>
+  <rect x="700" y="44" width="100" height="26" rx="4" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="750" y="61" font-size="11" font-weight="700" fill="#222222" text-anchor="middle">Port-Leck</text>
+  <rect x="810" y="44" width="90" height="26" rx="4" fill="#faf7f2" stroke="#d9d4cc"/>
+  <text x="855" y="61" font-size="11" font-weight="700" fill="#222222" text-anchor="middle">DoS</text>
+
+  <!-- Zeile 1 -->
+  <rect x="20" y="78" width="560" height="64" rx="8" fill="#ffffff" stroke="#286983"/>
+  <rect x="20" y="78" width="6" height="64" fill="#286983"/>
+  <text x="40" y="102" font-size="12.5" font-weight="600" fill="#222222">1  Verschlüsselung: TLS überall, DNSSEC, DoH/DoT</text>
+  <text x="40" y="122" font-size="10.5" fill="#757087">Übernommene Verbindungen liefern keine lesbaren Daten, Einschleusen scheitert.</text>
+  <text x="640" y="116" font-size="12" font-weight="700" fill="#286983" text-anchor="middle">wirksam</text>
+  <text x="750" y="116" font-size="12" fill="#7a2f16" text-anchor="middle">nein</text>
+  <text x="855" y="116" font-size="12" fill="#7a2f16" text-anchor="middle">nein</text>
+
+  <!-- Zeile 2 -->
+  <rect x="20" y="150" width="560" height="64" rx="8" fill="#ffffff" stroke="#286983"/>
+  <rect x="20" y="150" width="6" height="64" fill="#286983"/>
+  <text x="40" y="174" font-size="12.5" font-weight="600" fill="#222222">2  Trennung: eigenes NAT bzw. eigener Host pro Vertrauenszone</text>
+  <text x="40" y="194" font-size="10.5" fill="#757087">Ohne gemeinsames NAT-Gerät fehlt die Voraussetzung für alle Varianten.</text>
+  <text x="640" y="188" font-size="12" font-weight="700" fill="#286983" text-anchor="middle">wirksam</text>
+  <text x="750" y="188" font-size="12" font-weight="700" fill="#286983" text-anchor="middle">wirksam</text>
+  <text x="855" y="188" font-size="12" font-weight="700" fill="#286983" text-anchor="middle">wirksam</text>
+
+  <!-- Zeile 3 -->
+  <rect x="20" y="222" width="560" height="64" rx="8" fill="#ffffff" stroke="#d9d4cc"/>
+  <rect x="20" y="222" width="6" height="64" fill="#757087"/>
+  <text x="40" y="246" font-size="12.5" font-weight="600" fill="#222222">3  Anti-Spoofing: IP Source Guard, uRPF, NET_RAW entziehen</text>
+  <text x="40" y="266" font-size="10.5" fill="#757087">Erschwert die Varianten, die gefälschte Absenderadressen brauchen.</text>
+  <text x="640" y="260" font-size="12" fill="#757087" text-anchor="middle">teilweise</text>
+  <text x="750" y="260" font-size="12" fill="#757087" text-anchor="middle">teilweise</text>
+  <text x="855" y="260" font-size="12" fill="#757087" text-anchor="middle">teilweise</text>
+
+  <!-- Zeile 4 -->
+  <rect x="20" y="294" width="560" height="64" rx="8" fill="#ffffff" stroke="#d9d4cc"/>
+  <rect x="20" y="294" width="6" height="64" fill="#757087"/>
+  <text x="40" y="318" font-size="12.5" font-weight="600" fill="#222222">4  NAT-Härtung: Updates, Loose-Mode aus, Verbindungslimit pro Client</text>
+  <text x="40" y="338" font-size="10.5" fill="#757087">Erhöht den Aufwand deutlich, verhindert die Angriffe laut Forscher aber nicht vollständig.</text>
+  <text x="640" y="332" font-size="12" fill="#757087" text-anchor="middle">teilweise</text>
+  <text x="750" y="332" font-size="12" fill="#757087" text-anchor="middle">teilweise</text>
+  <text x="855" y="332" font-size="12" fill="#757087" text-anchor="middle">teilweise</text>
+
+  <!-- Zeile 5 -->
+  <rect x="20" y="366" width="560" height="64" rx="8" fill="#ffffff" stroke="#d9d4cc"/>
+  <rect x="20" y="366" width="6" height="64" fill="#757087"/>
+  <text x="40" y="390" font-size="12.5" font-weight="600" fill="#222222">5  Überwachung: Füllstand der NAT-Tabelle, RST-Fluten, Spoofing</text>
+  <text x="40" y="410" font-size="10.5" fill="#757087">Verhindert nichts, macht Angriffsversuche aber sichtbar.</text>
+  <text x="640" y="404" font-size="12" fill="#757087" text-anchor="middle">erkennen</text>
+  <text x="750" y="404" font-size="12" fill="#757087" text-anchor="middle">erkennen</text>
+  <text x="855" y="404" font-size="12" fill="#757087" text-anchor="middle">erkennen</text>
+
+  <text x="20" y="456" font-size="10.5" fill="#757087">Quelle: NatJack White Paper 1.0 (SODIUM-24, August 2026), Abschnitt 11; Einordnung rafaelpfister.ch</text>
+</svg>

@@ -1,7 +1,7 @@
 ---
-title: "MailHeaderAnalyzer: Analyze Email Headers in PowerShell Without Network Access"
+title: "MailHeaderAnalyzer: Analyze email headers in PowerShell without network access"
 navTitle: "MailHeaderAnalyzer (PowerShell)"
-description: "Reference for the MailHeaderAnalyzer PowerShell module: parameter overview, syntax, description, examples, and parameter properties for Get-MailHeaderAnalysis and ConvertTo-MailHeaderReport, plus the output object with delivery chain, authentication results, Exchange Online classification, and all finding codes."
+description: "Reference for the PowerShell module MailHeaderAnalyzer: parameter overview, syntax, description, examples, and parameter properties for Get-MailHeaderAnalysis and ConvertTo-MailHeaderReport, plus the output object with delivery chain, authentication results, Exchange Online classification, and all finding codes."
 date: "2026-09-24"
 kategorie: "SMTP & Mail Flow"
 timeToRead: "16 min read"
@@ -23,22 +23,22 @@ related:
 slug: "mailheaderanalyzer-analyze-email-headers-in-powershell-without-network-access"
 translationId: "article-041d7b2f9615f670"
 translationOf: mailheaderanalyzer-powershell-modul
-translationSourceHash: 41c3cb7c83800c0cc30f797ad6b2d9ec480d6c32bc054d2e01bd037b3dcd6c9b
+translationSourceHash: 7f1ed02181dcd5665641de26ab47fc5acaeaa73a230c60093063ab8bb99e15d3
 translationModel: gpt-5.6-terra
-translatedAt: 2026-09-26T08:54:50.629Z
+translatedAt: 2026-10-27T09:26:27.430Z
 translationReview: automatic
-url: https://rafaelpfister.ch/en/blog/mailheaderanalyzer-analyze-email-headers-in-powershell-without-network-access
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/en/blog/mailheaderanalyzer-analyze-email-headers-in-powershell-without-network-access
 ---
 
-# MailHeaderAnalyzer: Analyze Email Headers in PowerShell Without Network Access
+# MailHeaderAnalyzer: Analyze email headers in PowerShell without network access
 
-MailHeaderAnalyzer is a PowerShell module with two cmdlets. `Get-MailHeaderAnalysis` analyzes an email header: the delivery chain with delays and TLS details, SPF, DKIM, DMARC, and ARC results including origin verification against your gateway's authserv-id, DMARC alignment, Exchange Online hybrid classification, assessments from Microsoft Defender, SpamAssassin, and Rspamd, as well as anomalies such as duplicate `From` lines or Unicode control characters. `ConvertTo-MailHeaderReport` creates a report for tickets from it. The module operates fully offline: no DNS queries, no HTTP connections. It is the command-line version of the [Header Analyzer on this website](/tools/header-analyzer) and uses the same analysis logic.
+MailHeaderAnalyzer is a PowerShell module with two cmdlets. `Get-MailHeaderAnalysis` analyzes an email header: delivery chain with delays and TLS details, SPF, DKIM, DMARC, and ARC results including origin verification against your gateway's authserv-id, DMARC alignment, Exchange Online hybrid classification, assessments from Microsoft Defender, SpamAssassin, and Rspamd, as well as anomalies such as duplicate `From` lines or Unicode control characters. `ConvertTo-MailHeaderReport` creates a report for tickets. The module works entirely offline: no DNS queries, no HTTP connections. It is the command-line version of the [Header Analyzer on this website](/tools/header-analyzer) and uses the same analysis logic.
 
 | | |
 |---|---|
 | Module | [MailHeaderAnalyzer in the PowerShell Gallery](https://www.powershellgallery.com/packages/MailHeaderAnalyzer) |
-| Source code | [pfstr/MailHeaderAnalyzer on GitHub](https://github.com/pfstr/MailHeaderAnalyzer), MIT License |
+| Source code | [pfstr/MailHeaderAnalyzer on GitHub](https://github.com/pfstr/MailHeaderAnalyzer), MIT license |
 | Applies to | Windows PowerShell 5.1, PowerShell 7.x; Windows, Linux, macOS; Exchange Management Shell |
 | Cmdlets | `Get-MailHeaderAnalysis`, `ConvertTo-MailHeaderReport` |
 
@@ -46,10 +46,10 @@ MailHeaderAnalyzer is a PowerShell module with two cmdlets. `Get-MailHeaderAnaly
 
 | Cmdlet | Parameter | Type | Required | Pipeline | Effect |
 |---|---|---|---|---|---|
-| `Get-MailHeaderAnalysis` | `-Header` | `String[]` | Yes (Text parameter set) | Yes, by value | The header as text. Lines from the pipeline are combined into one header |
+| `Get-MailHeaderAnalysis` | `-Header` | `String[]` | Yes (Text parameter set) | Yes, by value | The header as text. Lines from the pipeline are assembled into one header |
 | `Get-MailHeaderAnalysis` | `-Path` | `String[]` | Yes (Path parameter set) | Yes, by property name | File containing the header or a complete `.eml` message; accepts objects from `Get-ChildItem` |
 | `Get-MailHeaderAnalysis` | `-FromClipboard` | `Switch` | Yes (Clipboard parameter set) | No | Reads the header from the clipboard (Windows only) |
-| `Get-MailHeaderAnalysis` | `-TrustedAuthServId` | `String[]` | No | No | authserv-id(s) of your inbound gateway; only verification lines with one of these IDs count as substantiated |
+| `Get-MailHeaderAnalysis` | `-TrustedAuthServId` | `String[]` | No | No | authserv-id(s) of your inbound gateway; only authentication lines with one of these IDs are considered evidenced |
 | `ConvertTo-MailHeaderReport` | `-Analysis` | `MailHeaderAnalyzer.Analysis` | Yes | Yes, by value | The result object from `Get-MailHeaderAnalysis` |
 | `ConvertTo-MailHeaderReport` | `-Format` | `String` | No | No | `Markdown` (default) or `Text` |
 
@@ -63,10 +63,10 @@ Install-Module -Name MailHeaderAnalyzer -Scope CurrentUser
 
 | Option | Effect |
 |---|---|
-| `-Name MailHeaderAnalyzer` | Name of the module in the PowerShell Gallery |
-| `-Scope CurrentUser` | Installs in the user's module directory without administrator privileges |
+| `-Name MailHeaderAnalyzer` | Module name in the PowerShell Gallery |
+| `-Scope CurrentUser` | Installs to the user's module directory, without administrator rights |
 
-On a system without Internet access, download the module on another computer with `Save-Module -Name MailHeaderAnalyzer -Path C:\Temp` and copy the `MailHeaderAnalyzer` folder into a directory from `$env:PSModulePath`, for example `%USERPROFILE%\Documents\WindowsPowerShell\Modules` (Windows PowerShell 5.1) or `%USERPROFILE%\Documents\PowerShell\Modules` (PowerShell 7). `Update-Module -Name MailHeaderAnalyzer` retrieves updates, and `Get-Module -Name MailHeaderAnalyzer -ListAvailable` displays the installed version.
+On a system without internet access, download the module on another computer with `Save-Module -Name MailHeaderAnalyzer -Path C:\Temp` and copy the `MailHeaderAnalyzer` folder to a directory from `$env:PSModulePath`, for example `%USERPROFILE%\Documents\WindowsPowerShell\Modules` (Windows PowerShell 5.1) or `%USERPROFILE%\Documents\PowerShell\Modules` (PowerShell 7). `Update-Module -Name MailHeaderAnalyzer` retrieves updates, and `Get-Module -Name MailHeaderAnalyzer -ListAvailable` displays the installed version.
 
 ## Get-MailHeaderAnalysis
 
@@ -103,11 +103,11 @@ Get-MailHeaderAnalysis
 
 ### Description
 
-The cmdlet splits the raw header into fields, unfolds RFC 5322 folding, and decodes RFC 2047 values in subjects and addresses. From the `Received` lines, it builds the delivery chain in chronological order, calculates the delay at each station, and reads the TLS version, cipher, and protocol class according to RFC 3848. From `Authentication-Results`, `Received-SPF`, `DKIM-Signature` and the ARC chain, it determines the authentication results and assigns an origin to each verification line (RFC 8601, section 5): substantiated if its authserv-id is in `-TrustedAuthServId`, otherwise merely plausible or unsubstantiated; see [AuthTrust](#authtrust-herkunft-der-prüfergebnisse). It also includes DMARC alignment, Exchange Online hybrid classification, spam filter assessments, and a list of anomalies.
+The cmdlet parses the raw header into fields, unfolds RFC 5322 folding, and decodes RFC 2047 values in the subject and addresses. From the `Received` lines, it builds the delivery chain in chronological order, calculates the delay at each hop, and reads the TLS version, cipher, and protocol class according to RFC 3848. From `Authentication-Results`, `Received-SPF`, `DKIM-Signature` and the ARC chain, it determines authentication results and assigns an origin to each authentication line (RFC 8601, section 5): evidenced if its authserv-id is listed in `-TrustedAuthServId`, otherwise only plausible or unsubstantiated; see [AuthTrust](#authtrust-herkunft-der-prüfergebnisse). It also includes DMARC alignment, Exchange Online hybrid classification, spam filter assessments, and a list of anomalies.
 
-The cmdlet performs no DNS queries and opens no network connection. `Spf`, `Dkim`, `Dmarc`, and `Arc` are therefore always the receiving server's verdict. DKIM and ARC signatures are not cryptographically revalidated; for the ARC chain, the cmdlet checks only its structure (`ArcStructure`).
+The cmdlet performs no DNS queries and opens no network connection. `Spf`, `Dkim`, `Dmarc` and `Arc` are therefore always the receiving server's verdict. DKIM and ARC signatures are not cryptographically verified; for the ARC chain, the cmdlet checks only its structure (`ArcStructure`).
 
-Input is read tolerantly: a blank line ends the header, and any subsequent message body is ignored. Lines without a field name and without leading whitespace, such as those created when copying from client dialogs, belong to the preceding field. An mbox separator line `From ...` before the first field is skipped, and a byte order mark is removed. At most 200 `Received` lines are analyzed, counted from delivery.
+Input is read tolerantly: a blank line ends the header, and any following message body is ignored. Lines without a field name and without leading whitespace, as can result from copying from client dialogs, are assigned to the preceding field. An mbox separator line `From ...` before the first field is skipped, and a byte order mark is removed. At most 200 `Received` lines are analyzed, counted from delivery onward.
 
 ### Examples
 
@@ -117,7 +117,7 @@ Input is read tolerantly: a blank line ends the header, and any subsequent messa
 Get-MailHeaderAnalysis -FromClipboard
 ```
 
-Analyzes the header currently in the clipboard. In Outlook for Windows, find the header under File, Properties, Internet headers; in Outlook on the web, find it in message options under “View message details.”
+Analyzes the header currently in the clipboard. In Outlook for Windows, you can find the header under File, Properties, Internet headers; in Outlook on the web, under “View message details” in message options.
 
 ```text
 Subject     : Service-Report für März
@@ -164,7 +164,7 @@ Displays the delivery chain as a table, with the first hop first.
 Get-Content -Path .\header.txt | Get-MailHeaderAnalysis | Select-Object -ExpandProperty Findings
 ```
 
-Reads the header line by line from a text file and displays only anomalies. `-Raw` with `Get-Content` is not required; the cmdlet combines the lines itself.
+Reads the header from a text file line by line and displays only the anomalies. `-Raw` with `Get-Content` is not required; the cmdlet assembles the lines itself.
 
 #### Example 5
 
@@ -180,7 +180,7 @@ Analyzes all messages in a folder and writes a CSV file with one row per message
 
 | Option | Effect |
 |---|---|
-| `Get-ChildItem -Path .\export\*.eml` | Returns file objects; `-Path` accepts their `FullName` property |
+| `Get-ChildItem -Path .\export\*.eml` | Returns the file objects; `-Path` accepts their `FullName` property |
 | `Select-Object … @{ Name; Expression }` | Calculated column that combines all finding codes into one string |
 | `Export-Csv -NoTypeInformation -Encoding UTF8` | CSV without a type header, UTF-8 for umlauts in subject lines |
 
@@ -193,16 +193,16 @@ Get-ChildItem .\export\*.eml |
     Select-Object Source, AuthTrust, AuthServId, DeliveredBy
 ```
 
-Lists messages whose verification results do not originate from your own inbound gateway `mx.example.org`. For phishing analysis, this is an initial filter. Without `-TrustedAuthServId`, you can filter only for `Unmatched`; a forgery that also includes a matching `Received` line then appears as `Matched` and passes through the filter.
+Lists messages whose authentication results do not originate from your own inbound gateway `mx.example.org`. For phishing analysis, this is an initial filter. Without `-TrustedAuthServId`, you can filter only for `Unmatched`; a forgery that also includes a matching `Received` line then appears as `Matched` and passes through the filter.
 
 <details class="options-details">
 <summary>Options explained</summary>
 
 | Option | Effect |
 |---|---|
-| `-TrustedAuthServId 'mx.example.org'` | authserv-id that your gateway writes in `Authentication-Results`; exact match, without subdomains |
-| `Where-Object AuthTrust -ne 'Trusted'` | Retains all messages whose authoritative verification line does not have a trusted authserv-id |
-| `Select-Object Source, AuthTrust, AuthServId, DeliveredBy` | File, origin level, authserv-id of the verification line, and delivering station |
+| `-TrustedAuthServId 'mx.example.org'` | authserv-id that your gateway writes in `Authentication-Results`; exact comparison, without subdomains |
+| `Where-Object AuthTrust -ne 'Trusted'` | Keeps all messages whose authoritative authentication line has no trusted authserv-id |
+| `Select-Object Source, AuthTrust, AuthServId, DeliveredBy` | File, origin level, authserv-id of the authentication line, and delivering hop |
 
 </details>
 
@@ -213,7 +213,7 @@ $a = Get-MailHeaderAnalysis -Path .\nachricht.eml
 $a.Hops[$a.SlowestHopIndex - 1] | Format-List Index, FromHost, ByHost, Delay
 ```
 
-Displays the station with the longest delay. `SlowestHopIndex` is 1-based; the `Hops` array is 0-based.
+Displays the hop with the greatest delay. `SlowestHopIndex` is 1-based; the `Hops` array is 0-based.
 
 #### Example 8
 
@@ -227,7 +227,7 @@ Writes the complete analysis as JSON. `-Depth 6` is required because `Hops`, `Dk
 
 #### -Header
 
-The header as text. The parameter accepts one string containing the complete header or multiple strings; pipeline input is collected and combined into one header at the end, which is why `Get-Content datei | Get-MailHeaderAnalysis` works without `-Raw`. To analyze multiple headers separately, use `-Path` with multiple files.
+The header as text. The parameter accepts a single string containing the entire header or multiple strings; pipeline input is collected and assembled into one header at the end, so `Get-Content datei | Get-MailHeaderAnalysis` works without `-Raw`. To analyze multiple headers separately, use `-Path` with multiple files.
 
 Aliases: `Text`, `Raw`, `InputObject`
 
@@ -235,7 +235,7 @@ Aliases: `Text`, `Raw`, `InputObject`
 |---|---|
 | Type | `String[]` |
 | Default value | None |
-| Supports wildcards | No |
+| Wildcards supported | No |
 
 | Text parameter set | Value |
 |---|---|
@@ -246,7 +246,7 @@ Aliases: `Text`, `Raw`, `InputObject`
 
 #### -Path
 
-Path to a file containing the header or a complete `.eml` message. Relative paths are resolved against the current directory. The file is read with `[System.IO.File]::ReadAllText`: a byte order mark is honored; without a BOM, UTF-8 is used. Each file produces a separate result object; missing files produce a non-terminating error.
+Path to a file containing the header or a complete `.eml` message. Relative paths are resolved against the current directory. The file is read with `[System.IO.File]::ReadAllText`: a byte order mark is honored; without a BOM, UTF-8 is used. Each file produces a separate result object; missing files generate a non-terminating error.
 
 Aliases: `FullName`, `PSPath`, `LiteralPath`
 
@@ -254,7 +254,7 @@ Aliases: `FullName`, `PSPath`, `LiteralPath`
 |---|---|
 | Type | `String[]` |
 | Default value | None |
-| Supports wildcards | No |
+| Wildcards supported | No |
 
 | Path parameter set | Value |
 |---|---|
@@ -265,13 +265,13 @@ Aliases: `FullName`, `PSPath`, `LiteralPath`
 
 #### -FromClipboard
 
-Reads the header from the clipboard with `Get-Clipboard -Raw`. The parameter is available only on Windows; on Linux and macOS, the cmdlet terminates with an error, as it also does when the clipboard is empty.
+Reads the header from the clipboard with `Get-Clipboard -Raw`. The parameter is available only on Windows; on Linux and macOS, the cmdlet terminates with an error, as it does if the clipboard is empty.
 
 | Parameter property | Value |
 |---|---|
 | Type | `SwitchParameter` |
 | Default value | `False` |
-| Supports wildcards | No |
+| Wildcards supported | No |
 
 | Clipboard parameter set | Value |
 |---|---|
@@ -282,11 +282,11 @@ Reads the header from the clipboard with `Get-Clipboard -Raw`. The parameter is 
 
 #### -TrustedAuthServId
 
-The authserv-id or authserv-ids that your inbound gateway writes in `Authentication-Results`, for example `mx.example.org`. The cmdlet compares exactly, case-insensitively and without subdomains. Verification lines with one of these IDs receive `AuthTrust = Trusted`, and only they are then included in `Spf`, `Dkim`, `Dmarc`, and `Arc`. The same applies to the `receiver=` of a `Received-SPF` line.
+The authserv-id or authserv-ids that your inbound gateway writes in `Authentication-Results`, for example `mx.example.org`. The cmdlet compares exactly, case-insensitively and without subdomains. Authentication lines with one of these IDs receive `AuthTrust = Trusted`, and only they are then included in `Spf`, `Dkim`, `Dmarc` and `Arc`. The same applies to the `receiver=` of a `Received-SPF` line.
 
-The result is only as reliable as the gateway: it must remove incoming `Authentication-Results` lines that claim its own authserv-id (RFC 8601, section 5). Whether it does so cannot be determined from a header. If two lines with a trusted ID conflict, the cmdlet reports `AuthTrustedConflict`. Microsoft 365 does not write an authserv-id in its verification line; if Exchange Online receives your email, omit the parameter.
+The result is only as reliable as the gateway: it must remove incoming `Authentication-Results` lines that claim its own authserv-id (RFC 8601, section 5). Whether it does so cannot be determined from a header. If two lines with a trusted ID conflict, the cmdlet reports `AuthTrustedConflict`. Microsoft 365 does not write an authserv-id in its authentication line; if Exchange Online receives your mail, omit the parameter.
 
-For an entire session, you can set the value as a default, for example in the PowerShell profile:
+For an entire session, you can set the value as a default, for example in your PowerShell profile:
 
 ```powershell
 $PSDefaultParameterValues['Get-MailHeaderAnalysis:TrustedAuthServId'] = 'mx.example.org'
@@ -296,7 +296,7 @@ $PSDefaultParameterValues['Get-MailHeaderAnalysis:TrustedAuthServId'] = 'mx.exam
 |---|---|
 | Type | `String[]` |
 | Default value | None |
-| Supports wildcards | No |
+| Wildcards supported | No |
 
 | Parameter set (all) | Value |
 |---|---|
@@ -307,21 +307,21 @@ $PSDefaultParameterValues['Get-MailHeaderAnalysis:TrustedAuthServId'] = 'mx.exam
 
 ### Inputs
 
-`System.String`: Header lines or the complete header, bound to `-Header`.
+`System.String`: Header lines or the entire header, bound to `-Header`.
 
 `System.IO.FileInfo`: File objects from `Get-ChildItem`, whose `FullName` is bound to `-Path`.
 
 ### Outputs
 
-`MailHeaderAnalyzer.Analysis`: one object per analyzed header. The properties are described in the [Output object](#ausgabeobjekt) section.
+`MailHeaderAnalyzer.Analysis`: one object for each analyzed header. The properties are described in the [Output object](#ausgabeobjekt) section.
 
 ### Notes
 
-The analysis text (explanations in `Findings`, `CompAuthReasonMeaning`, and the meaning fields) is in English so it can be used unchanged in international tickets. You can display the default view in full with `Format-List *`.
+The analysis text (explanations in `Findings`, `CompAuthReasonMeaning` and the meaning fields) is in English so it can be pasted unchanged into international tickets. You can display the default view in full with `Format-List *`.
 
 ## ConvertTo-MailHeaderReport
 
-Creates a report in Markdown or text from an analysis object.
+Creates a report from an analysis object as Markdown or text.
 
 ### Syntax
 
@@ -334,7 +334,7 @@ ConvertTo-MailHeaderReport
 
 ### Description
 
-The report includes the subject, sender, date, and Message-ID; authentication results with origin and alignment; all findings; the delivery chain; the Exchange classification; and spam filter values. Unicode directional control characters remain visible in the report as `<U+...>` so they cannot enter a ticket system through the report. The last line states the module version.
+The report includes the subject, sender, date, and Message-ID; authentication results with origin and alignment; all findings; the delivery chain; the Exchange classification; and spam filter values. Unicode control characters for text direction remain visible in the report as `<U+...>` so they cannot enter a ticket system through the report. The last line states the module version.
 
 ### Examples
 
@@ -344,7 +344,7 @@ The report includes the subject, sender, date, and Message-ID; authentication re
 Get-MailHeaderAnalysis -Path .\nachricht.eml | ConvertTo-MailHeaderReport | Set-Clipboard
 ```
 
-Creates a Markdown report and places it on the clipboard.
+Creates a Markdown report and places it in the clipboard.
 
 ```markdown
 # Email header analysis
@@ -399,7 +399,7 @@ The analysis object from `Get-MailHeaderAnalysis`. The cmdlet rejects other obje
 |---|---|
 | Type | `MailHeaderAnalyzer.Analysis` |
 | Default value | None |
-| Supports wildcards | No |
+| Wildcards supported | No |
 
 | Parameter set (all) | Value |
 |---|---|
@@ -418,9 +418,9 @@ The output format. Valid values:
 | Parameter property | Value |
 |---|---|
 | Type | `String` |
-| Valid values | `Markdown`, `Text` |
+| Allowed values | `Markdown`, `Text` |
 | Default value | `Markdown` |
-| Supports wildcards | No |
+| Wildcards supported | No |
 
 | Parameter set (all) | Value |
 |---|---|
@@ -431,7 +431,7 @@ The output format. Valid values:
 
 ### Inputs
 
-`MailHeaderAnalyzer.Analysis`: the result from `Get-MailHeaderAnalysis`.
+`MailHeaderAnalyzer.Analysis`: the result of `Get-MailHeaderAnalysis`.
 
 ### Outputs
 
@@ -439,11 +439,11 @@ The output format. Valid values:
 
 ## Output object
 
-`Get-MailHeaderAnalysis` returns one object of type `MailHeaderAnalyzer.Analysis` for each input. The default view shows the summary from Example 1; all properties are accessible through `Select-Object`, `Format-List *`, or `ConvertTo-Json`.
+`Get-MailHeaderAnalysis` returns one object of type `MailHeaderAnalyzer.Analysis` for each input. The default view displays the summary from Example 1; all properties are available through `Select-Object`, `Format-List *` or `ConvertTo-Json`.
 
 ### MailHeaderAnalyzer.Analysis
 
-| Property | Type | Content |
+| Property | Type | Contents |
 |---|---|---|
 | `Source` | String | File path, `Clipboard` or `Text` |
 | `Subject` | String | Subject, RFC 2047 decoded |
@@ -454,16 +454,16 @@ The output format. Valid values:
 | `Spf`, `Dkim`, `Dmarc`, `Arc`, `CompAuth` | String | Result according to the authoritative `Authentication-Results` line (`pass`, `fail`, `none`, `softfail` and others); `$null` if not checked. `Arc` is the recipient's verdict on the ARC chain |
 | `CompAuthReason`, `CompAuthReasonMeaning` | String | Reason code for Microsoft 365 composite authentication and its meaning |
 | `AuthTrust` | String | `Trusted`, `Matched`, `Unmatched`, `Absent` or `None`, see [AuthTrust](#authtrust-herkunft-der-prüfergebnisse) |
-| `AuthServId` | String | authserv-id of the authoritative verification line |
+| `AuthServId` | String | authserv-id of the authoritative authentication line |
 | `AuthenticationResults` | Object[] | All `Authentication-Results` lines with `AuthServId`, `Methods`, `Trust`, `Raw` |
 | `ReceivedSpf` | Object | The `Received-SPF` line with `Result` and `Properties` |
 | `SpfAlignment`, `DkimAlignment` | String | `Strict`, `Relaxed`, `None` or `$null` |
 | `Hops` | Hop[] | Delivery chain in chronological order; see [Hop object](#mailheaderanalyzerhop) |
 | `HopCount`, `TotalDuration`, `SlowestHopIndex`, `HasClockSkew` | Int, TimeSpan, Int, Bool | Chain metrics |
-| `DeliveredBy` | String | `by` host of the most recent `Received` line, i.e., the delivering station |
+| `DeliveredBy` | String | `by` host of the most recent `Received` line, i.e., the delivering hop |
 | `DkimSignatures` | Object[] | Per signature: `Domain`, `Selector`, `Algorithm`, `Canonicalization`, `SignedHeaders`, `BodyLength`, `Timestamp`, `Expires`, `ReceiverResult`, `Tags` |
 | `ArcChain` | Object[] | ARC instances with `Instance`, `SealDomain`, `ChainValidation`, `Methods` |
-| `ArcStructure`, `ArcStructureIssues` | String, String[] | ARC chain structure: `Consistent`, `Inconsistent` or `$null` without ARC headers, plus detected deviations. Structure check only, no signature validation; see [ARC chain](#arc-kette-aufbau-und-urteil) |
+| `ArcStructure`, `ArcStructureIssues` | String, String[] | Structure of the ARC chain: `Consistent`, `Inconsistent` or `$null` without ARC headers, plus the deviations found. Structure check only, not signature verification; see [ARC chain](#arc-kette-aufbau-und-urteil) |
 | `Exchange` | Object | Exchange Online hybrid classification; see [Exchange object](#mailheaderanalyzerexchangeclassification); `$null` without corresponding headers |
 | `Spam` | Object | Spam filter assessments; see [Spam object](#mailheaderanalyzerspamassessment); `$null` without corresponding headers |
 | `List` | Object | `ListId`, `Unsubscribe`, `OneClick` (RFC 8058); `$null` without list headers |
@@ -473,74 +473,74 @@ The output format. Valid values:
 
 ### MailHeaderAnalyzer.Hop
 
-Each entry in `Hops` corresponds to one `Received` line. The order is chronological, thus the reverse of the order in the header.
+Each entry in `Hops` corresponds to a `Received` line. The order is chronological, the reverse of the header order.
 
-| Property | Content |
+| Property | Contents |
 |---|---|
-| `Index` | Sequential number, 1 = submission |
-| `FromHost`, `Helo`, `ReverseDns`, `IPAddress`, `IsPrivateIP` | Details of the submitting system from the `from` part; the IP comes from the square brackets in the comment, the rDNS name from the preceding comment |
-| `ByHost`, `Software` | Receiving system and its software (comment following `by`) |
-| `Protocol`, `ProtocolClass` | `with` value and class according to RFC 3848: `TlsAuthenticated` (ESMTPSA), `Tls` (ESMTPS or TLS information present), `Authenticated` (ESMTPA), `Plain`, `Http`, `Mapi`, `Local` |
-| `TlsVersion`, `TlsCipher` | From the formats used by Microsoft (`version=TLS1_2, cipher=…`), Postfix (`using TLSv1.3 with cipher …`) and Exim |
+| `Index` | Sequence number; 1 = submission |
+| `FromHost`, `Helo`, `ReverseDns`, `IPAddress`, `IsPrivateIP` | Details about the submitting system from the `from` part; the IP comes from the square brackets in the comment, and the rDNS name from the preceding comment |
+| `ByHost`, `Software` | Receiving system and its software (comment after `by`) |
+| `Protocol`, `ProtocolClass` | `with` value and class according to RFC 3848: `TlsAuthenticated` (ESMTPSA), `Tls` (ESMTPS or TLS details present), `Authenticated` (ESMTPA), `Plain`, `Http`, `Mapi`, `Local` |
+| `TlsVersion`, `TlsCipher` | From notation used by Microsoft (`version=TLS1_2, cipher=…`), Postfix (`using TLSv1.3 with cipher …`) and Exim |
 | `Id`, `For`, `Via` | Other `Received` components |
 | `Date` | Timestamp after the semicolon, UTC |
-| `Delay` | TimeSpan to the preceding hop; negative with clock skew |
-| `Provider` | Detected provider or gateway based on host names (Microsoft 365, Google Workspace, SEPPmail, HIN, Proofpoint, Mimecast, and others) |
+| `Delay` | TimeSpan to the preceding hop; negative in case of clock skew |
+| `Provider` | Detected vendor or gateway based on host names (Microsoft 365, Google Workspace, SEPPmail, HIN, Proofpoint, Mimecast, and others) |
 | `Attested` | `$true` only for the final hop: only this line was written by the receiving system itself; all lines below it were already in the message |
 | `Raw` | The original line |
 
-### AuthTrust: origin of verification results
+### AuthTrust: origin of authentication results
 
-An `Authentication-Results` line can be written into a message by any sender, as can a matching `Received` line. Therefore, the header alone cannot prove who wrote a verification line. Under RFC 8601, section 5, only the line whose authserv-id the receiving organization recognizes as its own is authoritative, and the inbound gateway must remove incoming lines with that ID. The cmdlet implements this rule with `-TrustedAuthServId`. Without this parameter, it compares the authserv-id only with the `by` hosts of the `Received` chain (same domain or subdomain, always at the dot boundary, no substring); this is a plausibility check.
+Any sender can write an `Authentication-Results` line into a message themselves, as well as a matching `Received` line. Therefore, the header alone cannot establish who wrote an authentication line. According to RFC 8601, section 5, only the line whose authserv-id the receiving organization recognizes as its own is authoritative, and the inbound gateway must remove incoming lines with that ID. The cmdlet implements this rule with `-TrustedAuthServId`. Without this parameter, it compares the authserv-id only with the `by` hosts in the `Received` chain (same domain or subdomain, always at the dot boundary, never a substring); this is a plausibility check.
 
 | Value | Meaning |
 |---|---|
-| `Trusted` | The authserv-id is in `-TrustedAuthServId`. Once such a line exists, only lines at this level are included in `Spf`, `Dkim`, `Dmarc`, and `Arc`. Reliable provided that the gateway removes foreign lines with this ID |
-| `Matched` | The authserv-id occurs as a `by` host in the chain. Plausible but not proof: a forgery can include the matching `Received` line. Without `-TrustedAuthServId`, finding `AuthPlausibleOnly` indicates this. Lines at this level count when no `Trusted` line is present |
-| `Unmatched` | The authserv-id is neither trusted nor found in the chain. The results are displayed but treated as an unsubstantiated claim; finding `AuthUnverified` indicates this |
-| `Absent` | The line has no authserv-id. Microsoft 365 writes its verification line in this form; it begins directly with `spf=` |
-| `None` | No verification line present |
+| `Trusted` | The authserv-id is listed in `-TrustedAuthServId`. As soon as such a line exists, only lines at this level are included in `Spf`, `Dkim`, `Dmarc` and `Arc`. Reliable provided that the gateway removes foreign lines with this ID |
+| `Matched` | The authserv-id appears as a `by` host in the chain. Plausible, but not evidence: a forgery can include the matching `Received` line. Without `-TrustedAuthServId`, finding `AuthPlausibleOnly` points this out. Lines at this level count if no `Trusted` line is present |
+| `Unmatched` | The authserv-id is neither trusted nor found in the chain. Results are displayed but are treated as unsubstantiated claims; finding `AuthUnverified` points this out |
+| `Absent` | The line has no authserv-id. Microsoft 365 writes its authentication line in this form; it starts directly with `spf=` |
+| `None` | No authentication line present |
 
-If the header contains verification lines from multiple origins, finding `AuthMixedOrigins` reports this. If a verification line is absent but a `Received-SPF` line is present, its result is adopted as `Spf` and marked with `ReceivedSpfOnly`.
+If the header contains authentication lines from several origins, finding `AuthMixedOrigins` reports this. If an authentication line is absent but a `Received-SPF` line is present, its result is adopted as `Spf` and identified with `ReceivedSpfOnly`.
 
-With `-TrustedAuthServId`, two findings are added: `AuthNotTrusted` if no verification line has a trusted ID, and `AuthTrustedConflict` if two such lines report different results for `spf`, `dmarc`, `arc`, or `compauth`. The latter case means that at least one line does not originate from the gateway and the gateway did not remove it. In that case, the cmdlet adopts the topmost line; which of the two is genuine cannot be determined from the header. DKIM is excluded from this comparison because multiple signatures can legitimately have different results.
+With `-TrustedAuthServId`, two findings are added: `AuthNotTrusted` when no authentication line has a trusted ID, and `AuthTrustedConflict` when two such lines report different results for `spf`, `dmarc`, `arc` or `compauth`. The second case means that at least one line did not originate from the gateway and that the gateway did not remove it. In this case, the cmdlet uses the topmost line; the header cannot determine which of the two is genuine. DKIM is excluded from this comparison because multiple signatures may legitimately have different results.
 
 ### ARC chain: structure and verdict
 
-For ARC, the cmdlet provides two separate details. `Arc` is the `arc=` result from the authoritative verification line, meaning the verdict of the recipient that verified the chain signatures. `ArcStructure` is the module's own check and concerns only the structure specified by RFC 8617: consecutive instance numbers `i=1` through `i=n` (maximum 50), exactly one `ARC-Seal`, one `ARC-Message-Signature`, and one `ARC-Authentication-Results` per instance, plus `cv=none` for instance 1 and `cv=pass` for all subsequent instances. The module does not revalidate signatures; `Consistent` therefore says nothing about whether the chain is genuine. Deviations appear in `ArcStructureIssues` and finding `ArcStructureInconsistent`.
+For ARC, the cmdlet provides two separate values. `Arc` is the `arc=` result from the authoritative authentication line, i.e., the verdict of the recipient that verified the chain's signatures. `ArcStructure` is the module's own check and concerns only the structure according to RFC 8617: consecutive instance numbers `i=1` through `i=n` (maximum 50), exactly one `ARC-Seal`, one `ARC-Message-Signature`, and one `ARC-Authentication-Results` per instance, plus `cv=none` for instance 1 and `cv=pass` for all subsequent instances. The module does not verify signatures; `Consistent` therefore says nothing about whether the chain is genuine. Deviations appear in `ArcStructureIssues` and finding `ArcStructureInconsistent`.
 
-The information in `ARC-Authentication-Results` consists of statements by the respective forwarder. Finding `DkimBrokenAfterForward` therefore classifies a DKIM failure as the result of forwarding only if the recipient itself reports `arc=pass` and an earlier instance recorded a DKIM `pass` for the same domain.
+The details in `ARC-Authentication-Results` are claims by the respective forwarder. Finding `DkimBrokenAfterForward` therefore classifies a DKIM failure as the result of forwarding only when the recipient itself reports `arc=pass` and an earlier instance recorded a DKIM `pass` for the same domain.
 
 ### DMARC alignment
 
-`SpfAlignment` compares the envelope sender domain with the `From` domain; `DkimAlignment` compares the `d=` domain of the verified signature with the `From` domain. `Strict` means identical domain, `Relaxed` means the same organizational domain, and `None` means no match. The organizational domain is determined heuristically: the final two labels, or the final three for known multi-part suffixes such as `co.uk` or `com.au`. A complete Public Suffix List is not included.
+`SpfAlignment` compares the envelope sender domain with the `From` domain; `DkimAlignment` compares the `d=` domain of the verified signature with the `From` domain. `Strict` means identical domain, `Relaxed` means the same organizational domain, and `None` means no match. The organizational domain is determined heuristically: the last two labels, or the last three for known multipart suffixes such as `co.uk` or `com.au`. A complete Public Suffix List is not included.
 
 ### MailHeaderAnalyzer.ExchangeClassification
 
-If the header contains fields `X-MS-Exchange-Organization-*`, `X-OriginatorOrg` or `X-MS-Exchange-CrossTenant-*`, the cmdlet populates the `Exchange` property. The meanings follow the Exchange Team article “Demystifying hybrid mail flow”; background information is available in the article [Exchange hybrid headers: internal or external?](/blog/exchange-hybrid-header-intern-extern).
+If the header contains `X-MS-Exchange-Organization-*`, `X-OriginatorOrg` or `X-MS-Exchange-CrossTenant-*` fields, the cmdlet populates the `Exchange` property. The meanings follow the Exchange Team article “Demystifying hybrid mail flow”; background is provided in [Exchange hybrid headers: internal or external?](/blog/exchange-hybrid-header-intern-extern).
 
-| Property | Content |
+| Property | Contents |
 |---|---|
 | `Directionality`, `DirectionalityMeaning` | `Originating` or `Incoming` with explanation |
-| `AuthAs`, `AuthAsMeaning` | `Internal` or `Anonymous` with implications for EOP filtering |
+| `AuthAs`, `AuthAsMeaning` | `Internal` or `Anonymous` with the implications for EOP filtering |
 | `AuthSource` | Server that assigned the classification |
 | `AuthMechanism`, `AuthMechanismMeaning` | Mechanism code. Only value 10 (Externally Secured) is publicly documented; for all other codes, the module explicitly states that Microsoft does not document them |
-| `OriginatorOrg` | Default domain of the sending tenant, the non-forgeable tenant attribute when receiving from Microsoft 365 |
+| `OriginatorOrg` | Default domain of the sending tenant, the non-forgeable tenant identifier when receiving from Microsoft 365 |
 | `CrossTenantAuthAs`, `CrossTenantAuthSource`, `CrossTenantId` | Classification and tenant ID at the tenant boundary |
 | `CrossTenantFromEntity`, `CrossTenantFromMeaning` | `Internet`, `Hosted` or `HybridOnPrem` with explanation |
-| `WrongTenantAttribution` | Value of `X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp` if the message was assigned to another tenant |
-| `OrganizationHeadersPreserved`, `CrossPremisesHeadersFiltered` | Markers for organization headers received or removed by the sending connector, respectively |
+| `WrongTenantAttribution` | Value of `X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp` when the message was assigned to another tenant |
+| `OrganizationHeadersPreserved`, `CrossPremisesHeadersFiltered` | Markers for received organizational headers and organizational headers removed by the send connector, respectively |
 
 ### MailHeaderAnalyzer.SpamAssessment
 
 The `Spam` property combines assessments from known filters. Values originate from external systems and are decoded but not evaluated.
 
-| Property | Source | Content |
+| Property | Source | Contents |
 |---|---|---|
 | `Scl`, `SclMeaning` | `X-Forefront-Antispam-Report`, `X-Microsoft-Antispam` | Spam Confidence Level with meaning (-1 trusted, 0/1 not spam, 5/6 suspected spam, 9 very likely spam) |
 | `Bcl` | `X-Microsoft-Antispam` | Bulk Complaint Level 0 through 9 |
 | `Category`, `CategoryMeaning` | `CAT:` | Classification such as `SPM`, `PHSH`, `HPHSH`, `MALW`, `SPOOF`, `DIMP`, `UIMP`, `BULK` |
-| `SpamFilterVerdict`, `SpamFilterMeaning` | `SFV:` | Filter result such as `NSPM`, `SPM`, `SKA` (allowlist), `SKI` (intra-organizational) |
+| `SpamFilterVerdict`, `SpamFilterMeaning` | `SFV:` | Filter result such as `NSPM`, `SPM`, `SKA` (allowlist), `SKI` (intraorganizational) |
 | `IPVerdict`, `IPVerdictMeaning` | `IPV:` | `CAL` (IP on connection allowlist) or `NLI` (no reputation) |
 | `Direction`, `DirectionMeaning` | `DIR:` | `INB`, `OUT`, `INT` |
 | `ConnectingIP`, `Country` | `CIP:`, `CTRY:` | Submitting IP and country of origin |
@@ -548,7 +548,7 @@ The `Spam` property combines assessments from known filters. Values originate fr
 | `SpamAssassinScore`, `SpamAssassinTests` | `X-Spam-Status` | Score and triggered tests |
 | `RspamdSymbols` | `X-Spamd-Result`, `X-Spam-Report` | Symbols with scores |
 
-The complete list of `compauth` reason codes is available in the article [Microsoft 365 compauth: Reason Codes](/blog/microsoft-365-compauth-reason-codes).
+The complete list of `compauth` reason codes is available in [Microsoft 365 compauth: Reason Codes](/blog/microsoft-365-compauth-reason-codes).
 
 ### Findings
 
@@ -556,45 +556,45 @@ The cmdlet returns anomalies as objects in `Findings`, each with `Severity` (`In
 
 | Code | Severity | Meaning |
 |---|---|---|
-| `DuplicateField` | Warning | A field limited by RFC 5322 to one instance (`From`, `Subject`, `Date`, `Message-ID` and others) occurs multiple times. Email clients and filters may select different instances; a known forgery pattern |
-| `BidiControls` | Warning | Unicode directional control characters in a field. They reverse reading direction, making `fdp.exe` appear as `exe.pdf`. The module displays them as `<U+202E>` |
+| `DuplicateField` | Warning | A field limited by RFC 5322 to one instance (`From`, `Subject`, `Date`, `Message-ID` and others) occurs more than once. Mail clients and filters may choose different instances; a known forgery pattern |
+| `BidiControls` | Warning | Unicode control character for text direction in a field. It reverses the reading direction, so `fdp.exe` then appears as `exe.pdf`. The module displays it as `<U+202E>` |
 | `HopOverflow` | Warning | More than 200 `Received` lines; the excess lines were not analyzed |
-| `AuthPlausibleOnly` | Info | The authserv-id occurs in the delivery chain, but `-TrustedAuthServId` was not specified: plausible, not proof |
-| `AuthNotTrusted` | Warning | `-TrustedAuthServId` was specified, but no verification line has one of these IDs |
-| `AuthTrustedConflict` | Warning | Two verification lines with a trusted ID report different results for the same method; the gateway apparently does not remove foreign lines |
-| `AuthUnverified` | Warning | The verification results have an authserv-id that is neither trusted nor present in the delivery chain |
-| `AuthMixedOrigins` | Warning | Verification lines from multiple origins are present |
+| `AuthPlausibleOnly` | Info | The authserv-id occurs in the delivery chain, but `-TrustedAuthServId` was not specified: plausible, not evidence |
+| `AuthNotTrusted` | Warning | `-TrustedAuthServId` was specified, but no authentication line has one of these IDs |
+| `AuthTrustedConflict` | Warning | Two authentication lines with a trusted ID report different results for the same method; the gateway apparently does not remove foreign lines |
+| `AuthUnverified` | Warning | The authentication results have an authserv-id that is neither trusted nor present in the delivery chain |
+| `AuthMixedOrigins` | Warning | Authentication lines from multiple origins are present |
 | `ReceivedSpfForeign` | Warning | The `receiver=` of the `Received-SPF` line does not occur in the chain |
-| `ReceivedSpfOnly` | Info | The SPF result comes only from `Received-SPF`, not from a verification line |
-| `NoAuthResults` | Info | No verification results in the header |
+| `ReceivedSpfOnly` | Info | The SPF result originates only from `Received-SPF`, not from an authentication line |
+| `NoAuthResults` | Info | No authentication results in the header |
 | `DmarcFail` | Fail | DMARC failed according to the receiving server |
 | `SpfNotPass` | Warning | SPF result `fail`, `softfail`, `permerror` or `temperror` |
 | `DkimNotPass` | Warning | DKIM result `fail`, `permerror` or `temperror`, without the recipient confirming the ARC chain |
-| `DkimBrokenAfterForward` | Info | DKIM failed at the recipient, but the recipient reports `arc=pass`, and an earlier ARC instance recorded DKIM `pass` for the same domain: typical of forwarding and mailing lists |
+| `DkimBrokenAfterForward` | Info | DKIM failed at the recipient, but the recipient reports `arc=pass`, and an earlier ARC instance recorded a DKIM `pass` for the same domain: typical of forwarding and mailing lists |
 | `DkimWeakHash` | Warning | Signature with `rsa-sha1` (RFC 8301 classifies SHA-1 as obsolete) |
 | `DkimBodyLength` | Warning | The `l=` tag limits the signed length of the message body; appended content is not covered |
 | `DkimExpired` | Warning | The `x=` timestamp is in the past |
 | `DkimFromUnsigned` | Warning | The `From` field is not included in `h=`, although RFC 6376 requires it |
 | `ArcStructureInconsistent` | Warning | The ARC headers do not form a formally complete chain (gaps, missing or duplicate headers, incorrect `cv=` sequence); structure check only |
-| `ClockSkew` | Info | A hop has an earlier timestamp than its predecessor; delays are only approximate values |
-| `ReplyToMismatch` | Info | `Reply-To` domain differs from the `From` domain; common for newsletters, a phishing pattern |
-| `SpfNotAligned` | Info | Envelope sender domain and `From` domain belong to different organizations; SPF therefore does not contribute to DMARC |
-| `ExchangeWrongTenant` | Warning | Message was assigned to another tenant; a classic cause is an inbound connector from another tenant using the same certificate or IP addresses |
-| `ExchangeHeadersFiltered` | Warning | The sending connector removed the cross-premises headers (KB3212872) |
-| `ExchangeExternallySecured` | Warning | AuthMechanism 10: received through a receive connector with “Externally Secured,” EOP filtering skipped |
+| `ClockSkew` | Info | A hop has an earlier timestamp than its predecessor; delays are only approximate |
+| `ReplyToMismatch` | Info | The `Reply-To` domain differs from the `From` domain; common for newsletters, but a phishing pattern |
+| `SpfNotAligned` | Info | The envelope sender domain and `From` domain belong to different organizations; SPF then does not contribute to DMARC |
+| `ExchangeWrongTenant` | Warning | The message was assigned to a different tenant; a classic cause is an inbound connector from another tenant with the same certificate or IP addresses |
+| `ExchangeHeadersFiltered` | Warning | The send connector removed the cross-premises headers (KB3212872) |
+| `ExchangeExternallySecured` | Warning | AuthMechanism 10: received through a receive connector with “Externally Secured”; EOP filtering skipped |
 | `SpamCategory` | Warning | Microsoft assigned a category other than `NONE` |
 | `SpamConfidence` | Warning | SCL 5 or higher |
 
 ## How it works and limitations
 
-The module reads what is in the header and derives what can be substantiated without external queries. This entails several limitations:
+The module reads what is in the header and derives what can be established without external queries. This entails several limitations:
 
-- **No cryptographic validation.** DKIM and ARC signatures are not revalidated, and DNS records are not queried. `Spf`, `Dkim`, `Dmarc`, and `Arc` are always the receiving server's verdict; `ArcStructure` checks only the chain structure.
-- **Origin can be substantiated only with knowledge of the gateway.** Without `-TrustedAuthServId`, `AuthTrust` is a plausibility check. With the parameter, the statement depends on the gateway removing foreign verification lines with its authserv-id; the module cannot verify this.
-- **Only the final `Received` line is substantiated.** The sender supplied all lines below it and can construct them arbitrarily. `Attested` marks this distinction; delays at earlier hops rely on the information in those lines.
-- **Organizational domains are heuristic.** For relaxed alignment, the module uses a short list of multi-part suffixes rather than a complete Public Suffix List.
-- **AuthMechanism is only partly documented.** Apart from value 10, Microsoft has not published the codes; the module does not invent meanings.
-- **Character sets.** RFC 2047 values are decoded using encodings recognized by .NET on the respective system. Unknown character sets remain unchanged.
+- **No cryptographic verification.** DKIM and ARC signatures are not recalculated, and DNS records are not queried. `Spf`, `Dkim`, `Dmarc` and `Arc` are always the receiving server's verdict; `ArcStructure` checks only the chain's structure.
+- **Origin can be evidenced only with knowledge of the gateway.** Without `-TrustedAuthServId`, `AuthTrust` is a plausibility check. With the parameter, the statement depends on the gateway removing foreign authentication lines using its authserv-id; the module cannot verify that.
+- **Only the final `Received` line is evidenced.** The sender supplied all lines below it and can construct them arbitrarily. `Attested` marks this distinction; delays at earlier hops are based on the information in those lines.
+- **Organizational domains are heuristic.** For relaxed alignment, the module uses a short list of multipart suffixes, not a complete Public Suffix List.
+- **AuthMechanism is only partially documented.** Other than value 10, Microsoft has not published the codes; the module does not invent meanings.
+- **Character sets.** RFC 2047 values are decoded using encodings that .NET recognizes on the respective system. Unknown character sets remain unchanged.
 
 ## Privacy
 
@@ -602,11 +602,15 @@ A complete header contains internal host names, IP addresses, senders, recipient
 
 ## Source code and versions
 
-The source code is available under the MIT License on [GitHub](https://github.com/pfstr/MailHeaderAnalyzer). The analysis logic is a port of the library also used by the Header Analyzer on this website; both share test cases. Continuous integration checks every change using PSScriptAnalyzer and Pester on Windows PowerShell 5.1, PowerShell 7 on Windows, Ubuntu, and macOS. Releases to the PowerShell Gallery are automatically published from versioned tags; changes in each version are listed in the [changelog](https://github.com/pfstr/MailHeaderAnalyzer/blob/main/CHANGELOG.md).
+The source code is available under the MIT license on [GitHub](https://github.com/pfstr/MailHeaderAnalyzer). The analysis logic is a port of the library also used by the Header Analyzer on this website; both share the test cases. Continuous integration tests every change with PSScriptAnalyzer and Pester on Windows PowerShell 5.1, PowerShell 7 on Windows, Ubuntu, and macOS. Releases to the PowerShell Gallery are published automatically from versioned tags; changes per version are listed in the [changelog](https://github.com/pfstr/MailHeaderAnalyzer/blob/main/CHANGELOG.md).
 
-Version 0.2.0 from September 26, 2026 tightened the origin model following a review note by @saltyslugga: parameter `-TrustedAuthServId`, level `Trusted`, and `Matched` now only as plausibility. The `ArcValid` property was removed and replaced with `ArcStructure` and `ArcStructureIssues`; scripts that evaluate `ArcValid` must be updated.
+Version 0.2.0 of September 26, 2026 tightened the origin model following a review note from @saltyslugga: parameter `-TrustedAuthServId`, level `Trusted`, and `Matched` only as plausibility. The `ArcValid` property was removed and replaced by `ArcStructure` and `ArcStructureIssues`; scripts that evaluate `ArcValid` must be updated.
 
 I accept bugs and feature requests as [issues on GitHub](https://github.com/pfstr/MailHeaderAnalyzer/issues). Please anonymize test headers before submitting bug reports; the included test cases use only example domains under RFC 2606 and addresses under RFC 5737.
+
+## Change log
+
+- **October 25, 2026:** Replaced source RFC 7489 with RFC 9989, which supersedes the DMARC specification as of May 2026.
 
 ## Sources
 
@@ -618,20 +622,20 @@ I accept bugs and feature requests as [issues on GitHub](https://github.com/pfst
 
 4.  [RFC 8601: Message Header Field for Indicating Message Authentication Status](https://www.rfc-editor.org/rfc/rfc8601): structure of `Authentication-Results` and the rule that only the receiving organization's line is authoritative (section 5).
 
-5.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): structure of `Received` lines and the recommendation of an upper limit as loop protection (section 6.3).
+5.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): structure of `Received` lines and the recommendation for an upper limit as loop protection (section 6.3).
 
-6.  [RFC 3848: ESMTP and LMTP Transmission Types Registration](https://www.rfc-editor.org/rfc/rfc3848): the `with` values `ESMTPS`, `ESMTPA`, and `ESMTPSA`.
+6.  [RFC 3848: ESMTP and LMTP Transmission Types Registration](https://www.rfc-editor.org/rfc/rfc3848): the `with` values `ESMTPS`, `ESMTPA` and `ESMTPSA`.
 
 7.  [RFC 6376: DomainKeys Identified Mail (DKIM) Signatures](https://www.rfc-editor.org/rfc/rfc6376): tags of `DKIM-Signature`, requirement to sign `From`.
 
 8.  [RFC 8301: Cryptographic Algorithm and Key Usage Update to DKIM](https://www.rfc-editor.org/rfc/rfc8301): classification of `rsa-sha1` as obsolete.
 
-9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): strict and relaxed alignment.
+9.  [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989): strict and relaxed alignment; supersedes RFC 7489 as of May 2026.
 
-10.  [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617): chain structure consisting of `ARC-Seal`, `ARC-Message-Signature`, and `ARC-Authentication-Results`, instance numbers, and `cv=` values.
+10.  [RFC 8617: The Authenticated Received Chain (ARC) Protocol](https://www.rfc-editor.org/rfc/rfc8617): structure of the chain consisting of `ARC-Seal`, `ARC-Message-Signature` and `ARC-Authentication-Results`, instance numbers, and `cv=` values.
 
 11.  [Microsoft Learn: Anti-spam message headers in Microsoft 365](https://learn.microsoft.com/en-us/defender-office-365/message-headers-eop-mdo): meaning of SCL, BCL, CAT, SFV, IPV, and `compauth` reason codes.
 
-12.  [Exchange Team Blog: Demystifying hybrid mail flow](https://techcommunity.microsoft.com/blog/exchange/demystifying-hybrid-mail-flow-when-is-a-message-internal/1420838): source of the meanings of MessageDirectionality, AuthAs, and AuthMechanism.
+12.  [Exchange Team Blog: Demystifying hybrid mail flow](https://techcommunity.microsoft.com/blog/exchange/demystifying-hybrid-mail-flow-when-is-a-message-internal/1420838): origin of the meanings of MessageDirectionality, AuthAs, and AuthMechanism.
 
 13.  [Header Analyzer on rafaelpfister.ch](/tools/header-analyzer): the browser version with the same analysis logic.
