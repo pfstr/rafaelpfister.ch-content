@@ -14,6 +14,360 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# git.kernel.org erklärt: Aufbau der Seite und praktische Nutzung
+
+URL: https://rafaelpfister.ch/blog/git-kernel-org-erklaert
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) ist der Git-Server von kernel.org. Hier liegen der Hauptentwicklungszweig von Linus Torvalds, die Stable-Kernel, linux-next, Hunderte Subsystem- und Entwicklerbäume sowie Werkzeuge wie `git` selbst, `e2fsprogs` oder die Linux-Manpages. Die Weboberfläche ist eine angepasste Version von [cgit](https://git.zx2c4.com/cgit/about/) (im Seitenfuss als `cgit 1.3.1-korg` ausgewiesen). Sie ist rein lesend: Es gibt keine Konten, keine Issues und keine Pull Requests. Die Kernel-Entwicklung läuft über Mailinglisten, deren Archiv unter [lore.kernel.org](https://lore.kernel.org/) liegt; git.kernel.org zeigt das Ergebnis, also die Commits, die Maintainer in ihre Bäume übernommen haben.
+
+Typische Anlässe für einen Besuch sind ein CVE-Eintrag, der auf einen Kernel-Commit verweist, die Frage, ob ein bestimmter Fix in einer Kernel-Version enthalten ist, oder das Nachlesen einer einzelnen Quelldatei, ohne das ganze Repository zu klonen.
+
+## Die Startseite: Repository-Liste
+
+Die Startseite listet alle öffentlichen Repositories in einer Tabelle. Die Gruppierung folgt dem Dateipfad auf dem Server: Jede Zwischenüberschrift wie `pub/scm/fs` oder `pub/scm/linux` ist ein Verzeichnis, darunter stehen die Repositories mit ihrem Pfad relativ zu diesem Verzeichnis.
+
+<details class="options-details">
+<summary>Spalten im Überblick</summary>
+
+| Spalte | Inhalt |
+|---|---|
+| Name | Pfad des Repositorys unterhalb der Gruppe, z. B. `xfs/xfs-linux.git` unter `pub/scm/fs` |
+| Description | Inhalt der Datei `description` im Repository. „Unnamed repository; edit this file …" ist der Git-Standardtext und bedeutet nur, dass der Betreiber keine Beschreibung gesetzt hat |
+| Owner | verantwortliche Person oder Gruppe (z. B. „XFS FS Group", „Infra Team") |
+| Idle | Zeit seit dem letzten Commit auf irgendeinem Branch; ein kleiner Wert zeigt einen aktiv gepflegten Baum |
+| Links | Direktsprünge in die Ansichten `summary`, `log` und `tree` des Repositorys |
+
+</details>
+
+Die wichtigsten Gruppen:
+
+| Gruppe | Inhalt |
+|---|---|
+| `pub/scm/linux` | Kernel-Bäume: Mainline, Stable, linux-next sowie die persönlichen und Subsystem-Bäume der Maintainer |
+| `pub/scm/fs` | Dateisysteme samt Userspace-Werkzeugen (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Bibliotheken wie `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | das Git-Projekt selbst (`git.git`) mit HTML-Dokumentation und Manpages |
+| `pub/scm/docs` | Dokumentationsquellen, darunter `man-pages` und die PGP-Schlüssel der Kernel-Entwickler (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | Infrastruktur von kernel.org, z. B. der cgit-Fork und die Transparenz-Logs des Gitolite-Servers |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, Entwicklerwerkzeuge wie `sparse` und `pahole`, Linus Torvalds' `uemacs` |
+
+Die Liste ist sehr lang, weil allein unter `pub/scm/linux/kernel/git/` jeder Maintainer mit Konto eigene Bäume ablegen kann. Das Suchfeld oben rechts filtert die Liste nach Name, Beschreibung und Owner. Die Suche lässt sich auch direkt als URL aufrufen, z. B. `https://git.kernel.org/?q=xfs`.
+
+## Das Pfadschema der Kernel-Bäume
+
+Kernel-Repositories folgen dem Muster:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` ist der Benutzername des Maintainers auf kernel.org, nicht zwingend sein voller Name (`akpm` ist Andrew Morton, `acme` ist Arnaldo Carvalho de Melo). Für die meisten Fragen genügen drei Bäume:
+
+| Baum | Pfad | Zweck |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Entwicklungszweig von Linus Torvalds; hier entstehen die Releases `v7.3`, `v7.4-rc1` usw. |
+| Stable | `stable/linux.git` | gepflegte Versionen mit Fixes (`v7.3.1`, `v7.3.2` …) und die Longterm-Kernel; ein Branch pro Versionsreihe, z. B. `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | täglich zusammengeführter Stand aller Subsystem-Bäume für das nächste Merge-Window |
+
+Ein Fix durchläuft diese Bäume in der Regel in dieser Reihenfolge: Er landet zuerst im Baum des zuständigen Subsystems, erscheint in linux-next, wird im Merge-Window per Pull-Request-Mail von Linus Torvalds in die Mainline übernommen und danach in die Stable-Zweige zurückportiert. Welcher Subsystem-Baum zuständig ist, steht in der Datei `MAINTAINERS` im Kernel-Quellcode (Zeilen mit `T: git …`).
+
+## Die Ansichten eines Repositorys
+
+Ein Klick auf einen Repository-Namen öffnet die Ansicht `summary`. Die Tab-Leiste darüber führt zu den weiteren Ansichten; links daneben wählt ein Auswahlfeld den Branch, auf den sich alle Ansichten beziehen.
+
+<details class="options-details">
+<summary>Ansichten im Überblick</summary>
+
+| Ansicht | Inhalt |
+|---|---|
+| about | README des Repositorys, sofern hinterlegt |
+| summary | Branches mit letztem Commit, die neuesten Tags mit Download-Link, die letzten zehn Commits und die Clone-URLs |
+| refs | vollständige Liste aller Branches und Tags |
+| log | Commit-Verlauf mit Suchfeld; Spalten Alter, Commit-Nachricht, Autor, geänderte Dateien und Zeilen |
+| tree | Dateibaum zum gewählten Branch oder Commit, mit Links auf `plain` (Rohdatei) und `log` (Verlauf der Datei) |
+| commit | Metadaten und Diff eines einzelnen Commits |
+| diff | Unterschied zwischen zwei Commits oder zwischen einem Commit und seinem Vorgänger |
+| stats | Commit-Statistik nach Autor über einen wählbaren Zeitraum |
+
+</details>
+
+In der `summary`-Ansicht ist der Tag-Block nützlich, um die aktuelle Version abzulesen: Die Mainline zeigt Release-Candidates (`v7.3-rc7`) und Releases (`v7.3`). Die Download-Links erzeugen ein Archiv auf Anfrage und sind dafür nicht immer verfügbar; für fertige Releases sind die Tarballs auf [kernel.org](https://kernel.org/) bzw. `cdn.kernel.org` der vorgesehene Bezugsweg, dort auch mit PGP-Signatur.
+
+Am Ende der `summary`-Ansicht stehen die Clone-URLs. Neben `https://` und dem unverschlüsselten `git://` ist ein Spiegel bei Google (`kernel.googlesource.com`) angegeben, der denselben Inhalt liefert.
+
+## Den Verlauf durchsuchen
+
+Das Suchfeld in der `log`-Ansicht hat ein Auswahlfeld mit vier Modi. Jeder Modus ist auch als URL-Parameter verfügbar, sodass sich Suchen als Lesezeichen ablegen oder in Tickets verlinken lassen:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Parameter | Wirkung |
+|---|---|
+| `qt=grep` | sucht in den Commit-Nachrichten (Auswahl „log msg") |
+| `qt=author` | sucht im Autorenfeld (Name oder E-Mail-Adresse) |
+| `qt=committer` | sucht im Committer-Feld, also bei der Person, die den Commit übernommen hat |
+| `qt=range` | zeigt einen Bereich in Git-Notation, z. B. `q=v7.3-rc6..v7.3-rc7` für alle Commits zwischen zwei Tags |
+| `q=` | Suchbegriff bzw. Bereich |
+| `h=` | Branch, auf den sich die Suche bezieht, z. B. `h=linux-7.3.y` im Stable-Baum |
+| `ofs=` | Versatz für die Seitenblätterung (git.kernel.org zeigt 200 Commits pro Seite) |
+
+</details>
+
+Der Bereich `v7.3-rc6..v7.3-rc7` beantwortet die Frage „Was hat sich zwischen zwei Versionen geändert?" direkt im Browser. Im Stable-Baum zeigt `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` alle Fixes, die mit einem Stable-Update hinzugekommen sind.
+
+## Einen Commit lesen
+
+Ein einzelner Commit ist über seinen vollständigen SHA-1-Hash adressierbar:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+Die Ansicht zeigt Autor, Committer, Datum, den übergeordneten Commit (`parent`), die vollständige Commit-Nachricht und den Diff. Am Ende einer Kernel-Commit-Nachricht stehen Trailer wie `Signed-off-by:`, `Reviewed-by:` und `Fixes: <sha> ("Titel")`. Die `Fixes:`-Zeile nennt den Commit, der den Fehler eingeführt hat; damit lässt sich eingrenzen, ab welcher Version ein System betroffen ist. `Link:` verweist meist auf die zugehörige Diskussion in lore.kernel.org, `Cc: stable@vger.kernel.org` markiert den Fix zum Rückportieren in die Stable-Kernel.
+
+Ersetzt man `commit` in der URL durch `patch`, liefert der Server den Commit als Patch-Datei im Mail-Format (`text/plain`), die sich mit `git am` oder `patch` anwenden lässt.
+
+## Kurz-URLs in CVE-Einträgen
+
+Seit das Kernel-Projekt selbst CVE-Nummern vergibt, verweisen die Einträge in der CVE-Liste und der NVD auf Kurz-URLs der Form `https://git.kernel.org/stable/c/<sha>`. git.kernel.org leitet diese per HTTP 301 auf die Commit-Ansicht im passenden Baum weiter:
+
+| Kurz-URL | Ziel |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit im Stable-Baum `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit in der Mainline `torvalds/linux.git` |
+
+Ein CVE-Eintrag nennt in der Regel mehrere solcher Links: einen pro Stable-Zweig, in den der Fix zurückportiert wurde, und einen für die Mainline. Die Hashes unterscheiden sich, weil jeder Rückport ein eigener Commit ist. Die Commit-Nachricht des Rückports nennt den Hash des Originals in der Mainline, entweder als Zeile `commit <sha> upstream.` oder als `[ Upstream commit <sha> ]`.
+
+## Prüfen, ob ein Fix in einer Version enthalten ist
+
+Die Weboberfläche zeigt nicht an, in welchen Tags ein Commit enthalten ist. Dafür ist ein lokaler Klon nötig. Für diesen Zweck reicht ein Klon ohne Dateiinhalte, der nur die Commit-Historie lädt:
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `clone` | legt eine lokale Kopie des Repositorys an |
+| `--filter=blob:none` | Partial Clone: lädt Commits und Verzeichnisstrukturen, Dateiinhalte (Blobs) erst bei Bedarf |
+| `--no-checkout` | legt kein Arbeitsverzeichnis an; für Abfragen der Historie nicht nötig |
+| URL | HTTPS-Clone-URL aus der `summary`-Ansicht des Stable-Baums |
+
+</details>
+
+Anschliessend beantwortet ein Befehl im geklonten Verzeichnis die Frage nach der ersten Version mit dem Fix:
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `describe` | beschreibt einen Commit relativ zu einem Tag |
+| `--contains` | sucht den ältesten Tag, der den Commit enthält, statt des jüngsten Tags davor |
+| `<sha>` | Hash des Commits, z. B. aus der Kurz-URL im CVE-Eintrag |
+
+</details>
+
+Die Ausgabe hat die Form `v7.3.2~14`: Der Fix ist ab `v7.3.2` enthalten. Alle Tags mit dem Commit listet `git tag --contains <sha>`. Wer nur eine einzelne Datei oder einen Stand zum Lesen braucht, kann statt eines Klons die Ansichten `tree` und `plain` im Browser verwenden.
+
+Für den vollständigen Quellcode zum Bauen genügt ein flacher Klon eines Tags:
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `--depth 1` | lädt nur den letzten Commit ohne Historie; der Download schrumpft von mehreren GB auf einige hundert MB |
+| `--branch v7.3` | wählt den Tag oder Branch, der ausgecheckt wird |
+| URL | Clone-URL der Mainline |
+
+</details>
+
+## Änderungen verfolgen
+
+Jedes Repository bietet einen Atom-Feed des Standard-Branches unter `…/<repository>.git/atom/`, für die Mainline also `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. Ein Feed-Reader zeigt damit neue Commits an, ohne dass die Seite regelmässig aufgerufen werden muss. Für die Mainline erzeugt der Feed während des Merge-Windows viele Einträge pro Tag; für Releases und Stable-Updates ist die Versionsübersicht auf [kernel.org](https://kernel.org/) bzw. deren Feed die ruhigere Quelle.
+
+## Quellen
+
+1.  [git.kernel.org](https://git.kernel.org/): Repository-Liste mit Gruppen, Owner- und Idle-Spalte; Suchfeld der Startseite.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/): Mainline mit Ansichten summary, log, tree, Clone-URLs und Atom-Feed.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/): Stable- und Longterm-Kernel, ein Branch pro Versionsreihe.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/): Upstream der Weboberfläche, Dokumentation der URL-Parameter.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html): Regeln für Rückports, Trailer `Cc: stable` und Verweis auf den Upstream-Commit.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html): CVE-Vergabe durch das Kernel-Projekt und Aufbau der Einträge.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html): Bedeutung der Trailer `Fixes:`, `Link:`, `Signed-off-by:`.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe): Manpage, Option `--contains`.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone): Manpage, Optionen `--filter`, `--depth`, `--branch`, `--no-checkout`.
+
+10.  [lore.kernel.org](https://lore.kernel.org/): Archiv der Kernel-Mailinglisten, auf das die `Link:`-Trailer verweisen.
+
+----
+
+# VMware ESX und Linux-Kernel: CISA meldet Angriffe auf CVE-2026-41709 und Fragnesia
+
+URL: https://rafaelpfister.ch/blog/esx-linux-kernel-kev-angriffe
+Datum: 2026-10-29
+
+# VMware ESX und Linux-Kernel: CISA meldet Angriffe auf CVE-2026-41709 und Fragnesia
+
+Die US-Behörde CISA hat am 28. Oktober 2026 zwei Schwachstellen in ihren Katalog der aktiv ausgenutzten Lücken (Known Exploited Vulnerabilities, KEV) aufgenommen: CVE-2026-41709 in VMware ESX und CVE-2026-46300 im Linux-Kernel, bekannt als Fragnesia. Für beide gibt es seit Monaten Updates. Angreifer haben beide Lücken mit einem klaren Zweck eingesetzt, obwohl sie nur niedrig beziehungsweise hoch und nicht kritisch bewertet sind: die eine, um Spuren zu vermeiden, die andere, um nach einem Erstzugriff Root-Rechte zu erlangen.
+
+| CVE | Produkt | Art | CVSS | Updates seit |
+|---|---|---|---|---|
+| CVE-2026-41709 | VMware ESX | Operationen werden nicht protokolliert | 2.7 (niedrig) | 29.07.2026 |
+| CVE-2026-46300 (Fragnesia) | Linux-Kernel, XFRM ESP-in-TCP | lokale Rechteausweitung auf root | 7.8 (hoch) | Mai 2026 |
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Unterstützung bei Prüfung und Update</p>
+<p>Wenn Sie Hilfe beim Inventar betroffener ESX-Hosts oder Linux-Systeme brauchen, nutzen Sie bitte das <a href="https://adeptio.ch/">Kontaktformular auf adeptio.ch</a>. Ich melde mich auch kurzfristig.</p>
+</div>
+
+## CVE-2026-41709: ESX protokolliert nicht alle Operationen
+
+Broadcom hat die Lücke am 29. Juli 2026 im Advisory VMSA-2026-0006 veröffentlicht, zusammen mit mehreren kritischen Lücken in ESX, vCenter, Workstation und Fusion. Laut Advisory kann ein Administrator mit bösen Absichten bestimmte Operationen auf dem ESX-Host ausführen, ohne dass diese protokolliert werden. Broadcom bewertet das mit CVSS 2.7 als niedrig, weil der Angreifer bereits Administratorrechte braucht. Einen Workaround gibt es nicht.
+
+Die niedrige Bewertung beschreibt die Lücke isoliert. Im Angriff hat sie eine andere Funktion: Wer bereits Kontrolle über die Virtualisierungsumgebung hat, kann damit Befehle ausführen, die in der späteren Forensik fehlen. CrowdStrike beschreibt im Legal Threat Landscape Report 2026, dass die China zugeordnete Gruppe Warp Panda bei Einbrüchen in US-Organisationen, darunter Anwaltskanzleien, Schadsoftware in vCenter-Umgebungen platziert und CVE-2026-41709 in mehreren Fällen als Zero-Day ausgenutzt hat, zuletzt Anfang 2026. Die Lücke wurde also mehrere Monate vor dem Patch ausgenutzt.
+
+Fixversionen laut Broadcom:
+
+| Produkt | ESX-Version | Fixversion |
+|---|---|---|
+| VMware Cloud Foundation, vSphere Foundation | 9.1.x | ESXi-9.1.0.0-25370933 |
+| VMware Cloud Foundation, vSphere Foundation | 9.0.x | ESXi-9.0.2.0100-25595025 |
+| VMware ESX | 8.0 | ESXi80U3j-25429389 |
+| VMware Cloud Foundation | 5.x | 5.2.4 (Async-Patching nach KB88287) |
+| VMware Telco Cloud Platform | 5.0.x, 5.1.x | siehe KB449886 |
+
+Die installierte Version und den Build eines Hosts zeigt die ESX-Shell:
+
+```shell
+esxcli system version get
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `system version get` | gibt Produkt, Version, Update-Stand und Build-Nummer des Hosts aus |
+
+</details>
+
+Für die Bewertung eines möglichen Vorfalls bedeutet das: Auf ESX-Hosts, die vor dem Update kompromittiert waren, sind die lokalen Protokolle nicht vollständig. Ein Abgleich mit externen Quellen (vCenter-Ereignisse, Netzwerk- und Firewall-Logs, Logs der Backup-Software) ist dann aussagekräftiger als das Host-Log allein.
+
+## CVE-2026-46300 (Fragnesia): Root über den Page Cache
+
+Fragnesia ist eine Variante der Lücke Dirty Frag und liegt im XFRM-ESP-Subsystem des Kernels, genauer in ESP-in-TCP (IPsec über TCP). Ein lokaler Benutzer ohne Rechte erhält damit Schreibzugriff auf den Page Cache und kann den zwischengespeicherten Inhalt von Dateien ändern, die er nur lesen darf. Der öffentliche Exploit verändert so `/usr/bin/su` und startet eine Root-Shell. William Bowling von Zellic hat die Lücke am 13. Mai 2026 mit Exploit und Patch veröffentlicht; Microsoft warnte kurz darauf. Red Hat bewertet sie mit CVSS 7.8. Die Patches für Dirty Frag beheben Fragnesia nicht, es braucht einen eigenen Kernel-Fix.
+
+Die grossen Distributionen liefern korrigierte Kernel über die normalen Updates aus, zum Beispiel AlmaLinux 8 ab `kernel-4.18.0-553.124.2.el8_10`, AlmaLinux 9 ab `kernel-5.14.0-611.54.4.el9_7` und Ubuntu 20.04 ab `5.15.0-181.191~20.04.1`. Für andere Distributionen gilt das jeweilige Advisory; Ubuntu weist darauf hin, dass bei Backports die Versionsnummer allein wenig aussagt.
+
+Ob die betroffenen Module geladen sind, zeigt:
+
+```shell
+lsmod | grep -E '^(esp4|esp6|rxrpc) '
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `lsmod` | listet die aktuell geladenen Kernel-Module |
+| `grep -E` | erweiterte reguläre Ausdrücke, hier für die Alternative `esp4\|esp6\|rxrpc` |
+| `'^(…) '` | trifft nur Zeilen, die mit genau diesem Modulnamen beginnen |
+
+</details>
+
+Bis ein korrigierter Kernel installiert ist, lassen sich die Module entladen und am erneuten Laden hindern. Das ist nur möglich, wenn das System kein IPsec braucht:
+
+```shell
+rmmod esp4 esp6 rxrpc
+printf 'install esp4 /bin/false\ninstall esp6 /bin/false\ninstall rxrpc /bin/false\n' > /etc/modprobe.d/dirtyfrag.conf
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `rmmod esp4 esp6 rxrpc` | entlädt die drei Module aus dem laufenden Kernel |
+| `install <modul> /bin/false` | Eintrag in modprobe.d: beim Laden des Moduls wird `/bin/false` ausgeführt statt das Modul geladen |
+| `> /etc/modprobe.d/dirtyfrag.conf` | schreibt die Regeln in eine eigene Konfigurationsdatei; bestehende Dateien bleiben unverändert |
+
+</details>
+
+## Die Angriffskette über php2shell
+
+Wie Fragnesia in der Praxis eingesetzt wird, beschreibt Dream Research in einer Analyse vom 26. Oktober 2026. Ein Angreifer hat zwischen dem 8. und 24. Oktober 25 Firewall-Server in den USA, Japan, Taiwan und Südkorea übernommen. Den Hersteller nennt Dream nicht. Die Kette bestand aus zwei Schritten in einer einzigen HTTP-Anfrage:
+
+1. **Erstzugriff über php2shell:** Die beiden PHP-Lücken CVE-2026-109618 und CVE-2026-109619 erlauben Codeausführung auf dem Management-Webserver der Firewall, im beschriebenen Fall als Benutzer `nobody`.
+2. **Rechteausweitung über Fragnesia:** SELinux verhinderte, dass der Webserver-Prozess Systemdateien ändert. Der Angreifer überschrieb deshalb über den Page Cache `/etc/pam.d/su` mit `pam_permit.so` und erhielt mit `su` ohne Passwort Root-Rechte.
+
+Auf einer Firewall der Zielorganisation richtete der Angreifer danach einen dauerhaften SSH-Reverse-Tunnel ein, übernahm den internen Management-Server, entschlüsselte das Passwort des LDAP-Dienstkontos und griff das Active Directory an. Die übrigen 22 Firewalls blieben mit einer Webshell versehen. Dream ordnet die Kampagne einem Akteur mit China-Bezug zu und sieht Hinweise auf KI-gestützte Entwicklung der rund 40 Skripte, ohne direkten Beleg.
+
+Eine lokale Rechteausweitung ist damit auch auf Appliances relevant: Eine Webanwendung mit eingeschränkten Rechten reicht als Ausgangspunkt, wenn der Kernel ungepatcht ist.
+
+## php2shell und PAN-OS
+
+PHP hat die php2shell-Lücken am 21. Oktober 2026 geschlossen (PHP 8.5.12, 8.4.27, 8.3.36 und 8.2.35); CISA führt beide seit dem 26. Oktober im KEV-Katalog. Palo Alto Networks meldet aktive Angriffe auf das Management-Webinterface von PAN-OS über diese Lücken (Advisory CVE-2026-109618, CVSS 4.0 9.2). Betroffen sind PA-Series- und VM-Series-Firewalls sowie Panorama; GlobalProtect und Captive Portal sind laut Hersteller nicht betroffen. Für die unterstützten Versionen 10.2 bis 12.2 sind Hotfixes erschienen; für 11.1.7-h12 nennt das Advisory den 30. Oktober 2026. Das Risiko ist am höchsten, wenn das Management-Interface aus dem Internet erreichbar ist; Palo Alto empfiehlt, den Zugriff auf vertrauenswürdige interne Adressen zu beschränken.
+
+## Was jetzt zu tun ist
+
+1. ESX-Hosts auf die Fixversionen aus VMSA-2026-0006 bringen. Das Advisory schliesst zugleich die kritischen Lücken CVE-2026-59309, CVE-2026-59310 und CVE-2026-47876.
+2. Linux-Systeme auf einen Kernel mit Fragnesia-Fix aktualisieren und neu starten. Das betrifft auch Appliances auf Linux-Basis, für die der Hersteller ein eigenes Update liefern muss.
+3. PHP auf die Versionen vom 21. Oktober 2026 oder einen Distributions-Backport aktualisieren; bei PAN-OS die Hotfixes aus dem Advisory einspielen.
+4. Management-Schnittstellen von Firewalls, Hypervisoren und vCenter nicht aus dem Internet erreichbar machen.
+5. Bei Verdacht auf Kompromittierung von ESX-Hosts die Protokolle mit externen Quellen abgleichen, weil das Host-Log vor dem Update unvollständig sein kann.
+
+## Quellen
+
+1.  [CISA: CISA Adds Two Known Exploited Vulnerabilities to Catalog (28.10.2026)](https://www.cisa.gov/news-events/alerts/2026/10/28/cisa-adds-two-known-exploited-vulnerabilities-catalog): Aufnahme von CVE-2026-41709 und CVE-2026-46300 in den KEV-Katalog.
+
+2.  [Broadcom: VMSA-2026-0006](https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/38017): Advisory mit Beschreibung von CVE-2026-41709, Response-Matrix und Fixversionen.
+
+3.  [CrowdStrike: 2026 Legal Threat Landscape Report](https://www.crowdstrike.com/en-us/blog/crowdstrike-2026-legal-threat-landscape-report/): Warp Panda in vCenter-Umgebungen und Ausnutzung von CVE-2026-41709 als Zero-Day.
+
+4.  [Dream Research: Chained php2shell exploit roots 25 servers](https://dreamgroup.com/blog/chained-php2shell-exploit-roots-25-servers): Analyse der Angriffskette aus php2shell und Fragnesia mit Artefakten und Zuordnung.
+
+5.  [Palo Alto Networks: CVE-2026-109618](https://security.paloaltonetworks.com/CVE-2026-109618): Advisory zu den Auswirkungen von php2shell auf PAN-OS mit betroffenen Versionen, Hotfixes und Mitigationen.
+
+6.  [CISA: CISA Adds Two Known Exploited Vulnerabilities to Catalog (26.10.2026)](https://www.cisa.gov/news-events/alerts/2026/10/26/cisa-adds-two-known-exploited-vulnerabilities-catalog): Aufnahme der php2shell-Lücken CVE-2026-109618 und CVE-2026-109619.
+
+7.  [Ubuntu: Fragnesia Linux kernel local privilege escalation vulnerability mitigations](https://ubuntu.com/blog/fragnesia-linux-vulnerability-fixes-available): betroffene Ubuntu-Releases, Fixversionen und Modul-Sperre als Übergangslösung.
+
+8.  [Tenable: Fragnesia (CVE-2026-46300) FAQ](https://tenable.com/blog/fragnesia-cve-2026-46300-faq-about-new-linux-kernel-xfrm-esp-in-tcp-priv-esc): Hintergrund zu ESP-in-TCP, Abgrenzung zu Dirty Frag und Fixstand der Distributionen.
+
+9.  [heise online: Angriffe auf Linux- und VMware-ESX-Schwachstellen](https://www.heise.de/news/Angriffe-auf-Linux-und-VMware-ESX-Schwachstellen-11503947.html): deutschsprachige Meldung mit Einordnung der niedrigen Broadcom-Bewertung.
+
+10.  [heise online: Fragnesia: Microsoft warnt vor weiterer Rechteausweitungslücke in Linux](https://www.heise.de/news/Fragnesia-Microsoft-warnt-vor-weiterer-Rechteausweitungsluecke-in-Linux-11294817.html): Details zu Entdeckung, Exploit und Workaround.
+
+----
+
 # NatJack: Angriffe auf NAT-Tabellen erklärt, wer betroffen ist und welche Massnahmen nötig sind
 
 URL: https://rafaelpfister.ch/blog/natjack-nat-tabellen-angriff
@@ -18809,6 +19163,220 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# git.kernel.org explained: site structure and practical use
+
+URL: https://rafaelpfister.ch/en/blog/git-kernel-org-explained-site-structure-and-practical-use
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) is kernel.org's Git server. It hosts Linus Torvalds' main development branch, the stable kernels, linux-next, hundreds of subsystem and developer trees, as well as tools such as `git` itself, `e2fsprogs` or the Linux man pages. The web interface is a customized version of [cgit](https://git.zx2c4.com/cgit/about/) (identified in the footer as `cgit 1.3.1-korg`). It is read-only: there are no accounts, issues, or pull requests. Kernel development takes place through mailing lists, whose archive is at [lore.kernel.org](https://lore.kernel.org/); git.kernel.org shows the result: the commits that maintainers have incorporated into their trees.
+
+Typical reasons to visit include a CVE entry that refers to a kernel commit, determining whether a particular fix is included in a kernel version, or reading an individual source file without cloning the entire repository.
+
+## The home page: repository list
+
+The home page lists all public repositories in a table. The grouping follows the file path on the server: each intermediate heading such as `pub/scm/fs` or `pub/scm/linux` is a directory, with the repositories listed below it using paths relative to that directory.
+
+<details class="options-details">
+<summary>Column overview</summary>
+
+| Column | Content |
+|---|---|
+| Name | Repository path below the group, for example `xfs/xfs-linux.git` under `pub/scm/fs` |
+| Description | Contents of the `description` file in the repository. “Unnamed repository; edit this file …” is Git's default text and only means that the operator has not set a description |
+| Owner | Responsible person or group (for example, “XFS FS Group,” “Infra Team”) |
+| Idle | Time since the last commit on any branch; a low value indicates an actively maintained tree |
+| Links | Direct links to the repository's `summary`, `log`, and `tree` views |
+
+</details>
+
+The most important groups:
+
+| Group | Content |
+|---|---|
+| `pub/scm/linux` | Kernel trees: mainline, stable, linux-next, and the personal and subsystem trees of maintainers |
+| `pub/scm/fs` | File systems and user-space tools (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Libraries such as `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | The Git project itself (`git.git`) with HTML documentation and man pages |
+| `pub/scm/docs` | Documentation sources, including `man-pages` and the PGP keys of kernel developers (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | kernel.org infrastructure, such as the cgit fork and the Gitolite server's transparency logs |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, developer tools such as `sparse` and `pahole`, Linus Torvalds' `uemacs` |
+
+The list is very long because every maintainer with an account can store their own trees under `pub/scm/linux/kernel/git/`. The search field in the upper right filters the list by name, description, and owner. The search can also be called directly as a URL, for example `https://git.kernel.org/?q=xfs`.
+
+## The path scheme of kernel trees
+
+Kernel repositories follow this pattern:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` is the maintainer's username on kernel.org, not necessarily their full name (`akpm` is Andrew Morton, `acme` is Arnaldo Carvalho de Melo). For most questions, three trees are sufficient:
+
+| Tree | Path | Purpose |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Linus Torvalds' development branch; releases `v7.3`, `v7.4-rc1`, and so on are created here |
+| Stable | `stable/linux.git` | Maintained versions with fixes (`v7.3.1`, `v7.3.2` …) and the long-term kernels; one branch per version series, for example `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | Daily merged state of all subsystem trees for the next merge window |
+
+A fix generally moves through these trees in this order: it first lands in the responsible subsystem's tree, appears in linux-next, is incorporated into mainline during the merge window by Linus Torvalds via pull request email, and is then backported to the stable branches. The responsible subsystem tree is specified in the `MAINTAINERS` file in the kernel source code (lines with `T: git …`).
+
+## Repository views
+
+Clicking a repository name opens the `summary` view. The tab bar above it leads to the other views; a selection field to its left chooses the branch to which all views apply.
+
+<details class="options-details">
+<summary>View overview</summary>
+
+| View | Content |
+|---|---|
+| about | Repository README, if available |
+| summary | Branches with the latest commit, the newest tags with download links, the last ten commits, and clone URLs |
+| refs | Complete list of all branches and tags |
+| log | Commit history with search field; columns for age, commit message, author, changed files, and lines |
+| tree | File tree for the selected branch or commit, with links to `plain` (raw file) and `log` (file history) |
+| commit | Metadata and diff for a single commit |
+| diff | Difference between two commits or between a commit and its parent |
+| stats | Commit statistics by author over a selectable period |
+
+</details>
+
+In the `summary` view, the tag block is useful for reading the current version: mainline shows release candidates (`v7.3-rc7`) and releases (`v7.3`). The download links generate an archive on request and are therefore not always available; for completed releases, the tarballs at [kernel.org](https://kernel.org/) or `cdn.kernel.org` are the intended download source, including PGP signatures.
+
+The clone URLs are at the bottom of the `summary` view. In addition to `https://` and the unencrypted `git://`, a mirror at Google (`kernel.googlesource.com`) is listed and provides the same content.
+
+## Searching the history
+
+The search field in the `log` view has a selection field with four modes. Each mode is also available as a URL parameter, allowing searches to be bookmarked or linked in tickets:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Parameter | Effect |
+|---|---|
+| `qt=grep` | Searches commit messages (“log msg” selection) |
+| `qt=author` | Searches the author field (name or email address) |
+| `qt=committer` | Searches the committer field, meaning the person who incorporated the commit |
+| `qt=range` | Shows a range in Git notation, for example `q=v7.3-rc6..v7.3-rc7` for all commits between two tags |
+| `q=` | Search term or range |
+| `h=` | Branch to which the search applies, for example `h=linux-7.3.y` in the stable tree |
+| `ofs=` | Offset for pagination (git.kernel.org shows 200 commits per page) |
+
+</details>
+
+The range `v7.3-rc6..v7.3-rc7` directly answers the question, “What changed between two versions?” in the browser. In the stable tree, `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` shows all fixes added with a stable update.
+
+## Reading a commit
+
+An individual commit can be addressed through its full SHA-1 hash:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+The view shows the author, committer, date, parent commit (`parent`), complete commit message, and diff. At the end of a kernel commit message are trailers such as `Signed-off-by:`, `Reviewed-by:`, and `Fixes: <sha> ("Titel")`. The `Fixes:` line identifies the commit that introduced the bug; this can be used to determine from which version a system is affected. `Link:` usually refers to the related discussion on lore.kernel.org, while `Cc: stable@vger.kernel.org` marks the fix for backporting to stable kernels.
+
+If `commit` in the URL is replaced with `patch`, the server returns the commit as a patch file in mail format (`text/plain`), which can be applied with `git am` or `patch`.
+
+## Short URLs in CVE entries
+
+Since the kernel project itself began assigning CVE numbers, entries in the CVE list and NVD refer to short URLs in the form `https://git.kernel.org/stable/c/<sha>`. git.kernel.org redirects these via HTTP 301 to the commit view in the appropriate tree:
+
+| Short URL | Destination |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit in the stable tree `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit in mainline `torvalds/linux.git` |
+
+A CVE entry generally lists several such links: one for each stable branch to which the fix was backported, and one for mainline. The hashes differ because each backport is its own commit. The backport's commit message identifies the hash of the original in mainline, either as a `commit <sha> upstream.` line or as `[ Upstream commit <sha> ]`.
+
+## Checking whether a fix is included in a version
+
+The web interface does not show which tags contain a commit. A local clone is required for that. For this purpose, a clone without file contents that downloads only the commit history is sufficient:
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `clone` | Creates a local copy of the repository |
+| `--filter=blob:none` | Partial clone: downloads commits and directory structures, with file contents (blobs) only as needed |
+| `--no-checkout` | Does not create a working directory; not needed for history queries |
+| URL | HTTPS clone URL from the `summary` view of the stable tree |
+
+</details>
+
+Then, a command in the cloned directory answers the question of the first version containing the fix:
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `describe` | Describes a commit relative to a tag |
+| `--contains` | Finds the oldest tag that contains the commit instead of the newest preceding tag |
+| `<sha>` | Commit hash, for example from the short URL in the CVE entry |
+
+</details>
+
+The output takes the form `v7.3.2~14`: the fix is included starting with `v7.3.2`. `git tag --contains <sha>` lists all tags containing the commit. If only an individual file or a revision is needed for reading, the `tree` and `plain` views can be used in the browser instead of a clone.
+
+For the full source code for building, a shallow clone of a tag is sufficient:
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `--depth 1` | Downloads only the latest commit without history; the download shrinks from several GB to a few hundred MB |
+| `--branch v7.3` | Selects the tag or branch to check out |
+| URL | Clone URL for mainline |
+
+</details>
+
+## Tracking changes
+
+Every repository provides an Atom feed for the default branch at `…/<repository>.git/atom/`, and for mainline this is `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. A feed reader can therefore display new commits without requiring regular visits to the page. During the merge window, the mainline feed generates many entries per day; for releases and stable updates, the version overview at [kernel.org](https://kernel.org/) or its feed is the quieter source.
+
+## Sources
+
+1.  [git.kernel.org](https://git.kernel.org/): Repository list with groups, Owner and Idle columns; home page search field.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/): Mainline with summary, log, tree views, clone URLs, and Atom feed.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/): Stable and long-term kernels, one branch per version series.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/): Upstream of the web interface, documentation for URL parameters.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html): Rules for backports, `Cc: stable` trailer, and reference to the upstream commit.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html): CVE assignment by the kernel project and entry structure.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html): Meaning of the `Fixes:`, `Link:`, and `Signed-off-by:` trailers.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe): Man page, `--contains` option.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone): Man page, `--filter`, `--depth`, `--branch`, and `--no-checkout` options.
+
+10.  [lore.kernel.org](https://lore.kernel.org/): Archive of the kernel mailing lists referenced by the `Link:` trailers.
+
+----
+
 # NatJack: NAT Table Attacks Explained, Who Is Affected, and What Measures Are Needed
 
 URL: https://rafaelpfister.ch/en/blog/natjack-nat-table-attacks-explained-who-is-affected-and-what-measures-are-needed
@@ -37470,6 +38038,220 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# git.kernel.org expliqué : structure du site et utilisation pratique
+
+URL: https://rafaelpfister.ch/fr/blog/git-kernel-org-explique-structure-du-site-et-utilisation-pratique
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) est le serveur Git de kernel.org. On y trouve la branche principale de développement de Linus Torvalds, les noyaux Stable, linux-next, des centaines d’arbres de sous-systèmes et de développeurs, ainsi que des outils comme `git` lui-même, `e2fsprogs` ou les pages de manuel Linux. L’interface web est une version adaptée de [cgit](https://git.zx2c4.com/cgit/about/) (indiquée dans le pied de page comme `cgit 1.3.1-korg`). Elle est en lecture seule : il n’y a ni comptes, ni issues, ni pull requests. Le développement du noyau passe par des listes de diffusion, dont l’archive se trouve sur [lore.kernel.org](https://lore.kernel.org/) ; git.kernel.org affiche le résultat, c’est-à-dire les commits que les mainteneurs ont intégrés dans leurs arbres.
+
+On le consulte généralement à partir d’une entrée CVE renvoyant vers un commit du noyau, pour déterminer si un correctif donné est inclus dans une version du noyau, ou pour lire un fichier source précis sans cloner tout le dépôt.
+
+## La page d’accueil : liste des dépôts
+
+La page d’accueil répertorie tous les dépôts publics dans un tableau. Le regroupement suit le chemin des fichiers sur le serveur : chaque intertitre tel que `pub/scm/fs` ou `pub/scm/linux` correspond à un répertoire, sous lequel figurent les dépôts avec leur chemin relatif à ce répertoire.
+
+<details class="options-details">
+<summary>Vue d’ensemble des colonnes</summary>
+
+| Colonne | Contenu |
+|---|---|
+| Name | Chemin du dépôt sous le groupe, par exemple `xfs/xfs-linux.git` sous `pub/scm/fs` |
+| Description | Contenu du fichier `description` dans le dépôt. « Unnamed repository; edit this file … » est le texte standard de Git et signifie seulement que l’opérateur n’a pas défini de description |
+| Owner | personne ou groupe responsable (par ex. « XFS FS Group », « Infra Team ») |
+| Idle | temps écoulé depuis le dernier commit sur une branche quelconque ; une faible valeur indique un arbre activement maintenu |
+| Links | accès directs aux vues `summary`, `log` et `tree` du dépôt |
+
+</details>
+
+Les principaux groupes :
+
+| Groupe | Contenu |
+|---|---|
+| `pub/scm/linux` | Arbres du noyau : Mainline, Stable, linux-next, ainsi que les arbres personnels et de sous-systèmes des mainteneurs |
+| `pub/scm/fs` | Systèmes de fichiers avec leurs outils en espace utilisateur (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Bibliothèques telles que `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | Le projet Git lui-même (`git.git`) avec documentation HTML et pages de manuel |
+| `pub/scm/docs` | Sources de documentation, dont `man-pages` et les clés PGP des développeurs du noyau (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | Infrastructure de kernel.org, par ex. le fork de cgit et les journaux de transparence du serveur Gitolite |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, outils de développement tels que `sparse` et `pahole`, `uemacs` de Linus Torvalds |
+
+La liste est très longue, car sous `pub/scm/linux/kernel/git/` à lui seul, chaque mainteneur disposant d’un compte peut déposer ses propres arbres. Le champ de recherche en haut à droite filtre la liste selon le nom, la description et le propriétaire. La recherche peut aussi être appelée directement via une URL, par exemple `https://git.kernel.org/?q=xfs`.
+
+## Le schéma des chemins des arbres du noyau
+
+Les dépôts du noyau suivent le modèle :
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` est le nom d’utilisateur du mainteneur sur kernel.org, et pas nécessairement son nom complet (`akpm` est Andrew Morton, `acme` est Arnaldo Carvalho de Melo). Pour la plupart des questions, trois arbres suffisent :
+
+| Arbre | Chemin | Objectif |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Branche de développement de Linus Torvalds ; c’est ici que sont créées les versions `v7.3`, `v7.4-rc1` etc. |
+| Stable | `stable/linux.git` | Versions maintenues avec correctifs (`v7.3.1`, `v7.3.2` …) et noyaux Longterm ; une branche par série de versions, par ex. `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | État quotidiennement fusionné de tous les arbres de sous-systèmes pour la prochaine fenêtre de fusion |
+
+Un correctif passe généralement par ces arbres dans cet ordre : il arrive d’abord dans l’arbre du sous-système responsable, apparaît dans linux-next, est intégré à la Mainline pendant la fenêtre de fusion par Linus Torvalds via un e-mail de pull request, puis est rétroporté vers les branches Stable. L’arbre de sous-système responsable est indiqué dans le fichier `MAINTAINERS` du code source du noyau (lignes contenant `T: git …`).
+
+## Les vues d’un dépôt
+
+Un clic sur le nom d’un dépôt ouvre la vue `summary`. La barre d’onglets au-dessus mène aux autres vues ; à sa gauche, une liste déroulante sélectionne la branche à laquelle toutes les vues se rapportent.
+
+<details class="options-details">
+<summary>Vue d’ensemble des vues</summary>
+
+| Vue | Contenu |
+|---|---|
+| about | README du dépôt, s’il est présent |
+| summary | Branches avec le dernier commit, tags les plus récents avec lien de téléchargement, dix derniers commits et URL de clonage |
+| refs | Liste complète de toutes les branches et de tous les tags |
+| log | Historique des commits avec champ de recherche ; colonnes âge, message de commit, auteur, fichiers et lignes modifiés |
+| tree | Arborescence des fichiers pour la branche ou le commit sélectionné, avec liens vers `plain` (fichier brut) et `log` (historique du fichier) |
+| commit | Métadonnées et diff d’un commit individuel |
+| diff | Différence entre deux commits ou entre un commit et son prédécesseur |
+| stats | Statistiques de commits par auteur sur une période sélectionnable |
+
+</details>
+
+Dans la vue `summary`, le bloc des tags permet de connaître la version actuelle : la Mainline affiche les release candidates (`v7.3-rc7`) et les versions publiées (`v7.3`). Les liens de téléchargement génèrent une archive à la demande et ne sont donc pas toujours disponibles ; pour les versions finalisées, les tarballs sur [kernel.org](https://kernel.org/) ou `cdn.kernel.org` constituent la méthode de téléchargement prévue, avec signature PGP.
+
+À la fin de la vue `summary` figurent les URL de clonage. Outre `https://` et `git://` non chiffré, un miroir chez Google (`kernel.googlesource.com`) est indiqué et fournit le même contenu.
+
+## Rechercher dans l’historique
+
+Le champ de recherche de la vue `log` propose une liste déroulante avec quatre modes. Chaque mode est aussi disponible comme paramètre d’URL, ce qui permet d’enregistrer les recherches comme favoris ou de créer des liens dans des tickets :
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Paramètre | Effet |
+|---|---|
+| `qt=grep` | recherche dans les messages de commit (sélection « log msg ») |
+| `qt=author` | recherche dans le champ auteur (nom ou adresse e-mail) |
+| `qt=committer` | recherche dans le champ committer, c’est-à-dire la personne ayant intégré le commit |
+| `qt=range` | affiche une plage en notation Git, par ex. `q=v7.3-rc6..v7.3-rc7` pour tous les commits entre deux tags |
+| `q=` | terme de recherche ou plage |
+| `h=` | branche à laquelle se rapporte la recherche, par ex. `h=linux-7.3.y` dans l’arbre Stable |
+| `ofs=` | décalage pour la pagination (git.kernel.org affiche 200 commits par page) |
+
+</details>
+
+La plage `v7.3-rc6..v7.3-rc7` répond directement dans le navigateur à la question « Qu’est-ce qui a changé entre deux versions ? ». Dans l’arbre Stable, `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` affiche tous les correctifs ajoutés avec une mise à jour Stable.
+
+## Lire un commit
+
+Un commit individuel est adressable par son hash SHA-1 complet :
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+La vue affiche l’auteur, le committer, la date, le commit parent (`parent`), le message de commit complet et le diff. À la fin d’un message de commit du noyau figurent des trailers tels que `Signed-off-by:`, `Reviewed-by:` et `Fixes: <sha> ("Titel")`. La ligne `Fixes:` indique le commit qui a introduit l’erreur ; elle permet ainsi de déterminer à partir de quelle version un système est affecté. `Link:` renvoie généralement vers la discussion correspondante sur lore.kernel.org, `Cc: stable@vger.kernel.org` marque le correctif à rétroporter vers les noyaux Stable.
+
+En remplaçant `commit` dans l’URL par `patch`, le serveur fournit le commit sous forme de fichier patch au format e-mail (`text/plain`), applicable avec `git am` ou `patch`.
+
+## URL courtes dans les entrées CVE
+
+Depuis que le projet du noyau attribue lui-même des numéros CVE, les entrées dans la liste CVE et la NVD renvoient vers des URL courtes de la forme `https://git.kernel.org/stable/c/<sha>`. git.kernel.org les redirige via HTTP 301 vers la vue du commit dans l’arbre correspondant :
+
+| URL courte | Destination |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit dans l’arbre Stable `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit dans la Mainline `torvalds/linux.git` |
+
+Une entrée CVE mentionne généralement plusieurs liens de ce type : un par branche Stable dans laquelle le correctif a été rétroporté, et un pour la Mainline. Les hash diffèrent parce que chaque rétroportage constitue un commit distinct. Le message de commit du rétroportage indique le hash de l’original dans la Mainline, soit sous forme de ligne `commit <sha> upstream.`, soit sous forme de `[ Upstream commit <sha> ]`.
+
+## Vérifier si un correctif est inclus dans une version
+
+L’interface web n’indique pas dans quels tags un commit est inclus. Un clone local est nécessaire pour cela. À cette fin, un clone sans contenu de fichiers, qui ne télécharge que l’historique des commits, suffit :
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `clone` | crée une copie locale du dépôt |
+| `--filter=blob:none` | Clone partiel : télécharge les commits et les structures de répertoires, les contenus de fichiers (blobs) seulement à la demande |
+| `--no-checkout` | ne crée pas de répertoire de travail ; inutile pour interroger l’historique |
+| URL | URL de clonage HTTPS de la vue `summary` de l’arbre Stable |
+
+</details>
+
+Ensuite, une commande dans le répertoire cloné répond à la question de la première version contenant le correctif :
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `describe` | décrit un commit par rapport à un tag |
+| `--contains` | recherche le tag le plus ancien contenant le commit, plutôt que le tag le plus récent qui le précède |
+| `<sha>` | Hash du commit, par ex. provenant de l’URL courte dans l’entrée CVE |
+
+</details>
+
+La sortie a la forme `v7.3.2~14` : le correctif est inclus à partir de `v7.3.2`. `git tag --contains <sha>` répertorie tous les tags contenant le commit. Si l’on a seulement besoin de lire un fichier individuel ou un état donné, on peut utiliser les vues `tree` et `plain` dans le navigateur plutôt qu’un clone.
+
+Pour disposer du code source complet à compiler, un clone superficiel d’un tag suffit :
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `--depth 1` | ne télécharge que le dernier commit sans historique ; le téléchargement passe de plusieurs Go à quelques centaines de Mo |
+| `--branch v7.3` | sélectionne le tag ou la branche à extraire |
+| URL | URL de clonage de la Mainline |
+
+</details>
+
+## Suivre les modifications
+
+Chaque dépôt propose un flux Atom de la branche par défaut sous `…/<repository>.git/atom/`, donc pour la Mainline `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. Un lecteur de flux affiche ainsi les nouveaux commits sans qu’il soit nécessaire de consulter régulièrement la page. Pour la Mainline, le flux génère de nombreuses entrées par jour durant la fenêtre de fusion ; pour les versions publiées et les mises à jour Stable, l’aperçu des versions sur [kernel.org](https://kernel.org/) ou son flux constitue une source plus calme.
+
+## Sources
+
+1.  [git.kernel.org](https://git.kernel.org/) : liste des dépôts avec groupes, colonnes Owner et Idle ; champ de recherche de la page d’accueil.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/) : Mainline avec les vues summary, log, tree, les URL de clonage et le flux Atom.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/) : noyaux Stable et Longterm, une branche par série de versions.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/) : amont de l’interface web, documentation des paramètres d’URL.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html) : règles de rétroportage, trailer `Cc: stable` et référence au commit amont.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html) : attribution des CVE par le projet du noyau et structure des entrées.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html) : signification des trailers `Fixes:`, `Link:`, `Signed-off-by:`.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe) : page de manuel, option `--contains`.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone) : page de manuel, options `--filter`, `--depth`, `--branch`, `--no-checkout`.
+
+10.  [lore.kernel.org](https://lore.kernel.org/) : archive des listes de diffusion du noyau, vers laquelle renvoient les trailers `Link:`.
 
 ----
 
@@ -56137,6 +56919,220 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# git.kernel.org spiegato: struttura del sito e utilizzo pratico
+
+URL: https://rafaelpfister.ch/it/blog/git-kernel-org-spiegato-struttura-del-sito-e-utilizzo-pratico
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) è il server Git di kernel.org. Qui si trovano il ramo di sviluppo principale di Linus Torvalds, i kernel Stable, linux-next, centinaia di alberi di sottosistemi e sviluppatori, nonché strumenti come `git` stesso, `e2fsprogs` o le pagine man di Linux. L'interfaccia web è una versione adattata di [cgit](https://git.zx2c4.com/cgit/about/) (indicata nel piè di pagina come `cgit 1.3.1-korg`). È in sola lettura: non esistono account, issue né pull request. Lo sviluppo del kernel avviene tramite mailing list, il cui archivio si trova su [lore.kernel.org](https://lore.kernel.org/); git.kernel.org mostra il risultato, ovvero i commit che i maintainer hanno integrato nei loro alberi.
+
+I motivi tipici per visitarlo sono una voce CVE che rimanda a un commit del kernel, la verifica che una determinata correzione sia inclusa in una versione del kernel oppure la lettura di un singolo file sorgente senza clonare l'intero repository.
+
+## La pagina iniziale: elenco dei repository
+
+La pagina iniziale elenca tutti i repository pubblici in una tabella. Il raggruppamento segue il percorso dei file sul server: ogni sottotitolo come `pub/scm/fs` o `pub/scm/linux` è una directory; sotto di esso sono elencati i repository con il relativo percorso rispetto a tale directory.
+
+<details class="options-details">
+<summary>Panoramica delle colonne</summary>
+
+| Colonna | Contenuto |
+|---|---|
+| Name | Percorso del repository sotto il gruppo, ad es. `xfs/xfs-linux.git` sotto `pub/scm/fs` |
+| Description | Contenuto del file `description` nel repository. «Unnamed repository; edit this file …» è il testo predefinito di Git e significa soltanto che il gestore non ha impostato una descrizione |
+| Owner | persona o gruppo responsabile, ad es. «XFS FS Group», «Infra Team» |
+| Idle | Tempo trascorso dall'ultimo commit su un qualsiasi branch; un valore basso indica un albero mantenuto attivamente |
+| Links | Collegamenti diretti alle viste `summary`, `log` e `tree` del repository |
+
+</details>
+
+I gruppi più importanti:
+
+| Gruppo | Contenuto |
+|---|---|
+| `pub/scm/linux` | Alberi del kernel: mainline, Stable, linux-next nonché gli alberi personali e dei sottosistemi dei maintainer |
+| `pub/scm/fs` | File system e strumenti userspace (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Librerie come `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | Il progetto Git stesso (`git.git`) con documentazione HTML e pagine man |
+| `pub/scm/docs` | Fonti della documentazione, tra cui `man-pages` e le chiavi PGP degli sviluppatori del kernel (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | Infrastruttura di kernel.org, ad es. il fork di cgit e i log di trasparenza del server Gitolite |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, strumenti per sviluppatori come `sparse` e `pahole`, `uemacs` di Linus Torvalds |
+
+L'elenco è molto lungo perché solo sotto `pub/scm/linux/kernel/git/` ogni maintainer con un account può archiviare i propri alberi. Il campo di ricerca in alto a destra filtra l'elenco per nome, descrizione e owner. La ricerca può essere richiamata anche direttamente come URL, ad es. `https://git.kernel.org/?q=xfs`.
+
+## Lo schema dei percorsi degli alberi del kernel
+
+I repository del kernel seguono il modello:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` è il nome utente del maintainer su kernel.org, non necessariamente il suo nome completo (`akpm` è Andrew Morton, `acme` è Arnaldo Carvalho de Melo). Per la maggior parte delle domande sono sufficienti tre alberi:
+
+| Albero | Percorso | Scopo |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Ramo di sviluppo di Linus Torvalds; qui nascono le release `v7.3`, `v7.4-rc1` ecc. |
+| Stable | `stable/linux.git` | Versioni mantenute con correzioni (`v7.3.1`, `v7.3.2` …) e kernel Longterm; un branch per ogni serie di versioni, ad es. `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | Stato integrato quotidianamente di tutti gli alberi dei sottosistemi per la prossima merge window |
+
+In genere una correzione attraversa questi alberi in quest'ordine: arriva prima nell'albero del sottosistema responsabile, appare in linux-next, viene integrata nella mainline da Linus Torvalds durante la merge window tramite e-mail di pull request e successivamente viene sottoposta a backport nei rami Stable. L'albero del sottosistema responsabile è indicato nel file `MAINTAINERS` nel codice sorgente del kernel (righe con `T: git …`).
+
+## Le viste di un repository
+
+Un clic sul nome di un repository apre la vista `summary`. La barra delle schede sopra porta alle altre viste; a sinistra un menu a tendina seleziona il branch a cui si riferiscono tutte le viste.
+
+<details class="options-details">
+<summary>Panoramica delle viste</summary>
+
+| Vista | Contenuto |
+|---|---|
+| about | README del repository, se presente |
+| summary | Branch con l'ultimo commit, tag più recenti con link per il download, gli ultimi dieci commit e gli URL di clonazione |
+| refs | Elenco completo di tutti i branch e tag |
+| log | Cronologia dei commit con campo di ricerca; colonne età, messaggio di commit, autore, file e righe modificati |
+| tree | Albero dei file del branch o commit selezionato, con link a `plain` (file grezzo) e `log` (cronologia del file) |
+| commit | Metadati e diff di un singolo commit |
+| diff | Differenza tra due commit oppure tra un commit e il suo predecessore |
+| stats | Statistiche dei commit per autore in un periodo selezionabile |
+
+</details>
+
+Nella vista `summary`, il blocco dei tag è utile per leggere la versione attuale: la mainline mostra release candidate (`v7.3-rc7`) e release (`v7.3`). I link di download generano un archivio su richiesta e quindi non sono sempre disponibili; per le release definitive, i tarball su [kernel.org](https://kernel.org/) oppure `cdn.kernel.org` sono il canale previsto per il download, anche con firma PGP.
+
+Alla fine della vista `summary` si trovano gli URL di clonazione. Oltre a `https://` e al non cifrato `git://`, viene indicato un mirror su Google (`kernel.googlesource.com`) che fornisce lo stesso contenuto.
+
+## Cercare nella cronologia
+
+Il campo di ricerca nella vista `log` dispone di un menu a tendina con quattro modalità. Ogni modalità è disponibile anche come parametro URL, così le ricerche possono essere salvate nei segnalibri o collegate nei ticket:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Parametro | Effetto |
+|---|---|
+| `qt=grep` | Cerca nei messaggi di commit (selezione «log msg») |
+| `qt=author` | Cerca nel campo autore (nome o indirizzo e-mail) |
+| `qt=committer` | Cerca nel campo committer, quindi nella persona che ha integrato il commit |
+| `qt=range` | Mostra un intervallo nella notazione Git, ad es. `q=v7.3-rc6..v7.3-rc7` per tutti i commit tra due tag |
+| `q=` | Termine di ricerca o intervallo |
+| `h=` | Branch a cui si riferisce la ricerca, ad es. `h=linux-7.3.y` nell'albero Stable |
+| `ofs=` | Offset per la paginazione (git.kernel.org mostra 200 commit per pagina) |
+
+</details>
+
+L'intervallo `v7.3-rc6..v7.3-rc7` risponde direttamente nel browser alla domanda «Che cosa è cambiato tra due versioni?». Nell'albero Stable, `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` mostra tutte le correzioni aggiunte con un aggiornamento Stable.
+
+## Leggere un commit
+
+Un singolo commit è indirizzabile tramite il suo hash SHA-1 completo:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+La vista mostra autore, committer, data, il commit padre (`parent`), il messaggio di commit completo e il diff. Alla fine di un messaggio di commit del kernel sono presenti trailer come `Signed-off-by:`, `Reviewed-by:` e `Fixes: <sha> ("Titel")`. La riga `Fixes:` indica il commit che ha introdotto il difetto; consente quindi di restringere l'intervallo per stabilire da quale versione un sistema è interessato. `Link:` rimanda di norma alla discussione corrispondente su lore.kernel.org, mentre `Cc: stable@vger.kernel.org` contrassegna la correzione per il backport nei kernel Stable.
+
+Sostituendo `commit` nell'URL con `patch`, il server fornisce il commit come file patch in formato e-mail (`text/plain`), applicabile con `git am` oppure `patch`.
+
+## URL brevi nelle voci CVE
+
+Da quando il progetto kernel assegna direttamente i numeri CVE, le voci nell'elenco CVE e nell'NVD rimandano a URL brevi del formato `https://git.kernel.org/stable/c/<sha>`. git.kernel.org li reindirizza con HTTP 301 alla vista del commit nell'albero appropriato:
+
+| URL breve | Destinazione |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit nell'albero Stable `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit nella mainline `torvalds/linux.git` |
+
+Una voce CVE indica di norma più link di questo tipo: uno per ogni ramo Stable in cui la correzione è stata sottoposta a backport e uno per la mainline. Gli hash differiscono perché ogni backport è un commit distinto. Il messaggio di commit del backport indica l'hash dell'originale nella mainline, come riga `commit <sha> upstream.` oppure come `[ Upstream commit <sha> ]`.
+
+## Verificare se una correzione è inclusa in una versione
+
+L'interfaccia web non mostra in quali tag è contenuto un commit. A questo scopo è necessario un clone locale. Per questo utilizzo basta un clone senza contenuti dei file, che scarica soltanto la cronologia dei commit:
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `clone` | Crea una copia locale del repository |
+| `--filter=blob:none` | Clone parziale: scarica commit e strutture delle directory, i contenuti dei file (blob) solo quando necessario |
+| `--no-checkout` | Non crea una directory di lavoro; non è necessaria per interrogare la cronologia |
+| URL | URL di clonazione HTTPS dalla vista `summary` dell'albero Stable |
+
+</details>
+
+Successivamente, un comando nella directory clonata risponde alla domanda sulla prima versione contenente la correzione:
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `describe` | Descrive un commit rispetto a un tag |
+| `--contains` | Cerca il tag più vecchio che contiene il commit, invece del tag più recente precedente |
+| `<sha>` | Hash del commit, ad es. dall'URL breve nella voce CVE |
+
+</details>
+
+L'output ha la forma `v7.3.2~14`: la correzione è inclusa a partire da `v7.3.2`. Tutti i tag contenenti il commit sono elencati da `git tag --contains <sha>`. Chi ha bisogno soltanto di un singolo file o di uno stato da leggere può usare nel browser le viste `tree` e `plain` invece di un clone.
+
+Per il codice sorgente completo da compilare è sufficiente un clone superficiale di un tag:
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `--depth 1` | Scarica soltanto l'ultimo commit senza cronologia; il download si riduce da diversi GB a qualche centinaio di MB |
+| `--branch v7.3` | Seleziona il tag o il branch da estrarre |
+| URL | URL di clonazione della mainline |
+
+</details>
+
+## Monitorare le modifiche
+
+Ogni repository offre un feed Atom del branch predefinito su `…/<repository>.git/atom/`, per la mainline quindi `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. Un lettore di feed mostra così i nuovi commit senza dover visitare regolarmente la pagina. Per la mainline, il feed genera molte voci al giorno durante la merge window; per release e aggiornamenti Stable, la panoramica delle versioni su [kernel.org](https://kernel.org/) oppure il suo feed è la fonte più tranquilla.
+
+## Fonti
+
+1.  [git.kernel.org](https://git.kernel.org/): Elenco dei repository con gruppi, colonne Owner e Idle; campo di ricerca della pagina iniziale.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/): Mainline con viste summary, log, tree, URL di clonazione e feed Atom.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/): Kernel Stable e Longterm, un branch per ogni serie di versioni.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/): Upstream dell'interfaccia web, documentazione dei parametri URL.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html): Regole per i backport, trailer `Cc: stable` e riferimento al commit upstream.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html): Assegnazione delle CVE da parte del progetto kernel e struttura delle voci.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html): Significato dei trailer `Fixes:`, `Link:`, `Signed-off-by:`.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe): Pagina man, opzione `--contains`.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone): Pagina man, opzioni `--filter`, `--depth`, `--branch`, `--no-checkout`.
+
+10.  [lore.kernel.org](https://lore.kernel.org/): Archivio delle mailing list del kernel, a cui rimandano i trailer `Link:`.
+
+----
+
 # NatJack: spiegazione degli attacchi alle tabelle NAT, chi è interessato e quali misure sono necessarie
 
 URL: https://rafaelpfister.ch/it/blog/natjack-spiegazione-degli-attacchi-alle-tabelle-nat-chi-e-interessato-e-quali-misure-sono
@@ -74798,6 +75794,220 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e body).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# git.kernel.org explicado: estructura del sitio y uso práctico
+
+URL: https://rafaelpfister.ch/es/blog/git-kernel-org-explicado-estructura-del-sitio-y-uso-practico
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) es el servidor Git de kernel.org. Aquí se encuentran la rama principal de desarrollo de Linus Torvalds, los kernels Stable, linux-next, cientos de árboles de subsistemas y desarrolladores, así como herramientas como `git` mismo, `e2fsprogs` o las páginas de manual de Linux. La interfaz web es una versión adaptada de [cgit](https://git.zx2c4.com/cgit/about/) (indicada en el pie de página como `cgit 1.3.1-korg`). Es de solo lectura: no hay cuentas, issues ni pull requests. El desarrollo del kernel se lleva a cabo mediante listas de correo, cuyo archivo está en [lore.kernel.org](https://lore.kernel.org/); git.kernel.org muestra el resultado, es decir, los commits que los mantenedores han incorporado a sus árboles.
+
+Los motivos habituales para visitarlo son una entrada CVE que remite a un commit del kernel, la pregunta de si una corrección concreta está incluida en una versión del kernel o la consulta de un único archivo fuente sin clonar todo el repositorio.
+
+## La página de inicio: lista de repositorios
+
+La página de inicio enumera todos los repositorios públicos en una tabla. La agrupación sigue la ruta de archivos en el servidor: cada encabezado intermedio como `pub/scm/fs` o `pub/scm/linux` es un directorio, y debajo aparecen los repositorios con su ruta relativa a ese directorio.
+
+<details class="options-details">
+<summary>Resumen de las columnas</summary>
+
+| Columna | Contenido |
+|---|---|
+| Name | Ruta del repositorio dentro del grupo, por ejemplo `xfs/xfs-linux.git` en `pub/scm/fs` |
+| Description | Contenido del archivo `description` en el repositorio. «Unnamed repository; edit this file …» es el texto estándar de Git y solo significa que el operador no ha definido una descripción |
+| Owner | persona o grupo responsable, por ejemplo «XFS FS Group» o «Infra Team» |
+| Idle | tiempo desde el último commit en cualquier rama; un valor pequeño indica un árbol con mantenimiento activo |
+| Links | accesos directos a las vistas `summary`, `log` y `tree` del repositorio |
+
+</details>
+
+Los grupos más importantes:
+
+| Grupo | Contenido |
+|---|---|
+| `pub/scm/linux` | Árboles del kernel: Mainline, Stable, linux-next, así como los árboles personales y de subsistemas de los mantenedores |
+| `pub/scm/fs` | Sistemas de archivos junto con herramientas de espacio de usuario (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Bibliotecas como `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | El propio proyecto Git (`git.git`) con documentación HTML y páginas de manual |
+| `pub/scm/docs` | Fuentes de documentación, entre ellas `man-pages` y las claves PGP de los desarrolladores del kernel (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | Infraestructura de kernel.org, por ejemplo el fork de cgit y los registros de transparencia del servidor Gitolite |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, herramientas para desarrolladores como `sparse` y `pahole`, `uemacs` de Linus Torvalds |
+
+La lista es muy extensa porque solo bajo `pub/scm/linux/kernel/git/` cada mantenedor con cuenta puede alojar sus propios árboles. El campo de búsqueda situado arriba a la derecha filtra la lista por nombre, descripción y propietario. La búsqueda también puede abrirse directamente como URL, por ejemplo `https://git.kernel.org/?q=xfs`.
+
+## El esquema de rutas de los árboles del kernel
+
+Los repositorios del kernel siguen el patrón:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` es el nombre de usuario del mantenedor en kernel.org, no necesariamente su nombre completo (`akpm` es Andrew Morton, `acme` es Arnaldo Carvalho de Melo). Para la mayoría de las consultas bastan tres árboles:
+
+| Árbol | Ruta | Finalidad |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Rama de desarrollo de Linus Torvalds; aquí se crean las versiones `v7.3`, `v7.4-rc1` etc. |
+| Stable | `stable/linux.git` | Versiones mantenidas con correcciones (`v7.3.1`, `v7.3.2` …) y los kernels Longterm; una rama por cada serie de versiones, por ejemplo `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | Estado integrado diariamente de todos los árboles de subsistemas para la próxima ventana de integración |
+
+Por regla general, una corrección pasa por estos árboles en este orden: primero llega al árbol del subsistema responsable, aparece en linux-next, Linus Torvalds la incorpora a Mainline durante la ventana de integración mediante un correo de pull request y después se retroporta a las ramas Stable. El árbol de subsistema responsable figura en el archivo `MAINTAINERS` del código fuente del kernel (líneas con `T: git …`).
+
+## Las vistas de un repositorio
+
+Al hacer clic en el nombre de un repositorio se abre la vista `summary`. La barra de pestañas superior lleva a las demás vistas; a la izquierda, un cuadro de selección permite elegir la rama a la que se refieren todas las vistas.
+
+<details class="options-details">
+<summary>Resumen de las vistas</summary>
+
+| Vista | Contenido |
+|---|---|
+| about | README del repositorio, si está disponible |
+| summary | Ramas con el último commit, las etiquetas más recientes con enlace de descarga, los diez últimos commits y las URL de clonación |
+| refs | Lista completa de todas las ramas y etiquetas |
+| log | Historial de commits con campo de búsqueda; columnas de antigüedad, mensaje de commit, autor, archivos modificados y líneas |
+| tree | Árbol de archivos de la rama o commit seleccionado, con enlaces a `plain` (archivo sin procesar) y `log` (historial del archivo) |
+| commit | Metadatos y diff de un único commit |
+| diff | Diferencia entre dos commits o entre un commit y su predecesor |
+| stats | Estadísticas de commits por autor durante un periodo seleccionable |
+
+</details>
+
+En la vista `summary`, el bloque de etiquetas sirve para consultar la versión actual: Mainline muestra release candidates (`v7.3-rc7`) y versiones (`v7.3`). Los enlaces de descarga generan un archivo bajo demanda y por ello no siempre están disponibles; para versiones ya publicadas, los tarballs en [kernel.org](https://kernel.org/) o `cdn.kernel.org` son el medio de descarga previsto, también con firma PGP.
+
+Al final de la vista `summary` se encuentran las URL de clonación. Además de `https://` y del `git://` sin cifrar, se indica un espejo en Google (`kernel.googlesource.com`) que ofrece el mismo contenido.
+
+## Buscar en el historial
+
+El campo de búsqueda de la vista `log` dispone de un cuadro de selección con cuatro modos. Cada modo también está disponible como parámetro de URL, de modo que las búsquedas pueden guardarse como marcadores o enlazarse en tickets:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Parámetro | Efecto |
+|---|---|
+| `qt=grep` | busca en los mensajes de commit (selección «log msg») |
+| `qt=author` | busca en el campo del autor (nombre o dirección de correo electrónico) |
+| `qt=committer` | busca en el campo del committer, es decir, la persona que incorporó el commit |
+| `qt=range` | muestra un rango en notación Git, por ejemplo `q=v7.3-rc6..v7.3-rc7` para todos los commits entre dos etiquetas |
+| `q=` | término de búsqueda o rango |
+| `h=` | rama a la que se refiere la búsqueda, por ejemplo `h=linux-7.3.y` en el árbol Stable |
+| `ofs=` | desplazamiento para la paginación (git.kernel.org muestra 200 commits por página) |
+
+</details>
+
+El rango `v7.3-rc6..v7.3-rc7` responde directamente en el navegador a la pregunta «¿Qué ha cambiado entre dos versiones?». En el árbol Stable, `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` muestra todas las correcciones añadidas con una actualización Stable.
+
+## Leer un commit
+
+Un único commit puede direccionarse mediante su hash SHA-1 completo:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+La vista muestra autor, committer, fecha, el commit padre (`parent`), el mensaje completo del commit y el diff. Al final de un mensaje de commit del kernel se encuentran trailers como `Signed-off-by:`, `Reviewed-by:` y `Fixes: <sha> ("Titel")`. La línea `Fixes:` indica el commit que introdujo el error; así se puede delimitar desde qué versión un sistema está afectado. `Link:` suele remitir a la discusión correspondiente en lore.kernel.org, y `Cc: stable@vger.kernel.org` marca la corrección para retroportarla a los kernels Stable.
+
+Si se sustituye `commit` en la URL por `patch`, el servidor entrega el commit como archivo de parche en formato de correo (`text/plain`), que puede aplicarse con `git am` o `patch`.
+
+## URL cortas en entradas CVE
+
+Desde que el propio proyecto del kernel asigna números CVE, las entradas de la lista CVE y de la NVD remiten a URL cortas con la forma `https://git.kernel.org/stable/c/<sha>`. git.kernel.org las redirige mediante HTTP 301 a la vista del commit en el árbol correspondiente:
+
+| URL corta | Destino |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit en el árbol Stable `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit en Mainline `torvalds/linux.git` |
+
+Por regla general, una entrada CVE incluye varios enlaces de este tipo: uno por cada rama Stable a la que se ha retroportado la corrección y uno para Mainline. Los hashes difieren porque cada retroportación es un commit independiente. El mensaje de commit de la retroportación indica el hash del original en Mainline, bien como línea `commit <sha> upstream.` o como `[ Upstream commit <sha> ]`.
+
+## Comprobar si una corrección está incluida en una versión
+
+La interfaz web no muestra en qué etiquetas está incluido un commit. Para ello se necesita un clon local. Para este fin basta con un clon sin contenidos de archivos, que solo descarga el historial de commits:
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `clone` | crea una copia local del repositorio |
+| `--filter=blob:none` | Clon parcial: descarga commits y estructuras de directorios; los contenidos de archivos (blobs), solo cuando se necesitan |
+| `--no-checkout` | no crea un directorio de trabajo; no es necesario para consultar el historial |
+| URL | URL de clonación HTTPS de la vista `summary` del árbol Stable |
+
+</details>
+
+A continuación, un comando en el directorio clonado responde a la pregunta sobre la primera versión con la corrección:
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `describe` | describe un commit en relación con una etiqueta |
+| `--contains` | busca la etiqueta más antigua que contiene el commit, en lugar de la etiqueta más reciente anterior |
+| `<sha>` | hash del commit, por ejemplo de la URL corta de la entrada CVE |
+
+</details>
+
+La salida tiene la forma `v7.3.2~14`: la corrección está incluida desde `v7.3.2`. `git tag --contains <sha>` enumera todas las etiquetas con el commit. Quien solo necesite un único archivo o un estado para consultar puede usar en el navegador las vistas `tree` y `plain` en lugar de un clon.
+
+Para el código fuente completo destinado a compilación basta con un clon superficial de una etiqueta:
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `--depth 1` | descarga solo el último commit sin historial; la descarga se reduce de varios GB a unos cientos de MB |
+| `--branch v7.3` | selecciona la etiqueta o rama que se extrae |
+| URL | URL de clonación de Mainline |
+
+</details>
+
+## Seguir los cambios
+
+Cada repositorio ofrece un feed Atom de la rama predeterminada en `…/<repository>.git/atom/`, y para Mainline es `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. Un lector de feeds muestra así los nuevos commits sin tener que visitar la página con regularidad. Para Mainline, el feed genera muchas entradas al día durante la ventana de integración; para versiones y actualizaciones Stable, la vista general de versiones en [kernel.org](https://kernel.org/) o su feed es la fuente más tranquila.
+
+## Fuentes
+
+1.  [git.kernel.org](https://git.kernel.org/): Lista de repositorios con grupos y columnas Owner e Idle; campo de búsqueda de la página de inicio.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/): Mainline con vistas summary, log, tree, URL de clonación y feed Atom.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/): Kernels Stable y Longterm, una rama por cada serie de versiones.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/): Upstream de la interfaz web, documentación de los parámetros de URL.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html): Reglas para retroportaciones, trailer `Cc: stable` y referencia al commit upstream.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html): Asignación de CVE por el proyecto del kernel y estructura de las entradas.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html): Significado de los trailers `Fixes:`, `Link:`, `Signed-off-by:`.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe): Página de manual, opción `--contains`.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone): Página de manual, opciones `--filter`, `--depth`, `--branch`, `--no-checkout`.
+
+10.  [lore.kernel.org](https://lore.kernel.org/): Archivo de las listas de correo del kernel, al que remiten los trailers `Link:`.
 
 ----
 
@@ -93465,6 +94675,220 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 
 ----
 
+# git.kernel.org förklarat: sidans struktur och praktisk användning
+
+URL: https://rafaelpfister.ch/sv/blog/git-kernel-org-forklarat-sidans-struktur-och-praktisk-anvandning
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) är Git-servern för kernel.org. Här finns Linus Torvalds huvudutvecklingsgren, stabila kärnor, linux-next, hundratals subsystem- och utvecklarträd samt verktyg som `git` självt, `e2fsprogs` eller Linux-manualsidorna. Webbgränssnittet är en anpassad version av [cgit](https://git.zx2c4.com/cgit/about/) (anges i sidfoten som `cgit 1.3.1-korg`). Det är skrivskyddat: det finns inga konton, inga issues och inga pull requests. Kärnutvecklingen sker via e-postlistor, vars arkiv finns på [lore.kernel.org](https://lore.kernel.org/); git.kernel.org visar resultatet, alltså de commits som maintainerna har tagit in i sina träd.
+
+Vanliga skäl att besöka sidan är en CVE-post som hänvisar till en kernel-commit, frågan om en viss fix ingår i en kernel-version eller att läsa en enskild källfil utan att klona hela repositoriet.
+
+## Startsidan: lista över repositorier
+
+Startsidan listar alla offentliga repositorier i en tabell. Grupperingen följer filsökvägen på servern: varje mellanrubrik som `pub/scm/fs` eller `pub/scm/linux` är en katalog, och under den visas repositorierna med sin sökväg relativt denna katalog.
+
+<details class="options-details">
+<summary>Kolumner i översikt</summary>
+
+| Kolumn | Innehåll |
+|---|---|
+| Namn | Repositoriets sökväg under gruppen, till exempel `xfs/xfs-linux.git` under `pub/scm/fs` |
+| Beskrivning | Innehållet i filen `description` i repositoriet. ”Unnamed repository; edit this file …” är Git-standardtexten och betyder endast att operatören inte har angett någon beskrivning |
+| Ägare | Ansvarig person eller grupp (t.ex. ”XFS FS Group”, ”Infra Team”) |
+| Inaktivitet | Tid sedan senaste commit på någon branch; ett lågt värde visar ett aktivt underhållet träd |
+| Länkar | Direktlänkar till repositoriets vyer `summary`, `log` och `tree` |
+
+</details>
+
+De viktigaste grupperna:
+
+| Grupp | Innehåll |
+|---|---|
+| `pub/scm/linux` | Kernel-träd: mainline, stable, linux-next samt maintainrarnas personliga träd och subsystemträd |
+| `pub/scm/fs` | Filsystem med userspace-verktyg (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Bibliotek som `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | Själva Git-projektet (`git.git`) med HTML-dokumentation och manualsidor |
+| `pub/scm/docs` | Dokumentationskällor, inklusive `man-pages` och PGP-nycklarna för kernel-utvecklarna (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | Infrastruktur för kernel.org, till exempel cgit-forken och Gitolite-serverns transparensloggar |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, utvecklarverktyg som `sparse` och `pahole`, Linus Torvalds `uemacs` |
+
+Listan är mycket lång eftersom varje maintainer med konto kan lägga egna träd enbart under `pub/scm/linux/kernel/git/`. Sökfältet uppe till höger filtrerar listan efter namn, beskrivning och ägare. Sökningen kan även öppnas direkt som URL, till exempel `https://git.kernel.org/?q=xfs`.
+
+## Sökvägsschemat för kernel-träden
+
+Kernel-repositorier följer mönstret:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` är maintainerens användarnamn på kernel.org, inte nödvändigtvis personens fullständiga namn (`akpm` är Andrew Morton, `acme` är Arnaldo Carvalho de Melo). För de flesta frågor räcker tre träd:
+
+| Träd | Sökväg | Syfte |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Linus Torvalds utvecklingsgren; här skapas releaserna `v7.3`, `v7.4-rc1` osv. |
+| Stable | `stable/linux.git` | Underhållna versioner med fixar (`v7.3.1`, `v7.3.2` …) och longterm-kärnorna; en branch per versionsserie, till exempel `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | Dagligen sammanslagen version av alla subsystemträd för nästa merge window |
+
+En fix passerar vanligtvis dessa träd i denna ordning: den hamnar först i det ansvariga subsystemets träd, visas i linux-next, tas under merge window in i mainline av Linus Torvalds via ett pull request-mejl och bakporteras därefter till stable-grenarna. Vilket subsystemträd som ansvarar framgår av filen `MAINTAINERS` i kernel-källkoden (rader med `T: git …`).
+
+## Vyerna i ett repositorium
+
+Ett klick på ett repositorienamn öppnar vyn `summary`. Flikraden ovanför leder till övriga vyer; till vänster om den väljer en rullista den branch som alla vyer avser.
+
+<details class="options-details">
+<summary>Vyer i översikt</summary>
+
+| Vy | Innehåll |
+|---|---|
+| about | Repositoriets README, om den finns |
+| summary | Brancher med senaste commit, de senaste taggarna med nedladdningslänk, de senaste tio commits och klon-URL:er |
+| refs | Fullständig lista över alla brancher och taggar |
+| log | Commit-historik med sökfält; kolumner för ålder, commit-meddelande, författare, ändrade filer och rader |
+| tree | Filträd för vald branch eller commit, med länkar till `plain` (råfil) och `log` (filhistorik) |
+| commit | Metadata och diff för en enskild commit |
+| diff | Skillnad mellan två commits eller mellan en commit och dess föregångare |
+| stats | Commit-statistik per författare under en valbar tidsperiod |
+
+</details>
+
+I vyn `summary` är taggblocket användbart för att läsa av den aktuella versionen: mainline visar release candidates (`v7.3-rc7`) och releaser (`v7.3`). Nedladdningslänkarna skapar ett arkiv på begäran och är därför inte alltid tillgängliga; för färdiga releaser är tarbollarna på [kernel.org](https://kernel.org/) respektive `cdn.kernel.org` den avsedda nedladdningsvägen, där även PGP-signaturen finns.
+
+I slutet av vyn `summary` finns klon-URL:erna. Utöver `https://` och det okrypterade `git://` anges en spegel hos Google (`kernel.googlesource.com`) som tillhandahåller samma innehåll.
+
+## Söka i historiken
+
+Sökfältet i vyn `log` har en rullista med fyra lägen. Varje läge finns även som URL-parameter, så att sökningar kan sparas som bokmärken eller länkas i ärenden:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Alternativ förklarade</summary>
+
+| Parameter | Funktion |
+|---|---|
+| `qt=grep` | Söker i commit-meddelanden (valet ”log msg”) |
+| `qt=author` | Söker i författarfältet (namn eller e-postadress) |
+| `qt=committer` | Söker i committer-fältet, alltså efter personen som tog in commiten |
+| `qt=range` | Visar ett intervall i Git-notation, till exempel `q=v7.3-rc6..v7.3-rc7` för alla commits mellan två taggar |
+| `q=` | Sökterm respektive intervall |
+| `h=` | Branch som sökningen avser, till exempel `h=linux-7.3.y` i stable-trädet |
+| `ofs=` | Förskjutning för sidindelning (git.kernel.org visar 200 commits per sida) |
+
+</details>
+
+Intervallet `v7.3-rc6..v7.3-rc7` besvarar frågan ”Vad ändrades mellan två versioner?” direkt i webbläsaren. I stable-trädet visar `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` alla fixar som tillkommit med en stable-uppdatering.
+
+## Läsa en commit
+
+En enskild commit kan adresseras med sin fullständiga SHA-1-hash:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+Vyn visar författare, committer, datum, överordnad commit (`parent`), det fullständiga commit-meddelandet och diffen. I slutet av ett kernel-commit-meddelande finns trailers som `Signed-off-by:`, `Reviewed-by:` och `Fixes: <sha> ("Titel")`. Raden `Fixes:` anger commiten som introducerade felet; därmed går det att avgränsa från vilken version ett system är påverkat. `Link:` hänvisar oftast till den tillhörande diskussionen på lore.kernel.org, `Cc: stable@vger.kernel.org` markerar fixen för bakportering till stable-kärnorna.
+
+Om `commit` i URL:en ersätts med `patch`, levererar servern commiten som en patchfil i e-postformat (`text/plain`), som kan tillämpas med `git am` eller `patch`.
+
+## Kort-URL:er i CVE-poster
+
+Sedan kernel-projektet självt började tilldela CVE-nummer hänvisar posterna i CVE-listan och NVD till kort-URL:er av formen `https://git.kernel.org/stable/c/<sha>`. git.kernel.org omdirigerar dessa med HTTP 301 till commit-vyn i rätt träd:
+
+| Kort-URL | Mål |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit i stable-trädet `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit i mainline `torvalds/linux.git` |
+
+En CVE-post anger vanligen flera sådana länkar: en per stable-gren som fixen har bakporterats till och en för mainline. Hasharna skiljer sig åt eftersom varje bakport är en egen commit. Bakportens commit-meddelande anger originalets hash i mainline, antingen som raden `commit <sha> upstream.` eller som `[ Upstream commit <sha> ]`.
+
+## Kontrollera om en fix ingår i en version
+
+Webbgränssnittet visar inte vilka taggar en commit ingår i. För det krävs en lokal klon. För detta ändamål räcker en klon utan filinnehåll, som endast laddar commit-historiken:
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Alternativ förklarade</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `clone` | Skapar en lokal kopia av repositoriet |
+| `--filter=blob:none` | Partiell klon: laddar commits och katalogstrukturer, filinnehåll (blobbar) först vid behov |
+| `--no-checkout` | Skapar ingen arbetskatalog; behövs inte för frågor om historiken |
+| URL | HTTPS-klon-URL från vyn `summary` i stable-trädet |
+
+</details>
+
+Därefter besvarar ett kommando i den klonade katalogen frågan om den första versionen med fixen:
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Alternativ förklarade</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `describe` | Beskriver en commit relativt till en tagg |
+| `--contains` | Söker efter den äldsta taggen som innehåller commiten i stället för den senaste taggen före den |
+| `<sha>` | Commitens hash, till exempel från kort-URL:en i CVE-posten |
+
+</details>
+
+Utdata har formen `v7.3.2~14`: fixen ingår från och med `v7.3.2`. Alla taggar som innehåller commiten listas av `git tag --contains <sha>`. Den som bara behöver en enskild fil eller en version för läsning kan använda vyerna `tree` och `plain` i webbläsaren i stället för en klon.
+
+För den fullständiga källkoden för att bygga räcker en grund klon av en tagg:
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Alternativ förklarade</summary>
+
+| Alternativ | Funktion |
+|---|---|
+| `--depth 1` | Laddar endast den senaste commiten utan historik; nedladdningen minskar från flera GB till några hundra MB |
+| `--branch v7.3` | Väljer taggen eller branchen som checkas ut |
+| URL | Klon-URL för mainline |
+
+</details>
+
+## Följa ändringar
+
+Varje repositorium erbjuder ett Atom-flöde för standardbranchen under `…/<repository>.git/atom/`, för mainline alltså `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. En flödesläsare visar då nya commits utan att sidan behöver besökas regelbundet. För mainline skapar flödet många poster per dag under merge window; för releaser och stable-uppdateringar är versionsöversikten på [kernel.org](https://kernel.org/) respektive dess flöde den lugnare källan.
+
+## Källor
+
+1.  [git.kernel.org](https://git.kernel.org/): Lista över repositorier med grupper, kolumnerna Owner och Idle samt sökfältet på startsidan.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/): Mainline med vyerna summary, log, tree, klon-URL:er och Atom-flöde.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/): Stable- och longterm-kärnor, en branch per versionsserie.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/): Webbgränssnittets upstream, dokumentation om URL-parametrarna.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html): Regler för bakportering, trailern `Cc: stable` och hänvisning till upstream-commiten.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html): CVE-tilldelning genom kernel-projektet och posternas struktur.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html): Betydelsen av trailerarna `Fixes:`, `Link:`, `Signed-off-by:`.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe): Manualsida, alternativet `--contains`.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone): Manualsida, alternativen `--filter`, `--depth`, `--branch`, `--no-checkout`.
+
+10.  [lore.kernel.org](https://lore.kernel.org/): Arkiv för kernel-e-postlistorna som trailerarna `Link:` hänvisar till.
+
+----
+
 # NatJack: NAT-tabellattacker förklarade, vem som påverkas och vilka åtgärder som behövs
 
 URL: https://rafaelpfister.ch/sv/blog/natjack-nat-tabellattacker-forklarade-vem-som-paverkas-och-vilka-atgarder-som-behovs
@@ -112117,6 +113541,220 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# git.kernel.org forklart: sidens oppbygning og praktisk bruk
+
+URL: https://rafaelpfister.ch/no/blog/git-kernel-org-forklart-sidens-oppbygning-og-praktisk-bruk
+Datum: 2026-10-29
+
+[git.kernel.org](https://git.kernel.org/) er Git-serveren til kernel.org. Her ligger hovedutviklingsgrenen til Linus Torvalds, Stable-kjernene, linux-next, hundrevis av delsystem- og utviklertrær samt verktøy som `git` selv, `e2fsprogs` eller Linux-man-sidene. Nettgrensesnittet er en tilpasset versjon av [cgit](https://git.zx2c4.com/cgit/about/) (oppgitt som `cgit 1.3.1-korg` i bunnteksten). Det er skrivebeskyttet: Det finnes ingen kontoer, issues eller pull requests. Kjerneutviklingen foregår via e-postlister, med arkiv på [lore.kernel.org](https://lore.kernel.org/); git.kernel.org viser resultatet, altså commitene som vedlikeholderne har tatt inn i trærne sine.
+
+Typiske grunner til å besøke siden er en CVE-oppføring som viser til en kjerne-commit, spørsmålet om en bestemt feilretting er inkludert i en kjerneversjon, eller å lese en enkelt kildefil uten å klone hele repositoryet.
+
+## Startsiden: repository-listen
+
+Startsiden lister opp alle offentlige repositoryer i en tabell. Grupperingen følger filstien på serveren: Hver mellomoverskrift som `pub/scm/fs` eller `pub/scm/linux` er en katalog, og under den står repositoryene med stien sin relativt til denne katalogen.
+
+<details class="options-details">
+<summary>Kolonneoversikt</summary>
+
+| Kolonne | Innhold |
+|---|---|
+| Name | Sti til repositoryet under gruppen, for eksempel `xfs/xfs-linux.git` under `pub/scm/fs` |
+| Description | Innholdet i filen `description` i repositoryet. «Unnamed repository; edit this file …» er standardteksten i Git og betyr bare at operatøren ikke har angitt en beskrivelse |
+| Owner | Ansvarlig person eller gruppe (for eksempel «XFS FS Group», «Infra Team») |
+| Idle | Tid siden siste commit på en hvilken som helst branch; en lav verdi viser et aktivt vedlikeholdt tre |
+| Links | Direkte lenker til repositoryets visninger `summary`, `log` og `tree` |
+
+</details>
+
+De viktigste gruppene:
+
+| Gruppe | Innhold |
+|---|---|
+| `pub/scm/linux` | Kjernetrær: mainline, stable, linux-next samt vedlikeholdernes personlige trær og delsystemtrær |
+| `pub/scm/fs` | Filsystemer med Userspace-verktøy (ext2/3/4, XFS, fscrypt, fsverity) |
+| `pub/scm/libs` | Biblioteker som `libcap`, `libgpiod`, `libtraceevent` |
+| `pub/scm/git` | Selve Git-prosjektet (`git.git`) med HTML-dokumentasjon og man-sider |
+| `pub/scm/docs` | Dokumentasjonskilder, blant annet `man-pages` og PGP-nøklene til kjerneutviklerne (`kernel/pgpkeys.git`) |
+| `pub/scm/infra` | Infrastruktur for kernel.org, for eksempel cgit-forken og transparensloggene til Gitolite-serveren |
+| `pub/scm/bluetooth`, `devel`, `editors` | BlueZ, utviklerverktøy som `sparse` og `pahole`, Linus Torvalds' `uemacs` |
+
+Listen er svært lang fordi hver vedlikeholder med konto kan legge egne trær under `pub/scm/linux/kernel/git/`. Søket øverst til høyre filtrerer listen etter navn, beskrivelse og eier. Søket kan også åpnes direkte som URL, for eksempel `https://git.kernel.org/?q=xfs`.
+
+## Stiskjemaet for kjernetrær
+
+Kjernerepositoryer følger mønsteret:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/<konto>/<repository>.git/
+```
+
+`<konto>` er vedlikeholderens brukernavn på kernel.org, ikke nødvendigvis fullt navn (`akpm` er Andrew Morton, `acme` er Arnaldo Carvalho de Melo). For de fleste spørsmål holder det med tre trær:
+
+| Tre | Sti | Formål |
+|---|---|---|
+| Mainline | `torvalds/linux.git` | Utviklingsgrenen til Linus Torvalds; her oppstår utgivelsene `v7.3`, `v7.4-rc1` osv. |
+| Stable | `stable/linux.git` | Vedlikeholdte versjoner med feilrettinger (`v7.3.1`, `v7.3.2` …) og Longterm-kjernene; én branch per versjonsserie, for eksempel `linux-7.3.y` |
+| linux-next | `next/linux-next.git` | Daglig sammenslått status for alle delsystemtrær før neste merge-vindu |
+
+En feilretting går vanligvis gjennom disse trærne i denne rekkefølgen: Den havner først i treet til det ansvarlige delsystemet, vises i linux-next, tas inn i mainline av Linus Torvalds i merge-vinduet via en pull request-e-post, og tilbakeporteres deretter til Stable-grenene. Hvilket delsystemtre som er ansvarlig, står i filen `MAINTAINERS` i kjernekildekoden (linjer med `T: git …`).
+
+## Visningene i et repository
+
+Et klikk på et repository-navn åpner visningen `summary`. Fanelinjen over fører til de andre visningene; til venstre for den velger et valgfelt branchen som alle visningene gjelder.
+
+<details class="options-details">
+<summary>Oversikt over visninger</summary>
+
+| Visning | Innhold |
+|---|---|
+| about | Repositoryets README, dersom den finnes |
+| summary | Brancher med siste commit, de nyeste taggene med nedlastingslenke, de siste ti commitene og klone-URL-ene |
+| refs | Fullstendig liste over alle brancher og tagger |
+| log | Commit-historikk med søkefelt; kolonnene alder, commit-melding, forfatter, endrede filer og linjer |
+| tree | Filtre for valgt branch eller commit, med lenker til `plain` (råfil) og `log` (filhistorikk) |
+| commit | Metadata og diff for én enkelt commit |
+| diff | Forskjell mellom to commiter eller mellom en commit og dens forgjenger |
+| stats | Commit-statistikk per forfatter over en valgfri periode |
+
+</details>
+
+I visningen `summary` er taggblokken nyttig for å lese av gjeldende versjon: Mainline viser release candidates (`v7.3-rc7`) og utgivelser (`v7.3`). Nedlastingslenkene oppretter et arkiv på forespørsel og er derfor ikke alltid tilgjengelige; for ferdige utgivelser er tarballene på [kernel.org](https://kernel.org/) eller `cdn.kernel.org` den tiltenkte nedlastingsmåten, også med PGP-signatur.
+
+Nederst i visningen `summary` finnes klone-URL-ene. Ved siden av `https://` og den ukrypterte `git://` er det oppgitt et speil hos Google (`kernel.googlesource.com`) som leverer samme innhold.
+
+## Søk i historikken
+
+Søkefeltet i visningen `log` har et valgfelt med fire moduser. Hver modus er også tilgjengelig som URL-parameter, slik at søk kan lagres som bokmerker eller lenkes til i saker:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=grep&q=CVE
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Parameter | Virkning |
+|---|---|
+| `qt=grep` | Søker i commit-meldingene (valget «log msg») |
+| `qt=author` | Søker i forfatterfeltet (navn eller e-postadresse) |
+| `qt=committer` | Søker i committer-feltet, altså personen som tok inn commiten |
+| `qt=range` | Viser et område i Git-notasjon, for eksempel `q=v7.3-rc6..v7.3-rc7` for alle commiter mellom to tagger |
+| `q=` | Søkeord eller område |
+| `h=` | Branch søket gjelder, for eksempel `h=linux-7.3.y` i Stable-treet |
+| `ofs=` | Forskyvning for sideinndeling (git.kernel.org viser 200 commiter per side) |
+
+</details>
+
+Området `v7.3-rc6..v7.3-rc7` besvarer spørsmålet «Hva har endret seg mellom to versjoner?» direkte i nettleseren. I Stable-treet viser `qt=range&q=v7.3.1..v7.3.2&h=linux-7.3.y` alle feilrettinger som er lagt til med en Stable-oppdatering.
+
+## Lese en commit
+
+En enkelt commit kan adresseres med hele SHA-1-hashen:
+
+```text
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=<sha>
+```
+
+Visningen viser forfatter, committer, dato, overordnet commit (`parent`), hele commit-meldingen og diffen. På slutten av en commit-melding for kjernen står trailere som `Signed-off-by:`, `Reviewed-by:` og `Fixes: <sha> ("Titel")`. Linjen `Fixes:` angir commiten som introduserte feilen; dermed kan man avgrense fra hvilken versjon et system er berørt. `Link:` viser som regel til den tilhørende diskusjonen på lore.kernel.org, `Cc: stable@vger.kernel.org` markerer feilrettingen for tilbakeportering til Stable-kjernene.
+
+Hvis man erstatter `commit` i URL-en med `patch`, leverer serveren commiten som en patchfil i e-postformat (`text/plain`), som kan brukes med `git am` eller `patch`.
+
+## Kort-URL-er i CVE-oppføringer
+
+Siden kjerneprosjektet selv begynte å tildele CVE-numre, viser oppføringene i CVE-listen og NVD til kort-URL-er på formen `https://git.kernel.org/stable/c/<sha>`. git.kernel.org videresender dem med HTTP 301 til commit-visningen i det aktuelle treet:
+
+| Kort-URL | Mål |
+|---|---|
+| `https://git.kernel.org/stable/c/<sha>` | Commit i Stable-treet `stable/linux.git` |
+| `https://git.kernel.org/linus/<sha>` | Commit i mainline `torvalds/linux.git` |
+
+En CVE-oppføring angir vanligvis flere slike lenker: én per Stable-gren som feilrettingen er tilbakeportert til, og én for mainline. Hashene er forskjellige fordi hver tilbakeportering er en egen commit. Commit-meldingen for tilbakeporteringen angir hashen til originalen i mainline, enten som linjen `commit <sha> upstream.` eller som `[ Upstream commit <sha> ]`.
+
+## Kontrollere om en feilretting finnes i en versjon
+
+Nettgrensesnittet viser ikke hvilke tagger en commit er inkludert i. Til det trengs en lokal klone. For dette formålet holder det med en klone uten filinnhold, som bare laster ned commit-historikken:
+
+```bash
+git clone --filter=blob:none --no-checkout https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `clone` | Oppretter en lokal kopi av repositoryet |
+| `--filter=blob:none` | Partial Clone: laster ned commiter og katalogstrukturer, filinnhold (blobs) først ved behov |
+| `--no-checkout` | Oppretter ingen arbeidskatalog; ikke nødvendig for spørringer i historikken |
+| URL | HTTPS-klone-URL fra visningen `summary` for Stable-treet |
+
+</details>
+
+Deretter besvarer en kommando i den klonede katalogen spørsmålet om den første versjonen med feilrettingen:
+
+```bash
+git describe --contains <sha>
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `describe` | Beskriver en commit relativt til en tagg |
+| `--contains` | Finner den eldste taggen som inneholder commiten, i stedet for den nyeste taggen før den |
+| `<sha>` | Hashen til commiten, for eksempel fra kort-URL-en i CVE-oppføringen |
+
+</details>
+
+Utdataene har formen `v7.3.2~14`: Feilrettingen er inkludert fra `v7.3.2`. Alle tagger med commiten listes av `git tag --contains <sha>`. Den som bare trenger én enkelt fil eller en status for lesing, kan bruke visningene `tree` og `plain` i nettleseren i stedet for en klone.
+
+For fullstendig kildekode til bygging holder det med en grunn klone av en tagg:
+
+```bash
+git clone --depth 1 --branch v7.3 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `--depth 1` | Laster bare ned siste commit uten historikk; nedlastingen reduseres fra flere GB til noen hundre MB |
+| `--branch v7.3` | Velger taggen eller branchen som sjekkes ut |
+| URL | Klone-URL for mainline |
+
+</details>
+
+## Følge endringer
+
+Hvert repository tilbyr en Atom-feed for standardbranchen under `…/<repository>.git/atom/`, for mainline altså `https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/atom/`. En feed-leser viser dermed nye commiter uten at siden må åpnes regelmessig. For mainline produserer feeden mange oppføringer per dag under merge-vinduet; for utgivelser og Stable-oppdateringer er versjonsoversikten på [kernel.org](https://kernel.org/) eller dens feed den roligere kilden.
+
+## Kilder
+
+1.  [git.kernel.org](https://git.kernel.org/): Repository-liste med grupper, Owner- og Idle-kolonne; søkefelt på startsiden.
+
+2.  [torvalds/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/): Mainline med visningene summary, log, tree, klone-URL-er og Atom-feed.
+
+3.  [stable/linux.git](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/): Stable- og Longterm-kjerner, én branch per versjonsserie.
+
+4.  [cgit](https://git.zx2c4.com/cgit/about/): Upstream for nettgrensesnittet, dokumentasjon av URL-parametrene.
+
+5.  [Kernel Docs: Everything you ever wanted to know about Linux -stable releases](https://docs.kernel.org/process/stable-kernel-rules.html): Regler for tilbakeporteringer, traileren `Cc: stable` og henvisning til upstream-commiten.
+
+6.  [Kernel Docs: CVEs](https://docs.kernel.org/process/cve.html): CVE-tildeling gjennom kjerneprosjektet og oppbygningen av oppføringene.
+
+7.  [Kernel Docs: Submitting patches](https://docs.kernel.org/process/submitting-patches.html): Betydningen av trailerne `Fixes:`, `Link:`, `Signed-off-by:`.
+
+8.  [git-describe](https://git-scm.com/docs/git-describe): Man-side, alternativet `--contains`.
+
+9.  [git-clone](https://git-scm.com/docs/git-clone): Man-side, alternativene `--filter`, `--depth`, `--branch`, `--no-checkout`.
+
+10.  [lore.kernel.org](https://lore.kernel.org/): Arkiv for kjernens e-postlister, som trailerne `Link:` viser til.
 
 ----
 
