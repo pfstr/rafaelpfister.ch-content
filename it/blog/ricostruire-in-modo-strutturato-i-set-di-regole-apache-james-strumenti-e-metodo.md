@@ -1,7 +1,7 @@
 ---
-title: "Ristrutturare le regole di Apache James: strumenti e metodo"
-navTitle: "Ristrutturare le regole"
-description: "Dopo anni, le regole Mailet stratificate contengono percorsi morti che nessuno riconosce più. Come analizzare le regole come un grafo, individuare in modo affidabile il codice irraggiungibile e strutturare la riorganizzazione affinché un unico Mailet mantenga aperta la via di ritorno."
+title: "Ricostruire in modo strutturato le regole Apache James: strumenti e metodo"
+navTitle: "Ricostruire le regole"
+description: "Le regole Mailet stratificate negli anni contengono percorsi morti che nessuno riconosce più. Come analizzare le regole come un grafo, individuare in modo affidabile il codice irraggiungibile e strutturare la riorganizzazione in modo che un solo Mailet mantenga aperta la via del ritorno."
 date: "2026-08-11"
 kategorie: "Totemomail"
 timeToRead: "16 min di lettura"
@@ -25,27 +25,27 @@ slug: "ricostruire-in-modo-strutturato-i-set-di-regole-apache-james-strumenti-e-
 translationId: "article-b9c98459a0ff6352"
 draft: false
 translationOf: apache-james-ruleset-strukturiert-neu-aufbauen
-translationSourceHash: ebcf5bf98f1f74aa7784c74c558da4db240e69f02de722a0251dd832d1224403
+translationSourceHash: acf116bf560f396b8a3f679fd2ca62a600e127ccf6cd7522c4a8534bb9876c0e
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-31T10:02:16.992Z
+translatedAt: 2026-10-29T03:35:37.403Z
 translationReview: automatic
-url: https://rafaelpfister.ch/it/blog/ricostruire-in-modo-strutturato-i-set-di-regole-apache-james-strumenti-e-metodo
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/it/blog/ricostruire-in-modo-strutturato-i-set-di-regole-apache-james-strumenti-e-metodo
 ---
 
-# Ristrutturare le regole di Apache James: strumenti e metodo
+# Ricostruire in modo strutturato le regole Apache James: strumenti e metodo
 
-I gateway di posta basati su Apache James, tra cui TotemoMail, controllano l'intero flusso dei messaggi tramite un insieme di regole in XML. Dopo alcuni anni di esercizio, questo insieme di regole acquisisce una caratteristica che quasi nessuno nota: una parte considerevole non viene mai eseguita. Sono state aggiunte regole, sono stati inseriti smistamenti prima di esse, rami hanno portato al nulla e, poiché nulla si rompeva, tutto è rimasto com'era.
+I gateway di posta basati su Apache James, tra cui Totemomail, gestiscono l'intero flusso dei messaggi tramite regole in XML. Dopo alcuni anni di esercizio, queste regole acquisiscono una caratteristica che quasi nessuno nota: una parte considerevole non viene mai eseguita. Sono state aggiunte regole, inseriti instradamenti prima di esse, rami sono finiti nel vuoto e, poiché nulla si rompeva, tutto è rimasto com'era.
 
-Il problema non è lo spazio su disco. È che nessuno può più dire quale regola venga effettivamente applicata. Chi pianifica una modifica legge un file con centinaia di Mailet e non sa quali siano davvero rilevanti. Ed è proprio una domanda a cui si può rispondere meccanicamente.
+Il problema non è lo spazio di memoria. È che nessuno sa più dire quale regola si applichi effettivamente. Chi pianifica una modifica legge un file con centinaia di Mailet e non sa quali siano davvero rilevanti. Proprio a questa domanda si può rispondere meccanicamente.
 
-Questo articolo descrive il metodo e gli strumenti: analizzare l'insieme di regole come un grafo diretto, trovare in modo affidabile il codice irraggiungibile e impostare la riorganizzazione affinché un unico Mailet mantenga aperta la via di ritorno.
+Questo articolo descrive il metodo e gli strumenti necessari: analizzare le regole come un grafo diretto, individuare in modo affidabile il codice irraggiungibile e impostare la riorganizzazione affinché un singolo Mailet mantenga aperta la via del ritorno.
 
 ## Il modello in quattro frasi
 
-Un insieme di regole è composto da **processori**, ovvero catene denominate. Ogni catena contiene **Mailet** che svolgono un'azione e ogni Mailet dispone di un **Matcher** che decide se si applica al messaggio corrente. Un Mailet della classe `ToProcessor` passa il messaggio a un'altra catena.
+Una configurazione di regole è composta da **processori**, ovvero catene denominate. Ogni catena contiene **Mailet** che eseguono operazioni, e ogni Mailet ha un **Matcher** che decide se si applica al messaggio corrente. Un Mailet della classe `ToProcessor` passa il messaggio a un'altra catena.
 
-Il punto di ingresso si chiama generalmente `root`. Da lì si dirama tutto il resto.
+Il punto di ingresso si chiama solitamente `root`. Da lì si dirama tutto il resto.
 
 ```xml
 <processor name="root">
@@ -61,21 +61,21 @@ Il punto di ingresso si chiama generalmente `root`. Da lì si dirama tutto il re
 </processor>
 ```
 
-La struttura è quindi un grafo diretto: i processori sono nodi, le destinazioni di `ToProcessor` sono archi. E non appena lo si vede in questo modo, la questione del codice morto diventa un compito standard: un'analisi di raggiungibilità.
+La struttura è quindi un grafo diretto: i processori sono nodi, le destinazioni di `ToProcessor` sono archi. E non appena lo si considera in questo modo, la domanda sul codice morto diventa un problema standard, ovvero un'analisi di raggiungibilità.
 
 ## Due tipi di codice morto
 
-Prima di misurare, dovete sapere cosa state cercando. Esistono due forme e la seconda è quella insidiosa.
+Prima di misurare, occorre sapere cosa cercare. Esistono due forme, e la seconda è quella insidiosa.
 
-**Processori irraggiungibili.** Intere catene alle quali non punta più alcun `ToProcessor`. Sono presenti nel file, ma non vi si entra mai. È il caso evidente.
+**Processori irraggiungibili.** Intere catene alle quali non punta più alcun `ToProcessor`. Sono nel file, ma non vi si entra mai. È il caso evidente.
 
-**Residuo morto all'interno di una catena.** Un `ToProcessor` con `match="All"` si applica a **qualsiasi** messaggio e lo inoltra. Tutto ciò che si trova sotto nella stessa catena non viene mai raggiunto. Lo stesso vale per i Mailet con `passThrough=false`: consumano il messaggio e ne gestiscono autonomamente l'ulteriore trattamento; i Mailet successivi non lo vedono più.
+**Residuo morto all'interno di una catena.** Un `ToProcessor` con `match="All"` corrisponde a **ogni** messaggio e lo inoltra. Tutto ciò che segue nella stessa catena non viene mai raggiunto. Lo stesso vale per i Mailet con `passThrough=false`: consumano il messaggio e gestiscono autonomamente il trattamento successivo, per cui i Mailet seguenti non lo vedono più.
 
-Questa seconda forma non può essere trovata con una semplice ricerca testuale, poiché le righe appaiono del tutto normali. A tal fine serve l'ordine interno della catena.
+Una semplice ricerca testuale non trova questa seconda forma, perché le righe sembrano del tutto normali. A questo scopo serve l'ordine all'interno della catena.
 
-## Strumento 1: estrarre il grafo
+## Strumento 1: leggere il grafo
 
-Il punto di partenza è un'analisi che estrae i processori e le relative destinazioni. Lo script seguente utilizza solo la libreria standard e funziona con ogni installazione Python:
+Il punto di partenza è un'analisi che estrae i processori e le loro destinazioni. Il seguente script usa solo la libreria standard e funziona su qualsiasi installazione Python:
 
 ```python
 import re
@@ -102,11 +102,11 @@ for name, block in bloecke.items():
     print(f"{name} -> {', '.join(ziele(block)) or '(kein Ziel)'}")
 ```
 
-Notate la differenza tra il **tag di definizione** `<processor name="...">` e il **tag di destinazione** `<processor>name</processor>` all'interno di un Mailet `ToProcessor`. Entrambi hanno lo stesso nome, ma significano cose diverse. Confonderli produce risultati privi di senso. È proprio questa anche l'origine dell'errore descritto più avanti.
+Notate la differenza tra il **tag di definizione** `<processor name="...">` e il **tag di destinazione** `<processor>name</processor>` all'interno di un Mailet `ToProcessor`. Entrambi hanno lo stesso nome, ma significano cose diverse. Chi li confonde ottiene risultati privi di senso. Proprio da questo deriva anche la fonte di errore descritta più avanti.
 
 ## Strumento 2: raggiungibilità dal punto di ingresso
 
-Con il grafo, l'analisi è una ricerca in ampiezza a partire da `root`. Tutto ciò che non viene visitato è morto:
+Con il grafo, l'analisi consiste in una ricerca in ampiezza a partire da `root`. Tutto ciò che non viene visitato è morto:
 
 ```python
 erreichbar = set()
@@ -134,7 +134,7 @@ for name in tot:
     print(f"  - {name} ({anzahl_mailets(bloecke[name])} Mailets)")
 ```
 
-Un output tipico per un insieme di regole stratificato:
+Un output tipico per una configurazione di regole stratificata negli anni:
 
 ```text
 Prozessoren gesamt: 38
@@ -147,11 +147,11 @@ Tot:                20
   ...
 ```
 
-Venti dei 38 processori, con oltre 160 Mailet complessivi, non vengono mai eseguiti. Non è un'eccezione, ma la norma in un ambiente che ha attraversato più ristrutturazioni.
+Venti dei 38 processori, con oltre 160 Mailet complessivi, non vengono mai eseguiti. Non è un'eccezione, bensì la norma in un ambiente che ha attraversato diverse riorganizzazioni.
 
-## Strumento 3: trovare il residuo morto nelle catene
+## Strumento 3: individuare il residuo morto all'interno delle catene
 
-Ora la seconda forma. Esaminate ogni catena raggiungibile, Mailet per Mailet, e contrassegnate tutto ciò che segue il primo salto incondizionato:
+Ora la seconda forma. Esaminate ogni catena raggiungibile Mailet per Mailet e contrassegnate tutto ciò che segue il primo salto incondizionato:
 
 ```python
 def toter_rest(block):
@@ -171,11 +171,11 @@ for name in sorted(erreichbar):
         print(f"{name}: Mailets {ab + 1} bis {gesamt} werden nie erreicht")
 ```
 
-Questo risultato è più prezioso dell'elenco dei processori, perché si trova nel mezzo di catene attive. Chi aggiunge una regola e la inserisce sotto un `ToProcessor match="All"` ha scritto una regola che non verrà mai applicata e poi si stupisce della sua inefficacia.
+Questo riscontro è più prezioso dell'elenco dei processori, perché si trova in mezzo a catene attive. Chi aggiunge una regola e la inserisce sotto un `ToProcessor match="All"` ha scritto una regola che non si applicherà mai e poi si stupisce della sua inefficacia.
 
 ## Strumento 4: verifica della struttura
 
-Un XML ben formato da solo non basta. Queste quattro verifiche intercettano gli errori che un parser lascia passare ma che il gateway non accetta:
+Il solo XML ben formato non basta. Questi quattro controlli intercettano gli errori che un parser lascia passare, ma che il gateway non accetta:
 
 ```python
 dom = xml.dom.minidom.parseString(daten.replace("\n", "\r\n").encode("utf-8"))
@@ -184,7 +184,7 @@ namen = [p.getAttribute("name")
          for p in dom.getElementsByTagName("processor")
          if p.getAttribute("name")]
 
-# 1. Nomi dei processori duplicati
+# 1. Nomi di processore duplicati
 doppelt = {n for n in namen if namen.count(n) > 1}
 
 # 2. Ogni Mailet deve essere figlio diretto di un processore e avere class + match
@@ -208,24 +208,24 @@ print("Strukturfehler:      ", fehler or "keine")
 print("Ziele ohne Definition:", sorted(zielnamen - set(namen)) or "keine")
 ```
 
-Un `ToProcessor` che punta a un processore inesistente è l'errore classico dopo una rinomina. L'XML rimane ben formato, ma il gateway fallisce solo in fase di esecuzione, di solito con un messaggio poco utile.
+Un `ToProcessor` verso un processore inesistente è l'errore classico dopo una ridenominazione. L'XML resta ben formato, il gateway fallisce solo a runtime e di solito con un messaggio poco utile.
 
 ## Inquadramento: è costruzione di compilatori
 
-Ciò che state facendo ha un nome e una teoria alle spalle. Un insieme di regole è un **grafo di controllo del flusso**, ossia lo stesso modello con cui i compilatori analizzano i programmi da decenni. Vale la pena saperlo perché mette a disposizione algoritmi pronti e, cosa più importante, affermazioni chiare sui loro limiti.
+Ciò che state facendo ha un nome e una teoria alle spalle. Una configurazione di regole è un **grafo di flusso di controllo**, ossia lo stesso modello con cui i compilatori analizzano i programmi da decenni. Vale la pena saperlo perché mette a disposizione algoritmi pronti e, cosa più importante, affermazioni chiare sui loro limiti.
 
-| Domanda nell'insieme di regole | Modello | Procedura |
+| Domanda nelle regole | Modello | Procedura |
 |---|---|---|
 | Quali processori sono morti? | Raggiungibilità dal nodo di ingresso | Ricerca in ampiezza o in profondità, complessità `O(V+E)` |
-| Quali regole in una catena sono morte? | Nodi dopo un salto incondizionato | la stessa ricerca su un grafo più dettagliato |
-| Dove può nascere un mail loop? | **Ciclo nel grafo** | componenti fortemente connesse |
-| Dove deve trovarsi una regola affinché venga sicuramente applicata? | **Dominatore** del nodo di ingresso | albero dei dominatori |
+| Quali regole in una catena sono morte? | Nodi dopo un salto incondizionato | la stessa ricerca su un grafo più fine |
+| Dove può formarsi un mail loop? | **Ciclo nel grafo** | componenti fortemente connesse |
+| Dove deve trovarsi una regola affinché si applichi con certezza? | **Dominatore** del nodo di ingresso | albero dei dominatori |
 
-Le ultime due righe sono le più preziose sul piano pratico. Un mail loop non è un misterioso fenomeno operativo, bensì un ciclo nel grafo di routing; il contatore degli hop in fase di esecuzione è solo il freno di emergenza, mentre a livello strutturale individuate il ciclo prima. E se volete collocare una regola che **ogni** messaggio deve attraversare, ad esempio un filtro per domini mittente non instradabili, dovete cercare un dominatore. Non è una questione di gusto, ma qualcosa di calcolabile.
+Le ultime due righe sono le più preziose nella pratica. Un mail loop non è un misterioso fenomeno operativo, ma un ciclo nel grafo di routing; il contatore degli hop a runtime è solo il freno d'emergenza, mentre qui potete individuare il loop prima a livello strutturale. E se volete collocare una regola che **ogni** messaggio deve attraversare, ad esempio un filtro per domini mittente non instradabili, allora dovete cercare un dominatore. Non è una questione di gusti, ma qualcosa di calcolabile.
 
 ### Trovare i cicli prima che diventino mail loop
 
-La ricerca in ampiezza risponde alla domanda sul codice morto. Per i loop serve la ricerca in profondità, poiché una **retrocosta** indica un ciclo. Il metodo è la classica marcatura a tre colori:
+La ricerca in ampiezza risponde alla domanda sul codice morto. Per i loop serve la ricerca in profondità, perché in questo caso un **arco all'indietro** segnala il ciclo. Il metodo è la classica marcatura a tre colori:
 
 ```python
 def zyklen_finden(bloecke, ziele):
@@ -259,28 +259,28 @@ for zyklus in zyklen_finden(bloecke, ziele):
 outgoing -> processOutgoing -> outgoing
 ```
 
-Un tale rilevamento non prova l'esistenza di un loop, perché gli archi sono protetti da condizioni e forse non vengono mai percorsi insieme. Tuttavia, è l'elenco completo dei punti in cui un loop **può** formarsi, ed è esattamente ciò che dovete conoscere prima di una ristrutturazione. Il contatore degli hop in fase di esecuzione è solo il freno di emergenza; qui vedete la costruzione.
+Un simile riscontro non è una prova di un loop, poiché gli archi sono sorvegliati da condizioni e potrebbero non essere mai percorsi insieme. È però l'elenco completo dei punti in cui un loop **può** formarsi, ed è proprio ciò che dovete conoscere prima di una riorganizzazione. Il contatore degli hop a runtime è solo il freno d'emergenza; qui vedete la costruzione.
 
-Altrettanto importante è il **limite** del metodo. Gli archi sono controllati da Matcher che dipendono dal contenuto del messaggio. La raggiungibilità esatta è quindi in generale indecidibile; l'analisi fornisce una sovra-approssimazione. Ne deriva un valore informativo asimmetrico che dovete conoscere:
+Altrettanto importante è il **limite** del metodo. Gli archi sono sorvegliati dai Matcher, che dipendono dal contenuto del messaggio. La raggiungibilità esatta è quindi generalmente indecidibile, e l'analisi fornisce una sovra-approssimazione. Ne consegue una validità asimmetrica delle affermazioni che dovete conoscere:
 
-- **«Irraggiungibile» è affidabile.** Se non conduce alcun percorso, nessun messaggio può arrivarci. Potete eliminare questo codice.
-- **«Raggiungibile» significa solo «non escluso strutturalmente».** Il grafo non indica se un messaggio reale soddisferà mai le condizioni.
+- **«Irraggiungibile» è affidabile.** Se nessun percorso conduce lì, nessun messaggio può arrivarci. Potete eliminare questo codice.
+- **«Raggiungibile» significa solo «non escluso strutturalmente».** Il grafo non dice se un messaggio reale soddisferà mai le condizioni.
 
-L'analisi non sostituisce quindi il test, ma riduce lo spazio di test. In pratica, rimane comunque un vantaggio enorme: da 38 processori ne restano 18 da verificare.
+L'analisi non sostituisce quindi il test, ma riduce lo spazio dei test. Nella pratica resta comunque un enorme vantaggio: da 38 processori ne rimangono 18 che dovete effettivamente verificare.
 
-Non vi servono esplicitamente metodi di apprendimento automatico, come Graph Neural Networks o embedding di nodi. Sono utili per grafi grandi con struttura sconosciuta e pattern statistici. Un insieme di regole ha alcune decine di nodi, una struttura interamente nota e una semantica deterministica. Gli algoritmi esatti non sono solo più economici, ma forniscono prove anziché probabilità.
+Non servono esplicitamente metodi di machine learning, come Graph Neural Networks o embedding dei nodi. Sono utili per grafi grandi con struttura sconosciuta e pattern statistici. Una configurazione di regole ha alcune decine di nodi, una struttura completamente nota e una semantica deterministica. Qui gli algoritmi esatti non solo sono più economici, ma forniscono prove anziché probabilità.
 
-## Fonti di errore nell'elaborazione automatica
+## Fonti di errore nell'elaborazione automatizzata
 
-Se modificate un insieme di regole tramite script, vi sono tre errori che si verificano regolarmente. Li ho commessi tutti e tre personalmente.
+Se modificate una configurazione di regole mediante script, ci sono tre errori che si verificano puntualmente. Li ho commessi tutti e tre personalmente.
 
-**Il pattern avido oltre i confini dei processori.** Chi vuole rimuovere un processore con un'espressione regolare ricorre naturalmente a:
+**Il pattern avido oltre i confini dei processori.** Chi vuole rimuovere un processore tramite espressione regolare ricorre naturalmente a:
 
 ```python
 muster = re.compile(r'   <processor name="%s">.*?</processor>\n' % name, re.S)
 ```
 
-È sbagliato. All'interno della catena, ogni Mailet `ToProcessor` contiene un `<processor>ziel</processor>`, e il `.*?` non avido si ferma esattamente lì. Il risultato: viene rimosso mezzo processore, rimane un residuo di `</mailet>` e `</processor>`, e l'XML è distrutto. Ancorate invece al rientro del tag di chiusura e verificate il bilanciamento dei tag rispetto a:
+Questo è sbagliato. All'interno della catena, ogni Mailet `ToProcessor` contiene un `<processor>ziel</processor>`, e il non avido `.*?` si ferma proprio lì. Il risultato: viene rimosso mezzo processore, resta un frammento composto da `</mailet>` e `</processor>`, e l'XML è distrutto. Ancorate invece il pattern all'indentazione del tag di chiusura e verificate il bilanciamento dei tag con:
 
 ```python
 muster = re.compile(r'   <processor name="%s">.*?\n   </processor>\n' % name, re.S)
@@ -291,21 +291,21 @@ block = treffer.group(0)
 assert block.count("<mailet ") == block.count("</mailet>"), "Tag-Bilanz stimmt nicht"
 ```
 
-**Fine riga.** La configurazione usa solitamente CRLF. In Python leggete con `rb`, normalizzate in `\n` per l'elaborazione e alla fine riscrivete CRLF. Chi lo dimentica produce un file con terminazioni di riga miste, che a seconda del prodotto viene rifiutato senza alcun messaggio.
+**Fine riga.** La configurazione usa solitamente CRLF. In Python leggete con `rb`, normalizzate a `\n` per l'elaborazione e alla fine riscrivete nuovamente CRLF. Chi lo dimentica produce un file con fine riga misti, che a seconda del prodotto viene rifiutato senza commenti.
 
-**Caratteri speciali.** Mantenete il file in puro ASCII e scrivete gli umlaut come riferimenti a caratteri (`&#228;` per ä). Questo evita ogni discussione sulle codifiche tra editor, script e interfaccia web del gateway.
+**Caratteri speciali.** Mantenete il file in puro ASCII e scrivete le vocali accentate come riferimenti a caratteri (`&#228;` per ä). Questo evita ogni discussione sulle codifiche tra editor, script e interfaccia web del gateway.
 
-Dopo ogni modifica, verificate almeno la corretta formattazione, le terminazioni di riga invariate e il numero invariato di processori. Tre righe di controllo risparmiano un ripristino.
+Dopo ogni modifica, verificate almeno che il file sia ben formato, che i fine riga non siano cambiati e che il numero di processori sia invariato. Tre righe di controllo risparmiano un rollback.
 
-## Il metodo per la ristrutturazione: albero parallelo con uno scambio
+## Il metodo per la riorganizzazione: albero parallelo con uno scambio
 
-Ora passiamo alla ricostruzione vera e propria. Il percorso più ovvio, modificare passo dopo passo l'insieme di regole esistente, è il peggiore: non potete tornare indietro in modo pulito e non potete più leggere lo stato precedente.
+Ora veniamo alla vera ricostruzione. Il percorso più ovvio, trasformare gradualmente la configurazione esistente, è il peggiore: non potete tornare indietro in modo pulito e non potete più leggere lo stato precedente.
 
 Si è invece dimostrato efficace l'albero parallelo:
 
-**Passo 1: costruire accanto il nuovo albero.** Create i nuovi processori con un suffisso nel nome, ad esempio `rootV2`, `incomingV2`, `outgoingV2`. Il vecchio albero rimane completamente presente e invariato.
+**Passo 1: creare il nuovo albero accanto al vecchio.** Create i nuovi processori con un suffisso nel nome, ad esempio `rootV2`, `incomingV2`, `outgoingV2`. Il vecchio albero rimane completamente presente e invariato.
 
-**Passo 2: un unico scambio.** All'inizio del punto di ingresso esistente si trova esattamente un Mailet:
+**Passo 2: un unico scambio.** All'inizio del precedente punto di ingresso c'è esattamente un Mailet:
 
 ```xml
 <processor name="root">
@@ -316,40 +316,42 @@ Si è invece dimostrato efficace l'albero parallelo:
 </processor>
 ```
 
-In questo modo tutto il traffico passa attraverso il nuovo albero. Quello vecchio è irraggiungibile, ma rimane completamente presente. **La via di ritorno consiste nel rimuovere queste tre righe**, ed è comprensibile in qualsiasi situazione, anche per una persona che non ha eseguito la ristrutturazione.
+In questo modo tutto il traffico passa attraverso il nuovo albero. Il vecchio è irraggiungibile, ma ancora completamente presente. **La via del ritorno consiste nel rimuovere queste tre righe**, ed è comprensibile in ogni situazione, anche per chi non ha effettuato la riorganizzazione.
 
-**Passo 3: raggiungibilità come collaudo.** Eseguite l'analisi dello strumento 2 e verificate tre punti: il nuovo punto di ingresso viene referenziato esattamente una volta, tutti i nuovi processori sono raggiungibili e il vecchio albero è completamente irraggiungibile. È un criterio di collaudo oggettivo anziché un'ispezione visiva.
+**Passo 3: raggiungibilità come collaudo.** Eseguite l'analisi dello strumento 2 e controllate tre punti: il nuovo punto di ingresso è referenziato esattamente una volta, tutti i nuovi processori sono raggiungibili e il vecchio albero è completamente irraggiungibile. È un criterio di collaudo oggettivo invece di un controllo visivo.
 
-**Passo 4: riordinare solo dopo il collaudo.** Quando il nuovo albero è confermato in esercizio, rimuovete quello vecchio ed eliminate i suffissi. Solo allora perdete la via di ritorno nel file, e fino a quel momento non ne avete avuto bisogno.
+**Passo 4: riordinare solo dopo la prova sul campo.** Quando il nuovo albero è confermato in esercizio, rimuovete il vecchio ed eliminate i suffissi. Solo allora perdete la via del ritorno nel file, e fino a quel momento non ne avete avuto bisogno.
 
-Per passaggi intermedi che volete osservare ma non ancora attivare in modo vincolante, sono adatti Mailet di sola osservazione: registrano, ma non modificano il routing. In questo modo raccogliete i dati mancanti per la decisione, senza rischi.
+Per passaggi intermedi che volete osservare senza ancora attivarli definitivamente, sono adatti Mailet di sola osservazione: registrano informazioni, ma non modificano il routing. In questo modo raccogliete i dati mancanti per la decisione senza rischi.
 
-## Integrare fin da subito la visibilità
+## Integrare subito anche la visibilità
 
-Durante la ricostruzione conviene considerare due aspetti che faranno la differenza in esercizio.
+Durante la ricostruzione, conviene considerare due aspetti che faranno la differenza in esercizio.
 
-**Non scartate mai direttamente nella catena principale.** Un Mailet che scarta un messaggio lascia nella cronologia dei messaggi solo l'indicazione che è stato eliminato, senza motivo. Diramate invece verso un processore appositamente denominato, ad esempio `dropNonRoutable`. Il solo nome compare nella cronologia e indica già cosa è successo.
+**Non scartate mai direttamente nella catena principale.** Un Mailet che scarta un messaggio lascia nella cronologia del messaggio solo l'indicazione che è stato eliminato, senza motivo. Diramate invece verso un processore espressamente denominato, ad esempio `dropNonRoutable`. Il solo nome compare nella cronologia e indica già cosa è successo.
 
-**Non tutta la registrazione finisce nella cronologia del messaggio.** Molti prodotti prevedono due meccanismi: uno per il log del server e uno per la cronologia visibile anche al supporto. Solo il secondo è visibile nella cronologia. Chi imposta esclusivamente il primo ha sì registrato l'evento, ma nel trace continua a comparire soltanto «Messaggio eliminato». Formulate le voci della cronologia in linguaggio chiaro e nominate la regola: «scartato deliberatamente dalla regola per domini mittente non instradabili, nessun errore di consegna» evita moltissime richieste di chiarimento in esercizio.
+**Non tutte le registrazioni finiscono nella cronologia del messaggio.** Molti prodotti conoscono due meccanismi: uno per il log del server e uno per la cronologia visibile anche al supporto. Solo il secondo è visibile nella cronologia. Chi imposta esclusivamente il primo ha sì registrato l'evento, ma nel trace continua ad apparire soltanto «messaggio eliminato». Formulate le voci della cronologia in chiaro e nominate la regola: «scartato intenzionalmente dalla regola per domini mittente non instradabili, nessun errore di consegna» risparmia moltissime richieste di chiarimento in esercizio.
 
-## Il cluster è parte del compito
+## Il cluster fa parte del compito
 
-Un punto regolarmente sottovalutato: se il gateway gira su più nodi, la configurazione deve essere salvata **in modo identico e persistente dopo il riavvio su tutti i nodi**. Se è attiva solo su un nodo, il comportamento dipende da quale nodo elabora il messaggio e i vostri test misurano il caso.
+Un aspetto regolarmente sottovalutato: se il gateway gira su più nodi, la configurazione deve essere presente **in modo identico e persistente dopo il riavvio su tutti i nodi**. Se è attiva solo su un nodo, il comportamento dipende da quale nodo elabora il messaggio, e i vostri test misurano il caso.
 
-Particolarmente spiacevole è il caso in cui una modifica funzioni ma non sia stata resa persistente. Il nodo lavora quindi correttamente fino al riavvio, per poi tornare allo stato precedente. Dopo ogni deployment, verificate perciò entrambe le cose: stessa versione su tutti i nodi e persistenza della versione dopo un riavvio.
+Particolarmente spiacevole è il caso in cui una modifica funziona, ma non è stata resa persistente. Il nodo opera allora correttamente fino al riavvio, per poi tornare allo stato precedente. Dopo ogni deployment, controllate quindi entrambe le cose: stesso stato su tutti i nodi e persistenza dello stato dopo un riavvio.
 
 ## In sintesi
 
-Trattate l'insieme di regole come un grafo, non come un file di testo. Una ricerca in ampiezza dal punto di ingresso separa in poche righe di codice ciò che è vivo da ciò che è morto, e l'analisi all'interno delle catene individua inoltre le regole che sono presenti ma non vengono mai raggiunte dopo un salto incondizionato.
+Trattate la configurazione di regole come un grafo, non come un file di testo. Una ricerca in ampiezza a partire dal punto di ingresso separa in poche righe di codice ciò che è vivo da ciò che è morto, e l'analisi all'interno delle catene individua inoltre le regole che sono presenti ma non vengono mai raggiunte dopo un salto incondizionato.
 
-Per la ristrutturazione stessa, l'albero parallelo con un unico scambio è il metodo con il miglior rapporto tra impegno e sicurezza. E l'analisi di raggiungibilità fornisce anche il relativo criterio di collaudo.
+Per la riorganizzazione stessa, l'albero parallelo con un unico scambio è il metodo con il miglior rapporto tra impegno e sicurezza. E l'analisi di raggiungibilità vi fornisce al tempo stesso il criterio di collaudo.
+
+## Cronologia delle modifiche
+
+- **25 ottobre 2026:** aggiornati i link delle Fonti ai nuovi indirizzi della documentazione Apache James; i riferimenti a Mailet e Matcher sono ora riuniti in un'unica fonte.
 
 ## Fonti
 
-1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): struttura dello spool manager, processori, Mailet e Matcher nonché ordine di elaborazione.
+1.  [Apache James: Mailet container configuration](https://james.apache.org/server/config-mailetcontainer.html): struttura dello Spoolmanager, processori, Mailet e Matcher nonché ordine di elaborazione.
 
-2.  [Apache James: Provided mailets](https://james.apache.org/server/dev-provided-mailets.html): riferimento dei Mailet forniti, incluso ToProcessor e i parametri per inoltro e consumo.
+2.  [Apache James: Mailets and Matchers Reference](https://james.apache.org/mailet/standard/mailet-report.html): riferimento dei Mailet forniti, incluso ToProcessor, e dei Matcher, tra cui All, HostIsLocal e RecipientIs.
 
-3.  [Apache James: Provided matchers](https://james.apache.org/server/dev-provided-matchers.html): riferimento dei Matcher, tra cui All, HostIsLocal e le varianti basate sul destinatario.
-
-4.  [Apache James: Mailet API](https://james.apache.org/server/dev-mailet-api.html): contratto tra Mailet e container, base per comprendere consumo e inoltro.
+3.  [Apache James: Mailet API](https://james.apache.org/mailet/api/index.html): descrizione dell'interfaccia Mailet e dell'esecuzione nel contenitore Mailet, base per comprendere consumo e inoltro.
