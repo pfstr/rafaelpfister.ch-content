@@ -1,7 +1,7 @@
 ---
 title: "totemomail 9.5.1: Account-Übernahme im Web Portal und SSRF über eingehende Mails geschlossen"
 navTitle: "totemomail 9.5.1"
-description: "totemomail 9.5.1 schliesst acht Sicherheitslücken. Zwei davon lassen sich ohne Anmeldung ausnutzen: ein Fehler im Passwort-Reset des Web Portals, der die Übernahme von Administratorkonten erlaubt, und serverseitige Abrufe von URLs aus eingehenden Nachrichten. Dazu kommen Path-Traversal-Fixes in Admin API und Mail API sowie aktualisierte Tomcat- und Batik-Bibliotheken."
+description: "totemomail 9.5.1 schliesst acht Sicherheitslücken und bringt totemomail auf den Stand, auf den sich die Ende September veröffentlichten Kiteworks-Advisories zum Email Protection Gateway beziehen. Zwei Lücken lassen sich ohne Anmeldung ausnutzen: ein Fehler im Passwort-Reset des Web Portals, der die Übernahme von Administratorkonten erlaubt, und serverseitige Abrufe von URLs aus eingehenden Nachrichten. Dazu kommen Path-Traversal-Fixes in Admin API und Mail API sowie aktualisierte Tomcat- und Batik-Bibliotheken."
 date: "2026-10-31"
 kategorie: "Totemomail"
 timeToRead: "5 Min. Lesezeit"
@@ -25,23 +25,38 @@ totemo hat totemomail 9.5.1 (Build 101) veröffentlicht. Der Patch enthält acht
 
 ## Von 9.2.1 direkt zu 9.5.1
 
-Die Release Notes führen 9.5.1 unmittelbar nach 9.2.1; Versionen 9.3 und 9.4 kommen in der totemomail-Historie nicht vor. Ein Eintrag in 9.5.1 verweist trotzdem auf eine «security hardening introduced in 9.3.1». Wahrscheinlich stammt diese Nummer aus der Versionierung des Kiteworks Email Protection Gateway (EPG), das auf derselben Codebasis aufbaut und eigene Releases erhält. Für totemomail-Installationen mit 9.2.1 ist 9.5.1 das nächste Update; die Release Notes führen dazwischen keinen weiteren Patch.
+Die Release Notes führen 9.5.1 unmittelbar nach 9.2.1; Versionen 9.3 und 9.4 kommen in der totemomail-Historie nicht vor. Ein Eintrag in 9.5.1 verweist trotzdem auf eine «security hardening introduced in 9.3.1». Die Zwischenversionen stammen aus dem Kiteworks Email Protection Gateway (EPG), das auf derselben Codebasis aufbaut: Die Sicherheitshinweise von Kiteworks nennen als Korrekturstände EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 und 9.5.1. Für totemomail-Installationen mit 9.2.1 ist 9.5.1 das nächste Update; die Release Notes führen dazwischen keinen weiteren Patch.
 
 ## Lücken ohne Anmeldung
 
-**Server-Side Request Forgery über den Nachrichteninhalt.** totemomail rief URLs aus verarbeiteten Nachrichten serverseitig ab, ohne das Ziel ausreichend einzuschränken. Ein Absender ohne Anmeldung konnte eine Nachricht so gestalten, dass das Gateway Anfragen an interne Dienste oder an Metadaten-Endpunkte von Cloud-Instanzen stellte und die Antworten zurückgab. Ausreichend ist dafür eine Mail, die das Gateway verarbeitet; bei einem Gateway im eingehenden Mailfluss kann das jeder externe Absender. Besonders heikel ist das bei Installationen in Azure, AWS oder anderen Clouds, wo der Metadaten-Endpunkt `169.254.169.254` Konfigurationsdaten und je nach Plattform Zugangstokens der Instanz liefert. Die Release Notes nennen für diese Lücke keine CVE-Nummer.
+**Server-Side Request Forgery über den Nachrichteninhalt.** totemomail rief URLs aus verarbeiteten Nachrichten serverseitig ab, ohne das Ziel ausreichend einzuschränken. Ein Absender ohne Anmeldung konnte eine Nachricht so gestalten, dass das Gateway Anfragen an interne Dienste oder an Metadaten-Endpunkte von Cloud-Instanzen stellte und die Antworten zurückgab. Ausreichend ist dafür eine Mail, die das Gateway verarbeitet; bei einem Gateway im eingehenden Mailfluss kann das jeder externe Absender. Besonders heikel ist das bei Installationen in Azure, AWS oder anderen Clouds, wo der Metadaten-Endpunkt `169.254.169.254` Konfigurationsdaten und je nach Plattform Zugangstokens der Instanz liefert. Die Release Notes nennen für diese Lücke keine CVE-Nummer. Kiteworks führt für das EPG fünf Advisories zum Zugriff auf interne Netzwerkressourcen (CVE-2026-102095, CVE-2026-102102 bis CVE-2026-102105, jeweils CVSS 9.1, behoben in EPG 9.5.0); welches davon dem totemomail-Eintrag entspricht, geht aus den knappen Advisory-Texten nicht hervor.
 
-**Passwort-Reset im Web Portal (CVE-2026-85066).** Ein Fehler im Ablauf zum Zurücksetzen des Passworts erlaubte es, die Prüfschritte zu überspringen und für ein bestehendes Konto ein neues Passwort zu setzen. Die Release Notes schliessen Administratorkonten ausdrücklich ein. Das Web Portal ist für externe Empfänger von verschlüsselten Nachrichten gedacht und deshalb in der Regel öffentlich erreichbar.
+**Passwort-Reset im Web Portal (CVE-2026-85066).** Ein Fehler im Ablauf zum Zurücksetzen des Passworts erlaubte es, die Prüfschritte zu überspringen und für ein bestehendes Konto ein neues Passwort zu setzen. Die Release Notes schliessen Administratorkonten ausdrücklich ein. Kiteworks bewertet die Lücke im zugehörigen Advisory GHSA-rwpq-5xfv-54pv mit CVSS 9.8 (kritisch) und nennt EPG 9.5.0 als Korrekturstand. Das Web Portal ist für externe Empfänger von verschlüsselten Nachrichten gedacht und deshalb in der Regel öffentlich erreichbar.
 
 ## Lücken mit Administratorrechten
 
 Drei weitere Korrekturen setzen eine Anmeldung mit administrativen Rechten voraus. In Kombination mit der Account-Übernahme im Web Portal verlieren diese Voraussetzungen allerdings an Gewicht.
 
-- **Admin API, Queue-Verwaltung (CVE-2026-34843):** Über unzureichend geschützte Datei-Uploads liessen sich Dateien an beliebige Stellen im Dateisystem schreiben. Laut Release Notes war damit Remote Code Execution möglich.
+- **Admin API, Queue-Verwaltung (CVE-2026-34843):** Über unzureichend geschützte Datei-Uploads liessen sich Dateien an beliebige Stellen im Dateisystem schreiben. Laut Release Notes war damit Remote Code Execution möglich. Das Advisory GHSA-mhc9-4pph-2r9x bewertet die Lücke mit CVSS 7.2; im EPG ist sie seit 9.4.0 behoben.
 - **Rule Designer:** Beim Import einer Regelkonfiguration konnte die Verarbeitungspipeline Code ausserhalb der freigegebenen Mail-Processing-Komponenten laden und ausführen. Voraussetzung sind Rechte zur Konfiguration von Mailregeln.
 - **Mail API:** Beim Entpacken hochgeladener ZIP-Dateien bestand eine Path-Traversal-Lücke. Dateien werden jetzt nur noch in das temporäre Verzeichnis entpackt.
 
 Die vierte Korrektur betrifft die Property `security.login.requestingKeysAvailable`. Bisher blendete sie im Web Portal nur den Link zum Anfordern öffentlicher Schlüssel aus; die Funktion selbst blieb über eine direkte Anfrage erreichbar. Ab 9.5.1 deaktiviert die Property die Funktion. Wenn Sie die Property gesetzt haben, um Schlüsselanfragen zu unterbinden, wirkt sie erst mit diesem Update wie erwartet.
+
+## Was das Kiteworks-Register zusätzlich listet
+
+Kiteworks hat am 30. September 2026 in seinem Advisory-Register auf GitHub gesammelt 125 Sicherheitshinweise veröffentlicht, davon 28 zum Email Protection Gateway. Die totemomail-Release-Notes zu 9.5.1 nennen deutlich weniger Punkte. Das Register unterscheidet nicht zwischen EPG und totemomail; ob jede EPG-Lücke auch totemomail betrifft, lässt sich daraus nicht ablesen. Die kritischen EPG-Einträge sind:
+
+| CVE | CVSS | Auswirkung laut Advisory | Behoben ab EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Codeausführung mit Root-Rechten ohne Anmeldung | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Übernahme von Benutzerkonten (Passwort-Reset) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Übernahme von Benutzerkonten | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Übernahme von Benutzerkonten | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Änderung der Administrationskonfiguration | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 bis 102105 | 9.1 | Zugriff auf interne Netzwerkressourcen | 9.5.0 |
+
+Dazu kommen 13 als hoch eingestufte Einträge, die meisten davon Codeausführung mit Administratorrechten (CVSS 7.2). Der höchste genannte Korrekturstand ist 9.5.1; Kiteworks hat 9.5.1 Ende September als aktuelle Version bezeichnet, in der alle bekannten Schwachstellen berücksichtigt seien. Wer totemomail auf 9.5.1 bringt, hat damit den Stand, auf den sich alle EPG-Advisories des Registers beziehen.
 
 ## Aktualisierte Bibliotheken
 
@@ -64,6 +79,14 @@ Bis das Update installiert ist, reduzieren zwei Massnahmen das Risiko: Admin-Kon
 
 1.  totemomail Release Notes 9.5.1 (Build 101), totemo ag: Installationsanleitung und Release Notes als PDF, für Kunden über den Hersteller-Support erhältlich; Grundlage aller Angaben in diesem Artikel.
 
-2.  [Mailrouting zwischen totemomail und Exchange Online verstehen](/blog/totemomail-m365): Wie totemomail eingehende Nachrichten verarbeitet; relevant für die Frage, welche Mails die SSRF-Lücke auslösen können.
+2.  [Kiteworks Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security/advisories): Offizielles Register mit CVSS-Werten und Korrekturständen für Email Protection Gateway, Core, MFT und Advanced Forms.
 
-3.  [Totemomail-Lizenzlimit erreicht: verwaiste Benutzer per LDAP bereinigen](/blog/totemomail-licensed-user-limit-ldap-cleanup): Hintergrund zur Lizenzzählung, die der Lizenzbericht-Fix betrifft.
+3.  [GHSA-rwpq-5xfv-54pv: Account takeover (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): Advisory zum Passwort-Reset-Fehler, CVSS 9.8, behoben in EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: Arbitrary code execution (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Kritischste EPG-Lücke mit CVSS 10.0, behoben in EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks published 125 advisories](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): Auswertung der Veröffentlichung vom 30. September 2026 mit Zählung nach Produkt und Schweregrad und den Aussagen von Kiteworks zu 9.5.1.
+
+6.  [Mailrouting zwischen totemomail und Exchange Online verstehen](/blog/totemomail-m365): Wie totemomail eingehende Nachrichten verarbeitet; relevant für die Frage, welche Mails die SSRF-Lücke auslösen können.
+
+7.  [Totemomail-Lizenzlimit erreicht: verwaiste Benutzer per LDAP bereinigen](/blog/totemomail-licensed-user-limit-ldap-cleanup): Hintergrund zur Lizenzzählung, die der Lizenzbericht-Fix betrifft.
