@@ -1,10 +1,10 @@
 ---
 title: "Vanlige årsaker til e-postsløyfer og hvordan de løses"
-navTitle: "Løs e-postsløyfer"
-description: "Slik kan SMTP-e-postsløyfer i Exchange Online, hybridmiljøer og foranliggende e-postgatewayer systematisk identifiseres og løses ved hjelp av NDR, hoder, Message Trace, mottakerobjekter og koblinger."
+navTitle: "Løse e-postsløyfer"
+description: "Slik finner og løser du SMTP-e-postsløyfer systematisk i Exchange Online, hybridmiljøer og foranliggende e-postgatewayer ved hjelp av NDR, headere, Message Trace, mottakerobjekter og connectorer."
 date: "2026-08-07"
 kategorie: "Exchange OnPrem / Hybrid"
-timeToRead: "12 min lesetid"
+timeToRead: "12 min. lesetid"
 themen:
   - exchange-onprem-hybrid
   - microsoft-365-exchange
@@ -23,28 +23,28 @@ slug: "vanlige-arsaker-til-e-postsloyfer-og-hvordan-de-loses"
 translationId: "article-4c91e7b2a8605fd3"
 draft: false
 translationOf: typische-ursachen-fuer-mail-loops-und-deren-behebung
-translationSourceHash: c71063cb6e7d05a1f311a5269e4d6805d8b219e8d0fb103485738925ef99f990
+translationSourceHash: 6bd8a9a875aa7795711db421084241c47d7b2c1f24abb9ba64bc1b18128d86b7
 translationModel: gpt-5.6-terra
-translatedAt: 2026-09-01T09:05:07.297Z
+translatedAt: 2026-10-30T03:39:28.152Z
 translationReview: automatic
-url: https://rafaelpfister.ch/no/blog/vanlige-arsaker-til-e-postsloyfer-og-hvordan-de-loses
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/no/blog/vanlige-arsaker-til-e-postsloyfer-og-hvordan-de-loses
 ---
 
 # Vanlige årsaker til e-postsløyfer og hvordan de løses
 
-En e-postsløyfe oppstår når minst to transportsystemer overleverer den samme meldingen til hverandre gjentatte ganger. Ingen av systemene oppfatter seg selv som det endelige målet, men begge kjenner til et angivelig passende neste hopp. Sløyfen avsluttes først når en server ser at det tillatte antallet transportstasjoner er overskredet og genererer en NDR.
+En e-postsløyfe oppstår når minst to transportsystemer gjentatte ganger overleverer den samme meldingen til hverandre. Ingen av systemene identifiserer seg som det endelige målet, men begge kjenner et angivelig passende neste hopp. Sløyfen avsluttes først når en server ser at det tillatte antallet transportstasjoner er overskredet og oppretter en NDR.
 
-I Exchange er to meldinger særlig informative:
+I Exchange er to meldinger spesielt informative:
 
-- `554 5.4.6 Hop count exceeded - possible mail loop` genereres vanligvis av den lokale Exchange-serveren.
-- `554 5.4.14 Hop count exceeded - possible mail loop ATTR34` genereres av Exchange Online.
+- `554 5.4.6 Hop count exceeded - possible mail loop` opprettes vanligvis av den lokale Exchange-serveren.
+- `554 5.4.14 Hop count exceeded - possible mail loop ATTR34` opprettes av Exchange Online.
 
-Hop-grensen er ikke årsaken, men sikringen mot en endeløs gjentakelse. Å øke den løser derfor ingenting. Målet er å finne punktet der meldingen, i strid med målarkitekturen, returneres til et system den allerede har passert.
+Hopgrensen er ikke årsaken, men sikringen mot en endeløs gjentakelse. Å øke den løser derfor ingenting. Det som må finnes, er punktet der meldingen, i strid med målarkitekturen, returneres til et system den allerede har passert.
 
-## Gjenkjenn sløyfemønsteret i hodet
+## Gjenkjenne sløyfemønsteret i headeren
 
-NDR-en og de fullstendige opprinnelige meldingshodene bør sikres før enhver endring. `Received`-linjer leses nedenfra og opp: Den nederste linjen er det tidligste dokumenterte hoppet, den øverste er det nyeste.
+NDR-en og de fullstendige opprinnelige meldingshodene bør lagres før enhver endring. `Received`-linjer leses nedenfra og opp: Den nederste linjen er det tidligst dokumenterte hoppet, den øverste er det nyeste.
 
 En sløyfe viser seg vanligvis som en gjentakende sekvens:
 
@@ -58,19 +58,19 @@ Internet
   → ...
 ```
 
-Ikke alle Microsoft-vertsnavn som forekommer flere ganger, er allerede en sløyfe. Exchange Online behandler meldinger internt gjennom flere transportroller. Det som er påfallende, er den gjentatte returen mellom de samme administrative grensene, for eksempel mellom Exchange Online og en lokal gateway. Tidsstempel, sendende IP, mottakende vert og `Message-ID` bidrar til å identifisere runden entydig.
+Ikke hvert Microsoft-vertsnavn som forekommer flere ganger, er allerede en sløyfe. Exchange Online behandler meldinger internt via flere transportroller. Det som er påfallende, er gjentatt retur mellom de samme administrative grensene, for eksempel mellom Exchange Online og en lokal gateway. Tidsstempel, sendende IP-adresse, mottakende vert og `Message-ID` bidrar til å identifisere runden entydig.
 
 For den første analysen besvares disse spørsmålene:
 
-1. Hvilket system genererte NDR-en?
+1. Hvilket system opprettet NDR-en?
 2. Hvilke to eller tre hopp gjentar seg?
 3. Hvilket system skulle ha levert meldingen endelig?
-4. På grunnlag av hvilken domene-, mottaker-, koblings- eller regelbeslutning ble den videresendt?
-5. Hvilken endring påvirket sist e-postflyten?
+4. På grunnlag av hvilken domene-, mottaker-, connector- eller regelbeslutning ble den videresendt?
+5. Hvilken endring har sist påvirket e-postflyten?
 
 ## Diagnose i Exchange Online
 
-Med `Get-MessageTraceV2` kan behandlingen de siste 90 dagene undersøkes; maksimalt ti dager er tillatt per spørring. Et smalt tidsvindu og den konkrete mottakeradressen gir de mest nyttige resultatene:
+Med `Get-MessageTraceV2` kan behandlingen de siste 90 dagene undersøkes; maksimalt ti dager er tillatt per spørring. Et snevert tidsvindu og den konkrete mottakeradressen gir de mest nyttige resultatene:
 
 ```powershell
 $start = (Get-Date).AddHours(-2)
@@ -92,9 +92,9 @@ $trace |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
-| `-RecipientAddress` | Filtrerer sporingen på den angitte mottakeradressen |
+| `-RecipientAddress` | Filtrerer sporet på den angitte mottakeradressen |
 | `-StartDate` / `-EndDate` | Tidsvindu for spørringen; maksimalt ti dager er tillatt per spørring |
 | `-ResultSize 5000` | Maksimalt antall returnerte oppføringer |
 | `Select-Object …` | Reduserer utdataene til feltene som er relevante for sløyfeanalysen |
@@ -102,7 +102,7 @@ $trace |
 
 </details>
 
-Detaljene for et treff viser enkelte transporthendelser:
+Detaljene for et treff viser enkeltstående transporthendelser:
 
 ```powershell
 $trace | ForEach-Object {
@@ -115,15 +115,15 @@ $trace | ForEach-Object {
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-MessageTraceId` | Entydig sporings-ID fra resultatet av `Get-MessageTraceV2` |
 | `-RecipientAddress` | Mottakeradresse for treffet; kreves sammen med sporings-ID-en for detaljspørringen |
-| `Format-Table … -AutoSize` | Tilpasser kolonnebreddene til innholdet slik at hendelsesdetaljene forblir lesbare |
+| `Format-Table … -AutoSize` | Tilpasser kolonnebreddene til innholdet, slik at hendelsesdetaljene forblir lesbare |
 
 </details>
 
-Deretter hentes domene, mottaker og koblinger inn samlet:
+Deretter hentes domene, mottaker og connectorer sammen:
 
 ```powershell
 Get-AcceptedDomain |
@@ -146,16 +146,16 @@ Get-InboundConnector |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-Identity $recipient` | Velger mottakerobjektet via adresse, alias eller navn |
-| `-IncludeTestModeConnectors` | Tar også med koblinger i testmodus i utdataene |
-| `Format-Table … -AutoSize` | Tabellvisning med kolonnebredder basert på innhold |
+| `-IncludeTestModeConnectors` | Tar også med connectorer i testmodus i utdataene |
+| `Format-Table … -AutoSize` | Tabellvisning med kolonnebredder etter innhold |
 | `Format-List …` | Listevisning av de angitte egenskapene, egnet for lange verdier som adresselister |
 
 </details>
 
-Det avgjørende er ikke om ett enkelt objekt ser plausibelt ut. Domenetype, faktisk mottakertype og gjeldende kobling må sammen beskrive det samme målet.
+Det avgjørende er ikke om et enkelt objekt ser plausibelt ut. Domenetypen, den faktiske mottakertypen og den gjeldende connectoren må sammen beskrive samme målsted.
 
 ## Diagnose i lokal Exchange
 
@@ -179,14 +179,14 @@ Get-MailUser -Identity $recipient -ErrorAction SilentlyContinue |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-Identity $recipient` | Velger objektet via adresse, alias eller navn |
-| `-ErrorAction SilentlyContinue` | Undertrykker feilmeldingen dersom objektet ikke finnes i den aktuelle typen; spørringen returnerer da ganske enkelt ikke noe resultat |
+| `-ErrorAction SilentlyContinue` | Undertrykker feilmeldingen dersom objektet ikke finnes i den aktuelle typen; spørringen gir da ganske enkelt ikke noe resultat |
 
 </details>
 
-For transportstien trengs send- og mottakskoblinger samt sporingsloggene:
+For transportbanen trengs Send- og Receive-connectorer samt sporingsloggene:
 
 ```powershell
 Get-SendConnector |
@@ -213,36 +213,36 @@ $servers |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
-| `Where-Object { … }` | Begrenser serverlisten til Mailbox- og Hub Transport-servere, altså rollene med sporingslogger |
+| `Where-Object { … }` | Begrenser serverlisten til Mailbox- og Hub-Transport-servere, altså rollene med sporingslogger |
 | `-Start` / `-End` | Tidsvindu for logsøket |
 | `-Recipients $recipient` | Filtrerer på sporingshendelser med denne mottakeradressen |
-| `-ResultSize Unlimited` | Opphever standardgrensen på 1000 returnerte oppføringer |
-| `Select-Object …` | Reduserer utdataene til feltene som er relevante for stianalysen |
+| `-ResultSize Unlimited` | Fjerner standardgrensen på 1000 returnerte oppføringer |
+| `Select-Object …` | Reduserer utdataene til feltene som er relevante for bananalysen |
 | `Sort-Object Timestamp` | Sorterer hendelsene fra alle servere kronologisk |
 
 </details>
 
-En `SEND` til Exchange Online, etterfulgt av en ny `RECEIVE` av den samme meldingen fra Exchange Online, synliggjør returen. Med `MessageId` og `NetworkMessageId` kan man unngå å forveksle ulike testmeldinger.
+En `SEND` til Exchange Online, etterfulgt av en ny `RECEIVE` av den samme meldingen fra Exchange Online, synliggjør returen. Med `MessageId` og `NetworkMessageId` kan du unngå å forveksle ulike testmeldinger.
 
 ## De vanligste årsakene i oversikt
 
 | Mønster | Typisk årsak | Løsning |
 | --- | --- | --- |
-| Ukjente mottakere pendler mellom to systemer | Accepted Domain står på `InternalRelay`, men begge sider videresender ukjente mottakere | Definer et entydig ansvar; bruk `Authoritative` ved fullstendig EXO-levering, eller fastsett ett avsluttende hopp for Split-Domain |
-| EXO sender til lokal Exchange, som umiddelbart sender tilbake til EXO | Hybrid-kobling eller Centralized Mail Transport passer ikke lenger med postboksplasseringen | Kontroller HCW-konfigurasjonen og `RouteAllMessagesViaOnPremises`; deaktiver utdatert sentral rute eller korriger lokal mottakeroppløsning |
-| Meldingen pendler mellom EXO og en sikkerhets-, signatur- eller krypteringsgateway | Returnerte meldinger oppfyller utgangsregelen på nytt | Bruk en header satt av gatewayen eller en dokumentert mekanisme for forebygging av sløyfer som unntak; autentiser inn- og utgående koblinger entydig |
-| Bare én mottaker er berørt | Utdatert eller feil `targetAddress`, feil RemoteMailbox-type eller motstridende proxy-adresser | Fastsett Source of Authority, korriger mottakerobjektet der og synkroniser |
-| Bare videresendte meldinger går i sløyfe | Transportregel, postboksvideresending eller innboksregel adresserer den opprinnelige stien på nytt | Deaktiver regelen, korriger målet og definer et robust unntak |
-| Bare ett underdomene eller én applikasjon er berørt | Overordnet domene dekker ikke underdomenet riktig i den forventede koblingsstien | Konfigurer underdomenet eksplisitt som Accepted Domain og i riktig Send Connector |
-| Alle meldinger går i sløyfe etter en gateway- eller DNS-endring | Smart Host eller MX peker mot inngangen til det sendende systemet | Korriger neste hopp og kontroller DNS-, NAT- og Load Balancer-mål separat |
+| Ukjente mottakere pendler mellom to systemer | Accepted Domain står på `InternalRelay`, men begge sider videresender ukjente mottakere | Definer et tydelig ansvar; ved fullstendig EXO-levering bruk `Authoritative`, eller angi ett eneste avsluttende hopp for Split-Domain |
+| EXO sender til lokal Exchange, som straks sender tilbake til EXO | Hybrid-connector eller Centralized Mail Transport samsvarer ikke lenger med postboksplasseringen | Kontroller HCW-konfigurasjonen og `RouteAllMessagesViaOnPremises`; deaktiver foreldet sentralrute eller korriger lokal mottakeroppløsning |
+| Meldingen pendler mellom EXO og en sikkerhets-, signatur- eller krypteringsgateway | Returnerende meldinger oppfyller utgående regel på nytt | Bruk headeren satt av gatewayen eller den dokumenterte mekanismen for sløyfeforebygging som unntak; autentiser inn- og utgående connectorer entydig |
+| Bare én mottaker er berørt | Foreldet eller feil `targetAddress`, feil RemoteMailbox-type eller motstridende proxy-adresser | Fastslå Source of Authority, korriger mottakerobjektet der og synkroniser |
+| Bare videresendte meldinger går i sløyfe | Transportregel, postboksvideresending eller Inbox-regel adresserer den opprinnelige banen på nytt | Deaktiver regelen, korriger målet og definer et robust unntak |
+| Bare ett underdomene eller én applikasjon er berørt | Overordnet domene dekker ikke underdomenet korrekt i den forventede connectorbanen | Konfigurer underdomenet eksplisitt som Accepted Domain og i riktig Send Connector |
+| Alle meldinger går i sløyfe etter en gateway- eller DNS-endring | Smart Host eller MX peker til inngangen på det sendende systemet | Korriger neste hopp og kontroller DNS-, NAT- og Load Balancer-mål separat |
 
 ## Årsak 1: Feil type Accepted Domain
 
-Et authoritative-domene betyr: Alle gyldige mottakere for dette domenet er kjent i Exchange-organisasjonen; ukjente mottakere avvises. Et Internal Relay-domene betyr: En del av mottakerne befinner seg i et annet system og må videresendes via en Send- eller Outbound-Connector.
+Et authoritative-domene betyr: Alle gyldige mottakere for dette domenet er kjent i Exchange-organisasjonen; ukjente mottakere avvises. Et Internal-Relay-domene betyr: En del av mottakerne ligger i et annet system og må videresendes via en Send- eller Outbound-connector.
 
-Den problematiske konstellasjonen oppstår når Exchange Online sender ukjente mottakere til et lokalt system, og dette heller ikke behandler det samme domenet avsluttende, men sender det tilbake til Exchange Online via MX eller Smart Host.
+Den problematiske konstellasjonen oppstår når Exchange Online sender ukjente mottakere til et lokalt system, og dette heller ikke behandler det samme domenet avsluttende, men returnerer det til Exchange Online via MX eller Smart Host.
 
 ```powershell
 Get-AcceptedDomain -Identity contoso.com |
@@ -252,35 +252,35 @@ Get-AcceptedDomain -Identity contoso.com |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-Identity contoso.com` | Velger Accepted Domain som skal kontrolleres |
-| `Format-List …` | Viser domenenavn, domenetype og underdomenedekning som en liste |
+| `Format-List …` | Viser domenenavn, domenetype og underdomenedekning som liste |
 
 </details>
 
-Når alle mottakere befinner seg i Exchange Online etter fullført migrering, er `Authoritative` vanligvis riktig måltilstand:
+Hvis alle mottakere befinner seg i Exchange Online etter at en migrering er fullført, er `Authoritative` vanligvis riktig måltilstand:
 
 ```powershell
-# Kjør bare etter fullstendig kontroll av mottakere og ruting.
+# Kjør først etter fullstendig kontroll av mottaker og ruting.
 Set-AcceptedDomain -Identity contoso.com -DomainType Authoritative
 ```
 
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-Identity contoso.com` | Accepted Domain som skal endres |
 | `-DomainType Authoritative` | Setter domenet til authoritative: ukjente mottakere avvises i stedet for å videresendes |
 
 </details>
 
-Ved et reelt Split-Domain kan `InternalRelay` være riktig. Da kreves det imidlertid en tydelig kobling til systemet som kjenner de gjenværende mottakerne. Dette målet må ikke sende ukjente adresser tilbake til utgangspunktet.
+For et reelt Split-Domain kan `InternalRelay` være korrekt. Da kreves det imidlertid en tydelig connector til systemet som kjenner de gjenværende mottakerne. Dette målet må ikke sende ukjente adresser tilbake til utgangspunktet.
 
-## Årsak 2: Overlappende hybridkoblinger og Centralized Mail Transport
+## Årsak 2: Overlappende hybrid-connectorer og Centralized Mail Transport
 
-Centralized Mail Transport ruter utgående meldinger fra Exchange Online bevisst via lokal Exchange. Dette er nyttig for bestemte samsvarskrav, men skaper ekstra transportveier. Hvis alternativet forblir aktivt etter en migrering, selv om det lokale systemet sender meldinger tilbake til Exchange Online via sin egen MX, kan det oppstå en sirkel.
+Centralized Mail Transport ruter bevisst utgående Exchange Online-meldinger via lokal Exchange. Dette er nyttig for bestemte samsvarskrav, men skaper ekstra transportveier. Hvis alternativet forblir aktivt etter en migrering, selv om det lokale systemet sender meldinger tilbake til Exchange Online via sin egen MX, kan det oppstå en sirkel.
 
 ```powershell
 Get-OutboundConnector -IncludeTestModeConnectors |
@@ -291,19 +291,19 @@ Get-OutboundConnector -IncludeTestModeConnectors |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
-| `-IncludeTestModeConnectors` | Tar også med koblinger i testmodus i utdataene |
-| `Format-Table … -AutoSize` | Tabellvisning av rutingegenskapene med kolonnebredder basert på innhold |
+| `-IncludeTestModeConnectors` | Tar også med connectorer i testmodus i utdataene |
+| `Format-Table … -AutoSize` | Tabellvisning av rutingegenskapene med kolonnebredder etter innhold |
 
 </details>
 
-Flere koblinger med overlappende omfang bør også kontrolleres. Microsoft anbefaler en dedikert lokal kobling for hybrid e-postflyt; reparasjon med Hybrid Configuration Wizard er ofte sikrere enn isolerte enkeltendringer.
+Flere connectorer med overlappende omfang bør også kontrolleres. Microsoft anbefaler en dedikert lokal connector for hybrid e-postflyt; en reparasjon med Hybrid Configuration Wizard er ofte tryggere enn isolerte enkeltendringer.
 
-Hvis Centralized Mail Transport dokumentert ikke lenger er nødvendig, kan innstillingen deaktiveres målrettet:
+Hvis Centralized Mail Transport beviselig ikke lenger er nødvendig, kan innstillingen deaktiveres målrettet:
 
 ```powershell
-# Bare etter kontroll av samsvars- og gatewaykrav.
+# Kun etter kontroll av kravene til samsvar og gateway.
 Set-OutboundConnector `
     -Identity "Outbound to On-Premises" `
     -RouteAllMessagesViaOnPremises:$false
@@ -312,18 +312,18 @@ Set-OutboundConnector `
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
-| `-Identity "Outbound to On-Premises"` | Outbound Connector som skal endres |
+| `-Identity "Outbound to On-Premises"` | Outbound-connectoren som skal endres |
 | `-RouteAllMessagesViaOnPremises:$false` | Deaktiverer Centralized Mail Transport: utgående meldinger fra Exchange Online går ikke lenger via lokal Exchange |
 
 </details>
 
-## Årsak 3: En gateway behandler returmeldinger på nytt
+## Årsak 3: En gateway behandler returene sine på nytt
 
-I et inn-og-ut-scenario sender Exchange Online en melding til en tilleggstjeneste for signering, kryptering eller arkivering. Denne returnerer den deretter til Exchange Online. Utgangsregelen må gjenkjenne returmeldingen; ellers sendes den til tjenesten på nytt.
+I et in-and-out-scenario sender Exchange Online en melding til en tilleggstjeneste for signering, kryptering eller arkivering. Denne sender den deretter tilbake til Exchange Online. Den utgående regelen må gjenkjenne returen; ellers sendes den på nytt til tjenesten.
 
-Kontrollen begynner med alle regler som velger koblinger, omdirigerer mottakere eller evaluerer headere:
+Kontrollen starter med alle regler som velger connectorer, omdirigerer mottakere eller evaluerer headere:
 
 ```powershell
 Get-TransportRule |
@@ -337,31 +337,31 @@ Get-TransportRule |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
-| `Sort-Object Priority` | Sorterer reglene i evalueringsrekkefølgen deres |
-| `Format-List …` | Viser egenskapene som velger koblinger, omdirigerer mottakere eller angir headere eller evaluerer dem som unntak |
+| `Sort-Object Priority` | Sorterer reglene i evalueringsrekkefølgen |
+| `Format-List …` | Viser egenskapene som velger connectorer, omdirigerer mottakere eller setter headere eller evaluerer dem som unntak |
 
 </details>
 
-Det konkrete unntaket må følge dokumentasjonen fra gateway-produsenten. Vanlig er en header satt av tjenesten som ikke kan forfalskes troverdig fra Internett. I tillegg bør innkommende koblinger identifisere tjenesten ved hjelp av sertifikat eller fast avsender-IP. Et generelt unntak for alle meldinger som fremstår som «interne», er for bredt.
+Det konkrete unntaket må følge dokumentasjonen fra gatewayprodusenten. Vanlig er en header satt av tjenesten, som ikke pålitelig kan forfalskes av Internett. I tillegg bør inbound-connectorer identifisere tjenesten via sertifikat eller fast avsender-IP. Et generelt unntak for alle meldinger som fremstår som «interne», er for bredt.
 
-## Årsak 4: Mottakerobjektet og den faktiske postboksen befinner seg ikke på samme sted
+## Årsak 4: Mottakerobjektet og den faktiske postboksen er ikke på samme sted
 
-Et objekt kan vises i Exchange Online som `MailUser`, selv om den aktive postboksen ligger lokalt. I et synkronisert hybridmiljø er dette ikke automatisk et duplikat. Heller ikke en `ExternalEmailAddress`, som tilsvarer den primære SMTP-adressen, beviser alene en feilkonfigurasjon.
+Et objekt kan vises i Exchange Online som `MailUser`, selv om den aktive postboksen ligger lokalt. I et synkronisert hybridmiljø er dette ikke automatisk et duplikat. Selv en `ExternalEmailAddress`, som samsvarer med den primære SMTP-adressen, beviser alene ikke en feilkonfigurasjon.
 
-Avgjørende er kombinasjonen av alle spørringene:
+Det avgjørende er kombinasjonen av alle spørringene:
 
 - `Get-Mailbox` lokalt gir et resultat: Den aktive postboksen ligger lokalt.
 - `Get-RemoteMailbox` lokalt gir et resultat: Det administrerte målet ligger i Exchange Online.
 - `Get-EXOMailbox` gir et resultat: Det finnes en ekte postboks i skyen.
-- `Get-EXORecipient` gir bare en MailUser: Objektet er et rutingmål, ikke en skypostboks.
+- `Get-EXORecipient` returnerer bare en MailUser: Objektet er et rutingsmål, ikke en skylagringspostboks.
 
-Problematiske er utdaterte objekter etter en migrering, feil eksterne rutingdomener eller manuelt angitte `targetAddress`-verdier, der domenet fører tilbake via samme transportvei. Endringer utføres ved Source of Authority: I synkroniserte miljøer altså med Exchange-administrasjonsverktøy lokalt og ikke ved å redigere enkeltattributter direkte i Exchange Online.
+Problematiske er foreldede objekter etter en migrering, feil eksterne rutingsdomener eller manuelt angitte `targetAddress`-verdier, der domenet fører tilbake via samme transportvei. Endringer gjøres i Source of Authority: I synkroniserte miljøer altså med Exchange-administrasjonsverktøy lokalt og ikke ved direkte redigering av enkeltattributter i Exchange Online.
 
 ## Årsak 5: Videresendinger og transportregler danner en sirkel
 
-En regel kan omdirigere fra adresse A til B, mens B sender tilbake til A via en annen regel, en postboksvideresending eller et eksternt system. Slike sløyfer berører ofte bare enkelte mottakere eller meldingstyper.
+En regel kan omdirigere fra adresse A til B, mens B sender tilbake til A via en annen regel, en postboksvideresending eller et eksternt system. Slike sløyfer berører ofte bare enkeltmottakere eller meldingstyper.
 
 ```powershell
 Get-TransportRule |
@@ -380,20 +380,20 @@ Get-InboxRule -Mailbox user01@contoso.com |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
-| `Sort-Object Priority` | Sorterer transportreglene i evalueringsrekkefølgen deres |
-| `-ResultSize Unlimited` | Opphever standardgrensen på 1000 returnerte postbokser |
-| `-Mailbox user01@contoso.com` | Postboks der innboksreglene hentes ut |
-| `Select-Object …` | Reduserer utdataene til målene for videresending og omdirigering |
+| `Sort-Object Priority` | Sorterer transportreglene i evalueringsrekkefølgen |
+| `-ResultSize Unlimited` | Fjerner standardgrensen på 1000 returnerte postbokser |
+| `-Mailbox user01@contoso.com` | Postboks som Inbox-regler skal hentes for |
+| `Select-Object …` | Reduserer utdataene til videresendings- og omdirigeringsmålene |
 
 </details>
 
-Løsningen består ikke bare i å slå av en regel midlertidig. Hele kjeden må løses opp, og regler for eksterne tjenester trenger et unntak som pålitelig gjenkjenner allerede behandlede meldinger.
+Løsningen består ikke bare i å slå av en regel midlertidig. Hele kjeden må oppløses, og regler for eksterne tjenester trenger et unntak som sikkert gjenkjenner allerede behandlede meldinger.
 
 ## Årsak 6: MX, Smart Host eller underdomene peker tilbake
 
-En gateway kan internt trenge et annet neste hopp enn eksterne avsendere. Hvis den bruker den offentlige MX-en for videresending, kan denne under visse omstendigheter peke tilbake på selve gatewayen. Det samme problemet oppstår dersom en Smart Host føres tilbake til sin egen lytter via NAT eller lastbalansering.
+En gateway kan internt trenge et annet neste hopp enn eksterne avsendere. Hvis den for videresending bare bruker den offentlige MX-en, kan denne i enkelte tilfeller peke tilbake på gatewayen selv. Det samme problemet oppstår når en Smart Host fører tilbake til sin egen lytter via NAT eller Load Balancing.
 
 ```powershell
 Resolve-DnsName -Type MX contoso.com
@@ -406,15 +406,15 @@ Get-SendConnector |
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-Type MX` | Spør etter MX-poster i stedet for standard A-poster |
-| `contoso.com` / `app.contoso.com` | Domenet som skal spørres etter som posisjonsargument (parameter `-Name`) |
-| `Format-List …` | Viser adresserom, rutingmodus og Smart Hosts per Send Connector |
+| `contoso.com` / `app.contoso.com` | Domene som skal spørres etter som posisjonsargument (parameter `-Name`) |
+| `Format-List …` | Viser adresserom, rutingsmodus og Smart Hosts per Send Connector |
 
 </details>
 
-Underdomener fortjener en egen kontroll. Microsoft dokumenterer tilfeller der et applikasjonsunderdomene må opprettes eksplisitt som et Internal Relay-domene og synkroniseres til Edge-systemene:
+Underdomener fortjener en egen kontroll. Microsoft har i en nå tilbaketrukket supportartikkel dokumentert tilfeller der et applikasjonsunderdomene må opprettes eksplisitt som et Internal-Relay-domene og synkroniseres til Edge-systemene:
 
 ```powershell
 New-AcceptedDomain `
@@ -428,7 +428,7 @@ Start-EdgeSynchronization
 <details class="options-details">
 <summary>Forklaring av alternativer</summary>
 
-| Alternativ | Effekt |
+| Alternativ | Virkning |
 |---|---|
 | `-Name "app.contoso.com"` | Visningsnavn for det nye Accepted Domain-objektet |
 | `-DomainName app.contoso.com` | SMTP-domenet som Exchange godtar meldinger for |
@@ -436,26 +436,26 @@ Start-EdgeSynchronization
 
 </details>
 
-Disse kommandoene er ingen universell løsning. De passer bare dersom `app.contoso.com` faktisk leveres utenfor Exchange-organisasjonen og Send Connector har et entydig neste hopp.
+Disse kommandoene er ikke en universell løsning. De passer bare dersom `app.contoso.com` faktisk leveres utenfor Exchange-organisasjonen og Send Connector har et entydig neste hopp.
 
-## Sikker fremgangsmåte ved en aktiv sløyfe
+## Trygg fremgangsmåte ved en aktiv sløyfe
 
-Under driftsforstyrrelsen bør først oppformeringen stanses. Avhengig av arkitekturen deaktiveres den utløsende transportregelen eller den spesifikke koblingen kontrollert, eller gatewayen holder den berørte køen tilbake. Før dette eksporteres konfigurasjon og meldingseksempler.
+Under forstyrrelsen bør multiplikasjonen først stoppes. Avhengig av arkitekturen deaktiveres den utløsende transportregelen eller den spesifikke connectoren kontrollert, eller gatewayen holder den berørte køen tilbake. Konfigurasjon og meldingseksempler eksporteres på forhånd.
 
-Deretter følger en test med nøyaktig én avsender, én mottaker og en tydelig gjenkjennelig emnelinje. Meldingen følges kontinuerlig gjennom headere, Message Trace og lokale sporingslogger. Først når den ender på det planlagte målet, åpnes e-postflyten trinnvis igjen.
+Deretter følger en test med nøyaktig én avsender, én mottaker og en tydelig gjenkjennelig emnelinje. Meldingen spores uten avbrudd via headere, Message Trace og lokale sporingslogger. Først når den ender ved det tiltenkte målet, åpnes e-postflyten gradvis igjen.
 
-Ikke anbefalt er:
+Anbefales ikke:
 
-- å øke hop-grenser
-- å endre flere koblinger samtidig
-- å bytte Accepted Domains på mistanke mellom `Authoritative` og `InternalRelay`
-- å legge en problematisk kø inn igjen gjentatte ganger uten kontroll
-- å korrigere synkroniserte Exchange-attributter direkte i AD eller Exchange Online
-- å deaktivere TLS-, IP- eller sertifikatkontroller som en tilsynelatende hurtigløsning
+- øke hopgrenser
+- endre flere connectorer samtidig
+- bytte Accepted Domains på mistanke mellom `Authoritative` og `InternalRelay`
+- legge en problematisk kø inn på nytt gjentatte ganger uten kontroll
+- korrigere synkroniserte Exchange-attributter direkte i AD eller Exchange Online
+- deaktivere TLS-, IP- eller sertifikatkontroller som en antatt hurtigløsning
 
 ## Sluttkontroll
 
-Etter korrigeringen bør dokumentasjonen inneholde nøyaktig én uttalelse for hvert relevant domene: Hvilket system kjenner mottakeren, hvilken kobling gjelder, og hvilken vert er det endelige neste hoppet?
+Etter korrigeringen bør dokumentasjonen for hvert relevant domene inneholde nøyaktig én opplysning: Hvilket system kjenner mottakeren, hvilken connector gjelder, og hvilken vert er det endelige neste hoppet?
 
 Den tekniske godkjenningen omfatter minst:
 
@@ -466,13 +466,17 @@ Den tekniske godkjenningen omfatter minst:
 - headere uten gjentakende hoppsekvens
 - Message Trace med `Delivered` eller forventet overlevering
 - lokal sporing uten ny `RECEIVE` etter en `SEND` til samme mål
-- koblingsvalidering for alle koblinger som fortsatt trengs
+- connectorvalidering for alle connectorer som fortsatt er nødvendige
 
-En løst e-postsløyfe er først avsluttet når ikke bare test-e-posten kommer frem, men også ukjente mottakere og alternative e-postflytstier avsluttes definert. Det er nettopp der de fleste tilbakefallene ligger.
+En løst e-postsløyfe er først fullført når ikke bare test-e-posten kommer frem, men også ukjente mottakere og alternative e-postflytbaner avsluttes på en definert måte. Det er nettopp der de fleste tilbakefallene ligger.
+
+## Endringslogg
+
+- **25. oktober 2026:** Microsoft har trukket tilbake supportartikkelen om underdomene- og EdgeSync-scenarioet; kilden viser nå til den arkiverte versjonen fra 19. april 2026.
 
 ## Kilder
 
-1. [Microsoft Learn – Fix NDR error 5.4.6 or 5.4.14 in Exchange Online](https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/fix-error-code-5-4-6-through-5-4-20-in-exchange-online): Betydningen av Exchange-NDR-er og typiske årsaker i Accepted Domains og hybridkoblinger.
+1. [Microsoft Learn – Fix NDR error 5.4.6 or 5.4.14 in Exchange Online](https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/fix-error-code-5-4-6-through-5-4-20-in-exchange-online): Betydningen av Exchange-NDR-er og typiske årsaker i Accepted Domains og hybrid-connectorer.
 
 2. [Microsoft Learn – Manage accepted domains in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains): Forskjeller mellom `Authoritative` og `InternalRelay`.
 
@@ -480,9 +484,9 @@ En løst e-postsløyfe er først avsluttet når ikke bare test-e-posten kommer f
 
 4. [Microsoft Learn – Transport routing in Exchange hybrid deployments](https://learn.microsoft.com/en-us/exchange/transport-routing): Forventede transportveier med og uten Centralized Mail Transport.
 
-5. [Microsoft Learn – Validate connectors in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/validate-connectors): Koblingsvalidering og merknader om flere koblinger som passer samtidig.
+5. [Microsoft Learn – Validate connectors in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/validate-connectors): Connectorvalidering og merknader om flere connectorer som passer samtidig.
 
-6. [Microsoft Learn – Manage mail flow using a third-party cloud service](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud): Støttede e-postflytmønstre med foranliggende tredjepartstjenester.
+6. [Microsoft Learn – Manage mail flow using a third-party cloud service](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-mail-flow-using-third-party-cloud): Støttede mønstre for e-postflyt med foranliggende tredjepartstjenester.
 
 7. [Microsoft Learn – Mail flow rules in Exchange Online](https://learn.microsoft.com/en-us/exchange/security-and-compliance/mail-flow-rules/mail-flow-rules): Behandling, prioritet, handlinger og unntak for transportregler.
 
@@ -490,4 +494,4 @@ En løst e-postsløyfe er først avsluttet når ikke bare test-e-posten kommer f
 
 9. [Microsoft Learn – Search message tracking logs](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/search-message-tracking-logs): Lokal meldingssporing på tvers av alle Exchange-servere.
 
-10. [Microsoft Learn – Hop count exceeded for an on-premises application subdomain](https://learn.microsoft.com/en-us/troubleshoot/exchange/mailflow/hop-count-exceeded-possible-mail-loop): Dokumentert scenario for underdomene/EdgeSync med eksplisitt Internal Relay-domene.
+10. [Microsoft Learn – Hop count exceeded for an on-premises application subdomain (arkivert versjon fra 19. april 2026)](https://web.archive.org/web/20260419203247/https://learn.microsoft.com/en-us/troubleshoot/exchange/mailflow/hop-count-exceeded-possible-mail-loop): Dokumentert underdomene-/EdgeSync-scenario med eksplisitt Internal-Relay-domene; Microsoft har siden trukket tilbake artikkelen.

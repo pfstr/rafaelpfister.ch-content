@@ -1,10 +1,10 @@
 ---
-title: "Teste SMTP under Linux: fra TCP-forbindelsen til levert e-post"
-navTitle: "Teste SMTP"
-description: "Når en appliance ikke lenger leverer e-post, hjelper en manuell SMTP-test mer enn enhver logg. Slik kontrollerer du lag for lag med innebygde verktøy, hva ulike feilbilder betyr, og hvorfor en lastbalanserer kan forvrenge feilsøkingen."
+title: "Testing SMTP on Linux: from the TCP connection to delivered mail"
+navTitle: "Test SMTP"
+description: "When an appliance stops delivering email, a manual SMTP test is more helpful than any log. Learn how to check layer by layer using built-in tools, what different error patterns mean, and why a load balancer can distort diagnosis."
 date: "2026-07-31"
-kategorie: "SMTP og e-postflyt"
-timeToRead: "10 min lesetid"
+kategorie: "SMTP and mail flow"
+timeToRead: "10 min read"
 themen:
   - smtp-mailflow
   - testing
@@ -12,98 +12,98 @@ themen:
 slug: "teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post"
 translationId: "article-cb44a92c03a47bc0"
 translationOf: smtp-verbindung-testen-linux
-translationSourceHash: af2a802f67ec6d294b1507eaf26e25704b938e8760ac6751104ce7258cc2a4b3
+translationSourceHash: 17f985224e55b45d0395c6f5f6a100918ad6718f2bd22191bc29f30e204e5e11
 translationModel: gpt-5.6-terra
-translatedAt: 2026-09-02T08:19:46.129Z
+translatedAt: 2026-10-31T03:22:52.613Z
 translationReview: automatic
-url: https://rafaelpfister.ch/no/blog/teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/no/blog/teste-smtp-under-linux-fra-tcp-forbindelse-til-levert-e-post
 ---
 
-# Teste SMTP under Linux: fra TCP-forbindelsen til levert e-post
+# Testing SMTP on Linux: from the TCP connection to delivered mail
 
-Når en e-postgateway plutselig ikke lenger leverer noe, viser appliance-loggene ofte bare sluttresultatet: en levering mislykkes, køen vokser, og en feilmelding oppgir en timeout. Hva årsaken faktisk er, viser først en manuell test fra kommandolinjen. SMTP er en klartekstprotokoll som kan kommuniseres helt manuelt, og nettopp det gjør den til et diagnoseverktøy som er tilgjengelig overalt uten ekstra installasjon.
+When a mail gateway suddenly stops delivering anything, the appliance logs often show only the end result: delivery fails, the queue grows, and an error message reports a timeout. Only a manual test from the command line reveals the actual cause. SMTP is a plain-text protocol that can be spoken entirely by hand, and that is precisely what makes it a diagnostic tool available everywhere without additional installation.
 
-Den andre grunnen til den manuelle testen: På appliances kan man som regel ikke installere noe. Ingen pakkebehandler, ingen root-rettigheter, ingen `swaks`. Alle følgende trinn fungerer derfor med det som uansett finnes på praktisk talt alle Linux-systemer.
+The second reason for manual testing: on appliances, you usually cannot install anything. No package manager, no root permissions, no `swaks`. All the following steps therefore work with what is already available on virtually every Linux system.
 
-## Skill lagene fra hverandre
+## Separate the layers
 
-En mislykket e-postsending kan feile på fem forskjellige nivåer, og hvert av dem gir et annet feilbilde:
+A failed email transmission can fail at five different levels, each producing a different error pattern:
 
-1. **Navneoppløsning:** Målverten kan ikke oversettes til en IP-adresse.
-2. **TCP-forbindelse:** Forbindelsen til porten opprettes ikke eller blir tilbakestilt.
-3. **SMTP-dialog:** Forbindelsen er opprettet, men serveren avviser avsender, mottaker eller innhold.
-4. **Transportkryptering:** STARTTLS mangler, sertifikatet er ugyldig eller TLS-versjonen passer ikke.
-5. **Avsenderkontroll:** E-posten blir godtatt og forkastet hos mottakeren på grunn av SPF, DKIM eller DMARC.
+1. **Name resolution:** The target host cannot be translated into an IP address.
+2. **TCP connection:** The connection to the port cannot be established or is reset.
+3. **SMTP dialogue:** The connection is established, but the server rejects the sender, recipient, or content.
+4. **Transport encryption:** STARTTLS is missing, the certificate is invalid, or the TLS version does not match.
+5. **Sender verification:** The email is accepted but rejected by the recipient due to SPF, DKIM, or DMARC.
 
-Feilsøkingen blir vesentlig bedre når du kontrollerer disse nivåene etter hverandre og enkeltvis, i stedet for å sende en fullstendig test-e-post med én gang. Et mislykket totalforsøk forteller deg bare at noe ikke fungerer. Lagkontrollen forteller deg hva.
+Diagnosis improves enormously when you check these levels one after another and individually instead of immediately sending a complete test email. A failed overall attempt only tells you that something does not work. Checking the layers tells you what.
 
-## Trinn 1: Navneoppløsning
+## Step 1: Name resolution
 
 ```bash
 getent hosts relay.example.com
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `hosts` | NSS-database som skal spørres; bruker de samme kildene og samme rekkefølge som systemet selv, i henhold til `nsswitch.conf` |
-| `relay.example.com` | Vertsnavn som skal løses opp |
+| `hosts` | NSS database to query; uses the same sources and order as the system itself, according to `nsswitch.conf` |
+| `relay.example.com` | Hostname to resolve |
 
 </details>
 
-Hvis utdataene forblir tomme, er ingen navneserver tilgjengelig på denne verten, eller den svarer ikke på eksterne navn. Dette forekommer regelmessig i praksis: Appliances i isolerte soner får ofte bare en intern resolver som utelukkende kjenner egne soner.
+If the output remains empty, no name server is reachable from this host, or it does not answer external names. This occurs regularly in practice: appliances in isolated zones often receive only an internal resolver that knows exclusively its own zones.
 
 ```bash
 cat /etc/resolv.conf; grep hosts: /etc/nsswitch.conf
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `/etc/resolv.conf` | Fil med de konfigurerte navneserverne, utgitt av `cat` |
-| `hosts:` | Søk mønster for `grep`: linjen som angir rekkefølgen på oppløsningskildene (filer, DNS) |
-| `/etc/nsswitch.conf` | Fil med NSS-konfigurasjonen, gjennomsøkt av `grep` |
+| `/etc/resolv.conf` | File output by `cat` containing the configured name servers |
+| `hosts:` | Search pattern for `grep`: the line that defines the order of resolution sources (files, DNS) |
+| `/etc/nsswitch.conf` | File searched by `grep` containing the NSS configuration |
 
 </details>
 
-Hvis oppløsningen mangler, test videre direkte mot IP-adressen. Det er fullt tilstrekkelig for feilsøkingen og skiller DNS-problemet rent fra transportproblemet. I produksjon er den manglende oppløsningen naturligvis et separat funn som må rettes.
+If resolution is unavailable, test directly against the IP address in the following steps. This is entirely sufficient for diagnosis and cleanly separates the DNS problem from the transport problem. For production operation, the missing resolution naturally remains a separate finding that should be corrected.
 
-## Trinn 2: Portens tilgjengelighet
+## Step 2: Port reachability
 
-For en ren TCP-kontroll er bash tilstrekkelig. Pseudoenheten `/dev/tcp` åpner en forbindelse uten at `nc` eller `telnet` må være installert:
+For a pure TCP check, bash is sufficient. The pseudo-device `/dev/tcp` opens a connection without requiring `nc` or `telnet` to be installed:
 
 ```bash
 timeout 10 bash -c 'exec 3<>/dev/tcp/192.0.2.25/25' ; echo "exit=$?"
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `timeout 10` | Avbryter den påfølgende kommandoen etter 10 sekunder og returnerer deretter avslutningskode 124 |
-| `bash -c '…'` | Kjører kommandokjeden i en bash; nødvendig fordi `/dev/tcp` er en bash-funksjon |
-| `exec 3<>/dev/tcp/192.0.2.25/25` | Åpner filbeskrivelse 3 for lesing og skriving som TCP-forbindelse til 192.0.2.25, port 25 |
-| `echo "exit=$?"` | Skriver ut avslutningskoden for den foregående kommandoen |
+| `timeout 10` | Stops the subsequent command after 10 seconds and then returns exit code 124 |
+| `bash -c '…'` | Executes the command string in bash; required because `/dev/tcp` is a bash feature |
+| `exec 3<>/dev/tcp/192.0.2.25/25` | Opens file descriptor 3 for reading and writing as a TCP connection to 192.0.2.25, port 25 |
+| `echo "exit=$?"` | Outputs the exit code of the preceding command |
 
 </details>
 
-Avslutningskoden er den egentlige informasjonen her:
+The exit code is the actual information here:
 
-| exit | Betydning |
+| exit | Meaning |
 |---|---|
-| `0` | Forbindelsen er opprettet, porten er åpen |
-| `124` | Timeout: Pakker forkastes, typisk for en brannmur med DROP-regel |
-| `1` | Umiddelbar avvisning (RST) eller manglende rute |
+| `0` | Connection established, port is open |
+| `124` | Timeout: packets are being dropped, typical of a firewall with a DROP rule |
+| `1` | Immediate rejection (RST) or no route |
 
-Forskjellen mellom 124 og 1 er i praksis det viktigste tegnet av alle. En timeout betyr at noen forkaster trafikken stille på veien, og det er nesten alltid en brannmurregel. Et umiddelbart RST kommer derimot fra et system som svarer, men ikke tilbyr tjenesten.
+In practice, the difference between 124 and 1 is the most important clue of all. A timeout means that something silently drops traffic along the path, and that is almost always a firewall rule. An immediate RST, by contrast, comes from a system that responds but does not offer the service.
 
-Kontroller begge relevante porter med én gang, og i tillegg et vilkårlig annet mål for å se om verten i det hele tatt har tillatelse til å opprette utgående forbindelser:
+Check both relevant ports right away, as well as any other target, to see whether the host is allowed to establish outgoing connections at all:
 
 ```bash
 for t in "192.0.2.25 25" "192.0.2.25 587" "1.1.1.1 443"; do
@@ -114,76 +114,76 @@ done
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `set -- $t` | Deler verdiparet ved mellomrommet i posisjonsparameterne `$1` (IP-adresse) og `$2` (port) |
-| `timeout 8` | Avbryter forbindelsesforsøket etter 8 sekunder (avslutningskode 124) |
-| `bash -c "…"` | Kjører forbindelsesopprettingen med `/dev/tcp` i en bash |
-| `2>/dev/null` | Undertrykker feilmeldinger slik at nøyaktig én resultatlinje vises per mål |
+| `set -- $t` | Splits the value pair at the space into positional parameters `$1` (IP address) and `$2` (port) |
+| `timeout 8` | Stops the connection attempt after 8 seconds (exit code 124) |
+| `bash -c "…"` | Executes the `/dev/tcp` connection setup in bash |
+| `2>/dev/null` | Suppresses error messages so that exactly one result line appears for each target |
 
 </details>
 
-Hvis også kontrolltesten feiler, har systemet generelt ingen direkte utgående tilgang, og trafikken må gå via et internt relé eller en proxy. Mer om hvorfor dette tilfellet er særlig vanskelig, lenger ned.
+If the control test also fails, the system generally has no direct outbound access and traffic must go through an internal relay or proxy. More on why this case is particularly tricky below.
 
-Hvis `/dev/tcp` mangler, er skallet ikke bash. Under `sh`, `ash` eller `ksh` finnes ikke funksjonen, noe som ofte feiltolkes som et tilsynelatende nettverksproblem:
+If `/dev/tcp` is missing, the shell is not bash. Under `sh`, `ash`, or `ksh`, the feature does not exist, which is often misinterpreted as an apparent network problem:
 
 ```bash
 ps -p $$ -o comm= ; echo "BASH_VERSION=${BASH_VERSION:-keine bash}"
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-p $$` | Begrenses utdataene til prosessen med PID-en til gjeldende skall (`$$`) |
-| `-o comm=` | Skriver bare ut kommandonavnet; den tomme etiketten etter `=` undertrykker overskriftslinjen |
-| `${BASH_VERSION:-keine bash}` | Skriver ut bash-versjonen eller erstatningsteksten dersom variabelen ikke er satt |
+| `-p $$` | Limits output to the process with the PID of the current shell (`$$`) |
+| `-o comm=` | Outputs only the command name; the empty label after `=` suppresses the header line |
+| `${BASH_VERSION:-keine bash}` | Outputs the bash version or replacement text if the variable is not set |
 
 </details>
 
-## Trinn 3: Lytt først, ikke send
+## Step 3: Listen first, do not send
 
-En SMTP-server hilser på eget initiativ med et `220`-banner. Den mest informative enkelttesten består derfor i å åpne en forbindelse og ikke gjøre noe:
+An SMTP server proactively greets you with a `220` banner. The most meaningful single test is therefore to open a connection and do nothing:
 
 ```bash
 { exec 3<>/dev/tcp/192.0.2.25/25 && timeout 15 cat <&3; echo "[ende exit=$?]"; }
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `exec 3<>/dev/tcp/192.0.2.25/25` | Åpner filbeskrivelse 3 som TCP-forbindelse til målet |
-| `timeout 15 cat <&3` | Leser i 15 sekunder alt serveren sender på eget initiativ, og skriver det ut |
-| `echo "[ende exit=$?]"` | Viser avslutningskoden etter utløp; 124 betyr: Ingenting kom på 15 sekunder |
+| `exec 3<>/dev/tcp/192.0.2.25/25` | Opens file descriptor 3 as a TCP connection to the target |
+| `timeout 15 cat <&3` | Reads and outputs everything the server sends on its own for 15 seconds |
+| `echo "[ende exit=$?]"` | Displays the exit code afterwards; 124 means: nothing else arrived for 15 seconds |
 
 </details>
 
-Disse få tegnene skiller to helt forskjellige situasjoner. Hvis det kommer et `220 mail.example.com ESMTP`, snakker motparten og alle videre feil ligger i dialogen. Hvis ingenting kommer, skyldes det ikke en feilformulert kommando fra din side, for du har jo ikke sendt noen.
+These few characters distinguish two completely different situations. If a `220 mail.example.com ESMTP` arrives, the remote side is communicating and all further errors are in the dialogue. If nothing arrives, it is not due to an incorrectly formulated command on your part, because you did not send one.
 
-Filbeskrivelsen forblir deretter åpen i skallet. Lukk den før du starter neste test, ellers kan du ende opp med å fortsette på en gammel forbindelse som ikke lenger er intakt:
+The file descriptor remains open in the shell afterwards. Close it before starting the next test, otherwise you may continue working with an old, no longer intact connection:
 
 ```bash
 exec 3<&- 3>&-
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `3<&-` | Lukker lesesiden til filbeskrivelse 3 |
-| `3>&-` | Lukker skrivesiden til filbeskrivelse 3 |
+| `3<&-` | Closes the read side of file descriptor 3 |
+| `3>&-` | Closes the write side of file descriptor 3 |
 
 </details>
 
-## Trinn 4: SMTP-dialogen for hånd
+## Step 4: The SMTP dialogue by hand
 
-Når banneret er på plass, gjennomfører du hele dialogen. Det er viktig å ha en leserprosess som kjører samtidig, slik at du ser hvert svar i det øyeblikket det kommer. Et skript som først sender alt og deretter leser, viser deg ingenting dersom dialogen avbrytes midtveis:
+Once the banner is present, conduct the complete dialogue. A concurrent reader process is important so that you see each response the moment it arrives. A script that sends everything first and reads only afterwards shows you nothing if the connection breaks off in the middle of the dialogue:
 
 ```bash
 {
@@ -201,48 +201,48 @@ sleep 2; kill $R 2>/dev/null
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `exec 3<>/dev/tcp/192.0.2.25/25` | Åpner filbeskrivelse 3 som TCP-forbindelse til målet |
-| `cat <&3 & R=$!` | Starter en bakgrunnsleser for filbeskrivelse 3 og lagrer PID-en i `R` |
-| `printf '…\r\n' >&3` | Sender en SMTP-kommando med den påkrevde CRLF-linjeavslutningen over forbindelsen |
-| `sleep n` | Venter angitt antall sekunder på serversvaret før neste kommando følger |
-| `date -R` | Leverer datoen i RFC-kompatibelt format for `Date:`-headeren |
-| `date +%s` | Leverer Unix-tiden som et enkelt entydig grunnlag for Message-ID |
-| `kill $R 2>/dev/null` | Avslutter bakgrunnsleseren; feilmeldingen utelates hvis den allerede er avsluttet |
+| `exec 3<>/dev/tcp/192.0.2.25/25` | Opens file descriptor 3 as a TCP connection to the target |
+| `cat <&3 & R=$!` | Starts a background reader for file descriptor 3 and stores its PID in `R` |
+| `printf '…\r\n' >&3` | Sends an SMTP command with the required CRLF line ending over the connection |
+| `sleep n` | Waits the specified number of seconds for the server response before the next command follows |
+| `date -R` | Provides the date in RFC-compliant format for the `Date:` header |
+| `date +%s` | Provides Unix time as a simple unique basis for the message ID |
+| `kill $R 2>/dev/null` | Stops the background reader; the error message is omitted if it has already terminated |
 
 </details>
 
-To detaljer avgjør om det lykkes eller mislykkes. SMTP krever CRLF som linjeavslutning, derfor `printf` med `\r\n` og ikke `echo`. Og punktum på en egen linje avslutter meldingsdelen; det må sendes som `\r\n.\r\n`.
+Two details determine success or failure. SMTP requires CRLF as the line ending, hence `printf` with `\r\n` rather than `echo`. And the dot on a line of its own ends the message body; it must be sent as `\r\n.\r\n`.
 
-Forventet forløp: `220` ved tilkobling, `250` på EHLO, `250 2.1.0` på MAIL FROM, `250 2.1.5` på RCPT TO, `354` på DATA og til slutt `250 2.0.0 Ok: queued as <id>`. Noter deg kø-ID-en. Den kan brukes til å spore meldingen hos leverandøren som drifter tjenesten dersom den aldri kommer frem hos mottakeren.
+The expected sequence: `220` when establishing the connection, `250` for EHLO, `250 2.1.0` for MAIL FROM, `250 2.1.5` for RCPT TO, `354` for DATA, and finally `250 2.0.0 Ok: queued as <id>`. Note the queue ID. This lets the operating provider trace the message if it never arrives at the recipient.
 
-EHLO-navnet fortjener oppmerksomhet: Enkelte reléer kontrollerer det mot forover- og revers-DNS og svarer ellers med `501` eller `504`. Bruk den faktiske FQDN-en til systemet som sender, ikke kortnavnet.
+The EHLO name deserves attention: some relays check it against forward and reverse DNS and otherwise reply with `501` or `504`. Use the actual FQDN of the sending system, not the short name.
 
-## Trinn 5: STARTTLS og sertifikat
+## Step 5: STARTTLS and certificate
 
-For den krypterte forbindelsen håndterer `openssl s_client` STARTTLS-forhandlingen selv og overleverer deretter kanalen til standardinndata:
+For the encrypted connection, `openssl s_client` handles the STARTTLS negotiation itself and then passes the channel to standard input:
 
 ```bash
 openssl s_client -connect 192.0.2.25:25 -starttls smtp -tls1_2 -brief </dev/null
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-connect 192.0.2.25:25` | Målvert og port for forbindelsen |
-| `-starttls smtp` | Gjennomfører først SMTP-dialogen i klartekst og bytter deretter til TLS via STARTTLS |
-| `-tls1_2` | Forhandler utelukkende TLS 1.2 |
-| `-brief` | Reduserer utdataene til en kort oppsummering av den fremforhandlede forbindelsen |
-| `</dev/null` | Lukker standardinndata umiddelbart slik at `s_client` ikke venter interaktivt etter handshaken |
+| `-connect 192.0.2.25:25` | Target host and port for the connection |
+| `-starttls smtp` | First performs the SMTP plain-text dialogue and then switches to TLS via STARTTLS |
+| `-tls1_2` | Negotiates TLS 1.2 exclusively |
+| `-brief` | Reduces output to a short summary of the negotiated connection |
+| `</dev/null` | Closes standard input immediately so that `s_client` does not wait interactively after the handshake |
 
 </details>
 
-Hvis du kobler til via IP-adressen fordi DNS mangler, fungerer ikke vertsnavnkontrollen. Sertifikatnavnet passer da ikke med den numeriske adressen. SNI og kontrollnavn kan angis eksplisitt, helt uten DNS-oppslag:
+If you connect via the IP address because DNS is unavailable, hostname verification cannot work. The certificate name then does not match the numerical address. SNI and verification names can be explicitly set without any DNS query:
 
 ```bash
 openssl s_client -connect 192.0.2.25:25 \
@@ -251,24 +251,24 @@ openssl s_client -connect 192.0.2.25:25 \
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-servername mail.example.com` | Angir SNI-navnet i ClientHello, uavhengig av forbindelsesadressen |
-| `-verify_hostname mail.example.com` | Kontrollerer serversertifikatet mot dette navnet i stedet for den numeriske adressen |
+| `-servername mail.example.com` | Sets the SNI name in ClientHello, independently of the connection address |
+| `-verify_hostname mail.example.com` | Verifies the server certificate against this name rather than against the numerical address |
 
 </details>
 
-To feilbilder forekommer regelmessig her og tolkes ofte feil.
+Two error patterns regularly occur here and are often interpreted incorrectly.
 
-**«Didn't find STARTTLS in server response, trying anyway»** betyr at serveren ikke tilbød STARTTLS i sitt EHLO-svar. `openssl` sender likevel et TLS-ClientHello, serveren oppfatter dette som ugyldige protokolldata og forbindelsen avsluttes med `wrong version number` eller `write:errno=32` (EPIPE). Begge meldingene er følgefeil. Den egentlige informasjonen er: ingen STARTTLS. Se med klartekstdialogen fra trinn 4 hvilke funksjoner serveren faktisk rapporterer.
+**«Didn't find STARTTLS in server response, trying anyway»** means that the server did not offer STARTTLS in its EHLO response. `openssl` nevertheless sends a TLS ClientHello, the server sees invalid protocol data in it, and the connection ends with `wrong version number` or `write:errno=32` (EPIPE). Both messages are subsequent errors. The actual information is: no STARTTLS. Use the plain-text dialogue from step 4 to see which capabilities the server actually reports.
 
-**Ingen STARTTLS på et internt hopp** er ofte helt korrekt. Hvis en lastbalanserer videresender forbindelsen på lag 4, forhandler ikke den TLS, men systemet bak den gjør det først mot det faktiske målet. Å teste i klartekst på det interne segmentet er da ikke en sikkerhetsmangel, men rett og slett arkitekturen.
+**No STARTTLS on an internal hop** is often entirely correct. If a load balancer forwards the connection at Layer 4, it does not negotiate TLS; the system behind it does so with the actual target. Testing in plain text on the internal segment is therefore not a security flaw but simply the architecture.
 
-## Trinn 6: Python som alternativ
+## Step 6: Python as an alternative
 
-Hvis Python finnes, slipper du den manuelle tidsstyringen med `sleep`. Standardbiblioteket er tilstrekkelig, ingenting må installeres i tillegg:
+If Python is available, it saves you the manual timing using `sleep`. The standard library is sufficient; nothing needs to be installed:
 
 ```python
 #!/usr/bin/env python3
@@ -298,114 +298,118 @@ s.send_message(msg)
 s.quit()
 ```
 
-`set_debuglevel(1)` logger hele dialogen, inkludert alle svarkoder, og `smtplib` leser hvert svar synkront. Et avbrudd vises som `SMTPServerDisconnected` sammen med den sist mottatte linjen, i stedet for som en stille Broken Pipe.
+`set_debuglevel(1)` logs the complete dialogue, including all response codes, and `smtplib` reads every response synchronously. An interruption appears as `SMTPServerDisconnected` together with the last received line, instead of as a silent broken pipe.
 
-To ting går ofte galt her: `server_hostname` er obligatorisk ved tilkobling via en IP-adresse, ellers kontrollerer Python sertifikatet mot den numeriske adressen. Og dersom du bevisst deaktiverer kontrollen, må `check_hostname = False` stå før `verify_mode = ssl.CERT_NONE`, ellers kaster Python en `ValueError`.
+Two points often go wrong here: `server_hostname` is mandatory when connecting via an IP address, otherwise Python verifies the certificate against the numerical address. And if you deliberately disable verification, `check_hostname = False` must come before `verify_mode = ssl.CERT_NONE`, otherwise Python raises a `ValueError`.
 
-## Avsenderadresse, SPF og alignment
+## Sender address, SPF, and alignment
 
-En test feiler overraskende ofte ikke i transporten, men på grunn av den valgte avsenderadressen. Tre punkter bør kontrolleres på forhånd.
+A test surprisingly often does not fail at transport, but rather at the chosen sender address. Three points should be checked in advance.
 
-Avsenderdomenet må være en FQDN. En adresse som `test@meine-testdomain` uten toppnivådomene avvises av mange MTA-er allerede ved MAIL FROM med `501` eller `553`.
+The sender domain must be an FQDN. An address such as `test@meine-testdomain` without a top-level domain is rejected by many MTAs already at MAIL FROM with `501` or `553`.
 
-Domenet må autorisere den aktuelle sendingsveien. En titt i SPF-posten viser om den utgående adressen er dekket:
+The domain must authorize the delivery path used. A look at the SPF record shows whether the outgoing address is covered:
 
 ```bash
 dig +short TXT example.com | grep spf1
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `+short` | Skriver bare ut postverdiene, uten headere og metadata |
-| `TXT` | Posttypen som spørres etter |
-| `example.com` | Navnet som spørres etter |
-| `grep spf1` | Filtrerer ut SPF-linjen blant flere TXT-poster |
+| `+short` | Outputs only the record values, without headers and metadata |
+| `TXT` | Record type queried |
+| `example.com` | Name queried |
+| `grep spf1` | Filters the SPF line from multiple TXT records |
 
 </details>
 
-Og med aktiv DMARC er det alignment som avgjør. Hvis posten inneholder `aspf=s`, må domenet i konvolutten (MAIL FROM) og domenet i `From:`-headeren være nøyaktig like, ikke bare beslektet:
+And with DMARC enabled, alignment is decisive. If the record contains `aspf=s`, the domain in the envelope (MAIL FROM) and the domain in the `From:` header must match exactly, not merely be related:
 
 ```bash
 dig +short TXT _dmarc.example.com
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `+short` | Skriver bare ut postverdiene, uten headere og metadata |
-| `TXT _dmarc.example.com` | Posttype og navnet under domenet som er definert for DMARC |
+| `+short` | Outputs only the record values, without headers and metadata |
+| `TXT _dmarc.example.com` | Record type and the name defined for DMARC below the domain |
 
 </details>
 
-Ved `p=reject` forsvinner en test-e-post med feil alignment lydløst hos mottakeren, selv om reléet ditt godtok den med `250 queued`. Dette er den vanligste årsaken til meldinger som anses som vellykkede på sendersiden, men likevel aldri kommer frem.
+With `p=reject`, a test email with unsuitable alignment disappears silently at the recipient even though your relay accepted it with `250 queued`. This is the most common cause of messages considered successful on the sending side that nevertheless never arrive.
 
-## Når en lastbalanserer står imellom
+## When a load balancer is in between
 
-I større miljøer sender en appliance sjelden direkte til internett. Vanlig er en virtuell server på en lastbalanserer, som aksepterer forbindelsen, omskriver den til en definert adresse via source NAT og først deretter videresender den utad. Dette har en ubehagelig konsekvens for feilsøkingen.
+In larger environments, an appliance rarely sends directly to the internet. A virtual server on a load balancer is common: it accepts the connection, rewrites it to a defined address using source NAT, and only then forwards it externally. This has an unpleasant consequence for diagnosis.
 
-En virtuell server som opererer på lag 4, kvitterer TCP-handshaken umiddelbart før den selv har opprettet en forbindelse til målet. Hvis denne andre forbindelsen feiler, ser du på klienten en vellykket opprettet og umiddelbart deretter tilbakestilt forbindelse: `Connection reset by peer`, uten noe SMTP-banner. Feilen ligger da ikke hos deg og heller ikke hos målet, men i poolen bak den virtuelle serveren, for eksempel fordi et medlem er markert som nede eller den konfigurerte FQDN-en ikke blir løst opp.
+A virtual server operating at Layer 4 acknowledges the TCP handshake immediately, before it has itself established a connection to the target. If this second connection fails, you see a successfully established connection on the client that is reset immediately afterwards: `Connection reset by peer`, without any SMTP banner. The error is then neither on your side nor at the target, but in the pool behind the virtual server, for example because a member is marked down or the configured FQDN cannot be resolved.
 
-Dette forklarer også hvorfor en test direkte mot internettdestinasjonen må feile dersom videresendingsregelen bare godtar trafikk fra den allerede omskrevne SNAT-adressen. Forbindelser med den opprinnelige kildeadressen passer ikke med noen regel og forkastes. I slike miljøer skal du alltid teste mot den tiltenkte virtuelle serveren, ikke mot det faktiske målet.
+This also explains why a test directly against the internet target must fail when the forwarding rule accepts traffic only from the already rewritten SNAT address. Connections with the original source address do not match any rule and are dropped. In such environments, always test against the intended virtual server, not the actual target.
 
-Hvilken kildeadresse systemet ditt bruker for et bestemt mål, kan besvares med én enkelt linje. Verdien etter `src` er nøyaktig opplysningen nettverksteamet trenger for å åpne opp:
+A single line tells you which source address your system uses for a specific target. The value after `src` is exactly the information the network team needs for authorization:
 
 ```bash
 ip route get 192.0.2.25
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `route get` | Spør kjernen hvilken rute den ville valgt for et konkret mål |
-| `192.0.2.25` | Måladresse for den simulerte forbindelsen |
+| `route get` | Asks the kernel which route it would select for a specific target |
+| `192.0.2.25` | Target address of the simulated connection |
 
 </details>
 
-Hvis systemet står bak NAT, ser motparten ikke denne, men den offentlige adressen til perimeteret. Den kan ikke fastslås innenfra så lenge ingen trafikk slipper gjennom; den står i NAT-regelen.
+If the system is behind NAT, the remote side does not see this address but the perimeter's public address. It cannot be determined from inside as long as no traffic gets through; it is specified in the NAT rule.
 
-## Feilbilder på et øyeblikk
+## Error patterns at a glance
 
-| Observasjon | Sannsynlig årsak |
+| Observation | Likely cause |
 |---|---|
-| `Name or service not known` | Ingen navneoppløsning på verten |
-| Timeout, exit 124 | Brannmur forkaster stille (DROP) |
-| `Connection refused` | Ingen tjeneste på porten eller REJECT-regel |
-| Forbindelsen er opprettet, ikke noe banner, deretter RST | Lastbalanserer godtar, backend er ikke tilgjengelig |
-| `Didn't find STARTTLS` | Serveren tilbyr ingen transportkryptering |
-| `wrong version number`, `errno=32` | Følgefeil etter tvungen TLS uten STARTTLS |
-| `501` / `553` på MAIL FROM | Avsenderdomenet er ikke en FQDN eller er ikke tillatt |
-| `554 relay access denied` | Kilde-IP-en er ikke åpnet for reléet |
-| `250 queued`, men ingen levering | SPF, DKIM eller DMARC-alignment hos mottakeren |
+| `Name or service not known` | No name resolution on the host |
+| Timeout, exit 124 | Firewall silently drops traffic (DROP) |
+| `Connection refused` | No service on the port or REJECT rule |
+| Connection established, no banner, then RST | Load balancer accepts, backend unavailable |
+| `Didn't find STARTTLS` | Server does not offer transport encryption |
+| `wrong version number`, `errno=32` | Subsequent errors after forced TLS without STARTTLS |
+| `501` / `553` at MAIL FROM | Sender domain is not an FQDN or is not permitted |
+| `554 relay access denied` | Source IP not authorized at the relay |
+| `250 queued`, but no delivery | SPF, DKIM, or DMARC alignment at the recipient |
 
-## Lasttester og rate limits
+## Load tests and rate limits
 
-For volumtester gjelder en regel som ofte overses i hverdagen: Det er ikke antallet meldinger som er problemet, men antallet forbindelser. Typiske reléer tillater noen hundre forbindelser per minutt, men titusenvis av meldinger. Hold derfor én økt åpen og send mange konvolutter gjennom den, i stedet for å opprette en ny forbindelse for hver melding.
+One rule applies to volume tests that is often overlooked in everyday work: the number of messages is not the problem; the number of connections is. Typical relays allow a few hundred connections per minute but tens of thousands of messages. Therefore, keep one session open and send many envelopes over it instead of creating a new connection for every message.
 
-I `smtplib` betyr dette ganske enkelt å bruke samme forbindelsesobjekt flere ganger og kontrollert bygge opp økten på nytt etter et fast antall meldinger. Den som derimot åpner en ny forbindelse per e-post, overskrider forbindelsesgrensen lenge før meldingsgrensen og fremprovoserer avvisninger som ser ut som et problem hos motparten.
+In `smtplib`, this simply means using the same connection object multiple times and rebuilding the session in a controlled manner after a fixed number of messages. Conversely, anyone opening a new connection per email exceeds the connection limit long before the message limit and provokes rejections that look like a problem at the remote side.
 
-## Konklusjon
+## Conclusion
 
-Den manuelle SMTP-testen er ikke en nødløsning for miljøer uten verktøy, men den mest presise feilsøkingen som er tilgjengelig i e-postdrift. Den skiller navneoppløsning, tilgjengelighet, protokolldialog og kryptering klart fra hverandre og gir et entydig resultat for hvert nivå. Den som først bare lytter, deretter utfører dialogen for hånd og tar svarkodene på alvor, kommer i løpet av få minutter frem til en konklusjon som kan dokumentere en sak overfor nettverks- eller leverandørteamet: med kildeadresse, målport, observert atferd og avslutningskode.
+The manual SMTP test is not a workaround for environments without tools, but the most precise diagnostic available in mail operations. It cleanly separates name resolution, reachability, protocol dialogue, and encryption, delivering an unambiguous result for every level. Those who first only listen, then conduct the dialogue by hand, and take the response codes seriously can reach a conclusion within minutes that supports a ticket to the network or provider team: with source address, destination port, observed behaviour, and exit code.
+
+## Change log
+
+- **25 October 2026:** Replaced source RFC 7489 with RFC 9989, which supersedes the DMARC specification since May 2026.
 
 ## Kilder
 
-1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Definerer SMTP-dialogen, kommandorekkefølgen og betydningen av svarkodene.
+1.  [RFC 5321: Simple Mail Transfer Protocol](https://www.rfc-editor.org/rfc/rfc5321): Defines the SMTP dialogue, command sequence, and meaning of response codes.
 
-2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Beskriver STARTTLS som en utvidelse, inkludert atferden når serveren ikke tilbyr den.
+2.  [RFC 3207: SMTP Service Extension for Secure SMTP over TLS](https://www.rfc-editor.org/rfc/rfc3207): Describes STARTTLS as an extension, including behaviour when the server does not offer it.
 
-3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Oppbygning og evaluering av SPF-posten for autorisering av sendende systemer.
+3.  [RFC 7208: Sender Policy Framework (SPF)](https://www.rfc-editor.org/rfc/rfc7208): Structure and evaluation of the SPF record for authorizing sending systems.
 
-4.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc7489): Regulerer alignment mellom avsenderen i konvolutten og headeren, samt policy-evalueringen.
+4.  [RFC 9989: Domain-Based Message Authentication, Reporting, and Conformance (DMARC)](https://www.rfc-editor.org/rfc/rfc9989): Governs alignment between envelope and header sender, the `aspf` tag, and policy evaluation; replaces RFC 7489 since May 2026.
 
-5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Referanse for alternativene som brukes, blant annet `-starttls`, `-servername` og `-verify_hostname`.
+5.  [OpenSSL: s_client](https://docs.openssl.org/master/man1/openssl-s_client/): Reference for the options used, including `-starttls`, `-servername` and `-verify_hostname`.
 
-6.  [Python-dokumentasjon: smtplib](https://docs.python.org/3/library/smtplib.html): Standardbibliotek for SMTP-økter, inkludert STARTTLS og feilsøkingsutskrift.
+6.  [Python documentation: smtplib](https://docs.python.org/3/library/smtplib.html): Standard library for SMTP sessions including STARTTLS and debug output.
 
-7.  [Bash Reference Manual: Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Dokumenterer `/dev/tcp` som en bash-spesifikk pseudoenhet for nettverksforbindelser.
+7.  [Bash Reference Manual: Redirections](https://www.gnu.org/software/bash/manual/bash.html#Redirections): Documents `/dev/tcp` as a bash-specific pseudo-device for network connections.

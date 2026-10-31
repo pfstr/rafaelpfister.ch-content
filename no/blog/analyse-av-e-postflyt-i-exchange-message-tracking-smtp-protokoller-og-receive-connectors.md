@@ -1,10 +1,10 @@
 ---
-title: "Analyse av Exchange-e-postflyt: Message Tracking, SMTP-protokoller og Receive Connectors"
-navTitle: "Analysere e-postflyt"
-description: "Slik finner du systematisk ut hvor en melding har blitt av i Exchange OnPrem, Hybrid og Exchange Online: spørringene med eksempelutdata, hvordan du leser SMTP-protokollen riktig, og punktene som regelmessig fører til feilslutninger."
+title: "Analyzing Exchange mail flow: Message tracking, SMTP logs and receive connectors"
+navTitle: "Analyze mail flow"
+description: "How to systematically find out where a message ended up in Exchange OnPrem, Hybrid and Exchange Online: queries with example output, how to read SMTP logs correctly, and the pitfalls that regularly lead to false conclusions."
 date: "2026-08-11"
 kategorie: "Exchange OnPrem / Hybrid"
-timeToRead: "22 min. lesetid"
+timeToRead: "22 min read"
 themen:
   - exchange-onprem-hybrid
   - smtp-mailflow
@@ -27,29 +27,29 @@ slug: "analyse-av-e-postflyt-i-exchange-message-tracking-smtp-protokoller-og-rec
 translationId: "article-ad93c41ab6cd20e6"
 draft: false
 translationOf: exchange-message-tracking-und-receive-connectoren-analysieren
-translationSourceHash: da923f7fa45ee5c38ea52e96d56781f7c3806556245a5f071242e7f02473a71c
+translationSourceHash: 867f3a9a27b8db05d2721cce6282149f4616c4170576d0ab3f39a3cbde3701e3
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-31T10:14:53.436Z
-translationReview: automatic
-url: https://rafaelpfister.ch/no/blog/analyse-av-e-postflyt-i-exchange-message-tracking-smtp-protokoller-og-receive-connectors
+translatedAt: 2026-10-30T03:28:35.532Z
+translationReview: required
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/no/blog/analyse-av-e-postflyt-i-exchange-message-tracking-smtp-protokoller-og-receive-connectors
 ---
 
-# Analyse av Exchange-e-postflyt: Message Tracking, SMTP-protokoller og Receive Connectors
+# Analyzing Exchange mail flow: Message tracking, SMTP logs and receive connectors
 
-Det vanligste spørsmålet i e-postdrift er: En melding har ikke kommet frem – hvor ble den av? Message Tracking gir et pålitelig svar, men bare hvis du vet hva det **ikke** forteller deg. Denne artikkelen beskriver fremgangsmåten i rekkefølgen som har vist seg å fungere, viser typiske utdata for hver spørring og nevner feilkildene som regelmessig koster timer, fordi de peker mot plausible, men feilaktige konklusjoner.
+The most common question in mail operations is: A message did not arrive—where did it go? Message tracking answers this reliably, but only if you know what it does **not** tell you. This article describes the procedure in the order that has proven effective, shows the typical output for each query, and identifies the sources of error that regularly cost hours because they suggest plausible but incorrect conclusions.
 
-Alle eksemplene bruker generiske navn: `SRV-MAIL01` og `SRV-MAIL02` som transportservere, `example.com` som domene. Hvis du vil sette sammen kommandoene for ditt miljø i stedet for å skrive dem inn: [Kommandogeneratoren](https://rafaelpfister.ch/tools/command-builder) inneholder vanlige kommandoer for Message Tracking og opptak for PowerShell og Unix-skall side om side, helt lokalt i nettleseren.
+All examples use generic names: `SRV-MAIL01` and `SRV-MAIL02` as transport servers, `example.com` as the domain. If you want to assemble the commands for your environment rather than type them: the [Command Generator](https://rafaelpfister.ch/tools/command-builder) contains the common message tracking and capture commands for PowerShell and Unix shells side by side, entirely locally in the browser.
 
-## Grunnprinsippet: lokaliser først, forklar deretter
+## The principle: locate first, then explain
 
-Refleksen er å lete etter årsaken med én gang. Det er mer effektivt å først fastslå hvor langt meldingen i det hele tatt har kommet. Det avgrenser søkeområdet drastisk i ett steg, for da vet du om du må lete i ditt eget system, hos en foranstilt gateway eller hos målet.
+The instinct is to look for the cause immediately. It is more efficient to first determine how far the message got at all. This drastically narrows the search space in one step, because you then know whether to look in your own system, at the upstream gateway, or at the destination.
 
-Rekkefølgen er derfor: Finn meldingen, les siste hendelse, les feilårsaken, avgjør om det er et enkelttilfelle eller et mønster, og rekonstruer først deretter innleveringsveien.
+The order is therefore: find the message, read the last event, read the reason for the error, determine whether it is an isolated case or a pattern, and only then reconstruct the delivery path.
 
-## Trinn 1: Finn meldingen
+## Step 1: Find the message
 
-Begynn med mottakeren, for den kjenner du nesten alltid. Det er viktig å kjøre spørringen mot **alle** transportservere, ikke bare én.
+Start with the recipient, because you almost always know it. It is important to run the query across **all** transport servers, not just one.
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
@@ -63,20 +63,20 @@ Begynn med mottakeren, for den kjenner du nesten alltid. Det er viktig å kjøre
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Server` | Transportserveren som Tracking-loggen hentes fra; her begge serverne etter tur via pipelinen |
-| `-Start` | Nedre tidsgrense for søket, her de siste seks timene |
-| `-ResultSize Unlimited` | Fjerner standardgrensen på 1000 oppføringer |
-| `-Recipients` | Filtrerer på meldinger til denne mottakeradressen |
-| `Sort-Object Timestamp` | Sorterer de sammenslåtte resultatene fra begge servere kronologisk |
-| `-AutoSize -Wrap` | Tilpasser kolonnebredden til innholdet og bryter lange verdier i stedet for å kutte dem |
+| `-Server` | Transport server whose tracking log is queried; here, both servers are processed sequentially through the pipeline |
+| `-Start` | Lower time limit for the search, here the last six hours |
+| `-ResultSize Unlimited` | Removes the default limit of 1,000 entries |
+| `-Recipients` | Filters for messages to this recipient address |
+| `Sort-Object Timestamp` | Sorts the combined results from both servers chronologically |
+| `-AutoSize -Wrap` | Adjusts column widths to the content and wraps long values instead of truncating them |
 
 </details>
 
-Typiske utdata for en melding som har gått gjennom uten problemer:
+Typical output for a message that passed through cleanly:
 
 ```text
 Timestamp           ServerHostname EventId      Source  ConnectorId
@@ -90,7 +90,7 @@ Timestamp           ServerHostname EventId      Source  ConnectorId
 11.08.2026 08:27:53 SRV-MAIL02     HADISCARD    SMTP
 ```
 
-Hvis spørringen ikke finner noe, må du kontrollere om mottakeren ble utvidet via en distribusjonsgruppe. Da er det bedre å søke på avsenderen:
+If the query finds nothing, check whether the recipient was expanded through a distribution group. In that case, search by sender instead:
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
@@ -104,33 +104,33 @@ Hvis spørringen ikke finner noe, må du kontrollere om mottakeren ble utvidet v
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Server` | Transportserveren som Tracking-loggen hentes fra |
-| `-Start` | Nedre tidsgrense for søket |
-| `-ResultSize Unlimited` | Fjerner standardgrensen på 1000 oppføringer |
-| `Where-Object` | Filtrerer på klientsiden etter avsendere i eget domene, siden `-Sender` bare godtar eksakte adresser |
-| `@{n=…; e=…}` | Beregnet kolonne: samler samlefeltet `Recipients` til en kommaseparert tekststreng |
+| `-Server` | Transport server whose tracking log is queried |
+| `-Start` | Lower time limit for the search |
+| `-ResultSize Unlimited` | Removes the default limit of 1,000 entries |
+| `Where-Object` | Filters client-side for senders from your own domain, since `-Sender` accepts only exact addresses |
+| `@{n=…; e=…}` | Calculated column: combines the collection field `Recipients` into a comma-separated string |
 
 </details>
 
-## Trinn 2: Les siste hendelse
+## Step 2: Read the last event
 
-Hele diagnosen avhenger av meldingens **siste** `EventId`. Den forteller deg hvilket søkeområde som skal undersøkes videre.
+The entire diagnosis depends on the message's **last** `EventId`. It tells you which search area to investigate next.
 
-| Siste EventId | Betydning | Neste trinn |
+| Last EventId | Meaning | Next step |
 |---|---|---|
-| `RECEIVE`, deretter ingenting | Meldingen sitter fast | Kontroller køer |
-| `SEND` eller `SENDEXTERNAL` | Levert videre | Fortsett søket ved neste hopp |
-| `FAIL` | Endelig mislykket | Les årsaken i `RecipientStatus` |
-| `DEFER` | Nytt forsøk pågår | Kontroller kø og målsystem |
-| `DROP` eller `POISONMESSAGE` | Forkastet | Kontroller transportregel eller agent |
-| `DELIVER` | Levert til en lokal postkasse | Kontroller postkasseregler |
-| `RESOLVE` | Mottakeren ble omskrevet | Les måladresse i oppføringen |
+| `RECEIVE`, then nothing | Message is stuck | Check queues |
+| `SEND` or `SENDEXTERNAL` | Successfully handed off | Continue searching at the next hop |
+| `FAIL` | Permanently failed | Read the reason in `RecipientStatus` |
+| `DEFER` | Retry in progress | Check the queue and destination system |
+| `DROP` or `POISONMESSAGE` | Discarded | Check transport rule or agent |
+| `DELIVER` | Delivered to a local mailbox | Check mailbox rules |
+| `RESOLVE` | Recipient was rewritten | Read the destination address in the entry |
 
-`RESOLVE` er det mest informative mellomtrinnet i hybridmiljøer, fordi omskrivingen til skyens rutingadresse blir synlig der:
+`RESOLVE` is the most informative intermediate step in hybrid environments, because this is where the rewrite to the cloud routing address is visible:
 
 ```text
 EventId : RESOLVE
@@ -139,9 +139,9 @@ Sender  : absender@example.com
 To      : BENUTZER@example.mail.onmicrosoft.com
 ```
 
-Hvis forventet `onmicrosoft.com`-adresse står der, er mottakerobjektet konfigurert riktig, og du kan avslutte saken. Hvis den opprinnelige adressen fortsatt står der, mangler mål-adressen på det lokale objektet, og Exchange forsøker å levere lokalt.
+If the expected `onmicrosoft.com` address appears there, the recipient object is configured correctly and you can rule this out. If the original address still appears, the local object lacks the target address and Exchange attempts local delivery.
 
-Hvis meldingen sitter fast, viser køen som regel årsaken i klartekst:
+If the message is stuck, the queue usually shows the reason in plain text:
 
 ```powershell
 Get-Queue -Server SRV-MAIL01 |
@@ -151,21 +151,21 @@ Get-Queue -Server SRV-MAIL01 |
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Server` | Serveren som transportkøene hentes fra |
-| `Where-Object` | Skjuler tomme køer og viser bare køer med ventende meldinger |
-| `-AutoSize -Wrap` | Hindrer at den lange kolonnen `LastError` blir avkortet |
+| `-Server` | Server whose transport queues are queried |
+| `Where-Object` | Hides empty queues and shows only queues with pending messages |
+| `-AutoSize -Wrap` | Prevents the long `LastError` column from being truncated |
 
 </details>
 
-## Feilkilde 1: Tracking er serverbasert, og mange oppføringer er skyggekopier
+## Source of error 1: Tracking is server-specific, and many entries are shadow copies
 
-Hvis du ser par med `HARECEIVE` og `HADISCARD` i utdataene, ofte med tillegget `ExplicitlyDiscarded`, har denne serveren **ikke behandlet** meldingen. Den holdt bare en skyggekopi som del av Shadow Redundancy, mens en annen server tok seg av selve leveringen. Så snart primærserveren melder suksess, forkaster partneren sin kopi.
+If you see pairs of `HARECEIVE` and `HADISCARD` in the output, often with the addition `ExplicitlyDiscarded`, this server did **not process** the message. It merely held a shadow copy as part of Shadow Redundancy, while another server handled the actual delivery. Once the primary server reports success, the partner discards its copy.
 
-Slik ser det ut hvis du bare har spurt feil server:
+This is what it looks like when you queried only the wrong server:
 
 ```text
 Timestamp           EventId    SourceContext
@@ -174,15 +174,15 @@ Timestamp           EventId    SourceContext
 11.08.2026 09:48:07 HADISCARD  ExplicitlyDiscarded;1a2aae6b-f3a3-4e04-9233-7de460b92223
 ```
 
-To linjer, ingen feil, ingen levering. Den som konkluderer med at meldingen har forsvunnet, leter på feil sted. Den faktiske behandlingen står i tracking-loggen til partnerserveren.
+Two lines, no error, no delivery. Anyone concluding from this that the message disappeared is looking in the wrong place. The actual processing is in the partner server's tracking log.
 
-I praksis betyr det to ting. For det første er slike linjer ikke tegn på et problem, men normal drift. For det andre må du alltid spørre alle transportservere.
+In practice, this means two things. First, such lines are not an indication of a problem, but normal operation. Second, you must query all transport servers.
 
-## Feilkilde 2: `Format-Table` kutter akkurat de avgjørende kolonnene
+## Source of error 2: `Format-Table` truncates exactly the crucial columns
 
-Feilårsaken står i `RecipientStatus`, og dette feltet er langt. I en tabell faller det enten helt bort eller blir avkortet. Nettopp dette fører til at man ser `FAIL`, men ikke årsaken, og i stedet begynner å gjette.
+The reason for the error is in `RecipientStatus`, and this field is long. In a table, it either disappears entirely or is truncated. This is exactly what causes you to see `FAIL` but not the reason, and start guessing instead.
 
-Så snart du har funnet et feiltilfelle, bør du derfor bytte til `Format-List` og løse opp samlefeltene:
+As soon as you find an error case, therefore switch to `Format-List` and expand the collection fields:
 
 ```powershell
 Get-MessageTrackingLog -Server SRV-MAIL01 `
@@ -197,21 +197,21 @@ Get-MessageTrackingLog -Server SRV-MAIL01 `
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Server` | Transportserveren som Tracking-loggen hentes fra |
-| `-Start` | Nedre tidsgrense for søket |
-| `-ResultSize Unlimited` | Fjerner standardgrensen på 1000 oppføringer |
-| `-Recipients` | Filtrerer på meldinger til denne mottakeradressen |
-| `-EventId FAIL` | Bare oppføringer med endelig leveringsfeil |
-| `Format-List` | Viser hvert felt på egen linje i full lengde; ingenting blir avkortet |
-| `@{n=…; e=…}` | Beregnede felt: løser opp samlefeltene `Recipients` og `RecipientStatus` til lesbare tekststrenger |
+| `-Server` | Transport server whose tracking log is queried |
+| `-Start` | Lower time limit for the search |
+| `-ResultSize Unlimited` | Removes the default limit of 1,000 entries |
+| `-Recipients` | Filters for messages to this recipient address |
+| `-EventId FAIL` | Only entries with a final delivery failure |
+| `Format-List` | Displays every field on its own line at full length; nothing is truncated |
+| `@{n=…; e=…}` | Calculated fields: expand the collection fields `Recipients` and `RecipientStatus` into readable strings |
 
 </details>
 
-Slik ser forskjellen ut. Først tabellvisningen, som ikke forklarer noe:
+And this is what the difference looks like. First, the table view that explains nothing:
 
 ```text
 Timestamp           EventId ConnectorId
@@ -219,7 +219,7 @@ Timestamp           EventId ConnectorId
 11.08.2026 09:47:13 FAIL    Outbound-to-O365
 ```
 
-Deretter samme melding som liste:
+Then the same message as a list:
 
 ```text
 Timestamp      : 11.08.2026 09:47:13
@@ -232,11 +232,11 @@ MessageSubject : Statusmeldung Nachtlauf
 MessageId      : <1897281176.1319@app01.intern.example.com>
 ```
 
-Diagnosen er dermed klar uten at du har trengt én eneste antakelse: Motparten avviser avsenderen. `LED` inneholder hele SMTP-svaret, `FQDN` og `IP` angir systemet som svarte, og `LRT` tidspunktet for siste forsøk.
+The diagnosis is now clear without needing a single assumption: The remote side objects to the sender. `LED` contains the complete SMTP response, `FQDN` and `IP` identify the system that responded, and `LRT` the time of the last attempt.
 
-## Trinn 3: Enkelttilfelle eller mønster?
+## Step 3: Isolated case or pattern?
 
-Før du går i dybden på én enkelt sak, må du avklare omfanget. Denne ene spørringen avgjør om du har en bagatell eller en hendelse:
+Before you delve into a single case, clarify the scope. This one query determines whether you are dealing with a minor issue or an incident:
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
@@ -250,20 +250,20 @@ Før du går i dybden på én enkelt sak, må du avklare omfanget. Denne ene sp�
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Start` | Nedre tidsgrense, her de siste åtte timene |
-| `-EventId FAIL` | Bare endelig mislykkede leveringer |
-| `-ResultSize Unlimited` | Fjerner standardgrensen på 1000 oppføringer |
-| `Where-Object` | Filtrerer på undersøkt SMTP-statuskode i feltet `RecipientStatus` |
-| `Group-Object` | Grupperer etter avsenderdomene, delen etter `@` |
-| `Sort-Object Count -Descending` | Vanligste domene øverst |
+| `-Start` | Lower time limit, here the last eight hours |
+| `-EventId FAIL` | Only permanently failed deliveries |
+| `-ResultSize Unlimited` | Removes the default limit of 1,000 entries |
+| `Where-Object` | Filters for the SMTP status code under investigation in the `RecipientStatus` field |
+| `Group-Object` | Groups by sender domain (the part after `@`) |
+| `Sort-Object Count -Descending` | Most frequent domain at the top |
 
 </details>
 
-Erstatt `5.1.8` med statuskoden du undersøker. Utdataene besvarer spørsmålet på én linje:
+Replace `5.1.8` with the status code you are investigating. The output answers the question in one line:
 
 ```text
 Count Name
@@ -271,13 +271,13 @@ Count Name
     9 example-test.com
 ```
 
-Ett enkelt avsenderdomene betyr: et avgrenset problem, ingen hendelse, og du kan fortsette å lete i ro. Hvis det sto tjue forskjellige domener der, ville du hatt et pågående utfall, og alt annet måtte vente. Å gjøre dette skillet så tidlig sparer erfaringsmessig mest tid.
+A single sender domain means: a narrowly scoped problem, not an incident; you can continue investigating at your leisure. If twenty different domains appeared there, you would have an ongoing outage and everything else would have to wait. Making this distinction early saves the most time in practice.
 
-## Feilkilde 3: `ConnectorId` oppgir ikke den faktiske Receive Connectoren
+## Source of error 3: The `ConnectorId` does not name the actual receive connector
 
-Dette er den dyreste feilkilden, fordi utdataene ser seriøse ut. E-post som leveres av en klient eller et eksternt system på port 25, treffer først **Front End Transport**. Denne sender meldingen videre til **Transport Service** på port 2525. Message Tracking skrives først der; Front End Transport skriver ikke egen tracking.
+This is the costliest source of error because the output looks credible. Mail submitted by a client or external system on port 25 first reaches the **Front End Transport**. This passes the message on to the **Transport Service** on port 2525. Message tracking is written only there; Front End Transport does not write its own tracking.
 
-Konsekvensen ser du på denne linjen:
+You can see the consequence in this line:
 
 ```text
 EventId        : RECEIVE
@@ -286,9 +286,9 @@ ClientIp       : 10.0.1.11
 ClientHostname : srv-mail01.intern.example.com
 ```
 
-`ConnectorId` angir den interne connectoren på port 2525, og `ClientIp` er adressen til **serveren som proxyer**, ikke den opprinnelige avsenderen. Hvilken av de konfigurerte connectorene på port 25 et system faktisk traff, står ganske enkelt ikke i tracking. Den som stoler på denne opplysningen, leter etter feilen i en connector som ikke var involvert.
+The `ConnectorId` names the internal connector on port 2525, and the `ClientIp` is the address of the **proxying server**, not that of the original submitting system. Which configured connector on port 25 a system actually reached simply does not appear in tracking. Anyone who trusts this value will look for the error in a connector that was not involved at all.
 
-Det finnes to veier til svaret. Den første er rekonstruksjon via konfigurasjonen:
+There are two ways to get the answer. The first is reconstruction through the configuration:
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-ReceiveConnector -Server $_ } |
@@ -299,13 +299,13 @@ Det finnes to veier til svaret. Den første er rekonstruksjon via konfigurasjone
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Server` | Serveren som Receive Connectorene listes for |
-| `Format-List` | Full feltlengde; `RemoteIPRanges` og `PermissionGroups` ville blitt avkortet i tabeller |
-| `@{n=…; e=…}` | Beregnede felt: samler samlefeltene `Bindings` og `RemoteIPRanges` til kommaseparerte tekststrenger |
+| `-Server` | Server whose receive connectors are listed |
+| `Format-List` | Full field lengths; `RemoteIPRanges` and `PermissionGroups` would be truncated in tables |
+| `@{n=…; e=…}` | Calculated fields: combines the collection fields `Bindings` and `RemoteIPRanges` into comma-separated strings |
 
 </details>
 
@@ -323,17 +323,17 @@ PermissionGroups : AnonymousUsers, Custom
 AuthMechanism    : Tls
 ```
 
-Fastslå kilde-IP-en til systemet som leverer inn, og finn connectoren der `RemoteIPRanges` inneholder den. Hvis den ikke faller innenfor noen av de begrensede connectorene, gjenstår Default Frontend Connectoren, som vanligvis godtar hele adresserommet. Bruk også her `Format-List`, fordi `RemoteIPRanges` og `PermissionGroups` regelmessig blir avkortet i tabeller.
+Determine the source IP of the submitting system and find the connector whose `RemoteIPRanges` contains it. If it falls within none of the restricted connectors, the default frontend connector remains, which usually accepts the entire address space. Use `Format-List` here too, because `RemoteIPRanges` and `PermissionGroups` are regularly truncated in tables.
 
-Den andre veien er SMTP-protokollen, og den fortjener en egen seksjon.
+The second way is the SMTP log, and it deserves its own section.
 
-## SMTP-protokollen: den eneste komplette kilden
+## The SMTP log: the only complete source
 
-Protokollen til Front End Transport registrerer hele SMTP-økten: hvilken connector som ble kontaktet, hvilken IP som koblet til, og hva klient og server sa til hverandre. Det er den eneste kilden som løser problemet med `ConnectorId` beskrevet ovenfor.
+The Front End Transport log records the complete SMTP session: which connector was addressed, which IP connected, and what the client and server said to each other. It is the only source that resolves the issue described above with `ConnectorId`.
 
-### Slå på logging
+### Enable logging
 
-Som standard er logging **slått av** på de fleste connectorer. Du slår den på per connector:
+By default, logging is **disabled** on most connectors. Enable it per connector:
 
 ```powershell
 Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
@@ -341,20 +341,20 @@ Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Identity` | Connectoren som skal endres, i formen `Server\Connectorname` |
-| `-ProtocolLoggingLevel Verbose` | Slår på SMTP-logging; `None` slår den av igjen |
+| `-Identity` | The connector to modify in the form `Server\Connectorname` |
+| `-ProtocolLoggingLevel Verbose` | Enables SMTP logging; `None` disables it again |
 
 </details>
 
-For utgående forbindelser gjøres det tilsvarende med `Set-SendConnector`. Husk å sette verdien tilbake til `None` etter analysen, fordi detaljert logging bruker diskplass og skriver betydelige datamengder ved høy trafikk.
+For outgoing connections, use `Set-SendConnector` accordingly. Remember to set the value back to `None` after the analysis, because detailed logging consumes disk space and writes considerable amounts of data under high load.
 
-### Hvor filene ligger
+### Where the files are located
 
-Exchange skiller protokollene etter tjeneste og retning. Det er unødvendig å hardkode stiene; hent dem heller:
+Exchange separates logs by service and direction. There is no need to hard-code the paths; query them:
 
 ```powershell
 Get-FrontendTransportService SRV-MAIL01 |
@@ -366,36 +366,36 @@ Get-TransportService SRV-MAIL01 |
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `SRV-MAIL01` | Posisjonsparameteren `-Identity`: serveren det skal spørres mot |
-| `ReceiveProtocolLogPath`, `SendProtocolLogPath` | Lagringsstier for protokollene for henholdsvis innkommende og utgående forbindelser |
-| `ReceiveProtocolLogMaxAge` | Maksimal alder på protokollfilene; eldre filer slettes |
-| `ReceiveProtocolLogMaxDirectorySize` | Øvre grense for diskplassen protokollkatalogen kan bruke |
+| `SRV-MAIL01` | Positional parameter `-Identity`: the server to query |
+| `ReceiveProtocolLogPath`, `SendProtocolLogPath` | Storage paths for logs of incoming and outgoing connections respectively |
+| `ReceiveProtocolLogMaxAge` | Maximum age of log files; older files are deleted |
+| `ReceiveProtocolLogMaxDirectorySize` | Maximum disk space usage of the log directory |
 
 </details>
 
-Vanligvis ligger de under installasjonsstien i `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` for Front End Transport og i `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` for Transport Service. **Dette er kjernen:** Klientforbindelser på port 25 finner du bare i `FrontEnd`-stien; i `Hub`-stien står bare intern videresendingstrafikk på 2525.
+They are typically located below the installation path in `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` for Front End Transport and in `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` for the Transport Service. **This is the key point:** You will find client connections on port 25 exclusively in the `FrontEnd` path; the `Hub` path contains only internal forwarding traffic on 2525.
 
-Vær oppmerksom på oppbevaringen. `ReceiveProtocolLogMaxAge` står ofte på 30 dager, og `ReceiveProtocolLogMaxDirectorySize` begrenser i tillegg plassforbruket. Ved høy trafikk trer størrelsesbegrensningen i kraft betydelig før aldersgrensen, og da er protokollene dine bare noen få dager gamle.
+Note the retention settings. `ReceiveProtocolLogMaxAge` is often set to 30 days, while `ReceiveProtocolLogMaxDirectorySize` additionally limits disk usage. Under high load, the size limit takes effect considerably earlier than the age limit, and your logs may then be only a few days old.
 
-### Forstå formatet
+### Understanding the format
 
-Filene er CSV-filer med overskriftslinjer som begynner med `#`. De viktigste kolonnene er `date-time`, `connector-id`, `session-id`, `sequence-number`, `local-endpoint`, `remote-endpoint`, `event` og `data`.
+The files are CSV with header lines beginning with `#`. The most important columns are `date-time`, `connector-id`, `session-id`, `sequence-number`, `local-endpoint`, `remote-endpoint`, `event` and `data`.
 
-Avgjørende er kolonnen `event`, ett enkelt tegn:
+The decisive column is `event`, a single character:
 
-| Tegn | Betydning |
+| Character | Meaning |
 |---|---|
-| `+` | Forbindelse opprettet |
-| `-` | Forbindelse avsluttet |
-| `>` | Server sender til klient |
-| `<` | Klient sender til server |
-| `*` | Serverinformasjon, ikke SMTP-trafikk |
+| `+` | Connection established |
+| `-` | Connection closed |
+| `>` | Server sends to client |
+| `<` | Client sends to server |
+| `*` | Server information, not SMTP traffic |
 
-Du kjenner igjen en økt på felles `session-id`; `sequence-number` angir rekkefølgen i økten. Et typisk utdrag ser slik ut:
+You can identify a session by the shared `session-id`; `sequence-number` gives the order within the session. A typical excerpt looks like this:
 
 ```text
 2026-08-11T09:47:10.4Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,0,
@@ -410,11 +410,11 @@ Du kjenner igjen en økt på felles `session-id`; `sequence-number` angir rekkef
   10.0.1.13:25,10.0.20.22:51244,>,"250 2.1.5 Recipient OK",
 ```
 
-Her står alt som manglet i Message Tracking: den **faktiske** connectoren (`smtp-noauth`), den **faktiske** kilde-IP-en (`10.0.20.22`) og navnet systemet melder seg med i `EHLO`.
+It contains everything missing from message tracking: the **actual** connector (`smtp-noauth`), the **actual** source IP (`10.0.20.22`) and the name the system uses in `EHLO`.
 
-### Målrettet søk
+### Search specifically
 
-For enkelttilfeller er et tekstfilter betydelig raskere enn objektanalyse. Søk etter avsenderadressen eller `EHLO`-navnet og hent øktidentifikatoren:
+For individual cases, a text filter is significantly faster than object parsing. Search for the sender address or the `EHLO` name and retrieve the session ID:
 
 ```powershell
 $pfad = (Get-FrontendTransportService SRV-MAIL01).ReceiveProtocolLogPath
@@ -423,18 +423,18 @@ Select-String -Path "$pfad\*.log" -Pattern "dienst@example-test.com" -SimpleMatc
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Path "$pfad\*.log"` | Søker gjennom alle protokollfiler i stien som ble hentet tidligere |
-| `-Pattern` | Søkeordet, her avsenderadressen |
-| `-SimpleMatch` | Behandler mønsteret som tekst i stedet for regulært uttrykk; punktumet i adressen trenger dermed ikke escaping |
-| `-First 5` | Begrenser utdata til de første fem treffene |
+| `-Path "$pfad\*.log"` | Searches all log files in the previously queried path |
+| `-Pattern` | The search term, here the sender address |
+| `-SimpleMatch` | Treats the pattern as text rather than a regular expression; the dot in the address therefore needs no escaping |
+| `-First 5` | Limits output to the first five hits |
 
 </details>
 
-Med den funne `session-id` henter du hele økten:
+With the discovered `session-id`, retrieve the complete session:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
@@ -442,17 +442,17 @@ Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Pattern` | Øktidentifikatoren fra første treff |
-| `-SimpleMatch` | Ordrett søk uten regex-evaluering |
-| `-First 40` | Begrenser utdata til de første 40 linjene i økten |
+| `-Pattern` | The session ID from the first hit |
+| `-SimpleMatch` | Literal search without regex evaluation |
+| `-First 40` | Limits output to the first 40 lines of the session |
 
 </details>
 
-Hvis du bare vil vite hvilke connectorer som i det hele tatt har trafikk, teller du forbindelsesopprettelsene. Dette er mange størrelsesordener raskere enn å parse hver linje i store filer:
+If you only want to know which connectors see traffic at all, count connection establishments. For large files, this is orders of magnitude faster than parsing every line:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
@@ -462,14 +462,14 @@ Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Pattern ',\+,'` | Regulært uttrykk for hendelsen `+` (forbindelsesopprettelse) mellom to CSV-kommaer; plusstegnet er escaped |
-| `ForEach-Object { … -split ',' }` | Deler trefflinjen på kommaene og henter andre kolonne, `connector-id` |
-| `Group-Object` | Teller forbindelsesopprettelser per connector |
-| `Sort-Object Count -Descending` | Mest brukte connector øverst |
+| `-Pattern ',\+,'` | Regular expression for event `+` (connection establishment) between two CSV commas; the plus sign is escaped |
+| `ForEach-Object { … -split ',' }` | Splits the matching line at commas and accesses the second column, `connector-id` |
+| `Group-Object` | Counts connection establishments per connector |
+| `Sort-Object Count -Descending` | Most-used connector at the top |
 
 </details>
 
@@ -482,15 +482,15 @@ Count Name
 15789 SRV-MAIL01\smtp-noauth SRV-MAIL01
 ```
 
-Denne fordelingen besvarer et spørsmål som ikke kan besvares i Message Tracking: Hvilke veier bruker applikasjonene dine faktisk? Før en connector-endring er dette det viktigste tallet av alle.
+This distribution answers a question that message tracking cannot answer: Which routes do your applications actually use? Before changing a connector, this is the most important number of all.
 
-### Når ingenting ble logget
+### When nothing was logged
 
-Hvis det mangler enhver linje på det aktuelle tidspunktet, finnes det tre vanlige årsaker: Logging var slått av på den aktuelle connectoren, oppbevaringsgrensen har allerede fjernet filen, eller du ser i feil sti – altså i `Hub`- i stedet for `FrontEnd`-katalogen. Kontroller i denne rekkefølgen.
+If every line is missing for the time in question, there are three common reasons: Logging was disabled on the relevant connector, the retention limit has already removed the file, or you are looking in the wrong path—namely the `Hub` directory instead of the `FrontEnd` directory. Check in that order.
 
-## Trinn 4: Kontroller rettigheter
+## Step 4: Check permissions
 
-Når en innlevering avvises, eller omvendt når mer er tillatt enn antatt, går veien via connectorens rettigheter. Her finnes en teknisk særegenhet: `Get-ADPermission` krever **DistinguishedName**. Hvis du sender inn den vanlige identiteten i formen `Server\Connectorname`, mislykkes kallet i en ekstern økt med den misvisende meldingen om at objektet ikke ble funnet.
+If a submission is rejected or, conversely, more is permitted than expected, investigate the connector's permissions. There is a technical peculiarity here: `Get-ADPermission` requires the **DistinguishedName**. If you pass the familiar identity in the form `Server\Connectorname`, the call fails in a remote session with the misleading message that the object cannot be found.
 
 ```powershell
 $dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName
@@ -500,13 +500,13 @@ Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" |
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-Identity $dn` | Objektet som skal kontrolleres som DistinguishedName; formen `Server\Connectorname` mislykkes i eksterne økter |
-| `-User` | Begrenser utdata til rettighetene for denne sikkerhetsidentiteten, her anonym tilgang |
-| `Where-Object` | Filtrerer på SMTP-relevante Extended Rights |
+| `-Identity $dn` | The object to check as DistinguishedName; the `Server\Connectorname` form fails in remote sessions |
+| `-User` | Limits output to the permissions of this security principal, here anonymous access |
+| `Where-Object` | Filters for SMTP-relevant Extended Rights |
 
 </details>
 
@@ -518,22 +518,22 @@ NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Accept-Any-Sender
 NT AUTHORITY\ANONYMOUS LOGON ms-Exch-SMTP-Accept-Authoritative-Domain-Sender
 ```
 
-Vurderingen er enklere enn den ser ut når du skiller mellom fire rettigheter:
+The evaluation is simpler than it looks when you distinguish four rights:
 
-| Rettighet | Betydning |
+| Right | Meaning |
 |---|---|
-| `ms-Exch-SMTP-Submit` | Kan i det hele tatt levere inn |
-| `ms-Exch-SMTP-Accept-Any-Sender` | Kan bruke vilkårlige avsenderadresser |
-| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | Kan opptre som eget domene |
-| `ms-Exch-SMTP-Accept-Any-Recipient` | **Kan videresende til eksterne domener** |
+| `ms-Exch-SMTP-Submit` | May submit mail at all |
+| `ms-Exch-SMTP-Accept-Any-Sender` | May use arbitrary sender addresses |
+| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | May present itself as its own domain |
+| `ms-Exch-SMTP-Accept-Any-Recipient` | **May relay to external domains** |
 
-De første tre er standardsettet for anonym innlevering og nødvendig for mottak av Internett-e-post. Først den fjerde rettigheten gjør en inngående connector til et relay. På en connector som godtar hele adresserommet, er det et åpent relay. På en connector med streng IP-begrensning er det derimot den vanlige og tilsiktede løsningen for at applikasjonsservere skal kunne sende eksternt.
+The first three are the standard set required for anonymous submission and receiving internet mail. Only the fourth right turns an inbound connector into a relay. On a connector accepting the entire address space, it is an open relay. On a connector with strict IP restrictions, however, it is the usual and intended way for application servers to send externally.
 
-Ikke forveksle `Accept-Any-Sender` med `Accept-Any-Recipient`. Den første er ufarlig og nødvendig, den andre er den sikkerhetsrelevante innstillingen.
+Do not confuse `Accept-Any-Sender` with `Accept-Any-Recipient`. The first is harmless and necessary; the second is the security-relevant setting.
 
-## Trinn 5: Kontrolltest med egen innlevering
+## Step 5: Verification test through your own submission
 
-Hvis vurderingen forblir tvetydig, leverer du selv inn en melding. Da kontrollerer du avsender, mottaker og innleveringspunkt fullt ut:
+If the analysis remains ambiguous, submit a message yourself. This gives you complete control over sender, recipient and submission point:
 
 ```powershell
 Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
@@ -545,49 +545,49 @@ Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-SmtpServer` | Målvert for innleveringen, her bevisst som IP-adresse for å treffe et bestemt endepunkt |
-| `-Port 25` | Målport; 25 for uautentisert server-til-server-innlevering |
-| `-From` | Envelope- og header-avsender for testmeldingen |
-| `-To` | Mottakeradresse |
-| `-Subject` | Emnelinje |
-| `-Body` | Meldingstekst |
-| `-Encoding UTF8` | Tegnkoding for emne og tekst, unngår problemer med spesialtegn |
+| `-SmtpServer` | Submission target host, deliberately an IP address here to reach a specific endpoint |
+| `-Port 25` | Target port; 25 for unauthenticated server-to-server submission |
+| `-From` | Envelope and header sender of the test message |
+| `-To` | Recipient address |
+| `-Subject` | Subject line |
+| `-Body` | Message text |
+| `-Encoding UTF8` | Character encoding for subject and text; prevents issues with umlauts |
 
 </details>
 
-`Send-MailMessage` er offisielt avviklet, men er fortsatt det raskeste verktøyet til diagnoseformål og finnes på alle Windows-servere. Ved suksess gis det ingen utdata, noe som kan virke uvant.
+`Send-MailMessage` is officially deprecated, but remains the fastest tool for diagnostics and is available on every Windows Server. On success, it produces no output, which takes some getting used to.
 
-Hvis du tester en TLS-strekning på port 587 og motparten presenterer et sertifikat som ikke passer til navnet som brukes, for eksempel fordi du bruker IP-adressen, avbrytes kallet med en sertifikatfeil. Til testen kan du deaktivere kontrollen i økten:
+If you test a TLS connection on port 587 and the remote side presents a certificate that does not match the name used—for example, because you address the IP address—the call fails with a certificate error. For testing, you can suspend validation in the session:
 
 ```powershell
 [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
 ```
 
-Dette gjelder bare den aktive PowerShell-økten. Bruk det bevisst og aldri i skript som kjører i drift.
+This applies only to the current PowerShell session. Set it deliberately and never in scripts running in production.
 
-Hvis testmeldingen kommer frem og du vil vite hva som skjedde med den underveis, hjelper [Mail Header Analyzer](https://rafaelpfister.ch/tools/header-analyzer): Den deler opp headerne, tegner veien via hoppene og viser resultatene av autentiseringskontrollene, helt lokalt i nettleseren, uten at meldingen forlater enheten din.
+If the test message arrives and you want to know what happened to it along the way, the [Mail Header Analyzer](https://rafaelpfister.ch/tools/header-analyzer) helps: It parses the headers, maps the path through the hops and shows the results of the authentication checks, entirely locally in the browser without the message leaving your device.
 
-## Exchange Online: samme spørsmål, et annet verktøy
+## Exchange Online: the same question, a different tool
 
-I tenant-en gjelder andre regler, og dette er punktet der vante fremgangsmåter feiler. Regn med disse forskjellene:
+Different rules apply in the tenant, and this is where familiar methods fail. Expect these differences:
 
 | | Exchange OnPrem | Exchange Online |
 |---|---|---|
-| Spørring | `Get-MessageTrackingLog` | `Get-MessageTraceV2` |
-| Detaljnivå | Hver transporthendelse | Én linje per melding og mottaker |
-| Connector synlig | Ja, med begrensning (se over) | **Nei** |
-| Servertilknytning | Ja, spør per server | Ikke relevant |
-| SMTP-protokoll | Tilgjengelig | **Ikke tilgjengelig** |
-| Oppbevaring | Din konfigurasjon | Omtrent 10 dager via cmdleten |
-| Forsinkelse | Nesten umiddelbart | Noen minutter |
+| Query | `Get-MessageTrackingLog` | `Get-MessageTraceV2` |
+| Granularity | Every transport event | One line per message and recipient |
+| Connector visible | Yes (with limitations, see above) | **No** |
+| Server-specific | Yes, query per server | Not applicable |
+| SMTP log | Available | **Not available** |
+| Retention | Your configuration | 90 days via the cmdlet, maximum 10 days per query |
+| Delay | Almost immediate | A few minutes |
 
-De tre viktigste praktiske konsekvensene: Det finnes **ingen connector-tilordning**, du må bruke `FromIP` og `ToIP`. Det finnes **ingen SMTP-protokoll**, SMTP-samtalen kan ikke rekonstrueres. Og dataene vises **forsinket**, en nettopp sendt melding dukker ikke opp umiddelbart.
+The three most important practical consequences: There is **no connector assignment**; you make do with `FromIP` and `ToIP`. There is **no SMTP log**, so the SMTP conversation cannot be reconstructed. And data appears **with a delay**; a message just sent does not appear immediately.
 
-### Grunnspørringen
+### The basic query
 
 ```powershell
 Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) `
@@ -599,14 +599,14 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) `
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-StartDate` | Nedre tidsgrense for spørringen, her de siste fire timene |
-| `-EndDate` | Øvre tidsgrense; cmdleten krever begge grensene |
-| `-RecipientAddress` | Filtrerer på meldinger til denne mottakeradressen |
-| `-ResultSize 1000` | Maksimalt antall linjer på denne siden; øvre grense er 5000 |
+| `-StartDate` | Lower time limit of the query, here the last four hours |
+| `-EndDate` | Upper time limit; the cmdlet requires both limits |
+| `-RecipientAddress` | Filters for messages to this recipient address |
+| `-ResultSize 1000` | Maximum rows on this page; the limit is 5,000 |
 
 </details>
 
@@ -617,11 +617,11 @@ Received            SenderAddress          RecipientAddress          Status    F
 11.08.2026 09:05:24 dienst@example-test.com empfaenger@example.com   Failed    10.0.20.23
 ```
 
-De viktigste verdiene for `Status`: `Delivered`, `Failed`, `Pending`, `Quarantined`, `FilteredAsSpam` og `Expanded` for utvidede distribusjonsgrupper. `Pending` betyr at leveringsforsøk fortsatt pågår, ikke at noe er ødelagt.
+The most important values of `Status`: `Delivered`, `Failed`, `Pending`, `Quarantined`, `FilteredAsSpam` and `Expanded` for expanded distribution groups. `Pending` means delivery attempts are still in progress, not that something is broken.
 
-### Detaljene for en melding
+### The details for a message
 
-Statusen alene sier ingenting om årsaken. Til det trenger du detaljvisningen, og den krever meldingsidentifikatoren fra grunnspørringen:
+The status alone says nothing about the reason. For that, you need the detail view, which requires the message ID from the basic query:
 
 ```powershell
 $n = Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) -EndDate (Get-Date) `
@@ -634,20 +634,20 @@ Get-MessageTraceDetailV2 -MessageTraceId $n.MessageTraceId `
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-MessageTraceId` | Entydig identifikator for meldingen fra grunnspørringen; obligatorisk |
-| `-RecipientAddress` | Mottakeren hvis behandlingssteg vises; også obligatorisk, siden en melding kan ha flere mottakere |
+| `-MessageTraceId` | Unique message identifier from the basic query; required |
+| `-RecipientAddress` | Recipient whose processing steps are shown; also required because a message can have multiple recipients |
 
 </details>
 
-Der står behandlingsstegene i tjenesten, for eksempel regelanvendelser, filteravgjørelser og årsaken til en avvisning.
+This displays the processing steps in the service, such as rule applications, filtering decisions and the reason for a rejection.
 
-### Lenger tilbake enn ti dager
+### Beyond ten days
 
-Cmdleten går omtrent ti dager tilbake. For eldre perioder finnes det et historisk søk som kjører asynkront og leverer resultatet som CSV, med et tidsrom på opptil 90 dager:
+`Get-MessageTraceV2` provides data from the last 90 days, but no more than 10 days per query; split longer periods across multiple queries. Alternatively, there is the historical search, which runs asynchronously and provides the result as CSV, covering up to 90 days:
 
 ```powershell
 Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
@@ -661,25 +661,25 @@ Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -Auto
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativene</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-ReportTitle` | Fritt valgt navn på oppgaven, som resultatet senere kan finnes under |
-| `-StartDate`, `-EndDate` | Undersøkt tidsrom, opptil 90 dager tilbake |
-| `-ReportType MessageTrace` | Rapporttype; `MessageTrace` leverer meldingsoversikten som CSV |
-| `-SenderAddress` | Filtrerer på denne avsenderadressen |
-| `-NotifyAddress` | Mottaker av ferdigmeldingen; må være en adresse i en Accepted Domain i tenant-en |
+| `-ReportTitle` | Freely selectable job name under which the result can later be found |
+| `-StartDate`, `-EndDate` | Period examined, up to 90 days back |
+| `-ReportType MessageTrace` | Type of report; `MessageTrace` provides the message overview as CSV |
+| `-SenderAddress` | Filters for this sender address |
+| `-NotifyAddress` | Recipient of the completion notification; must be an address from an Accepted Domain of the tenant |
 
 </details>
 
-Beregn tid til dette; slike oppgaver kan kjøre i timer, avhengig av omfanget.
+Allow time for this: depending on the scope, such jobs can run for hours.
 
-### Feilkilde 4: Manglende treff er ikke bevis på manglende trafikk
+### Source of error 4: Missing hits do not prove there was no traffic
 
-Dette er den mest subtile feilkilden i tenant-en. `Get-MessageTraceV2` leverer sidevis, maksimalt 5000 linjer per kall. Ved høy trafikk kan én side bare dekke noen få minutter, selv om du har spurt etter syv dager. Filtrerer du deretter lokalt, for eksempel etter en kilde-IP, filtrerer du bare et svært lite utdrag.
+This is the most subtle source of error in the tenant. `Get-MessageTraceV2` returns results in pages, with a maximum of 5,000 rows per call. Under high volume, one page may cover only a few minutes even though you queried seven days. If you then filter locally, for example by a source IP, you are filtering a tiny sample.
 
-Dette ser du på advarselen som viser at det finnes flere resultater:
+You can recognize this by the warning indicating further results:
 
 ```text
 WARNING: There are more results, use the following command to get more.
@@ -687,30 +687,34 @@ Get-MessageTraceV2 -StartDate "2026-08-11T07:25:19Z" -EndDate "2026-08-11T09:05:
   -StartingRecipientAddress "naechster@example.com" -ResultSize 5000
 ```
 
-Hvis den vises, er analysen din **ufullstendig**. Hvis det ikke kommer tilbake noen treff, er korrekt resultat: Ikke funnet i utdraget. Det er ikke: Finnes ikke.
+If it appears, your analysis is **incomplete**. If no hit is returned, the correct result is: not found in this sample. It is not: does not exist.
 
-Det finnes to ryddige utveier. Enten reduserer du tidsvinduet til én side dekker det helt, noe du ser ved at advarselen uteblir. Eller du går gjennom alle sidene ved hjelp av fortsettelsesopplysningene i advarselen. For spørsmålet om noe **aldri** forekommer, er en konfigurasjonskontroll uansett bedre: Hvis et system ikke har en rute til et mål, kan det ikke levere dit, uavhengig av ethvert observasjonsvindu.
+There are two clean ways out. Either reduce the time window until one page covers it completely, indicated by the absence of the warning. Or work through all pages using the continuation information in the warning. For the question of whether something **never** occurs, a configuration check is preferable anyway: If a system has no route to a destination, it cannot deliver there, regardless of any observation window.
 
-Den fullstendige analysen av alle innleverende adresser er et eget tema, med egne krevende punkter ved tolkningen. Den finner du i [Hvem leverer egentlig inn i tenant-en din? Aggregere innleverende IP-adresser](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
+A complete analysis of all submitting addresses is a subject in its own right, with its own pitfalls of interpretation. It is covered in [Who actually submits mail to your tenant? Aggregating submitting IP addresses](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
 
-## En fremgangsmåte som har vist seg å fungere
+## A procedure that has proven effective
 
-Oppsummert har denne rekkefølgen vist seg å være den raskeste. Søk etter meldingen på alle servere og fastslå siste hendelse. Ved feil, bytt straks til `Format-List` og les hele SMTP-svaret, i stedet for å trekke slutninger fra hendelsestypen. Avklar deretter omfanget, altså grupper og tell. Først når saken er avgrenset, rekonstruerer du innleveringsveien via connector-konfigurasjon og SMTP-protokoll. Til slutt, ved behov, kontrollerer du med egen innlevering.
+In summary, this sequence has proven the fastest. Search for the message across all servers and determine the last event. If it fails, immediately switch to `Format-List` and read the complete SMTP response instead of inferring from the event type. Then clarify the scope by grouping and counting. Only once the case is narrowly scoped should you reconstruct the submission path through connector configuration and SMTP logs. Finally, if necessary, verify with your own submission.
 
-De vanligste tidstyvene er derimot alltid de samme: Man leser en avkortet tabell i stedet for hele feilmeldingen, man oppfatter skyggekopier som behandlingssteg, man stoler på `ConnectorId` i tracking, og man anser et tomt utvalg som bevis. Den som kjenner disse fire, kommer som regel til riktig nivå i løpet av få minutter.
+The most common time-wasters are always the same: Reading a truncated table instead of the complete error message, mistaking shadow copies for processing steps, trusting the `ConnectorId` in tracking, and considering an empty sample proof. Those who know these four usually reach the right level within a few minutes.
+
+## Change log
+
+- **25 October 2026:** Corrected: Get-MessageTraceV2 returns data from the last 90 days, but no more than 10 days per query. Updated source links to the new Microsoft Learn addresses.
 
 ## Kilder
 
-1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Feltbeskrivelse og fullstendig liste over hendelsestyper i Message Tracking.
+1.  [Message tracking in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-logs/message-tracking): Field description and complete list of event types in message tracking.
 
-2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): Lagringssteder, format og oppbevaring av SMTP-protokoller, inkludert Front End Transport.
+2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): Locations, format and retention of SMTP logs, including Front End Transport.
 
-3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): Forklarer hendelsene rundt skyggekopier og forkastingen av dem.
+3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): Explains events related to shadow copies and their disposal.
 
-4.  [Mail routing in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-routing/mail-routing): Samspillet mellom Front End Transport og Transport Service, grunnlaget for proxy-atferden.
+4.  [Mail routing in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-routing/mail-routing): Interaction between Front End Transport and Transport Service, the basis of proxy behavior.
 
-5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): Bindinger, rettighetsgrupper og autentiseringsmekanismer.
+5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): Bindings, permission groups and authentication mechanisms.
 
-6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Etterfølgeren til Get-MessageTrace, inkludert sidelogikk og feltliste.
+6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2): Successor to Get-MessageTrace, including paging logic, field list and query range (90 days, maximum 10 days per query).
 
-7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): Asynkron meldingssporing over opptil 90 dager.
+7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/start-historicalsearch): Asynchronous message tracing for up to 90 days.

@@ -1,44 +1,44 @@
 ---
-title: "Kjør Claude Code sikkert på din egen VPS"
+title: "Run Claude Code securely on your own VPS"
 navTitle: "VPS for Claude"
-description: "En herdet Debian-VPS holder Claude Code-økter permanent tilgjengelige. Veiledningen dekker alt fra brukerkonto og SSH-nøkler til brannmur, datahygiene, tmux og sikker tilgang fra iPhone."
+description: "A hardened Debian VPS keeps Claude Code sessions continuously accessible. This guide covers everything from user accounts and SSH keys to firewall configuration, data hygiene, tmux and secure access from an iPhone."
 date: "2026-07-21"
 kategorie: "Claude"
-timeToRead: "12 min lesetid"
+timeToRead: "12 min read"
 themen:
   - claude
 slug: "kjor-claude-code-sikkert-pa-din-egen-vps"
 translationOf: "claude-code-vps-debian-absichern"
 translationId: article-f932e9e537d7704a
 translationReview: automatic
-translationSourceHash: 011d5e16cec877d14e68e11ff48caee9b6ee849ee6235c889676cfe64ae81628
-translatedAt: 2026-09-04T08:48:30.739Z
-url: https://rafaelpfister.ch/no/blog/kjor-claude-code-sikkert-pa-din-egen-vps
+translationSourceHash: 0c584eb684bd92b439d97b20aae84cd15468c5c30d1e277d7fde7bd3fab9a37e
+translatedAt: 2026-10-31T03:44:58.697Z
 translationModel: gpt-5.6-terra
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/no/blog/kjor-claude-code-sikkert-pa-din-egen-vps
 ---
 
-På din egen datamaskin avsluttes en Claude Code-økt ufrivillig senest når den bærbare datamaskinen går i dvale eller nettverksforbindelsen brytes. En VPS fortsetter å kjøre og er tilgjengelig fra flere enheter. Samtidig er den permanent koblet til det offentlige internettet og blir automatisk skannet kort tid etter oppstart.
+A Claude Code session on your own computer ends unintentionally at the latest when the laptop goes to sleep or the network connection drops. A VPS keeps running and is accessible from multiple devices. At the same time, it is permanently connected to the public internet and is automatically scanned shortly after startup.
 
-Denne veiledningen kombinerer begge kravene: Claude Code forblir tilgjengelig i en `tmux`-økt, mens Debian-serveren kun tilbyr en nøkkelbeskyttet SSH-forbindelse utad. Herdingen er ikke spesifikk for Claude og egner seg også for andre offentlig tilgjengelige Linux-servere.
+This guide combines both requirements: Claude Code remains available in a `tmux` session, while the Debian server offers only a key-protected SSH connection to the outside world. The hardening is not specific to Claude and is also suitable for other publicly accessible Linux servers.
 
-## Hvorfor en VPS kan være fornuftig
+## Why a VPS can make sense
 
-Sammenlignet med en rent lokal installasjon gir serveren tre praktiske fordeler:
+Compared with a purely local installation, the server offers three practical advantages:
 
-- **Vedvarende drift.** I en `tmux`-økt fortsetter Claude å kjøre selv om SSH-forbindelsen brytes. En oppgave som tar ti minutter eller en time, fullføres uten at den bærbare datamaskinen må stå åpen.
-- **Tilgjengelighet.** Den samme økten er tilgjengelig fra skrivebordsmaskinen, den bærbare datamaskinen og iPhone. Du starter en oppgave ved skrivebordet og sjekker resultatet mens du er på farten.
-- **Datakontroll.** Du bestemmer selv hva som ligger på serveren. Ingen synkroniseringstjeneste, ingen utilsiktet sikkerhetskopiering av påloggingsopplysninger, forutsatt at du går nøye frem ved migreringen (se nedenfor).
+- **Persistence.** In a `tmux` session, Claude keeps running even when the SSH connection is disconnected. A task that takes ten minutes or an hour finishes without the laptop having to remain open.
+- **Accessibility.** The same session is accessible from the desktop, laptop and iPhone. You start a task at your desk and check the result while on the go.
+- **Data control.** You decide what resides on the server. No sync service, no accidentally backed-up credentials, provided you proceed carefully during migration (see below).
 
-`tmux` er kun en funksjon for tilgjengelighet og komfort, ikke et sikkerhetstiltak. Det egentlige arbeidet ligger i sikringen.
+`tmux` is purely an availability and convenience feature, not a security measure. The actual work lies in securing the system.
 
-## Utgangspunkt
+## Starting point
 
-Grunnlaget er Debian 13 (Trixie), minimalt installert, uten skrivebordsmiljø og uten ekstra nettverkstjenester. Leverandøren tilbyr en foranstilt brannmur som virker uavhengig av operativsystemet. Målet er en server der kun SSH er tilgjengelig utenfra, og også det bare med passfrasebeskyttede nøkler.
+The basis is Debian 13 (Trixie), installed minimally, without a desktop and without additional network services. The provider supplies an upstream firewall that operates independently of the operating system. The goal is a server where only SSH is externally accessible, and even that only with passphrase-protected keys.
 
-## 1. Oppdater systemet
+## 1. Update the system
 
-Oppdater alle pakker umiddelbart etter installasjonen:
+Immediately after installation, update all packages:
 
 ```bash
 sudo apt update
@@ -46,20 +46,20 @@ sudo apt full-upgrade
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `update` | Leser inn pakkelistene fra alle konfigurerte kilder på nytt |
-| `full-upgrade` | Oppdaterer alle pakker og kan også installere nye pakker eller fjerne eksisterende pakker |
+| `update` | Reloads package lists from all configured Kilder |
+| `full-upgrade` | Updates all packages and may also install new packages or remove existing ones |
 
 </details>
 
-I motsetning til `upgrade` løser `full-upgrade` også avhengigheter som krever nye eller fjernede pakker. På et nytt system er dette riktig fremgangsmåte for å installere alle tilgjengelige sikkerhetsoppdateringer. Start på nytt én gang etter kjerneoppdateringer.
+Unlike `upgrade`, `full-upgrade` also resolves dependencies that require new or removed packages. On a fresh system, this is the right approach to install all available security updates. Restart once after kernel updates.
 
-## 2. Egen bruker i stedet for root
+## 2. Use your own user instead of root
 
-Å arbeide som root er unødvendig risikabelt: Hver skrivefeil påvirker hele systemet, og direkte root-pålogging er det første automatiserte angrep forsøker. Opprett derfor en egen bruker (her `claude`) med sudo-rettigheter for tilfellene der de trengs:
+Working as root is unnecessarily risky: every typo affects the entire system, and direct root login is the first thing automated attacks attempt. Therefore, create your own user (here `claude`) with sudo privileges for cases where they are needed:
 
 ```bash
 sudo adduser claude
@@ -67,67 +67,67 @@ sudo usermod -aG sudo claude
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-a` | Legger til: supplerer brukerens gruppeliste i stedet for å erstatte den; bare gyldig sammen med `-G` |
-| `-G sudo` | Tilleggsgruppe(r) brukeren skal tas opp i |
-| `claude` | Den aktuelle brukeren; ved `adduser` navnet på kontoen som skal opprettes |
+| `-a` | Append: adds to the user's group list rather than replacing it; valid only together with `-G` |
+| `-G sudo` | Supplementary group(s) to which the user is added |
+| `claude` | The affected user; with `adduser` the name of the account to be created |
 
 </details>
 
-Fra nå av utføres all administrasjon via `claude` og `sudo`, ikke lenger via direkte root-tilgang.
+From now on, all administration is performed through `claude` and `sudo`, no longer through direct root access.
 
-## 3. Ed25519-nøkler med passfrase, én per enhet
+## 3. Ed25519 keys with a passphrase, one per device
 
-Påloggingen skal utelukkende skje med SSH-nøkler, ikke passord. Ed25519 er den gjeldende standarden: kort, rask og kryptografisk solid. Det avgjørende er at nøkkelen opprettes på klienten, altså på PC-en, ikke på serveren, og beskyttes med en passfrase. Passfrasen er den andre forsvarslinjen dersom den private nøkkelen noen gang havner i feil hender.
+Login should take place exclusively via SSH keys, not passwords. Ed25519 is the current standard: short, fast and cryptographically sound. Crucially, the key is generated on the client, i.e. on the PC, not on the server, and protected with a passphrase. The passphrase is the second line of defense if the private key ever falls into the wrong hands.
 
-På PC-en:
+On the PC:
 
 ```bash
 ssh-keygen -t ed25519 -C "pc-thinkpad"
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-t ed25519` | Nøkkeltype, her den elliptiske metoden Ed25519 |
-| `-C "pc-thinkpad"` | Kommentar som legges til den offentlige nøkkelen |
+| `-t ed25519` | Key type, here the Ed25519 elliptic-curve algorithm |
+| `-C "pc-thinkpad"` | Comment appended to the public key |
 
 </details>
 
-Kommentaren (`-C`) navngir enheten. Det lønner seg senere: Det opprettes en egen nøkkel for hver enhet: én for PC-en, én separat for iPhone. Hvis en enhet mistes, fjerner du målrettet dens offentlige nøkkel fra `~/.ssh/authorized_keys`, uten å måtte rulle ut alle andre tilganger på nytt.
+The comment (`-C`) identifies the device. This pays off later: generate a separate key for every device: one for the PC and a separate one for the iPhone. If a device is lost, remove its public key specifically from `~/.ssh/authorized_keys` without having to redeploy all other access credentials.
 
-Kun den offentlige nøkkelen hører hjemme på serveren. Den private nøkkelen forlater aldri enheten. I `authorized_keys` finnes det til slutt kun offentlige nøkler, hver med sin enhetskommentar:
+Only the public key belongs on the server. The private key never leaves the device. In `authorized_keys`, there are ultimately only public keys, each with its device comment:
 
 ```text
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...pc  pc-thinkpad
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...ios iphone-15
 ```
 
-Overfør den offentlige PC-nøkkelen innledningsvis. Så lenge passordpålogging fortsatt er aktiv, gjøres dette enklest med:
+Transfer the public PC key initially. As long as password login is still active, the easiest way is:
 
 ```bash
 ssh-copy-id claude@SERVER
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `claude@SERVER` | Bruker og målvert; den offentlige standardnøkkelen legges der til i `~/.ssh/authorized_keys` |
+| `claude@SERVER` | User and target host; the default public key is appended there to `~/.ssh/authorized_keys` |
 
 </details>
 
-Test deretter at pålogging med nøkkel fungerer før passordpålogging deaktiveres i neste trinn. Filrettighetene må være riktige, ellers ignorerer sshd filen: `~/.ssh` til `700`, `authorized_keys` til `600`.
+Then test that key login works before disabling password login in the next step. File permissions must be correct, otherwise sshd ignores the file: `~/.ssh` at `700`, `authorized_keys` at `600`.
 
-## 4. Herd SSH: ingen root, ingen passord
+## 4. Harden SSH: no root, no password
 
-Serverkonfigurasjonen ligger i `/etc/ssh/sshd_config` og (i Debian 13) i drop-in-filer under `/etc/ssh/sshd_config.d/`. Endringer hører hjemme i en egen drop-in-fil; dermed forblir hovedfilen urørt og pakkeoppdateringer overskriver ingenting. Opprett filen `/etc/ssh/sshd_config.d/99-haertung.conf`:
+The server configuration is located in `/etc/ssh/sshd_config` and (on Debian 13) in drop-in files under `/etc/ssh/sshd_config.d/`. Changes belong in a separate drop-in file; this leaves the main file untouched and package updates do not overwrite anything. Create the file `/etc/ssh/sshd_config.d/99-haertung.conf`:
 
 ```text
 PermitRootLogin no
@@ -136,80 +136,80 @@ KbdInteractiveAuthentication no
 PubkeyAuthentication yes
 ```
 
-Dette deaktiverer direkte root-pålogging og passordpålogging. Fra nå av slipper kun de inn som har en passende privat nøkkel. Kontroller syntaksen i konfigurasjonen før den lastes på nytt:
+This disables direct root login and password login. From now on, only someone with a matching private key can get in. Before reloading, check the configuration syntax:
 
 ```bash
 sudo sshd -t
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-t` | Testmodus: kontrollerer konfigurasjonsfilen og nøklene for gyldighet uten å starte tjenesten |
+| `-t` | Test mode: checks the configuration file and keys for validity without starting the service |
 
 </details>
 
-Hvis `sshd -t` ikke rapporterer noe, er filen gyldig. Last den først da på nytt:
+If `sshd -t` reports nothing, the file is valid. Only then reload:
 
 ```bash
 sudo systemctl reload ssh
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `reload` | Ber tjenesten laste inn konfigurasjonen på nytt uten å bryte eksisterende forbindelser |
-| `ssh` | Målenheten, her OpenSSH-tjenesten |
+| `reload` | Instructs the service to reload its configuration without disconnecting existing connections |
+| `ssh` | The target unit, here the OpenSSH service |
 
 </details>
 
-**Viktig:** La den eksisterende SSH-økten være åpen og test den nye tilgangen i en annen terminal. Først når nøkkelinnloggingen der beviselig fungerer, kan den gamle økten lukkes. Dette forholdsreglene reduserer risikoen for å bli utestengt til praktisk talt null. En feil i konfigurasjonen kan ellers koste deg all tilgang.
+**Important:** Keep the existing SSH session open and test the new access in a second terminal. Only once key login demonstrably works there may the old session be closed. This precaution reduces the risk of locking yourself out to virtually zero. A configuration error would otherwise cost you all access.
 
-## 5. Legg SSH på en uvanlig port
+## 5. Move SSH to an unusual port
 
-Standardporten 22 blir forsøkt av roboter døgnet rundt. Å bytte til en høy, fritt valgt port (i eksempelet `61417`) lar størstedelen av denne automatiserte støyen bomme. Dette er uttrykkelig ingen sikkerhetsgevinst i egentlig forstand: Et portbytte erstatter ikke sterk autentisering, det reduserer bare loggmengden og skannebelastningen. Nøkkelkravet fra trinn 4 forblir den egentlige sikringen.
+The standard port 22 is probed by bots around the clock. Switching to a high, freely chosen port (in the example `61417`) makes most of this automated noise come to nothing. This is explicitly not a security gain in the strict sense: changing ports does not replace strong authentication; it only reduces log volume and scan load. The key requirement from step 4 remains the actual protection.
 
-Hvilken port det blir, er ikke vilkårlig. IANA skiller mellom tre soner: **0–1023 (well-known ports)** er forbeholdt standardtjenester (SSH selv på 22, HTTP på 80, HTTPS på 443), krever root for binding og hører ikke hjemme på en selvvalgt SSH-port. Skannere forventer disse portene, det samme gjør standardtjenester som installeres senere. **1024–49151 (registrerte porter)** er tildelt enkeltapplikasjoner på forespørsel, for eksempel 3306 (MySQL), 5432 (PostgreSQL), 6379 (Redis) eller 8080/8443 som utbredte HTTP-alternativer; en tilfeldig valgt port i dette området kolliderer lett senere med programvare som forventer nettopp sin registrerte port. **49152–65535 (dynamiske/private porter)** er ifølge IANA ikke tildelt noen tjeneste og er beregnet på midlertidige, private formål, altså riktig område for en permanent, selvvalgt port.
+The port is not entirely arbitrary. IANA distinguishes three zones: **0–1023 (well-known ports)** are reserved for standard services (SSH itself on 22, HTTP on 80, HTTPS on 443), require root privileges to bind and have no place as a self-chosen SSH port; scanners expect precisely these ports, as do standard services installed later. **1024–49151 (registered ports)** are assigned to individual applications on request, such as 3306 (MySQL), 5432 (PostgreSQL), 6379 (Redis) or 8080/8443 as common HTTP alternatives; a randomly selected port from this range can later easily conflict with software that expects its registered port. **49152–65535 (dynamic/private ports)** are not assigned to any service according to IANA and are intended for temporary, private purposes—the correct range for a permanent, self-chosen port.
 
-Det gjenstår et forbehold: Mange Linux-systemer, også Debian, bruker deler av det samme området som kildeport for egne utgående forbindelser (`net.ipv4.ip_local_port_range`, som standard rundt 32768–60999). En tjeneste som lytter permanent, kolliderer ikke egentlig med dette, siden kjernen ikke tildeler en allerede bundet port, men en port over 60999 unngår også denne teoretiske uklarheten. Eksempelet i denne artikkelen (`61417`) ligger derfor bevisst der. Før omleggingen bør du i tillegg kontrollere med `ss -lntup` (se trinn 7) at den valgte porten ikke allerede er opptatt på din egen server.
+One caveat remains: many Linux systems, including Debian, use part of the same range as a source port for their own outgoing connections (`net.ipv4.ip_local_port_range`, by default around 32768–60999). A permanently listening service does not truly conflict as a result, as the kernel does not assign an already bound port, but a port above 60999 also avoids this theoretical ambiguity. The example in this article (`61417`) is therefore deliberately in that range. Before switching, also use `ss -lntup` (see step 7) to check that the selected port is not already occupied on your server.
 
-I Debian 13 finnes det en særhet: SSH kan startes via systemd-socket-aktivering. Hvis dette er tilfellet, ignoreres `Port`-angivelsen i `sshd_config` helt enkelt; porten må da angis på socketen. Kontroller først hvilket tilfelle som gjelder:
+Debian 13 has a special feature here: SSH can be started through systemd socket activation. If that is the case, the `Port` setting in `sshd_config` is simply ignored; the port must then be set on the socket. First check which case applies:
 
 ```bash
 systemctl is-enabled ssh.socket
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `is-enabled` | Viser om enheten er aktivert for systemoppstart |
-| `ssh.socket` | Socket-enheten for SSH-tjenesten |
+| `is-enabled` | Shows whether the unit is enabled for system startup |
+| `ssh.socket` | The socket unit of the SSH service |
 
 </details>
 
-Hvis kommandoen svarer med `enabled`, kjører SSH via socketen. Endre da porten der:
+If the command responds with `enabled`, SSH runs through the socket. Then change the port there:
 
 ```bash
 sudo systemctl edit ssh.socket
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `edit` | Oppretter en drop-in-overstyringsfil for enheten og åpner den i redigeringsprogrammet |
-| `ssh.socket` | Socket-enheten som skal overstyres |
+| `edit` | Creates a drop-in override file for the unit and opens it in the editor |
+| `ssh.socket` | The socket unit to override |
 
 </details>
 
-Skriv inn følgende linjer i redigeringsprogrammet. Den første, tomme `ListenStream=`-linjen sletter den forhåndsinnstilte porten 22, den andre angir den nye:
+Enter the following lines in the editor. The first, empty `ListenStream=` line removes the preset port 22; the second sets the new one:
 
 ```text
 [Socket]
@@ -217,7 +217,7 @@ ListenStream=
 ListenStream=61417
 ```
 
-Bruk deretter endringene:
+Then apply the changes:
 
 ```bash
 sudo systemctl daemon-reload
@@ -225,178 +225,184 @@ sudo systemctl restart ssh.socket
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `daemon-reload` | Leser inn alle enhetsfiler på nytt, inkludert den nettopp opprettede overstyringsfilen |
-| `restart ssh.socket` | Starter socket-enheten på nytt slik at den lytter på den nye porten |
+| `daemon-reload` | Reloads all unit files, including the override file just created |
+| `restart ssh.socket` | Restarts the socket unit so it listens on the new port |
 
 </details>
 
-Hvis socket-aktivering ikke er aktiv (`disabled`), skal i stedet `Port 61417` legges i drop-in-filen fra trinn 4, etterfulgt av `sudo sshd -t` og `sudo systemctl restart ssh`.
+If socket activation is not active (`disabled`), add `Port 61417` to the drop-in file from step 4 instead, followed by `sudo sshd -t` and `sudo systemctl restart ssh`.
 
-Også her gjelder: Åpne først den nye porten i brannmuren (neste trinn), koble deretter til og test, og la den gamle økten være åpen til tilgang via den nye porten er bekreftet.
+The same applies here: first open the new port in the firewall (next step), then connect and test, and leave the old session open until access through the new port is confirmed.
 
-## 6. Brannmur: stengt som standard
+## 6. Firewall: closed by default
 
-Den foranstilte brannmuren hos leverandøren er den mest effektive grensen fordi den fanger opp pakker før de i det hele tatt når operativsystemet. To grunnregler:
+The upstream provider firewall is the most effective boundary because it intercepts packets before they even reach the operating system. Two basic rules apply:
 
-- **Standardhandling for innkommende trafikk er DROP.** Alt som ikke uttrykkelig er tillatt, forkastes uten kommentar og uten tilbakemelding til avsenderen.
-- **Ett eneste unntak:** innkommende TCP på målporten `61417`. Ikke noe mer trenger å være tilgjengelig utenfra.
+- **Set the default action for incoming traffic to DROP.** Everything not explicitly allowed is discarded, without comment and without feedback to the sender.
+- **One single exception:** incoming TCP to target port `61417`. Nothing else needs to be externally accessible.
 
-Utgående trafikk forblir tillatt. Dette er bevisst: Serveren må kunne laste ned pakker, synkronisere tid og nå API-et for Claude Code. Restriktiv filtrering av utgående trafikk gir lite ekstra beskyttelse på en enkeltserver, men gjør driften merkbart mer tungvint.
+Outgoing traffic remains allowed. This is intentional: the server must download packages, synchronize the time and reach the API for Claude Code. Restrictive outbound filtering offers little additional protection for a single server, but makes operation noticeably more cumbersome.
 
-De som ønsker ekstra dybdeforsvar, kan duplisere de samme reglene på verten med `nftables` eller `ufw`. For oppsettet som beskrives, er leverandørens brannmur tilstrekkelig.
+If you want additional defense in depth, you can duplicate the same rules on the host with `nftables` or `ufw`. For the setup described, the provider firewall is sufficient.
 
-## 7. Kontroller angrepsflaten
+## 7. Check the attack surface
 
-Etter herdingen kontrollerer du hva serveren faktisk tilbyr utad. To kommandoer er nok. Først: Hvilke tjenester lytter på hvilke adresser?
+After hardening, verify what the server actually offers externally. Two commands are sufficient. First: which services listen on which addresses?
 
 ```bash
 sudo ss -lntup
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-l` | Vis kun lyttende sockets |
-| `-n` | Numerisk utdata: porter og adresser løses ikke opp til navn |
-| `-t` | Inkluder TCP-sockets |
-| `-u` | Inkluder UDP-sockets |
-| `-p` | Viser prosessen bak hver socket; dette krever `sudo` |
+| `-l` | Shows only listening sockets |
+| `-n` | Numeric output: ports and addresses are not resolved to names |
+| `-t` | Includes TCP sockets |
+| `-u` | Includes UDP sockets |
+| `-p` | Shows the process behind each socket; `sudo` is required for this |
 
 </details>
 
-Adressekolonnen er avgjørende: En tjeneste på `0.0.0.0` eller `[::]` er tilgjengelig utenfra, mens en på `127.0.0.1` eller `[::1]` kun er lokal. I sikret tilstand skal kun SSH vises offentlig. Tjenester som `chronyd` (tidssynkronisering) kan vises, men bare bundet til lokale adresser. Hvis `chronyd` kun lytter på `127.0.0.1` og `::1`, kan den ikke nås utenfra og er dermed uproblematisk.
+The address column is decisive: a service on `0.0.0.0` or `[::]` is externally accessible, while one on `127.0.0.1` or `[::1]` is local only. In the secured state, only SSH should appear publicly. Services such as `chronyd` (time synchronization) may appear, but only bound to local addresses. If `chronyd` listens exclusively on `127.0.0.1` and `::1`, it cannot be reached externally and is therefore harmless.
 
-For det andre: Finnes det mislykkede systemtjenester som tyder på et konfigurasjonsproblem?
+Second: are there failed system services that indicate a configuration problem?
 
 ```bash
 systemctl --failed
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `--failed` | Lister utelukkende enheter i feiltilstand |
+| `--failed` | Lists only units in the failed state |
 
 </details>
 
-Svaret bør være `0 loaded units listed`, ikke én eneste mislykket tjeneste. Feilende enheter er ikke bare et driftsproblem, men potensielt også et sikkerhetsproblem hvis det ligger en halvstartet, feilkonfigurert nettverkstjeneste bak.
+The response should be `0 loaded units listed`, not a single failed service. Failed units are not only an operational problem but potentially also a security problem if a partially started, incorrectly configured network service is behind them.
 
-## 8. Installer og drift Claude Code
+## 8. Install and run Claude Code
 
-Claude Code trenger et aktuelt Node.js-kjøremiljø. Etter installasjonen av dette setter du opp CLI-en i henhold til den offisielle veiledningen og autentiserer deg på nytt på serveren; ikke last opp lokale påloggingsopplysninger (mer om dette straks).
+Claude Code does not require a separate Node.js runtime environment. Anthropic recommends the native installer (`curl -fsSL https://claude.ai/install.sh | bash`), which updates Claude Code itself in the background; for Debian, a signed apt repository is alternatively available that is updated through regular system updates. After installation, authenticate the CLI afresh on the server; do not upload local credentials (more on that shortly).
 
-For varig drift med `tmux`:
+For continuous operation, use `tmux`:
 
 ```bash
 tmux new -s claude
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `new` | Oppretter en ny økt |
-| `-s claude` | Angir øktnavnet den senere kan gjenopptas med |
+| `new` | Creates a new session |
+| `-s claude` | Assigns the session name used to resume it later |
 
 </details>
 
-Start Claude inne i økten. Med `Ctrl-b`, deretter `d`, kobler du fra økten uten å avslutte den; Claude fortsetter å kjøre. Du kommer tilbake med:
+Start Claude within the session. Press `Ctrl-b`, then `d` to detach from the session without ending it; Claude keeps running. Return with:
 
 ```bash
 tmux attach -t claude
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `attach` | Kobler terminalen til en kjørende økt igjen |
-| `-t claude` | Velger måløkten ut fra navnet |
+| `attach` | Reconnects the terminal to a running session |
+| `-t claude` | Selects the target session by its name |
 
 </details>
 
-Slik overlever en aktiv oppgave brutte forbindelser, enhetsbytter og den bærbare datamaskinens nattero.
+This lets a running task survive disconnected connections, device changes and the laptop's overnight sleep.
 
-## 9. Datahygiene ved migrering
+## 9. Data hygiene during migration
 
-Den mest følsomme delen ved å flytte til serveren er ikke teknologien, men spørsmålet om hva du tar med deg. Tre regler:
+The most delicate part of moving to the server is not the technology, but what you bring along. Three rules:
 
-- **Ingen private nøkler på serveren.** I `authorized_keys` ligger det kun offentlige nøkler. Private nøkler blir værende på endeenhetene.
-- **Ikke kopier påloggingsopplysninger ukritisk.** Sensitive lokale filer som en `.credentials.json` hører ikke hjemme på VPS-en uten kontroll. Autentiser deg i stedet på nytt på serveren.
-- **Legg først konfigurasjon i en migreringsmappe.** Ikke skriv eksisterende Claude-minner og -konfigurasjon direkte inn i de aktive konfigurasjonsbanene, men overfør dem først til en separat migreringsmappe og vurder der hva som faktisk skal tas med. Det du ikke lenger trenger, som gamle MCP-oppføringer eller foreldreløse innstillinger, blir bevisst igjen i stedet for å følge med ukritisk.
+- **No private keys on the server.** Only public keys reside in `authorized_keys`. Private keys remain on the end devices.
+- **Do not copy credentials wholesale.** Sensitive local files such as a `.credentials.json` do not belong on the VPS without verification. Instead, authenticate afresh on the server.
+- **Put configuration into a migration folder first.** Do not write existing Claude memories and configuration directly into active configuration paths. First transfer them to a separate migration folder and check what should actually be retained. Anything no longer needed, such as old MCP entries or orphaned settings, is deliberately left behind instead of migrating unchecked.
 
-## 10. Forhåndsvisninger på nett via en SSH-tunnel
+## 10. Web previews through an SSH tunnel
 
-For forhåndsvisninger på nett, for eksempel en lokal utviklingsserver som Claude starter, er fristelsen stor til bare å åpne en ekstra port. Det bør du ikke gjøre. Hver ekstra åpne port er ekstra angrepsflate. I stedet kjører forhåndsvisningen gjennom en kryptert SSH-porttunnel: Tjenesten lytter kun lokalt på serveren, og SSH videresender den til klienten.
+For web previews, such as a local development server started by Claude, it is tempting simply to open another port. Do not do this. Every additional open port is additional attack surface. Instead, the preview runs through an encrypted SSH port tunnel: the service listens only locally on the server, and SSH forwards it to the client.
 
-Gjør en tjeneste som kjører lokalt på port 4321 tilgjengelig fra PC-en:
+From the PC, make a service running locally on port 4321 accessible:
 
 ```bash
 ssh -p 61417 -L 4321:localhost:4321 claude@SERVER
 ```
 
 <details class="options-details">
-<summary>Forklaring av alternativer</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-p 61417` | Porten SSH-serveren lytter på (den som ble valgt i trinn 5) |
-| `-L 4321:localhost:4321` | Lokal portvideresending: Forbindelser til lokal port 4321 videresendes gjennom tunnelen til `localhost:4321` sett fra serveren |
-| `claude@SERVER` | Bruker og målvert for SSH-forbindelsen |
+| `-p 61417` | Port on which the SSH server listens (the one chosen in step 5) |
+| `-L 4321:localhost:4321` | Local port forwarding: connections on local port 4321 are forwarded through the tunnel to `localhost:4321` from the server's perspective |
+| `claude@SERVER` | User and target host of the SSH connection |
 
 </details>
 
-Deretter åpner du `http://localhost:4321` i den lokale nettleseren. Trafikken går utelukkende gjennom den eksisterende, autentiserte SSH-forbindelsen, uten at én eneste ekstra port må åpnes i brannmuren.
+Then open `http://localhost:4321` in the local browser. All traffic runs through the existing, authenticated SSH connection, without having to open even one additional port in the firewall.
 
-## Tilgang fra iPhone
+## Access from an iPhone
 
-Tilgang på farten fungerer med samme sikkerhetsmodell som fra PC-en. Du trenger bare en SSH-klient med nøkkeladministrasjon. **Termius**, **Blink Shell** og **Secure ShellFish** er utbredte; alle kan opprette Ed25519-nøkler og lagre dem i iOS-nøkkelringen, delvis sikret med Face ID.
+Access on the go works using the same security model as from the PC. You only need an SSH client with key management. Common options include **Termius**, **Blink Shell** and **Secure ShellFish**; all can generate Ed25519 keys and store them in the iOS keychain, in some cases secured with Face ID.
 
-Fremgangsmåten tilsvarer trinn 3, bare på iPhone:
+The procedure corresponds to step 3, only on the iPhone:
 
-1. Opprett en egen Ed25519-nøkkel for iPhone i SSH-klienten, ikke kopier PC-nøkkelen. Den private nøkkelen blir værende i enhetens nøkkelring.
-2. Legg iPhones offentlige nøkkel inn som en ekstra linje i `~/.ssh/authorized_keys` på serveren, med en beskrivende kommentar (`iphone-15`).
-3. Opprett forbindelsen i klienten: serveradresse, bruker `claude`, port `61417`, og iPhone-nøkkelen for autentisering.
+1. Generate a separate Ed25519 key for the iPhone in the SSH client; do not copy the PC key. The private key remains in the device's keychain.
+2. Add the iPhone's public key as an additional line in `~/.ssh/authorized_keys` on the server, with a descriptive comment (`iphone-15`).
+3. Create the connection in the client: server address, user `claude`, port `61417`, and the iPhone key for authentication.
 
-Det er nettopp derfor en separat nøkkel per enhet lønner seg: Hvis iPhone mistes, sletter du den ene `iphone-15`-linjen fra `authorized_keys` på serveren, og enheten er utestengt, mens PC-tilgang og alle andre nøkler fortsetter uendret.
+This is precisely why a separate key per device is worthwhile: if the iPhone is lost, delete the single `iphone-15` line from `authorized_keys` on the server, and the device is locked out while PC access and all other keys continue unaffected.
 
-Etter tilkobling henter du tilbake den kjørende Claude-økten med `tmux attach -t claude` og fortsetter der du slapp ved skrivebordet. Porttunnelen fra trinn 10 fungerer også fra iOS; Termius og Secure ShellFish støtter portvideresending.
+After connecting, resume the running Claude session with `tmux attach -t claude` and continue where you left off at your desk. The port tunnel from step 10 also works from iOS; Termius and Secure ShellFish support port forwarding.
 
-## Sjekkliste
+## Checklist
 
-Hele prosessen oppsummert:
+In summary, the complete process:
 
-1. Debian 13 installert og fullstendig oppdatert med `apt full-upgrade`.
-2. Egen bruker `claude` med sudo-rettigheter; direkte root-pålogging brukes ikke lenger.
-3. Passfrasebeskyttede Ed25519-nøkler, én per enhet, kun offentlige nøkler i `authorized_keys`.
-4. sshd herdet: `PermitRootLogin no`, `PasswordAuthentication no`; kontrollert med `sshd -t` før ny innlasting, og eksisterende økt holdt åpen til testen var gjennomført.
-5. SSH på port 61417, ved socket-aktivering angitt på `ssh.socket`, ellers i sshd-konfigurasjonen.
-6. Leverandørbrannmur: innkommende standard DROP, eneste unntak TCP 61417; utgående tillatt.
-7. Angrepsflate kontrollert med `ss -lntup` (kun SSH offentlig, `chronyd` lokalt) og `systemctl --failed` (ingen feil).
-8. Claude Code autentisert på nytt på serveren, drift i en `tmux`-økt.
-9. Datahygiene: ingen private nøkler eller påloggingsopplysninger på serveren, konfigurasjon først kontrollert via en migreringsmappe.
-10. Ingen ekstra porter; forhåndsvisninger på nett kjører gjennom en SSH-tunnel.
+1. Debian 13 installed and fully updated with `apt full-upgrade`.
+2. Separate user `claude` with sudo privileges; direct root login no longer used.
+3. Passphrase-protected Ed25519 keys, one per device, with only public keys in `authorized_keys`.
+4. sshd hardened: `PermitRootLogin no`, `PasswordAuthentication no`; checked with `sshd -t` before reloading, and kept the existing session open until testing.
+5. SSH moved to port 61417, set on `ssh.socket` with socket activation, otherwise in the sshd configuration.
+6. Provider firewall: incoming default DROP, sole exception TCP 61417; outgoing traffic allowed.
+7. Attack surface checked with `ss -lntup` (only SSH public, `chronyd` local) and `systemctl --failed` (no errors).
+8. Claude Code freshly authenticated on the server, operated in a `tmux` session.
+9. Data hygiene: no private keys and no credentials on the server; configuration first checked through a migration folder.
+10. No additional ports; web previews run through an SSH tunnel.
 
-Etter dette oppsettet er kun SSH på den angitte porten tilgjengelig utenfra, og også der utelukkende med en passfrasebeskyttet nøkkel. Claude Code kjører uavhengig av endeenheten i `tmux`; forhåndsvisninger på nett forblir tilgjengelige via SSH-tunneler uten å åpne en ekstra port.
+After this setup, only SSH on the specified port is externally accessible, and even there exclusively with a passphrase-protected key. Claude Code runs independently of the end device in `tmux`; web previews remain accessible through SSH tunnels without opening an additional port.
+
+## Change log
+
+- **25 October 2026:** Corrected: Claude Code does not require a separate Node.js runtime environment; added the recommended native installer and the signed apt repository for Debian. Updated source links to the new Claude Code documentation addresses.
 
 ## Kilder
 
-1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config): Referanse for alle sshd-direktiver, blant annet `PermitRootLogin`, `PasswordAuthentication` og `PubkeyAuthentication`.
+1.  [OpenSSH Manual – sshd_config(5)](https://man.openbsd.org/sshd_config): Reference for all sshd directives, including `PermitRootLogin`, `PasswordAuthentication` and `PubkeyAuthentication`.
 
-2.  [Debian Wiki – SSH](https://wiki.debian.org/SSH): Debian-spesifikke merknader om SSH-konfigurasjon, inkludert drop-in-filene under `/etc/ssh/sshd_config.d/`.
+2.  [Debian Wiki – SSH](https://wiki.debian.org/SSH): Debian-specific notes on SSH configuration, including the drop-in files under `/etc/ssh/sshd_config.d/`.
 
-3.  [systemd.socket(5) – freedesktop.org](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html): Hvordan socket-aktivering og `ListenStream=`-direktivet fungerer, relevant for SSH-portbyttet i Debian 13.
+3.  [systemd.socket(5) – freedesktop.org](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html): How socket activation and the `ListenStream=` directive work, relevant to changing the SSH port on Debian 13.
 
-4.  [ss(8) – iproute2 Manpage](https://man7.org/linux/man-pages/man8/ss.8.html): Alternativer for `ss` for å liste lyttende sockets med prosess og bindingsadresse.
+4.  [ss(8) – iproute2 Manpage](https://man7.org/linux/man-pages/man8/ss.8.html): Options for `ss` to list listening sockets together with their process and binding address.
 
-5.  [Claude Code – Offisiell dokumentasjon](https://docs.claude.com/en/docs/claude-code/overview): Installasjon, autentisering og drift av Claude Code.
+5.  [Claude Code – Official documentation](https://code.claude.com/docs/en/overview): Installation, authentication and operation of Claude Code.
+
+6.  [Claude Code – Advanced setup](https://code.claude.com/docs/en/setup): System requirements, native installer, apt repository and auto-updates.

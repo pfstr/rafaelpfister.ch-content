@@ -1,10 +1,10 @@
 ---
-title: "Analysera Exchange-e-postflödet: meddelandespårning, SMTP-loggar och Receive Connectors"
+title: "Analysera e-postflödet i Exchange: meddelandespårning, SMTP-loggar och Receive Connectors"
 navTitle: "Analysera e-postflödet"
-description: "Så tar du systematiskt reda på var ett meddelande har tagit vägen i Exchange OnPrem, Hybrid och Exchange Online: frågor med exempelutdata, hur du läser SMTP-loggen korrekt och de punkter som regelbundet leder till felaktiga slutsatser."
+description: "Så tar du systematiskt reda på var ett meddelande har tagit vägen i Exchange OnPrem, Hybrid och Exchange Online: frågor med exempelutdata, hur du läser SMTP-loggen korrekt och fallgroparna som regelbundet leder till felaktiga slutsatser."
 date: "2026-08-11"
 kategorie: "Exchange OnPrem / Hybrid"
-timeToRead: "22 min läsning"
+timeToRead: "22 minuters läsning"
 themen:
   - exchange-onprem-hybrid
   - smtp-mailflow
@@ -27,25 +27,25 @@ slug: "analysera-exchange-mailflode-meddelandesparning-smtp-protokoll-och-receiv
 translationId: "article-ad93c41ab6cd20e6"
 draft: false
 translationOf: exchange-message-tracking-und-receive-connectoren-analysieren
-translationSourceHash: da923f7fa45ee5c38ea52e96d56781f7c3806556245a5f071242e7f02473a71c
+translationSourceHash: 867f3a9a27b8db05d2721cce6282149f4616c4170576d0ab3f39a3cbde3701e3
 translationModel: gpt-5.6-terra
-translatedAt: 2026-08-31T10:13:28.664Z
-translationReview: required
-url: https://rafaelpfister.ch/sv/blog/analysera-exchange-mailflode-meddelandesparning-smtp-protokoll-och-receive-connectors
+translatedAt: 2026-10-30T03:27:43.663Z
+translationReview: automatic
 aktualisiert: 2026-10-25
+url: https://rafaelpfister.ch/sv/blog/analysera-exchange-mailflode-meddelandesparning-smtp-protokoll-och-receive-connectors
 ---
 
-# Analysera Exchange-e-postflödet: meddelandespårning, SMTP-loggar och Receive Connectors
+# Analysera e-postflödet i Exchange: meddelandespårning, SMTP-loggar och Receive Connectors
 
-Den vanligaste frågan i e-postdriften är: Ett meddelande har inte kommit fram, var tog det vägen? Meddelandespårning ger ett tillförlitligt svar, men bara om du vet vad den **inte** säger. Den här artikeln beskriver arbetssättet i den ordning som har visat sig fungera bäst, visar typisk utdata för varje fråga och pekar ut felkällor som regelbundet kostar timmar eftersom de leder till rimliga men felaktiga slutsatser.
+Den vanligaste frågan i e-postdriften är: Ett meddelande har inte kommit fram, var har det tagit vägen? Meddelandespårning besvarar detta tillförlitligt, men bara om du vet vad den **inte** berättar. Den här artikeln beskriver arbetsgången i den ordning som har visat sig fungera, visar typisk utdata för varje fråga och nämner felkällorna som regelbundet kostar timmar eftersom de antyder rimliga men felaktiga slutsatser.
 
-Alla exempel använder generiska namn: `SRV-MAIL01` och `SRV-MAIL02` som transportservrar, `example.com` som domän. Om du vill sätta ihop kommandon för din miljö i stället för att skriva dem: [kommandogeneratorn](https://rafaelpfister.ch/tools/command-builder) innehåller vanliga kommandon för meddelandespårning och logginsamling för PowerShell och Unix-skal sida vid sida, helt lokalt i webbläsaren.
+Alla exempel använder generiska namn: `SRV-MAIL01` och `SRV-MAIL02` som transportservrar, `example.com` som domän. Om du vill sätta ihop kommandona för din miljö i stället för att skriva dem: [Kommandogeneratorn](https://rafaelpfister.ch/tools/command-builder) innehåller vanliga kommandon för meddelandespårning och insamling för PowerShell och Unix-skal sida vid sida, helt lokalt i webbläsaren.
 
 ## Grundprincipen: lokalisera först, förklara sedan
 
-Reflexen är att genast leta efter orsaken. Det är effektivare att först fastställa hur långt meddelandet över huvud taget har kommit. Det begränsar sökområdet drastiskt i ett enda steg, eftersom du sedan vet om du ska söka i det egna systemet, hos det föregående gatewayet eller hos mottagaren.
+Reflexen är att genast söka efter orsaken. Det är effektivare att först avgöra hur långt meddelandet över huvud taget har kommit. Det begränsar sökområdet drastiskt i ett enda steg, eftersom du därefter vet om du behöver söka i ditt eget system, hos den föregående gatewayen eller vid målet.
 
-Ordningen är därför: hitta meddelandet, läs den senaste händelsen, läs felorsaken, avgör om det är ett enskilt fall eller ett mönster, och rekonstruera först därefter inlämningsvägen.
+Ordningen är därför: hitta meddelandet, läs den senaste händelsen, läs felorsaken, avgör om det är ett enskilt fall eller ett mönster och rekonstruera först därefter inskickningsvägen.
 
 ## Steg 1: Hitta meddelandet
 
@@ -63,20 +63,20 @@ Börja med mottagaren, eftersom du nästan alltid känner till den. Det är vikt
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
-| `-Server` | Transportserver vars spårningslogg frågas; här båda servrarna efter varandra via pipelinen |
+| `-Server` | Transportserver vars spårningslogg frågas; här båda servrarna i följd via pipelinen |
 | `-Start` | Nedre tidsgräns för sökningen, här de senaste sex timmarna |
-| `-ResultSize Unlimited` | Tar bort standardgränsen på 1 000 poster |
-| `-Recipients` | Filtrerar på meddelanden till denna mottagaradress |
-| `Sort-Object Timestamp` | Sorterar de sammanslagna resultaten från båda servrarna kronologiskt |
-| `-AutoSize -Wrap` | Anpassar kolumnbredden till innehållet och radbryter långa värden i stället för att klippa av dem |
+| `-ResultSize Unlimited` | Tar bort standardgränsen på 1000 poster |
+| `-Recipients` | Filtrerar efter meddelanden till denna mottagaradress |
+| `Sort-Object Timestamp` | Sorterar de sammanfogade resultaten från båda servrarna kronologiskt |
+| `-AutoSize -Wrap` | Anpassar kolumnbredden efter innehållet och radbryter långa värden i stället för att klippa av dem |
 
 </details>
 
-Typisk utdata för ett meddelande som har gått igenom utan problem:
+Typisk utdata för ett meddelande som har passerat utan problem:
 
 ```text
 Timestamp           ServerHostname EventId      Source  ConnectorId
@@ -104,33 +104,33 @@ Om frågan inte hittar något, kontrollera om mottagaren har expanderats via en 
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Server` | Transportserver vars spårningslogg frågas |
 | `-Start` | Nedre tidsgräns för sökningen |
-| `-ResultSize Unlimited` | Tar bort standardgränsen på 1 000 poster |
-| `Where-Object` | Filtrerar på klientsidan efter avsändare från den egna domänen, eftersom `-Sender` bara accepterar exakta adresser |
+| `-ResultSize Unlimited` | Tar bort standardgränsen på 1000 poster |
+| `Where-Object` | Filtrerar på klientsidan efter avsändare i den egna domänen, eftersom `-Sender` endast accepterar exakta adresser |
 | `@{n=…; e=…}` | Beräknad kolumn: sammanfattar samlingsfältet `Recipients` till en kommaseparerad sträng |
 
 </details>
 
 ## Steg 2: Läs den senaste händelsen
 
-Hela diagnostiken bygger på meddelandets **senaste** `EventId`. Den talar om vilket sökområde som ska undersökas härnäst.
+Hela diagnosen hänger på meddelandets **senaste** `EventId`. Den talar om för dig vilket sökområde som ska undersökas härnäst.
 
 | Senaste EventId | Betydelse | Nästa steg |
 |---|---|---|
-| `RECEIVE`, därefter inget | Meddelandet har fastnat | Kontrollera köer |
-| `SEND` eller `SENDEXTERNAL` | Har överlämnats korrekt | Sök vidare vid nästa hopp |
-| `FAIL` | Har misslyckats definitivt | Läs orsaken i `RecipientStatus` |
+| `RECEIVE`, därefter ingenting | Meddelandet har fastnat | Kontrollera köer |
+| `SEND` eller `SENDEXTERNAL` | Överlämnat utan problem | Sök vidare vid nästa hopp |
+| `FAIL` | Slutgiltigt misslyckat | Läs orsaken i `RecipientStatus` |
 | `DEFER` | Nytt försök pågår | Kontrollera kön och målsystemet |
-| `DROP` eller `POISONMESSAGE` | Har förkastats | Kontrollera transportregel eller agent |
-| `DELIVER` | Har levererats till en lokal postlåda | Kontrollera postlåderegel |
-| `RESOLVE` | Mottagaren har skrivits om | Läs mål­adressen i posten |
+| `DROP` eller `POISONMESSAGE` | Kasserat | Kontrollera transportregel eller agent |
+| `DELIVER` | Levererat till en lokal postlåda | Kontrollera postlåderegler |
+| `RESOLVE` | Mottagaren har skrivits om | Läs måladressen i posten |
 
-`RESOLVE` är det mest upplysande mellansteget i hybridmiljöer, eftersom omskrivningen till molnets routningsadress syns där:
+`RESOLVE` är det mest informativa mellansteget i hybridmiljöer, eftersom omskrivningen till molnroutningsadressen syns där:
 
 ```text
 EventId : RESOLVE
@@ -139,9 +139,9 @@ Sender  : absender@example.com
 To      : BENUTZER@example.mail.onmicrosoft.com
 ```
 
-Om den förväntade `onmicrosoft.com`-adressen står där är mottagarobjektet korrekt konfigurerat och du kan avsluta ärendet. Om den ursprungliga adressen fortfarande står där saknas måladressen på det lokala objektet och Exchange försöker leverera lokalt.
+Om den förväntade `onmicrosoft.com`-adressen står där är mottagarobjektet korrekt konfigurerat och du kan avsluta ärendet. Om den ursprungliga adressen fortfarande står där saknar det lokala objektet måladressen, och Exchange försöker leverera lokalt.
 
-Om meddelandet har fastnat visar kön vanligtvis orsaken i klartext:
+Om meddelandet har fastnat visar kön oftast orsaken i klartext:
 
 ```powershell
 Get-Queue -Server SRV-MAIL01 |
@@ -151,21 +151,21 @@ Get-Queue -Server SRV-MAIL01 |
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Server` | Server vars transportköer frågas |
-| `Where-Object` | Döljer tomma köer och visar bara köer med väntande meddelanden |
-| `-AutoSize -Wrap` | Hindrar att den långa kolumnen `LastError` klipps av |
+| `Where-Object` | Döljer tomma köer och visar endast köer med väntande meddelanden |
+| `-AutoSize -Wrap` | Förhindrar att den långa kolumnen `LastError` klipps av |
 
 </details>
 
-## Felkälla 1: Spårning är serverbunden och många poster är skuggkopior
+## Felkälla 1: Spårning är serverbaserad och många poster är skuggkopior
 
-Om du i utdata ser par av `HARECEIVE` och `HADISCARD`, ofta med tillägget `ExplicitlyDiscarded`, har denna server **inte bearbetat** meddelandet. Den höll bara en skuggkopia inom Shadow Redundancy, medan en annan server skötte den faktiska leveransen. Så snart den primära servern rapporterar att den lyckats förkastar partnern sin kopia.
+Om du ser par av `HARECEIVE` och `HADISCARD` i utdata, ofta med tillägget `ExplicitlyDiscarded`, har denna server **inte behandlat** meddelandet. Den höll endast en skuggkopia inom Shadow Redundancy, medan en annan server hanterade den faktiska leveransen. Så snart den primära servern rapporterar framgång kasserar partnern sin kopia.
 
-Så här ser det ut om du bara har frågat fel server:
+Så här ser det ut när du bara har frågat fel server:
 
 ```text
 Timestamp           EventId    SourceContext
@@ -174,15 +174,15 @@ Timestamp           EventId    SourceContext
 11.08.2026 09:48:07 HADISCARD  ExplicitlyDiscarded;1a2aae6b-f3a3-4e04-9233-7de460b92223
 ```
 
-Två rader, inget fel, ingen leverans. Den som drar slutsatsen att meddelandet har försvunnit söker på fel ställe. Den faktiska bearbetningen finns i partner­serverns spårning.
+Två rader, inget fel, ingen leverans. Den som drar slutsatsen att meddelandet har försvunnit söker på fel plats. Den faktiska behandlingen finns i partnerserverns spårning.
 
-I praktiken innebär detta två saker. För det första är sådana rader ingen indikation på ett problem utan normal drift. För det andra måste du ovillkorligen fråga alla transportservrar.
+I praktiken betyder det två saker. För det första är sådana rader inte en indikation på ett problem, utan normal drift. För det andra måste du alltid fråga alla transportservrar.
 
 ## Felkälla 2: `Format-Table` klipper av just de avgörande kolumnerna
 
-Felorsaken står i `RecipientStatus`, och fältet är långt. I en tabell försvinner det antingen helt eller klipps av. Det är just detta som gör att man ser `FAIL`, men inte orsaken, och börjar gissa i stället.
+Felorsaken finns i `RecipientStatus`, och det fältet är långt. I en tabell försvinner det antingen helt eller klipps av. Det leder just till att man ser `FAIL` men inte orsaken och i stället börjar gissa.
 
-Så snart du har hittat ett fel fall ska du därför växla till `Format-List` och expandera samlingsfälten:
+Så snart du har hittat ett fel fall bör du därför byta till `Format-List` och expandera samlingsfälten:
 
 ```powershell
 Get-MessageTrackingLog -Server SRV-MAIL01 `
@@ -197,21 +197,21 @@ Get-MessageTrackingLog -Server SRV-MAIL01 `
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Server` | Transportserver vars spårningslogg frågas |
 | `-Start` | Nedre tidsgräns för sökningen |
-| `-ResultSize Unlimited` | Tar bort standardgränsen på 1 000 poster |
-| `-Recipients` | Filtrerar på meddelanden till denna mottagaradress |
-| `-EventId FAIL` | Endast poster med definitivt leveransfel |
+| `-ResultSize Unlimited` | Tar bort standardgränsen på 1000 poster |
+| `-Recipients` | Filtrerar efter meddelanden till denna mottagaradress |
+| `-EventId FAIL` | Endast poster med slutgiltigt leveransfel |
 | `Format-List` | Visar varje fält på en egen rad i full längd, inget klipps av |
 | `@{n=…; e=…}` | Beräknade fält: expanderar samlingsfälten `Recipients` och `RecipientStatus` till läsbara strängar |
 
 </details>
 
-Och så här ser skillnaden ut. Först tabellvyn, som inte förklarar något:
+Så här ser skillnaden ut. Först tabellvyn som inte förklarar någonting:
 
 ```text
 Timestamp           EventId ConnectorId
@@ -232,11 +232,11 @@ MessageSubject : Statusmeldung Nachtlauf
 MessageId      : <1897281176.1319@app01.intern.example.com>
 ```
 
-Diagnosen är därmed fastställd utan att du behövde en enda gissning: Motparten invänder mot avsändaren. `LED` innehåller det fullständiga SMTP-svaret, `FQDN` och `IP` anger systemet som svarade och `LRT` tidpunkten för det senaste försöket.
+Diagnosen är därmed klar, utan att du behövde göra en enda gissning: Motparten invänder mot avsändaren. `LED` innehåller det fullständiga SMTP-svaret, `FQDN` och `IP` anger systemet som svarade, och `LRT` tidpunkten för det senaste försöket.
 
 ## Steg 3: Enskilt fall eller mönster?
 
-Innan du fördjupar dig i ett enskilt fall, klargör omfattningen. Den här enda frågan avgör om du har att göra med en randanmärkning eller en incident:
+Innan du fördjupar dig i ett enskilt fall ska du klargöra omfattningen. Denna enda fråga avgör om du har att göra med en randanmärkning eller en incident:
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object {
@@ -250,20 +250,20 @@ Innan du fördjupar dig i ett enskilt fall, klargör omfattningen. Den här enda
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Start` | Nedre tidsgräns, här de senaste åtta timmarna |
-| `-EventId FAIL` | Endast definitivt misslyckade leveranser |
-| `-ResultSize Unlimited` | Tar bort standardgränsen på 1 000 poster |
-| `Where-Object` | Filtrerar på den undersökta SMTP-statuskoden i fältet `RecipientStatus` |
+| `-EventId FAIL` | Endast slutgiltigt misslyckade leveranser |
+| `-ResultSize Unlimited` | Tar bort standardgränsen på 1000 poster |
+| `Where-Object` | Filtrerar efter den undersökta SMTP-statuskoden i fältet `RecipientStatus` |
 | `Group-Object` | Grupperar efter avsändardomän (delen efter `@`) |
 | `Sort-Object Count -Descending` | Vanligaste domänen överst |
 
 </details>
 
-Ersätt `5.1.8` med statuskoden du undersöker. Utdata besvarar frågan på en rad:
+Ersätt `5.1.8` med statuskoden som du undersöker. Utdata besvarar frågan på en rad:
 
 ```text
 Count Name
@@ -271,11 +271,11 @@ Count Name
     9 example-test.com
 ```
 
-En enda avsändardomän betyder: ett avgränsat problem, ingen incident, du kan söka vidare i lugn och ro. Om tjugo olika domäner stod där skulle du ha ett pågående avbrott, och allt annat skulle få vänta. Att göra denna åtskillnad så tidigt sparar erfarenhetsmässigt mest tid.
+En enda avsändardomän innebär: ett snävt avgränsat problem, ingen incident, du kan fortsätta söka i lugn och ro. Om det stod tjugo olika domäner där skulle du ha ett pågående avbrott och allt annat behöva vänta. Att göra denna åtskillnad så tidigt sparar enligt erfarenhet mest tid.
 
 ## Felkälla 3: `ConnectorId` anger inte den verkliga Receive Connectorn
 
-Detta är den dyraste felkällan, eftersom utdata ser trovärdig ut. E-post som en klient eller ett externt system lämnar in på port 25 når först **Front End Transport**. Den vidarebefordrar meddelandet till **Transport Service** på port 2525. Meddelandespårningen skrivs först där; Front End Transport skriver ingen egen spårning.
+Det här är den dyraste felkällan, eftersom utdata ser seriös ut. E-post som en klient eller ett externt system skickar in på port 25 träffar först **Front End Transport**. Den vidarebefordrar meddelandet till **Transport Service** på port 2525. Meddelandespårningen skrivs först där; Front End Transport skriver ingen egen spårning.
 
 Följden syns på denna rad:
 
@@ -286,9 +286,9 @@ ClientIp       : 10.0.1.11
 ClientHostname : srv-mail01.intern.example.com
 ```
 
-`ConnectorId` anger den interna connectorn på port 2525, och `ClientIp` är adressen till den **proxyande servern**, inte till den ursprungliga inlämnaren. Vilken av de konfigurerade connectorerna på port 25 ett system faktiskt träffade står helt enkelt inte i spårningen. Den som litar på denna uppgift letar efter felet i en connector som inte ens var inblandad.
+`ConnectorId` anger den interna connectorn på port 2525, och `ClientIp` är adressen till **den proxande servern**, inte den ursprungliga avsändaren. Vilken av de konfigurerade connectorerna på port 25 ett system faktiskt träffade framgår helt enkelt inte av spårningen. Den som litar på denna uppgift söker felet vid en connector som inte ens var inblandad.
 
-Det finns två vägar till svaret. Den första är rekonstruktion via konfigurationen:
+Det finns två sätt att få svaret. Det första är rekonstruktion via konfigurationen:
 
 ```powershell
 'SRV-MAIL01','SRV-MAIL02' | ForEach-Object { Get-ReceiveConnector -Server $_ } |
@@ -299,12 +299,12 @@ Det finns två vägar till svaret. Den första är rekonstruktion via konfigurat
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Server` | Server vars Receive Connectors listas |
-| `Format-List` | Fulla fältlängder; `RemoteIPRanges` och `PermissionGroups` skulle klippas av i tabeller |
+| `Format-List` | Fullständiga fältlängder; `RemoteIPRanges` och `PermissionGroups` skulle klippas av i tabeller |
 | `@{n=…; e=…}` | Beräknade fält: sammanfattar samlingsfälten `Bindings` och `RemoteIPRanges` till kommaseparerade strängar |
 
 </details>
@@ -323,17 +323,17 @@ PermissionGroups : AnonymousUsers, Custom
 AuthMechanism    : Tls
 ```
 
-Fastställ käll-IP-adressen för det inlämnande systemet och leta efter connectorn vars `RemoteIPRanges` innehåller den. Om den inte faller inom någon av de begränsade connectorerna återstår standard-frontend-connectorn, som vanligtvis accepterar hela adressrymden. Använd även här `Format-List`, eftersom `RemoteIPRanges` och `PermissionGroups` regelbundet klipps av i tabeller.
+Fastställ käll-IP-adressen för det inskickande systemet och leta efter connectorn vars `RemoteIPRanges` innehåller den. Om den inte omfattas av någon av de begränsade connectorerna återstår standard-frontend-connectorn, som vanligtvis accepterar hela adressutrymmet. Använd även här `Format-List`, eftersom `RemoteIPRanges` och `PermissionGroups` regelbundet klipps av i tabeller.
 
-Den andra vägen är SMTP-loggen, och den förtjänar ett eget avsnitt.
+Det andra sättet är SMTP-loggen, och den förtjänar ett eget avsnitt.
 
-## SMTP-loggen: den enda fullständiga källan
+## SMTP-loggen: den enda kompletta källan
 
-Front End Transports logg registrerar den fullständiga SMTP-sessionen: vilken connector som kontaktades, vilken IP-adress som anslöt och vad klienten och servern sade till varandra. Den är den enda källan som löser problemet med `ConnectorId` som beskrivits ovan.
+Loggen för Front End Transport registrerar hela SMTP-sessionen: vilken connector som kontaktades, vilken IP-adress som anslöt och vad klient och server sade till varandra. Det är den enda källan som löser det ovan beskrivna problemet med `ConnectorId`.
 
 ### Aktivera loggning
 
-Som standard är loggningen **avstängd** på de flesta connectorer. Du aktiverar den per connector:
+Som standard är loggning **avstängd** på de flesta connectorer. Du aktiverar den per connector:
 
 ```powershell
 Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
@@ -341,7 +341,7 @@ Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
@@ -350,11 +350,11 @@ Set-ReceiveConnector -Identity "SRV-MAIL01\Default Frontend SRV-MAIL01" `
 
 </details>
 
-För utgående anslutningar använder du på motsvarande sätt `Set-SendConnector`. Kom ihåg att återställa värdet till `None` efter analysen, eftersom detaljerad loggning tar diskutrymme och skriver stora datamängder vid hög belastning.
+För utgående anslutningar används motsvarande `Set-SendConnector`. Kom ihåg att återställa värdet till `None` efter analysen, eftersom detaljerad loggning kostar diskutrymme och skriver stora mängder data vid hög belastning.
 
 ### Var filerna finns
 
-Exchange skiljer loggarna efter tjänst och riktning. Det är onödigt att hårdkoda sökvägarna, fråga efter dem:
+Exchange separerar loggarna efter tjänst och riktning. Det är onödigt att hårdkoda sökvägarna, fråga efter dem:
 
 ```powershell
 Get-FrontendTransportService SRV-MAIL01 |
@@ -366,26 +366,26 @@ Get-TransportService SRV-MAIL01 |
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
-| `SRV-MAIL01` | Positionsparameter `-Identity`: servern som ska frågas |
-| `ReceiveProtocolLogPath`, `SendProtocolLogPath` | Lagringssökvägar för loggar över inkommande respektive utgående anslutningar |
-| `ReceiveProtocolLogMaxAge` | Maximal ålder för loggfiler; äldre filer raderas |
+| `SRV-MAIL01` | Positionsparametern `-Identity`: servern som ska frågas |
+| `ReceiveProtocolLogPath`, `SendProtocolLogPath` | Sökvägar till loggarna för inkommande respektive utgående anslutningar |
+| `ReceiveProtocolLogMaxAge` | Maximal ålder för loggfilerna; äldre filer tas bort |
 | `ReceiveProtocolLogMaxDirectorySize` | Övre gräns för loggkatalogens diskutrymmesanvändning |
 
 </details>
 
-Vanligtvis ligger de under installationssökvägen i `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` för Front End Transport och i `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` för Transport Service. **Detta är kärnan:** klientanslutningar på port 25 hittar du uteslutande i sökvägen `FrontEnd`, medan sökvägen `Hub` bara innehåller intern vidarebefordringstrafik på 2525.
+Vanligtvis finns de under installationssökvägen i `TransportRoles\Logs\FrontEnd\ProtocolLog\SmtpReceive` för Front End Transport och i `TransportRoles\Logs\Hub\ProtocolLog\SmtpReceive` för Transport Service. **Detta är kärnan:** Klientanslutningar på port 25 hittar du uteslutande i sökvägen `FrontEnd`; i sökvägen `Hub` finns endast den interna vidarebefordringstrafiken på 2525.
 
-Observera bevarandetiden. `ReceiveProtocolLogMaxAge` är ofta satt till 30 dagar och `ReceiveProtocolLogMaxDirectorySize` begränsar dessutom diskutrymmet. Vid hög belastning slår storleksbegränsningen till långt före åldersgränsen, och då är loggarna bara några dagar gamla.
+Observera lagringen. `ReceiveProtocolLogMaxAge` är ofta inställt på 30 dagar, medan `ReceiveProtocolLogMaxDirectorySize` dessutom begränsar diskutrymmet. Vid hög belastning träder storleksgränsen i kraft betydligt tidigare än åldersgränsen, och då är dina loggar bara några dagar gamla.
 
 ### Förstå formatet
 
 Filerna är CSV med rubrikrader som börjar med `#`. De viktigaste kolumnerna är `date-time`, `connector-id`, `session-id`, `sequence-number`, `local-endpoint`, `remote-endpoint`, `event` och `data`.
 
-Avgörande är kolumnen `event`, ett enskilt tecken:
+Avgörande är kolumnen `event`, ett enda tecken:
 
 | Tecken | Betydelse |
 |---|---|
@@ -393,9 +393,9 @@ Avgörande är kolumnen `event`, ett enskilt tecken:
 | `-` | Anslutning avslutad |
 | `>` | Servern skickar till klienten |
 | `<` | Klienten skickar till servern |
-| `*` | Information från servern, ingen SMTP-trafik |
+| `*` | Serverinformation, ingen SMTP-trafik |
 
-Du känner igen en session på det gemensamma `session-id`; `sequence-number` anger ordningen inom sessionen. Ett typiskt utdrag ser ut så här:
+Du känner igen en session på den gemensamma `session-id`; `sequence-number` anger ordningen inom sessionen. Ett typiskt utdrag ser ut så här:
 
 ```text
 2026-08-11T09:47:10.4Z,SRV-MAIL01\smtp-noauth SRV-MAIL01,08DEF44EC454A414,0,
@@ -410,11 +410,11 @@ Du känner igen en session på det gemensamma `session-id`; `sequence-number` an
   10.0.1.13:25,10.0.20.22:51244,>,"250 2.1.5 Recipient OK",
 ```
 
-Här finns allt som saknades i meddelandespårningen: den **verkliga** connectorn (`smtp-noauth`), den **verkliga** käll-IP-adressen (`10.0.20.22`) och namnet som systemet uppger i `EHLO`.
+Här finns allt som saknades i meddelandespårningen: den **verkliga** connectorn (`smtp-noauth`), den **verkliga** käll-IP-adressen (`10.0.20.22`) och namnet som systemet anmäler sig med i `EHLO`.
 
-### Sök målinriktat
+### Sök riktat
 
-För enskilda fall är ett textfilter betydligt snabbare än objektutvärdering. Sök efter avsändaradressen eller `EHLO`-namnet och hämta sessionsidentifieraren:
+För enskilda fall är ett textfilter betydligt snabbare än objektutvärdering. Sök efter avsändaradressen eller namnet i `EHLO` och låt sessionens identifierare visas:
 
 ```powershell
 $pfad = (Get-FrontendTransportService SRV-MAIL01).ReceiveProtocolLogPath
@@ -423,18 +423,18 @@ Select-String -Path "$pfad\*.log" -Pattern "dienst@example-test.com" -SimpleMatc
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
-| `-Path "$pfad\*.log"` | Söker igenom alla loggfiler i den tidigare frågade sökvägen |
-| `-Pattern` | Sökbegreppet, här avsändaradressen |
-| `-SimpleMatch` | Behandlar mönstret som text i stället för ett reguljärt uttryck; punkten i adressen behöver då inte escapes |
+| `-Path "$pfad\*.log"` | Söker igenom alla loggfiler i den tidigare hämtade sökvägen |
+| `-Pattern` | Söktermen, här avsändaradressen |
+| `-SimpleMatch` | Behandlar mönstret som text i stället för reguljärt uttryck; punkten i adressen behöver då inte escapas |
 | `-First 5` | Begränsar utdata till de första fem träffarna |
 
 </details>
 
-Med det funna `session-id` hämtar du hela sessionen:
+Med den hittade `session-id` hämtar du hela sessionen:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
@@ -442,17 +442,17 @@ Select-String -Path "$pfad\*.log" -Pattern "08DEF44EC454A414" -SimpleMatch |
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Pattern` | Sessionsidentifieraren från den första träffen |
 | `-SimpleMatch` | Bokstavlig sökning utan regex-utvärdering |
-| `-First 40` | Begränsar utdata till sessionens första 40 rader |
+| `-First 40` | Begränsar utdata till de första 40 raderna i sessionen |
 
 </details>
 
-Om du bara vill veta vilka connectorer som över huvud taget ser trafik, räkna anslutningsupprättningarna. Detta är storleksordningar snabbare än att parsa varje rad i stora filer:
+Om du bara vill veta vilka connectorer som över huvud taget ser trafik räknar du anslutningsuppbyggnaderna. Det är storleksordningar snabbare för stora filer än att parsa varje rad:
 
 ```powershell
 Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
@@ -462,13 +462,13 @@ Select-String -Path "$pfad\*.log" -Pattern ',\+,' |
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
-| `-Pattern ',\+,'` | Reguljärt uttryck för händelsen `+` (anslutningsupprättning) mellan två CSV-komman; plustecknet är escapet |
+| `-Pattern ',\+,'` | Reguljärt uttryck för händelsen `+` (anslutningsuppbyggnad) mellan två CSV-kommatecken; plustecknet är escapat |
 | `ForEach-Object { … -split ',' }` | Delar träffraden vid kommatecknen och hämtar den andra kolumnen, `connector-id` |
-| `Group-Object` | Räknar anslutningsupprättningar per connector |
+| `Group-Object` | Räknar anslutningsuppbyggnader per connector |
 | `Sort-Object Count -Descending` | Mest använda connector överst |
 
 </details>
@@ -482,15 +482,15 @@ Count Name
 15789 SRV-MAIL01\smtp-noauth SRV-MAIL01
 ```
 
-Denna fördelning besvarar en fråga som meddelandespårning inte kan besvara: Vilka vägar använder dina applikationer faktiskt? Inför en connectorändring är det den viktigaste siffran av alla.
+Denna fördelning besvarar en fråga som inte går att besvara i meddelandespårningen: Vilka vägar använder dina applikationer faktiskt? Före en connectorändring är det den viktigaste siffran av alla.
 
-### Om inget har loggats
+### Om inget loggades
 
-Om det saknas varje rad vid den aktuella tidpunkten finns det tre vanliga orsaker: Loggningen var avstängd på berörd connector, bevarandegränsen har redan trängt undan filen eller så tittar du i fel sökväg, alltså katalogen `Hub` i stället för `FrontEnd`. Kontrollera i denna ordning.
+Om varje rad saknas vid den aktuella tidpunkten finns det tre vanliga orsaker: Loggning var avstängd på berörd connector, lagringsgränsen har redan trängt undan filen eller du tittar i fel sökväg, alltså i katalogen `Hub` i stället för `FrontEnd`. Kontrollera i denna ordning.
 
 ## Steg 4: Kontrollera behörigheter
 
-Om en inlämning avvisas eller det omvänt är mer tillåtet än man tror går vägen via connectorns behörigheter. Här finns en teknisk egenhet: `Get-ADPermission` kräver **DistinguishedName**. Om du skickar den vanliga identiteten i formatet `Server\Connectorname` misslyckas anropet i en fjärrsession med det missvisande meddelandet att objektet inte kan hittas.
+Om en inskickning avvisas eller omvänt mer tillåts än väntat går vägen via connectorns behörigheter. Här finns en teknisk egenhet: `Get-ADPermission` behöver **DistinguishedName**. Om du skickar den vanliga identiteten i formatet `Server\Connectorname` misslyckas anropet i en fjärrsession med det missvisande meddelandet att objektet inte kan hittas.
 
 ```powershell
 $dn = (Get-ReceiveConnector "SRV-MAIL01\Default Frontend SRV-MAIL01").DistinguishedName
@@ -500,13 +500,13 @@ Get-ADPermission -Identity $dn -User "NT AUTHORITY\ANONYMOUS LOGON" |
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Identity $dn` | Objektet som ska kontrolleras som DistinguishedName; formatet `Server\Connectorname` misslyckas i fjärrsessioner |
 | `-User` | Begränsar utdata till behörigheterna för denna säkerhetsprincipal, här anonym åtkomst |
-| `Where-Object` | Filtrerar på SMTP-relevanta Extended Rights |
+| `Where-Object` | Filtrerar efter SMTP-relevanta Extended Rights |
 
 </details>
 
@@ -522,18 +522,18 @@ Utvärderingen är enklare än den ser ut om du skiljer mellan fyra rättigheter
 
 | Rättighet | Betydelse |
 |---|---|
-| `ms-Exch-SMTP-Submit` | Får över huvud taget lämna in |
-| `ms-Exch-SMTP-Accept-Any-Sender` | Får använda godtyckliga avsändaradresser |
-| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | Får uppträda som egen domän |
+| `ms-Exch-SMTP-Submit` | får över huvud taget skicka in |
+| `ms-Exch-SMTP-Accept-Any-Sender` | får använda godtyckliga avsändaradresser |
+| `ms-Exch-SMTP-Accept-Authoritative-Domain-Sender` | får uppträda som egen domän |
 | `ms-Exch-SMTP-Accept-Any-Recipient` | **får vidarebefordra till externa domäner** |
 
-De första tre är standarduppsättningen för anonym inlämning och krävs för mottagning av internet-e-post. Först den fjärde rättigheten gör en inkommande connector till en relay. På en connector som accepterar hela adressrymden är det en öppen relay. På en connector med snäv IP-begränsning är det däremot den vanliga och avsedda vägen för att applikationsservrar ska kunna skicka externt.
+De första tre är standarduppsättningen som krävs för anonym inskickning och mottagning av e-post från Internet. Det är först den fjärde rättigheten som gör en inkommande connector till en relay. På en connector som accepterar hela adressutrymmet är det en öppen relay. På en connector med snäv IP-begränsning är det däremot den vanliga och avsedda vägen för att applikationsservrar ska kunna skicka externt.
 
-Förväxla inte `Accept-Any-Sender` med `Accept-Any-Recipient`. Det första är ofarligt och nödvändigt, det andra är den säkerhetsrelevanta inställningen.
+Förväxla inte `Accept-Any-Sender` med `Accept-Any-Recipient`. Den första är ofarlig och nödvändig, den andra är den säkerhetsrelevanta inställningen.
 
-## Steg 5: Kontrolltest med egen inlämning
+## Steg 5: Kontrolltest med egen inskickning
 
-Om utvärderingen fortfarande är tvetydig lämnar du in ett meddelande själv. Då kontrollerar du avsändare, mottagare och inlämningspunkt helt:
+Om utvärderingen fortfarande är tvetydig, skicka in ett meddelande själv. Då kontrollerar du avsändare, mottagare och inskickningspunkt helt:
 
 ```powershell
 Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
@@ -545,12 +545,12 @@ Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
-| `-SmtpServer` | Målhost för inlämningen, här medvetet som IP-adress för att träffa en viss slutpunkt |
-| `-Port 25` | Målport; 25 för oautentiserad server-till-server-inlämning |
+| `-SmtpServer` | Målhost för inskickningen, här medvetet som IP-adress för att träffa en viss slutpunkt |
+| `-Port 25` | Målport; 25 för oautentiserad server-till-server-inskickning |
 | `-From` | Envelope- och headeravsändare för testmeddelandet |
 | `-To` | Mottagaradress |
 | `-Subject` | Ämnesrad |
@@ -559,33 +559,33 @@ Send-MailMessage -SmtpServer 10.0.1.11 -Port 25 `
 
 </details>
 
-`Send-MailMessage` är officiellt utfasat, men är fortfarande det snabbaste verktyget för diagnostiska ändamål och finns på alla Windows-servrar. Vid lyckad körning visas ingen utdata, vilket kan kännas ovant.
+`Send-MailMessage` är officiellt utfasat men är fortfarande det snabbaste verktyget för diagnosändamål och finns på varje Windows-server. Vid lyckat resultat visas ingen utdata, vilket kan kännas ovant.
 
-Om du testar en TLS-sträcka på port 587 och motparten presenterar ett certifikat som inte matchar namnet som används, till exempel eftersom du anger IP-adressen, avbryts anropet med ett certifikatfel. För testet kan du inaktivera kontrollen i sessionen:
+Om du testar en TLS-sträcka på port 587 och motparten presenterar ett certifikat som inte matchar det använda namnet, exempelvis för att du använder IP-adressen, avbryts anropet med ett certifikatfel. För testet kan du inaktivera kontrollen i sessionen:
 
 ```powershell
 [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
 ```
 
-Det gäller bara den aktuella PowerShell-sessionen. Gör det medvetet och aldrig i skript som körs i drift.
+Detta gäller endast den aktuella PowerShell-sessionen. Gör det medvetet och aldrig i skript som körs i produktion.
 
-Om testmeddelandet kommer fram och du vill veta vad som hände med det på vägen hjälper [Mail Header Analyzer](https://rafaelpfister.ch/tools/header-analyzer): den analyserar rubrikerna, ritar upp vägen över hoppen och visar resultaten av autentiseringskontrollerna, helt lokalt i webbläsaren utan att meddelandet lämnar din enhet.
+Om testmeddelandet kommer fram och du vill veta vad som hände med det på vägen hjälper [Mail Header Analyzer](https://rafaelpfister.ch/tools/header-analyzer): Den delar upp rubrikerna, ritar vägen över hoppen och visar resultaten av autentiseringskontrollerna, helt lokalt i webbläsaren utan att meddelandet lämnar din enhet.
 
 ## Exchange Online: samma fråga, ett annat verktyg
 
-I tenanten gäller andra regler, och det är här invanda arbetssätt misslyckas. Räkna med dessa skillnader:
+Andra regler gäller i klientorganisationen, och det är här invanda arbetssätt misslyckas. Räkna med följande skillnader:
 
 | | Exchange OnPrem | Exchange Online |
 |---|---|---|
 | Fråga | `Get-MessageTrackingLog` | `Get-MessageTraceV2` |
-| Detaljnivå | Varje transporthändelse | En rad per meddelande och mottagare |
-| Connector synlig | Ja (med begränsning, se ovan) | **nej** |
-| Serverberoende | Ja, fråga per server | Utgår |
-| SMTP-logg | Finns | **inte tillgänglig** |
-| Bevarande | Din konfiguration | Cirka 10 dagar via cmdleten |
-| Fördröjning | Nästan omedelbart | Några minuter |
+| Detaljnivå | varje transporthändelse | en rad per meddelande och mottagare |
+| Connector synlig | ja (med begränsning, se ovan) | **nej** |
+| Serverberoende | ja, fråga per server | bortfaller |
+| SMTP-logg | tillgänglig | **inte tillgänglig** |
+| Lagring | din konfiguration | 90 dagar via cmdleten, högst 10 dagar per fråga |
+| Fördröjning | nästan omedelbar | några minuter |
 
-De tre viktigaste praktiska konsekvenserna: Det finns **ingen connectorkoppling**, du får använda `FromIP` och `ToIP` som hjälp. Det finns **ingen SMTP-logg**, SMTP-konversationen kan inte rekonstrueras. Och data visas **fördröjt**, ett nyss skickat meddelande syns inte omedelbart.
+De tre viktigaste praktiska konsekvenserna: Det finns **ingen connectorkoppling**, du får använda `FromIP` och `ToIP`. Det finns **ingen SMTP-logg**, SMTP-konversationen går inte att rekonstruera. Och data visas **med fördröjning**, ett just skickat meddelande visas inte omedelbart.
 
 ### Grundfrågan
 
@@ -599,14 +599,14 @@ Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) `
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-StartDate` | Nedre tidsgräns för frågan, här de senaste fyra timmarna |
 | `-EndDate` | Övre tidsgräns; cmdleten kräver båda gränserna |
-| `-RecipientAddress` | Filtrerar på meddelanden till denna mottagaradress |
-| `-ResultSize 1000` | Maximalt antal rader på denna sida; övre gränsen är 5 000 |
+| `-RecipientAddress` | Filtrerar efter meddelanden till denna mottagaradress |
+| `-ResultSize 1000` | Maximalt antal rader på denna sida; övre gränsen är 5000 |
 
 </details>
 
@@ -621,7 +621,7 @@ De viktigaste värdena för `Status`: `Delivered`, `Failed`, `Pending`, `Quarant
 
 ### Detaljerna för ett meddelande
 
-Enbart statusen säger inget om orsaken. För det behöver du detaljvyn, som kräver meddelandeidentifieraren från grundfrågan:
+Statusen ensam säger ingenting om orsaken. För det behöver du detaljvyn, och den kräver meddelandeidentifieraren från grundfrågan:
 
 ```powershell
 $n = Get-MessageTraceV2 -StartDate (Get-Date).AddHours(-4) -EndDate (Get-Date) `
@@ -634,20 +634,20 @@ Get-MessageTraceDetailV2 -MessageTraceId $n.MessageTraceId `
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-MessageTraceId` | Unik identifierare för meddelandet från grundfrågan; obligatorisk |
-| `-RecipientAddress` | Mottagaren vars bearbetningssteg visas; också obligatorisk eftersom ett meddelande kan ha flera mottagare |
+| `-RecipientAddress` | Mottagaren vars behandlingssteg visas; också obligatorisk eftersom ett meddelande kan ha flera mottagare |
 
 </details>
 
-Där hittar du bearbetningsstegen i tjänsten, exempelvis regelanvändning, filterbeslut och orsaken till ett avvisande.
+Där hittar du tjänstens behandlingssteg, exempelvis regelanvändning, filterbeslut och orsaken till ett avvisande.
 
 ### Längre tillbaka än tio dagar
 
-Cmdleten går tillbaka cirka tio dagar. För äldre perioder finns den historiska sökningen, som körs asynkront och tillhandahåller resultatet som CSV, med ett intervall på upp till 90 dagar:
+`Get-MessageTraceV2` levererar data för de senaste 90 dagarna, men högst 10 dagar per fråga; dela upp längre perioder i flera frågor. Alternativt finns den historiska sökningen, som körs asynkront och tillhandahåller resultatet som CSV, med ett intervall på upp till 90 dagar:
 
 ```powershell
 Start-HistoricalSearch -ReportTitle "Analyse Nachtlauf" `
@@ -661,25 +661,25 @@ Get-HistoricalSearch | Format-Table JobId, ReportTitle, Status, SubmitDate -Auto
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
-| `-ReportTitle` | Fritt valt namn på uppdraget, som resultatet senare kan hittas under |
+| `-ReportTitle` | Fritt valbart namn på jobbet, under vilket resultatet senare kan hittas |
 | `-StartDate`, `-EndDate` | Undersökt tidsperiod, upp till 90 dagar tillbaka |
-| `-ReportType MessageTrace` | Rapporttyp; `MessageTrace` ger meddelandeöversikten som CSV |
-| `-SenderAddress` | Filtrerar på denna avsändaradress |
-| `-NotifyAddress` | Mottagare av färdigmeddelandet; måste vara en adress i en Accepted Domain i tenanten |
+| `-ReportType MessageTrace` | Typ av rapport; `MessageTrace` levererar meddelandeöversikten som CSV |
+| `-SenderAddress` | Filtrerar efter denna avsändaradress |
+| `-NotifyAddress` | Mottagare av färdigmeddelandet; måste vara en adress i en Accepted Domain i klientorganisationen |
 
 </details>
 
-Avsätt tid, eftersom sådana uppdrag kan ta timmar beroende på omfattningen.
+Avsätt tid; sådana jobb körs i timmar beroende på omfattning.
 
-### Felkälla 4: Saknade träffar är inget bevis på att trafiken saknas
+### Felkälla 4: Saknade träffar är inget bevis för att trafik saknas
 
-Detta är den mest subtila felkällan i tenanten. `Get-MessageTraceV2` levererar sida för sida, högst 5 000 rader per anrop. Vid hög belastning kan en sida bara täcka några minuter, även om du har frågat efter sju dagar. Om du sedan filtrerar lokalt, exempelvis efter en käll-IP, filtrerar du över ett mycket litet utdrag.
+Detta är den mest subtila felkällan i klientorganisationen. `Get-MessageTraceV2` levererar sida för sida, högst 5000 rader per anrop. Vid hög belastning kan en sida bara täcka några minuter trots att du har frågat efter sju dagar. Om du sedan filtrerar lokalt, exempelvis efter en käll-IP, filtrerar du över ett mycket litet utsnitt.
 
-Det syns på varningen som indikerar ytterligare resultat:
+Det syns på varningen som hänvisar till ytterligare resultat:
 
 ```text
 WARNING: There are more results, use the following command to get more.
@@ -687,17 +687,21 @@ Get-MessageTraceV2 -StartDate "2026-08-11T07:25:19Z" -EndDate "2026-08-11T09:05:
   -StartingRecipientAddress "naechster@example.com" -ResultSize 5000
 ```
 
-Om den visas är din utvärdering **ofullständig**. Om ingen träff kommer tillbaka är det korrekta resultatet: inte hittat i utdraget. Det betyder inte: finns inte.
+Om den visas är din utvärdering **ofullständig**. Om ingen träff returneras är det korrekta resultatet: inte hittad i utsnittet. Det är inte: existerar inte.
 
-Det finns två rena utvägar. Antingen minskar du tidsfönstret tills en sida täcker det helt, vilket märks genom att varningen uteblir. Eller så går du igenom alla sidor med hjälp av fortsättningsuppgifterna i varningen. För frågan om något **aldrig** förekommer är en konfigurationskontroll ändå överlägsen: Om ett system saknar en rutt till ett mål kan det inte leverera dit, oberoende av varje observationsfönster.
+Det finns två rena utvägar. Antingen minskar du tidsfönstret tills en sida täcker det helt, vilket märks genom att varningen uteblir. Eller så följer du fortsättningsuppgifterna från varningen genom alla sidor. För frågan om något **aldrig** förekommer är en konfigurationskontroll ändå överlägsen: Om ett system inte har någon rutt till ett mål kan det inte leverera dit, oavsett observationsfönster.
 
-Den fullständiga utvärderingen av alla inlämnande adresser är ett eget ämne, med egna känsliga tolkningsfrågor. Den beskrivs i [Vem lämnar egentligen in e-post i din tenant? Aggregera inlämnande IP-adresser](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
+Den fullständiga utvärderingen av alla inskickande adresser är ett ämne i sig, med egna känsliga tolkningspunkter. Den behandlas i [Vem skickar egentligen in till din klientorganisation? Aggregera inskickande IP-adresser](https://rafaelpfister.ch/blog/einliefernde-ip-adressen-aggregieren).
 
-## Ett arbetssätt som har visat sig fungera
+## En arbetsgång som har visat sig fungera
 
-Sammanfattningsvis har denna ordning visat sig vara den snabbaste. Sök efter meddelandet på alla servrar och fastställ den senaste händelsen. Vid ett misslyckande, växla genast till `Format-List` och läs det fullständiga SMTP-svaret i stället för att dra slutsatser utifrån händelsetypen. Klargör sedan omfattningen genom att gruppera och räkna. Först när fallet är väl avgränsat rekonstruerar du inlämningsvägen via connector-konfiguration och SMTP-logg. Kontrollera till sist, vid behov, med en egen inlämning.
+Sammanfattningsvis har denna ordning visat sig vara den snabbaste. Sök efter meddelandet på alla servrar och fastställ den senaste händelsen. Vid ett misslyckande byter du genast till `Format-List` och läser det fullständiga SMTP-svaret, i stället för att dra slutsatser från händelsetypen. Klargör sedan omfattningen, alltså gruppera och räkna. Först när fallet är snävt avgränsat rekonstruerar du inskickningsvägen via connector-konfiguration och SMTP-logg. Och kontrollera slutligen vid behov med en egen inskickning.
 
-De vanligaste tidstjuvarna är däremot alltid desamma: Man läser en avklippt tabell i stället för det fullständiga felmeddelandet, man håller skuggkopior för bearbetningssteg, man tror på `ConnectorId` i spårningen och man betraktar ett tomt stickprov som bevis. Den som känner till dessa fyra kommer som regel till rätt nivå på några minuter.
+De vanligaste tidstjuvarna är däremot alltid desamma: Man läser en avklippt tabell i stället för det fullständiga felmeddelandet, man misstar skuggkopior för behandlingssteg, man tror på `ConnectorId` i spårningen och man håller ett tomt stickprov för ett bevis. Den som känner till dessa fyra kommer vanligtvis till rätt nivå på några minuter.
+
+## Ändringshistorik
+
+- **25 oktober 2026:** Korrigerat: Get-MessageTraceV2 levererar data för de senaste 90 dagarna, men högst 10 dagar per fråga. Källänkar uppdaterade till de nya adresserna på Microsoft Learn.
 
 ## Källor
 
@@ -705,12 +709,12 @@ De vanligaste tidstjuvarna är däremot alltid desamma: Man läser en avklippt t
 
 2.  [Protocol logging in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/protocol-logging): Lagringsplatser, format och bevarande av SMTP-loggar, inklusive Front End Transport.
 
-3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): Förklarar händelserna kring skuggkopior och hur de förkastas.
+3.  [Shadow redundancy in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/transport-high-availability/shadow-redundancy): förklarar händelserna kring skuggkopior och hur de kasseras.
 
 4.  [Mail routing in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-routing/mail-routing): Samspelet mellan Front End Transport och Transport Service, grunden för proxybeteendet.
 
 5.  [Receive connectors in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/receive-connectors): Bindningar, behörighetsgrupper och autentiseringsmekanismer.
 
-6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetracev2): Efterföljaren till Get-MessageTrace inklusive sidlogik och fältlista.
+6.  [Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2): Efterträdaren till Get-MessageTrace inklusive sidlogik, fältlista och frågeintervall (90 dagar, högst 10 dagar per fråga).
 
-7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchange/start-historicalsearch): Asynkron meddelandespårning i upp till 90 dagar.
+7.  [Start-HistoricalSearch](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/start-historicalsearch): Asynkron meddelandespårning över upp till 90 dagar.
