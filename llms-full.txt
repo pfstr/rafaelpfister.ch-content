@@ -14,6 +14,421 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# RustDesk 1.5.1: signierte Updates, Trusted Devices V2 und Härtung der Dateiübertragung
+
+URL: https://rafaelpfister.ch/blog/rustdesk-1-5-1
+Datum: 2026-11-02
+
+# RustDesk 1.5.1: signierte Updates, Trusted Devices V2 und Härtung der Dateiübertragung
+
+RustDesk hat am 1. November 2026 die Version 1.5.1 des Clients veröffentlicht, gut einen Monat nach 1.5.0 (30. September 2026). Das Release bringt fünf neue Funktionen, darunter die Prüfung signierter Update-Metadaten und eine neue Version der Trusted Devices für die Zwei-Faktor-Anmeldung, drei Änderungen und rund 35 Fehlerbehebungen. Mehrere davon härten sicherheitsrelevante Abläufe: Validierung von Download-Pfaden, geschützte Installer-Übergabe unter Windows, Warnung bei unverschlüsselten API-Servern und ein enger gefasstes Auto-Login. Eine CVE oder ein Security Advisory nennt der Hersteller dazu nicht (Stand 2. November 2026). Das Release richtet sich an alle, die RustDesk-Clients auf Windows, macOS, Linux, Android oder iOS betreiben, insbesondere mit eigenem Server. Einrichtung und Betrieb eines eigenen RustDesk-Servers sind im Artikel [RustDesk: die quelloffene TeamViewer-Alternative einrichten](/blog/rustdesk-teamviewer-alternative) beschrieben.
+
+## Die Versionen im Überblick
+
+| Version | Datum | Art | Kernpunkte |
+|---|---|---|---|
+| 1.5.1 | 01.11.2026 | Client-Release | signierte Update-Metadaten, Trusted Devices V2, Tastenkürzel, Download-Pfad-Validierung, Installer-Härtung unter Windows, Warnung bei HTTP-API-Server, Fixes für DRM, Wayland, X11 und QSV |
+
+Der Open-Source-Server (`rustdesk-server`) ist von diesem Release nicht betroffen. Dessen letzte Version ist 1.1.16 vom 20. Juli 2026.
+
+## Signierte Update-Metadaten
+
+Mit PR #15914 bezieht der Desktop-Updater unter Windows und macOS seine Informationen aus signierten Release-Metadaten. Jedes Release enthält dazu die Assets `rustdesk-update.json` (Version, URL, Dateiname, Grösse und SHA-256 je Artefakt) und `rustdesk-update.json.sig` (Ed25519-Signatur). Der Client prüft die Signatur, bevor er die Metadaten auswertet, und akzeptiert nur Download-URLs unter dem Release von `rustdesk/rustdesk`. Schlägt die Prüfung fehl, bricht das Update ab; einen Rückfall auf unsignierte Daten gibt es nicht. Heruntergeladene Installer werden bis zum Start in einem geschützten Verzeichnis gehalten und vor der Ausführung mit erhöhten Rechten erneut gehasht.
+
+Laut PR belegt die Signatur Echtheit und Integrität, aber nicht die Aktualität: Ein Schutz gegen das Wiedereinspielen älterer, korrekt signierter Releases (Rollback) ist nicht enthalten. Die portable Variante unter Windows entpackt und startet weiterhin aus einem für den Benutzer beschreibbaren Verzeichnis; die Härtung dafür ist laut PR auf einen separaten Branch verschoben.
+
+## Trusted Devices V2
+
+PR #16548 ersetzt die bisherige Vertrauensstellung über die Hardware-ID durch Tokens, die der Host ausstellt. Für eine neue Registrierung braucht es weiterhin das permanente Passwort und TOTP; ein Trusted-Device-Token erspart danach nur die TOTP-Eingabe. Der Host speichert lediglich den SHA-256-Hash des Tokens in verschlüsselter Form, der Controller bindet sein Token an den geprüften Public Key des Hosts. Bei direkten IP-Verbindungen wird keine Vertrauensstellung angeboten, da dort die Host-Identität nicht geprüft wird.
+
+Für den Betrieb sind folgende Punkte aus dem PR relevant:
+
+- **Gültigkeit:** einstellbar auf 1, 7, 30 oder 90 Tage oder unbegrenzt, Standard 90 Tage. Vertrauensstellungen lassen sich in den Einstellungen einzeln erneuern, entfernen oder gesammelt löschen.
+- **Widerruf:** Eine Änderung von Passwort, 2FA oder der Trusted-Device-Einstellung widerruft die betroffenen Tokens. Der Host hält höchstens 128 Einträge.
+- **Gemischte Versionen:** Bestehende, nicht abgelaufene Vertrauensstellungen bleiben nach dem Update des Hosts gültig. Neue Registrierungen setzen 1.5.1 auf beiden Seiten voraus; in gemischten Sitzungen fragt RustDesk TOTP ab und bietet „Trust this device“ nicht an.
+- **Downgrade:** Laut PR nicht sicher, da ältere Versionen die importierten Vertrauensstellungen nicht lesen können.
+- **Bekannte Grenzen:** Ein Widerruf wird zuerst lokal gespeichert und asynchron in die Root-Konfiguration übernommen; ein Neustart vor dem Abgleich kann eine ältere Vertrauensstellung zurückbringen. Das Ablaufdatum richtet sich nach der Systemuhr des Hosts.
+
+Planen Sie das Update deshalb so, dass Hosts und Controller zeitnah auf 1.5.1 wechseln, und vermeiden Sie ein Zurücksetzen auf 1.5.0.
+
+## Weitere sicherheitsrelevante Korrekturen
+
+- **Download-Pfade (PR #16601):** Downloads lehnen unsichere Dateinamen und Pfade ab, die aus dem gewählten Zielverzeichnis herausführen oder über symbolische Links laufen. Entfernte Dateilisten werden vor dem Download geprüft, das Überschreiben bestehender Dateien und das Fortsetzen abgebrochener Downloads erfordern eine Bestätigung.
+- **Windows-Installer (PR #16554, #16562):** Die Skripte für die Installer-Übergabe mit erhöhten Rechten liegen nicht mehr in `System32`, sondern in einem Verzeichnis unter Windows Temp mit eingeschränkter DACL (Administrators und SYSTEM). Der Dienst wird über die native Service Control gesteuert. Anlass war unter anderem, dass Bitdefender das temporäre Batch-Skript blockierte (Issue #16557).
+- **Unverschlüsselter API-Server (PR #16616):** Die Server-Einstellungen zeigen eine Warnung, wenn der API-Server leer ist oder eine entfernte HTTP-Adresse nutzt. HTTPS sowie lokale Adressen lösen keine Warnung aus. Die Verbindung wird nicht blockiert.
+- **Auto-Login (PR #16520):** Das automatische Login gibt das Betriebssystem-Passwort nur noch auf dem Anmelde- oder Sperrbildschirm ein.
+- **Privacy Mode (PR #16507):** Eine abgelehnte Privacy-Mode-Anfrage schaltet den Privacy Mode einer anderen Verbindung nicht mehr ab.
+
+Betreiben Sie einen eigenen Server mit einer `http://`-Adresse als API-Server, erscheint die neue Warnung bei Ihren Anwendern. Stellen Sie den API-Server auf HTTPS um, bevor Sie 1.5.1 verteilen, um Rückfragen zu vermeiden.
+
+## Neue Funktionen und Änderungen
+
+Neben den bereits genannten Punkten bringt 1.5.1 Tastenkürzel (PR #14933), im Adressbuch eine Schaltfläche zum Öffnen der Web-Konsole und unter Android die direkte Dateiübertragung in SAF-Ordner. Geändert wurden die Kodierung statischer Bildinhalte nach dem Scrollen (schärfere Darstellung) und die Refresh-Budgets für MediaCodec. Die Verarbeitung von `ConfigUpdate` wurde entfernt.
+
+## Fehlerbehebungen nach Plattform
+
+- **Linux, DRM-Capture:** korrekte Grösse bei rotierten Displays, kein Aufwecken schlafender Displays beim Start, Verwerfen doppelter Frames und an den Encoder angepasste Bildrate.
+- **Linux, Wayland:** PipeWire-Capture ohne Wartezeiten, korrekte Zuordnung des Portal-Streams zum Ausgang, Tastaturlayout bei der Eingabe, und eine offene Portal-Anfrage blockiert den Server nicht mehr.
+- **Linux, allgemein:** korrekter aktiver Benutzer unter Flatpak, Absturz beim Schliessen des GTK-Fensters, sudo-Abfrage ohne falsches „Sorry, try again.“ und mit Unterstützung für sudo-rs, xrandr-Ausgabenamen, RandR-Monitorabfrage unter X11.
+- **Windows:** Lesen von `host=` aus Programmpfaden mit Nicht-ASCII-Zeichen, explizit benannte Executable für das Privacy-Fenster, QSV-Encoder-Hänger.
+- **macOS:** Link zu den Einstellungen für Screen Recording, Loslassen der Maustaste.
+- **Mobil:** kein verspätetes Mouse-Down mehr nach dem Loslassen des schwebenden Buttons.
+- **Netzwerk:** HTTP-API-Fehler 407 über HTTPS-Proxys, IPv6-ID-Server ohne Klammern bei der Ableitung des API-Servers, eine Fehlermeldung statt zwei, wenn beide WebRTC-Verbindungsversuche scheitern.
+- **Weitere:** gelöschte Drucker bleiben erhalten, Replay-Buffer im Terminal, Tastaturnavigation in der Dateiliste, Laden der Peers ohne gesetztes App-Verzeichnis, Klicks auf Peer-Karten im Web-Client.
+
+## Empfohlenes Vorgehen
+
+Zielversion für alle Clients ist 1.5.1. Aktualisieren Sie Hosts und Controller möglichst im selben Zeitraum, damit neue Trusted-Device-Registrierungen funktionieren, ein Downgrade auf 1.5.0 ist laut PR #16548 nicht sicher. Prüfen Sie vor dem Rollout, ob Ihr eigener API-Server per HTTPS erreichbar ist. Der Open-Source-Server muss für dieses Release nicht aktualisiert werden. Angaben zu Known Issues oder Supportfristen enthalten die Release Notes nicht (Stand 2. November 2026).
+
+## Quellen
+
+1.  [GitHub: RustDesk Release 1.5.1](https://github.com/rustdesk/rustdesk/releases/tag/1.5.1): Release Notes mit Datum, neuen Funktionen, Änderungen und Fehlerbehebungen.
+
+2.  [GitHub: RustDesk Release 1.5.0](https://github.com/rustdesk/rustdesk/releases/tag/1.5.0): Vorgängerversion vom 30. September 2026.
+
+3.  [GitHub: PR #15914, verify signed update metadata](https://github.com/rustdesk/rustdesk/pull/15914): Ablauf der Signaturprüfung, fehlender Rollback-Schutz, portable Variante.
+
+4.  [GitHub: PR #16548, Trusted Devices V2](https://github.com/rustdesk/rustdesk/pull/16548): Token-Modell, Kompatibilität mit älteren Versionen, Downgrade und bekannte Grenzen.
+
+5.  [GitHub: PR #16601, Download path validation](https://github.com/rustdesk/rustdesk/pull/16601): Prüfung von Dateinamen, Pfaden und symbolischen Links bei Downloads.
+
+6.  [GitHub: PR #16554, Installer-Skripte in geschützten Temp-Verzeichnissen](https://github.com/rustdesk/rustdesk/pull/16554): Verschiebung aus System32, DACL und Bezug zu Bitdefender.
+
+7.  [GitHub: PR #16616, Warnung bei unsicherem API-Server](https://github.com/rustdesk/rustdesk/pull/16616): Bedingungen und Text der neuen Warnung.
+
+8.  [GitHub: RustDesk Security Advisories](https://github.com/rustdesk/rustdesk/security/advisories): keine veröffentlichten Advisories (Stand 2. November 2026).
+
+9.  [GitHub: rustdesk-server Releases](https://github.com/rustdesk/rustdesk-server/releases): letzte Server-Version 1.1.16 vom 20. Juli 2026.
+
+10.  [RustDesk: die quelloffene TeamViewer-Alternative einrichten](/blog/rustdesk-teamviewer-alternative): Einrichtung von Client und eigenem Server.
+
+----
+
+# Multipath TCP (MPTCP) unter Linux: Funktionsweise, Geschichte und Prüfung vor dem Abschalten
+
+URL: https://rafaelpfister.ch/blog/multipath-tcp-mptcp-erklaert
+Datum: 2026-11-02
+
+Beim Prüfen meines Heim-Servers auf CVE-2026-98432 habe ich festgestellt, dass dort mehrere Dienste per Multipath TCP lauschten, darunter der Prometheus-node-exporter, der Pi-hole-Exporter und `tailscaled`, alle in Go geschrieben. Eingerichtet hatte ich das nie. Der bisher öffentlich beschriebene Root-Exploit für diese Lücke setzt genau einen solchen MPTCP-Listener voraus.
+
+Kurzfazit: MPTCP ist unter Linux seit Kernel 5.6 im offiziellen Kernel und standardmässig erlaubt. Seit Go 1.24 öffnen Go-Programme ihre Listener automatisch als MPTCP-Sockets. Ob Sie MPTCP abschalten können, lässt sich mit zwei Befehlen und einigen Zählern des Kernels klären. Auf den meisten Servern nutzt kein Client das Protokoll, und Go fällt nach dem Abschalten von selbst auf normales TCP zurück.
+
+## Was Multipath TCP ist
+
+Eine normale TCP-Verbindung ist an genau ein Adresspaar gebunden: Quell-IP und Port, Ziel-IP und Port. Wechselt ein Smartphone vom WLAN ins Mobilnetz, ändert sich die Quell-IP, und die Verbindung bricht ab. Multipath TCP erweitert TCP so, dass eine Verbindung mehrere Pfade gleichzeitig oder nacheinander nutzen kann, etwa WLAN und Mobilfunk.
+
+Technisch besteht eine MPTCP-Verbindung aus mehreren `Subflows`. Jeder Subflow ist für das Netz eine gewöhnliche TCP-Verbindung über einen Pfad. Die Anwendung sieht davon nichts: Sie arbeitet mit einem einzigen Socket, und der Kernel verteilt die Daten auf die Subflows. Damit die Daten in der richtigen Reihenfolge ankommen, führt MPTCP eine eigene 64-Bit-Sequenznummer auf Verbindungsebene (Data Sequence Number) zusätzlich zu den Sequenznummern der einzelnen Subflows.
+
+Ausgehandelt wird MPTCP im normalen TCP-Handshake. SYN, SYN/ACK und das erste ACK tragen die TCP-Option `MP_CAPABLE` (Option Kind 30), mit der beide Seiten erklären, dass sie MPTCP sprechen, und Schlüssel austauschen. Weitere Subflows treten der Verbindung später mit der Option `MP_JOIN` bei. Fehlt `MP_CAPABLE` in der Antwort, weil die Gegenseite MPTCP nicht kennt oder eine Middlebox die Option entfernt, läuft die Verbindung als gewöhnliches TCP weiter. Dieser Fallback ist Teil des Standards und der Grund, weshalb MPTCP-fähige Server mit allen TCP-Clients funktionieren.
+
+Unter Linux ist MPTCP Opt-in pro Socket: Eine Anwendung muss den Socket ausdrücklich mit dem Protokoll `IPPROTO_MPTCP` (Wert 262) anlegen. Ein Programm, das das nicht tut, verwendet weiterhin normales TCP, auch wenn MPTCP im Kernel aktiv ist.
+
+## Die Geschichte
+
+MPTCP entstand an Universitäten und kam über Apple in grossem Massstab in Betrieb. Die Linux-Implementierung lag über ein Jahrzehnt ausserhalb des offiziellen Kernels, bevor sie in neuer Form übernommen wurde.
+
+| Zeitpunkt | Ereignis |
+|---|---|
+| ab etwa 2009 | Forschende der Université catholique de Louvain (UCLouvain) entwickeln die erste Linux-Implementierung als eigenen Kernel-Zweig (multipath-tcp.org). |
+| März 2011 | RFC 6182 beschreibt die Architektur von Multipath TCP (Informational). |
+| Januar 2013 | RFC 6824 spezifiziert MPTCP Version 0 als experimentelles Protokoll. |
+| September 2013 | iOS 7 erscheint mit MPTCP, der erste kommerzielle Einsatz in grossem Umfang. Apple nutzt MPTCP unter anderem für Siri. |
+| Juni 2015 | KT (Korea Telecom) startet einen kommerziellen Dienst, der WLAN und LTE per MPTCP bündelt und Smartphones bis 1 Gbit/s ermöglicht; vorgestellt an der IETF 93. |
+| 2017 | iOS 11 öffnet MPTCP für App-Entwickler über `URLSession` (`multipathServiceType`). |
+| März 2020 | RFC 8684 definiert MPTCP Version 1 als Proposed Standard und ersetzt RFC 6824. |
+| 29. März 2020 | Linux 5.6 erscheint mit einer ersten MPTCP-Unterstützung im offiziellen Kernel, neu geschrieben und nur für Version 1. Zusätzliche Subflows kamen in den folgenden Versionen dazu. |
+| 2020 | 3GPP spezifiziert in Release 16 ATSSS (Access Traffic Steering, Switching, Splitting) für 5G; MPTCP verteilt dort Verkehr auf Mobilfunk und WLAN. |
+| August 2023 | Go 1.21 führt `SetMultipathTCP` für Dialer und Listener ein, standardmässig aus. |
+| Februar 2025 | Go 1.24 schaltet MPTCP für Listener standardmässig ein (`ListenConfig`), Dialer bleiben bei TCP. |
+| Oktober 2026 | CVE-2026-98432: Use-after-free im IPv4-TCP-Code; der gezeigte Root-Exploit braucht einen MPTCP-Listener. |
+
+Der Out-of-Tree-Zweig der UCLouvain unterstützte Version 0 und 1. Der offizielle Kernel kennt nur Version 1; das Projekt empfiehlt heute ausschliesslich diese Implementierung.
+
+## Warum MPTCP auf vielen Servern aktiv ist
+
+Zwei Voreinstellungen treffen zusammen. Der Kernel erlaubt MPTCP-Sockets standardmässig: Die Sysctl-Einstellung `net.mptcp.enabled` steht auf `1`. Und Go-Programme ab Version 1.24 legen jeden Listener als MPTCP-Socket an, sofern der Kernel das zulässt. Go-Dienste wie Prometheus-Exporter oder Tailscale lauschen deshalb per MPTCP, sobald sie mit Go 1.24 oder neuer gebaut wurden.
+
+Für normale Clients ändert das nichts: Sie senden kein `MP_CAPABLE`, und die Verbindung läuft als TCP. Die zusätzliche Angriffsfläche entsteht jedoch auf der Serverseite, weil jeder Client, der `MP_CAPABLE` mitschickt, den MPTCP-Code im Kernel erreicht.
+
+## CVE-2026-98432
+
+CVE-2026-98432 ist ein Use-after-free beim Aufbau von IPv4-TCP-Verbindungen mit IP-Optionen (CVSS 3.1: 9.8). Betroffen ist laut CVE-Eintrag Linux ab Version 4.4. Der Fehler selbst betrifft jeden TCP-Listener, nicht nur MPTCP. Für die Ausnutzung bis zu Root-Rechten wurde jedoch bisher nur eine Kette über einen MPTCP-Listener gezeigt; laut lilting.ch hat Anthropic sie am 27. Oktober 2026 in einer Laborumgebung vorgeführt. Ob Root-Rechte auch ohne MPTCP erreichbar sind, ist offen.
+
+Upstream ist der Fehler in den Stable-Kerneln 5.10.272, 5.15.223, 6.1.190, 6.6.159, 6.12.113, 6.18.56 und 7.2.10 sowie in Mainline 7.3 behoben (Commit „ipv4: free inet_opt and ireq_opt after an RCU grace period"). Ubuntu führte am 30. Oktober 2026 die LTS-Versionen 22.04, 24.04 und 26.04 noch als „Vulnerable, work in progress"; für 26.04 ist der Fix in `linux` 7.0.0-43.43 vorgesehen. Distributionen portieren Fixes zurück; massgebend ist deshalb die Paketversion aus dem Advisory der Distribution, nicht die Kernel-Hauptversion.
+
+MPTCP abzuschalten entfernt die Voraussetzung des gezeigten Exploits. Die Lücke im IPv4-TCP-Code bleibt bestehen, bis der aktualisierte Kernel installiert und gebootet ist.
+
+## Prüfen, ob MPTCP aktiv ist und genutzt wird
+
+### 1. Lässt der Kernel MPTCP zu?
+
+```bash
+sysctl net.mptcp.enabled
+```
+
+`1` heisst, Anwendungen dürfen MPTCP-Sockets anlegen. Meldet `sysctl`, der Schlüssel sei unbekannt, ist MPTCP nicht in den Kernel kompiliert und auf diesem Host nicht verfügbar.
+
+### 2. Welche Dienste lauschen per MPTCP?
+
+```bash
+sudo ss -Mlnp
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-M` | nur MPTCP-Sockets anzeigen |
+| `-l` | nur lauschende Sockets (Listener) |
+| `-n` | Adressen und Ports numerisch, ohne Namensauflösung |
+| `-p` | Prozess zum Socket anzeigen; braucht Root-Rechte für Prozesse anderer Benutzer |
+
+</details>
+
+Jede Zeile ist ein MPTCP-Listener. Derselbe Port erscheint mit `ss -tln` zusätzlich als TCP-Listener; das ist normal, weil der Kernel für jeden MPTCP-Listener intern einen TCP-Socket führt. Die Prozessnamen zeigen, welche Programme betroffen sind. In der Regel sind es Go-Programme.
+
+### 3. Hat je ein Client MPTCP genutzt?
+
+Der Kernel zählt MPTCP-Handshakes seit dem letzten Start. Die relevanten Zähler:
+
+```bash
+nstat -asz |
+  grep -E 'MPTcpExt(MPCapable|MPCurrEstab)'
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-a` | absolute Werte seit dem Systemstart statt Differenz zum letzten Aufruf |
+| `-s` | Verlaufsdatei von `nstat` nicht aktualisieren |
+| `-z` | auch Zähler mit dem Wert 0 ausgeben |
+
+</details>
+
+| Zähler | Bedeutung |
+|---|---|
+| `MPTcpExtMPCapableSYNRX` | eingehende SYN mit `MP_CAPABLE` an einem MPTCP-Listener |
+| `MPTcpExtMPCapableACKRX` | eingehende MPTCP-Verbindungen, deren Handshake abgeschlossen wurde |
+| `MPTcpExtMPCapableSYNTX` | ausgehende SYN mit `MP_CAPABLE`, also Verbindungen, die dieser Host per MPTCP aufbauen wollte |
+| `MPTcpExtMPCapableSYNACKRX` | ausgehende Verbindungen, bei denen die Gegenseite MPTCP bestätigt hat |
+| `MPTcpExtMPCapableFallbackACK` | serverseitig während des Handshakes auf TCP zurückgefallene Verbindungen |
+| `MPTcpExtMPCapableFallbackSYNACK` | clientseitig zurückgefallene Verbindungen |
+| `MPTcpExtMPCurrEstab` | aktuell bestehende MPTCP-Verbindungen |
+
+Stehen `MPCapableSYNRX` und `MPCapableACKRX` nach einer repräsentativen Laufzeit auf 0, hat kein Client MPTCP verwendet. Ist `MPCapableSYNTX` grösser als 0, baut eine Anwendung auf dem Host selbst ausgehende MPTCP-Verbindungen auf; diese Anwendung sollten Sie vor dem Abschalten identifizieren. Bestehende MPTCP-Verbindungen zeigt `ss -Mani` mit Details zu den Subflows.
+
+Die Zähler gelten seit dem letzten Neustart. Ein Server, der erst vor einer Stunde gebootet wurde, liefert deshalb keine belastbare Aussage. Zudem zählt der Kernel pro Netzwerk-Namespace, mehr dazu im nächsten Abschnitt.
+
+### 4. Container separat prüfen
+
+`net.mptcp.enabled` gilt pro Netzwerk-Namespace. Jeder Container mit eigenem Netzwerk (Docker-Bridge, Podman, Kubernetes-Pods) hat einen eigenen Wert, und ein neuer Namespace beginnt mit dem Standardwert `1`, unabhängig von der Einstellung auf dem Host. Auf meinem Heim-Server standen nach dem Abschalten auf dem Host alle Bridge-Container weiterhin auf `1`; nur die Container mit `network_mode: host` übernahmen die `0`.
+
+```bash
+for c in $(docker ps -q); do
+  pid=$(docker inspect -f '{{.State.Pid}}' "$c")
+  name=$(docker inspect -f '{{.Name}}' "$c")
+  echo "$name $(sudo nsenter -t "$pid" -n sysctl -n net.mptcp.enabled)"
+done
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `docker ps -q` | IDs aller laufenden Container |
+| `docker inspect -f '{{.State.Pid}}'` | PID des Hauptprozesses im Container, über die `nsenter` den Namespace findet |
+| `nsenter -t <pid>` | Namespaces des angegebenen Prozesses betreten |
+| `-n` | nur den Netzwerk-Namespace betreten; Dateisystem und Werkzeuge bleiben die des Hosts |
+| `sysctl -n` | nur den Wert ausgeben, ohne Schlüsselnamen |
+
+</details>
+
+`nsenter` hat den Vorteil, dass im Container weder `sysctl` noch `cat` vorhanden sein muss; viele Images (distroless, scratch) enthalten keine Shell. Auf dieselbe Weise lassen sich `ss -Mln` und die `nstat`-Zähler im Namespace eines Containers abfragen.
+
+## Wann Sie MPTCP abschalten können
+
+Das Abschalten ist unproblematisch, wenn die Zähler aus Schritt 3 auf dem Host und in den Containern keine MPTCP-Nutzung zeigen. Lauschende Go-Programme verlieren dadurch nichts: Go versucht den MPTCP-Socket, erhält vom Kernel einen Fehler und legt still einen TCP-Socket an. Andere Programme, die `IPPROTO_MPTCP` ausdrücklich anfordern, erhalten den Fehler `ENOPROTOOPT`. Ob sie dann auf TCP zurückfallen oder abbrechen, hängt von der Software ab; testen Sie solche Dienste nach der Umstellung.
+
+Vorsicht ist in diesen Fällen angebracht:
+
+- **Hybrid Access und Link-Bündelung:** Router oder Proxys, die DSL, Glasfaser und Mobilfunk per MPTCP bündeln (etwa OpenMPTCProuter oder Hybrid-Access-Gateways von Providern), sind auf MPTCP angewiesen.
+- **Server für mobile Apps:** Eine eigene iOS-App mit `multipathServiceType` profitiert beim Netzwechsel nur, wenn der Server MPTCP spricht. Die Zähler `MPCapableACKRX` zeigen, ob solche Clients vorkommen.
+- **Ausgehendes MPTCP:** Programme, die mit `mptcpize` gestartet werden oder in Go mit `GODEBUG=multipathtcp=1` oder `3` laufen, bauen ausgehend MPTCP auf. Erkennbar an `MPCapableSYNTX` grösser als 0.
+
+## MPTCP abschalten
+
+Es gibt drei Möglichkeiten, je nach gewünschter Reichweite.
+
+### Für den ganzen Host
+
+```bash
+echo "net.mptcp.enabled = 0" |
+  sudo tee /etc/sysctl.d/99-no-mptcp.conf
+sudo sysctl --system
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `/etc/sysctl.d/99-no-mptcp.conf` | Konfigurationsdatei, die beim Booten gelesen wird; die Einstellung bleibt über Neustarts erhalten |
+| `sysctl --system` | alle Dateien unter `/etc/sysctl.d/` und den übrigen Standardpfaden neu laden und sofort anwenden |
+
+</details>
+
+Die Einstellung verhindert nur das Anlegen neuer MPTCP-Sockets. Bereits offene Listener bleiben MPTCP-Sockets, bis der Dienst neu startet. Am einfachsten ist ein Neustart des Hosts; danach muss `ss -Mln` eine leere Liste liefern.
+
+### Für Container
+
+In Containern mit eigenem Netzwerk setzen Sie den Wert pro Container. Docker erlaubt Sysctls aus dem Bereich `net.*`, solange der Container nicht das Host-Netzwerk verwendet:
+
+```yaml
+services:
+  app:
+    sysctls:
+      net.mptcp.enabled: 0
+```
+
+Beim direkten Aufruf entspricht das `docker run --sysctl net.mptcp.enabled=0 …`. Die Änderung greift beim nächsten Neuerstellen des Containers (`docker compose up -d`).
+
+### Nur für einzelne Go-Programme
+
+Statt MPTCP im Kernel abzuschalten, lässt sich das Go-Standardverhalten pro Dienst zurücksetzen. Die Umgebungsvariable `GODEBUG=multipathtcp=0` schaltet MPTCP für Listener und Dialer ab. Bei einem systemd-Dienst geht das über ein Drop-in:
+
+```bash
+sudo systemctl edit node_exporter
+```
+
+```ini
+[Service]
+Environment=GODEBUG=multipathtcp=0
+```
+
+Setzt der Dienst bereits eine `GODEBUG`-Variable, werden die Einträge mit Komma getrennt in einer Variable kombiniert. Diese Möglichkeit wirkt nur bei Go-Programmen und nur, wenn der Code `SetMultipathTCP` nicht selbst aufruft; ein expliziter Aufruf im Programm hat Vorrang vor `GODEBUG`. Für eigene Go-Projekte steht dieselbe Einstellung als `godebug multipathtcp=0` in der `go.mod` oder als `//go:debug multipathtcp=0` im Hauptpaket zur Verfügung.
+
+## Kontrolle nach der Umstellung
+
+```bash
+sysctl net.mptcp.enabled
+ss -Mln
+```
+
+Erwartet werden `0` und keine Zeile unter dem Tabellenkopf von `ss`. Die Dienste lauschen danach weiterhin auf denselben Ports, sichtbar mit `ss -tln`. Rückgängig machen lässt sich die Umstellung, indem Sie die Datei unter `/etc/sysctl.d/` löschen und den Host neu starten.
+
+## Quellen
+
+1.  [RFC 8684: TCP Extensions for Multipath Operation with Multiple Addresses](https://datatracker.ietf.org/doc/html/rfc8684): Spezifikation von MPTCP Version 1 (März 2020) mit Subflows, `MP_CAPABLE`, Data Sequence Number und Fallback.
+
+2.  [RFC 6824](https://datatracker.ietf.org/doc/rfc6824/): MPTCP Version 0, experimentell (Januar 2013), durch RFC 8684 ersetzt.
+
+3.  [RFC 6182: Architectural Guidelines for Multipath TCP Development](https://datatracker.ietf.org/doc/rfc6182/): Architektur-Dokument von März 2011.
+
+4.  [Linux Kernel Documentation: Multipath TCP](https://docs.kernel.org/networking/mptcp.html): Opt-in über `IPPROTO_MPTCP`, Fehlercodes beim Anlegen von Sockets, Path Manager.
+
+5.  [Linux Kernel Documentation: MPTCP Sysfs variables](https://docs.kernel.org/networking/mptcp-sysctl.html): Bedeutung und Standardwert von `net.mptcp.enabled` und den übrigen MPTCP-Sysctls.
+
+6.  [mptcp.dev](https://www.mptcp.dev/): Website des Upstream-Projekts mit FAQ, Debugging-Anleitung (`ss -Mani`, `nstat`) und Hinweisen zu macOS und iOS.
+
+7.  [KernelNewbies: Linux 5.6](https://kernelnewbies.org/Linux_5.6): Release-Übersicht mit der ersten MPTCP-Unterstützung im offiziellen Kernel.
+
+8.  [Go 1.21 Release Notes](https://go.dev/doc/go1.21): Einführung der MPTCP-Unterstützung im Paket `net`, standardmässig aus, mit stillem Fallback auf TCP.
+
+9.  [Go 1.24 Release Notes](https://go.dev/doc/go1.24): MPTCP standardmässig für `ListenConfig` unter Linux.
+
+10.  [Go: GODEBUG-Einstellungen](https://go.dev/doc/godebug): Werte 0 bis 3 von `multipathtcp` sowie `godebug` in `go.mod` und `//go:debug`.
+
+11.  [Wikipedia: Multipath TCP](https://en.wikipedia.org/wiki/Multipath_TCP): Überblick über Implementierungen und Einsätze (UCLouvain, Apple, KT, 3GPP ATSSS).
+
+12.  [Ubuntu Security: CVE-2026-98432](https://ubuntu.com/security/CVE-2026-98432): Status der Ubuntu-Kernel je Release und vorgesehene Fixversionen.
+
+13.  [lilting.ch: CVE-2026-98432 Linux TCP Use-After-Free](https://lilting.ch/en/articles/linux-ipv4-tcp-options-uaf-mptcp-rce): Einordnung der Ausnutzbarkeit, Rolle von MPTCP und Fixversionen der Stable-Kernel.
+
+----
+
+# totemomail 9.5.1: Account-Übernahme im Web Portal und SSRF über eingehende Mails geschlossen
+
+URL: https://rafaelpfister.ch/blog/totemomail-9-5-1-sicherheitsupdate
+Datum: 2026-10-31
+
+# totemomail 9.5.1: Account-Übernahme im Web Portal und SSRF über eingehende Mails geschlossen
+
+totemo hat totemomail 9.5.1 (Build 101) veröffentlicht. Der Patch enthält acht Sicherheitskorrekturen, eine Verbesserung und drei Fehlerbehebungen. Zwei der Lücken lassen sich ohne Anmeldung ausnutzen: ein Fehler im Passwort-Reset des Web Portals, über den sich auch Administratorkonten übernehmen lassen, und serverseitige Abrufe von URLs, die in eingehenden Nachrichten stehen. Beide betreffen Komponenten, die bei den meisten Installationen aus dem Internet erreichbar sind. Planen Sie das Update deshalb zeitnah ein.
+
+## Von 9.2.1 direkt zu 9.5.1
+
+Die Release Notes führen 9.5.1 unmittelbar nach 9.2.1; Versionen 9.3 und 9.4 kommen in der totemomail-Historie nicht vor. Ein Eintrag in 9.5.1 verweist trotzdem auf eine «security hardening introduced in 9.3.1». Die Zwischenversionen stammen aus dem Kiteworks Email Protection Gateway (EPG), das auf derselben Codebasis aufbaut: Die Sicherheitshinweise von Kiteworks nennen als Korrekturstände EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 und 9.5.1. Für totemomail-Installationen mit 9.2.1 ist 9.5.1 das nächste Update; die Release Notes führen dazwischen keinen weiteren Patch.
+
+## Lücken ohne Anmeldung
+
+**Server-Side Request Forgery über den Nachrichteninhalt.** totemomail rief URLs aus verarbeiteten Nachrichten serverseitig ab, ohne das Ziel ausreichend einzuschränken. Ein Absender ohne Anmeldung konnte eine Nachricht so gestalten, dass das Gateway Anfragen an interne Dienste oder an Metadaten-Endpunkte von Cloud-Instanzen stellte und die Antworten zurückgab. Ausreichend ist dafür eine Mail, die das Gateway verarbeitet; bei einem Gateway im eingehenden Mailfluss kann das jeder externe Absender. Besonders heikel ist das bei Installationen in Azure, AWS oder anderen Clouds, wo der Metadaten-Endpunkt `169.254.169.254` Konfigurationsdaten und je nach Plattform Zugangstokens der Instanz liefert. Die Release Notes nennen für diese Lücke keine CVE-Nummer. Kiteworks führt für das EPG fünf Advisories zum Zugriff auf interne Netzwerkressourcen (CVE-2026-102095, CVE-2026-102102 bis CVE-2026-102105, jeweils CVSS 9.1, behoben in EPG 9.5.0); welches davon dem totemomail-Eintrag entspricht, geht aus den knappen Advisory-Texten nicht hervor.
+
+**Passwort-Reset im Web Portal (CVE-2026-85066).** Ein Fehler im Ablauf zum Zurücksetzen des Passworts erlaubte es, die Prüfschritte zu überspringen und für ein bestehendes Konto ein neues Passwort zu setzen. Die Release Notes schliessen Administratorkonten ausdrücklich ein. Kiteworks bewertet die Lücke im zugehörigen Advisory GHSA-rwpq-5xfv-54pv mit CVSS 9.8 (kritisch) und nennt EPG 9.5.0 als Korrekturstand. Das Web Portal ist für externe Empfänger von verschlüsselten Nachrichten gedacht und deshalb in der Regel öffentlich erreichbar.
+
+## Lücken mit Administratorrechten
+
+Drei weitere Korrekturen setzen eine Anmeldung mit administrativen Rechten voraus. In Kombination mit der Account-Übernahme im Web Portal verlieren diese Voraussetzungen allerdings an Gewicht.
+
+- **Admin API, Queue-Verwaltung (CVE-2026-34843):** Über unzureichend geschützte Datei-Uploads liessen sich Dateien an beliebige Stellen im Dateisystem schreiben. Laut Release Notes war damit Remote Code Execution möglich. Das Advisory GHSA-mhc9-4pph-2r9x bewertet die Lücke mit CVSS 7.2; im EPG ist sie seit 9.4.0 behoben.
+- **Rule Designer:** Beim Import einer Regelkonfiguration konnte die Verarbeitungspipeline Code ausserhalb der freigegebenen Mail-Processing-Komponenten laden und ausführen. Voraussetzung sind Rechte zur Konfiguration von Mailregeln.
+- **Mail API:** Beim Entpacken hochgeladener ZIP-Dateien bestand eine Path-Traversal-Lücke. Dateien werden jetzt nur noch in das temporäre Verzeichnis entpackt.
+
+Die vierte Korrektur betrifft die Property `security.login.requestingKeysAvailable`. Bisher blendete sie im Web Portal nur den Link zum Anfordern öffentlicher Schlüssel aus; die Funktion selbst blieb über eine direkte Anfrage erreichbar. Ab 9.5.1 deaktiviert die Property die Funktion. Wenn Sie die Property gesetzt haben, um Schlüsselanfragen zu unterbinden, wirkt sie erst mit diesem Update wie erwartet.
+
+## Was das Kiteworks-Register zusätzlich listet
+
+Kiteworks hat am 30. September 2026 in seinem Advisory-Register auf GitHub gesammelt 125 Sicherheitshinweise veröffentlicht, davon 28 zum Email Protection Gateway. Die totemomail-Release-Notes zu 9.5.1 nennen deutlich weniger Punkte. Das Register unterscheidet nicht zwischen EPG und totemomail; ob jede EPG-Lücke auch totemomail betrifft, lässt sich daraus nicht ablesen. Die kritischen EPG-Einträge sind:
+
+| CVE | CVSS | Auswirkung laut Advisory | Behoben ab EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Codeausführung mit Root-Rechten ohne Anmeldung | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Übernahme von Benutzerkonten (Passwort-Reset) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Übernahme von Benutzerkonten | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Übernahme von Benutzerkonten | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Änderung der Administrationskonfiguration | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 bis 102105 | 9.1 | Zugriff auf interne Netzwerkressourcen | 9.5.0 |
+
+Dazu kommen 13 als hoch eingestufte Einträge, die meisten davon Codeausführung mit Administratorrechten (CVSS 7.2). Der höchste genannte Korrekturstand ist 9.5.1; Kiteworks hat 9.5.1 Ende September als aktuelle Version bezeichnet, in der alle bekannten Schwachstellen berücksichtigt seien. Wer totemomail auf 9.5.1 bringt, hat damit den Stand, auf den sich alle EPG-Advisories des Registers beziehen.
+
+## Aktualisierte Bibliotheken
+
+Die mitgelieferten Bibliotheken von Apache Tomcat und Apache XML Graphics Batik wurden aktualisiert. Die Release Notes nennen dazu CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956 und CVE-2026-59083, ohne sie den beiden Bibliotheken einzeln zuzuordnen. Zusätzlich wurde woodstox-core-asl wegen einer Schwachstelle aktualisiert; dafür ist keine CVE-Nummer angegeben.
+
+## Verbesserung und Fehlerbehebungen
+
+- **EPG-Migration:** Bei der Migration aus einer Oracle-Datenbank unterstützt totemomail jetzt Oracle Wallet. Ist kein Datenbankpasswort konfiguriert, verbindet sich die Migration über das Wallet.
+- **RMS:** Nachrichten konnten in der Verarbeitung hängen bleiben, weil RMS-Aktionen unbegrenzt auf die Authentifizierung warteten. Die Wartezeit ist jetzt auf eine Minute begrenzt. Das betrifft Installationen mit Microsoft Purview Information Protection (RMS).
+- **TRE:** Die Funktion «Open Online» für Registered Envelopes funktioniert wieder. Sie war seit der erwähnten Härtung aus 9.3.1 ausgefallen.
+- **Lizenzbericht:** Bei Cloud-Lizenzen zählt der Bericht interne Benutzer mit vordefinierten Feature-Typen wieder korrekt. Wie sich verwaiste Konten auf die Lizenzzählung auswirken, beschreibt der Artikel zum [Lizenzlimit und der Bereinigung per LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup).
+
+## Installation
+
+Der Patch lässt sich auf Systemen ab totemomail 7 b985 unter Windows, Linux, Solaris und FreeBSD installieren. Melden Sie sich an der Administrationskonsole an, laden Sie unter `[Instanzname]` > «Update» die mitgelieferte TPF-Datei hoch und starten Sie das Update. Bei mehreren Instanzen ist das für jede Instanz einzeln nötig. totemomail startet danach nach Möglichkeit selbständig neu; planen Sie dafür ein Wartungsfenster ein und erstellen Sie vorher ein Backup oder einen Snapshot.
+
+Bis das Update installiert ist, reduzieren zwei Massnahmen das Risiko: Admin-Konsole und Admin API nur aus dem Verwaltungsnetz erreichbar machen und ausgehende Verbindungen des Gateways auf die tatsächlich benötigten Ziele beschränken. Bei Cloud-Installationen gehört der Metadaten-Endpunkt `169.254.169.254` zu den Zielen, die das Gateway nicht erreichen muss. Beide Massnahmen ersetzen den Patch nicht; die Lücke im Passwort-Reset des Web Portals schliesst nur das Update.
+
+## Quellen
+
+1.  totemomail Release Notes 9.5.1 (Build 101), totemo ag: Installationsanleitung und Release Notes als PDF, für Kunden über den Hersteller-Support erhältlich; Grundlage aller Angaben in diesem Artikel.
+
+2.  [Kiteworks Security Advisories auf GitHub](https://github.com/kiteworks/security-advisories/security/advisories): Offizielles Register mit CVSS-Werten und Korrekturständen für Email Protection Gateway, Core, MFT und Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv: Account takeover (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): Advisory zum Passwort-Reset-Fehler, CVSS 9.8, behoben in EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: Arbitrary code execution (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Kritischste EPG-Lücke mit CVSS 10.0, behoben in EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks published 125 advisories](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): Auswertung der Veröffentlichung vom 30. September 2026 mit Zählung nach Produkt und Schweregrad und den Aussagen von Kiteworks zu 9.5.1.
+
+6.  [Mailrouting zwischen totemomail und Exchange Online verstehen](/blog/totemomail-m365): Wie totemomail eingehende Nachrichten verarbeitet; relevant für die Frage, welche Mails die SSRF-Lücke auslösen können.
+
+7.  [Totemomail-Lizenzlimit erreicht: verwaiste Benutzer per LDAP bereinigen](/blog/totemomail-licensed-user-limit-ldap-cleanup): Hintergrund zur Lizenzzählung, die der Lizenzbericht-Fix betrifft.
+
+----
+
 # Paperless-ngx 3.4.0: OIDC-Login ohne doppelte 2FA, Thumbnails ohne ImageMagick
 
 URL: https://rafaelpfister.ch/blog/paperless-ngx-3-4-0
@@ -19247,6 +19662,85 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# totemomail 9.5.1: Account takeover in the Web Portal and SSRF via incoming email fixed
+
+URL: https://rafaelpfister.ch/en/blog/totemomail-9-5-1-account-takeover-in-the-web-portal-and-ssrf-via-incoming-email-fixed
+Datum: 2026-10-31
+
+# totemomail 9.5.1: Account takeover in the Web Portal and SSRF via incoming email fixed
+
+totemo has released totemomail 9.5.1 (Build 101). The patch contains eight security fixes, one improvement, and three bug fixes. Two vulnerabilities can be exploited without authentication: a flaw in the Web Portal password reset process that can also be used to take over administrator accounts, and server-side retrieval of URLs contained in incoming messages. Both affect components that are reachable from the internet in most installations. You should therefore schedule the update promptly.
+
+## From 9.2.1 directly to 9.5.1
+
+The release notes list 9.5.1 directly after 9.2.1; versions 9.3 and 9.4 do not appear in the totemomail history. Nevertheless, an entry in 9.5.1 refers to “security hardening introduced in 9.3.1.” The intermediate versions come from Kiteworks Email Protection Gateway (EPG), which is based on the same codebase: Kiteworks security advisories list EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0, and 9.5.1 as fixed versions. For totemomail installations running 9.2.1, 9.5.1 is the next update; the release notes list no additional patch in between.
+
+## Vulnerabilities without authentication
+
+**Server-Side Request Forgery through message content.** totemomail retrieved URLs from processed messages on the server side without sufficiently restricting the destination. An unauthenticated sender could craft a message that caused the gateway to send requests to internal services or metadata endpoints of cloud instances and return the responses. All that is required is an email processed by the gateway; for a gateway in the inbound mail flow, any external sender can do this. This is particularly sensitive for installations in Azure, AWS, or other clouds, where the metadata endpoint `169.254.169.254` provides configuration data and, depending on the platform, instance access tokens. The release notes do not list a CVE number for this vulnerability. Kiteworks lists five EPG advisories for access to internal network resources (CVE-2026-102095, CVE-2026-102102 through CVE-2026-102105, each with CVSS 9.1, fixed in EPG 9.5.0); the brief advisory texts do not reveal which of them corresponds to the totemomail entry.
+
+**Password reset in the Web Portal (CVE-2026-85066).** A flaw in the password reset flow made it possible to bypass verification steps and set a new password for an existing account. The release notes explicitly include administrator accounts. Kiteworks rates the vulnerability CVSS 9.8 (critical) in the related advisory GHSA-rwpq-5xfv-54pv and lists EPG 9.5.0 as the fixed version. The Web Portal is intended for external recipients of encrypted messages and is therefore usually publicly accessible.
+
+## Vulnerabilities requiring administrator privileges
+
+Three additional fixes require authentication with administrative privileges. In combination with the account takeover in the Web Portal, however, those requirements carry less weight.
+
+- **Admin API, queue management (CVE-2026-34843):** Insufficiently protected file uploads could be used to write files to arbitrary locations in the file system. According to the release notes, this enabled remote code execution. Advisory GHSA-mhc9-4pph-2r9x rates the vulnerability CVSS 7.2; it has been fixed in EPG since 9.4.0.
+- **Rule Designer:** When importing a rule configuration, the processing pipeline could load and execute code outside the approved mail processing components. Permissions to configure mail rules are required.
+- **Mail API:** A path traversal vulnerability existed when extracting uploaded ZIP files. Files are now extracted only to the temporary directory.
+
+The fourth fix concerns the property `security.login.requestingKeysAvailable`. Previously, it only hid the link for requesting public keys in the Web Portal; the feature itself remained accessible through a direct request. Starting with 9.5.1, the property disables the feature. If you set the property to prevent key requests, it will only work as expected after this update.
+
+## What the Kiteworks registry lists in addition
+
+On September 30, 2026, Kiteworks published 125 security advisories in its advisory registry on GitHub, including 28 for Email Protection Gateway. The totemomail 9.5.1 release notes list significantly fewer items. The registry does not distinguish between EPG and totemomail; it does not indicate whether every EPG vulnerability also affects totemomail. The critical EPG entries are:
+
+| CVE | CVSS | Impact according to the advisory | Fixed in EPG starting with |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Unauthenticated code execution with root privileges | 9.4.1 |
+| CVE-2026-85066 | 9.8 | User account takeover (password reset) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | User account takeover | 9.5.0 |
+| CVE-2026-102149 | 9.4 | User account takeover | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Modification of the administration configuration | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 through 102105 | 9.1 | Access to internal network resources | 9.5.0 |
+
+There are also 13 entries rated high, most of them code execution with administrator privileges (CVSS 7.2). The highest listed fixed version is 9.5.1; Kiteworks described 9.5.1 as the current version at the end of September, stating that it addressed all known vulnerabilities. Updating totemomail to 9.5.1 therefore brings it in line with all EPG advisories in the registry.
+
+## Updated libraries
+
+The bundled Apache Tomcat and Apache XML Graphics Batik libraries have been updated. The release notes list CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956, and CVE-2026-59083, without assigning them individually to the two libraries. In addition, woodstox-core-asl was updated because of a vulnerability; no CVE number is provided for it.
+
+## Improvement and bug fixes
+
+- **EPG migration:** When migrating from an Oracle database, totemomail now supports Oracle Wallet. If no database password is configured, the migration connects through the wallet.
+- **RMS:** Messages could get stuck in processing because RMS actions waited indefinitely for authentication. The wait time is now limited to one minute. This affects installations using Microsoft Purview Information Protection (RMS).
+- **TRE:** The “Open Online” feature for Registered Envelopes works again. It had stopped working since the aforementioned hardening in 9.3.1.
+- **License report:** For cloud licenses, the report once again correctly counts internal users with predefined feature types. The article on the [license limit and cleanup via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup) describes how orphaned accounts affect license counting.
+
+## Installation
+
+The patch can be installed on systems running totemomail 7 b985 or later on Windows, Linux, Solaris, and FreeBSD. Sign in to the administration console, upload the included TPF file under `[Instanzname]` > “Update,” and start the update. For multiple instances, this must be done separately for each instance. totemomail will restart itself afterward if possible; schedule a maintenance window and create a backup or snapshot beforehand.
+
+Until the update is installed, two measures reduce the risk: make the admin console and Admin API accessible only from the management network, and restrict the gateway’s outbound connections to the destinations actually required. For cloud installations, the metadata endpoint `169.254.169.254` is among the destinations the gateway does not need to reach. Neither measure replaces the patch; only the update fixes the password reset vulnerability in the Web Portal.
+
+## Sources
+
+1.  totemomail Release Notes 9.5.1 (Build 101), totemo ag: installation guide and release notes as a PDF, available to customers through vendor support; basis for all information in this article.
+
+2.  [Kiteworks Security Advisories on GitHub](https://github.com/kiteworks/security-advisories/security/advisories): Official registry with CVSS scores and fixed versions for Email Protection Gateway, Core, MFT, and Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv: Account takeover (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): Advisory on the password reset flaw, CVSS 9.8, fixed in EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: Arbitrary code execution (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Most critical EPG vulnerability with CVSS 10.0, fixed in EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks published 125 advisories](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): Analysis of the September 30, 2026 publication, including counts by product and severity, and Kiteworks’ statements about 9.5.1.
+
+6.  [Understanding mail routing between totemomail and Exchange Online](/blog/totemomail-m365): How totemomail processes incoming messages; relevant to the question of which emails can trigger the SSRF vulnerability.
+
+7.  [Totemomail license limit reached: clean up orphaned users via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup): Background on the license counting affected by the license report fix.
+
+----
+
 # Paperless-ngx 3.4.0: OIDC Login Without Duplicate 2FA, Thumbnails Without ImageMagick
 
 URL: https://rafaelpfister.ch/en/blog/paperless-ngx-3-4-0-oidc-login-without-duplicate-2fa-thumbnails-without-imagemagick
@@ -38410,6 +38904,85 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# totemomail 9.5.1 : prise de contrôle de comptes dans le portail web et SSRF via les e-mails entrants corrigés
+
+URL: https://rafaelpfister.ch/fr/blog/totemomail-9-5-1-prise-de-controle-de-comptes-dans-le-portail-web-et-ssrf-via-les-e-mails
+Datum: 2026-10-31
+
+# totemomail 9.5.1 : prise de contrôle de comptes dans le portail web et SSRF via les e-mails entrants corrigés
+
+totemo a publié totemomail 9.5.1 (Build 101). Le correctif contient huit corrections de sécurité, une amélioration et trois corrections de bugs. Deux des failles peuvent être exploitées sans authentification : une erreur dans la réinitialisation du mot de passe du portail web, qui permet également de prendre le contrôle de comptes administrateur, et des requêtes serveur vers des URL contenues dans des messages entrants. Toutes deux concernent des composants accessibles depuis Internet dans la plupart des installations. Planifiez donc rapidement la mise à jour.
+
+## De 9.2.1 directement à 9.5.1
+
+Les notes de version présentent 9.5.1 directement après 9.2.1 ; les versions 9.3 et 9.4 n’apparaissent pas dans l’historique de totemomail. Une entrée de la version 9.5.1 renvoie néanmoins à un « security hardening introduced in 9.3.1 ». Les versions intermédiaires proviennent de Kiteworks Email Protection Gateway (EPG), qui repose sur la même base de code : les avis de sécurité de Kiteworks indiquent EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 et 9.5.1 comme versions correctives. Pour les installations totemomail en 9.2.1, 9.5.1 est la prochaine mise à jour ; les notes de version ne mentionnent aucun autre correctif entre les deux.
+
+## Failles sans authentification
+
+**Server-Side Request Forgery via le contenu des messages.** totemomail récupérait côté serveur des URL issues de messages traités sans suffisamment restreindre leur destination. Un expéditeur non authentifié pouvait concevoir un message de façon à ce que la passerelle envoie des requêtes à des services internes ou à des points de terminaison de métadonnées d’instances Cloud, puis en renvoie les réponses. Il suffit pour cela d’un e-mail traité par la passerelle ; avec une passerelle dans le flux des e-mails entrants, tout expéditeur externe peut le faire. Cela est particulièrement critique pour les installations dans Azure, AWS ou d’autres Clouds, où le point de terminaison de métadonnées `169.254.169.254` fournit des données de configuration et, selon la plateforme, des jetons d’accès de l’instance. Les notes de version ne donnent pas de numéro CVE pour cette faille. Kiteworks répertorie pour l’EPG cinq avis concernant l’accès à des ressources réseau internes (CVE-2026-102095, CVE-2026-102102 à CVE-2026-102105, tous avec un CVSS de 9.1, corrigés dans EPG 9.5.0) ; les textes succincts des avis ne permettent pas de déterminer lequel correspond à l’entrée totemomail.
+
+**Réinitialisation de mot de passe dans le portail web (CVE-2026-85066).** Une erreur dans le processus de réinitialisation du mot de passe permettait de contourner les étapes de vérification et de définir un nouveau mot de passe pour un compte existant. Les notes de version incluent explicitement les comptes administrateur. Kiteworks évalue la faille dans l’avis associé GHSA-rwpq-5xfv-54pv à CVSS 9.8 (critique) et indique EPG 9.5.0 comme version corrective. Le portail web est destiné aux destinataires externes de messages chiffrés et est donc généralement accessible publiquement.
+
+## Failles nécessitant des droits d’administrateur
+
+Trois autres corrections nécessitent une authentification avec des droits administrateur. En combinaison avec la prise de contrôle de comptes dans le portail web, ces conditions perdent toutefois de leur importance.
+
+- **Admin API, gestion de la file d’attente (CVE-2026-34843) :** des téléversements de fichiers insuffisamment protégés permettaient d’écrire des fichiers à des emplacements arbitraires du système de fichiers. Selon les notes de version, cela permettait l’exécution de code à distance. L’avis GHSA-mhc9-4pph-2r9x évalue la faille à CVSS 7.2 ; elle est corrigée dans l’EPG depuis la version 9.4.0.
+- **Rule Designer :** lors de l’importation d’une configuration de règle, le pipeline de traitement pouvait charger et exécuter du code en dehors des composants de traitement des e-mails autorisés. Des droits de configuration des règles de messagerie sont requis.
+- **Mail API :** une faille de traversée de chemin existait lors de l’extraction de fichiers ZIP téléversés. Les fichiers ne sont désormais extraits que dans le répertoire temporaire.
+
+La quatrième correction concerne la propriété `security.login.requestingKeysAvailable`. Jusqu’à présent, elle masquait uniquement dans le portail web le lien permettant de demander des clés publiques ; la fonction elle-même restait accessible par une requête directe. À partir de la version 9.5.1, la propriété désactive cette fonction. Si vous avez défini cette propriété pour empêcher les demandes de clés, elle ne produit l’effet attendu qu’avec cette mise à jour.
+
+## Ce que le registre Kiteworks répertorie en plus
+
+Le 30 septembre 2026, Kiteworks a publié en bloc 125 avis de sécurité dans son registre d’avis sur GitHub, dont 28 concernant l’Email Protection Gateway. Les notes de version de totemomail 9.5.1 mentionnent nettement moins de points. Le registre ne distingue pas l’EPG de totemomail ; il ne permet donc pas de déterminer si chaque faille EPG affecte également totemomail. Les entrées EPG critiques sont les suivantes :
+
+| CVE | CVSS | Impact selon l’avis | Corrigé à partir d’EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Exécution de code avec droits root sans authentification | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Prise de contrôle de comptes utilisateurs (réinitialisation de mot de passe) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Prise de contrôle de comptes utilisateurs | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Prise de contrôle de comptes utilisateurs | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Modification de la configuration d’administration | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 à 102105 | 9.1 | Accès à des ressources réseau internes | 9.5.0 |
+
+S’y ajoutent 13 entrées classées comme élevées, dont la plupart concernent l’exécution de code avec des droits administrateur (CVSS 7.2). La version corrective la plus récente mentionnée est 9.5.1 ; Kiteworks a désigné 9.5.1 fin septembre comme la version actuelle intégrant toutes les vulnérabilités connues. En mettant totemomail à jour vers 9.5.1, vous atteignez ainsi le niveau auquel se réfèrent tous les avis EPG du registre.
+
+## Bibliothèques mises à jour
+
+Les bibliothèques fournies Apache Tomcat et Apache XML Graphics Batik ont été mises à jour. Les notes de version mentionnent les CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956 et CVE-2026-59083, sans les attribuer individuellement aux deux bibliothèques. En outre, woodstox-core-asl a été mis à jour en raison d’une vulnérabilité ; aucun numéro CVE n’est indiqué pour celle-ci.
+
+## Amélioration et corrections de bugs
+
+- **Migration EPG :** lors de la migration depuis une base de données Oracle, totemomail prend désormais en charge Oracle Wallet. Si aucun mot de passe de base de données n’est configuré, la migration se connecte via le Wallet.
+- **RMS :** des messages pouvaient rester bloqués lors du traitement, car les actions RMS attendaient indéfiniment l’authentification. Le délai d’attente est désormais limité à une minute. Cela concerne les installations avec Microsoft Purview Information Protection (RMS).
+- **TRE :** la fonction « Open Online » pour les Registered Envelopes fonctionne à nouveau. Elle ne fonctionnait plus depuis le renforcement de sécurité mentionné de la version 9.3.1.
+- **Rapport de licence :** pour les licences Cloud, le rapport compte à nouveau correctement les utilisateurs internes avec des types de fonctionnalités prédéfinis. L’article sur la [limite de licence et le nettoyage via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup) décrit l’incidence des comptes orphelins sur le décompte des licences.
+
+## Installation
+
+Le correctif peut être installé sur les systèmes à partir de totemomail 7 b985 sous Windows, Linux, Solaris et FreeBSD. Connectez-vous à la console d’administration, téléversez le fichier TPF fourni sous `[Instanzname]` > « Update », puis lancez la mise à jour. En cas de plusieurs instances, cette opération doit être effectuée séparément pour chaque instance. totemomail redémarre ensuite automatiquement dans la mesure du possible ; prévoyez une fenêtre de maintenance et créez au préalable une sauvegarde ou un snapshot.
+
+En attendant l’installation de la mise à jour, deux mesures réduisent le risque : rendre la console d’administration et l’Admin API accessibles uniquement depuis le réseau d’administration, et limiter les connexions sortantes de la passerelle aux destinations réellement nécessaires. Pour les installations Cloud, le point de terminaison de métadonnées `169.254.169.254` fait partie des destinations que la passerelle ne doit pas pouvoir atteindre. Ces deux mesures ne remplacent pas le correctif ; seule la mise à jour corrige la faille de réinitialisation du mot de passe du portail web.
+
+## Sources
+
+1.  Notes de version totemomail 9.5.1 (Build 101), totemo ag : guide d’installation et notes de version au format PDF, disponibles pour les clients auprès du support du fabricant ; base de toutes les informations de cet article.
+
+2.  [Kiteworks Security Advisories sur GitHub](https://github.com/kiteworks/security-advisories/security/advisories): registre officiel contenant les valeurs CVSS et les versions correctives pour Email Protection Gateway, Core, MFT et Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv : prise de contrôle de compte (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): avis sur l’erreur de réinitialisation du mot de passe, CVSS 9.8, corrigée dans EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6 : exécution de code arbitraire (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): faille EPG la plus critique avec un CVSS de 10.0, corrigée dans EPG 9.4.1.
+
+5.  [P.K. Sharma : Kiteworks a publié 125 avis](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): analyse de la publication du 30 septembre 2026 avec un décompte par produit et degré de gravité, ainsi que les déclarations de Kiteworks concernant la version 9.5.1.
+
+6.  [Comprendre le routage des e-mails entre totemomail et Exchange Online](/blog/totemomail-m365): explique comment totemomail traite les messages entrants ; pertinent pour déterminer quels e-mails peuvent déclencher la faille SSRF.
+
+7.  [Limite de licence Totemomail atteinte : nettoyer les utilisateurs orphelins via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup): contexte sur le décompte des licences concerné par la correction du rapport de licence.
 
 ----
 
@@ -57578,6 +58151,85 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# totemomail 9.5.1: risolte l'acquisizione di account nel Web Portal e SSRF tramite e-mail in entrata
+
+URL: https://rafaelpfister.ch/it/blog/totemomail-9-5-1-risolte-l-acquisizione-di-account-nel-web-portal-e-ssrf-tramite-e-mail-in
+Datum: 2026-10-31
+
+# totemomail 9.5.1: risolte l'acquisizione di account nel Web Portal e SSRF tramite e-mail in entrata
+
+totemo ha rilasciato totemomail 9.5.1 (Build 101). La patch contiene otto correzioni di sicurezza, un miglioramento e tre correzioni di errori. Due vulnerabilità sono sfruttabili senza autenticazione: un errore nel reset della password del Web Portal, che consente anche l'acquisizione di account amministratore, e richieste lato server di URL presenti nei messaggi in entrata. Entrambe riguardano componenti che, nella maggior parte delle installazioni, sono raggiungibili da Internet. Pianificate quindi tempestivamente l'aggiornamento.
+
+## Da 9.2.1 direttamente a 9.5.1
+
+Le release note elencano la versione 9.5.1 immediatamente dopo la 9.2.1; le versioni 9.3 e 9.4 non compaiono nella cronologia di totemomail. Tuttavia, una voce nella 9.5.1 fa riferimento a un «security hardening introduced in 9.3.1». Le versioni intermedie provengono dal Kiteworks Email Protection Gateway (EPG), che si basa sullo stesso codice: gli avvisi di sicurezza di Kiteworks indicano come versioni corrette EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 e 9.5.1. Per le installazioni totemomail con la 9.2.1, la 9.5.1 è il prossimo aggiornamento; le release note non indicano altre patch intermedie.
+
+## Vulnerabilità senza autenticazione
+
+**Server-Side Request Forgery tramite il contenuto dei messaggi.** totemomail recuperava lato server URL da messaggi elaborati senza limitare sufficientemente la destinazione. Un mittente non autenticato poteva predisporre un messaggio in modo che il gateway inviasse richieste a servizi interni o endpoint di metadati di istanze cloud e restituisse le risposte. A tale scopo è sufficiente un'e-mail elaborata dal gateway; con un gateway nel flusso di posta in entrata, può farlo qualsiasi mittente esterno. Il caso è particolarmente delicato per le installazioni in Azure, AWS o altri cloud, dove l'endpoint di metadati `169.254.169.254` fornisce dati di configurazione e, a seconda della piattaforma, token di accesso dell'istanza. Le release note non indicano un numero CVE per questa vulnerabilità. Per l'EPG, Kiteworks elenca cinque advisory sull'accesso a risorse di rete interne (CVE-2026-102095, CVE-2026-102102 fino a CVE-2026-102105, tutti con CVSS 9.1, risolti in EPG 9.5.0); dai testi sintetici degli advisory non risulta quale di essi corrisponda alla voce di totemomail.
+
+**Reset della password nel Web Portal (CVE-2026-85066).** Un errore nella procedura di reimpostazione della password consentiva di saltare i passaggi di verifica e impostare una nuova password per un account esistente. Le release note includono esplicitamente gli account amministratore. Kiteworks valuta la vulnerabilità nell'advisory associato GHSA-rwpq-5xfv-54pv con CVSS 9.8 (critico) e indica EPG 9.5.0 come versione corretta. Il Web Portal è destinato ai destinatari esterni di messaggi crittografati e pertanto è generalmente raggiungibile pubblicamente.
+
+## Vulnerabilità con diritti di amministratore
+
+Altre tre correzioni richiedono l'autenticazione con diritti amministrativi. In combinazione con l'acquisizione di account nel Web Portal, tali requisiti perdono tuttavia importanza.
+
+- **Admin API, gestione della coda (CVE-2026-34843):** tramite upload di file protetti in modo insufficiente era possibile scrivere file in posizioni arbitrarie del file system. Secondo le release note, ciò consentiva la Remote Code Execution. L'advisory GHSA-mhc9-4pph-2r9x valuta la vulnerabilità con CVSS 7.2; nell'EPG è risolta dalla versione 9.4.0.
+- **Rule Designer:** durante l'importazione di una configurazione di regole, la pipeline di elaborazione poteva caricare ed eseguire codice al di fuori dei componenti autorizzati per l'elaborazione della posta. Sono necessari diritti per configurare le regole di posta.
+- **Mail API:** durante l'estrazione di file ZIP caricati era presente una vulnerabilità di path traversal. Ora i file vengono estratti solo nella directory temporanea.
+
+La quarta correzione riguarda la proprietà `security.login.requestingKeysAvailable`. Finora, nel Web Portal nascondeva solo il collegamento per richiedere chiavi pubbliche; la funzione stessa restava raggiungibile tramite una richiesta diretta. Dalla 9.5.1, la proprietà disattiva la funzione. Se avete impostato la proprietà per impedire richieste di chiavi, avrà l'effetto previsto solo con questo aggiornamento.
+
+## Cosa elenca in aggiunta il registro Kiteworks
+
+Il 30 settembre 2026, Kiteworks ha pubblicato collettivamente 125 avvisi di sicurezza nel proprio registro di advisory su GitHub, di cui 28 relativi all'Email Protection Gateway. Le release note di totemomail 9.5.1 indicano molti meno punti. Il registro non distingue tra EPG e totemomail; non è quindi possibile stabilire se ogni vulnerabilità EPG riguardi anche totemomail. Le voci critiche dell'EPG sono:
+
+| CVE | CVSS | Impatto secondo l'advisory | Risolto da EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Esecuzione di codice con diritti root senza autenticazione | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Acquisizione di account utente (reset della password) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Acquisizione di account utente | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Acquisizione di account utente | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Modifica della configurazione di amministrazione | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 fino a 102105 | 9.1 | Accesso a risorse di rete interne | 9.5.0 |
+
+Si aggiungono 13 voci classificate come alte, per la maggior parte esecuzione di codice con diritti amministrativi (CVSS 7.2). La versione corretta più recente indicata è la 9.5.1; Kiteworks ha definito la 9.5.1 la versione attuale a fine settembre, nella quale sarebbero considerate tutte le vulnerabilità note. Chi aggiorna totemomail alla 9.5.1 raggiunge quindi il livello a cui fanno riferimento tutti gli advisory EPG del registro.
+
+## Librerie aggiornate
+
+Le librerie incluse di Apache Tomcat e Apache XML Graphics Batik sono state aggiornate. Le release note citano CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956 e CVE-2026-59083, senza attribuirle singolarmente alle due librerie. Inoltre, woodstox-core-asl è stato aggiornato a causa di una vulnerabilità; non è indicato alcun numero CVE.
+
+## Miglioramento e correzioni di errori
+
+- **Migrazione EPG:** durante la migrazione da un database Oracle, totemomail ora supporta Oracle Wallet. Se non è configurata una password del database, la migrazione si connette tramite il wallet.
+- **RMS:** i messaggi potevano rimanere bloccati nell'elaborazione perché le azioni RMS attendevano senza limite l'autenticazione. Il tempo di attesa è ora limitato a un minuto. Ciò riguarda le installazioni con Microsoft Purview Information Protection (RMS).
+- **TRE:** la funzione «Open Online» per le Registered Envelopes funziona di nuovo. Non funzionava dalla citata hardening della 9.3.1.
+- **Rapporto sulle licenze:** per le licenze cloud, il rapporto conta di nuovo correttamente gli utenti interni con tipi di funzionalità predefiniti. L'articolo sul [limite di licenza e la pulizia tramite LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup) descrive l'impatto degli account orfani sul conteggio delle licenze.
+
+## Installazione
+
+La patch può essere installata su sistemi a partire da totemomail 7 b985 su Windows, Linux, Solaris e FreeBSD. Accedete alla console di amministrazione, caricate il file TPF fornito in `[Instanzname]` > «Update» e avviate l'aggiornamento. Con più istanze, l'operazione è necessaria singolarmente per ciascuna istanza. In seguito totemomail si riavvia autonomamente, se possibile; pianificate una finestra di manutenzione e create prima un backup o uno snapshot.
+
+Finché l'aggiornamento non è installato, due misure riducono il rischio: rendere la console di amministrazione e l'Admin API raggiungibili solo dalla rete di gestione e limitare le connessioni in uscita del gateway alle destinazioni effettivamente necessarie. Nelle installazioni cloud, l'endpoint di metadati `169.254.169.254` rientra tra le destinazioni che il gateway non deve poter raggiungere. Entrambe le misure non sostituiscono la patch; solo l'aggiornamento risolve la vulnerabilità nel reset della password del Web Portal.
+
+## Fonti
+
+1.  totemomail Release Notes 9.5.1 (Build 101), totemo ag: guida di installazione e release note in PDF, disponibili per i clienti tramite il supporto del produttore; base di tutte le informazioni in questo articolo.
+
+2.  [Kiteworks Security Advisories su GitHub](https://github.com/kiteworks/security-advisories/security/advisories): registro ufficiale con valori CVSS e versioni corrette per Email Protection Gateway, Core, MFT e Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv: Account takeover (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): advisory sull'errore di reset della password, CVSS 9.8, risolto in EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: Arbitrary code execution (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): vulnerabilità EPG più critica con CVSS 10.0, risolta in EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks published 125 advisories](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): analisi della pubblicazione del 30 settembre 2026 con conteggio per prodotto e livello di gravità e le dichiarazioni di Kiteworks sulla 9.5.1.
+
+6.  [Comprendere il routing della posta tra totemomail e Exchange Online](/blog/totemomail-m365): come totemomail elabora i messaggi in entrata; rilevante per stabilire quali e-mail possano attivare la vulnerabilità SSRF.
+
+7.  [Limite di licenza Totemomail raggiunto: pulire gli utenti orfani tramite LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup): contesto sul conteggio delle licenze interessato dalla correzione del rapporto sulle licenze.
+
+----
+
 # Paperless-ngx 3.4.0: accesso OIDC senza doppia 2FA, miniature senza ImageMagick
 
 URL: https://rafaelpfister.ch/it/blog/paperless-ngx-3-4-0-accesso-oidc-senza-doppia-2fa-miniature-senza-imagemagick
@@ -76737,6 +77389,85 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# totemomail 9.5.1: corregida la toma de cuentas en el portal web y SSRF a través de correos entrantes
+
+URL: https://rafaelpfister.ch/es/blog/totemomail-9-5-1-corregida-la-toma-de-cuentas-en-el-portal-web-y-ssrf-a-traves-de-correos
+Datum: 2026-10-31
+
+# totemomail 9.5.1: corregida la toma de cuentas en el portal web y SSRF a través de correos entrantes
+
+totemo ha publicado totemomail 9.5.1 (Build 101). El parche incluye ocho correcciones de seguridad, una mejora y tres correcciones de errores. Dos de las vulnerabilidades pueden explotarse sin iniciar sesión: un fallo en el restablecimiento de contraseña del portal web, que también permite tomar cuentas de administrador, y solicitudes del lado del servidor a URL incluidas en mensajes entrantes. Ambas afectan a componentes accesibles desde Internet en la mayoría de las instalaciones. Por ello, planifique la actualización cuanto antes.
+
+## De 9.2.1 directamente a 9.5.1
+
+Las notas de la versión enumeran 9.5.1 inmediatamente después de 9.2.1; las versiones 9.3 y 9.4 no aparecen en el historial de totemomail. No obstante, una entrada de 9.5.1 hace referencia a un «security hardening introduced in 9.3.1». Las versiones intermedias proceden de Kiteworks Email Protection Gateway (EPG), basado en la misma base de código: los avisos de seguridad de Kiteworks indican como versiones corregidas EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 y 9.5.1. Para instalaciones de totemomail con 9.2.1, 9.5.1 es la siguiente actualización; las notas de la versión no incluyen ningún otro parche intermedio.
+
+## Vulnerabilidades sin inicio de sesión
+
+**Server-Side Request Forgery mediante el contenido del mensaje.** totemomail obtenía del lado del servidor URL presentes en mensajes procesados, sin restringir suficientemente el destino. Un remitente sin iniciar sesión podía diseñar un mensaje de modo que el gateway enviara solicitudes a servicios internos o a puntos de conexión de metadatos de instancias Cloud y devolviera las respuestas. Basta con un correo que procese el gateway; en un gateway situado en el flujo de correo entrante, cualquier remitente externo puede hacerlo. Esto resulta especialmente delicado en instalaciones en Azure, AWS u otras nubes, donde el punto de conexión de metadatos `169.254.169.254` proporciona datos de configuración y, según la plataforma, tokens de acceso de la instancia. Las notas de la versión no indican ningún número CVE para esta vulnerabilidad. Kiteworks enumera para EPG cinco avisos sobre acceso a recursos de red internos (CVE-2026-102095, CVE-2026-102102 a CVE-2026-102105, todos con CVSS 9.1, corregidos en EPG 9.5.0); los escuetos textos de los avisos no permiten determinar cuál de ellos corresponde a la entrada de totemomail.
+
+**Restablecimiento de contraseña en el portal web (CVE-2026-85066).** Un fallo en el proceso de restablecimiento de contraseña permitía omitir los pasos de validación y establecer una nueva contraseña para una cuenta existente. Las notas de la versión incluyen explícitamente las cuentas de administrador. Kiteworks califica la vulnerabilidad en el aviso asociado GHSA-rwpq-5xfv-54pv con CVSS 9.8 (crítica) e indica EPG 9.5.0 como versión corregida. El portal web está pensado para destinatarios externos de mensajes cifrados y, por tanto, normalmente es accesible públicamente.
+
+## Vulnerabilidades con derechos de administrador
+
+Otras tres correcciones requieren iniciar sesión con derechos de administrador. Sin embargo, en combinación con la toma de cuentas en el portal web, estos requisitos pierden importancia.
+
+- **API de administración, gestión de colas (CVE-2026-34843):** mediante cargas de archivos insuficientemente protegidas, era posible escribir archivos en ubicaciones arbitrarias del sistema de archivos. Según las notas de la versión, esto permitía la ejecución remota de código. El aviso GHSA-mhc9-4pph-2r9x califica la vulnerabilidad con CVSS 7.2; en EPG está corregida desde la versión 9.4.0.
+- **Rule Designer:** al importar una configuración de reglas, la canalización de procesamiento podía cargar y ejecutar código fuera de los componentes autorizados de procesamiento de correo. Se requieren permisos para configurar reglas de correo.
+- **API de correo:** al descomprimir archivos ZIP cargados existía una vulnerabilidad de path traversal. Ahora los archivos solo se descomprimen en el directorio temporal.
+
+La cuarta corrección afecta a la propiedad `security.login.requestingKeysAvailable`. Hasta ahora, en el portal web solo ocultaba el enlace para solicitar claves públicas; la función en sí seguía siendo accesible mediante una solicitud directa. Desde la versión 9.5.1, la propiedad desactiva la función. Si ha configurado la propiedad para impedir solicitudes de claves, solo funcionará como se espera con esta actualización.
+
+## Lo que lista adicionalmente el registro de Kiteworks
+
+El 30 de septiembre de 2026, Kiteworks publicó de forma conjunta 125 avisos de seguridad en su registro de avisos en GitHub, 28 de ellos sobre Email Protection Gateway. Las notas de la versión de totemomail 9.5.1 mencionan claramente menos puntos. El registro no distingue entre EPG y totemomail; no permite determinar si cada vulnerabilidad de EPG también afecta a totemomail. Las entradas críticas de EPG son:
+
+| CVE | CVSS | Impacto según el aviso | Corregido desde EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Ejecución de código con privilegios de root sin iniciar sesión | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Toma de cuentas de usuario (restablecimiento de contraseña) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Toma de cuentas de usuario | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Toma de cuentas de usuario | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Modificación de la configuración de administración | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 a 102105 | 9.1 | Acceso a recursos de red internos | 9.5.0 |
+
+Además, hay 13 entradas clasificadas como altas, la mayoría de ellas de ejecución de código con derechos de administrador (CVSS 7.2). La versión corregida más alta indicada es 9.5.1; Kiteworks describió 9.5.1 a finales de septiembre como la versión actual que tiene en cuenta todas las vulnerabilidades conocidas. Quien actualice totemomail a 9.5.1 tendrá así la versión a la que se refieren todos los avisos de EPG del registro.
+
+## Bibliotecas actualizadas
+
+Se han actualizado las bibliotecas incluidas de Apache Tomcat y Apache XML Graphics Batik. Las notas de la versión mencionan CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956 y CVE-2026-59083, sin asignarlas individualmente a las dos bibliotecas. Además, se actualizó woodstox-core-asl debido a una vulnerabilidad; no se indica ningún número CVE para ella.
+
+## Mejora y correcciones de errores
+
+- **Migración de EPG:** al migrar desde una base de datos Oracle, totemomail ahora admite Oracle Wallet. Si no hay configurada una contraseña de base de datos, la migración se conecta mediante el wallet.
+- **RMS:** los mensajes podían quedarse bloqueados durante el procesamiento porque las acciones de RMS esperaban indefinidamente la autenticación. El tiempo de espera está limitado ahora a un minuto. Esto afecta a instalaciones con Microsoft Purview Information Protection (RMS).
+- **TRE:** la función «Open Online» para Registered Envelopes vuelve a funcionar. Había dejado de funcionar desde el endurecimiento mencionado de la versión 9.3.1.
+- **Informe de licencias:** en las licencias Cloud, el informe vuelve a contar correctamente a los usuarios internos con tipos de función predefinidos. El artículo sobre el [límite de licencia y la limpieza mediante LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup) describe cómo afectan las cuentas huérfanas al recuento de licencias.
+
+## Instalación
+
+El parche puede instalarse en sistemas con totemomail 7 b985 o posterior en Windows, Linux, Solaris y FreeBSD. Inicie sesión en la consola de administración, cargue el archivo TPF incluido en `[Instanzname]` > «Update» e inicie la actualización. Si hay varias instancias, deberá hacerlo individualmente para cada una. Después, totemomail se reinicia automáticamente si es posible; planifique una ventana de mantenimiento y cree antes una copia de seguridad o una instantánea.
+
+Hasta que se instale la actualización, dos medidas reducen el riesgo: hacer que la consola de administración y la API de administración sean accesibles solo desde la red de gestión, y restringir las conexiones salientes del gateway a los destinos realmente necesarios. En instalaciones Cloud, el punto de conexión de metadatos `169.254.169.254` es uno de los destinos a los que el gateway no necesita acceder. Ninguna de las dos medidas sustituye al parche; solo la actualización corrige la vulnerabilidad de restablecimiento de contraseña del portal web.
+
+## Fuentes
+
+1.  Notas de la versión de totemomail 9.5.1 (Build 101), totemo ag: guía de instalación y notas de la versión en PDF, disponibles para clientes a través del soporte del fabricante; base de toda la información de este artículo.
+
+2.  [Kiteworks Security Advisories en GitHub](https://github.com/kiteworks/security-advisories/security/advisories): Registro oficial con valores CVSS y versiones corregidas para Email Protection Gateway, Core, MFT y Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv: toma de cuentas (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): Aviso sobre el fallo de restablecimiento de contraseña, CVSS 9.8, corregido en EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: ejecución arbitraria de código (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Vulnerabilidad más crítica de EPG con CVSS 10.0, corregida en EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks publicó 125 avisos](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): Análisis de la publicación del 30 de septiembre de 2026, con recuento por producto y nivel de gravedad, y las declaraciones de Kiteworks sobre 9.5.1.
+
+6.  [Entender el enrutamiento de correo entre totemomail y Exchange Online](/blog/totemomail-m365): Cómo procesa totemomail los mensajes entrantes; relevante para determinar qué correos pueden desencadenar la vulnerabilidad SSRF.
+
+7.  [Límite de licencia de Totemomail alcanzado: limpiar usuarios huérfanos mediante LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup): Contexto sobre el recuento de licencias al que afecta la corrección del informe de licencias.
+
+----
+
 # Paperless-ngx 3.4.0: inicio de sesión OIDC sin 2FA duplicada, miniaturas sin ImageMagick
 
 URL: https://rafaelpfister.ch/es/blog/paperless-ngx-3-4-0-inicio-de-sesion-oidc-sin-2fa-duplicada-miniaturas-sin-imagemagick
@@ -95883,6 +96614,85 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# totemomail 9.5.1: Kontoövertagande i webbportalen och SSRF via inkommande e-post åtgärdade
+
+URL: https://rafaelpfister.ch/sv/blog/totemomail-9-5-1-kontoovertagande-i-webbportalen-och-ssrf-via-inkommande-e-post-atgardade
+Datum: 2026-10-31
+
+# totemomail 9.5.1: Kontoövertagande i webbportalen och SSRF via inkommande e-post åtgärdade
+
+totemo har släppt totemomail 9.5.1 (Build 101). Patchen innehåller åtta säkerhetskorrigeringar, en förbättring och tre felrättningar. Två av bristerna kan utnyttjas utan inloggning: ett fel i webbportalens lösenordsåterställning, som även kan användas för att ta över administratörskonton, samt serverbaserade hämtningar av URL:er i inkommande meddelanden. Båda berör komponenter som i de flesta installationer är åtkomliga från internet. Planera därför uppdateringen snarast.
+
+## Direkt från 9.2.1 till 9.5.1
+
+Release Notes listar 9.5.1 direkt efter 9.2.1; versionerna 9.3 och 9.4 förekommer inte i totemomails historik. En post i 9.5.1 hänvisar ändå till en «security hardening introduced in 9.3.1». Mellanversionerna kommer från Kiteworks Email Protection Gateway (EPG), som bygger på samma kodbas: Kiteworks säkerhetsmeddelanden anger EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 och 9.5.1 som åtgärdade versioner. För totemomail-installationer med 9.2.1 är 9.5.1 nästa uppdatering; Release Notes listar ingen ytterligare patch däremellan.
+
+## Brister utan inloggning
+
+**Server-Side Request Forgery via meddelandeinnehållet.** totemomail hämtade URL:er från behandlade meddelanden på serversidan utan att begränsa målet tillräckligt. En avsändare utan inloggning kunde utforma ett meddelande så att gatewayen skickade förfrågningar till interna tjänster eller metadataändpunkter för molninstanser och returnerade svaren. Det räcker med ett e-postmeddelande som gatewayen behandlar; med en gateway i det inkommande e-postflödet kan vilken extern avsändare som helst göra detta. Detta är särskilt känsligt i installationer i Azure, AWS eller andra moln, där metadataändpunkten `169.254.169.254` ger konfigurationsdata och, beroende på plattform, instansens åtkomsttoken. Release Notes anger inget CVE-nummer för denna brist. Kiteworks listar fem EPG-advisories om åtkomst till interna nätverksresurser (CVE-2026-102095, CVE-2026-102102 till CVE-2026-102105, samtliga CVSS 9.1, åtgärdade i EPG 9.5.0); de kortfattade advisory-texterna visar inte vilket av dem som motsvarar totemomail-posten.
+
+**Lösenordsåterställning i webbportalen (CVE-2026-85066).** Ett fel i processen för återställning av lösenord gjorde det möjligt att hoppa över verifieringsstegen och ange ett nytt lösenord för ett befintligt konto. Release Notes omfattar uttryckligen administratörskonton. Kiteworks bedömer bristen i det tillhörande advisoryt GHSA-rwpq-5xfv-54pv till CVSS 9.8 (kritisk) och anger EPG 9.5.0 som åtgärdad version. Webbportalen är avsedd för externa mottagare av krypterade meddelanden och är därför vanligtvis offentligt åtkomlig.
+
+## Brister med administratörsrättigheter
+
+Ytterligare tre korrigeringar kräver inloggning med administratörsrättigheter. I kombination med kontoövertagandet i webbportalen får dessa krav dock mindre betydelse.
+
+- **Admin API, köhantering (CVE-2026-34843):** Genom otillräckligt skyddade filuppladdningar kunde filer skrivas till valfria platser i filsystemet. Enligt Release Notes möjliggjorde detta Remote Code Execution. Advisoryt GHSA-mhc9-4pph-2r9x bedömer bristen till CVSS 7.2; i EPG är den åtgärdad sedan 9.4.0.
+- **Rule Designer:** Vid import av en regelkonfiguration kunde bearbetningspipelinen ladda och köra kod utanför de godkända Mail Processing-komponenterna. Rättigheter för att konfigurera e-postregler krävs.
+- **Mail API:** Vid uppackning av uppladdade ZIP-filer fanns en Path Traversal-brist. Filer packas nu endast upp i den temporära katalogen.
+
+Den fjärde korrigeringen berör egenskapen `security.login.requestingKeysAvailable`. Tidigare dolde den i webbportalen endast länken för att begära offentliga nycklar; själva funktionen var fortfarande åtkomlig via en direkt förfrågan. Från och med 9.5.1 inaktiverar egenskapen funktionen. Om du har angett egenskapen för att förhindra nyckelförfrågningar fungerar den först med denna uppdatering som förväntat.
+
+## Vad Kiteworks-registret dessutom listar
+
+Kiteworks publicerade samlat 125 säkerhetsmeddelanden i sitt advisory-register på GitHub den 30 september 2026, varav 28 för Email Protection Gateway. totemomails Release Notes för 9.5.1 nämner betydligt färre punkter. Registret skiljer inte mellan EPG och totemomail; det går därför inte att avgöra om varje EPG-brist även berör totemomail. De kritiska EPG-posterna är:
+
+| CVE | CVSS | Påverkan enligt advisory | Åtgärdad från EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Kodexekvering med root-rättigheter utan inloggning | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Övertagande av användarkonton (lösenordsåterställning) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Övertagande av användarkonton | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Övertagande av användarkonton | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Ändring av administrationskonfigurationen | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 till 102105 | 9.1 | Åtkomst till interna nätverksresurser | 9.5.0 |
+
+Därtill kommer 13 poster klassade som höga, de flesta av dem kodexekvering med administratörsrättigheter (CVSS 7.2). Den högsta angivna åtgärdade versionen är 9.5.1; Kiteworks beskrev 9.5.1 som den aktuella versionen i slutet av september, där alla kända sårbarheter hade beaktats. Den som uppdaterar totemomail till 9.5.1 har därmed den version som alla EPG-advisories i registret avser.
+
+## Uppdaterade bibliotek
+
+De medföljande biblioteken från Apache Tomcat och Apache XML Graphics Batik har uppdaterats. Release Notes nämner CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956 och CVE-2026-59083, utan att tilldela dem separat till de två biblioteken. Dessutom uppdaterades woodstox-core-asl på grund av en sårbarhet; inget CVE-nummer anges för detta.
+
+## Förbättring och felrättningar
+
+- **EPG-migrering:** Vid migrering från en Oracle-databas stöder totemomail nu Oracle Wallet. Om inget databaslösenord är konfigurerat ansluter migreringen via Wallet.
+- **RMS:** Meddelanden kunde fastna under bearbetningen eftersom RMS-åtgärder väntade obegränsat på autentisering. Väntetiden är nu begränsad till en minut. Detta berör installationer med Microsoft Purview Information Protection (RMS).
+- **TRE:** Funktionen «Open Online» för Registered Envelopes fungerar igen. Den hade slutat fungera sedan den nämnda härdningen i 9.3.1.
+- **Licensrapport:** För molnlicenser räknar rapporten åter interna användare med fördefinierade funktionstyper korrekt. Artikeln om [licensgränsen och rensning via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup) beskriver hur övergivna konton påverkar licensräkningen.
+
+## Installation
+
+Patchen kan installeras på system från totemomail 7 b985 under Windows, Linux, Solaris och FreeBSD. Logga in på administrationskonsolen, ladda upp den medföljande TPF-filen under `[Instanzname]` > «Update» och starta uppdateringen. Vid flera instanser måste detta göras separat för varje instans. totemomail startar sedan om automatiskt om möjligt; planera in ett underhållsfönster och skapa en säkerhetskopia eller snapshot i förväg.
+
+Tills uppdateringen har installerats minskar två åtgärder risken: gör administrationskonsolen och Admin API åtkomliga endast från administrationsnätverket och begränsa gatewayens utgående anslutningar till de mål som faktiskt behövs. Vid molninstallationer är metadataändpunkten `169.254.169.254` ett av de mål som gatewayen inte behöver kunna nå. Båda åtgärderna ersätter inte patchen; bristen i webbportalens lösenordsåterställning åtgärdas endast genom uppdateringen.
+
+## Källor
+
+1.  totemomail Release Notes 9.5.1 (Build 101), totemo ag: installationsanvisning och Release Notes som PDF, tillgängliga för kunder via tillverkarens support; grund för alla uppgifter i denna artikel.
+
+2.  [Kiteworks Security Advisories på GitHub](https://github.com/kiteworks/security-advisories/security/advisories): Officiellt register med CVSS-värden och åtgärdade versioner för Email Protection Gateway, Core, MFT och Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv: Kontoövertagande (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): Advisory om felet i lösenordsåterställningen, CVSS 9.8, åtgärdat i EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: Godtycklig kodexekvering (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Den mest kritiska EPG-bristen med CVSS 10.0, åtgärdad i EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks publicerade 125 advisories](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): Analys av publiceringen den 30 september 2026 med antal per produkt och allvarlighetsgrad samt Kiteworks uttalanden om 9.5.1.
+
+6.  [Förstå e-postrouting mellan totemomail och Exchange Online](/blog/totemomail-m365): Hur totemomail behandlar inkommande meddelanden; relevant för frågan om vilka e-postmeddelanden som kan utlösa SSRF-bristen.
+
+7.  [Gränsen för Totemomail-licenser nådd: rensa övergivna användare via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup): Bakgrund till licensräkningen som licensrapportkorrigeringen berör.
 
 ----
 
@@ -115042,6 +115852,85 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# totemomail 9.5.1: Accountovertakelse i Web Portal og SSRF via innkommende e-post lukket
+
+URL: https://rafaelpfister.ch/no/blog/totemomail-9-5-1-accountovertakelse-i-web-portal-og-ssrf-via-innkommende-e-post-lukket
+Datum: 2026-10-31
+
+# totemomail 9.5.1: Accountovertakelse i Web Portal og SSRF via innkommende e-post lukket
+
+totemo har publisert totemomail 9.5.1 (Build 101). Oppdateringen inneholder åtte sikkerhetsrettinger, én forbedring og tre feilrettinger. To av sårbarhetene kan utnyttes uten innlogging: en feil i tilbakestilling av passord i Web Portal, som også kan brukes til å overta administratorkontoer, og serversidige oppslag av URL-er som finnes i innkommende meldinger. Begge berører komponenter som i de fleste installasjoner er tilgjengelige fra Internett. Planlegg derfor oppdateringen snarlig.
+
+## Direkte fra 9.2.1 til 9.5.1
+
+Release Notes oppfører 9.5.1 rett etter 9.2.1; versjonene 9.3 og 9.4 forekommer ikke i totemomail-historikken. En oppføring i 9.5.1 viser likevel til en «security hardening introduced in 9.3.1». Mellomversjonene stammer fra Kiteworks Email Protection Gateway (EPG), som bygger på samme kodebase: Kiteworks' sikkerhetsadvarsler angir EPG 9.3.1, 9.4.0, 9.4.1, 9.5.0 og 9.5.1 som rettede versjoner. For totemomail-installasjoner med 9.2.1 er 9.5.1 neste oppdatering; Release Notes oppfører ingen ytterligere oppdatering imellom.
+
+## Sårbarheter uten innlogging
+
+**Server-Side Request Forgery via meldingsinnholdet.** totemomail hentet URL-er fra behandlede meldinger på serversiden uten å begrense målet tilstrekkelig. En avsender uten innlogging kunne utforme en melding slik at gatewayen sendte forespørsler til interne tjenester eller metadataendepunkter for skyinstanser og returnerte svarene. Det er tilstrekkelig med en e-post som gatewayen behandler; ved en gateway i innkommende e-postflyt kan enhver ekstern avsender gjøre dette. Dette er særlig kritisk ved installasjoner i Azure, AWS eller andre skyer, der metadataendepunktet `169.254.169.254` leverer konfigurasjonsdata og, avhengig av plattformen, tilgangstokener for instansen. Release Notes oppgir ikke noe CVE-nummer for denne sårbarheten. Kiteworks fører fem advisories for EPG om tilgang til interne nettverksressurser (CVE-2026-102095, CVE-2026-102102 til CVE-2026-102105, alle med CVSS 9.1, rettet i EPG 9.5.0); det fremgår ikke av de korte advisorytekstene hvilket av disse som tilsvarer totemomail-oppføringen.
+
+**Tilbakestilling av passord i Web Portal (CVE-2026-85066).** En feil i prosessen for å tilbakestille passord gjorde det mulig å hoppe over kontrolltrinnene og sette et nytt passord for en eksisterende konto. Release Notes inkluderer uttrykkelig administratorkontoer. Kiteworks vurderer sårbarheten i det tilhørende advisoryet GHSA-rwpq-5xfv-54pv til CVSS 9.8 (kritisk) og oppgir EPG 9.5.0 som rettet versjon. Web Portal er beregnet på eksterne mottakere av krypterte meldinger og er derfor som regel offentlig tilgjengelig.
+
+## Sårbarheter med administratorrettigheter
+
+Tre ytterligere rettinger forutsetter innlogging med administratorrettigheter. I kombinasjon med accountovertakelsen i Web Portal får disse forutsetningene imidlertid mindre betydning.
+
+- **Admin API, køadministrasjon (CVE-2026-34843):** Utilstrekkelig beskyttede filopplastinger gjorde det mulig å skrive filer til vilkårlige steder i filsystemet. Ifølge Release Notes var Remote Code Execution mulig på denne måten. Advisoryet GHSA-mhc9-4pph-2r9x vurderer sårbarheten til CVSS 7.2; i EPG har den vært rettet siden 9.4.0.
+- **Rule Designer:** Ved import av en regelkonfigurasjon kunne behandlingspipelinen laste og kjøre kode utenfor de godkjente Mail Processing-komponentene. Dette forutsetter rettigheter til å konfigurere e-postregler.
+- **Mail API:** Ved utpakking av opplastede ZIP-filer forelå det en Path Traversal-sårbarhet. Filer pakkes nå kun ut i den midlertidige katalogen.
+
+Den fjerde rettingen gjelder egenskapen `security.login.requestingKeysAvailable`. Tidligere skjulte den bare lenken for å be om offentlige nøkler i Web Portal; selve funksjonen forble tilgjengelig gjennom en direkte forespørsel. Fra og med 9.5.1 deaktiverer egenskapen funksjonen. Hvis du har angitt egenskapen for å forhindre nøkkelforespørsler, virker den først som forventet med denne oppdateringen.
+
+## Hva Kiteworks-registeret i tillegg lister opp
+
+Kiteworks publiserte samlet 125 sikkerhetsadvarsler i sitt advisory-register på GitHub den 30. september 2026, hvorav 28 for Email Protection Gateway. totemomail Release Notes for 9.5.1 nevner langt færre punkter. Registeret skiller ikke mellom EPG og totemomail; det kan ikke leses ut derfra om hver EPG-sårbarhet også berører totemomail. De kritiske EPG-oppføringene er:
+
+| CVE | CVSS | Konsekvens ifølge advisory | Rettet fra EPG |
+|---|---|---|---|
+| CVE-2026-54154 | 10.0 | Kjøring av kode med root-rettigheter uten innlogging | 9.4.1 |
+| CVE-2026-85066 | 9.8 | Overtakelse av brukerkontoer (tilbakestilling av passord) | 9.5.0 |
+| CVE-2026-85065 | 9.8 | Overtakelse av brukerkontoer | 9.5.0 |
+| CVE-2026-102149 | 9.4 | Overtakelse av brukerkontoer | 9.5.1 |
+| CVE-2026-102106 | 9.1 | Endring av administrasjonskonfigurasjonen | 9.5.0 |
+| CVE-2026-102095, CVE-2026-102102 til 102105 | 9.1 | Tilgang til interne nettverksressurser | 9.5.0 |
+
+I tillegg kommer 13 oppføringer klassifisert som høye, de fleste av dem kjøring av kode med administratorrettigheter (CVSS 7.2). Den høyeste oppgitte rettede versjonen er 9.5.1; Kiteworks beskrev 9.5.1 som den gjeldende versjonen i slutten av september, der alle kjente sårbarheter skulle være hensyntatt. Den som oppdaterer totemomail til 9.5.1, er dermed på nivået som alle EPG-advisoryene i registeret refererer til.
+
+## Oppdaterte biblioteker
+
+De medfølgende bibliotekene fra Apache Tomcat og Apache XML Graphics Batik er oppdatert. Release Notes oppgir CVE-2026-50229, CVE-2026-53404, CVE-2026-53434, CVE-2026-55276, CVE-2026-55955, CVE-2026-55956 og CVE-2026-59083, uten å tilordne dem individuelt til de to bibliotekene. I tillegg ble woodstox-core-asl oppdatert på grunn av en sårbarhet; det er ikke oppgitt noe CVE-nummer for dette.
+
+## Forbedring og feilrettinger
+
+- **EPG-migrering:** Ved migrering fra en Oracle-database støtter totemomail nå Oracle Wallet. Hvis det ikke er konfigurert noe databasepassord, kobler migreringen seg til via Wallet.
+- **RMS:** Meldinger kunne bli hengende i behandlingen fordi RMS-handlinger ventet ubegrenset på autentisering. Ventetiden er nå begrenset til ett minutt. Dette berører installasjoner med Microsoft Purview Information Protection (RMS).
+- **TRE:** Funksjonen «Open Online» for Registered Envelopes fungerer igjen. Den hadde sluttet å fungere siden den nevnte hardeningen i 9.3.1.
+- **Lisensrapport:** For skylisenser teller rapporten igjen interne brukere med forhåndsdefinerte Feature-typer korrekt. Artikkelen om [lisensgrensen og opprydding via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup) beskriver hvordan foreldreløse kontoer påvirker lisenstellingen.
+
+## Installasjon
+
+Oppdateringen kan installeres på systemer fra totemomail 7 b985 under Windows, Linux, Solaris og FreeBSD. Logg inn på administrasjonskonsollen, last opp den medfølgende TPF-filen under `[Instanzname]` > «Update», og start oppdateringen. Ved flere instanser må dette gjøres separat for hver instans. totemomail starter deretter på nytt automatisk der det er mulig; planlegg et vedlikeholdsvindu for dette og opprett en sikkerhetskopi eller et øyeblikksbilde på forhånd.
+
+Inntil oppdateringen er installert, reduserer to tiltak risikoen: Gjør admin-konsollen og Admin API kun tilgjengelig fra administrasjonsnettet, og begrens gatewayens utgående forbindelser til de målene som faktisk er nødvendige. Ved skyinstallasjoner er metadataendepunktet `169.254.169.254` blant målene gatewayen ikke trenger å nå. Begge tiltakene erstatter ikke oppdateringen; sårbarheten i tilbakestillingen av passord i Web Portal lukkes bare av oppdateringen.
+
+## Kilder
+
+1.  totemomail Release Notes 9.5.1 (Build 101), totemo ag: Installasjonsveiledning og Release Notes som PDF, tilgjengelig for kunder via produsentens support; grunnlag for alle opplysninger i denne artikkelen.
+
+2.  [Kiteworks Security Advisories på GitHub](https://github.com/kiteworks/security-advisories/security/advisories): Offisielt register med CVSS-verdier og rettede versjoner for Email Protection Gateway, Core, MFT og Advanced Forms.
+
+3.  [GHSA-rwpq-5xfv-54pv: Account takeover (CVE-2026-85066)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-rwpq-5xfv-54pv): Advisory om feilen ved tilbakestilling av passord, CVSS 9.8, rettet i EPG 9.5.0.
+
+4.  [GHSA-5xhq-9wq3-rvj6: Arbitrary code execution (CVE-2026-54154)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5xhq-9wq3-rvj6): Den mest kritiske EPG-sårbarheten med CVSS 10.0, rettet i EPG 9.4.1.
+
+5.  [P.K. Sharma: Kiteworks published 125 advisories](https://www.pk-sharma.com/briefing/kiteworks-125-advisories-which-is-the-shutdown-flaw): Evaluering av publiseringen fra 30. september 2026 med opptelling etter produkt og alvorlighetsgrad samt Kiteworks' uttalelser om 9.5.1.
+
+6.  [Forstå e-postruting mellom totemomail og Exchange Online](/blog/totemomail-m365): Hvordan totemomail behandler innkommende meldinger; relevant for spørsmålet om hvilke e-poster som kan utløse SSRF-sårbarheten.
+
+7.  [Totemomail-lisensgrense nådd: rydd opp i foreldreløse brukere via LDAP](/blog/totemomail-licensed-user-limit-ldap-cleanup): Bakgrunn for lisenstellingen som rettingen av lisensrapporten berører.
 
 ----
 
