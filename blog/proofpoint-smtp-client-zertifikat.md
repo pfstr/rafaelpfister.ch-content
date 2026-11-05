@@ -9,7 +9,7 @@ themen:
   - "proofpoint"
   - "smtp-mailflow"
 produkte:
-  - "proofpoint"
+  - "proofpoint-pps"
   - "exchange-online"
 protokolle:
   - "tls"
