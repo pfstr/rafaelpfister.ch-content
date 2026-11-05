@@ -14,6 +14,310 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Home Assistant 2026.11.0: Marketplace statt HACS und neue Entitätsnamen
+
+URL: https://rafaelpfister.ch/blog/home-assistant-2026-11-0
+Datum: 2026-11-05
+
+# Home Assistant 2026.11.0: Marketplace statt HACS und neue Entitätsnamen
+
+Home Assistant 2026.11.0 ist am 4. November 2026 erschienen und folgt auf 2026.10.4. Das Release integriert den bisherigen Home Assistant Community Store (HACS) als Marketplace direkt in Home Assistant, ändert die Bildung von Entitätsnamen und enthält eine lange Liste von Backward-incompatible changes, darunter Änderungen an den Device Trackern von FRITZ!Box Tools und an der Anmeldung über nicht lokale Adressen. Laut Release-Blogpost kommen 38 neue Integrationen hinzu. Eine Sicherheitskorrektur mit CVE nennen die Release Notes nicht. Das Release richtet sich an alle Betreiber von Home Assistant, besonders an Installationen mit Custom Integrations aus HACS, wie sie in den Artikeln zur [Midea PortaSplit](/blog/midea-portasplit-home-assistant) und zu [digitalSTROM](/blog/digitalstrom-home-assistant) verwendet werden.
+
+## Die Versionen im Überblick
+
+| Version | Datum | Art | Kernpunkte |
+|---|---|---|---|
+| 2026.11.0 | 04.11.2026 | Monatsrelease | HACS wird zum Marketplace, neue Entitätsnamen, Device Tracker von Netzwerkscannern immer mit Gerät, Auth-Prüfung bei nicht lokalen Adressen, kein `deps`-Ordner mehr, 38 neue Integrationen |
+
+## Marketplace: HACS wird Teil von Home Assistant
+
+Mit 2026.11 wird HACS laut Release-Blogpost Teil von Home Assistant und heisst nun Marketplace. Administratoren finden ihn unter Einstellungen > Marketplace und installieren dort Integrationen, Dashboard-Karten, Themes und Vorlagen; ein GitHub-Konto ist dafür nicht nötig. Nach der Installation einer Integration entfällt der Neustart, Updates erfordern weiterhin einen Neustart.
+
+Bestehende HACS-Installationen migriert Home Assistant beim ersten Start nach dem Update. Installierte Projekte bleiben installiert und erhalten weiter Updates, Custom Repositories und Update-Entitäten werden übernommen. Laut Hersteller ist dafür kein Eingriff nötig. Der HACS-Installer endet mit Home Assistant 2026.11, eine separate HACS-Installation ist auf dieser Version nicht mehr möglich, und das bisherige HACS erhält keine neuen Releases. Fehler melden Sie künftig im Issue-Tracker von Home Assistant.
+
+Beim ersten Aufruf zeigt der Marketplace einen Hinweis, dass Community-Projekte vom Home-Assistant-Projekt weder getestet noch geprüft oder unterstützt werden. Diesen Hinweis müssen Sie vor dem Installieren oder Aktualisieren bestätigen. Projekte ausserhalb des Katalogs lassen sich über „Add from link" hinzufügen; dafür ist eine GitHub-Verbindung per Device Sign-in nötig, die nur öffentliche Informationen liest.
+
+Für die Midea PortaSplit betrifft das die Custom Integration `Midea AC LAN` und die Karte `apexcharts-card`, sofern beide über HACS installiert sind. Nach den Angaben zur Migration bleiben sie installiert und erhalten weiter Updates. Das Supply-Chain-Risiko von Custom Integrations, das der Artikel zum [Absichern der PortaSplit](/blog/midea-portasplit-home-assistant-absichern) beschreibt, bleibt mit dem Marketplace bestehen, wie der Risikohinweis des Herstellers zeigt. Prüfen Sie nach dem Update unter Einstellungen > Marketplace, ob alle bisher über HACS installierten Projekte und Custom Repositories vorhanden sind.
+
+## Neue Entitätsnamen
+
+Entitätsnamen setzen sich ab 2026.11 aus dem Namen der Entität und ihrem Kontext zusammen, in der Regel dem Gerätenamen. Selbst vergebene Namen werden nach denselben Regeln migriert, der alte Name bleibt als Alias erhalten. Karten, Badges und Zeilen ohne eigenen Namen zeigen nun den Gerätenamen gefolgt vom Entitätsnamen statt des Friendly Name. Entity-IDs, Automationen und Skripte sind laut Release Notes nicht betroffen.
+
+Für Templates empfiehlt der Hersteller die Funktionen `entity_name()`, `device_name()` und `area_name()`; das Attribut `friendly_name` soll später als veraltet markiert werden. Kontrollieren Sie nach dem Update Ihre Dashboards auf geänderte Beschriftungen und passen Sie Templates an, die `friendly_name` auswerten.
+
+## FRITZ!Box Tools und Device Tracker
+
+Netzwerkscanner-Tracker, ausdrücklich genannt sind unter anderem FRITZ!Box Tools, UniFi Network, NETGEAR und Nmap Tracker, haben nun immer ein Gerät. Umbenannte Tracker-Entitäten erhalten den Gerätenamen am Anfang ihres Namens. Neue Tracker dieser Integrationen werden immer deaktiviert angelegt; bisher waren sie aktiv, wenn eine andere Integration die MAC-Adresse des Geräts bereits kannte. Bestehende Tracker behalten ihren Zustand (aktiviert oder deaktiviert).
+
+Für Anwesenheitsautomationen über die FRITZ!Box, wie im [digitalSTROM-Artikel](/blog/digitalstrom-home-assistant) für das automatische Gehen beschrieben, heisst das: Vorhandene Tracker arbeiten weiter. Den Tracker eines neu hinzugekommenen Smartphones müssen Sie dagegen zuerst aktivieren, bevor er in Automationen einen Zustand liefert.
+
+Der Changelog führt für FRITZ!Box Tools zudem mehrere Korrekturen auf, unter anderem für die Erstellung der WLAN-Schalter, das Ausfiltern von FRITZ!Box-Hosts ohne IP-Adresse aus den Device Trackern, eine Neuladeschleife bei Geräten ohne Verkehrsdaten und eine verständlichere Fehlermeldung bei ungültiger Anmeldung im Einrichtungsdialog. Die Integration FRITZ!Box Call Monitor meldet bei fehlenden Berechtigungen nun einen Konfigurationsfehler.
+
+## Midea und digitalSTROM
+
+Die Verbesserungen an Midea im Release-Blogpost betreffen die offizielle Integration `Midea`, die seit Home Assistant 2026.8 Bestandteil von Core ist. Die Custom Integration `Midea AC LAN` (Domain `midea_ac_lan`) ist davon getrennt. Neu sind Steuerungen und ein Fortschrittssensor für Waschmaschinen und Trockner, Türsensoren für Kühlschränke, Wassererwärmer-Entitäten, ein Ein/Aus-Schalter für Luftreiniger und ein Schalter für den Signalton bei Luftentfeuchtern. Für Klimageräte nennt der Changelog eine Schaltfläche `reset_filter`, mit der sich der Filter als gereinigt markieren lässt. Die Integration hat die Qualitätsstufe Platinum erreicht. Laut Integrationsseite laufen Steuerung und Statusabfragen lokal, die Cloud wird nur für Token und Key von V3-Geräten benötigt.
+
+Zu digitalSTROM enthält der Changelog von 2026.11.0 keinen Eintrag. Die im [digitalSTROM-Artikel](/blog/digitalstrom-home-assistant) beschriebene Integration ist eine Custom Integration; ist sie über HACS als Custom Repository eingebunden, gilt dafür die beschriebene Übernahme in den Marketplace.
+
+## Weitere Backward-incompatible changes
+
+Die vollständige Liste steht im Release-Blogpost. Für den Betrieb sind vor allem diese Punkte relevant:
+
+- **Auth:** Bei Zugriff über eine nicht lokale IP-Adresse müssen Schema, Host und Port im Browser mit der Adresse übereinstimmen, die Home Assistant sieht, sonst schlägt die Anmeldung mit „Invalid client id" fehl. Die bisherige Prüfung akzeptierte solche Adressen wegen eines Fehlers, sobald sie einen Port enthielten. Tragen Sie in diesem Fall Ihren Reverse Proxy unter den Trusted Proxies der HTTP-Integration ein oder verwenden Sie einen Domainnamen.
+- **Python-Abhängigkeiten:** Home Assistant installiert keine Pakete mehr in den Ordner `deps` im Konfigurationsverzeichnis. Betroffen sind nur Core-Installationen ausserhalb einer virtuellen Umgebung; OS-, Supervised- und Container-Installationen nicht. Nach dem Update lässt sich der Ordner `deps` löschen.
+- **SMTP:** Ein nicht lesbarer Anhang führt nun zu einem Fehler; bisher wurde die Nachricht ohne Anhang versendet.
+- **Telegram:** Die alte `notify`-Plattform entfällt. Verwenden Sie die Notify-Entitäten des Telegram-Bots und die Aktion `notify.send_message`.
+- **Z-Wave:** Vorausgesetzt werden zwave-js-server 3.11.0 oder neuer (Schema 51), die Z-Wave JS App ab 1.9.0 bzw. Z-Wave JS UI ab v11.24.2.
+- **Uptime Kuma:** Versionen vor 2.0.0 werden nicht mehr unterstützt.
+- **Philips Hue:** Der Lichteffekt `"None"` entfällt, stattdessen gilt `"off"`.
+- **Matter und Electra Smart:** `climate.turn_on` setzt den zuletzt aktiven Modus fort. Für einen bestimmten Modus verwenden Sie `climate.set_hvac_mode`.
+- **Polling-Intervall:** Bei Hayward Omnilogic, Hive, Keenetic NDMS2, Kraken, Plaato und Risco wird ein eigenes Intervall ignoriert und der Standard verwendet. Control4 fragt immer alle 5 Sekunden ab; für ein anderes Intervall deaktivieren Sie das Polling und rufen `homeassistant.update_entity` aus einer Automation auf.
+
+Die Integration Flipr wurde entfernt, weil das Unternehmen dahinter liquidiert wurde.
+
+## Neue Funktionen
+
+Neben dem Marketplace nennt der Release-Blogpost unter anderem das Ausschliessen einzelner Entitäten, Geräte, Bereiche, Stockwerke oder Labels aus einem Target, Kopieren und Einfügen von Dashboard-Abschnitten, eine Datumskarte und eine Alert-Karte mit visuellem Editor. Das Energie-Dashboard kann aus einem Leistungssensor einen Energiesensor ableiten. Für die Fehlersuche gibt es einen Filter „Triggered by" in der Aktivität, Live-Logs je Integration und das Löschen von Statistiken in einem Zeitraum. Backups und Medien lassen sich auf lokalen Datenträgern speichern. Neu unterstützt werden Matter-1.5-Kameras mit WebRTC sowie LoRaWAN (ChirpStack, The Things Network, SenseCAP) und Zigbee Green Power.
+
+Bei der Alert-Karte heisst die Option `color` nun `alert_color`; anpassen müssen Sie nur Dashboards, die Sie selbst in YAML angelegt haben. Die neue Integration Debug console führt Python-Code innerhalb von Home Assistant aus, hat vollen Zugriff und muss deshalb in `configuration.yaml` aktiviert werden; nutzen können sie nur Administratoren.
+
+## Empfohlenes Vorgehen
+
+Zielversion ist 2026.11.0. Lesen Sie vor dem Update die Backward-incompatible changes im Release-Blogpost für die bei Ihnen eingesetzten Integrationen. Nach dem Update prüfen Sie im Marketplace, ob alle bisherigen HACS-Projekte übernommen wurden, kontrollieren Dashboards und Templates auf die neuen Entitätsnamen und aktivieren bei Bedarf neu angelegte Device Tracker. Bei Zugriff über einen Reverse Proxy testen Sie die Anmeldung. Die Sicherheitshinweise im GitHub-Repository von Home Assistant Core enthalten zum 5. November 2026 keinen Eintrag, der 2026.11.0 zugeordnet ist; Angaben zu Known Issues enthält der Release-Blogpost nicht.
+
+## Quellen
+
+1.  [Home Assistant: 2026.11: A lot in store!](https://www.home-assistant.io/blog/2026/11/04/release-202611/): Release-Blogpost mit Marketplace, Entitätsnamen, neuen Integrationen und den Backward-incompatible changes.
+
+2.  [Home Assistant: Full changelog for Home Assistant 2026.11](https://www.home-assistant.io/changelogs/core-2026.11): Vollständiger Changelog, darunter die Einträge zu FRITZ!Box Tools, FRITZ!Box Call Monitor und Midea.
+
+3.  [GitHub: home-assistant/core Release 2026.11.0](https://github.com/home-assistant/core/releases/tag/2026.11.0): Release-Tag mit Veröffentlichung am 4. November 2026.
+
+4.  [Home Assistant: Midea](https://www.home-assistant.io/integrations/midea/): Dokumentation der offiziellen Midea-Integration, eingeführt in 2026.8, lokale Steuerung.
+
+5.  [GitHub: Security Advisories home-assistant/core](https://github.com/home-assistant/core/security): Veröffentlichte Sicherheitshinweise, Stand 5. November 2026 ohne Eintrag zu 2026.11.0.
+
+6.  [Midea PortaSplit in Home Assistant: Einrichtung und Dashboard](/blog/midea-portasplit-home-assistant): Installation von Midea AC LAN und apexcharts-card über HACS.
+
+7.  [Midea PortaSplit in Home Assistant absichern](/blog/midea-portasplit-home-assistant-absichern): Supply-Chain-Risiko von Custom Integrations.
+
+8.  [digitalSTROM mit Home Assistant verbinden](/blog/digitalstrom-home-assistant): Lokale digitalSTROM-Integration und Anwesenheit über die FRITZ!Box.
+
+----
+
+# SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1
+
+URL: https://rafaelpfister.ch/blog/seppmail-releases-15-1-1
+Datum: 2026-11-03
+
+# SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1
+
+SEPPmail hat am 27. Oktober 2026 das Patch-Release 15.1.1 veröffentlicht. Es schliesst fünf Schwachstellen mit CVSS-Werten zwischen 6.9 und 9.2, darunter eine mögliche Codeausführung über Adressersetzungsregeln und das Lesen oder Löschen beliebiger Dateien über manipulierte Large-File-Transfer-Anhänge. Dazu kommen eine Härtung der PGP-Verarbeitung, eine Korrektur der DNS-Auflösung, die mit 15.1.0.1 fehlerhaft wurde, sowie Änderungen an MPKI, S/MIME, Backup und Virtualisierung. Das Release richtet sich an alle Betreiber von SEPPmail-Appliances, auch an Appliances, die als HIN Mailgateway laufen, da diese auf der SEPPmail-Firmware basieren. Der vorherige Stand ist im Artikel zu [SEPPmail 15.0.7, 15.1.0 und 15.1.0.1](/blog/seppmail-releases-15-1-0-1) beschrieben.
+
+## Die Versionen im Überblick
+
+| Version | Datum | Art | Kernpunkte |
+|---|---|---|---|
+| 15.1.1 | 27.10.2026 | Patch-Release | CVE-2026-114424 und CVE-2026-114425 (je CVSS 9.2), CVE-2026-114426 (CVSS 8.7), CVE-2026-114420 (CVSS 8.3), CVE-2026-114421 (CVSS 6.9), PGP-Härtung, DNS-Regression aus 15.1.0.1 behoben, QEMU Guest Agent |
+
+## Sicherheitskorrekturen in 15.1.1
+
+Die Revision History führt fünf Einträge mit CVE-ID. Als betroffen nennt sie jeweils Versionen vor 15.1.1; eine CVSS-Version gibt sie nicht an.
+
+- **CVE-2026-114424, CVSS 9.2:** Ersetzungswerte in Adressersetzungsregeln wurden fehlerhaft verarbeitet. Verwendet ein Regelsatz Werte aus der Nachricht als Ersatzwert, konnte ein entfernter Absender Befehle auf der Appliance ausführen. Die Auswertung wurde gehärtet.
+- **CVE-2026-114425, CVSS 9.2:** Speziell gestaltete Anhangs-Metadaten in eingehenden Nachrichten konnten die Large-File-Transfer-Verarbeitung (LFT) dazu bringen, beliebige Dateien zu lesen oder zu löschen. Die Metadaten werden nun vor jedem Dateizugriff validiert.
+- **CVE-2026-114426, CVSS 8.7:** Die Upload-Schnittstelle verarbeitete Anfragedaten, bevor die Authentifizierung geprüft war. Nicht authentifizierte Angreifer konnten so Speicherplatz und Worker-Prozesse erschöpfen. Die Authentifizierung erfolgt nun zuerst, zusätzlich ist die Upload-Grösse begrenzt.
+- **CVE-2026-114420, CVSS 8.3, und CVE-2026-114421, CVSS 6.9:** Unzureichendes Escaping bei Kontosuchen und eine fehlende Prüfung im Ablauf zur Passwort-Wiederherstellung ermöglichten die Übernahme von GINA-Konten. LDAP-Filterwerte werden nun escaped, und die Wiederherstellung fragt nur noch registrierte Benutzer mit konfigurierten Sicherheitsfragen ab. Die Revision History beschreibt beide CVEs mit identischem Text und identischer Korrektur, nennt aber unterschiedliche CVSS-Werte.
+
+Zwei weitere Punkte betreffen PGP, tragen aber keine CVE-ID: Schlüssel mit User-IDs, die nicht selbstsigniert sind, werden nicht mehr akzeptiert, und PGP-Nachrichten ohne tatsächliche Verschlüsselung (NULL-Verschlüsselung) werden erkannt und nicht mehr als verschlüsselt markiert.
+
+Zum Stand 3. November 2026 sind die fünf CVE-Einträge weder bei CVE.org noch in der NVD veröffentlicht. Vektoren, CWE-Zuordnung und eine Einschätzung zur Ausnutzung liegen deshalb noch nicht vor; die CVSS-Werte stammen aus der Revision History. Zwei der Lücken (CVE-2026-114424 und CVE-2026-114425) lassen sich nach Herstellerbeschreibung über eingehende Nachrichten auslösen, CVE-2026-114426 ohne Authentifizierung. Prüfen Sie bis zum Update, welche Adressersetzungsregeln Werte aus der Nachricht übernehmen, und ob LFT und die GINA-Passwort-Wiederherstellung aktiv sind.
+
+Für die beiden Sicherheitskorrekturen aus 15.1.0 (Root-CA-Verwaltung per REST-API mit CVSS 9.9 und Stored XSS im Log-Viewer mit CVSS 7.1) steht in der Revision History weiterhin „CVE-ID: Pending“ (Stand 3. November 2026).
+
+## Neue Funktionen und Änderungen
+
+- **Virtualisierung:** Die Appliance unterstützt den QEMU Guest Agent (qemu-ga).
+- **Admin:** Eine neue Systemoption deaktiviert das Sammeln der Customer-Summary-Daten, das auf grossen Installationen laut Hersteller lange dauern kann.
+- **Backup im Cluster:** Alle Cluster-Mitglieder erstellen ein Datenbank-Backup, versendet wird es nur vom Maintenance-Node. Ein fehlender Backup-Operator erscheint im Daily Report nicht mehr als Fehler, da grosse Datenbanken meist per SCP gesichert werden.
+- **Core Dumps:** Die Standardgrösse ist begrenzt, damit Core Dumps die `/tmp`-Partition nicht füllen.
+- **RuleEngine:** Fehlt beim Signieren oder Verschlüsseln das Schlüsselmaterial, erzeugt die Appliance es automatisch (bei Bedarf mit lokalem Benutzer), sofern die entsprechenden Optionen aktiviert sind. Andernfalls wird die Nachricht nicht mehr abgewiesen.
+- **S/MIME:** Sind die automatische Löschung und die tägliche Sperrprüfung aktiviert, werden widerrufene Zertifikate ebenfalls automatisch gelöscht.
+- **MPKI:** Der D-Trust-Connector entspricht der Connector-Spezifikation 2.28, die GlobalSign-Root-CA-Kette wurde aktualisiert, und nicht rechtzeitig ausgestellte SwissSignREST-Bestellungen bleiben als ausstehend erhalten und werden später abgeschlossen, damit keine Duplikate entstehen.
+- **Disclaimer:** Die Content-ID-Header von Inline-Bildern und Anhängen entsprechen RFC 2045.
+- **Outlook Add-In:** Die Unterstützung für HIN ACS im COM Outlook Add-In wurde entfernt, da HIN laut Release Notes eine eigene Software bereitstellt.
+
+Betreiber eines HIN Mailgateway, deren Benutzer HIN ACS über das COM Outlook Add-In nutzen, sollten vor dem Update klären, welche HIN-Software diese Funktion übernimmt. Ist die automatische Zertifikatslöschung zusammen mit der täglichen Sperrprüfung aktiviert, entfernt die Appliance nach dem Update auch widerrufene S/MIME-Zertifikate.
+
+## Fehlerbehebungen
+
+- **Betriebssystem:** Nach dem Einrichten einer lokalen DNS-Zone mit dem integrierten Resolver liessen sich seit 15.1.0.1 externe DNS-Namen nicht mehr auflösen.
+- **Admin:** Die HTML-Vorschau für Disclaimer funktionierte seit 15.0.6.1 nicht. Disclaimer- und Template-Dateien werden nun in UTF-8 geschrieben, Sonderzeichen werden dadurch nicht mehr beschädigt. Die Seite mit den Managed-Domain-Einstellungen lädt nach dem Anlegen einer Managed Domain korrekt.
+- **Logging:** Die Datenbank-Logging-Seite lädt auch bei Einträgen mit leeren Daten, rotierte Mail-Logs sind wieder einsehbar, und der Neuaufbau des Mail-Log-Archivindex läuft ohne Fehler.
+- **REST-API:** `PUT /v1/ssl` liefert die eigentliche Fehlermeldung statt eines internen Serverfehlers, und `PUT /webmail/domain/{domainName}` funktioniert mit aktivierter Option „Initial password via SMS“.
+- **S/MIME:** Das Ergebnis der CRL-Prüfung überschreibt nun das OCSP-Ergebnis, sodass widerrufene Zertifikate als widerrufen markiert werden.
+- **RuleEngine:** `make_lft()` funktioniert, wenn ein LFT mehrere Empfänger hat und nur ein Teil davon berechtigt ist.
+- **Webmail (GINA):** Lesebestätigungen gehen bei Nachrichten an mehrere Empfänger an alle Empfänger statt nur an den ersten.
+- **MPKI:** Die Einstellungen des SwissSignREST-Connectors werden in der Admin-GUI geladen.
+
+## Bekannte Probleme
+
+- **DNS-Auflösung mit lokaler DNS-Zone (15.1.0.1):** behoben in 15.1.1.
+- **HTML-Vorschau für Disclaimer (seit 15.0.6.1):** behoben in 15.1.1.
+- **CVE-IDs für die Sicherheitskorrekturen aus 15.1.0:** weiterhin offen („Pending“, Stand 3. November 2026).
+
+Einen Abschnitt zu Known Issues enthalten die Release Notes für 15.1.1 nicht.
+
+## Empfohlenes Vorgehen
+
+Zielversion ist 15.1.1, da alle fünf neuen CVEs Versionen vor 15.1.1 betreffen und zwei davon über eingehende Nachrichten ausnutzbar sind. Laut Revision History ermöglicht 15.0.7 das Update auf 15.1; Systeme im 15.0-Zweig aktualisieren Sie deshalb zuerst auf 15.0.7 und anschliessend auf 15.1.1. Erstellen Sie vor dem Update ein Backup und bei virtuellen Appliances zusätzlich einen Snapshot, wie es die Herstellerdokumentation empfiehlt. Angaben zur Update-Reihenfolge im Cluster oder zu einer Mindestversion für 15.1.1 enthalten die Release Notes nicht (Stand 3. November 2026).
+
+## Quellen
+
+1.  [SEPPmail-Dokumentation: Revision History](https://docs.seppmail.com/ch/20_revision-history.html): Release Notes zu 15.1.1 mit Datum, Sicherheitskorrekturen, CVSS-Werten, Änderungen und Fehlerbehebungen sowie Status der CVE-IDs aus 15.1.0.
+
+2.  [SEPPmail: Extended Release Notes 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html): Ausführliche Release Notes zu 15.1.0 und 15.1.0.1; ein Eintrag zu 15.1.1 fehlt dort zum Stand 3. November 2026.
+
+3.  [NVD: CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424): Zum Stand 3. November 2026 noch kein Eintrag, gilt auch für CVE-2026-114420, -114421, -114425 und -114426.
+
+4.  [CVE.org: CVE-2026-114424](https://www.cve.org/CVERecord?id=CVE-2026-114424): Zum Stand 3. November 2026 noch nicht veröffentlicht.
+
+5.  [SEPPmail 15.0.7, 15.1.0 und 15.1.0.1: CVE-Korrekturen und neuer Feature-Zweig](/blog/seppmail-releases-15-1-0-1): Vorheriger Release-Stand mit den Korrekturen aus 15.1.0 und dem Update-Pfad über 15.0.7.
+
+----
+
+# Teams-Voicemail per E-Mail: neuer Absender und neuer Betreff ab März 2027 (MC1511072)
+
+URL: https://rafaelpfister.ch/blog/teams-voicemail-mail-absender
+Datum: 2026-11-02
+
+Mit der Message-Center-Meldung MC1511072 vom 16. Oktober 2026 kündigt Microsoft eine neue Zustellung der Voicemail-E-Mails von Teams an. Der Rollout beginnt nach aktuellem Plan Anfang März 2027 und soll bis Ende Juni 2027 abgeschlossen sein; Microsoft behält sich Verschiebungen vor und will die verbindlichen Termine sowie allfällige Kundenaktionen in einer weiteren Meldung nachreichen. Hintergrund ist die Unterstützung eigener Absenderdomains (Bring Your Own Domain), damit die Voicemail-Mails unter den SPF-, DKIM- und DMARC-Richtlinien der Organisation laufen.
+
+## Was sich ändert
+
+Das Feld «Von» enthält künftig weder Namen noch Telefonnummer oder E-Mail-Adresse des Anrufers. Diese Angaben stehen neu im Betreff und weiterhin im Nachrichtentext. In Teams selbst bleibt die Anzeige unverändert.
+
+| Merkmal | Heute | Ab Rollout |
+|---|---|---|
+| Absender (persönliche Voicemail) | Name oder Nummer des Anrufers | `"Microsoft Teams" no-reply@<Standard-Tenant-Domain>` oder eigene Domain, falls konfiguriert |
+| Absenderdomain | `skype.voicemail.microsoft.com` bei PSTN-Anrufen, Tenant-Domain bei Teams-zu-Teams-Anrufen | Standard-Tenant-Domain oder eigene Domain |
+| Betreff (persönliche Voicemail) | `Voice mail (22 seconds)` | `Identified: John Smith (+19371817273) - Voicemail (00:22)` bzw. `Unidentified: +19371817273 - Voicemail (00:22)` |
+| Anrufwarteschlange (geteilte Voicemail) | `Shared Voicemail (<CQ-Name>)` | `John Smith (+37251223123) - Shared voicemail in <CQ-Name> (00:05)` |
+| Automatische Telefonzentrale (geteilte Voicemail) | `Shared Voicemail (<AA-Name>)` | `John Smith - Shared voicemail in <AA-Name> (00:11)` |
+
+Für Benutzer hat das zwei sichtbare Folgen: Im Posteingang erscheinen alle Voicemails mit demselben Absender «Microsoft Teams», und weil die Adresse eine No-Reply-Adresse ist, erreicht die Funktion «Antworten» den Anrufer nicht mehr.
+
+## Wer betroffen ist
+
+Betroffen sind alle Organisationen, die Teams Calling mit Voicemail nutzen, also Teams Phone mit Calling Plan, Operator Connect oder Direct Routing sowie Anrufwarteschlangen und automatische Telefonzentralen mit geteilter Voicemail. Die Meldung nennt keine Lizenz- oder Cloud-Einschränkung; der Rollout ist weltweit angekündigt.
+
+Handlungsbedarf besteht dort, wo etwas am heutigen Absender oder Betreff hängt:
+
+- Exchange-Transportregeln, die auf `skype.voicemail.microsoft.com`, auf den Anrufer als Absender oder auf den Betreff `Voice mail` bzw. `Shared Voicemail` prüfen
+- Einträge in Zulassungslisten: Tenant Allow/Block List, Spoof-Zulassungen, `AllowedSenderDomains` in Anti-Spam-Richtlinien
+- Posteingangsregeln von Benutzern und Gruppenpostfächern der Anrufwarteschlangen, die Voicemails anhand von Absender oder Betreff einsortieren oder weiterleiten
+- Power-Automate-Flows, Ticketsysteme und CRM-Anbindungen, die aus dem Absender die Telefonnummer des Anrufers lesen
+- vorgelagerte oder nachgelagerte Gateways (zum Beispiel bei zentralisiertem Mailfluss im Hybrid-Betrieb), die Regeln oder Ausnahmen für die Voicemail-Domain enthalten
+
+## Wie Sie prüfen, ob Sie betroffen sind
+
+Die folgenden Abfragen laufen in einer Exchange-Online-PowerShell-Sitzung (`Connect-ExchangeOnline`).
+
+### Transportregeln durchsuchen
+
+```powershell
+$muster = 'skype\.voicemail|voice ?mail|shared voicemail'
+Get-TransportRule |
+  Where-Object { ($_ | Format-List * | Out-String) -match $muster } |
+  Select-Object Name, State, Priority
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `$muster` | Regulärer Ausdruck für die heutige Absenderdomain und die heutigen Betreff-Texte |
+| `Format-List *` | Gibt alle Eigenschaften der Regel aus, damit Bedingungen und Ausnahmen mitdurchsucht werden |
+| `Out-String` | Wandelt die Ausgabe in Text um, auf den `-match` angewendet wird |
+| `Select-Object Name, State, Priority` | Zeigt nur Name, Status und Reihenfolge der gefundenen Regeln |
+
+</details>
+
+Jede gefundene Regel prüfen Sie auf Bedingungen wie `FromAddressContainsWords`, `SenderDomainIs` oder `SubjectContainsWords`.
+
+### Zulassungslisten und Anti-Spam-Richtlinien
+
+```powershell
+Get-TenantAllowBlockListItems -ListType Sender |
+  Where-Object Value -match 'voicemail'
+Get-TenantAllowBlockListSpoofItems |
+  Where-Object SpoofedUser -match 'voicemail'
+Get-HostedContentFilterPolicy |
+  Select-Object Name, AllowedSenderDomains, AllowedSenders
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-ListType Sender` | Liest die Absender-Einträge der Tenant Allow/Block List |
+| `Where-Object Value -match 'voicemail'` | Filtert Einträge, deren Wert die Voicemail-Domain enthält |
+| `Get-TenantAllowBlockListSpoofItems` | Listet die Spoof-Zulassungen und -Sperren |
+| `AllowedSenderDomains, AllowedSenders` | Zulassungen direkt in den Anti-Spam-Richtlinien |
+
+</details>
+
+### Tatsächliches Mailaufkommen ermitteln
+
+Die Nachrichtenablaufverfolgung zeigt, ob und wohin heute Voicemails zugestellt werden:
+
+```powershell
+Get-MessageTraceV2 -StartDate (Get-Date).AddDays(-10) -EndDate (Get-Date) -ResultSize 5000 |
+  Where-Object { $_.SenderAddress -like '*@skype.voicemail.microsoft.com' -or $_.Subject -match 'voice ?mail' } |
+  Group-Object RecipientAddress | Sort-Object Count -Descending |
+  Select-Object Count, Name
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-StartDate` / `-EndDate` | Zeitraum der Suche; Exchange Online liefert maximal die letzten 90 Tage, pro Abfrage höchstens 10 Tage |
+| `-ResultSize 5000` | Höchstzahl der Treffer pro Abfrage |
+| `Where-Object …` | Behält Mails von der PSTN-Voicemail-Domain oder mit Voicemail-Betreff |
+| `Group-Object RecipientAddress` | Zählt die Voicemails pro Empfänger |
+
+</details>
+
+Die Empfängerliste zeigt, welche Postfächer und Gruppenpostfächer Voicemails erhalten. Dort lohnt sich ein Blick auf Posteingangsregeln (`Get-InboxRule -Mailbox <Adresse>`) und auf angebundene Flows.
+
+## Was zu tun ist
+
+1.  Regeln auf Betreff statt Absender umstellen: Neue Bedingungen auf die künftigen Betreffmuster `- Voicemail (` und `- Shared voicemail in ` ausrichten. Bis der Rollout den eigenen Tenant erreicht hat, alte und neue Bedingung parallel führen.
+
+2.  Zulassungen für `skype.voicemail.microsoft.com` nach dem Rollout entfernen. Mails aus der eigenen Tenant-Domain brauchen keine Ausnahme; eine Zulassung für die eigene Domain wäre ein Sicherheitsrisiko, weil sie Spoofing erleichtert.
+
+3.  Automatisierungen anpassen, die die Anrufernummer aus dem Absender lesen. Die Nummer steht künftig im Betreff in Klammern bzw. bei unbekannten Anrufern direkt nach `Unidentified:`.
+
+4.  Eigene Absenderdomain vorbereiten: Die Konfigurationsanleitung für den Versand unter einer eigenen Domain kündigt Microsoft für die Folgemeldung an. Ist DMARC für diese Domain auf `p=reject` gesetzt, müssen SPF und DKIM den Versand aus Exchange Online abdecken, sonst landen die Voicemails in Quarantäne.
+
+5.  Benutzer und Servicedesk informieren: Absender «Microsoft Teams», Anruferdaten im Betreff, keine Antwort an den Anrufer per E-Mail mehr möglich.
+
+## Quellen
+
+1.  [MC1511072: Microsoft Teams: Upcoming change to voicemail message delivery by email](https://mc.merill.net/message/MC1511072): archivierter Text der Message-Center-Meldung mit Zeitplan und Gegenüberstellung von heutigem und künftigem Absender und Betreff.
+
+2.  [Microsoft Learn: Get-MessageTraceV2](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-messagetracev2): Parameter und Grenzen der Nachrichtenablaufverfolgung in Exchange Online.
+
+3.  [Microsoft Learn: Get-TenantAllowBlockListItems](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-tenantallowblocklistitems): Auslesen der Tenant Allow/Block List.
+
+4.  [Microsoft Learn: Set up voicemail for Teams](https://learn.microsoft.com/en-us/microsoftteams/set-up-phone-system-voicemail): Grundlagen der Teams-Voicemail und ihrer Zustellung per E-Mail.
+
+----
+
 # RustDesk 1.5.1: signierte Updates, Trusted Devices V2 und Härtung der Dateiübertragung
 
 URL: https://rafaelpfister.ch/blog/rustdesk-1-5-1

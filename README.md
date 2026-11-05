@@ -24,6 +24,11 @@ Articles that analyse or reference these vulnerabilities (generated from the art
 
 | CVE | Article |
 | --- | --- |
+| CVE-2026-114426 | [SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1](https://rafaelpfister.ch/blog/seppmail-releases-15-1-1) (German) |
+| CVE-2026-114425 | [SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1](https://rafaelpfister.ch/blog/seppmail-releases-15-1-1) (German) |
+| CVE-2026-114424 | [SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1](https://rafaelpfister.ch/blog/seppmail-releases-15-1-1) (German) |
+| CVE-2026-114421 | [SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1](https://rafaelpfister.ch/blog/seppmail-releases-15-1-1) (German) |
+| CVE-2026-114420 | [SEPPmail 15.1.1: fünf CVE-Korrekturen und Fix für die DNS-Regression aus 15.1.0.1](https://rafaelpfister.ch/blog/seppmail-releases-15-1-1) (German) |
 | CVE-2026-111497 | [CVE-2026-111497: Flaw in Brotli decoder affects Node.js, Bun, Python, .NET, and Envoy—what you need to update now](https://rafaelpfister.ch/en/blog/cve-2026-111497-flaw-in-brotli-decoder-affects-node-js-bun-python-net-and-envoy-what-you-need) |
 | CVE-2026-109619 | [VMware ESX and Linux Kernel: CISA Reports Attacks on CVE-2026-41709 and Fragnesia](https://rafaelpfister.ch/en/blog/vmware-esx-and-linux-kernel-cisa-reports-attacks-on-cve-2026-41709-and-fragnesia) |
 | CVE-2026-109618 | [VMware ESX and Linux Kernel: CISA Reports Attacks on CVE-2026-41709 and Fragnesia](https://rafaelpfister.ch/en/blog/vmware-esx-and-linux-kernel-cisa-reports-attacks-on-cve-2026-41709-and-fragnesia) |
