@@ -20,7 +20,7 @@ url: https://rafaelpfister.ch/blog/exchange-security-updates-september-2026
 
 # Exchange-Sicherheitsupdates vom September 2026: neun Schwachstellen, Wrapper-Problem behoben, v2 nachgeschoben
 
-Microsoft hat am 8. September 2026 Sicherheitsupdates (SUs) für Exchange Server veröffentlicht. Sie schliessen in Exchange SE und Exchange 2019 neun Schwachstellen, in Exchange 2016 acht. Keine davon war vorab öffentlich bekannt, keine wird laut Security Update Guide aktiv ausgenutzt, und Microsoft stuft alle als *Important* mit «Exploitation Less Likely» ein. Der höchste CVSS-Wert liegt mit 9.3 aber deutlich über dem des Vormonats. Besonders ist dieser Monat aus drei Gründen: Das SU behebt das seit Juni offene Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern, es bringt drei neue bzw. fortbestehende Known Issues mit sich, und am 2. Oktober hat Microsoft eine **Version 2** nachgeschoben, die eine zusätzliche Schwachstelle schliesst.
+Microsoft hat am 8. September 2026 Sicherheitsupdates (SUs) für Exchange veröffentlicht. Sie schliessen in Exchange SE und Exchange 2019 neun Schwachstellen, in Exchange 2016 acht. Keine davon war vorab öffentlich bekannt, keine wird laut Security Update Guide aktiv ausgenutzt, und Microsoft stuft alle als *Important* mit «Exploitation Less Likely» ein. Der höchste CVSS-Wert liegt mit 9.3 aber deutlich über dem des Vormonats. Besonders ist dieser Monat aus drei Gründen: Das SU behebt das seit Juni offene Problem der *Wrapper-Nachrichten* in freigegebenen Postfächern, es bringt drei neue bzw. fortbestehende Known Issues mit sich, und am 2. Oktober hat Microsoft eine **Version 2** nachgeschoben, die eine zusätzliche Schwachstelle schliesst.
 
 ## Für welche Exchange-Versionen das Update verfügbar ist
 

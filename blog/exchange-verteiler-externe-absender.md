@@ -1,7 +1,7 @@
 ---
-title: "Exchange Server: Nur ausgewählte externe Absender an eine Verteilerliste zulassen"
+title: "Exchange: Nur ausgewählte externe Absender an eine Verteilerliste zulassen"
 navTitle: "Verteiler: externe Absender"
-description: "Eine Verteilerliste in Exchange Server lässt sich so einrichten, dass nur bestimmte externe Absender sie erreichen. Zwei Wege mit PowerShell: Zustellbeschränkung mit E-Mail-Kontakten oder Transportregel. Dazu die Grenzen der Absenderprüfung und wie DMARC sie schliesst."
+description: "Eine Verteilerliste in Exchange lässt sich so einrichten, dass nur bestimmte externe Absender sie erreichen. Zwei Wege mit PowerShell: Zustellbeschränkung mit E-Mail-Kontakten oder Transportregel. Dazu die Grenzen der Absenderprüfung und wie DMARC sie schliesst."
 date: "2026-11-05"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "7 Min. Lesezeit"
@@ -24,9 +24,9 @@ translationId: "article-b3dc70052f5e8729"
 url: "https://rafaelpfister.ch/blog/exchange-verteiler-externe-absender"
 ---
 
-# Exchange Server: Nur ausgewählte externe Absender an eine Verteilerliste zulassen
+# Exchange: Nur ausgewählte externe Absender an eine Verteilerliste zulassen
 
-Eine Verteilerliste in Exchange Server nimmt standardmässig nur Nachrichten von authentifizierten, also internen Absendern an. Soll ein Partner, ein Lieferant oder ein Kunde die Liste ebenfalls erreichen, ohne dass sie damit für das ganze Internet offen steht, gibt es zwei Möglichkeiten: eine Zustellbeschränkung an der Gruppe selbst oder eine Transportregel. Beide funktionieren in Exchange Server 2016, 2019 und der Subscription Edition.
+Eine Verteilerliste in Exchange nimmt standardmässig nur Nachrichten von authentifizierten, also internen Absendern an. Soll ein Partner, ein Lieferant oder ein Kunde die Liste ebenfalls erreichen, ohne dass sie damit für das ganze Internet offen steht, gibt es zwei Möglichkeiten: eine Zustellbeschränkung an der Gruppe selbst oder eine Transportregel. Beide funktionieren in Exchange Server 2016, 2019 und der Subscription Edition.
 
 ## Ausgangslage: RequireSenderAuthenticationEnabled
 
@@ -142,7 +142,7 @@ Ohne die Verankerung mit `^` und `$` würde ein Muster wie `max\.muster@partner\
 
 Beide Varianten prüfen nur die Absenderadresse. Exchange stellt dabei nicht fest, ob die Nachricht tatsächlich vom freigegebenen Partner stammt. Wer die Adresse eines freigegebenen Absenders kennt, kann sie fälschen und die Liste damit erreichen. Bei einer Liste mit internem Teilnehmerkreis ist das ein Einfallstor für Phishing, das zudem den Anschein einer bekannten Adresse hat.
 
-Die Lücke schliessen SPF, DKIM und DMARC. Hat die Domain des Partners eine DMARC-Richtlinie mit `p=reject` oder `p=quarantine` und setzt Ihr Mail-Gateway diese Richtlinie durch, erreichen gefälschte Nachrichten dieser Domain den Exchange Server gar nicht erst. Bei Domains ohne DMARC-Richtlinie oder mit `p=none` fehlt dieser Schutz.
+Die Lücke schliessen SPF, DKIM und DMARC. Hat die Domain des Partners eine DMARC-Richtlinie mit `p=reject` oder `p=quarantine` und setzt Ihr Mail-Gateway diese Richtlinie durch, erreichen gefälschte Nachrichten dieser Domain Exchange gar nicht erst. Bei Domains ohne DMARC-Richtlinie oder mit `p=none` fehlt dieser Schutz.
 
 Schreibt Ihr Gateway das Prüfergebnis in den Header `Authentication-Results`, kann eine zweite Transportregel freigegebene Absender zusätzlich abweisen, wenn DMARC nicht bestanden ist:
 
@@ -172,7 +172,7 @@ New-TransportRule @regel
 
 </details>
 
-Diese Regel funktioniert nur zuverlässig, wenn das Gateway eingehende `Authentication-Results`-Header aus dem Internet entfernt oder überschreibt. Sonst kann ein Absender den Header mit `dmarc=pass` selbst mitliefern. Welche Header Ihr Gateway setzt und ob es fremde Header entfernt, ist in dessen Dokumentation beschrieben; Exchange Server selbst wertet DMARC nicht aus.
+Diese Regel funktioniert nur zuverlässig, wenn das Gateway eingehende `Authentication-Results`-Header aus dem Internet entfernt oder überschreibt. Sonst kann ein Absender den Header mit `dmarc=pass` selbst mitliefern. Welche Header Ihr Gateway setzt und ob es fremde Header entfernt, ist in dessen Dokumentation beschrieben; Exchange selbst wertet DMARC nicht aus.
 
 ## Welche Variante passt
 

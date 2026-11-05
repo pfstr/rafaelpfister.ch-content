@@ -20,7 +20,7 @@ draft: false
 
 # Exchange-Sicherheitsupdates vom August 2026: Pwn2Own-Lücke geschlossen, OWA Light abgeschaltet
 
-Microsoft hat am 11. August 2026 Sicherheitsupdates (SUs) für Exchange Server veröffentlicht, bereits den vierten Monat in Folge. Die Updates schliessen sieben Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird nach aktuellem Stand aktiv ausgenutzt, und Microsoft stuft die Ausnutzung bei allen sieben als «Exploitation Less Likely» ein. Ein Routine-Patchday ist es trotzdem nicht, aus drei Gründen: Das Update schliesst die am Hacking-Wettbewerb Pwn2Own demonstrierte Exchange-Lücke, es schaltet **OWA Light nach fast zwanzig Jahren endgültig ab**, und das Exchange-Team hat im Nachgang erklärt, warum der Monatsrhythmus vorerst der Normalzustand bleibt.
+Microsoft hat am 11. August 2026 Sicherheitsupdates (SUs) für Exchange veröffentlicht, bereits den vierten Monat in Folge. Die Updates schliessen sieben Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird nach aktuellem Stand aktiv ausgenutzt, und Microsoft stuft die Ausnutzung bei allen sieben als «Exploitation Less Likely» ein. Ein Routine-Patchday ist es trotzdem nicht, aus drei Gründen: Das Update schliesst die am Hacking-Wettbewerb Pwn2Own demonstrierte Exchange-Lücke, es schaltet **OWA Light nach fast zwanzig Jahren endgültig ab**, und das Exchange-Team hat im Nachgang erklärt, warum der Monatsrhythmus vorerst der Normalzustand bleibt.
 
 ## Für welche Exchange-Versionen das Update verfügbar ist
 
