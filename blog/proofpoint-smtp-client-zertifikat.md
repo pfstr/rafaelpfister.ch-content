@@ -3,9 +3,10 @@ title: "Proofpoint Protection Server: Zertifikat für «SMTP Client» nach einem
 navTitle: "PPS SMTP Client"
 description: "Steht im Proofpoint Protection Server unter System > Certificates > Services die Zuordnung «SMTP Client» auf «-none-», liefert Sendmail ohne TLS-Client-Zertifikat aus. Gegenstellen mit Zertifikatsprüfung lehnen dann ab, etwa Exchange Online mit 5.7.51 oder ein Smarthost mit «Relay access denied». So prüfen und beheben Sie das."
 date: "2026-11-05"
-kategorie: "SMTP und Mailflow"
+kategorie: "Proofpoint"
 timeToRead: "7 min to read"
 themen:
+  - "proofpoint"
   - "smtp-mailflow"
 produkte:
   - "proofpoint"
@@ -17,6 +18,8 @@ protokolle:
 slug: "proofpoint-smtp-client-zertifikat"
 url: "https://rafaelpfister.ch/blog/proofpoint-smtp-client-zertifikat"
 translationId: "article-6f99807d289cc394"
+warnung: true
+featured: "2026-11-05"
 ---
 
 Ich habe heute einen Ausfall im ausgehenden Mailflow eines Proofpoint Protection Server (PPS) 8.22.4 untersucht. Kurzfazit: Nach einem automatisch eingespielten Patch stand unter **System > Certificates > Services** die Zuordnung **SMTP Client** auf `-none-`. Sendmail hat danach ausgehende Verbindungen ohne TLS-Client-Zertifikat aufgebaut. Alle Gegenstellen, die Proofpoint über dieses Zertifikat erkennen, haben die Mails abgewiesen. Gewöhnliche Empfänger mit opportunistischem TLS haben weiter angenommen, deshalb fiel der Fehler erst auf, als einzelne Partner nicht mehr erreichbar waren.
