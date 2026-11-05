@@ -1,6 +1,6 @@
 ---
-title: "Proofpoint Protection Server: Zertifikat für «SMTP Client» nach einem Patch prüfen"
-navTitle: "PPS SMTP Client"
+title: "Proofpoint Protection Server 8.22.4: Patch kann die Zertifikatskonfiguration für SMTP Client zurücksetzen"
+navTitle: "PPS 8.22.4 Zertifikat"
 description: "Steht im Proofpoint Protection Server unter System > Certificates > Services die Zuordnung «SMTP Client» auf «-none-», liefert Sendmail ohne TLS-Client-Zertifikat aus. Gegenstellen mit Zertifikatsprüfung lehnen dann ab, etwa Exchange Online mit 5.7.51 oder ein Smarthost mit «Relay access denied». So prüfen und beheben Sie das."
 date: "2026-11-05"
 kategorie: "Proofpoint"
