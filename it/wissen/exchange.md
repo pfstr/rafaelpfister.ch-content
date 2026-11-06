@@ -1,7 +1,7 @@
 ---
 title: "Microsoft Exchange: famiglia di prodotti e modelli operativi"
 blatt: "exchange"
-description: "Microsoft Exchange come famiglia di prodotti: termini e protocolli comuni, differenze tra Exchange Online e Exchange Server, nonché i compiti della modalità ibrida e del flusso di posta ibrido."
+description: "Microsoft Exchange come famiglia di prodotti: concetti e protocolli comuni, differenze tra Exchange Online e Exchange Server, nonché i compiti della modalità ibrida e del flusso di posta ibrido."
 fakten:
   - label: Famiglia di prodotti
     wert: Exchange Online ed Exchange Server
@@ -9,11 +9,11 @@ fakten:
   - label: Funzioni principali
     wert: E-mail, calendario, contatti, rubrica e criteri
     href: https://learn.microsoft.com/en-us/exchange/recipients/recipients
-  - label: Gestione cloud
+  - label: Servizio cloud
     wert: Exchange Online all'interno di Microsoft 365
     href: https://learn.microsoft.com/en-us/exchange/exchange-online
   - label: Gestione in proprio
-    wert: Exchange Server su Windows Server e Active Directory
+    wert: Exchange su Windows Server e Active Directory
     href: https://learn.microsoft.com/en-us/exchange/exchange-server
   - label: Coesistenza
     wert: Exchange Hybrid collega l'organizzazione locale ed Exchange Online
@@ -25,7 +25,7 @@ fakten:
     wert: HTTPS, MAPI/HTTP, Outlook sul Web e client mobili
     href: https://learn.microsoft.com/en-us/exchange/architecture/client-access/client-access
   - label: Destinatari
-    wert: Cassette postali, gruppi, contatti, utenti di posta e risorse
+    wert: Caselle di posta, gruppi, contatti, utenti di posta e risorse
     href: https://learn.microsoft.com/en-us/exchange/recipients/recipients
   - label: Directory
     wert: Active Directory in locale, Microsoft Entra ID nel cloud
@@ -45,44 +45,44 @@ werbung:
 ctaThemen:
   - microsoft-365-exchange
   - exchange-onprem-hybrid
-translationSourceHash: f76fa79338367d134f158edf1b05fbee051e68cffacc657f421ca0bbdd03dc2f
+translationSourceHash: 120d6e74efed65ae14cfc80b5e66597bd4ea19799d6b0c4d9e22fce0152b8d30
 translationModel: gpt-5.6-terra
-translatedAt: 2026-10-05T11:15:16.843Z
+translatedAt: 2026-11-06T03:30:13.184Z
 translationReview: automatic
 ---
 
 # Microsoft Exchange: famiglia di prodotti e modelli operativi
 
-Il nome **Microsoft Exchange** indica oggi due piattaforme strettamente correlate, ma gestite in modo diverso. Con **Exchange Online**, Microsoft gestisce i server, le copie dei database e l'infrastruttura di trasporto interna. Con **Exchange Server**, host, Active Directory, database, code, certificati e ripristino restano sotto la responsabilità dell'organizzazione. **Exchange Hybrid** collega entrambe le organizzazioni quando le cassette postali o le funzioni sono distribuite tra i due lati ([Microsoft Learn: Exchange](https://learn.microsoft.com/en-us/exchange/), [Exchange hybrid deployments](https://learn.microsoft.com/en-us/exchange/exchange-hybrid)).
+Il nome **Microsoft Exchange** indica oggi due piattaforme strettamente correlate, ma gestite in modo diverso. Con **Exchange Online**, Microsoft gestisce i server, le copie dei database e l'infrastruttura di trasporto interna. Con **Exchange Server**, host, Active Directory, database, code, certificati e ripristino sono sotto la responsabilità dell'organizzazione. **Exchange Hybrid** collega entrambe le organizzazioni quando le caselle di posta o le funzioni sono distribuite tra i due lati ([Microsoft Learn: Exchange](https://learn.microsoft.com/en-us/exchange/), [Exchange hybrid deployments](https://learn.microsoft.com/en-us/exchange/exchange-hybrid)).
 
-Questa distinzione è il punto di partenza per ogni ulteriore domanda. Una cassetta postale può trovarsi nel cloud o nel proprio data center. Il mittente visibile, il dominio SMTP e la rubrica possono comunque essere utilizzati congiuntamente. Solo quando sono definiti il percorso della cassetta postale, l'origine dei relativi attributi del destinatario e il percorso effettivo del messaggio, è possibile analizzare in modo sensato il recapito, le autorizzazioni e gli errori.
+Questa distinzione è il punto di partenza per ogni altra domanda. Una casella di posta può trovarsi nel cloud o nel proprio data center. Il mittente visibile, il dominio SMTP e la rubrica possono comunque essere utilizzati congiuntamente. Solo quando sono noti la posizione della casella di posta, l'origine dei suoi attributi destinatario e l'effettivo percorso del messaggio è possibile analizzare in modo sensato il recapito, le autorizzazioni e gli errori.
 
-## Chiarire innanzitutto: dove si trova la cassetta postale?
+## Prima chiarire: dove si trova la casella di posta?
 
-Exchange gestisce e-mail, calendari, contatti, attività, oggetti della rubrica e diritti di accesso. Per gli utenti, il funzionamento è in gran parte identico. Per gli amministratori, invece, la posizione della cassetta postale cambia quasi ogni strumento e responsabilità.
+Exchange gestisce e-mail, calendari, contatti, attività, oggetti della rubrica e diritti di accesso. Per gli utenti questo appare sostanzialmente uguale. Per gli amministratori, invece, la posizione della casella di posta cambia quasi ogni strumento e ogni responsabilità.
 
 | Domanda | Exchange Online | Exchange On-Premises | Exchange Hybrid |
 |---|---|---|---|
-| Chi gestisce i server delle cassette postali? | Microsoft | l'organizzazione stessa | entrambi i lati per le rispettive cassette postali |
-| Dove vengono gestiti i destinatari? | Exchange Online ed Entra ID | Exchange Server e Active Directory | di norma creati localmente e sincronizzati con Entra ID; il modello esatto deve essere documentato |
-| Dove si traccia un messaggio? | Message Trace | Message Tracking Logs e code | su entrambi i lati, collegati tramite ora, mittente, destinatario e ID dei messaggi |
-| Chi può attivare copie di database? | Microsoft | l'amministrazione Exchange interna | il gestore del lato interessato |
-| Cosa collega entrambi i lati? | non applicabile | non applicabile | sincronizzazione delle directory, relazioni tra organizzazioni, OAuth, Autodiscover e connettori SMTP |
+| Chi gestisce i server delle caselle di posta? | Microsoft | la propria organizzazione | entrambi i lati per le rispettive caselle di posta |
+| Dove vengono gestiti i destinatari? | Exchange Online ed Entra ID | Exchange Server e Active Directory | generalmente creati in locale e sincronizzati con Entra ID; il modello esatto deve essere documentato |
+| Dove viene tracciato un messaggio? | Message Trace | Message Tracking Logs e code | su entrambi i lati, collegati tramite ora, mittente, destinatario e ID messaggio |
+| Chi può attivare copie di database? | Microsoft | la propria amministrazione Exchange | il gestore del lato interessato |
+| Cosa collega entrambi i lati? | non applicabile | non applicabile | sincronizzazione delle directory, relazioni organizzative, OAuth, Autodiscover e connettori SMTP |
 
-La tabella è solo una panoramica. I quattro approfondimenti trattano separatamente i modelli operativi:
+La tabella offre solo una panoramica. I quattro approfondimenti trattano separatamente i modelli operativi:
 
-- [Exchange Online](/kb/exchange-online) illustra gli oggetti del tenant, EOP, connettori, Message Trace, conservazione e la gestione di un servizio cloud.
-- [Exchange On-Premises](/kb/exchange-on-premises) segue la pipeline di trasporto, i database ESE, i DAG, Active Directory e il ripristino nel proprio data center.
-- [Exchange Hybrid](/kb/exchange-hybrid) tratta sincronizzazione delle directory, gestione dei destinatari, OAuth, relazioni tra organizzazioni, Autodiscover e Hybrid Configuration Wizard.
-- [Flusso di posta ibrido](/kb/hybrid-mailfluss) segue i messaggi tra Internet, Exchange Online, organizzazione locale e gateway di posta facoltativo.
+- [Exchange Online](/kb/exchange-online) spiega gli oggetti tenant, EOP, i connettori, Message Trace, la conservazione e la gestione di un servizio cloud.
+- [Exchange On-Premises](/kb/exchange-on-premises) segue la pipeline di trasporto, i database ESE, le DAG, Active Directory e il recovery nel proprio data center.
+- [Exchange Hybrid](/kb/exchange-hybrid) tratta la sincronizzazione delle directory, la gestione dei destinatari, OAuth, le relazioni organizzative, Autodiscover e Hybrid Configuration Wizard.
+- [Flusso di posta ibrido](/kb/hybrid-mailfluss) segue i messaggi tra Internet, Exchange Online, organizzazione locale e gateway di posta opzionale.
 
-## Struttura tecnica comune: ciò che resta uguale in tutte le varianti di Exchange
+## Struttura tecnica comune: ciò che rimane uguale in tutte le varianti di Exchange
 
-Dopo aver chiarito la sede operativa, è utile esaminare il modello funzionale comune. Exchange conosce **destinatari**, **messaggi**, **cassette postali**, **regole di trasporto**, **domini** e **connettori**. Questi termini ricorrono sia nel cloud sia sui server propri, anche se i sistemi sottostanti sono accessibili in modo diverso ([Microsoft Learn: Recipients](https://learn.microsoft.com/en-us/exchange/recipients/recipients), [Mail flow and the transport pipeline](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow)).
+Dopo aver chiarito il luogo operativo, vale la pena esaminare il modello funzionale comune. Exchange conosce **destinatari**, **messaggi**, **caselle di posta**, **regole di trasporto**, **domini** e **connettori**. Questi concetti compaiono sia nel cloud sia sui server propri, anche se i sistemi sottostanti sono accessibili in modo diverso ([Microsoft Learn: Recipients](https://learn.microsoft.com/en-us/exchange/recipients/recipients), [Mail flow and the transport pipeline](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow)).
 
-Un destinatario è anzitutto un oggetto di directory abilitato alla posta. Possiede indirizzi e un tipo, ad esempio cassetta postale utente, cassetta postale condivisa, gruppo, contatto o utente di posta. L'oggetto risponde alla domanda **chi** rappresenta un indirizzo e **dove** Exchange deve recapitare. La cassetta postale memorizza quindi gli elementi effettivi. Per questo possono coesistere un oggetto destinatario difettoso e una cassetta postale integra, o viceversa.
+Un destinatario è innanzitutto un oggetto di directory abilitato alla posta. Possiede indirizzi e un tipo, ad esempio casella di posta utente, casella condivisa, gruppo, contatto o utente di posta. L'oggetto risponde alla domanda su **chi** rappresenta un indirizzo e **dove** Exchange deve recapitare. La casella di posta memorizza quindi gli elementi effettivi. Per questo un oggetto destinatario difettoso e una casella di posta integra possono esistere contemporaneamente, o viceversa.
 
-Anche il percorso dei messaggi segue su entrambe le piattaforme gli stessi passaggi generali: Exchange accetta un messaggio SMTP, risolve i destinatari, applica regole di trasporto e funzioni di protezione, sceglie la destinazione successiva e recapita il messaggio in una cassetta postale o a un ulteriore hop SMTP. L'implementazione esatta differisce. Sui server propri l'amministratore può vedere code e log di tracciamento locali; in Exchange Online sono disponibili Message Trace, report e Service Health ([Exchange Server mail flow](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow), [Trace an email message in Exchange Online](https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message)).
+Anche il percorso del messaggio segue gli stessi passaggi generali su entrambe le piattaforme: Exchange accetta un messaggio SMTP, risolve i destinatari, applica regole di trasporto e funzioni di protezione, seleziona la destinazione successiva e recapita in una casella di posta oppure a un ulteriore hop SMTP. L'implementazione precisa differisce. Sui server propri l'amministratore può vedere code e log di tracciamento locali; in Exchange Online sono disponibili Message Trace, report e Service Health ([Exchange Server mail flow](https://learn.microsoft.com/en-us/exchange/mail-flow/mail-flow), [Trace an email message in Exchange Online](https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/trace-an-email-message)).
 
 <iframe class="kb-infographic" style="aspect-ratio: 1400 / 1076" src="/images/kb-interaktiv-exchange.svg?v=20260813" title="Interaktive Infografik: Exchange-Produktfamilie mit Transport, Postfächern, Exchange Online und Hybridverbindungen" loading="lazy">
   <a href="/images/kb-interaktiv-exchange.svg?v=20260813">Aprire direttamente la panoramica interattiva di Exchange</a>.
@@ -90,51 +90,51 @@ Anche il percorso dei messaggi segue su entrambe le piattaforme gli stessi passa
 
 ## Dall'indirizzo al percorso del messaggio
 
-Il dominio SMTP comune porta spesso alla falsa supposizione che tutti i messaggi seguano lo stesso percorso. In realtà, una combinazione di DNS, Accepted Domains, oggetto destinatario, connettori e regole determina dove un messaggio viene inviato successivamente.
+Il dominio SMTP comune porta spesso all'errata supposizione che tutti i messaggi seguano lo stesso percorso. In realtà, una combinazione di DNS, Accepted Domains, oggetto destinatario, connettori e regole determina dove un messaggio viene inviato successivamente.
 
-Un'**Accepted Domain** indica a Exchange come deve essere trattato un dominio. Per un dominio autorevole, Exchange si aspetta tutti i destinatari validi nella propria directory. Per un dominio Internal Relay, i destinatari sconosciuti possono essere inoltrati a un altro sistema. Questa impostazione non è quindi una semplice voce d'inventario, ma parte della decisione di recapito ([Accepted domains in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/accepted-domains/accepted-domains), [Accepted domains in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains)).
+Un'**Accepted Domain** indica a Exchange come trattare un dominio. Per un dominio autoritativo, Exchange si aspetta tutti i destinatari validi nella propria directory. Per un dominio Internal Relay, i destinatari sconosciuti possono essere inoltrati a un altro sistema. Questa impostazione non è quindi una riga di inventario, ma parte della decisione di recapito ([Accepted domains in Exchange Server](https://learn.microsoft.com/en-us/exchange/mail-flow/accepted-domains/accepted-domains), [Accepted domains in Exchange Online](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains)).
 
-I **connettori** determinano quindi da quali sistemi Exchange accetta messaggi e a quali sistemi li invia. In Exchange Server, i connettori Receive e Send lavorano con associazioni locali, spazi di indirizzamento, server di origine, smart host e autorizzazioni. Exchange Online utilizza connettori Inbound e Outbound per le relazioni con la propria infrastruttura o con partner ([Connectors on Exchange servers](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/connectors), [Set up connectors to route mail](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-to-route-mail)).
+I **connettori** determinano quindi da quali sistemi Exchange accetta messaggi e a quali sistemi li invia. In Exchange Server, i connettori di ricezione e invio operano con associazioni locali, spazi indirizzi, server di origine, smart host e autorizzazioni. Exchange Online utilizza connettori in ingresso e in uscita per relazioni con la propria infrastruttura o con partner ([Connectors on Exchange servers](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/connectors), [Set up connectors to route mail](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-to-route-mail)).
 
-Solo a questo punto diventano importanti le varianti ibride. Centralized Mail Transport, un gateway a monte o un dominio destinatari condiviso modificano hop e responsabilità aggiuntivi. Per questo sono trattati nell'articolo dedicato [Flusso di posta ibrido](/kb/hybrid-mailfluss), non tra gli argomenti relativi a identità o client.
+Solo a questo punto diventano importanti le varianti ibride. Centralized Mail Transport, un gateway a monte o un dominio destinatari condiviso modificano hop aggiuntivi e responsabilità. Per questo sono trattati nell'articolo dedicato [Flusso di posta ibrido](/kb/hybrid-mailfluss), non tra gli argomenti relativi a identità o client.
 
-## Dall'accesso alla cassetta postale
+## Dall'accesso alla casella di posta
 
-Il percorso del messaggio non spiega ancora come Outlook trovi la sua cassetta postale. A questo scopo Exchange utilizza **Autodiscover**. Un client parte dall'identità dell'utente e determina il punto finale di servizio appropriato. In locale possono essere coinvolti Service Connection Point di Active Directory e DNS; in Exchange Online, gli endpoint di Microsoft 365 conducono al servizio cloud ([Microsoft Learn: Autodiscover](https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover)).
+Il percorso del messaggio non spiega ancora come Outlook trovi la propria casella di posta. A questo scopo Exchange utilizza **Autodiscover**. Un client parte dall'identità dell'utente e determina il punto di accesso al servizio appropriato. In locale possono essere coinvolti i Service Connection Point di Active Directory e il DNS; in Exchange Online gli endpoint di Microsoft 365 conducono al servizio cloud ([Microsoft Learn: Autodiscover](https://learn.microsoft.com/en-us/exchange/architecture/client-access/autodiscover)).
 
-Dopo aver individuato l'endpoint, l'accesso moderno di Outlook avviene tramite HTTPS, in particolare con MAPI over HTTP. Anche Outlook sul Web, Exchange ActiveSync e diverse API utilizzano HTTPS, ma ciascuno con protocolli applicativi e autorizzazioni propri. Un accesso riuscito al portale Microsoft 365 non dimostra quindi automaticamente che Autodiscover, il protocollo Outlook o l'accesso alla specifica cassetta postale funzionino ([Client Access protocol architecture](https://learn.microsoft.com/en-us/exchange/architecture/client-access/client-access), [MAPI over HTTP](https://learn.microsoft.com/en-us/exchange/clients/mapi-over-http/mapi-over-http)).
+Dopo la determinazione dell'endpoint, l'accesso moderno di Outlook avviene tramite HTTPS, in particolare con MAPI over HTTP. Anche Outlook sul Web, Exchange ActiveSync e varie API utilizzano HTTPS, ma ciascuno con protocolli applicativi e autorizzazioni propri. Un accesso riuscito al portale Microsoft 365 non dimostra quindi automaticamente che Autodiscover, il protocollo Outlook o l'accesso alla casella di posta specifica funzionino ([Client Access protocol architecture](https://learn.microsoft.com/en-us/exchange/architecture/client-access/client-access), [MAPI over HTTP](https://learn.microsoft.com/en-us/exchange/clients/mapi-over-http/mapi-over-http)).
 
-Nella modalità ibrida si aggiunge un'ulteriore decisione: la cassetta postale è locale o online? Autodiscover e gli attributi del destinatario devono indirizzare il client al lato corretto. Solo dopo entrano in gioco funzioni tra organizzazioni, come disponibilità/occupato o spostamenti delle cassette postali. Questa sequenza è trattata passo dopo passo nell'articolo [Exchange Hybrid](/kb/exchange-hybrid).
+Nella modalità ibrida si aggiunge un'ulteriore decisione: la casella di posta è locale o online? Autodiscover e gli attributi destinatario devono guidare il client verso il lato corretto. Solo in seguito entrano in gioco le funzioni tra organizzazioni, come libero/occupato o gli spostamenti delle caselle di posta. Questa sequenza viene trattata passo dopo passo nell'articolo [Exchange Hybrid](/kb/exchange-hybrid).
 
 ## Amministrazione e autorizzazioni
 
-Una volta compresi i percorsi dei dati e degli accessi, si pone la domanda su chi possa modificarli. Exchange utilizza il controllo degli accessi basato sui ruoli. I ruoli contengono cmdlet e parametri, i gruppi di ruoli o le assegnazioni di ruolo li collegano agli amministratori e gli ambiti ne limitano l'area di applicazione. Exchange Online ed Exchange Server dispongono di concetti RBAC correlati, ma di configurazioni separate ([Permissions in Exchange Server](https://learn.microsoft.com/en-us/exchange/permissions/permissions), [Permissions in Exchange Online](https://learn.microsoft.com/en-us/exchange/permissions-exo/permissions-exo)).
+Una volta compresi i percorsi dei dati e di accesso, si pone la domanda su chi può modificarli. Exchange utilizza il controllo degli accessi basato sui ruoli. I ruoli contengono cmdlet e parametri, i gruppi di ruoli o le assegnazioni di ruolo li collegano agli amministratori e gli scope ne limitano l'ambito. Exchange Online ed Exchange Server possiedono concetti RBAC correlati, ma configurazioni separate ([Permissions in Exchange Server](https://learn.microsoft.com/en-us/exchange/permissions/permissions), [Permissions in Exchange Online](https://learn.microsoft.com/en-us/exchange/permissions-exo/permissions-exo)).
 
-Nella pratica quotidiana, questo significa che un ruolo di amministratore Entra, un gruppo di ruoli Exchange e un'autorizzazione della cassetta postale non sono la stessa cosa. **Full Access** consente di aprire una cassetta postale, **Send As** di inviare come destinatario e **Send on Behalf** di inviare in modo riconoscibile per conto di qualcuno. Nessuna di queste autorizzazioni, da sola, spiega se un'applicazione può accedere tramite Microsoft Graph o EWS ([Manage permissions for recipients in Exchange Online](https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/manage-permissions-for-recipients)).
+Nella pratica quotidiana ciò significa: un ruolo di amministratore Entra, un gruppo di ruoli Exchange e un'autorizzazione per una casella di posta non sono la stessa cosa. **Full Access** consente di aprire una casella di posta, **Send As** di inviare come destinatario e **Send on Behalf** di inviare in modo riconoscibile per conto di un altro soggetto. Nessuna di queste autorizzazioni spiega da sola se un'applicazione può accedere tramite Microsoft Graph o EWS ([Manage permissions for recipients in Exchange Online](https://learn.microsoft.com/en-us/exchange/recipients-in-exchange-online/manage-permissions-for-recipients)).
 
-La domanda per esperti non è quindi «L'utente è amministratore?», bensì: quale identità esegue l'accesso, quale ruolo si applica in quale organizzazione Exchange, quale oggetto viene contattato e quale autorizzazione aggiuntiva della cassetta postale o dell'applicazione viene verificata?
+La domanda da esperti non è quindi «L'utente è amministratore?», bensì: quale identità effettua l'accesso, quale ruolo si applica in quale organizzazione Exchange, quale oggetto viene indirizzato e quale ulteriore autorizzazione per casella di posta o applicazione viene verificata?
 
-## Operatività e ricerca guasti iniziano dal lato corretto
+## Gestione operativa e risoluzione dei problemi iniziano dal lato corretto
 
-Una diagnosi efficace inizia con tre informazioni: **utente o destinatario interessato, orario preciso e posizione della cassetta postale**. Successivamente si segue il percorso nell'ordine DNS o Autodiscover, accesso, endpoint Exchange, risoluzione del destinatario, evento di trasporto e recapito nella cassetta postale.
+Una diagnosi sensata inizia con tre informazioni: **utente o destinatario interessato, momento esatto e posizione della casella di posta**. Successivamente, il percorso viene seguito nell'ordine DNS o Autodiscover, accesso, endpoint Exchange, risoluzione del destinatario, evento di trasporto e recapito nella casella di posta.
 
 Per Exchange Online, Message Trace e Microsoft 365 Service Health forniscono lo stato del servizio visibile al cliente. Per Exchange Server si aggiungono code locali, Message Tracking Logs, Health Sets, Event Logs e copie di database. Nella modalità ibrida, le evidenze di entrambi i lati vengono riunite su una linea temporale comune ([Message Trace FAQ](https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/message-trace-faq), [Server health and performance](https://learn.microsoft.com/en-us/exchange/server-health/server-health)).
 
-Gli articoli di approfondimento contengono blocchi diagnostici Windows/Unix adeguati e la documentazione ufficiale degli strumenti utilizzati. Qui basta la regola operativa più importante: determinare prima il luogo e il percorso, poi scegliere lo strumento.
+Gli articoli di approfondimento contengono ciascuno blocchi di diagnostica Windows/Unix adatti e la documentazione ufficiale degli strumenti utilizzati. Qui è sufficiente la regola operativa più importante: prima determinare il luogo e il percorso, poi scegliere lo strumento.
 
 ## Archiviazione dei dati, disponibilità e ripristino
 
-La differenza tra cloud e gestione in proprio è più evidente nel ripristino. Exchange Server memorizza le cassette postali in database ESE con registri delle transazioni. I Database Availability Group replicano copie dei database e consentono attivazioni su altri server. L'organizzazione resta tuttavia responsabile della strategia di backup, della ripristinabilità e della dipendenza da Active Directory ([Database availability groups](https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups), [Backup, restore and disaster recovery](https://learn.microsoft.com/en-us/exchange/high-availability/disaster-recovery/disaster-recovery)).
+La differenza tra cloud e gestione in proprio risulta più evidente nel recovery. Exchange Server memorizza le caselle di posta in database ESE con log delle transazioni. I Database Availability Groups replicano le copie dei database e consentono l'attivazione su altri server. L'organizzazione rimane comunque responsabile della strategia di backup, della possibilità di ripristino e della dipendenza da Active Directory ([Database availability groups](https://learn.microsoft.com/en-us/exchange/high-availability/database-availability-groups/database-availability-groups), [Backup, restore and disaster recovery](https://learn.microsoft.com/en-us/exchange/high-availability/disaster-recovery/disaster-recovery)).
 
-Exchange Online gestisce la ridondanza del database e del trasporto come parte del servizio. Gli amministratori del tenant lavorano invece con elementi eliminati, Single Item Recovery, conservazione, hold ed eventualmente requisiti di backup esterni. La resilienza del servizio Microsoft e una regola di conservazione funzionale rispondono a domande diverse: la prima protegge il servizio in esecuzione, l'altra determina quali contenuti restano conservati dopo l'eliminazione o a fini di conformità ([Exchange Online data resiliency](https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency), [Retention policies for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange)).
+Exchange Online gestisce la ridondanza dei database e del trasporto come parte del servizio. Gli amministratori del tenant lavorano invece con elementi eliminati, Single Item Recovery, conservazione, hold e, se necessario, requisiti di backup esterni. La resilienza del servizio Microsoft e una regola di conservazione funzionale rispondono a domande diverse: la prima protegge il servizio in esecuzione, l'altra stabilisce quali contenuti devono essere mantenuti dopo l'eliminazione o per finalità di conformità ([Exchange Online data resiliency](https://learn.microsoft.com/en-us/compliance/assurance/assurance-exchange-data-resiliency), [Retention policies for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange)).
 
-Nella modalità ibrida, entrambi i modelli di ripristino devono essere documentati parallelamente. Sono inoltre necessari sincronizzazione delle directory, certificati, configurazione OAuth e connettori per ristabilire il collegamento dopo un guasto. Queste configurazioni non contengono dati delle cassette postali, ma determinano se le due organizzazioni Exchange possano tornare a collaborare.
+Nella modalità ibrida entrambi i modelli di recovery devono essere documentati parallelamente. Inoltre, sono necessari sincronizzazione delle directory, certificati, configurazione OAuth e connettori per ristabilire la connessione dopo un guasto. Queste configurazioni non contengono contenuti delle caselle di posta, ma determinano se le due organizzazioni Exchange possono tornare a collaborare.
 
 ## Evoluzione tecnica
 
-Exchange 4.0 apparve nel 1996 come successore delle precedenti piattaforme di posta Microsoft. Le prime versioni utilizzavano una directory proprietaria, MAPI e la famiglia di database ESE; i protocolli Internet acquisirono gradualmente maggiore importanza. Con Exchange 2000, Active Directory e SMTP divennero componenti centrali. Exchange 2007 introdusse ruoli server distinti e Exchange Management Shell, Exchange 2010 il Database Availability Group ([Exchange Team: A brief history of time](https://techcommunity.microsoft.com/blog/exchange/a-brief-history-of-time---exchange-server-way/589388), [Exchange Team: Exchange Server 2007 transport redesign](https://techcommunity.microsoft.com/blog/exchange/motivations-for-the-exchange-server-2007-transport-redesign/600465)).
+Exchange 4.0 apparve nel 1996 come successore delle precedenti piattaforme di posta Microsoft. Le prime versioni utilizzavano una propria directory, MAPI e la famiglia di database ESE; i protocolli Internet acquisirono gradualmente maggiore importanza. Con Exchange 2000, Active Directory e SMTP divennero componenti centrali. Exchange 2007 introdusse ruoli server distinti e Exchange Management Shell, Exchange 2010 il Database Availability Group ([Exchange Team: A brief history of time](https://techcommunity.microsoft.com/blog/exchange/a-brief-history-of-time---exchange-server-way/589388), [Exchange Team: Exchange Server 2007 transport redesign](https://techcommunity.microsoft.com/blog/exchange/motivations-for-the-exchange-server-2007-transport-redesign/600465)).
 
-Parallelamente, Microsoft ha sviluppato le offerte Exchange ospitate fino a Exchange Online. Hybrid non è quindi nato come prodotto singolo, bensì come collegamento di due organizzazioni Exchange autonome. Exchange Server Subscription Edition ha proseguito questa linea di sviluppo locale nel Modern Lifecycle dal 2025. Le informazioni specifiche su build e aggiornamenti vengono verificate prima delle modifiche nella documentazione Microsoft costantemente aggiornata ([Exchange Server SE release notes](https://learn.microsoft.com/en-us/exchange/release-notes), [Exchange Server Subscription Edition lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-subscription-edition)).
+Parallelamente, Microsoft sviluppò le offerte Exchange ospitate fino a Exchange Online. Di conseguenza, Hybrid non nacque come singolo prodotto, ma come collegamento tra due organizzazioni Exchange indipendenti. A partire dal 2025, Exchange Server Subscription Edition prosegue questa linea di sviluppo locale nel Modern Lifecycle. Le informazioni concrete su build e aggiornamenti vengono verificate prima delle modifiche nella documentazione Microsoft costantemente aggiornata ([Exchange Server SE release notes](https://learn.microsoft.com/en-us/exchange/release-notes), [Exchange Server Subscription Edition lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-subscription-edition)).
 
 ## Fonti
 

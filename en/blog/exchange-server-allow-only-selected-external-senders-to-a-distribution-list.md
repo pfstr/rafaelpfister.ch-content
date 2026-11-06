@@ -1,7 +1,7 @@
 ---
-title: "Exchange Server: Allow only selected external senders to a distribution list"
-navTitle: "Distribution list: external senders"
-description: "A distribution list in Exchange Server can be configured so that only specific external senders can reach it. Two approaches using PowerShell: delivery restrictions with mail contacts or a transport rule. Also covers the limits of sender verification and how DMARC closes them."
+title: "Exchange: Allow only selected external senders to a distribution list"
+navTitle: "Distribution lists: external senders"
+description: "An Exchange distribution list can be configured so that only specific external senders can reach it. Two approaches using PowerShell: delivery restrictions with mail contacts or a transport rule. Also covers the limits of sender verification and how DMARC closes them."
 date: "2026-11-05"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "7 min read"
@@ -22,20 +22,20 @@ related:
 slug: "exchange-server-allow-only-selected-external-senders-to-a-distribution-list"
 translationId: "article-b3dc70052f5e8729"
 translationOf: exchange-verteiler-externe-absender
-url: https://rafaelpfister.ch/en/blog/exchange-server-allow-only-selected-external-senders-to-a-distribution-list
-translationSourceHash: cff4b579945841f2469f23b5e44d834f6be7528cf9817f9d7ade0fd613f1c582
+translationSourceHash: 14114b684164aa90e68aac9d9ca4f75ed59c1ce77cf6479a167f154e66788d45
 translationModel: gpt-5.6-terra
-translatedAt: 2026-11-05T14:21:41.831Z
+translatedAt: 2026-11-05T15:42:08.397Z
 translationReview: automatic
+url: https://rafaelpfister.ch/en/blog/exchange-server-allow-only-selected-external-senders-to-a-distribution-list
 ---
 
-# Exchange Server: Allow only selected external senders to a distribution list
+# Exchange: Allow only selected external senders to a distribution list
 
-By default, a distribution list in Exchange Server accepts messages only from authenticated, meaning internal, senders. If a partner, vendor, or customer should also be able to reach the list without opening it to the entire internet, there are two options: a delivery restriction on the group itself or a transport rule. Both work in Exchange Server 2016, 2019, and the Subscription Edition.
+By default, an Exchange distribution list accepts messages only from authenticated, meaning internal, senders. If a partner, vendor, or customer should also be able to reach the list without opening it to the entire internet, there are two options: a delivery restriction on the group itself or a transport rule. Both work in Exchange Server 2016, 2019, and the Subscription Edition.
 
 ## Starting point: RequireSenderAuthenticationEnabled
 
-The `RequireSenderAuthenticationEnabled` property controls whether a group accepts external messages at all. If it is set to `$true` (the default for new distribution groups), Exchange rejects every message from an unauthenticated sender. Both approaches below therefore require this check to be disabled:
+Whether a group accepts external messages at all is controlled by the `RequireSenderAuthenticationEnabled` property. If it is set to `$true` (the default for new distribution groups), Exchange rejects every message from an unauthenticated sender. Both of the following options therefore require this check to be disabled:
 
 ```powershell
 Set-DistributionGroup -Identity "Projektteam" -RequireSenderAuthenticationEnabled $false
@@ -55,7 +55,7 @@ Without further restrictions, after this step any external sender can write to t
 
 ## Option 1: Delivery restriction with mail contacts
 
-The list of allowed senders (`AcceptMessagesOnlyFromSendersOrMembers`) accepts only objects from your own directory: mailboxes, mail users, mail contacts, and groups. A plain SMTP address cannot be entered there. You therefore create a mail contact for each external sender. To prevent the contact from appearing in the global address list, hide it:
+The list of allowed senders (`AcceptMessagesOnlyFromSendersOrMembers`) accepts only objects from your own directory: mailboxes, mail users, mail contacts, and groups. You cannot enter a plain SMTP address there. Therefore, create a mail contact for each external sender. To keep the contact from appearing in the global address book, hide it:
 
 ```powershell
 $kontakt = @{
@@ -72,14 +72,14 @@ Set-MailContact -Identity "Extern Max Muster" -HiddenFromAddressListsEnabled $tr
 
 | Option | Effect |
 |---|---|
-| `Name` | Display name of the contact in Active Directory. A consistent prefix such as “External” makes later maintenance easier. |
-| `ExternalEmailAddress` | The external address used by the sender. |
-| `OrganizationalUnit` | Target OU in Active Directory. If not specified, the contact is placed in the default `Users` container. |
-| `-HiddenFromAddressListsEnabled $true` | Hides the contact from the global address list and all address lists. |
+| `Name` | Display name of the contact in Active Directory. A consistent prefix such as “External” makes future maintenance easier. |
+| `ExternalEmailAddress` | The external address from which the sender sends. |
+| `OrganizationalUnit` | Target OU in Active Directory. Without specifying it, the contact is placed in the default `Users` container. |
+| `-HiddenFromAddressListsEnabled $true` | Hides the contact from the global address book and all address lists. |
 
 </details>
 
-Then add the contact as an allowed sender. The hashtable with `Add` adds to the existing list instead of overwriting it:
+Then add the contact as an allowed sender. The hashtable with `Add` appends to the existing list instead of overwriting it:
 
 ```powershell
 $erlaubt = @{ Add = "Extern Max Muster", "Extern Anna Beispiel" }
@@ -91,12 +91,12 @@ Set-DistributionGroup -Identity "Projektteam" -AcceptMessagesOnlyFromSendersOrMe
 
 | Option | Effect |
 |---|---|
-| `-AcceptMessagesOnlyFromSendersOrMembers` | List of senders allowed to reach the group. Individual senders and groups are possible; for groups, all members can send. |
+| `-AcceptMessagesOnlyFromSendersOrMembers` | List of senders allowed to reach the group. Individual senders and groups are possible; for groups, all members may send. |
 | `@{ Add = ... }` | Adds entries without removing existing ones. `@{ Remove = ... }` removes entries; a value without a hashtable replaces the entire list. |
 
 </details>
 
-As soon as this list contains at least one entry, Exchange rejects **all other senders**, including internal ones. If employees should continue to be able to write to the list, add an appropriate group as well, such as the distribution group itself (then all members can send) or a group containing all employees. Rejected senders receive a non-delivery report with status `5.7.1`.
+As soon as this list contains at least one entry, Exchange rejects **all other senders**, including internal ones. If employees should continue to be able to write to the list, also add a suitable group, for example the distribution group itself (then all members may send) or a group containing all employees. Rejected senders receive a non-delivery report with status `5.7.1`.
 
 Check the current configuration as follows:
 
@@ -106,13 +106,13 @@ Get-DistributionGroup -Identity "Projektteam" |
         AcceptMessagesOnlyFrom, AcceptMessagesOnlyFromDLMembers
 ```
 
-`AcceptMessagesOnlyFromSendersOrMembers` is a composite parameter: Exchange distributes the entries across the `AcceptMessagesOnlyFrom` (individual senders) and `AcceptMessagesOnlyFromDLMembers` (groups) properties. This is why the query displays those two properties. You can find the same setting in the Exchange Admin Center, in the group properties under Delivery management.
+`AcceptMessagesOnlyFromSendersOrMembers` is a composite parameter: Exchange distributes the entries across the `AcceptMessagesOnlyFrom` (individual senders) and `AcceptMessagesOnlyFromDLMembers` (groups) properties. This is why the query shows those two properties. You can find the same setting in the Exchange Admin Center in the group properties under Delivery management.
 
-This option is suitable when only a few external senders need to be added and the list of allowed senders should be visible directly on the group object. The drawback is the maintenance effort: every new sender needs a contact in Active Directory.
+This option is suitable when only a few external senders need to be added and the list of allowed senders should be visible directly on the group object. The disadvantage is the maintenance effort: each new sender requires a contact in Active Directory.
 
 ## Option 2: Transport rule without contacts
 
-If all internal users should still be able to write to the list while only external senders are restricted, a transport rule is simpler. It requires no contacts and can also be applied to entire domains. `RequireSenderAuthenticationEnabled` must also be set to `$false` here.
+If all internal users should still be able to write to the list and only external senders need to be restricted, a transport rule is simpler. It requires no contacts and can also apply to entire domains. `RequireSenderAuthenticationEnabled` must also be set to `$false` here.
 
 ```powershell
 $regel = @{
@@ -135,21 +135,21 @@ New-TransportRule @regel
 | `Name` | Name of the rule in the list of transport rules. |
 | `SentTo` | Condition: The message is addressed to this group. |
 | `FromScope NotInOrganization` | Condition: The sender is not part of your organization. Internal messages are therefore unaffected. |
-| `ExceptIfFromAddressMatchesPatterns` | Exception: Sender addresses matching one of the regular expressions. `^…$` anchors an individual address, while `@domain$` allows an entire domain. Escape periods with `\.`. |
+| `ExceptIfFromAddressMatchesPatterns` | Exception: Sender addresses that match one of the regular expressions. `^…$` anchors an individual address, while `@domain$` allows an entire domain. Escape periods with `\.`. |
 | `RejectMessageReasonText` | Text in the non-delivery report sent to the rejected sender. |
-| `RejectMessageEnhancedStatusCode` | Enhanced status code in the non-delivery report; `5.7.1` indicates insufficient permission. |
+| `RejectMessageEnhancedStatusCode` | Enhanced status code in the non-delivery report; `5.7.1` indicates missing permission. |
 
 </details>
 
-Without anchoring with `^` and `$`, a pattern such as `max\.muster@partner\.example` would also match `max.muster@partner.example.net`. Add new senders with `Set-TransportRule` and the complete, expanded list of patterns; the parameter replaces the existing list.
+Without anchoring with `^` and `$`, a pattern such as `max\.muster@partner\.example` would also match `max.muster@partner.example.net`. Add new senders with `Set-TransportRule` and the complete expanded list of patterns; the parameter replaces the existing list.
 
 ## Limitation of both options: The sender address can be spoofed
 
-Both options check only the sender address. Exchange does not determine whether the message actually came from the approved partner. Anyone who knows an approved sender's address can spoof it and reach the list. For a list with internal participants, this provides an entry point for phishing that also appears to come from a familiar address.
+Both options check only the sender address. Exchange does not determine whether the message actually came from the approved partner. Anyone who knows an approved sender’s address can spoof it and thus reach the list. For a list with internal participants, this is an entry point for phishing that also appears to come from a familiar address.
 
-SPF, DKIM, and DMARC close this gap. If the partner's domain has a DMARC policy of `p=reject` or `p=quarantine` and your mail gateway enforces that policy, spoofed messages from that domain never reach the Exchange Server in the first place. Domains without a DMARC policy or with `p=none` do not have this protection.
+SPF, DKIM, and DMARC close this gap. If the partner’s domain has a DMARC policy with `p=reject` or `p=quarantine` and your mail gateway enforces that policy, spoofed messages from that domain never reach Exchange in the first place. This protection is absent for domains without a DMARC policy or with `p=none`.
 
-If your gateway writes the check result to the `Authentication-Results` header, a second transport rule can additionally reject approved senders if DMARC did not pass:
+If your gateway writes the check result to the `Authentication-Results` header, a second transport rule can additionally reject approved senders when DMARC has not passed:
 
 ```powershell
 $regel = @{
@@ -171,17 +171,17 @@ New-TransportRule @regel
 
 | Option | Effect |
 |---|---|
-| `FromAddressMatchesPatterns` | Condition: The rule applies only to approved senders, using the same patterns as the first rule. |
+| `FromAddressMatchesPatterns` | Condition: The rule applies only to approved senders, using the same patterns as in the first rule. |
 | `ExceptIfHeaderMatchesMessageHeader` | Name of the header checked by the exception. |
 | `ExceptIfHeaderMatchesPatterns` | Exception: If the header contains `dmarc=pass`, the message is delivered. All other messages from approved senders are rejected. |
 
 </details>
 
-This rule works reliably only if the gateway removes or overwrites incoming `Authentication-Results` headers from the internet. Otherwise, a sender can supply the header with `dmarc=pass` themselves. Your gateway's documentation describes which headers it sets and whether it removes foreign headers; Exchange Server itself does not evaluate DMARC.
+This rule works reliably only if the gateway removes or overwrites incoming `Authentication-Results` headers from the internet. Otherwise, a sender can supply the header with `dmarc=pass` themselves. Your gateway’s documentation describes which headers it sets and whether it removes foreign headers; Exchange itself does not evaluate DMARC.
 
-## Which option is right
+## Which option fits
 
-The delivery restriction with contacts is suitable for lists with a fixed, small set of external senders and can also restrict internal senders if desired. The transport rule is suitable when everyone internally may send, entire partner domains should be allowed, or no contacts should be created in Active Directory. Regardless of the option, check the DMARC policy for every allowed domain and document who maintains the list of allowed senders.
+The delivery restriction with contacts is suitable for lists with a fixed, small group of external senders and can also restrict internal senders if desired. The transport rule is suitable when all internal users may send, entire partner domains should be allowed, or no contacts should be created in Active Directory. Regardless of the option, check the DMARC policy for every approved domain and document who maintains the list of allowed senders.
 
 ## Sources
 

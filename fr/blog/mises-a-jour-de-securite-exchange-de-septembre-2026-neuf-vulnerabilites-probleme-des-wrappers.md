@@ -1,7 +1,7 @@
 ---
 title: "Mises à jour de sécurité Exchange de septembre 2026 : neuf vulnérabilités, problème des wrappers corrigé, v2 publiée"
 navTitle: "Exchange SU 09/2026"
-description: "La SU de septembre corrige neuf vulnérabilités dans Exchange SE et 2019 (huit dans Exchange 2016), dont une faille d’usurpation avec un CVSS de 9.3, et résout le problème des wrappers dans les environnements hybrides. Le 2 octobre, une v2 a suivi avec une CVE supplémentaire ; s’y ajoutent trois problèmes connus avec des solutions de contournement et un SettingOverride qui doit désormais être supprimé."
+description: "La mise à jour de sécurité de septembre corrige neuf vulnérabilités dans Exchange SE et 2019 (huit dans Exchange 2016), dont une faille d’usurpation avec un CVSS de 9.3, et résout le problème des wrappers dans les environnements hybrides. Une v2 incluant une CVE supplémentaire a suivi le 2 octobre ; elle s’accompagne de trois problèmes connus avec solutions de contournement et d’un SettingOverride qui doit désormais être supprimé."
 date: "2026-10-07"
 kategorie: "Exchange OnPrem / hybride"
 timeToRead: "11 min de lecture"
@@ -16,27 +16,27 @@ protokolle:
 slug: "mises-a-jour-de-securite-exchange-de-septembre-2026-neuf-vulnerabilites-probleme-des-wrappers"
 translationId: article-53db0c02bc33f9bd
 translationOf: exchange-security-updates-september-2026
-translationSourceHash: 4b2c59794f87e999c5b89865e0005faa7d5cbb36478f6b8475d5e3f121186a7d
+translationSourceHash: 1f9a8027af593738b429df5a1b20adab97301c20761ef0cfe02e2691a12e880a
 translationModel: gpt-5.6-terra
-translatedAt: 2026-10-26T08:29:48.555Z
+translatedAt: 2026-11-05T15:45:13.579Z
 translationReview: automatic
 url: https://rafaelpfister.ch/fr/blog/mises-a-jour-de-securite-exchange-de-septembre-2026-neuf-vulnerabilites-probleme-des-wrappers
 ---
 
 # Mises à jour de sécurité Exchange de septembre 2026 : neuf vulnérabilités, problème des wrappers corrigé, v2 publiée
 
-Microsoft a publié le 8 septembre 2026 des mises à jour de sécurité (SU) pour Exchange Server. Elles corrigent neuf vulnérabilités dans Exchange SE et Exchange 2019, et huit dans Exchange 2016. Aucune n’était connue publiquement à l’avance, aucune n’est activement exploitée selon le Security Update Guide, et Microsoft les classe toutes comme *Important* avec « Exploitation Less Likely ». La valeur CVSS la plus élevée, 9.3, dépasse toutefois nettement celle du mois précédent. Ce mois-ci se distingue pour trois raisons : la SU corrige le problème des *messages wrapper* dans les boîtes aux lettres partagées, ouvert depuis juin ; elle introduit ou maintient trois Known Issues ; et Microsoft a publié le 2 octobre une **version 2** qui corrige une vulnérabilité supplémentaire.
+Microsoft a publié des mises à jour de sécurité (SU) pour Exchange le 8 septembre 2026. Elles corrigent neuf vulnérabilités dans Exchange SE et Exchange 2019, et huit dans Exchange 2016. Aucune n’était publiquement connue à l’avance, aucune n’est activement exploitée selon le Security Update Guide, et Microsoft les classe toutes comme *Important* avec « Exploitation Less Likely ». La valeur CVSS la plus élevée, 9.3, est toutefois nettement supérieure à celle du mois précédent. Ce mois-ci se distingue pour trois raisons : la SU corrige le problème des *messages wrapper* dans les boîtes aux lettres partagées, ouvert depuis juin, elle apporte trois nouveaux problèmes connus ou persistants, et Microsoft a publié une **version 2** le 2 octobre, qui corrige une vulnérabilité supplémentaire.
 
-## Pour quelles versions d’Exchange la mise à jour est disponible
+## Versions d’Exchange pour lesquelles la mise à jour est disponible
 
 Les SU du 8 septembre 2026 sont disponibles pour les versions suivantes :
 
 - **Exchange Server Subscription Edition (SE) RTM** : KB5121608, build 15.2.2562.49 ; disponible publiquement.
-- **Exchange Server 2019 CU15** : KB5121609, build 15.2.1748.51 ; uniquement via le **programme ESU de période 2**.
-- **Exchange Server 2019 CU14** : KB5121610, build 15.2.1544.46 ; uniquement via l’ESU de période 2.
-- **Exchange Server 2016 CU23** : KB5121611, build 15.1.2507.73 ; uniquement via l’ESU de période 2.
+- **Exchange Server 2019 CU15** : KB5121609, build 15.2.1748.51 ; uniquement via le **programme ESU période 2**.
+- **Exchange Server 2019 CU14** : KB5121610, build 15.2.1544.46 ; uniquement via ESU période 2.
+- **Exchange Server 2016 CU23** : KB5121611, build 15.1.2507.73 ; uniquement via ESU période 2.
 
-Exchange 2016 et 2019 ne sont plus pris en charge. Selon Microsoft, seules les organisations inscrites au programme ESU de période 2 reçoivent les SU de mai à octobre 2026. Selon les articles KB, cette éligibilité couvre jusqu’à octobre 2026. S’ajoute la pression d’Exchange Online : depuis la deuxième semaine de septembre, Exchange Online limite et bloque le flux de messagerie hybride provenant de serveurs antérieurs au niveau d’octobre 2025 ; voir les détails dans l’[article sur le Transport Enforcement](/blog/exchange-online-transport-enforcement-hybrid-server). Exchange Online est déjà protégé selon l’annonce ; dans les environnements hybrides, chaque serveur Exchange a néanmoins besoin de la SU, tout comme les machines disposant des Exchange Management Tools.
+Exchange 2016 et 2019 ne sont plus pris en charge. Selon Microsoft, seules les organisations inscrites au programme ESU période 2 reçoivent les SU de mai à octobre 2026. Selon les articles KB, cette éligibilité court jusqu’en octobre 2026. La pression vient également d’Exchange Online : depuis la deuxième semaine de septembre, Exchange Online limite et bloque le flux de messagerie hybride provenant de serveurs antérieurs au niveau d’octobre 2025 ; voir les détails dans l’[article sur l’application du transport](/blog/exchange-online-transport-enforcement-hybrid-server). Exchange Online lui-même est déjà protégé selon l’annonce ; dans les environnements hybrides, chaque serveur Exchange nécessite néanmoins la SU, de même que les machines dotées des Exchange Management Tools.
 
 Vous pouvez comparer votre niveau actuel avec la liste des [numéros de build Exchange](/tools/exchange-builds).
 
@@ -54,19 +54,19 @@ Vous pouvez comparer votre niveau actuel avec la liste des [numéros de build Ex
 | CVE-2026-69375 | Altération | 6.5 |
 | CVE-2026-69382 | Divulgation d’informations | 5.9 |
 
-CVE-2026-55007 ne concerne pas Exchange 2016 ; le Security Update Guide ne répertorie pour celle-ci qu’Exchange SE et Exchange 2019 CU14/CU15. Un détail concernant la documentation : CVE-2026-69380 manque dans la liste des CVE des articles KB des quatre SU de septembre. Le Security Update Guide indique toutefois bien les quatre builds de septembre comme correctifs pour cette CVE (état au 7 octobre 2026).
+CVE-2026-55007 ne concerne pas Exchange 2016 ; le Security Update Guide ne répertorie pour cette vulnérabilité qu’Exchange SE et Exchange 2019 CU14/CU15. Un détail concernant la documentation : CVE-2026-69380 manque dans la liste des CVE des articles KB des quatre SU de septembre. Le Security Update Guide indique toutefois précisément les quatre builds de septembre comme correctif pour cette CVE (état au 7 octobre 2026).
 
-**[CVE-2026-69356](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69356)** possède la valeur la plus élevée, avec un CVSS de 9.3. Selon Microsoft, un attaquant non authentifié peut envoyer une invitation de calendrier préparée contenant un lien de réunion malveillant ; si le destinataire ouvre la réunion et sélectionne le lien pour participer, le Cross-Site Scripting est déclenché. Une interaction utilisateur est donc nécessaire, mais pas un compte dans l’organisation.
+**[CVE-2026-69356](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69356)** possède la valeur la plus élevée, avec un CVSS de 9.3. Selon Microsoft, un attaquant non authentifié peut envoyer une invitation de calendrier préparée contenant un lien de réunion malveillant ; lorsque le destinataire ouvre la réunion et sélectionne le lien pour participer, le Cross-Site Scripting est déclenché. Une interaction utilisateur est donc nécessaire, mais pas un compte dans l’organisation.
 
-**[CVE-2026-69380](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69380)** (élévation de privilèges, CVSS 8.1) exige seulement un compte à faibles privilèges et une boîte aux lettres attribuée. Selon la FAQ du Security Update Guide, un attaquant peut, en exploitant des faiblesses dans la vérification des requêtes et des jetons d’identité, se faire passer pour un autre utilisateur et prendre le contrôle des boîtes aux lettres de tous les utilisateurs Exchange : lire et envoyer des e-mails, ainsi que télécharger des pièces jointes. Un seul compte utilisateur compromis suffit comme point de départ.
+**[CVE-2026-69380](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69380)** (élévation de privilèges, CVSS 8.1) nécessite seulement un compte disposant de peu de droits et une boîte aux lettres attribuée. Selon la FAQ du Security Update Guide, un attaquant peut, en exploitant des faiblesses dans la vérification des requêtes et des jetons d’identité, se faire passer pour un autre utilisateur et prendre le contrôle des boîtes aux lettres de tous les utilisateurs Exchange : lire et envoyer des e-mails ainsi que télécharger des pièces jointes. Un seul compte utilisateur compromis suffit comme point de départ.
 
-**[CVE-2026-69641](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69641)** (élévation de privilèges, CVSS 9.1) aboutit au même résultat, la prise de contrôle de toutes les boîtes aux lettres, mais nécessite l’appartenance à un groupe de rôles hautement privilégié.
+**[CVE-2026-69641](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69641)** (élévation de privilèges, CVSS 9.1) aboutit au même résultat, la prise de contrôle de toutes les boîtes aux lettres, mais requiert l’appartenance à un groupe de rôles hautement privilégié.
 
-La situation initiale diffère pour les deux vulnérabilités d’exécution de code à distance : [CVE-2026-69355](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69355) (CVSS 8.8) exige un compte authentifié à faibles privilèges, tandis que [CVE-2026-55007](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-55007) (CVSS 8.1) peut être déclenchée sans connexion par une pièce jointe Visio préparée, mais requiert selon Microsoft une mémoire vive durablement insuffisante sur le système cible. Les quatre autres failles sont les suivantes : CVE-2026-69378 (DoS par récursion non contrôlée, sans connexion), CVE-2026-69361 (SSRF, le serveur envoie des requêtes HTTP à des systèmes internes ou de bouclage), CVE-2026-69375 (un attaquant authentifié peut remplacer le contenu de fichiers) et CVE-2026-69382 (divulgation de données d’identification via un algorithme cryptographique faible, nécessite un cookie d’authentification déjà dérobé).
+La situation de départ diffère pour les deux vulnérabilités d’exécution de code à distance : [CVE-2026-69355](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69355) (CVSS 8.8) exige un compte authentifié avec peu de droits, tandis que [CVE-2026-55007](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-55007) (CVSS 8.1) peut être déclenchée sans connexion via une pièce jointe Visio préparée, mais nécessite selon Microsoft une mémoire vive durablement insuffisante sur le système cible. Les quatre autres failles sont les suivantes : CVE-2026-69378 (DoS par récursion non contrôlée, sans connexion), CVE-2026-69361 (SSRF, le serveur envoie des requêtes HTTP à des systèmes internes ou de bouclage), CVE-2026-69375 (un attaquant authentifié peut remplacer le contenu de fichiers) et CVE-2026-69382 (divulgation d’informations d’identification via un algorithme cryptographique faible, requiert un cookie d’authentification déjà dérobé).
 
 ## Version 2 du 2 octobre : CVE-2026-96940 ajoutée
 
-Le 2 octobre 2026, Microsoft a publié la « Version 2 » des SU de septembre. Selon l’annonce, la seule différence avec la première version est le correctif supplémentaire pour **[CVE-2026-96940](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-96940). Cette vulnérabilité d’élévation de privilèges a un CVSS de 8.8, n’est ni connue publiquement ni exploitée, mais Microsoft est la seule des dix CVE à l’évaluer comme **« Exploitation More Likely »**. Un attaquant authentifié peut ainsi accéder aux boîtes aux lettres d’autres utilisateurs de la même organisation et lire les e-mails avec leurs pièces jointes. Exchange Online est déjà corrigé côté serveur.
+Le 2 octobre 2026, Microsoft a publié la « version 2 » des SU de septembre. Selon l’annonce, la seule différence avec la première version réside dans le correctif supplémentaire de **[CVE-2026-96940](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-96940). Cette vulnérabilité d’élévation de privilèges a un CVSS de 8.8, n’est ni publiquement connue ni exploitée, mais Microsoft est la seule à l’évaluer parmi les dix CVE comme **« Exploitation More Likely »**. Un attaquant authentifié peut ainsi accéder aux boîtes aux lettres d’autres personnes dans la même organisation et lire les e-mails, y compris les pièces jointes. Exchange Online est déjà corrigé côté serveur.
 
 | Version | KB | Build v2 |
 | --- | --- | --- |
@@ -75,11 +75,11 @@ Le 2 octobre 2026, Microsoft a publié la « Version 2 » des SU de septembre. S
 | Exchange 2019 CU14 | KB5129957 | 15.2.1544.48 |
 | Exchange 2016 CU23 | KB5129958 | 15.1.2507.75 |
 
-Dans la pratique, cela signifie que le correctif de CVE-2026-96940 n’est inclus que dans les builds v2. Les serveurs exécutant déjà la SU du 8 septembre ont également besoin de v2. Si vous appliquez les correctifs seulement maintenant, vous pouvez installer directement v2, les SU étant cumulatives. Les articles KB ne précisent pas explicitement si les serveurs ayant reçu la première SU de septembre doivent obligatoirement installer v2 ; puisque la nouvelle CVE n’est corrigée qu’avec v2, c’est l’interprétation logique.
+En pratique, cela signifie que le correctif de CVE-2026-96940 n’est présent que dans les builds v2. Les serveurs exécutant déjà la SU du 8 septembre nécessitent également la v2. Ceux qui appliquent le correctif seulement maintenant peuvent installer directement la v2, car les SU sont cumulatives. Les articles KB ne disent pas explicitement si les serveurs dotés de la première SU de septembre doivent impérativement installer la v2 ; puisque la nouvelle CVE n’est corrigée qu’avec la v2, c’est l’interprétation logique.
 
 ## Problème des wrappers corrigé : supprimer maintenant le SettingOverride
 
-Le problème connu depuis la SU de juin, selon lequel des *messages wrapper* apparaissent dans la boîte de réception de boîtes aux lettres partagées dans les environnements hybrides, est corrigé avec la SU de septembre sur les quatre versions. L’[article d’août](/blog/exchange-security-updates-august-2026) indiquait encore que le SettingOverride documenté comme solution de contournement pouvait rester en place. Après l’installation de la SU de septembre, c’est l’inverse : Microsoft recommande dans l’article de support associé de vérifier puis de supprimer l’override.
+Le problème connu depuis la SU de juin, selon lequel des *messages wrapper* apparaissent dans la boîte de réception de boîtes aux lettres partagées dans les environnements hybrides, est corrigé avec la SU de septembre sur les quatre versions. Dans l’[article d’août](/blog/exchange-security-updates-august-2026), il était encore indiqué que le SettingOverride documenté comme solution de contournement pouvait rester en place. Après l’installation de la SU de septembre, c’est l’inverse : Microsoft recommande dans l’article de support associé de vérifier et supprimer l’override.
 
 ```powershell
 Get-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"
@@ -87,24 +87,24 @@ Remove-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Commande | Effet |
 |---|---|
-| `Get-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"` | Vérifie si l’override de solution de contournement est défini dans l’organisation. |
-| `Remove-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"` | Supprime l’override une fois la SU de septembre installée. |
+| `Get-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"` | Vérifie si l’override de contournement est défini dans l’organisation. |
+| `Remove-SettingOverride "DisableBlockSharedAndUserMailboxHeaders"` | Supprime l’override dès que la SU de septembre est installée. |
 
 </details>
 
 Si la première commande indique que l’objet `DisableBlockSharedAndUserMailboxHeaders` est introuvable, Microsoft précise qu’aucune autre action n’est nécessaire.
 
-Pour Exchange SE, la SU corrige également une erreur lors des requêtes de disponibilité hybride via Microsoft Graph : les utilisateurs on-premises voyaient les heures occupées des boîtes aux lettres Exchange Online décalées de leur propre décalage UTC, sans message d’erreur.
+Pour Exchange SE, la SU corrige en outre une erreur lors des requêtes hybride libre/occupé via Microsoft Graph : les utilisateurs on-premises voyaient les périodes occupées des boîtes aux lettres Exchange Online décalées de leur propre décalage UTC, sans message d’erreur.
 
 ## Problèmes connus
 
-**Les calendriers publiés (.ics) renvoient HTTP 500 aux applications de calendrier.** Le problème existe depuis la SU d’août (Exchange SE à partir du build 15.2.2562.46 ainsi qu’Exchange 2019 et 2016) et n’est pas corrigé dans la SU de septembre ni dans v2. Les abonnements à des calendriers publiés anonymement ne se mettent plus à jour ; la même URL fonctionne dans le navigateur. Selon Microsoft, la cause est la suivante : Exchange identifie les clients via le User-Agent ; les applications de calendrier sans identifiant de navigateur sont dirigées vers un chemin de code que la SU d’août a désactivé. Comme solution de contournement, Microsoft décrit une règle de réécriture d’URL sur le site IIS « Exchange Back End », qui ajoute le paramètre `layout=premium` aux requêtes .ics sous `/owa/calendar/`; le module IIS URL Rewrite doit être installé. Les étapes précises (via le Gestionnaire IIS ou directement dans `applicationHost.config`) figurent dans l’[article de support KB5126672](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672). Microsoft ne donne pas de date pour le correctif (état au 7 octobre 2026).
+**Les calendriers publiés (.ics) renvoient HTTP 500 aux applications de calendrier.** Le problème existe depuis la SU d’août (Exchange SE à partir du build 15.2.2562.46 ainsi qu’Exchange 2019 et 2016) et n’est pas corrigé dans la SU de septembre ni dans la v2. Les abonnements à des calendriers publiés anonymement ne se mettent plus à jour ; la même URL fonctionne dans un navigateur. Selon Microsoft, la cause est la suivante : Exchange identifie les clients par le User-Agent, et les applications de calendrier sans identifiant de navigateur suivent un chemin de code que la SU d’août a désactivé. Comme solution de contournement, Microsoft décrit une règle de réécriture d’URL sur le site « Exchange Back End » dans IIS, qui ajoute le paramètre `layout=premium` aux requêtes .ics sous `/owa/calendar/` ; le module IIS URL Rewrite doit être installé. Les étapes précises (via le Gestionnaire IIS ou directement dans le fichier `applicationHost.config`) figurent dans l’[article de support KB5126672](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672). Microsoft ne donne pas de date pour le correctif (état au 7 octobre 2026).
 
-**Disponibilité des boîtes aux lettres déléguées dans les environnements hybrides (Exchange SE uniquement).** Si la requête de disponibilité est configurée exclusivement via l’API Graph, les requêtes concernant des boîtes aux lettres Exchange Online via un accès on-premises délégué échouent. Outlook affiche « Your server location could not be determined », OWA affiche « No information » et les journaux EWS affichent `(403) Forbidden`. La solution de contournement documentée redirige les requêtes à nouveau via EWS plutôt que Graph :
+**Libre/occupé pour les boîtes aux lettres déléguées dans les environnements hybrides (Exchange SE uniquement).** Lorsque la requête de disponibilité est configurée exclusivement via l’API Graph, les requêtes vers les boîtes aux lettres Exchange Online via un accès on-premises délégué échouent. Outlook affiche « Your server location could not be determined », OWA affiche « No information », et le journal EWS contient `(403) Forbidden`. La solution de contournement documentée redirige à nouveau les requêtes via EWS au lieu de Graph :
 
 ```powershell
 Set-SettingOverride -Identity EnableRouteThroughMSGraphFeature -Parameters "Enabled=False"
@@ -112,24 +112,24 @@ Get-ExchangeDiagnosticInfo -Process Microsoft.Exchange.Directory.TopologyService
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
 | `-Identity EnableRouteThroughMSGraphFeature` | L’override qui contrôle le routage des requêtes de disponibilité via Microsoft Graph. |
-| `-Parameters "Enabled=False"` | Désactive le chemin Graph ; les requêtes passent à nouveau par EWS. |
-| `-Process Microsoft.Exchange.Directory.TopologyService` | Dirige l’appel de diagnostic vers le service de topologie. |
+| `-Parameters "Enabled=False"` | Désactive le chemin Graph ; les requêtes repassent par EWS. |
+| `-Process Microsoft.Exchange.Directory.TopologyService` | Adresse l’appel de diagnostic au service de topologie. |
 | `-Component VariantConfiguration -Argument Refresh` | Recharge la Variant Configuration afin que l’override prenne effet sans attendre. |
 
 </details>
 
-Dans l’annonce de v2, Microsoft répertorie ce problème parmi les problèmes corrigés. Toute personne ayant appliqué la solution de contournement devrait vérifier après l’installation de v2, dans l’[article de support KB5127092](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092), s’il convient de la retirer ; au 7 octobre 2026, aucune instruction à ce sujet n’y figurait encore.
+Dans l’annonce de la v2, Microsoft répertorie ce problème parmi les problèmes corrigés. Quiconque a défini la solution de contournement doit vérifier après l’installation de la v2, dans l’[article de support KB5127092](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092), si elle doit être annulée ; au 7 octobre 2026, aucune instruction à cet effet n’y figurait encore.
 
-**ContentEngine deadlock en raison de fichiers de règles WordBreaker coréens manquants (Exchange SE uniquement).** Avec la SU de septembre (build 15.2.2562.49 et build v2 15.2.2562.53), les fichiers de règles du WordBreaker coréen mis à jour ne sont pas installés. Conséquences : résultats de recherche manquants, livraison des e-mails retardée, clients Outlook ou MAPI qui se bloquent ou perdent la connexion. [KB5130098](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) indique que les environnements qui traitent des e-mails avec du contenu en coréen sont concernés. Cela ne dépend pas de la langue de vos propres utilisateurs : des messages contenant du texte coréen atteignent aussi des organisations sans correspondance coréenne, par exemple sous forme de spam ou de newsletter. Les environnements suisses ne sont donc pas exclus d’emblée. Microsoft étudie encore le problème ; la vérification et la solution de contournement figurent dans la section suivante.
+**Blocage de ContentEngine dû à l’absence de fichiers de règles WordBreaker coréens (Exchange SE uniquement).** Avec la SU de septembre (build 15.2.2562.49 et build v2 15.2.2562.53), les fichiers de règles du WordBreaker coréen mis à jour ne sont pas installés. Conséquences : résultats de recherche manquants, remise des e-mails retardée, clients Outlook ou MAPI qui se bloquent ou perdent la connexion. [KB5130098](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) indique comme concernés les environnements qui traitent des e-mails contenant du contenu en coréen. Cela ne dépend pas de la langue de vos propres utilisateurs : des messages avec du texte coréen parviennent aussi aux organisations sans correspondance en coréen, par exemple sous forme de spam ou de newsletters. Les environnements suisses ne sont donc pas exclus d’emblée. Microsoft étudie encore le problème ; la vérification et la solution de contournement figurent dans la section suivante.
 
-## Solution de contournement pour le deadlock WordBreaker
+## Solution de contournement pour le blocage du WordBreaker
 
-La solution de contournement de KB5130098 ajoute deux fichiers de règles provenant du package SQL Server 2025 Express RTM. Microsoft la soumet à des conditions : elle ne doit pas être appliquée uniquement en raison des symptômes, mais seulement sur des serveurs remplissant tous les critères de vérification et auxquels **les deux** fichiers manquent. L’[Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) ne vérifie pas ces fichiers ; la version v26.10.02 du 2 octobre 2026 ne contient aucun contrôle correspondant (état au 9 octobre 2026). La vérification doit donc être effectuée manuellement.
+La solution de contournement issue de KB5130098 ajoute deux fichiers de règles provenant du package SQL Server 2025 Express RTM. Microsoft la soumet à des conditions : elle ne doit pas être appliquée sur la seule base des symptômes, mais uniquement sur les serveurs qui remplissent tous les critères de vérification et auxquels **les deux** fichiers manquent. L’[Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) ne vérifie pas ces fichiers ; la version v26.10.02 du 2 octobre 2026 ne contient pas de vérification correspondante (état au 9 octobre 2026). Le contrôle doit donc être effectué manuellement.
 
 ### 1. Vérifier le serveur
 
@@ -150,15 +150,15 @@ $dll     = Get-Item (Join-Path $native 'korwbrkr.dll')
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Ligne | Effet |
 |---|---|
-| `Join-Path $env:ExchangeInstallPath 'Bin\Search\Ceres\Native'` | Construit le chemin vers le répertoire où doivent se trouver les fichiers de règles. |
+| `Join-Path $env:ExchangeInstallPath 'Bin\Search\Ceres\Native'` | Construit le chemin vers le répertoire auquel appartiennent les fichiers de règles. |
 | `Get-Item ...\ExSetup.exe` | Lit le fichier dont la version indique le build Exchange installé. |
-| `VersionInfo.FileVersion` | Version de fichier provenant des ressources de l’EXE ou de la DLL. |
-| `Get-FileHash -LiteralPath ... -Algorithm SHA256` | Calcule le hachage SHA256 de `korwbrkr.dll` installée. |
-| `Test-Path ...` | Renvoie `True` si le fichier de règles concerné est déjà présent. |
+| `VersionInfo.FileVersion` | Version du fichier issue des ressources de l’EXE ou de la DLL. |
+| `Get-FileHash -LiteralPath ... -Algorithm SHA256` | Calcule le hachage SHA256 du fichier `korwbrkr.dll` installé. |
+| `Test-Path ...` | Renvoie `True` lorsque le fichier de règles concerné est déjà présent. |
 
 </details>
 
@@ -172,11 +172,11 @@ La solution de contournement n’est autorisée que si toutes les valeurs corres
 | `KorwbrkrSha256` | 1C6BD8E144BA677EBCC83323AE59DB3881918170F9B3A5189B44611558B92C61 |
 | `KoTokenRule`, `KoComplexRule` | tous deux `False` |
 
-Si le build, la version ou le hachage de la DLL diffère, Microsoft renvoie au support. Si l’un des deux fichiers de règles est déjà présent, arrêtez-vous et n’écrasez rien.
+Si le build, la version ou le hachage de la DLL diffère, Microsoft renvoie vers le support. Si l’un des deux fichiers de règles est déjà présent, arrêtez-vous et n’écrasez rien.
 
 ### 2. Obtenir les fichiers de règles
 
-Les fichiers proviennent de `SQLEXPR_x64_ENU.exe`, le package x64 anglais de SQL Server 2025 Express RTM (version 17.0.1000.7, 748772024 octets). Microsoft recommande d’effectuer cette étape sur une station de travail d’administration, et non sur le serveur Exchange. SQL Server n’est pas installé : le package est uniquement décompressé et la MSI Full-Text est extraite uniquement en mode administratif. Vérifiez d’abord la signature et le hachage du téléchargement :
+Les fichiers proviennent de `SQLEXPR_x64_ENU.exe`, le package x64 anglais de SQL Server 2025 Express RTM (version 17.0.1000.7, 748772024 octets). Microsoft recommande d’effectuer cette étape sur un poste de travail d’administration, et non sur le serveur Exchange. SQL Server n’est pas installé : le package est uniquement décompressé et la MSI Full-Text n’est extraite qu’administrativement. Vérifiez d’abord la signature et le hachage du téléchargement :
 
 ```powershell
 Get-AuthenticodeSignature .\SQLEXPR_x64_ENU.exe |
@@ -184,7 +184,7 @@ Get-AuthenticodeSignature .\SQLEXPR_x64_ENU.exe |
 Get-FileHash .\SQLEXPR_x64_ENU.exe -Algorithm SHA256
 ```
 
-Les valeurs attendues sont l’état `Valid` avec un certificat Microsoft et la valeur SHA256 `74AA90C11202A5524E769B9BC22531BAEF22D91E9B2D2E8C3CB99E89A65C5297`. Décompressez et extrayez ensuite :
+Les valeurs attendues sont le statut `Valid` avec un certificat Microsoft et la valeur SHA256 `74AA90C11202A5524E769B9BC22531BAEF22D91E9B2D2E8C3CB99E89A65C5297`. Décompressez et extrayez ensuite :
 
 ```powershell
 $work = 'C:\Temp\KoreanRules'
@@ -197,17 +197,17 @@ $p.ExitCode
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
 | `/q` | Décompresse sans dialogue. |
-| `/x:<Pfad>` | Mode d’extraction du package SQL : décompresse le média d’installation dans le dossier sans démarrer SQL Setup. |
-| `-Wait -PassThru` | Attend la fin du processus et renvoie l’objet processus afin que le code de sortie puisse être lu. |
-| `msiexec /a <MSI>` | Installation administrative : dépose le contenu de la MSI sous forme de fichiers sans rien installer ni enregistrer. |
-| `TARGETDIR=<Pfad>` | Dossier cible des fichiers extraits. |
+| `/x:<Pfad>` | Mode d’extraction du package SQL : décompresse les supports d’installation dans le dossier sans démarrer SQL Setup. |
+| `-Wait -PassThru` | Attend la fin du processus et renvoie l’objet processus afin que le code de sortie soit lisible. |
+| `msiexec /a <MSI>` | Installation administrative : dépose le contenu de la MSI sous forme de fichiers, sans rien installer ni enregistrer. |
+| `TARGETDIR=<Pfad>` | Dossier de destination des fichiers extraits. |
 | `/qn` | Sans interface utilisateur. |
-| `/L*V <Datei>` | Journal détaillé qui indique la cause en cas d’erreur. |
+| `/L*V <Datei>` | Journal détaillé, qui montre la cause en cas d’erreur. |
 
 </details>
 
@@ -224,7 +224,7 @@ Get-ChildItem "$work\Files" -Recurse -Include 'ko.token.rule.bin', 'ko.complex.r
 | `ko.token.rule.bin` | 56132 | 8F2BD853593913EB8F73DCD4FCAC4216F216A0FF76A4569DF071BE3C36773010 |
 | `ko.complex.rule.bin` | 717792 | 0390D1E9A76EF33283025CF8F164430E311584B9535949C4EA1A74B6BB107B87 |
 
-Les fichiers se trouvent dans l’arborescence extraite sous `...\MSSQL\Binn\ftcomponents\wordbreakers`. Transférez uniquement ces deux fichiers dans un dossier de staging sur le serveur Exchange, aucun média SQL et surtout pas `korwbrkr.dll` provenant du package SQL.
+Les fichiers se trouvent dans l’arborescence extraite sous `...\MSSQL\Binn\ftcomponents\wordbreakers`. Transférez uniquement ces deux fichiers dans un dossier de préparation sur le serveur Exchange, aucun support SQL et surtout pas le fichier `korwbrkr.dll` du package SQL.
 
 ### 3. Copier les fichiers
 
@@ -238,29 +238,29 @@ foreach ($f in 'ko.token.rule.bin', 'ko.complex.rule.bin') {
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
-| `Copy-Item -LiteralPath <Quelle>` | Copie le fichier depuis le dossier de staging ; le chemin est évalué sans caractères génériques. |
-| `-Destination $native` | Répertoire cible à côté de `korwbrkr.dll` installée. |
+| `Copy-Item -LiteralPath <Quelle>` | Copie le fichier depuis le dossier de préparation ; le chemin est évalué sans caractères génériques. |
+| `-Destination $native` | Répertoire de destination à côté du fichier `korwbrkr.dll` installé. |
 | `Get-FileHash ... -Algorithm SHA256` | Vérifie à nouveau le hachage à l’emplacement cible par rapport au tableau ci-dessus. |
 
 </details>
 
-Utilisez `Copy-Item`, pas `Move-Item`. Un fichier copié reçoit les autorisations héritées du répertoire cible ; un fichier déplacé conserve celles de son dossier source. Les fichiers nécessitent les droits de lecture normaux de `Native`. Ne remplacez aucun autre fichier dans ce répertoire.
+Utilisez `Copy-Item`, et non `Move-Item`. Un fichier copié reçoit les autorisations héritées du répertoire cible ; un fichier déplacé conserve les autorisations de son dossier d’origine. Les fichiers nécessitent les droits de lecture normaux de `Native`. Ne remplacez aucun autre fichier dans ce répertoire.
 
-### 4. Redémarrer Search Host Controller
+### 4. Redémarrer le Search Host Controller
 
 ```powershell
 Restart-Service -Name HostControllerService
 ```
 
-Le redémarrage interrompt temporairement la recherche et le traitement de contenu sur le serveur ; Microsoft prévoit pour cela une fenêtre de maintenance. Il n’est pas nécessaire de redémarrer le serveur lui-même. Ne forcez pas l’arrêt des processus Exchange : si le service ne démarre pas correctement, le support est selon Microsoft l’étape suivante.
+Le redémarrage interrompt temporairement la recherche et le traitement du contenu sur le serveur ; Microsoft prévoit à cet effet une fenêtre de maintenance. Il n’est pas nécessaire de redémarrer le serveur lui-même. Ne forcez l’arrêt d’aucun processus Exchange : si le service ne démarre pas correctement, le support est selon Microsoft l’étape suivante.
 
-### 5. Vérification
+### 5. Contrôle
 
-Le Host Controller démarre lui-même le processus `NodeRunner.exe` de ContentEngine ; ne le démarrez pas manuellement. Cette requête indique s’il est en cours d’exécution :
+Le Host Controller démarre lui-même le processus `NodeRunner.exe` de ContentEngine ; ne le démarrez pas manuellement. La requête suivante permet de vérifier s’il est en cours d’exécution :
 
 ```powershell
 Get-CimInstance Win32_Process -Filter "Name = 'NodeRunner.exe'" |
@@ -269,68 +269,68 @@ Get-CimInstance Win32_Process -Filter "Name = 'NodeRunner.exe'" |
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
 | `Get-CimInstance Win32_Process -Filter "Name = 'NodeRunner.exe'"` | Lit tous les processus NodeRunner avec leur ligne de commande. |
-| `Where-Object CommandLine -like '*ContentEngineNode1*'` | Filtre sur le processus ContentEngine. |
-| `Select-Object ProcessId, CreationDate` | Affiche l’ID de processus et l’heure de démarrage ; l’heure de démarrage doit être postérieure au redémarrage du service. |
+| `Where-Object CommandLine -like '*ContentEngineNode1*'` | Filtre sur le processus de ContentEngine. |
+| `Select-Object ProcessId, CreationDate` | Affiche l’ID du processus et son heure de démarrage ; l’heure de démarrage doit être postérieure au redémarrage du service. |
 
 </details>
 
-Si aucun processus n’apparaît ou s’il se termine à plusieurs reprises, ne traitez aucun autre serveur. Sinon, vérifiez dans Outlook sur le web, avec une boîte aux lettres dont la copie active de la base de données se trouve sur ce serveur, que les nouveaux e-mails sont livrés et trouvés, y compris les e-mails contenant du texte coréen. Vérifiez également le service qui était initialement perturbé (livraison, connexion Outlook). Surveillez séparément le retard de l’index de recherche : le fait que les nouveaux e-mails soient trouvés ne prouve pas que les éléments plus anciens ont déjà été traités. Traitez les autres serveurs un par un et seulement après une vérification réussie du précédent.
+Si aucun processus n’apparaît ou s’il se termine de manière répétée, ne traitez pas d’autres serveurs. Sinon, vérifiez dans Outlook sur le Web, avec une boîte aux lettres dont la copie de base de données active se trouve sur ce serveur, que les nouveaux e-mails sont remis et trouvés, y compris les e-mails contenant du texte coréen. Vérifiez également le service qui était initialement perturbé (remise, connexion Outlook). Surveillez séparément le retard de l’index de recherche : le fait que les nouveaux e-mails soient trouvés ne prouve pas que les éléments plus anciens sont déjà traités. Traitez les autres serveurs un par un et uniquement après avoir contrôlé avec succès le précédent.
 
 ## Installation et suivi
 
-Microsoft recommande le déroulement habituel : inventorier avec l’[Exchange Health Checker](https://aka.ms/ExchangeHealthChecker), déterminer le chemin avec l’[Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) si le niveau est obsolète, installer la SU, redémarrer le serveur et vérifier que tous les services Exchange fonctionnent. Le Health Checker indique ensuite également si la SU est correctement installée. Le Security Update Guide indique qu’un redémarrage est requis pour les mises à jour.
+Microsoft recommande le processus habituel : inventorier avec l’[Exchange Health Checker](https://aka.ms/ExchangeHealthChecker), déterminer le chemin avec l’[Exchange Update Wizard](https://aka.ms/ExchangeUpdateWizard) si l’environnement n’est pas à jour, installer la SU, redémarrer le serveur et vérifier que tous les services Exchange sont en cours d’exécution. Le Health Checker indique ensuite également si la SU est correctement installée. Le Security Update Guide indique qu’un redémarrage est nécessaire pour les mises à jour.
 
-Trois opérations de suivi sont nécessaires après l’installation :
+Après l’installation, trois actions de suivi sont nécessaires :
 
 1. Supprimer le Wrapper-SettingOverride `DisableBlockSharedAndUserMailboxHeaders` s’il est défini (voir ci-dessus).
 
-2. Sur Exchange SE, contrôler au moyen du script de vérification de la [section WordBreaker](#workaround-für-den-wordbreaker-deadlock) si les deux fichiers de règles manquent, et vérifier si le problème de disponibilité survient. Appliquez les solutions de contournement uniquement si les conditions correspondantes sont remplies.
+2. Sur Exchange SE, contrôler avec le script de vérification de la [section WordBreaker](#workaround-für-den-wordbreaker-deadlock) si les deux fichiers de règles sont absents, et vérifier si le problème libre/occupé se produit. Appliquez les solutions de contournement uniquement lorsque les conditions correspondantes sont remplies.
 
-3. Pour les calendriers publiés avec des abonnés externes, mettre en place la règle de réécriture d’URL de KB5126672 si cela n’a pas encore été fait depuis la SU d’août.
+3. Pour les calendriers publiés avec des abonnés externes, configurer la règle de réécriture d’URL de KB5126672, si cela n’a pas déjà été fait depuis la SU d’août.
 
-Il reste également, depuis juillet, à vérifier si l’atténuation CVE-2026-42897 (M2.1.0) est toujours active ; la procédure de suppression figure dans l’[article sur la SU de juillet](/blog/exchange-security-updates-juli-2026).
+Depuis juillet, il reste également à vérifier si la mitigation CVE-2026-42897 (M2.1.0) est toujours active ; la manière de la supprimer est indiquée dans l’[article sur la SU de juillet](/blog/exchange-security-updates-juli-2026).
 
 ## Procédure recommandée
 
-Installez directement les builds v2 du 2 octobre sur tous les serveurs Exchange et les machines dotées des Management Tools ; les serveurs disposant de la SU du 8 septembre nécessitent également v2 pour CVE-2026-96940. La vulnérabilité d’usurpation avec un CVSS de 9.3 et la prise de contrôle des boîtes aux lettres via un compte utilisateur à faibles privilèges (CVE-2026-69380) sont des raisons suffisantes pour ne pas attendre le prochain Patch Tuesday. Supprimez ensuite l’override wrapper, vérifiez les trois Known Issues et exécutez le Health Checker. Le Health Checker ne signale pas les fichiers WordBreaker manquants ; le script de vérification de la section WordBreaker est nécessaire à cet effet. Le programme ESU pour Exchange 2016 et 2019 prend fin en octobre 2026 ; la migration vers Exchange SE ne peut plus être reportée.
+Installez directement les builds v2 du 2 octobre sur tous les serveurs Exchange et les machines dotées des Management Tools ; les serveurs avec la SU du 8 septembre nécessitent en plus la v2 pour CVE-2026-96940. La faille d’usurpation avec un CVSS de 9.3 et la prise de contrôle de boîtes aux lettres via un compte utilisateur disposant de peu de droits (CVE-2026-69380) sont des raisons suffisantes pour ne pas attendre le prochain Patch Tuesday. Supprimez ensuite l’override des wrappers, vérifiez les trois problèmes connus et exécutez le Health Checker. Le Health Checker ne signale pas les fichiers WordBreaker manquants ; pour cela, le script de vérification de la section WordBreaker est nécessaire. Le programme ESU pour Exchange 2016 et 2019 prend fin en octobre 2026 ; la migration vers Exchange SE ne peut plus être repoussée.
 
 ## Sources
 
-1.  [Released: September 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-september-2026-exchange-server-security-updates/4554411): Annonce officielle de la publication avec les versions prises en charge, l’indication ESU, les Known Issues, les problèmes corrigés et la procédure d’installation (consultée via le flux RSS du Exchange Team Blog).
+1.  [Released: September 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-september-2026-exchange-server-security-updates/4554411) : annonce officielle de publication avec les versions prises en charge, l’indication ESU, les problèmes connus, les problèmes corrigés et le processus d’installation (consultée via le flux RSS de l’Exchange Team Blog).
 
-2.  [Released: September 2026 V2 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/t5/exchange-team-blog/released-september-2026-v2-exchange-server-security-updates/ba-p/4561718): Annonce de la v2 du 2 octobre 2026 ; la seule différence est CVE-2026-96940.
+2.  [Released: September 2026 V2 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/t5/exchange-team-blog/released-september-2026-v2-exchange-server-security-updates/ba-p/4561718) : annonce de la v2 du 2 octobre 2026 ; la seule différence est CVE-2026-96940.
 
-3.  [Description of the security update for Microsoft Exchange Server Subscription Edition RTM: September 8, 2026 (KB5121608) – Microsoft Support](https://support.microsoft.com/help/5121608): Liste des CVE, problèmes corrigés et les trois Known Issues pour Exchange SE.
+3.  [Description of the security update for Microsoft Exchange Server Subscription Edition RTM: September 8, 2026 (KB5121608) – Microsoft Support](https://support.microsoft.com/help/5121608) : liste des CVE, problèmes corrigés et les trois problèmes connus pour Exchange SE.
 
-4.  [Description of the security update for Microsoft Exchange Server 2019 CU15: September 8, 2026 (KB5121609) – Microsoft Support](https://support.microsoft.com/help/5121609): Article KB pour Exchange 2019 CU15.
+4.  [Description of the security update for Microsoft Exchange Server 2019 CU15: September 8, 2026 (KB5121609) – Microsoft Support](https://support.microsoft.com/help/5121609) : article KB pour Exchange 2019 CU15.
 
-5.  [Description of the security update for Microsoft Exchange Server 2019 CU14: September 8, 2026 (KB5121610) – Microsoft Support](https://support.microsoft.com/help/5121610): Article KB pour Exchange 2019 CU14.
+5.  [Description of the security update for Microsoft Exchange Server 2019 CU14: September 8, 2026 (KB5121610) – Microsoft Support](https://support.microsoft.com/help/5121610) : article KB pour Exchange 2019 CU14.
 
-6.  [Description of the security update for Microsoft Exchange Server 2016 CU23: September 8, 2026 (KB5121611) – Microsoft Support](https://support.microsoft.com/help/5121611): Article KB pour Exchange 2016 CU23, sans CVE-2026-55007.
+6.  [Description of the security update for Microsoft Exchange Server 2016 CU23: September 8, 2026 (KB5121611) – Microsoft Support](https://support.microsoft.com/help/5121611) : article KB pour Exchange 2016 CU23, sans CVE-2026-55007.
 
-7.  [Security Update Guide – Microsoft Security Response Center](https://msrc.microsoft.com/update-guide/): Type, CVSS, gravité, évaluation de l’exploitation et FAQ sur les neuf CVE de septembre et CVE-2026-96940, y compris les builds concernés pour chaque CVE.
+7.  [Security Update Guide – Microsoft Security Response Center](https://msrc.microsoft.com/update-guide/) : type, CVSS, gravité, évaluation de l’exploitation et FAQ concernant les neuf CVE de septembre ainsi que CVE-2026-96940, y compris les builds concernés pour chaque CVE.
 
-8.  [Description of version 2 of the security update for Microsoft Exchange Server Subscription Edition RTM October 2, 2026 (KB5129955) – Microsoft Support](https://support.microsoft.com/help/5129955): Article KB relatif à la v2 pour Exchange SE ; les articles v2 pour 2019 et 2016 sont KB5129956 à KB5129958.
+8.  [Description of version 2 of the security update for Microsoft Exchange Server Subscription Edition RTM October 2, 2026 (KB5129955) – Microsoft Support](https://support.microsoft.com/help/5129955) : article KB relatif à la v2 pour Exchange SE ; les articles v2 pour 2019 et 2016 sont KB5129956 à KB5129958.
 
-9.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Numéros de build des SU de septembre et de la v2 du 2 octobre 2026.
+9.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates) : numéros de build des SU de septembre et de la v2 du 2 octobre 2026.
 
-10. [Wrapper messages appear in shared mailbox in hybrid environments after installing the June 2026 Security Update – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719): Correctif dans la SU de septembre et instructions pour supprimer le SettingOverride.
+10. [Wrapper messages appear in shared mailbox in hybrid environments after installing the June 2026 Security Update – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/hotfix/2026/5105719) : correctif dans la SU de septembre et instructions pour supprimer le SettingOverride.
 
-11. [Published calendar (.ics) returns HTTP 500 for calendar applications – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672): Cause et solution de contournement par réécriture d’URL.
+11. [Published calendar (.ics) returns HTTP 500 for calendar applications – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5126672) : cause et solution de contournement par réécriture d’URL.
 
-12. [Availability (free/busy) fails for delegated mailboxes in Exchange hybrid deployments using Graph API only – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092): Symptômes et solution de contournement par SettingOverride pour Exchange SE.
+12. [Availability (free/busy) fails for delegated mailboxes in Exchange hybrid deployments using Graph API only – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5127092) : symptômes et solution de contournement avec SettingOverride pour Exchange SE.
 
-13. [ContentEngine deadlock because of missing Korean WordBreaker rule files – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098): Builds SE concernés, critères de vérification, tailles et hachages de fichiers attendus, obtention depuis SQL Server 2025 Express, redémarrage du service et vérification.
+13. [ContentEngine deadlock because of missing Korean WordBreaker rule files – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5130098) : builds SE concernés, critères de vérification, tailles et hachages de fichiers attendus, obtention depuis SQL Server 2025 Express, redémarrage du service et contrôle.
 
-14. [Hybrid free/busy through Microsoft Graph incorrectly shifts busy times by requester timezone – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5125804): Erreur de fuseau horaire dans Exchange SE corrigée avec la SU de septembre.
+14. [Hybrid free/busy through Microsoft Graph incorrectly shifts busy times by requester timezone – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5125804) : l’erreur de fuseau horaire dans Exchange SE corrigée avec la SU de septembre.
 
-15. [Neue Sicherheitsupdates für Exchange Server (September 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-september-2026/): Analyse en allemand des neuf CVE avec valeurs CVSS et builds.
+15. [Neue Sicherheitsupdates für Exchange Server (September 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-september-2026/) : présentation en allemand des neuf CVE avec valeurs CVSS et builds.
 
-16. [Exchange Server: Sicherheitsupdates 8. September 2026 – Borns Tech and Windows World](https://borncity.com/blog/?p=329371): Résumé en allemand avec des indications sur la mise à jour de remplacement publiée ultérieurement.
+16. [Exchange Server: Sicherheitsupdates 8. September 2026 – Borns Tech and Windows World](https://borncity.com/blog/?p=329371) : résumé en allemand avec références à la mise à jour de remplacement ultérieure.
 
-17. [microsoft/CSS-Exchange – GitHub](https://github.com/microsoft/CSS-Exchange): Code source de l’Exchange Health Checker ; version v26.10.02 du 2 octobre 2026 sans vérification des fichiers WordBreaker (état au 9 octobre 2026).
+17. [microsoft/CSS-Exchange – GitHub](https://github.com/microsoft/CSS-Exchange) : code source de l’Exchange Health Checker ; version v26.10.02 du 2 octobre 2026 sans vérification des fichiers WordBreaker (état au 9 octobre 2026).

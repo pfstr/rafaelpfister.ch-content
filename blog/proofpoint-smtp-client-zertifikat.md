@@ -1,8 +1,9 @@
 ---
-title: "Proofpoint Protection Server 8.22.4: Patch kann die Zertifikatskonfiguration für SMTP Client zurücksetzen"
+title: "Proofpoint Protection Server 8.22.4: Patch 5807 lässt SMTP Client ohne Zertifikat"
 navTitle: "PPS 8.22.4 Zertifikat"
-description: "Steht im Proofpoint Protection Server unter System > Certificates > Services die Zuordnung «SMTP Client» auf «-none-», liefert Sendmail ohne TLS-Client-Zertifikat aus. Gegenstellen mit Zertifikatsprüfung lehnen dann ab, etwa Exchange Online mit 5.7.51 oder ein Smarthost mit «Relay access denied». So prüfen und beheben Sie das."
+description: "Die Patches 5806 und 5807 führen im Proofpoint Protection Server 8.22.4 unter System > Certificates > Services eine eigene Zuordnung «SMTP Client» ein. Steht sie auf «-none-», liefert Sendmail ohne TLS-Client-Zertifikat aus. Gegenstellen mit Zertifikatsprüfung lehnen dann ab, etwa Exchange Online mit 5.7.51 oder ein Smarthost mit «Relay access denied». So prüfen und beheben Sie das."
 date: "2026-11-05"
+aktualisiert: "2026-11-06"
 kategorie: "Proofpoint"
 timeToRead: "7 min to read"
 themen:
@@ -59,7 +60,16 @@ Direkt danach baut Sendmail die Verbindung trotzdem mit TLS auf (`verify=OK`), j
 
 PPS ordnet jedem Dienst pro Server ein Zertifikat zu. Unter **System > Certificates > Services** stehen pro Server unter anderem `SMTP Server`, `SMTP Client`, `Administration Server` und `End User Web Application / Encryption`. Aus der Zuordnung bei `SMTP Client` erzeugt PPS die Datei `/etc/pki/tls/certs/sendmail-client.pem`, die Sendmail als Client-Zertifikat verwendet. Steht dort `-none-`, schreibt PPS die Datei leer oder gar nicht.
 
-In der untersuchten Umgebung stand die Zuordnung nach einem automatischen Patch auf allen Servern auf `-none-`. Unter **System > Config History** war der Patch als Eintrag `configuration changes for patch-…` mit dem Ersteller `system` sichtbar, die Dateien unter `/etc/pki/tls/certs/` trugen denselben Zeitstempel. Ob Proofpoint die Zuordnung mit diesem Patch neu eingeführt hat oder ob der Patch eine bestehende Zuordnung zurückgesetzt hat, ist in den öffentlich zugänglichen Release Notes nicht beschrieben. Ich ergänze den Artikel, sobald Proofpoint dazu Stellung nimmt.
+Die Zuordnung `SMTP Client` gibt es in 8.22.4 erst seit den Patches 5806 und 5807, die Proofpoint am 29.10.2026 veröffentlicht hat. Beide tragen den Titel «TLS client and server certificate authentication improvement» und beheben laut Knowledge Base, dass PPS 8.22.4 keine getrennten Zertifikate für SMTP-Server und SMTP-Client zuordnen kann. Im Release 8.23.0 ist die Funktion regulär enthalten (Release Notes, Abschnitt «SMTP Client Certificate»).
+
+| Patch | Inhalt laut Knowledge Base |
+|---|---|
+| 5806 | Aktualisiert unter anderem `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` und die Vorlage `sendmail.mc`, startet die Admin-GUI (`admind`) neu und aktualisiert das RPM `pps-pfpt` |
+| 5807 | Setzt 5806 voraus, ändert keine Dateien und startet keine Prozesse neu; wendet nur die Konfigurationsänderungen an, die für getrennte Server- und Client-Zertifikate nötig sind |
+
+Proofpoint hat die Zuordnung also neu eingeführt und nicht eine bestehende zurückgesetzt. Ein Zertifikat übernimmt der Patch dabei nicht: Die neue Zeile steht nach der Installation auf `-none-`, und Sendmail verwendet ab diesem Zeitpunkt kein Client-Zertifikat mehr. Ein Hinweis darauf fehlt in den Patch-Beschreibungen.
+
+In der untersuchten Umgebung stand die Zuordnung danach auf allen Servern auf `-none-`. Unter **System > Config History** war Patch 5807 als Eintrag `configuration changes for patch-…` mit dem Ersteller `system` sichtbar, die Dateien unter `/etc/pki/tls/certs/` trugen denselben Zeitstempel. Unter **Software Patch History** erschien 5807 dagegen nicht. Das passt dazu, dass 5807 keine Software installiert, sondern nur Konfiguration ändert. Den Zeitpunkt der Umstellung zeigt deshalb **Config History**, die Software-Änderung selbst gehört zu Patch 5806.
 
 Ein Rollback unter **Config History** auf den Snapshot des Patches hat nicht geholfen. PPS hat die Datei danach neu geschrieben, jedoch mit 0 Bytes.
 
@@ -92,7 +102,14 @@ Fehlt `sendmail-client.pem` oder hat die Datei 0 Bytes, während `sendmail.pem` 
 
 Unter **System > Certificates > Services** für jeden betroffenen Agent bei `SMTP Client` ein gültiges Zertifikat auswählen und mit **Save Changes** speichern. In der Regel ist das dasselbe öffentliche Zertifikat, das bei `SMTP Server` steht.
 
-Die Auswahlliste zeigt alle importierten Zertifikate, auch abgelaufene mit demselben Namen. Unterscheiden lassen sie sich nur über die Seriennummer in Klammern. Vergleichen Sie die Seriennummer vor dem Speichern mit der Liste unter **System > Certificates > Certificates**, dort stehen Ausstellungs- und Ablaufdatum.
+Die Auswahlliste kann mehrere Zertifikate mit demselben Namen enthalten, auch abgelaufene. Unterscheiden lassen sie sich nur über die Seriennummer in Klammern. Vergleichen Sie die Seriennummer vor dem Speichern mit der Liste unter **System > Certificates > Certificates**, dort stehen Ausstellungs- und Ablaufdatum.
+
+Die Liste zeigt bei `SMTP Client` nicht zwingend alle importierten Zertifikate. In der untersuchten Umgebung fehlten einzelne Zertifikate, obwohl sie gültig waren und abgelaufene Exemplare bereits gelöscht waren. Nach welchen Kriterien PPS die Liste filtert, beschreiben weder die Patch-Artikel noch die Release Notes 8.23. Fehlt ein Zertifikat, prüfen Sie zwei Punkte:
+
+- **Privater Schlüssel:** Wurde das Zertifikat als PEM ohne Schlüssel importiert, kann PPS es keinem Dienst zuordnen. PKCS12-Dateien enthalten den Schlüssel immer.
+- **Verwendungszweck:** Enthält das Zertifikat in `Extended Key Usage` den Zweck `TLS Web Client Authentication`? Viele seit Herbst 2025 ausgestellte öffentliche Zertifikate enthalten ihn nicht mehr (siehe unten). Für den Dienst `SMTP Client` ist ein Zertifikat ohne diesen Zweck ohnehin ungeeignet.
+
+Bestätigt Proofpoint die Kriterien, ergänze ich sie hier.
 
 Nach dem Speichern verteilt PPS die Konfiguration an die Agents. Die Kontrolle auf dem Agent:
 
@@ -118,7 +135,7 @@ Eine Kopie von `sendmail.pem` nach `sendmail-client.pem` von Hand überbrückt d
 
 ## Nach jedem Patch kontrollieren
 
-Bis geklärt ist, warum der Patch die Zuordnung verändert hat, empfehle ich nach jedem Patch eine Kontrolle der Seite **Services**. Einfacher ist eine Überwachung, die bei der Meldung `sendmail-client.pem` im Maillog der Agents alarmiert. Unter **Licenses and Updates > Settings** lässt sich zudem festlegen, wann Patches eingespielt werden. Ein Zeitfenster, in dem jemand den Mailflow prüfen kann, verkürzt einen solchen Ausfall deutlich.
+Patch 5807 hat die Konfiguration geändert, ohne dass die Patch-Beschreibung auf die Folgen hinweist. Ich empfehle deshalb nach jedem Patch eine Kontrolle der Seite **Services** und einen Blick in **Config History**, ob der Patch Konfigurationsänderungen mitgebracht hat. Ist Patch 5807 auf einem 8.22.4-System noch nicht installiert, ordnen Sie `SMTP Client` direkt nach der Installation ein Zertifikat zu. Einfacher ist eine Überwachung, die bei der Meldung `sendmail-client.pem` im Maillog der Agents alarmiert. Unter **Licenses and Updates > Settings** lässt sich zudem festlegen, wann Patches eingespielt werden. Ein Zeitfenster, in dem jemand den Mailflow prüfen kann, verkürzt einen solchen Ausfall deutlich.
 
 ## Client Authentication verschwindet aus öffentlichen Zertifikaten
 
@@ -169,7 +186,13 @@ Für Verbindungen, bei denen Partner Proofpoint über ein Client-Zertifikat erke
 
 ## Quellen
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameter `RestrictDomainsToCertificate` und `TlsSenderCertificateName` für Partner-Connectoren in Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, Anmeldung nötig)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Artikel 000027579 vom 29.10.2026, geänderte Dateien und Neustart der Admin-GUI.
+
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, Anmeldung nötig)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Artikel 000027580 vom 29.10.2026, reine Konfigurationsänderung mit Abhängigkeit auf 5806.
+
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, Anmeldung nötig)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): Artikel 000027117, Abschnitt «SMTP Client Certificate» auf Seite 5 der Revision A.
+
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameter `RestrictDomainsToCertificate` und `TlsSenderCertificateName` für Partner-Connectoren in Exchange Online.
 
 2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Abschnitt 1.3.2 zu dedizierten TLS-Server-Hierarchien; Zertifikate ab dem 15.03.2027 nur noch mit `serverAuth`.
 

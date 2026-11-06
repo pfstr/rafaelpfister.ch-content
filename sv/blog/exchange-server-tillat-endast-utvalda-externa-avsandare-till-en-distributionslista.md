@@ -1,7 +1,7 @@
 ---
-title: "Exchange Server: Tillåt endast utvalda externa avsändare till en distributionslista"
-navTitle: "Distribution: externa avsändare"
-description: "En distributionslista i Exchange Server kan konfigureras så att endast vissa externa avsändare kan nå den. Två metoder med PowerShell: leveransbegränsning med e-postkontakter eller transportregel. Dessutom begränsningarna i avsändarkontrollen och hur DMARC stänger dem."
+title: "Exchange: Tillåt endast utvalda externa avsändare till en distributionslista"
+navTitle: "Distributionslista: externa avsändare"
+description: "En distributionslista i Exchange kan konfigureras så att endast vissa externa avsändare kan nå den. Två sätt med PowerShell: leveransbegränsning med e-postkontakter eller transportregel. Dessutom begränsningarna i avsändarkontrollen och hur DMARC täpper till dem."
 date: "2026-11-05"
 kategorie: "Exchange OnPrem / Hybrid"
 timeToRead: "7 min lästid"
@@ -22,40 +22,40 @@ related:
 slug: "exchange-server-tillat-endast-utvalda-externa-avsandare-till-en-distributionslista"
 translationId: "article-b3dc70052f5e8729"
 translationOf: exchange-verteiler-externe-absender
-url: https://rafaelpfister.ch/sv/blog/exchange-server-tillat-endast-utvalda-externa-avsandare-till-en-distributionslista
-translationSourceHash: cff4b579945841f2469f23b5e44d834f6be7528cf9817f9d7ade0fd613f1c582
+translationSourceHash: 14114b684164aa90e68aac9d9ca4f75ed59c1ce77cf6479a167f154e66788d45
 translationModel: gpt-5.6-terra
-translatedAt: 2026-11-05T14:23:07.237Z
+translatedAt: 2026-11-05T15:43:28.342Z
 translationReview: automatic
+url: https://rafaelpfister.ch/sv/blog/exchange-server-tillat-endast-utvalda-externa-avsandare-till-en-distributionslista
 ---
 
-# Exchange Server: Tillåt endast utvalda externa avsändare till en distributionslista
+# Exchange: Tillåt endast utvalda externa avsändare till en distributionslista
 
-En distributionslista i Exchange Server tar som standard endast emot meddelanden från autentiserade, alltså interna avsändare. Om en partner, leverantör eller kund också ska kunna nå listan utan att den därmed öppnas för hela internet finns två möjligheter: en leveransbegränsning på själva gruppen eller en transportregel. Båda fungerar i Exchange Server 2016, 2019 och Subscription Edition.
+En distributionslista i Exchange accepterar som standard endast meddelanden från autentiserade, alltså interna, avsändare. Om en partner, leverantör eller kund också ska kunna nå listan utan att den därmed är öppen för hela internet, finns det två möjligheter: en leveransbegränsning på själva gruppen eller en transportregel. Båda fungerar i Exchange Server 2016, 2019 och Subscription Edition.
 
 ## Utgångsläge: RequireSenderAuthenticationEnabled
 
-Egenskapen `RequireSenderAuthenticationEnabled` styr om en grupp över huvud taget tar emot externa meddelanden. Om den är satt till `$true` (standard för nya distributionsgrupper) avvisar Exchange alla meddelanden från icke-autentiserade avsändare. Båda följande varianter förutsätter därför att denna kontroll är avstängd:
+Om en grupp över huvud taget accepterar externa meddelanden styrs av egenskapen `RequireSenderAuthenticationEnabled`. Om den är satt till `$true` (standard för nya distributionsgrupper) avvisar Exchange alla meddelanden från en icke-autentiserad avsändare. Båda följande varianter förutsätter därför att denna kontroll är avstängd:
 
 ```powershell
 Set-DistributionGroup -Identity "Projektteam" -RequireSenderAuthenticationEnabled $false
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `-Identity` | Distributionsgruppen (namn, alias eller e-postadress). |
-| `-RequireSenderAuthenticationEnabled $false` | Gruppen tar även emot meddelanden från icke-autentiserade, externa avsändare. |
+| `-RequireSenderAuthenticationEnabled $false` | Gruppen accepterar även meddelanden från icke-autentiserade, externa avsändare. |
 
 </details>
 
-Utan ytterligare begränsning kan alla externa avsändare skriva till listan efter detta steg. Begränsningen till enskilda avsändare följer i nästa steg, helst inom samma underhållsfönster.
+Utan ytterligare begränsning kan varje extern avsändare skriva till listan efter detta steg. Begränsningen till enskilda avsändare följer i nästa steg, helst inom samma underhållsfönster.
 
 ## Variant 1: Leveransbegränsning med e-postkontakter
 
-Listan över tillåtna avsändare (`AcceptMessagesOnlyFromSendersOrMembers`) accepterar endast objekt från den egna katalogen: postlådor, e-postanvändare, e-postkontakter och grupper. En ren SMTP-adress kan inte läggas till där. Skapa därför en e-postkontakt för varje extern avsändare. Dölj kontakten så att den inte visas i den globala adresslistan:
+Listan över tillåtna avsändare (`AcceptMessagesOnlyFromSendersOrMembers`) accepterar endast objekt från den egna katalogen: postlådor, e-postanvändare, e-postkontakter och grupper. Det går inte att ange en ren SMTP-adress där. Skapa därför en e-postkontakt för varje extern avsändare. Dölj kontakten så att den inte visas i den globala adresslistan:
 
 ```powershell
 $kontakt = @{
@@ -68,18 +68,18 @@ Set-MailContact -Identity "Extern Max Muster" -HiddenFromAddressListsEnabled $tr
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `Name` | Kontaktens visningsnamn i Active Directory. Ett enhetligt prefix som ”Extern” underlättar senare administration. |
-| `ExternalEmailAddress` | Den externa adress som avsändaren använder. |
+| `ExternalEmailAddress` | Den externa adress som avsändaren skriver från. |
 | `OrganizationalUnit` | Mål-OU i Active Directory. Utan angivelse hamnar kontakten i standardcontainern `Users`. |
 | `-HiddenFromAddressListsEnabled $true` | Döljer kontakten från den globala adresslistan och alla adresslistor. |
 
 </details>
 
-Lägg sedan till kontakten som tillåten avsändare. Hashtable med `Add` kompletterar den befintliga listan i stället för att skriva över den:
+Lägg sedan till kontakten som tillåten avsändare. Hashtable-tabellen med `Add` utökar den befintliga listan i stället för att skriva över den:
 
 ```powershell
 $erlaubt = @{ Add = "Extern Max Muster", "Extern Anna Beispiel" }
@@ -87,7 +87,7 @@ Set-DistributionGroup -Identity "Projektteam" -AcceptMessagesOnlyFromSendersOrMe
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
@@ -96,9 +96,9 @@ Set-DistributionGroup -Identity "Projektteam" -AcceptMessagesOnlyFromSendersOrMe
 
 </details>
 
-Så snart denna lista innehåller minst en post avvisar Exchange **alla andra avsändare**, även interna. Om medarbetare fortfarande ska kunna skriva till listan ska du även lägga till en lämplig grupp, till exempel distributionsgruppen själv (då får alla medlemmar skicka) eller en grupp med alla medarbetare. Avvisade avsändare får en rapport om utebliven leverans med status `5.7.1`.
+Så snart denna lista innehåller minst en post avvisar Exchange **alla andra avsändare**, även interna. Om medarbetare fortfarande ska kunna skriva till listan lägger du dessutom till en lämplig grupp, till exempel distributionsgruppen själv (då får alla medlemmar skicka) eller en grupp med alla medarbetare. Avvisade avsändare får en leveransstatusrapport med statusen `5.7.1`.
 
-Kontrollera aktuell status så här:
+Kontrollera aktuellt läge så här:
 
 ```powershell
 Get-DistributionGroup -Identity "Projektteam" |
@@ -106,13 +106,13 @@ Get-DistributionGroup -Identity "Projektteam" |
         AcceptMessagesOnlyFrom, AcceptMessagesOnlyFromDLMembers
 ```
 
-`AcceptMessagesOnlyFromSendersOrMembers` är en samlingsparameter: Exchange fördelar posterna på egenskaperna `AcceptMessagesOnlyFrom` (enskilda avsändare) och `AcceptMessagesOnlyFromDLMembers` (grupper). Därför visar frågan dessa två egenskaper. Samma inställning finns i Exchange Admin Center, i gruppens egenskaper under leveranshantering (Delivery management).
+`AcceptMessagesOnlyFromSendersOrMembers` är en samlingsparameter: Exchange fördelar posterna på egenskaperna `AcceptMessagesOnlyFrom` (enskilda avsändare) och `AcceptMessagesOnlyFromDLMembers` (grupper). Därför visar frågan dessa båda egenskaper. Samma inställning finns i Exchange Admin Center, i gruppens egenskaper under leveranshantering (Delivery management).
 
-Denna variant passar när endast ett fåtal externa avsändare tillkommer och listan över tillåtna avsändare ska vara synlig direkt på gruppobjektet. Nackdelen är administrationsarbetet: varje ny avsändare behöver en kontakt i Active Directory.
+Denna variant passar när endast ett fåtal externa avsändare tillkommer och listan över tillåtna avsändare ska vara synlig på själva gruppobjektet. Nackdelen är administrationsarbetet: varje ny avsändare behöver en kontakt i Active Directory.
 
 ## Variant 2: Transportregel utan kontakter
 
-Om alla fortfarande ska kunna skriva till listan internt och endast externa avsändare ska begränsas är en transportregel enklare. Den behöver inga kontakter och kan även tillämpas på hela domäner. `RequireSenderAuthenticationEnabled` måste även här vara satt till `$false`.
+Om alla internt fortfarande ska kunna skriva till listan och endast externa avsändare ska begränsas är en transportregel enklare. Den kräver inga kontakter och kan även tillämpas på hela domäner. `RequireSenderAuthenticationEnabled` måste även här vara satt till `$false`.
 
 ```powershell
 $regel = @{
@@ -128,28 +128,28 @@ New-TransportRule @regel
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `Name` | Regelns namn i listan över transportregler. |
 | `SentTo` | Villkor: Meddelandet är adresserat till denna grupp. |
 | `FromScope NotInOrganization` | Villkor: Avsändaren tillhör inte den egna organisationen. Interna meddelanden påverkas därmed inte. |
-| `ExceptIfFromAddressMatchesPatterns` | Undantag: Avsändaradresser som matchar något av de reguljära uttrycken. `^…$` förankrar en enskild adress, `@domain$` tillåter en hel domän. Escape:a punkter med `\.`. |
-| `RejectMessageReasonText` | Text i rapporten om utebliven leverans till den avvisade avsändaren. |
-| `RejectMessageEnhancedStatusCode` | Utökad statuskod i rapporten om utebliven leverans; `5.7.1` står för saknad behörighet. |
+| `ExceptIfFromAddressMatchesPatterns` | Undantag: Avsändaradresser som motsvarar något av de reguljära uttrycken. `^…$` förankrar en enskild adress, `@domain$` tillåter en hel domän. Escapa punkter med `\.`. |
+| `RejectMessageReasonText` | Text i leveransstatusrapporten till den avvisade avsändaren. |
+| `RejectMessageEnhancedStatusCode` | Utökad statuskod i leveransstatusrapporten; `5.7.1` står för saknad behörighet. |
 
 </details>
 
-Utan förankringen med `^` och `$` skulle ett mönster som `max\.muster@partner\.example` även matcha `max.muster@partner.example.net`. Nya avsändare lägger du till med `Set-TransportRule` och den fullständiga, utökade listan med mönster; parametern ersätter den befintliga listan.
+Utan förankringen med `^` och `$` skulle ett mönster som `max\.muster@partner\.example` även passa `max.muster@partner.example.net`. Lägg till nya avsändare med `Set-TransportRule` och den fullständiga, utökade listan med mönster; parametern ersätter den befintliga listan.
 
 ## Begränsning i båda varianterna: Avsändaradressen kan förfalskas
 
-Båda varianterna kontrollerar endast avsändaradressen. Exchange fastställer då inte om meddelandet faktiskt kommer från den godkända partnern. Den som känner till adressen till en godkänd avsändare kan förfalska den och därmed nå listan. För en lista med interna deltagare är detta en ingång för nätfiske som dessutom ger intryck av att komma från en känd adress.
+Båda varianterna kontrollerar endast avsändaradressen. Exchange fastställer inte om meddelandet verkligen kommer från den godkända partnern. Den som känner till adressen till en godkänd avsändare kan förfalska den och därmed nå listan. För en lista med interna deltagare är detta en ingångspunkt för nätfiske, som dessutom ger intryck av att komma från en välkänd adress.
 
-SPF, DKIM och DMARC stänger denna lucka. Om partnerns domän har en DMARC-princip med `p=reject` eller `p=quarantine` och din e-postgateway tillämpar denna princip, når förfalskade meddelanden från denna domän inte ens Exchange Server. För domäner utan DMARC-princip eller med `p=none` saknas detta skydd.
+SPF, DKIM och DMARC täpper till luckan. Om partnerns domän har en DMARC-policy med `p=reject` eller `p=quarantine` och din e-postgateway tillämpar den policyn, når förfalskade meddelanden från denna domän inte ens Exchange. För domäner utan DMARC-policy eller med `p=none` saknas detta skydd.
 
-Om din gateway skriver kontrollresultatet i rubriken `Authentication-Results` kan en andra transportregel dessutom avvisa godkända avsändare när DMARC inte har godkänts:
+Om din gateway skriver kontrollresultatet i huvudet `Authentication-Results`, kan en andra transportregel dessutom avvisa godkända avsändare om DMARC inte har godkänts:
 
 ```powershell
 $regel = @{
@@ -167,21 +167,21 @@ New-TransportRule @regel
 ```
 
 <details class="options-details">
-<summary>Alternativen förklaras</summary>
+<summary>Alternativen förklarade</summary>
 
 | Alternativ | Effekt |
 |---|---|
 | `FromAddressMatchesPatterns` | Villkor: Regeln gäller endast för de godkända avsändarna, med samma mönster som i den första regeln. |
-| `ExceptIfHeaderMatchesMessageHeader` | Namnet på rubriken som undantaget kontrollerar. |
-| `ExceptIfHeaderMatchesPatterns` | Undantag: Om rubriken innehåller `dmarc=pass` levereras meddelandet. Alla övriga meddelanden från de godkända avsändarna avvisas. |
+| `ExceptIfHeaderMatchesMessageHeader` | Namnet på det huvud som undantaget kontrollerar. |
+| `ExceptIfHeaderMatchesPatterns` | Undantag: Om huvudet innehåller `dmarc=pass` levereras meddelandet. Alla övriga meddelanden från de godkända avsändarna avvisas. |
 
 </details>
 
-Denna regel fungerar endast tillförlitligt om gatewayen tar bort eller skriver över inkommande `Authentication-Results`-rubriker från internet. Annars kan en avsändare själv inkludera rubriken med `dmarc=pass`. Vilka rubriker din gateway sätter och om den tar bort främmande rubriker beskrivs i dess dokumentation; Exchange Server utvärderar inte DMARC själv.
+Denna regel fungerar bara tillförlitligt om gatewayen tar bort eller skriver över inkommande `Authentication-Results`-huvuden från internet. Annars kan en avsändare själv inkludera huvudet med `dmarc=pass`. Vilka huvuden din gateway sätter och om den tar bort externa huvuden beskrivs i dess dokumentation; Exchange utvärderar inte själv DMARC.
 
 ## Vilken variant passar
 
-Leveransbegränsningen med kontakter passar listor med en fast, liten krets av externa avsändare och begränsar vid behov även interna avsändare. Transportregeln passar när alla får skicka internt, hela partnerdomäner ska godkännas eller inga kontakter ska skapas i Active Directory. Oavsett variant bör du kontrollera DMARC-principen för varje godkänd domän och dokumentera vem som underhåller listan över tillåtna avsändare.
+Leveransbegränsning med kontakter passar för listor med en fast, liten grupp externa avsändare och begränsar vid behov även interna avsändare. Transportregeln passar när alla internt får skicka, hela partnerdomäner ska godkännas eller inga kontakter ska skapas i Active Directory. Oavsett variant bör du kontrollera DMARC-policyn för varje godkänd domän och dokumentera vem som underhåller listan över tillåtna avsändare.
 
 ## Källor
 
@@ -193,6 +193,6 @@ Leveransbegränsningen med kontakter passar listor med en fast, liten krets av e
 
 4.  [Microsoft Learn: New-TransportRule](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/new-transportrule?view=exchange-ps): Villkor, undantag och åtgärder för transportregler, inklusive FromScope och HeaderMatchesPatterns.
 
-5.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Specifikation av DMARC-principerna p=none, quarantine och reject.
+5.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Specifikation av DMARC-policyerna p=none, quarantine och reject.
 
-6.  [RFC 8601: Message Header Field for Indicating Message Authentication Status](https://datatracker.ietf.org/doc/html/rfc8601): Strukturen för rubriken Authentication-Results och anmärkningen att mottagande system ska ta bort främmande instanser.
+6.  [RFC 8601: Message Header Field for Indicating Message Authentication Status](https://datatracker.ietf.org/doc/html/rfc8601): Strukturen för huvudet Authentication-Results och informationen om att mottagande system bör ta bort externa instanser.
