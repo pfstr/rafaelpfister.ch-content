@@ -150,24 +150,22 @@ Ob Microsoft die Ablehnung zurücknimmt oder als Regel bestätigt, ist offen. F�
 
 ## Quellen
 
-1.  [msxfaq.de: Hotmail und DMARC Zwang](https://www.msxfaq.de/spam/hotmail_dmarc_zwang.htm): Praxisbeitrag von Frank Carius vom 9. November 2026 mit Unzustellbarkeitsbericht und empfohlenem Vorgehen; ohne Verweis auf eine Microsoft-Quelle.
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Offizielle Anforderungen an Absender; nennt die Schwelle von 5000 Nachrichten pro Tag, den Fehler 5.7.515 und die Empfehlung an alle Absender.
 
-2.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Offizielle Anforderungen an Absender; nennt die Schwelle von 5000 Nachrichten pro Tag, den Fehler 5.7.515 und die Empfehlung an alle Absender.
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Support-Artikel zum dokumentierten Fehler für Absender mit hohem Volumen.
 
-3.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Support-Artikel zum dokumentierten Fehler für Absender mit hohem Volumen.
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Forenthread mit der Moderatoren-Antwort vom 9. November 2026 zur laufenden Störung; Forenbeitrag, keine offizielle Service-Health-Meldung.
 
-4.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Forenthread mit der Moderatoren-Antwort vom 9. November 2026 zur laufenden Störung; Forenbeitrag, keine offizielle Service-Health-Meldung.
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Auswertung der ausgehenden Logs eines Mailproviders ab dem 5. November 2026.
 
-5.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Auswertung der ausgehenden Logs eines Mailproviders ab dem 5. November 2026.
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Hoster-Bericht mit über 500 Ablehnungen am ersten Tag und der Behebung über `p=none`.
 
-6.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Hoster-Bericht mit über 500 Ablehnungen am ersten Tag und der Behebung über `p=none`.
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Thread der Betreiber-Mailingliste mit den Messungen von MXroute, Fastmail und one.com, darunter die Eingrenzung auf `NXDOMAIN`.
 
-7.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Thread der Betreiber-Mailingliste mit den Messungen von MXroute, Fastmail und one.com, darunter die Eingrenzung auf `NXDOMAIN`.
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Reproduzierter Test mit gültigem und ausgerichtetem SPF und DKIM, ohne DMARC-Record.
 
-8.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Reproduzierter Test mit gültigem und ausgerichtetem SPF und DKIM, ohne DMARC-Record.
+8.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Deutschsprachige Zusammenfassung der Berichte vom 9. November 2026.
 
-9.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Deutschsprachige Zusammenfassung der Berichte vom 9. November 2026.
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Spezifikation, unter anderem zur Ermittlung des Records über die Organisationsdomain.
 
-10.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Spezifikation, unter anderem zur Ermittlung des Records über die Organisationsdomain.
-
-11.  [Mail-Sicherheitsindex Schweiz: Änderungsprotokoll](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Tägliche Änderungen der DNS-Records von 3364 Schweizer Organisationen; Grundlage der Zahlen zu den Gemeinden.
+10.  [Mail-Sicherheitsindex Schweiz: Änderungsprotokoll](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Tägliche Änderungen der DNS-Records von 3364 Schweizer Organisationen; Grundlage der Zahlen zu den Gemeinden.
