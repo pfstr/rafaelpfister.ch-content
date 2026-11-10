@@ -33,8 +33,6 @@ Seit dem 5. November 2026 kommen Nachrichten an Postfächer bei Outlook.com, Hot
 (AS9031519)
 ```
 
-Frank Carius hat den Fall am 9. November auf msxfaq.de unter dem Titel «Hotmail und DMARC Zwang» beschrieben. Kurzfazit nach Durchsicht der Primärquellen: Die Ablehnungen sind real und betreffen auch Domains mit wenigen Mails pro Woche. Eine angekündigte Regeländerung von Microsoft gibt es dazu jedoch bisher keine. Die einzige Stellungnahme mit Microsoft-Bezug spricht von einer Dienststörung, deren Ursache untersucht wird. Ein DMARC-Record behebt das Problem in fast allen dokumentierten Fällen, und er ist unabhängig vom Ausgang dieser Störung fällig.
-
 Stand der Angaben: 10. November 2026.
 
 ## Was Microsoft dokumentiert
