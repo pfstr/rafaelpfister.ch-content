@@ -14,12 +14,12 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519 und die Folgen in der Schweiz
+# Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519
 
 URL: https://rafaelpfister.ch/blog/outlook-com-dmarc-ablehnung-as9031519
 Datum: 2026-11-10
 
-# Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519 und die Folgen in der Schweiz
+# Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519
 
 Seit dem 5. November 2026 kommen Nachrichten an Postfächer bei Outlook.com, Hotmail, Live und MSN mit einem neuen Fehler zurück, wenn die Absenderdomain keinen DMARC-Record publiziert hat:
 
