@@ -1,31 +1,31 @@
 ---
-title: "Lisensiering: bruksrettigheter, måltall og tekniske tellepunkter"
+title: "Lisensiering: bruksrettigheter, måleverdier og tekniske tellepunkter"
 blatt: "lizenzierung"
-description: "Teknisk lisensiering for infrastruktur- og meldingsadministratorer: rettigheter, bruker-, enhets-, instans-, kjerne- og kapasitetsmåltall, utgaver, abonnementer, aktivering, lisensservere og sky-API-er, identitetskilder, HA/DR, tekniske håndhevingsgrenser, revisjonsdata, åpen kildekode og verifisering."
+description: "Teknisk lisensiering for infrastruktur- og meldingsadministratorer: rettigheter, måleverdier for brukere, enheter, instanser, kjerner og kapasitet, utgaver, abonnementer, aktivering, lisensservere og sky-API-er, identitetskilder, HA/DR, tekniske enforcement-grenser, revisjonsdata, åpen kildekode og verifisering."
 fakten:
   - label: Avgjørende
-    wert: Kontrakt, Product Terms og bestilling; teknisk visning er et bevis, ikke den juridiske kontrakten
+    wert: Kontrakt, Product Terms og bestilling; teknisk visning er dokumentasjon, ikke den juridiske avtalen
     href: https://www.iso.org/standard/52293.html
   - label: Tre mengder
     wert: ervervede rettigheter · teknisk tildelt · faktisk brukt
     href: https://www.iso.org/standard/52293.html
-  - label: Måltall
+  - label: Måleverdier
     wert: bruker · enhet · instans · kjerne/vCPU · kapasitet · transaksjon · funksjon
     href: https://www.iso.org/standard/52293.html
   - label: Tellepunkt
-    wert: scope + objektanker + statusfilter + tidsvindu + aggregeringsregel
+    wert: omfang + objektanker + statusfilter + tidsvindu + aggregeringsregel
     href: https://www.iso.org/standard/68531.html
   - label: Programvare-ID
-    wert: SWID-tagger standardiserer produktidentifikasjon, ikke automatisk rettigheten
+    wert: SWID-tagger standardiserer produktidentifikasjon, ikke automatisk rettighet
     href: https://www.iso.org/standard/65666.html
   - label: Identitetslisensiering
-    wert: vurder direkte og gruppebasert tildeling, SKU og tjenesteplan hver for seg
+    wert: vurder direkte og gruppebasert tildeling, SKU og tjenesteplan separat
     href: https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails
   - label: HA og DR
-    wert: passive noder, Cold Standby, test- og gjenopprettingsinstanser må bare vurderes etter konkrete Terms
+    wert: passive noder, Cold Standby, test- og gjenopprettingsinstanser skal bare vurderes etter konkrete Terms
     href: https://www.iso.org/standard/52293.html
-  - label: Håndheving
-    wert: advarsel, funksjonsgrense, ingen ny tildeling, Grace Period eller tjenesteavbrudd er produktspesifikt
+  - label: Enforcement
+    wert: advarsel, funksjonsbegrensning, ingen ny tildeling, Grace Period eller tjenesteavbrudd er produktspesifikt
     href: https://www.cisco.com/site/us/en/buy/licensing/index.html
   - label: Frakoblet drift
     wert: dokumenter token-/lease-varighet, Grace Period, klokke, Trust Store og gjenopprettingsvei
@@ -34,10 +34,10 @@ fakten:
     wert: gratis bruk betyr ikke uten forpliktelser; kontroller lisenstekst og distribusjonsscenario
     href: https://opensource.org/osd
   - label: Maskinlesbart
-    wert: SPDX-uttrykk modellerer enkeltstående, alternative og kombinerte lisenser
+    wert: SPDX-uttrykk modellerer enkeltvise, alternative og kombinerte lisenser
     href: https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/
-  - label: Administratorbevis
-    wert: eksporter Entitlement · inventar · tildeling · bruk · unntak · tid · kilde på en reproduserbar måte
+  - label: Admin-dokumentasjon
+    wert: eksporter Entitlement · inventar · tildeling · bruk · unntak · tid · kilde reproducerbart
     href: https://www.iso.org/standard/68531.html
 werbung:
   - newsletter
@@ -45,159 +45,159 @@ ctaThemen:
   - lizenzierung
   - messaging
   - itam
-translationSourceHash: 4abc9d3d627b9f38adb1f2fcb541662b430f07694209251464f0a4b0f9c4351f
+translationSourceHash: fb38ff7080a593642081c7fa017dd2d33735c4fd96cdf1ae256bebe4be37eb3d
 translationModel: gpt-5.6-terra
-translatedAt: 2026-10-09T11:26:11.935Z
+translatedAt: 2026-11-07T03:22:58.442Z
 translationReview: automatic
 ---
 
-# Lisensiering: bruksrettigheter, måltall og tekniske tellepunkter
+# Lisensiering: bruksrettigheter, måleverdier og tekniske tellepunkter
 
 Programvarelisensiering knytter en juridisk bruksavtale til teknisk målbare objekter. For administratorer er det avgjørende å ikke forveksle disse nivåene. En lisensnøkkel, en skyvisning eller en intern brukerteller kan aktivere funksjoner og måle bruk, men definerer ikke alene hva en organisasjon juridisk har lov til å bruke. ISO/IEC 19770-3 behandler digitale Entitlement-data uttrykkelig som en avbildning av bruksrettigheter og presiserer at de opprinnelige lisensvilkårene har forrang for juridiske formål ([ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
 
-Den operative oppgaven er derfor: **å avstemme ervervede rettigheter, teknisk installerte eller tildelte rettigheter og faktisk bruk på en reproduserbar måte**. Avvik kan være overforbruk, ubrukte kostnader, feil katalogfiltre, foreldreløse kontoer, passive klyngenoder, utløpte token eller ganske enkelt ulike definisjoner av det samme ordet «bruker». Artikkelen beskriver det tekniske perspektivet; kontrakts- og rettstolkning ligger hos innkjøp, lisensadministrasjon og juridisk rådgivning.
+Den operative oppgaven er derfor: **avstemme ervervede rettigheter, teknisk installerte eller tildelte rettigheter og faktisk bruk på en reproduserbar måte**. Avvik kan være overbruk, ubenyttede kostnader, feil katalogfiltre, foreldreløse kontoer, passive klyngenoder, utløpte token eller ganske enkelt ulike definisjoner av det samme ordet «bruker». Artikkelen beskriver det tekniske perspektivet; tolkning av kontrakt og jus ligger hos innkjøp, lisensadministrasjon og juridisk rådgivning.
 
-Forklaringen begynner med den kontraktsmessige bruksrettigheten og følger hvordan produkt, måltall og teknisk tellepunkt gjør den til et målt forbruk. Deretter følger tildeling, håndheving, revisjon, spesialtilfeller og gjenoppretting.
+Forklaringen begynner med den kontraktsmessige bruksretten og følger hvordan produkt, måleverdi og teknisk tellepunkt gjør den til målt forbruk. Deretter følger tildeling, enforcement, revisjon, spesialtilfeller og gjenoppretting.
 
-En lisens er først og fremst en bruksrettighet; teknisk synlig blir den først gjennom tildeling, målt bruk og eventuelt håndheving. Artikkelen skiller disse fire nivåene før den behandler produktmåltall og revisjoner.
+En lisens er først og fremst en bruksrett; den blir teknisk synlig først gjennom tildeling, målt bruk og eventuelt enforcement. Artikkelen skiller disse fire nivåene før den behandler produktmåleverdier og revisjoner.
 
-## Entitlement, tildeling, bruk og håndheving
+## Entitlement, tildeling, bruk og enforcement
 
-En ryddig lisensoversikt holder fire uavhengige tilstander adskilt:
+En ryddig lisensoversikt holder fire uavhengige tilstander atskilt:
 
-1. **Entitlement:** Hvilke bruksrettigheter er ervervet med hvilken kontrakt, hvilket produkt, måltall, scope, tidsrom og særrettighet?
-2. **Distribusjon/tildeling:** På hvilke enheter, instanser, brukere, tenants eller funksjoner er programvare installert, aktivert eller tilordnet?
+1. **Entitlement:** Hvilke bruksrettigheter ble ervervet med hvilken kontrakt, produkt, måleverdi, omfang, periode og særrett?
+2. **Utrulling/tildeling:** På hvilke enheter, instanser, brukere, tenants eller funksjoner er programvare installert, aktivert eller tilordnet?
 3. **Bruk:** Hvilke lisensrelevante objekter eller funksjoner ble faktisk brukt i den avtalte måleperioden?
-4. **Håndheving:** Hvilken grense kontrollerer produktet teknisk, og hvordan reagerer det ved manglende forbindelse, utløp eller overskridelse?
+4. **Enforcement:** Hvilken grense kontrollerer produktet teknisk, og hvordan reagerer det ved manglende forbindelse, utløp eller overskridelse?
 
 <iframe class="kb-infographic" style="aspect-ratio: 1400 / 1076" src="/images/kb-interaktiv-lizenzierung.svg?v=20260813" title="Interaktive Infografik: Lizenzarchitektur mit Vertrag und Entitlement, Inventar, Zuweisung und Nutzung, Metrik und Zählpunkt, Lizenzdienst, Enforcement, Ausnahmen sowie Audit- und Recoverypfad" loading="lazy">
-  <a href="/images/kb-interaktiv-lizenzierung.svg?v=20260813">Åpne den interaktive grafikken direkte</a>.
+  <a href="/images/kb-interaktiv-lizenzierung.svg?v=20260813">Åpne interaktiv grafikk direkte</a>.
 </iframe>
 
-Et eksisterende Entitlement beviser ikke korrekt tildeling; en tildeling beviser ikke bruk; lav bruk opphever ikke automatisk en navngitt brukerlisens. Omvendt kan et produkt fortsette teknisk selv om en abonnements- eller supportrettighet er utløpt. Samsvar og teknisk tilgjengelighet er derfor to ulike kontrollmål.
+Et eksisterende Entitlement beviser ikke korrekt tildeling; en tildeling beviser ikke bruk; lav bruk opphever ikke automatisk en navngitt brukerlisens. Omvendt kan et produkt teknisk fortsette å kjøre selv om en abonnement- eller supportrettighet er utløpt. Samsvar og teknisk tilgjengelighet er derfor to forskjellige kontrollmål.
 
-ISO/IEC 19770-1 spesifiserer krav til et IT-asset management-system. ISO/IEC 19770-2 standardiserer Software Identification Tags (SWID), som gjør programvare identifiserbar, men som ifølge standarden ikke krever Entitlement-reconciliation. ISO/IEC 19770-3 definerer begreper og et transportformat for Entitlements og tilhørende måltall. Samlet gir de datanivåene **inventar**, **programvareidentitet** og **bruksrettighet**, ikke en universell lisensberegning ([ISO/IEC 19770-1:2017](https://www.iso.org/standard/68531.html), [ISO/IEC 19770-2:2015](https://www.iso.org/standard/65666.html), [ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
+ISO/IEC 19770-1 spesifiserer krav til et IT-aktivaforvaltningssystem. ISO/IEC 19770-2 standardiserer Software Identification Tags (SWID), som gjør programvare identifiserbar, men som ifølge standarden ikke krever Entitlement-reconciliation. ISO/IEC 19770-3 definerer begreper og et transportformat for Entitlements og tilhørende måleverdier. Samlet leverer de datalagene **inventar**, **programvareidentitet** og **bruksrettighet**, ikke en universell lisensberegning ([ISO/IEC 19770-1:2017](https://www.iso.org/standard/68531.html), [ISO/IEC 19770-2:2015](https://www.iso.org/standard/65666.html), [ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
 
-## Lisensmåltall: Hva telles?
+## Lisensmåleverdier: Hva telles?
 
-Et måltall kan bare tolkes sammen med den fullstendige kontrakten:
+En måleverdi kan bare tolkes sammen med den fullstendige kontrakten:
 
-| Måltall | Mulig telleanker | Administratorspørsmål |
+| Måleverdi | Mulig telleanker | Administratorspørsmål |
 |---|---|---|
-| Named User | uforanderlig person-/tenant-ID | telles deaktiverte, delte, eksterne, tjeneste- eller testkontoer; kan lisensen tildeles på nytt? |
-| Concurrent User/Session | aktiv sesjon eller checkout-lease | hvilken sesjon starter/avslutter, hvordan behandles tidsavbrudd, flere enheter og frakoblede leases? |
+| Named User | uforanderlig person-/tenant-ID | teller deaktiverte, delte, eksterne, tjeneste- eller testkontoer; kan den tildeles på nytt? |
+| Concurrent User/Session | aktiv sesjon eller checkout-lease | hvilken sesjon starter/slutter, hvordan behandles tidsavbrudd, flere enheter og frakoblede leases? |
 | Device | maskinvare-ID, registrert enhet, klientinstans | telles VDI, erstatningsenhet, delt enhet og nyinstallerte agenter separat? |
-| Server/Instance/Node | VM, vert, appliance, klyngenode, containerinstans | telles passive, midlertidige, autoskalerte, test- eller gjenopprettingsinstanser? |
-| Processor/Core/vCPU | fysisk sokkel/kjerne, tildelt vCPU, minimumsantall | hvordan beregnes Hyperthreading, affinitet, klyngeflytting, skystørrelser og minimumspakker? |
-| Capacity | postbokser, lagring, domener, meldinger, gjennomstrømming eller datasett | gjelder toppverdi, gjennomsnitt, månedsmaksimum, Provisioned eller Used; hvilket tidsvindu? |
+| Server/Instance/Node | VM, vert, appliance, klyngenode, containerinstans | telles passive, midlertidige, automatisk skalerte, test- eller gjenopprettingsinstanser? |
+| Processor/Core/vCPU | fysisk sokkel/kjerne, tildelt vCPU, minimumsantall | hvordan beregnes Hyperthreading, affinitet, klyngebevegelse, skystørrelser og minimumspakker? |
+| Capacity | postbokser, lagring, domener, meldinger, gjennomstrømming eller datasett | gjelder topp, gjennomsnitt, månedsmaksimum, Provisioned eller Used; hvilket tidsvindu? |
 | Feature/Edition | aktivert tjenesteplan, modul, databasegrense, API | er installasjon, aktivering, konfigurasjon eller faktisk bruk tilstrekkelig? |
-| Subscription/Consumption | SKU-tildeling, kreditter, forespørsler, GB-måneder | når reserveres, forbrukes, etterberegnes eller tilbakeføres det? |
+| Subscription/Consumption | SKU-tildeling, kreditter, forespørsler, GB-måneder | når reserveres, forbrukes, etterberegnes eller returneres det? |
 
-Den tekniske enheten må ikke gjettes ut fra produktnavnet. «Per Core» kan bety fysiske kjerner på verten, vCPU-er i VM-en eller et normalisert kjernemåltall. «Bruker» kan bety fysisk person, aktiv konto, postboks, lisensiert identitet eller avsender som sender. «Instans» kan telles som kjørende, installert, registrert eller per klyngenode. ISO/IEC 19770-3 standardiserer en Entitlement-struktur, men erstatter ikke den konkrete definisjonen i Product Terms og bestillingen ([ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
+Den tekniske enheten må ikke gjettes ut fra produktnavnet. «Per Core» kan bety fysiske kjerner på verten, vCPU-er i VM-en eller en normalisert kjerneverdi. «Bruker» kan bety fysisk person, aktiv konto, postboks, lisensiert identitet eller avsendende avsender. «Instans» kan telles som kjørende, installert, registrert eller per klyngenode. ISO/IEC 19770-3 standardiserer en Entitlement-struktur, men erstatter ikke den konkrete definisjonen i Product Terms og bestilling ([ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
 
-Måltallet alene sier ennå ikke hvor det telles. Først det tekniske tellepunktet forklarer hvorfor produsentportalen, lokalt inventar og fakturaverdien kan avvike fra hverandre.
+Måleverdien alene sier ennå ikke hvor det telles. Først det tekniske tellepunktet forklarer hvorfor produsentportal, lokalt inventar og fakturaverdi kan avvike fra hverandre.
 
 ## Det tekniske tellepunktet
 
-Hvert måltall dokumenteres som en reproduserbar tellefunksjon:
+Hver måleverdi dokumenteres som en reproduserbar tellefunksjon:
 
-**Teller = Scope × objektanker × statusfilter × tidsvindu × aggregeringsregel × unntak**
+**Teller = omfang × objektanker × statusfilter × tidsvindu × aggregeringsregel × unntak**
 
-- **Scope:** organisasjon, tenant, domene, klynge, Subscription, sted eller kontrakt.
-- **Objektanker:** uforanderlig bruker-ID, enhets-ID, VM-ID, vertsserienummer, SKU-ID eller hash – ikke bare visningsnavn.
+- **Omfang:** Organisasjon, tenant, domene, klynge, Subscription, lokasjon eller kontrakt.
+- **Objektanker:** Uforanderlig bruker-ID, enhets-ID, VM-ID, vertens serienummer, SKU-ID eller hash – ikke bare visningsnavn.
 - **Statusfilter:** enabled, assigned, provisioned, active, seen, mounted, running eller consumed.
-- **Tidsvindu:** referansedato, kalendermåned, toppverdi, gjennomsnitt, rullerende vindu eller kontraktsår.
+- **Tidsvindu:** Stikkdato, kalendermåned, topp, gjennomsnitt, rullerende vindu eller kontraktsår.
 - **Aggregering:** Distinct, sum, maksimum, 95. persentil, minimumspakke eller trinn.
-- **Unntak:** eksterne brukere, systemkontoer, passiv DR-instans, Trial, NFR eller kontraktsmessig gratis Use Case.
+- **Unntak:** Eksterne brukere, systemkontoer, passiv DR-instans, Trial, NFR eller kontraktsmessig gratis brukstilfelle.
 
-Tellepunktet er ofte et **overleveringspunkt**. En LDAP-import kan telle alle matchende kontoer, selv om de aldri bruker en e-postfunksjon. En gateway kan lære avsendere fra trafikken og dermed beholde slettede eller tekniske identiteter. En sky-SKU kan tildeles direkte eller indirekte via en gruppe. Microsoft Graphs `licenseDetails`-API leverer lisenser som er arvet direkte og gjennom gruppemedlemskap, samt enkelte tjenesteplaner og klargjøringsstatus; dette viser hvorfor en boolsk verdi «har lisens» ikke er tilstrekkelig for analysen ([Microsoft Graph – List licenseDetails](https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails)).
+Tellepunktet er ofte et **overleveringspunkt**. En LDAP-import kan telle alle relevante kontoer, selv om de aldri bruker en e-postfunksjon. En gateway kan lære avsendere fra trafikken og dermed beholde slettede eller tekniske identiteter. En sky-SKU kan tildeles direkte eller indirekte via en gruppe. Microsoft Graphs `licenseDetails`-API leverer lisenser som er arvet direkte og gjennom gruppemedlemskap, samt enkelte tjenesteplaner og klargjøringsstatus; dette viser hvorfor en boolsk verdi «har lisens» ikke er nok for analysen ([Microsoft Graph – List licenseDetails](https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails)).
 
 ## Arkitektur for et lisenssystem
 
-Kommersielle produkter bruker ulike implementasjoner, men kan teknisk deles opp i kontrollflater. Denne modellen er en driftsmessig syntese av ISO/IEC-19770-datanivåer og dokumenterte produsentmekanismer, ikke en universell standardarkitektur:
+Kommersielle produkter bruker ulike implementeringer, men kan teknisk deles inn i kontrollflater. Denne modellen er en operativ syntese av ISO/IEC-19770-datalag og dokumenterte produsentmekanismer, ikke en universell standardarkitektur:
 
 | Kontrollflate | Funksjon | Feilområde |
 |---|---|---|
-| Entitlement Store | kontrakt/SKU, mengde, tidsrom, funksjoner, særrettigheter | feil bestilling, utløpt, feil tenant/Smart Account |
-| Inventory/Identity Source | brukere, enheter, instanser, kjerner, klynger, programvare-ID | duplikat, utdatert objekt, feil filter eller scope |
+| Entitlement Store | Kontrakt/SKU, antall, periode, funksjoner, særrettigheter | feil bestilling, utløpt, feil tenant/Smart Account |
+| Inventory/Identity Source | brukere, enheter, instanser, kjerner, klynger, programvare-ID | duplikat, utdatert objekt, feil filter eller omfang |
 | Assignment | tilordner rettighet til et objekt eller en tjenesteplan | direkte kontra gruppebasert tildeling, klargjøringsfeil |
 | Meter | samler bruk, sesjoner, kapasitet eller heartbeats | tid, frakoblet buffer, sampling, manglende telemetri |
-| Evaluator | anvender måltall, pool, unntak og tidsrom | kontraktslogikken stemmer ikke med teknisk policy |
-| License Service | lokal server, sky-API, token, lease, sertifikat eller nøkkel | DNS/TLS/proxy/klokke/trust, avbrudd eller Rate Limit |
-| Enforcement | aktiverer Edition/Feature eller begrenser atferd | hard sperre, Grace Period, advarsel eller Fail-open/fail-closed |
+| Evaluator | anvender måleverdi, pool, unntak og periode | kontraktslogikk stemmer ikke med teknisk policy |
+| License Service | lokal server, sky-API, token, lease, sertifikat eller nøkkel | DNS/TLS/proxy/klokke/trust, utfall eller Rate Limit |
+| Enforcement | aktiverer utgave/funksjon eller begrenser adferd | hard sperre, Grace Period, advarsel eller Fail-open/fail-closed |
 | Evidence Export | revisjons-, bruks- og tildelingsdata | rotasjon, personvern, manglende historikk eller ikke-reproduserbar eksport |
 
-Cisco Smart Licensing beskriver sentralisert konto- og lisensadministrasjon; Microsoft Graph eksponerer ervervede SKU-er, tildelinger og tjenesteplaner via API-er. Slike systemer gjør lisensiering til en distribuert avhengighet av identitet, skytjeneste, nettverk, TLS og tid. Et produkt kan fortsatt behandle data, men ikke hente en ny lisens; et annet kan sperre funksjoner etter en frakoblet frist. Den konkrete atferden må hentes fra produsentdokumentasjon og kontrakt ([Cisco Licensing](https://www.cisco.com/site/us/en/buy/licensing/index.html), [Microsoft Graph – Get-MgSubscribedSku](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.directorymanagement/get-mgsubscribedsku?view=graph-powershell-1.0)).
+Cisco Smart Licensing beskriver sentralisert konto- og lisensadministrasjon; Microsoft Graph eksponerer ervervede SKU-er, tildelinger og tjenesteplaner via API-er. Slike systemer gjør lisensiering til en distribuert avhengighet av identitet, skytjeneste, nettverk, TLS og tid. Et produkt kan fortsatt behandle data, men ikke hente en ny lisens; et annet kan sperre funksjoner etter en frakoblet periode. Den konkrete adferden må hentes fra produsentdokumentasjon og kontrakt ([Cisco Licensing](https://www.cisco.com/site/us/en/buy/licensing/index.html), [Microsoft Graph – Get-MgSubscribedSku](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.directorymanagement/get-mgsubscribedsku?view=graph-powershell-1.0)).
 
 ## Identitetsbasert lisensiering
 
-For navngitte brukere er katalogen en del av lisenssystemet. Et korrekt filter svarer ikke bare på «personer i OU X», men også på:
+Ved navngitte brukere er katalogen en del av lisenssystemet. Et korrekt filter besvarer ikke bare «personer i OU X», men:
 
-- hvilket attributt som utgjør den uforanderlige objektankeren;
+- hvilket attributt som danner det uforanderlige objektankeret;
 - om deaktiverte, sperrede, slettede eller ennå ikke klargjorte kontoer telles;
-- hvordan delte-/ressurspostbokser, tjenestekontoer, gjester, eksterne partnere og testkontoer behandles;
+- hvordan Shared/Resource Mailboxes, tjenestekontoer, gjester, eksterne partnere og testkontoer behandles;
 - om direkte og gruppebaserte tildelinger slås sammen;
 - når en fjernet lisens blir tilgjengelig igjen;
-- om historisk bruk eller bare beholdningen på referansedatoen er avgjørende;
-- hvilke attributter produktet cacher lokalt, og når det sletter dem.
+- om historisk bruk eller bare bestanden på stikkdatoen er avgjørende;
+- hvilke attributter produktet bufre lokalt og når det sletter dem.
 
-LDAP leverer oppføringer og attributter, men ingen universell definisjon av «lisensiert menneske». [LDAP](/kb/ldap) kan implementere scope og filter teknisk; måltallet kommer fra kontrakten. Det samme gjelder i skykataloger: SKU, tjenesteplan, `assignedLicenses`, klargjøringsstatus og faktisk workload-tilstand er ulike data. Microsoft Graph dokumenterer `subscribedSku` som et ervervet kommersielt Subscription og `licenseDetails` per bruker ([Microsoft Graph – Get-MgSubscribedSku](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.directorymanagement/get-mgsubscribedsku?view=graph-powershell-1.0), [Microsoft Graph – List licenseDetails](https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails)).
+LDAP leverer oppføringer og attributter, men ingen universell definisjon av «lisensiert menneske». [LDAP](/kb/ldap) kan teknisk implementere omfang og filter; måleverdien kommer fra kontrakten. Det samme gjelder i skykataloger: SKU, tjenesteplan, `assignedLicenses`, klargjøringsstatus og faktisk Workload-tilstand er ulike data. Microsoft Graph dokumenterer `subscribedSku` som et ervervet kommersielt Subscription og `licenseDetails` per bruker ([Microsoft Graph – Get-MgSubscribedSku](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.directorymanagement/get-mgsubscribedsku?view=graph-powershell-1.0), [Microsoft Graph – List licenseDetails](https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails)).
 
-Opprydding av foreldreløse kontoer må ikke styres direkte av lisenspress. Først kontrolleres eiere, oppbevaring, e-postruting, Legal Hold, tjenesteavhengigheter og gjenoppretting; deretter deaktiveres eller slettes identiteten kontrollert. En lisensrapport er et innspill i livssyklusen, ikke en sletteordre.
+Opprydding av foreldreløse kontoer må ikke styres direkte av lisenspress. Først kontrolleres eiere, oppbevaring, e-postruting, Legal Hold, tjenesteavhengigheter og gjenoppretting; deretter deaktiveres eller slettes identiteten kontrollert. En lisensrapport er inndata til livssyklusen, ikke en sletteordre.
 
 ## Instans-, kjerne- og kapasitetsmodeller
 
-Virtualisering og klynger gjør det fysiske servernavnet utilstrekkelig. Et inventar trenger vert, VM/container, tildelt vCPU, fysisk CPU/kjerne, hypervisorklynge, mobilitetsregler, Edition og rolle. Hvis en VM kan flyttes mellom verter, kan hele det mulige vertsscopet være relevant avhengig av kontrakten; en fast CPU-affinitet kan dokumenteres teknisk, men er ikke automatisk kontraktsmessig anerkjent.
+Virtualisering og klynger gjør det fysiske servernavnet utilstrekkelig. Et inventar trenger vert, VM/container, tildelt vCPU, fysisk CPU/kjerne, Hypervisor-klynge, mobilitetsregler, utgave og rolle. Hvis en VM kan flyttes mellom verter, kan hele det mulige vertsomfanget være relevant avhengig av kontrakten; en hard CPU-affinitet kan dokumenteres teknisk, men er ikke automatisk kontraktsmessig anerkjent.
 
-Editioner knytter bruksrettighet til tekniske begrensninger. Microsoft dokumenterer for eksempel for Exchange Server Editioner som blant annet skiller seg i antall samtidig monterte databaser; passive databasekopier kan også telle som monterte databaser. Product Key angir serverens Edition. Dette er et eksempel på hvordan Enforcement og kapasitetsarkitektur faller sammen, ikke en generell Exchange-lisensberegning ([Microsoft – Exchange Server Editions and Versions](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/deployment-ref/editions-and-versions), [Microsoft – Enter Exchange Product Key](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/post-installation-tasks/enter-product-key)).
+Utgaver knytter bruksrett til tekniske grenser. Microsoft dokumenterer for Exchange for eksempel utgaver som blant annet skiller seg i antall samtidig monterte databaser; passive databasekopier kan også telle som monterte databaser. Product Key angir serverutgaven. Dette er et eksempel på hvordan enforcement og kapasitetsarkitektur sammenfaller, ikke en generell Exchange-lisensberegning ([Microsoft – Exchange Server Editions and Versions](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/deployment-ref/editions-and-versions), [Microsoft – Enter Exchange Product Key](https://learn.microsoft.com/en-us/exchange/plan-and-deploy/post-installation-tasks/enter-product-key)).
 
-Kapasitetsmåltall trenger et tidsforløp. En øyeblikksverdi viser verken månedstopp eller kortvarig overforbruk. For meldingssystemer er særlig aktive postbokser, interne avsendere, domener, daglig antall meldinger, gjennomstrømming, lagring og krypterte brukere vanlige tekniske tellere – om de er lisensrelevante avgjøres kun av produktrettigheten. Dashbord lagrer derfor råverdi, tid, scope, kilde og beregningsregel i stedet for bare et trafikklys.
+Kapasitetsmåleverdier krever et tidsforløp. En øyeblikksverdi viser verken månedstopp eller kortvarig overtrekk. For meldinger er aktive postbokser, interne avsendere, domener, daglig meldingsantall, gjennomstrømming, lagring og krypterte brukere særlig vanlige tekniske tellere – om de er lisensrelevante, avgjøres bare av produktrettighetene. Dashbord lagrer derfor råverdi, tid, omfang, kilde og beregningsregel i stedet for bare et trafikklys.
 
 Så snart instanser eller identiteter telles, påvirker høy tilgjengelighet, tester og migreringer også lisensmengden. Passive systemer er ikke automatisk kostnadsfrie; den aktuelle kontrakten er avgjørende.
 
 ## HA, Disaster Recovery, test og migrering
 
-Passive noder, Cold Standby, gjenopprettingsinstanser, lab, test, opplæring og midlertidige parallelle tilstander under en [migrering](/kb/migration) er typiske spesialtilfeller. Teknisk kan «passiv» likevel bety at programvare er installert, replikering behandles, databaser er montert eller en lisens sjekkes ut av serveren. Kontraktsbegrepene må avbildes på observerbare tilstander.
+Passive noder, Cold Standby, gjenopprettingsinstanser, lab, test, opplæring og midlertidige parallelle tilstander under en [migrering](/kb/migration) er typiske spesialtilfeller. Teknisk «passiv» kan likevel bety at programvare er installert, replikering behandles, databaser er montert eller en lisens er sjekket ut av serveren. Kontraktsbegrepene må avbildes på observerbare tilstander.
 
 For hvert spesialtilfelle dokumenteres:
 
 - tillatt antall og definisjon av passive/kalde instanser;
-- om test, patchkvalifisering, backupgjenoppretting eller DR-test er inkludert;
-- hvor lenge samtidig gammel/ny drift er tillatt under migrering;
+- om test, patchkvalifisering, gjenoppretting fra sikkerhetskopi eller DR-test er inkludert;
+- hvor lenge samtidig gammel/ny drift er tillatt ved migrering;
 - om en lisens er mobil og hvilke Reassignment-/ventebetingelser som gjelder;
-- om sky- og On-premises-rettigheter er koblet;
-- hvilket bevis som skiller en reell DR-hendelse fra produktiv varig last;
-- hvordan lisensetjenesten fungerer i et isolert gjenopprettingsnett.
+- om sky- og On-premises-rettigheter er knyttet sammen;
+- hvilken dokumentasjon som skiller en reell DR-hendelse fra produktiv vedvarende belastning;
+- hvordan lisenssystemet fungerer i et isolert gjenopprettingsnettverk.
 
-[Backup- og DR-konseptet](/kb/backup-dr) inneholder derfor også lisensfiler, aktiveringsdata, lisensservere, frakoblede token, sertifikater, klokkeslett, DNS/proxy og produsentkontakter. En teknisk perfekt gjenoppretting som ikke kan aktivere sin Edition eller nødvendige funksjoner, oppfyller ikke gjenopprettingsmålet.
+[Backup- og DR-konseptet](/kb/backup-dr) omfatter derfor også lisensfiler, aktiveringsdata, lisensservere, Offline-token, sertifikater, klokkeslett, DNS/proxy og produsentkontakter. En teknisk perfekt gjenoppretting som ikke kan aktivere sin utgave eller nødvendige funksjoner, oppfyller ikke gjenopprettingsmålet.
 
-## Utløp, Grace Period og svikt i lisensetjenesten
+## Utløp, Grace Period og utfall av lisenssystemet
 
-For Subscription-, lease- eller skymodeller er minst følgende tidtakere relevante: Entitlement-slutt, token-utløp, heartbeat, Borrow-/Checkout-varighet, frakoblet frist, Grace Period og sertifikatgyldighet. Administratorsynet registrerer **absolutt tid, tidssone, synkroniseringskilde og siste vellykkede fornyelse**. En feil klokke kan utløse et tilsynelatende lisensutløp eller hindre validering av et signert token.
+Ved Subscription-, lease- eller skymodeller er minst følgende tidtakere relevante: Entitlement-slutt, token-utløp, heartbeat, Borrow-/Checkout-varighet, frakoblet frist, Grace Period og sertifikatgyldighet. Administrasjonsperspektivet registrerer **absolutt tid, tidssone, synkroniseringskilde og sist vellykkede fornyelse**. En feil klokke kan utløse et tilsynelatende lisensutløp eller hindre validering av et signert token.
 
-Atferden ved utløp er produktspesifikk:
+Adferden ved utløp er produktspesifikk:
 
 - bare advarsel eller samsvarshendelse;
 - ingen ny tildeling, eksisterende bruk fortsetter;
-- deaktivert Premiumfeature eller tilbakefall til mindre Edition;
+- deaktivert Premium-funksjon eller tilbakefall til mindre utgave;
 - begrenset antall nye sesjoner/brukere;
 - skrivebeskyttet drift;
 - fullstendig tjenesteavbrudd;
 - lokal Grace Period når skytjenesten ikke er tilgjengelig.
 
-Denne reaksjonen fastslås i et testmiljø eller på grunnlag av en eksplisitt produsentkilde, ikke ved å prøve den ut i produksjon. Overvåking varsler ved den tidligste driftsmessige tidtakeren, ikke først ved kontraktsslutt. Cisco dokumenterer egne online-/offline- og kontomekanismer for Smart Licensing; andre produsenter bruker lokale lisensservere, signerte filer, USB-dongler, produktnøkler eller SaaS-Entitlements ([Cisco Licensing](https://www.cisco.com/site/us/en/buy/licensing/index.html)).
+Denne reaksjonen fastsettes i et testmiljø eller med en eksplisitt produsentkilde, og prøves ikke ut i produksjonsdriften. Overvåking varsler før den tidligste operative tidtakeren, ikke først før kontraktsutløp. Cisco dokumenterer egne online-/offline- og kontomekanismer for Smart Licensing; andre produsenter bruker lokale lisensservere, signerte filer, USB-dongler, produktnøkler eller SaaS-Entitlements ([Cisco Licensing](https://www.cisco.com/site/us/en/buy/licensing/index.html)).
 
-## Åpen kildekode: Bruksrettighet uten teknisk teller
+## Åpen kildekode: bruksrett uten teknisk teller
 
-Åpen kildekode betyr ikke bare synlig kildekode. Open Source Definition krever blant annet fri videreformidling, tilgang til kildekode, avledede verk og teknologinøytrale rettigheter. Enkelte lisenser stiller ulike vilkår for endring, videreformidling, Notices, tilgjengeliggjøring av kildekode eller patentlisenser ([Open Source Initiative – Open Source Definition](https://opensource.org/osd)).
+Åpen kildekode betyr ikke bare synlig kildekode. Open Source Definition krever blant annet fri videreformidling, tilgang til kildekode, avledede verk og teknologinøytrale rettigheter. Enkeltlisenser stiller ulike vilkår for endring, videreformidling, Notices, tilgjengeliggjøring av kildekode eller patentlisenser ([Open Source Initiative – Open Source Definition](https://opensource.org/osd)).
 
-Apache License 2.0 gir opphavsretts- og patentlisenser på vilkår og krever ved videreformidling blant annet en lisenskopi, merking av endringer og bevaring av bestemte Notices. En nedlastingspris på null fjerner ikke disse pliktene ([Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)). I komponentkombinasjoner kan flere lisenser gjelde samtidig eller alternativt.
+Apache License 2.0 gir opphavsretts- og patentlisenser på vilkår og krever ved videreformidling blant annet lisenskopi, merknader om endringer og bevaring av bestemte Notices. En nedlastingspris på null fjerner ikke disse pliktene ([Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)). For komponentsett kan flere lisenser gjelde samtidig eller alternativt.
 
-SPDX License Expressions modellerer slike tilfeller maskinlesbart: `AND` for kumulative plikter, `OR` for et lisensvalg og `WITH` for et unntak. Et SPDX-uttrykk identifiserer den erklærte lisenssituasjonen, men foretar ingen juridisk kompatibilitetskontroll ([SPDX Specification – License Expressions](https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/)). For administratorer hører lisens- og Notice-filer, SBOM/komponentliste, distribusjonsvei og egne endringer til i release- og arkivdokumentasjonen.
+SPDX License Expressions modellerer slike tilfeller maskinlesbart: `AND` for kumulative plikter, `OR` for et lisensvalg og `WITH` for et unntak. Et SPDX-uttrykk identifiserer den erklærte lisenssituasjonen, men utfører ingen juridisk kompatibilitetskontroll ([SPDX Specification – License Expressions](https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/)). For administratorer inngår lisens- og Notice-filer, SBOM/komponentliste, distribusjonsvei og egne endringer i release- og arkivdokumentasjonen.
 
 ## Administratorverktøy for reproduserbare tellere
 
-Eksemplene viser tekniske inventar- og dokumentasjonsspørringer. Om et felt er lisensrelevant, må utledes fra Terms. Eksporter kan inneholde personopplysninger og krever tilgangsbeskyttelse, oppbevaring og formålsbegrensning.
+Eksemplene viser tekniske inventar- og dokumentasjonsforespørsler. Om et felt er lisensrelevant, må avledes av Terms. Eksporter kan inneholde personopplysninger og krever tilgangsbeskyttelse, oppbevaring og formålsbegrensning.
 
 ### Registrere CPU-, kjerne- og virtualiseringsinventar
 
@@ -218,9 +218,9 @@ lscpu</code></pre>
   </div>
 </div>
 
-[`Get-CimInstance`](https://learn.microsoft.com/en-us/powershell/module/cimcmdlets/get-ciminstance) leser CIM/WMI-inventardata; [`lscpu`](https://man7.org/linux/man-pages/man1/lscpu.1.html) samler CPU-, kjerne-, tråd-, sokkel- og NUMA-data. I en VM viser de primært gjestesynet. Vertsscope, klyngeflytting, skyinstanstype og kontraktsmessige kjernefaktorer dokumenteres separat.
+[`Get-CimInstance`](https://learn.microsoft.com/en-us/powershell/module/cimcmdlets/get-ciminstance) leser CIM/WMI-inventardata; [`lscpu`](https://man7.org/linux/man-pages/man1/lscpu.1.html) samler CPU-, kjerne-, tråd-, sokkel- og NUMA-data. I en VM viser de primært gjestevisningen. Vertsomfang, klyngebevegelse, skyinstanstype og kontraktsmessige kjernefaktorer dokumenteres separat.
 
-### Telle katalogobjekter med eksplisitt scope
+### Telle katalogobjekter med eksplisitt omfang
 
 <div class="os-tabs" data-os-tabs>
   <div class="os-tabs-bar" role="tablist" aria-label="Betriebssystem für Lizenz-Benutzerinventar">
@@ -240,7 +240,7 @@ lscpu</code></pre>
   </div>
 </div>
 
-[`Get-ADUser`](https://learn.microsoft.com/powershell/module/activedirectory/get-aduser) og [`ldapsearch`](https://www.openldap.org/software/man.cgi?query=ldapsearch) leverer objektankere og attributter. Search Base, filter, paging, flerverdiattributter og deaktiverte objekter dokumenteres. Eksporten teller ingen «lisenspliktige personer» så lenge kontraktsregelen ikke er nøyaktig avbildet på disse feltene.
+[`Get-ADUser`](https://learn.microsoft.com/powershell/module/activedirectory/get-aduser) og [`ldapsearch`](https://www.openldap.org/software/man.cgi?query=ldapsearch) leverer objektankere og attributter. Search Base, filter, paging, flerverdiattributter og deaktiverte objekter dokumenteres. Eksporten teller ikke «lisenspliktige personer» så lenge kontraktsregelen ikke er avbildet nøyaktig på disse feltene.
 
 ### Lese ut sky-SKU-er og brukertildelinger
 
@@ -262,7 +262,7 @@ Get-MgUserLicenseDetail -UserId 'admin@example.ch' |
   </div>
 </div>
 
-[`Get-MgSubscribedSku`](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.directorymanagement/get-mgsubscribedsku?view=graph-powershell-1.0), [`Get-MgUserLicenseDetail`](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.users/get-mguserlicensedetail) og [`curl`](https://curl.se/docs/manpage.html) leser Microsoft Graph-data. Token lagres ikke i skript, saker eller Shell-historikk. `ConsumedUnits`, brukertildeling, tjenesteplan-klargjøring og faktisk brukt workload vurderes separat.
+[`Get-MgSubscribedSku`](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.directorymanagement/get-mgsubscribedsku?view=graph-powershell-1.0), [`Get-MgUserLicenseDetail`](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.users/get-mguserlicensedetail) og [`curl`](https://curl.se/docs/manpage.html) leser Microsoft Graph-data. Token lagres ikke i skript, saker eller Shell-History. `ConsumedUnits`, brukertildeling, tjenesteplan-klargjøring og faktisk brukt Workload vurderes separat.
 
 ### Kontrollere lisensserver eller skyendepunkt fra produktnettverket
 
@@ -279,9 +279,9 @@ Get-MgUserLicenseDetail -UserId 'admin@example.ch' |
   </div>
 </div>
 
-[`Test-NetConnection`](https://learn.microsoft.com/powershell/module/nettcpip/test-netconnection) og [`nc`](https://man.openbsd.org/nc) kontrollerer DNS-/TCP-oppsett fra valgt opphav. En suksess beviser verken proxy, [TLS](/kb/tls), token, kontotilknytning eller lisenstransaksjonen. Produktlogger og produsentstatus leverer neste tilstandsovergang.
+[`Test-NetConnection`](https://learn.microsoft.com/powershell/module/nettcpip/test-netconnection) og [`nc`](https://man.openbsd.org/nc) kontrollerer DNS-/TCP-oppsett fra den valgte kilden. Suksess beviser verken proxy, [TLS](/kb/tls), token, kontotilordning eller lisens­transaksjonen. Produktlogger og produsentstatus gir neste tilstandsovergang.
 
-### Sikre revisjonseksport mot endring
+### Sikre revisjonseksport mot endringer
 
 <div class="os-tabs" data-os-tabs>
   <div class="os-tabs-bar" role="tablist" aria-label="Betriebssystem für Lizenz-Auditexport">
@@ -298,7 +298,7 @@ sha256sum ./evidence/entitlements.pdf</code></pre>
   </div>
 </div>
 
-[`Get-FileHash`](https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/get-filehash) og [`sha256sum`](https://www.gnu.org/software/coreutils/manual/html_node/sha2-utilities.html) oppdager senere byteendringer. I tillegg dokumenteres opprettelsestid, spørringsscope, verktøy-/API-versjon, Query, tidssone, eksportør og sikker lagring. En hash bekrefter ikke faglig fullstendighet.
+[`Get-FileHash`](https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/get-filehash) og [`sha256sum`](https://www.gnu.org/software/coreutils/manual/html_node/sha2-utilities.html) oppdager senere byteendringer. I tillegg dokumenteres opprettelsestid, forespørselsomfang, verktøy-/API-versjon, spørring, tidssone, eksportør og sikker lagring. En hash bekrefter ikke faglig fullstendighet.
 
 ### Kontrollere lisens- og aktiveringshendelser i perioden
 
@@ -320,16 +320,16 @@ Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=$since} |
   </div>
 </div>
 
-[`Get-WinEvent`](https://learn.microsoft.com/powershell/module/microsoft.powershell.diagnostics/get-winevent), [`journalctl`](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html) og [`grep`](https://www.gnu.org/software/grep/manual/grep.html) filtrerer lokale hendelser. Produsentlogger kan bruke strukturerte koder i stedet for engelske tekstmeldinger; Provider, Event-ID eller definerte felter foretrekkes. Tid, rotasjon og sentral loggkopi hører med i funnet.
+[`Get-WinEvent`](https://learn.microsoft.com/powershell/module/microsoft.powershell.diagnostics/get-winevent), [`journalctl`](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html) og [`grep`](https://www.gnu.org/software/grep/manual/grep.html) filtrerer lokale hendelser. Produsentlogger kan bruke strukturerte koder i stedet for engelske tekstmeldinger; Provider, Event-ID eller definerte felt foretrekkes. Tid, rotasjon og sentral loggkopi inngår i funnet.
 
-Av Entitlement, tellepunkt og driftstilstand oppstår revisjonsbeviset. Det må reproduserbart vise hva som ble kjøpt, tildelt, installert og faktisk brukt.
+Fra Entitlement, tellepunkt og driftstilstand oppstår revisjonsdokumentasjonen. Den må reproduserbart vise hva som ble kjøpt, tildelt, installert og faktisk brukt.
 
-## Revisjons- og driftsbevis
+## Revisjons- og driftsdokumentasjon
 
-Et reproduserbart lisensbevis inneholder:
+En reproduserbar lisensdokumentasjon inneholder:
 
-- kontrakts-/bestillingsreferanse, produkt/SKU, måltall, mengde, scope, løpetid og særrettigheter;
-- programvare- og maskinvareinventar med uforanderlige ID-er, Edition, versjon og klyngerelasjon;
+- kontrakts-/bestillingsreferanse, produkt/SKU, måleverdi, antall, omfang, løpetid og særrettigheter;
+- programvare- og maskinvareinventar med uforanderlige ID-er, utgave, versjon og klyngerelasjon;
 - direkte, gruppebaserte og automatiske tildelinger med kilde og klargjøringsstatus;
 - råmåleverdier og beregningsregel per tidsvindu;
 - unntak med begrunnelse, Owner, utløpsdato og teknisk kontroll;
@@ -337,13 +337,13 @@ Et reproduserbart lisensbevis inneholder:
 - produktvisning, API-/CLI-eksport og uavhengig motberegning;
 - tid, tidssone, Query/verktøyversjon, hash og beskyttet lagring.
 
-Avvik klassifiseres: **datafeil** (duplikater, gamle kontoer), **modellfeil** (feil måltall), **prosessfeil** (lisens ikke fjernet etter fratredelse), **teknisk feil** (synkronisering/token/server) eller **manglende Entitlement**. Først dette skillet viser om svaret er opprydding, konfigurasjon, kontraktsavklaring, anskaffelse eller Incident Response.
+Avvik klassifiseres: **datafeil** (duplikater, gamle kontoer), **modellfeil** (feil måleverdi), **prosessfeil** (lisens ikke fjernet etter fratredelse), **teknisk feil** (synkronisering/token/server) eller **manglende Entitlement**. Først dette skillet viser om svaret er opprydding, konfigurasjon, kontraktsavklaring, anskaffelse eller Incident Response.
 
 ## Teknisk utvikling av lisensiering
 
-Lokale produktnøkler og dongler knyttet først bruksrettigheten tett til én datamaskin. Nettverkslisensservere innførte delte pooler og Concurrent Leases; virtualisering krevde nye vert-, kjerne- og mobilitetsregler. Abonnementer og SaaS flyttet Entitlements til skykontoer, identitetsgrupper og tjenesteplaner. Cisco Smart Licensing og Microsoft Graph illustrerer sentrale konto-/API-modeller, mens ISO/IEC 19770 standardiserer SWID- og Entitlement-data ([Cisco Licensing](https://www.cisco.com/site/us/en/buy/licensing/index.html), [Microsoft Graph – List licenseDetails](https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails), [ISO/IEC 19770-2:2015](https://www.iso.org/standard/65666.html), [ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
+Lokale produktnøkler og dongler knyttet først bruksretten tett til én maskin. Nettverkslisensservere innførte delte pooler og Concurrent Leases; virtualisering krevde nye regler for verter, kjerner og mobilitet. Abonnementer og SaaS flyttet Entitlements til skykontoer, identitetsgrupper og tjenesteplaner. Cisco Smart Licensing og Microsoft Graph illustrerer sentrale konto-/API-modeller, mens ISO/IEC 19770 standardiserer SWID- og Entitlement-data ([Cisco Licensing](https://www.cisco.com/site/us/en/buy/licensing/index.html), [Microsoft Graph – List licenseDetails](https://learn.microsoft.com/en-us/graph/api/user-list-licensedetails), [ISO/IEC 19770-2:2015](https://www.iso.org/standard/65666.html), [ISO/IEC 19770-3:2016](https://www.iso.org/standard/52293.html)).
 
-Parallelt gjorde åpen kildekode teknisk aktivering overflødig for mange komponenter, men ikke lisensvilkår. SPDX etablerte maskinlesbare kortidentifikatorer og uttrykk for programvareforsyningskjeder. Dermed flyttet administratoroppgaven seg fra «registrere nøkkel» til et dataproblem om kontrakt, identitet, ressurs, løpetid, telemetri og programvaresammensetning. Mottiltaket er det samme som ved overvåking: klare objektankere, eksplisitte tidsvinduer, rådata og reproduserbare beregninger.
+Parallelt gjorde åpen kildekode teknisk aktivering overflødig for mange komponenter, men ikke lisensvilkår. SPDX skapte maskinlesbare kortidentifikatorer og uttrykk for programvareforsyningskjeder. Dermed flyttet administratoroppgaven seg fra «registrere nøkkel» til et dataproblem om kontrakt, identitet, aktivum, løpetid, telemetri og programvaresammensetning. Mottiltaket er det samme som ved overvåking: klare objektankere, eksplisitte tidsvinduer, rådata og reproduserbare beregninger.
 
 ## Kilder
 

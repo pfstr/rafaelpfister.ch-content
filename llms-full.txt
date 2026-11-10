@@ -14,6 +14,163 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519 und die Folgen in der Schweiz
+
+URL: https://rafaelpfister.ch/blog/outlook-com-dmarc-ablehnung-as9031519
+Datum: 2026-11-10
+
+# Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519 und die Folgen in der Schweiz
+
+Seit dem 5. November 2026 kommen Nachrichten an Postfächer bei Outlook.com, Hotmail, Live und MSN mit einem neuen Fehler zurück, wenn die Absenderdomain keinen DMARC-Record publiziert hat:
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+Frank Carius hat den Fall am 9. November auf msxfaq.de unter dem Titel «Hotmail und DMARC Zwang» beschrieben. Kurzfazit nach Durchsicht der Primärquellen: Die Ablehnungen sind real und betreffen auch Domains mit wenigen Mails pro Woche. Eine angekündigte Regeländerung von Microsoft gibt es dazu jedoch bisher keine. Die einzige Stellungnahme mit Microsoft-Bezug spricht von einer Dienststörung, deren Ursache untersucht wird. Ein DMARC-Record behebt das Problem in fast allen dokumentierten Fällen, und er ist unabhängig vom Ausgang dieser Störung fällig.
+
+Stand der Angaben: 10. November 2026.
+
+## Was Microsoft dokumentiert
+
+Die Postmaster-Richtlinien von Outlook.com enthalten weiterhin nur die Regel vom 5. Mai 2025: Domains, die mehr als 5000 Nachrichten pro Tag an Outlook.com-Konten senden, müssen SPF und DKIM bestehen und einen DMARC-Record mit mindestens `p=none` publizieren, der über SPF oder DKIM ausgerichtet ist. Nachrichten, die das nicht erfüllen, landen zuerst im Junk-Ordner und können später mit folgendem Fehler abgelehnt werden:
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+Für alle anderen Absender formuliert dieselbe Seite nur eine Empfehlung. Der Zusatz `AS9031519` und der Fehlertext `Message lacks SPF/DKIM/DMARC Auth Records` kommen weder in den Postmaster-Richtlinien noch im Support-Artikel zu 5.7.515 vor.
+
+Zur aktuellen Lage hat sich Microsoft nur in den Microsoft-Q&A-Foren geäussert. Ein als «Microsoft External Staff» gekennzeichneter Moderator schrieb am 9. November, es bestehe eine laufende Störung im Exchange-Dienst bei der Zustellung an Outlook.com, Hotmail.com und Live.com. Sie sei als Service Degradation eingestuft, und Microsoft untersuche die Ursache. Eine Incident-Nummer, eine Ursache oder einen Termin für die Behebung nennt der Beitrag nicht. Ein Blogbeitrag, ein Eintrag in den Postmaster-Richtlinien oder eine öffentliche Service-Health-Meldung liegen nicht vor.
+
+## Was Betreiber gemessen haben
+
+Die belastbarsten Daten stammen von Mailprovidern, die ihre Logs ausgewertet und auf der Mailingliste mailop sowie in eigenen Blogbeiträgen veröffentlicht haben (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Die Beobachtungen decken sich:
+
+- **Auslöser:** Die Absenderdomain hat keinen DMARC-Record. SPF und DKIM waren in den dokumentierten Fällen gültig und ausgerichtet. Der Fehlertext nennt zwar alle drei Verfahren, abgelehnt wird jedoch wegen des fehlenden DMARC-Records.
+- **Volumen:** Betroffen sind auch Domains mit wenigen Nachrichten pro Woche, weit unter der Schwelle von 5000 pro Tag.
+- **Empfänger:** Nur die Consumer-Postfächer (outlook.com, hotmail.com, live.com, msn.com und Ländervarianten wie hotmail.de oder outlook.be). Exchange-Online-Tenants als Empfänger lehnen nach den vorliegenden Berichten nicht mit diesem Fehler ab.
+- **Unregelmässig:** Nur ein Teil der Nachrichten wird abgewiesen. Ein erneuter Versand derselben Nachricht kann durchgehen.
+- **Behebung:** Ein Record mit `v=DMARC1; p=none` genügte in den dokumentierten Fällen. Nach der Publikation dauerte es zwischen wenigen Minuten und rund anderthalb Stunden, bis Outlook.com wieder annahm.
+
+Zwei Auswertungen grenzen den Auslöser weiter ein: Bei one.com wurden nur Domains abgewiesen, deren Abfrage von `_dmarc.<domain>` mit `NXDOMAIN` endet. Domains, bei denen der Name existiert und nur kein TXT-Record vorhanden ist (`NOERROR` ohne Antwort), waren dort nicht betroffen. MXroute fand in einem Log 367 abgewiesene Absenderdomains, 286 davon mit `NXDOMAIN` auf `_dmarc`. Diese Eingrenzung beruht auf Daten einzelner Betreiber und ist nicht abschliessend geklärt.
+
+Seit dem Mittag des 9. November melden einzelne Betroffene, dass die Ablehnungen aufgehört haben. Bestätigt hat Microsoft das nicht.
+
+## Sonderfall Microsoft 365 als Absender
+
+Tenants in Microsoft 365 sind als Absender überdurchschnittlich betroffen. Für eine eigene Domain legt Microsoft 365 keinen DMARC-Record an, und solange DKIM für die Domain nicht aktiviert ist, signiert Exchange Online mit der `onmicrosoft.com`-Domain des Tenants. Der Unzustellbarkeitsbericht verpackt die Ablehnung zusätzlich in einen zweiten Statuscode, der auf SPF verweist:
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+Der SPF-Record ist in diesen Fällen in der Regel korrekt. Massgebend ist der innere Fehler nach dem Pfeil.
+
+## Die eigene Domain prüfen
+
+Abgefragt wird der TXT-Record unter `_dmarc.<domain>`:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `+short` | `dig` gibt nur den Inhalt des Records aus |
+| `TXT` bzw. `-Type TXT` | Record-Typ der Abfrage |
+| `_dmarc.example.com` bzw. `-Name` | abgefragter Name: das Label `_dmarc` vor der Absenderdomain |
+
+</details>
+
+Eine leere Ausgabe bei `dig +short` oder der Fehler `DNS name does not exist` bei `Resolve-DnsName` bedeutet, dass kein DMARC-Record existiert. Für Subdomains gilt: Sendet `news.example.com` und hat selbst keinen Record, zählt nach RFC 7489 der Record der Organisationsdomain `example.com`.
+
+Der [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) auf dieser Seite prüft DMARC zusammen mit SPF, DKIM und der Ausrichtung in einem Durchgang.
+
+## Sofortmassnahme und der Weg danach
+
+Fehlt der Record, stellt dieser Eintrag die Zustellung an Outlook.com wieder her:
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` ändert nichts an der Behandlung Ihrer Mails bei anderen Empfängern und kann deshalb ohne Vorarbeiten publiziert werden. Das `rua`-Tag ist für die Annahme bei Outlook.com nicht erforderlich. Ohne `rua` erhalten Sie jedoch keine Aggregatberichte, und ohne diese Berichte fehlt die Grundlage für jeden weiteren Schritt. Die Adresse muss ein Postfach oder einen Auswertungsdienst erreichen, der die XML-Berichte verarbeitet.
+
+`p=none` schützt die Domain nicht vor Missbrauch. Der Record erfüllt lediglich die Annahmebedingung. Für einen wirksamen Schutz folgen diese Schritte:
+
+1. Alle Systeme erfassen, die mit der Domain senden (Mailserver, Newsletter-Dienst, ERP, Webshop, Scanner).
+2. SPF für diese Systeme vollständig und gültig halten, mit höchstens zehn DNS-Lookups.
+3. DKIM mit der eigenen Domain aktivieren, in Microsoft 365 pro Domain im Defender-Portal.
+4. Die Aggregatberichte einige Wochen auswerten und nicht ausgerichtete Quellen korrigieren.
+5. Die Policy auf `p=quarantine` und anschliessend auf `p=reject` anheben.
+
+Die typischen Fehler beim Publizieren dieser Records (doppelte SPF-Records, zu lange DKIM-Schlüssel, automatisch angehängter Zonenname) beschreibt der [Guide für DNS-Admins](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine).
+
+## Die Wirkung in der Schweiz: 152 Gemeinden in fünf Tagen
+
+Der [Mail-Sicherheitsindex Schweiz](https://rafaelpfister.ch/open-data/mail-security-index) prüft jede Nacht die DNS-Records von 3364 Schweizer Organisationen, darunter 2078 Gemeinden. Das [Änderungsprotokoll](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) zeigt seit dem 6. November eine Welle neu publizierter DMARC-Records. Das Datum ist jeweils das des nächtlichen Abgleichs.
+
+| Abgleich | Organisationen neu mit DMARC-Record | davon Gemeinden |
+|---|---|---|
+| 19. Oktober bis 5. November | höchstens 5 pro Tag | höchstens 4 pro Tag |
+| 6. November | 4 | 4 |
+| 7. November | 22 | 21 |
+| 8. November | 1 | 1 |
+| 9. November | 2 | 2 |
+| 10. November | 140 | 124 |
+
+In fünf Tagen haben 169 Organisationen erstmals einen DMARC-Record publiziert, 152 davon sind Gemeinden. Die Zahl der Organisationen ohne DMARC im Index sank von 817 auf 650. Der Zeitpunkt deckt sich mit den Ablehnungen bei Outlook.com. Bei den Gemeinden selbst habe ich die Gründe nicht erfragt.
+
+Die Records haben folgende Merkmale:
+
+- **Policy:** 139 der 152 Gemeinden haben `p=none` gesetzt, fünf `p=quarantine`, drei `p=reject`. Bei fünf besteht der Record nur aus `v=DMARC1` ohne `p=`-Tag und ist damit ungültig.
+- **Berichte:** 114 Records enthalten ausschliesslich `v=DMARC1; p=none`. Insgesamt haben 124 der 152 Gemeinden keine `rua`-Adresse eingetragen und erhalten somit keine Berichte.
+- **Zentrale Umstellungen:** Die Änderungen treten gebündelt auf. Am 10. November kamen 32 Genfer Gemeinden hinzu, deren Mailserver alle unter `acg-geneve.ch` laufen, dazu 26 Zürcher und 19 Freiburger Gemeinden. Am 7. November waren es acht Nidwaldner und sieben Tessiner Gemeinden. Die Bündelung nach Mailserver und Kanton spricht dafür, dass Informatikdienstleister die Records für alle betreuten Gemeinden in einem Durchgang gesetzt haben.
+
+Für die Zustellung an Outlook.com reichen diese Records. Als Schutz der Gemeindedomains vor gefälschten Absendern wirken sie noch nicht: Ohne `rua` fehlen die Daten, um die Policy später anzuheben. 537 der 2078 Gemeinden im Index haben weiterhin keinen DMARC-Record.
+
+## Einordnung
+
+Ob Microsoft die Ablehnung zurücknimmt oder als Regel bestätigt, ist offen. Für die Planung spielt das eine geringe Rolle: Google und Yahoo verlangen DMARC seit Februar 2024 von Massenversendern, Microsoft seit Mai 2025, und die Postmaster-Richtlinien von Outlook.com empfehlen es allen Absendern. Eine Domain ohne DMARC-Record war in den letzten Tagen bei einem der grössten Mailanbieter nicht mehr zuverlässig zustellbar. Der Record mit `p=none` und `rua` ist in wenigen Minuten publiziert und hat keine Nebenwirkungen auf die Zustellung.
+
+## Quellen
+
+1.  [msxfaq.de: Hotmail und DMARC Zwang](https://www.msxfaq.de/spam/hotmail_dmarc_zwang.htm): Praxisbeitrag von Frank Carius vom 9. November 2026 mit Unzustellbarkeitsbericht und empfohlenem Vorgehen; ohne Verweis auf eine Microsoft-Quelle.
+
+2.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Offizielle Anforderungen an Absender; nennt die Schwelle von 5000 Nachrichten pro Tag, den Fehler 5.7.515 und die Empfehlung an alle Absender.
+
+3.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Support-Artikel zum dokumentierten Fehler für Absender mit hohem Volumen.
+
+4.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Forenthread mit der Moderatoren-Antwort vom 9. November 2026 zur laufenden Störung; Forenbeitrag, keine offizielle Service-Health-Meldung.
+
+5.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Auswertung der ausgehenden Logs eines Mailproviders ab dem 5. November 2026.
+
+6.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Hoster-Bericht mit über 500 Ablehnungen am ersten Tag und der Behebung über `p=none`.
+
+7.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Thread der Betreiber-Mailingliste mit den Messungen von MXroute, Fastmail und one.com, darunter die Eingrenzung auf `NXDOMAIN`.
+
+8.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Reproduzierter Test mit gültigem und ausgerichtetem SPF und DKIM, ohne DMARC-Record.
+
+9.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Deutschsprachige Zusammenfassung der Berichte vom 9. November 2026.
+
+10.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Spezifikation, unter anderem zur Ermittlung des Records über die Organisationsdomain.
+
+11.  [Mail-Sicherheitsindex Schweiz: Änderungsprotokoll](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Tägliche Änderungen der DNS-Records von 3364 Schweizer Organisationen; Grundlage der Zahlen zu den Gemeinden.
+
+----
+
 # Kiteworks EPG 9.5.1: Vier öffentlich dokumentierte Sicherheitskorrekturen
 
 URL: https://rafaelpfister.ch/blog/kiteworks-epg-releases-9-5-1
@@ -62,7 +219,7 @@ Setzen Sie EPG mindestens auf 9.5.1, sofern eine ältere Version eingesetzt wird
 
 ----
 
-# Proofpoint Protection Server 8.22.4: Patch kann die Zertifikatskonfiguration für SMTP Client zurücksetzen
+# Proofpoint Protection Server 8.22.4: Patch 5807 lässt SMTP Client ohne Zertifikat
 
 URL: https://rafaelpfister.ch/blog/proofpoint-smtp-client-zertifikat
 Datum: 2026-11-05
@@ -104,7 +261,16 @@ Direkt danach baut Sendmail die Verbindung trotzdem mit TLS auf (`verify=OK`), j
 
 PPS ordnet jedem Dienst pro Server ein Zertifikat zu. Unter **System > Certificates > Services** stehen pro Server unter anderem `SMTP Server`, `SMTP Client`, `Administration Server` und `End User Web Application / Encryption`. Aus der Zuordnung bei `SMTP Client` erzeugt PPS die Datei `/etc/pki/tls/certs/sendmail-client.pem`, die Sendmail als Client-Zertifikat verwendet. Steht dort `-none-`, schreibt PPS die Datei leer oder gar nicht.
 
-In der untersuchten Umgebung stand die Zuordnung nach einem automatischen Patch auf allen Servern auf `-none-`. Unter **System > Config History** war der Patch als Eintrag `configuration changes for patch-…` mit dem Ersteller `system` sichtbar, die Dateien unter `/etc/pki/tls/certs/` trugen denselben Zeitstempel. Ob Proofpoint die Zuordnung mit diesem Patch neu eingeführt hat oder ob der Patch eine bestehende Zuordnung zurückgesetzt hat, ist in den öffentlich zugänglichen Release Notes nicht beschrieben. Ich ergänze den Artikel, sobald Proofpoint dazu Stellung nimmt.
+Die Zuordnung `SMTP Client` gibt es in 8.22.4 erst seit den Patches 5806 und 5807, die Proofpoint am 29.10.2026 veröffentlicht hat. Beide tragen den Titel «TLS client and server certificate authentication improvement» und beheben laut Knowledge Base, dass PPS 8.22.4 keine getrennten Zertifikate für SMTP-Server und SMTP-Client zuordnen kann. Im Release 8.23.0 ist die Funktion regulär enthalten (Release Notes, Abschnitt «SMTP Client Certificate»).
+
+| Patch | Inhalt laut Knowledge Base |
+|---|---|
+| 5806 | Aktualisiert unter anderem `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` und die Vorlage `sendmail.mc`, startet die Admin-GUI (`admind`) neu und aktualisiert das RPM `pps-pfpt` |
+| 5807 | Setzt 5806 voraus, ändert keine Dateien und startet keine Prozesse neu; wendet nur die Konfigurationsänderungen an, die für getrennte Server- und Client-Zertifikate nötig sind |
+
+Proofpoint hat die Zuordnung also neu eingeführt und nicht eine bestehende zurückgesetzt. Ein Zertifikat übernimmt der Patch dabei nicht: Die neue Zeile steht nach der Installation auf `-none-`, und Sendmail verwendet ab diesem Zeitpunkt kein Client-Zertifikat mehr. Ein Hinweis darauf fehlt in den Patch-Beschreibungen.
+
+In der untersuchten Umgebung stand die Zuordnung danach auf allen Servern auf `-none-`. Unter **System > Config History** war Patch 5807 als Eintrag `configuration changes for patch-…` mit dem Ersteller `system` sichtbar, die Dateien unter `/etc/pki/tls/certs/` trugen denselben Zeitstempel. Unter **Software Patch History** erschien 5807 dagegen nicht. Das passt dazu, dass 5807 keine Software installiert, sondern nur Konfiguration ändert. Den Zeitpunkt der Umstellung zeigt deshalb **Config History**, die Software-Änderung selbst gehört zu Patch 5806.
 
 Ein Rollback unter **Config History** auf den Snapshot des Patches hat nicht geholfen. PPS hat die Datei danach neu geschrieben, jedoch mit 0 Bytes.
 
@@ -137,7 +303,14 @@ Fehlt `sendmail-client.pem` oder hat die Datei 0 Bytes, während `sendmail.pem` 
 
 Unter **System > Certificates > Services** für jeden betroffenen Agent bei `SMTP Client` ein gültiges Zertifikat auswählen und mit **Save Changes** speichern. In der Regel ist das dasselbe öffentliche Zertifikat, das bei `SMTP Server` steht.
 
-Die Auswahlliste zeigt alle importierten Zertifikate, auch abgelaufene mit demselben Namen. Unterscheiden lassen sie sich nur über die Seriennummer in Klammern. Vergleichen Sie die Seriennummer vor dem Speichern mit der Liste unter **System > Certificates > Certificates**, dort stehen Ausstellungs- und Ablaufdatum.
+Die Auswahlliste kann mehrere Zertifikate mit demselben Namen enthalten, auch abgelaufene. Unterscheiden lassen sie sich nur über die Seriennummer in Klammern. Vergleichen Sie die Seriennummer vor dem Speichern mit der Liste unter **System > Certificates > Certificates**, dort stehen Ausstellungs- und Ablaufdatum.
+
+Die Liste zeigt bei `SMTP Client` nicht zwingend alle importierten Zertifikate. In der untersuchten Umgebung fehlten einzelne Zertifikate, obwohl sie gültig waren und abgelaufene Exemplare bereits gelöscht waren. Nach welchen Kriterien PPS die Liste filtert, beschreiben weder die Patch-Artikel noch die Release Notes 8.23. Fehlt ein Zertifikat, prüfen Sie zwei Punkte:
+
+- **Privater Schlüssel:** Wurde das Zertifikat als PEM ohne Schlüssel importiert, kann PPS es keinem Dienst zuordnen. PKCS12-Dateien enthalten den Schlüssel immer.
+- **Verwendungszweck:** Enthält das Zertifikat in `Extended Key Usage` den Zweck `TLS Web Client Authentication`? Viele seit Herbst 2025 ausgestellte öffentliche Zertifikate enthalten ihn nicht mehr (siehe unten). Für den Dienst `SMTP Client` ist ein Zertifikat ohne diesen Zweck ohnehin ungeeignet.
+
+Bestätigt Proofpoint die Kriterien, ergänze ich sie hier.
 
 Nach dem Speichern verteilt PPS die Konfiguration an die Agents. Die Kontrolle auf dem Agent:
 
@@ -163,7 +336,7 @@ Eine Kopie von `sendmail.pem` nach `sendmail-client.pem` von Hand überbrückt d
 
 ## Nach jedem Patch kontrollieren
 
-Bis geklärt ist, warum der Patch die Zuordnung verändert hat, empfehle ich nach jedem Patch eine Kontrolle der Seite **Services**. Einfacher ist eine Überwachung, die bei der Meldung `sendmail-client.pem` im Maillog der Agents alarmiert. Unter **Licenses and Updates > Settings** lässt sich zudem festlegen, wann Patches eingespielt werden. Ein Zeitfenster, in dem jemand den Mailflow prüfen kann, verkürzt einen solchen Ausfall deutlich.
+Patch 5807 hat die Konfiguration geändert, ohne dass die Patch-Beschreibung auf die Folgen hinweist. Ich empfehle deshalb nach jedem Patch eine Kontrolle der Seite **Services** und einen Blick in **Config History**, ob der Patch Konfigurationsänderungen mitgebracht hat. Ist Patch 5807 auf einem 8.22.4-System noch nicht installiert, ordnen Sie `SMTP Client` direkt nach der Installation ein Zertifikat zu. Einfacher ist eine Überwachung, die bei der Meldung `sendmail-client.pem` im Maillog der Agents alarmiert. Unter **Licenses and Updates > Settings** lässt sich zudem festlegen, wann Patches eingespielt werden. Ein Zeitfenster, in dem jemand den Mailflow prüfen kann, verkürzt einen solchen Ausfall deutlich.
 
 ## Client Authentication verschwindet aus öffentlichen Zertifikaten
 
@@ -214,7 +387,13 @@ Für Verbindungen, bei denen Partner Proofpoint über ein Client-Zertifikat erke
 
 ## Quellen
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameter `RestrictDomainsToCertificate` und `TlsSenderCertificateName` für Partner-Connectoren in Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, Anmeldung nötig)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Artikel 000027579 vom 29.10.2026, geänderte Dateien und Neustart der Admin-GUI.
+
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, Anmeldung nötig)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Artikel 000027580 vom 29.10.2026, reine Konfigurationsänderung mit Abhängigkeit auf 5806.
+
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, Anmeldung nötig)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): Artikel 000027117, Abschnitt «SMTP Client Certificate» auf Seite 5 der Revision A.
+
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameter `RestrictDomainsToCertificate` und `TlsSenderCertificateName` für Partner-Connectoren in Exchange Online.
 
 2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Abschnitt 1.3.2 zu dedizierten TLS-Server-Hierarchien; Zertifikate ab dem 15.03.2027 nur noch mit `serverAuth`.
 
@@ -20353,25 +20532,73 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
-# Proofpoint Protection Server 8.22.4: Patch may reset the certificate configuration for SMTP Client
+# Kiteworks EPG 9.5.1: Four publicly documented security fixes
+
+URL: https://rafaelpfister.ch/en/blog/kiteworks-epg-9-5-1-four-publicly-documented-security-fixes
+Datum: 2026-11-06
+
+# Kiteworks EPG 9.5.1: Four publicly documented security fixes
+
+Kiteworks continues the former totemo technology as Email Protection Gateway (EPG). Version 9.5.1 was the current Kiteworks version no later than September 25, 2026; the vendor does not state a public release date. The vendor advisories published on September 30 document four fixes for EPG 9.5.1: an account takeover, two unauthenticated flaws for writing files and triggering a denial of service, respectively, and a flaw that allowed administrators to write arbitrary files. The classification for the identically named totemomail version is available in the article on [totemomail 9.5.1](/blog/totemomail-9-5-1-sicherheitsupdate).
+
+## Versions at a glance
+
+| Version | Date | Type | Key points |
+|---|---|---|---|
+| 9.5.1 | publicly confirmed no later than September 25, 2026 | security update | Four publicly documented EPG fixes, including CVE-2026-102149 with CVSS 9.4 |
+
+## Security fixes in 9.5.1
+
+According to Kiteworks, all four advisories affect all EPG versions before 9.5.1 and list 9.5.1 as the fixed version. The advisories were published on September 30, 2026. They retrospectively describe the security status of the release, rather than its exact release date.
+
+- **CVE-2026-102149, CVSS 9.4 (critical):** A weakness in access control could allow an attacker to gain access to user accounts over the network. The CVSS rating requires neither privileges nor user interaction. Kiteworks classifies the cause as CWE-306 (missing authentication for critical functions) and CWE-639 (authorization bypass through a user-controlled key).
+- **CVE-2026-102143, CVSS 7.5 (high):** An unauthenticated attacker could write files to the appliance. Kiteworks cites an authentication issue as well as CWE-306 and CWE-434 (unrestricted upload of dangerous file types).
+- **CVE-2026-102146, CVSS 6.5 (medium):** An administrator could write arbitrary files. Kiteworks describes a privilege issue; the CVSS metric requires high privileges. The vendor lists CWE-73 (external control of file name or path) and CWE-1336 (insufficient neutralization in a template engine) as weaknesses.
+- **CVE-2026-102144, CVSS 5.3 (medium):** An attacker on the network could trigger a denial of service. The advisory cites missing authentication for critical functions and uncontrolled resource consumption (CWE-306, CWE-400). This rating also requires neither privileges nor user interaction.
+
+For operators, the account takeover is the priority fix because, according to the advisory, it is possible without an existing account. The other two flaws that do not require login also affect all versions before 9.5.1. The vendor advisories do not disclose technical details about endpoints, configurations, or workarounds.
+
+## Recommended approach
+
+Upgrade EPG to at least 9.5.1 if an older version is in use. Kiteworks explicitly identifies upgrading to 9.5.1 or later as the remedy for all four advisories. If a later vendor version has already been approved, it also meets this minimum version requirement. Kiteworks has not published a public update path, known issues, or support timelines for EPG 9.5.1 in the sources reviewed.
+
+## Sources
+
+1.  [Kiteworks: Precautionary Shutdown Advisory for Customers](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): Vendor notice dated September 25, 2026, naming 9.5.1 as the current version.
+
+2.  [Kiteworks Security Advisories](https://github.com/kiteworks/security-advisories/security/advisories): Official overview of the advisories published on September 30, 2026, including the EPG entries for 9.5.1.
+
+3.  [GHSA-c9w5-4frw-7wqq: Account takeover (CVE-2026-102149)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-c9w5-4frw-7wqq): Critical access-control weakness, CVSS 9.4, fixed in EPG 9.5.1.
+
+4.  [GHSA-3p9g-jh62-8f89: Unauthorized file modification (CVE-2026-102143)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-3p9g-jh62-8f89): Unauthenticated file writing, CVSS 7.5, fixed in EPG 9.5.1.
+
+5.  [GHSA-5pgq-v8g2-rg2f: Unauthorized file modification (CVE-2026-102146)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5pgq-v8g2-rg2f): Writing arbitrary files with administrator privileges, CVSS 6.5, fixed in EPG 9.5.1.
+
+6.  [GHSA-wwhf-5862-rjxq: Denial of service (CVE-2026-102144)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-wwhf-5862-rjxq): Unauthenticated denial of service, CVSS 5.3, fixed in EPG 9.5.1.
+
+7.  [Kiteworks: EPG with totemo Integration](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Vendor statement on the continuation and renaming of the totemo technology as Email Protection Gateway.
+
+----
+
+# Proofpoint Protection Server 8.22.4: Patch 5807 leaves SMTP Client without a certificate
 
 URL: https://rafaelpfister.ch/en/blog/proofpoint-protection-server-8-22-4-patch-may-reset-the-certificate-configuration-for-smtp
 Datum: 2026-11-05
 
 Today, I investigated an outage in the outbound mail flow of a Proofpoint Protection Server (PPS) 8.22.4. In short: After an automatically installed patch, the **SMTP Client** assignment under **System > Certificates > Services** was set to `-none-`. Sendmail then established outbound connections without a TLS client certificate. All peers that identify Proofpoint through this certificate rejected the emails. Regular recipients using opportunistic TLS continued accepting mail, so the issue was only noticed when individual partners could no longer be reached.
 
-If you operate PPS with automatic patches and have partners that require a client certificate, check this setting after every patch.
+If you run PPS with automatic patches and have partners that require a client certificate, check this setting after every patch.
 
 ## Symptom
 
 Only connections where the peer validates Proofpoint's client certificate are affected. Two typical cases:
 
-- **Exchange Online with a partner connector** restricted to a certificate via `RestrictDomainsToCertificate`. The rejection is `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
-- **Smarthost that permits relaying only with a client certificate.** The response is `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
+- **Exchange Online with a partner connector** restricted to a certificate through `RestrictDomainsToCertificate`. The rejection is `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
+- **A smarthost that allows relaying only with a client certificate.** The response is `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
 
-All other destinations continue receiving their mail. The test matrix therefore shows an inconsistent picture: mail to external recipients gets through, while mail to individual partners or through a specific smarthost fails.
+All other destinations continue receiving their mail. The test matrix therefore shows an inconsistent picture: mail to external recipients gets through, while mail to individual partners or through a particular smarthost fails.
 
-The agent's mail log contains one of the following two messages for every outbound connection. If the file is missing entirely:
+The agent mail log contains one of the following two messages for every outbound connection. If the file is missing entirely:
 
 ```text
 sendmail[...]: STARTTLS=client: file /etc/pki/tls/certs/sendmail-client.pem unsafe:
@@ -20393,15 +20620,24 @@ Immediately afterward, Sendmail still establishes the connection with TLS (`veri
 
 ## Cause
 
-PPS assigns a certificate to each service on each server. Under **System > Certificates > Services**, each server lists, among other things, `SMTP Server`, `SMTP Client`, `Administration Server` and `End User Web Application / Encryption`. From the assignment for `SMTP Client`, PPS generates the file `/etc/pki/tls/certs/sendmail-client.pem`, which Sendmail uses as its client certificate. If it is set to `-none-`, PPS writes the file as empty or does not write it at all.
+PPS assigns a certificate to each service on each server. Under **System > Certificates > Services**, each server has, among others, `SMTP Server`, `SMTP Client`, `Administration Server` and `End User Web Application / Encryption`. PPS generates the file `/etc/pki/tls/certs/sendmail-client.pem` from the assignment for `SMTP Client`, which Sendmail uses as its client certificate. If it is set to `-none-`, PPS writes the file as empty or does not write it at all.
 
-In the environment investigated, the assignment was set to `-none-` on all servers after an automatic patch. Under **System > Config History**, the patch was visible as an entry `configuration changes for patch-…` created by `system`, and the files under `/etc/pki/tls/certs/` had the same timestamp. Whether Proofpoint introduced the assignment with this patch or whether the patch reset an existing assignment is not described in the publicly available release notes. I will update this article as soon as Proofpoint comments on it.
+The `SMTP Client` assignment has only existed in 8.22.4 since patches 5806 and 5807, which Proofpoint released on October 29, 2026. Both are titled “TLS client and server certificate authentication improvement” and, according to the Knowledge Base, fix the inability of PPS 8.22.4 to assign separate certificates to the SMTP server and SMTP client. The feature is included as standard in release 8.23.0 (Release Notes, section “SMTP Client Certificate”).
+
+| Patch | Content according to the Knowledge Base |
+|---|---|
+| 5806 | Updates, among other things, `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` and the template `sendmail.mc`, restarts the Admin GUI (`admind`), and updates the RPM `pps-pfpt` |
+| 5807 | Requires 5806, changes no files, and restarts no processes; it only applies the configuration changes required for separate server and client certificates |
+
+Proofpoint therefore introduced the assignment rather than resetting an existing one. The patch does not carry over a certificate: After installation, the new row is set to `-none-`, and Sendmail no longer uses a client certificate from that point onward. The patch descriptions contain no notice of this.
+
+In the environment investigated, the assignment was set to `-none-` on all servers afterward. Under **System > Config History**, patch 5807 was visible as an entry `configuration changes for patch-…` created by `system`, and the files under `/etc/pki/tls/certs/` had the same timestamp. However, 5807 did not appear under **Software Patch History**. This is consistent with 5807 not installing software but only changing configuration. **Config History** therefore shows when the change occurred, while the software change itself belongs to patch 5806.
 
 A rollback under **Config History** to the patch snapshot did not help. PPS rewrote the file afterward, but with 0 bytes.
 
 ## Check
 
-In the Admin GUI on the master, go to **System > Certificates > Services**. At the top, select each agent that delivers outbound mail under **Server**, one at a time, and inspect the `SMTP Client` row.
+In the Admin GUI on the master, under **System > Certificates > Services**, select each agent that delivers mail externally in turn at the top under **Server**, and inspect the `SMTP Client` row.
 
 On the agent itself, two commands show the status:
 
@@ -20416,8 +20652,8 @@ grep -E 'sendmail-client.pem|SSL_CTX_' /var/log/maillog | tail -5
 | Option | Effect |
 |---|---|
 | `-l` | Long format with permissions, owner, size, and date |
-| `--time-style=full-iso` | Timestamp with date, time, and time zone for comparison with the patch time |
-| `grep -E` | Extended regular expressions so both search terms can be combined with `\|` |
+| `--time-style=full-iso` | Timestamp with date, time, and time zone, for comparison with the patch time |
+| `grep -E` | Extended regular expressions, allowing both search terms to be combined with `\|` |
 | `tail -5` | Display only the last five matches |
 
 </details>
@@ -20426,11 +20662,18 @@ If `sendmail-client.pem` is missing or the file is 0 bytes while `sendmail.pem` 
 
 ## Fix
 
-Under **System > Certificates > Services**, select a valid certificate for `SMTP Client` on each affected agent and save it with **Save Changes**. This is usually the same public certificate assigned to `SMTP Server`.
+Under **System > Certificates > Services**, select a valid certificate for `SMTP Client` on each affected agent and save it with **Save Changes**. Usually, this is the same public certificate assigned to `SMTP Server`.
 
-The selection list displays all imported certificates, including expired ones with the same name. They can only be distinguished by the serial number in parentheses. Before saving, compare the serial number with the list under **System > Certificates > Certificates**, which shows the issue and expiration dates.
+The selection list may contain multiple certificates with the same name, including expired ones. They can only be distinguished by the serial number in parentheses. Before saving, compare the serial number with the list under **System > Certificates > Certificates**, where the issue and expiration dates are shown.
 
-After saving, PPS distributes the configuration to the agents. Verify on the agent:
+The list for `SMTP Client` does not necessarily show all imported certificates. In the environment investigated, some certificates were missing even though they were valid and expired copies had already been deleted. Neither the patch articles nor the 8.23 Release Notes describe the criteria PPS uses to filter the list. If a certificate is missing, check two points:
+
+- **Private key:** If the certificate was imported as a PEM without a key, PPS cannot assign it to a service. PKCS12 files always contain the key.
+- **Purpose:** Does the certificate include the purpose `TLS Web Client Authentication` in `Extended Key Usage`? Many public certificates issued since fall 2025 no longer include it (see below). A certificate without this purpose is unsuitable for the `SMTP Client` service anyway.
+
+If Proofpoint confirms the criteria, I will add them here.
+
+After saving, PPS distributes the configuration to the agents. Check on the agent:
 
 ```bash
 ls -l /etc/pki/tls/certs/sendmail-client.pem
@@ -20442,25 +20685,25 @@ grep -E 'STARTTLS=client|stat=' /var/log/maillog | tail -20
 
 | Option | Effect |
 |---|---|
-| `ls -l` | Shows the file size and permissions; after the correction, it is no longer empty |
+| `ls -l` | Shows the file size and permissions; after the fix, it is no longer empty |
 | `grep -E 'STARTTLS=client\|stat='` | Filters TLS messages for outbound connections and the delivery result |
 | `tail -20` | Display only the last twenty lines |
 
 </details>
 
-The messages `SSL_CTX_… failed` and `unsafe` must no longer appear after saving, and deliveries to partners must end with `stat=Sent`. Sendmail delivers mail that was previously deferred with a 4xx code from the queue on its own. Mail rejected with a 5xx code must be resent by the senders.
+The messages `SSL_CTX_… failed` and `unsafe` must no longer appear after saving, and deliveries to partners must end with `stat=Sent`. Sendmail delivers messages that were deferred with a 4xx code from the queue automatically. Messages rejected with a 5xx code must be resent by the senders.
 
 Manually copying `sendmail.pem` to `sendmail-client.pem` also bridges the outage. However, PPS overwrites the file again during the next configuration push as long as the assignment is missing in the GUI.
 
 ## Check after every patch
 
-Until it is clear why the patch changes the assignment, I recommend checking the **Services** page after every patch. Monitoring that alerts on the message `sendmail-client.pem` in the agents' mail logs is easier. Under **Licenses and Updates > Settings**, you can also specify when patches are installed. A maintenance window in which someone can check the mail flow significantly reduces the duration of such an outage.
+Patch 5807 changed the configuration without the patch description indicating the consequences. I therefore recommend checking the **Services** page after every patch and looking in **Config History** to see whether the patch included configuration changes. If patch 5807 is not yet installed on an 8.22.4 system, assign a certificate to `SMTP Client` immediately after installation. Even simpler is monitoring that alerts on the `sendmail-client.pem` message in the agents' mail logs. Under **Licenses and Updates > Settings**, you can also specify when patches are installed. A maintenance window during which someone can check mail flow substantially shortens such an outage.
 
-## Client Authentication disappears from public certificates
+## Client Authentication is disappearing from public certificates
 
-Independently of the patch, a second change affects precisely these connections. Until now, public TLS certificates have generally contained both purposes in the `Extended Key Usage` extension: `TLS Web Server Authentication` and `TLS Web Client Authentication`. Mail gateways therefore use their server certificate as a client certificate as well.
+Independently of the patch, a second change affects these exact connections. Public TLS certificates have generally contained both purposes in the `Extended Key Usage` extension: `TLS Web Server Authentication` and `TLS Web Client Authentication`. Mail gateways therefore also use their server certificate as a client certificate.
 
-The Chrome Root Program requires public certificates issued from March 15, 2027 onward to contain only `serverAuth`. Since October 1, 2025, DigiCert has issued public TLS certificates without Client Authentication by default; the purpose remains available upon request until March 1, 2027. Other CAs have comparable schedules. OpenSSL shows whether a certificate contains the client purpose:
+The Chrome Root Program requires that public certificates issued from March 15, 2027 onward contain only `serverAuth`. DigiCert has issued public TLS certificates without Client Authentication by default since October 1, 2025; the purpose is still available upon request until March 1, 2027. Other CAs have comparable schedules. OpenSSL shows whether a certificate includes the client purpose:
 
 ```bash
 openssl x509 -in zertifikat.pem -noout \
@@ -20472,46 +20715,52 @@ openssl x509 -in zertifikat.pem -noout \
 
 | Option | Effect |
 |---|---|
-| `x509` | Subcommand for viewing and editing X.509 certificates |
+| `x509` | Subcommand for displaying and processing X.509 certificates |
 | `-in zertifikat.pem` | Certificate file in PEM format |
 | `-noout` | Do not output the certificate itself again |
-| `-subject` | Display the subject (CN and additional fields) |
-| `-enddate` | Display the expiration date |
+| `-subject` | Display subject (CN and other fields) |
+| `-enddate` | Display expiration date |
 | `-ext extendedKeyUsage` | Display only the extension containing the purposes |
 
 </details>
 
-In Windows, double-clicking the file shows the same information: the **Details** tab, **Enhanced Key Usage** field.
+On Windows, double-clicking the file shows the same information: the **Details** tab, **Enhanced Key Usage** field.
 
 What this means for outbound connections depends on the peer:
 
-| What the peer validates | Result with a certificate without Client Authentication |
+| The peer validates | Result with a certificate without Client Authentication |
 |---|---|
-| Name in the certificate (for example, Exchange Online via `TlsSenderCertificateName`) | Whether Exchange Online validates the purpose is not documented; test before changing the certificate |
-| Purpose of the client certificate | Rejection even if the name and CA match |
-| Fingerprint of the client certificate | Rejection with every certificate change until the new fingerprint is configured |
+| Name in the certificate (e.g., Exchange Online through `TlsSenderCertificateName`) | Whether Exchange Online validates the purpose is not documented; test before changing the certificate |
+| Purpose of the client certificate | Rejection even if the name and CA are correct |
+| Fingerprint of the client certificate | Rejection at every certificate change until the new fingerprint is configured |
 
-In addition, public certificates have a shorter validity period. Under CA/Browser Forum decision SC-081v3, it will gradually decrease from 398 days to 47 days by March 2029; the first stage of 200 days has applied since March 2026. Every certificate change is a point at which a peer may not recognize the new certificate.
+Public certificates also have a shorter validity period. Under CA/Browser Forum decision SC-081v3, it is gradually decreasing from 398 days to 47 days by March 2029; the first stage of 200 days has applied since March 2026. Every certificate change is a point at which a peer may not recognize the new certificate.
 
-For connections where partners identify Proofpoint through a client certificate, I therefore recommend:
+For connections where partners identify Proofpoint using a client certificate, I therefore recommend:
 
-1.  **Check existing certificates:** Do current gateway certificates still include the client purpose, and when do they expire?
+1.  **Check existing certificates:** Do the current gateway certificates still contain the client purpose, and when do they expire?
 
-2.  **Plan a dedicated client certificate** that permanently includes the client purpose, such as one from a private PKI or a CA offering for server-to-server connections. Partners must know it.
+2.  **Plan a dedicated client certificate** that permanently contains the client purpose, for example from a private PKI or a CA offering for server-to-server connections. Partners must know it.
 
-3.  **Ask partners what they validate:** Name, purpose, issuer, or fingerprint. This determines whether a certificate change constitutes a change for them.
+3.  **Ask partners what they validate:** Name, purpose, issuer, or fingerprint. This determines whether a certificate change is a change for them.
 
-4.  **Manage certificate changes as changes**, with a list of all peers that must know the certificate and a test for each peer.
+4.  **Handle certificate changes as a change**, with a list of all peers that need to know the certificate and a test for each peer.
 
 ## Sources
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameters `RestrictDomainsToCertificate` and `TlsSenderCertificateName` for partner connectors in Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, sign-in required)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Article 000027579 dated October 29, 2026; changed files and restart of the Admin GUI.
 
-2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Section 1.3.2 on dedicated TLS server hierarchies; certificates issued from March 15, 2027 onward may contain only `serverAuth`.
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, sign-in required)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Article 000027580 dated October 29, 2026; configuration-only change dependent on 5806.
+
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, sign-in required)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): Article 000027117, section “SMTP Client Certificate” on page 5 of revision A.
+
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameters `RestrictDomainsToCertificate` and `TlsSenderCertificateName` for partner connectors in Exchange Online.
+
+2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Section 1.3.2 on dedicated TLS server hierarchies; certificates issued from March 15, 2027 onward only with `serverAuth`.
 
 3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): Default without Client Authentication since October 1, 2025, available upon request until March 1, 2027, and alternatives for server-to-server connections.
 
-4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): Overview of postponed dates for Client Authentication and validity stages at DigiCert and Sectigo.
+4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): Overview of postponed dates for Client Authentication and validity-period stages at DigiCert and Sectigo.
 
 5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): Decision on the gradual reduction of public TLS certificate validity periods through March 2029.
 
@@ -40591,32 +40840,80 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 
 ----
 
-# Proofpoint Protection Server 8.22.4 : un correctif peut réinitialiser la configuration du certificat pour le client SMTP
+# Kiteworks EPG 9.5.1 : quatre correctifs de sécurité documentés publiquement
+
+URL: https://rafaelpfister.ch/fr/blog/kiteworks-epg-9-5-1-quatre-correctifs-de-securite-documentes-publiquement
+Datum: 2026-11-06
+
+# Kiteworks EPG 9.5.1 : quatre correctifs de sécurité documentés publiquement
+
+Kiteworks poursuit l’ancienne technologie totemo sous le nom d’Email Protection Gateway (EPG). La version 9.5.1 était au plus tard le 25 septembre 2026 la version actuelle de Kiteworks ; le fabricant ne mentionne pas de date de publication publique. Les avis du fabricant publiés le 30 septembre documentent quatre correctifs pour EPG 9.5.1 : une prise de contrôle de compte, deux vulnérabilités non authentifiées permettant respectivement l’écriture de fichiers et le déclenchement d’un déni de service, ainsi qu’une vulnérabilité permettant aux administrateurs d’écrire des fichiers arbitraires. La classification pour la version totemomail du même nom figure dans l’article sur [totemomail 9.5.1](/blog/totemomail-9-5-1-sicherheitsupdate).
+
+## Aperçu des versions
+
+| Version | Date | Type | Points essentiels |
+|---|---|---|---|
+| 9.5.1 | confirmée publiquement au plus tard le 25.09.2026 | mise à jour de sécurité | Quatre correctifs EPG documentés publiquement, dont CVE-2026-102149 avec un CVSS de 9,4 |
+
+## Correctifs de sécurité dans la version 9.5.1
+
+Selon Kiteworks, les quatre avis concernent toutes les versions d’EPG antérieures à la version 9.5.1 et indiquent la version 9.5.1 comme version corrigée. Les avis ont été publiés le 30 septembre 2026. Ils décrivent rétrospectivement l’état de sécurité de la version, et non sa date de publication exacte.
+
+- **CVE-2026-102149, CVSS 9,4 (critique) :** Une faiblesse dans le contrôle d’accès pouvait permettre à un attaquant d’accéder à des comptes utilisateurs via le réseau. L’évaluation CVSS ne requiert ni privilèges ni interaction de l’utilisateur. Kiteworks attribue la cause à CWE-306 (absence d’authentification pour des fonctions critiques) et CWE-639 (contournement de l’autorisation via une clé contrôlée par l’utilisateur).
+- **CVE-2026-102143, CVSS 7,5 (élevé) :** Un attaquant non authentifié pouvait écrire des fichiers sur l’appliance. Kiteworks mentionne un problème d’authentification ainsi que CWE-306 et CWE-434 (téléversement non restreint de types de fichiers dangereux).
+- **CVE-2026-102146, CVSS 6,5 (moyen) :** Un administrateur pouvait écrire des fichiers arbitraires. Kiteworks décrit une erreur de privilèges ; la métrique CVSS requiert des privilèges élevés. Le fabricant cite comme faiblesses CWE-73 (contrôle externe du nom de fichier ou du chemin) et CWE-1336 (neutralisation insuffisante dans un moteur de modèles).
+- **CVE-2026-102144, CVSS 5,3 (moyen) :** Un attaquant sur le réseau pouvait déclencher un déni de service. L’avis mentionne l’absence d’authentification pour des fonctions critiques et une consommation non contrôlée de ressources (CWE-306, CWE-400). Cette évaluation ne requiert pas non plus de privilèges ni d’interaction de l’utilisateur.
+
+Pour les exploitants, la prise de contrôle de compte est le correctif prioritaire, car elle est, selon l’avis, possible sans compte existant. Les deux autres vulnérabilités sans connexion concernent également toutes les versions antérieures à la version 9.5.1. Les avis du fabricant ne publient aucun détail technique sur les points de terminaison, les configurations ou les solutions de contournement.
+
+## Procédure recommandée
+
+Mettez EPG à niveau au minimum vers la version 9.5.1 si une version antérieure est utilisée. Pour les quatre avis, Kiteworks indique explicitement la mise à niveau vers la version 9.5.1 ou une version ultérieure comme mesure corrective. Si une version ultérieure du fabricant est déjà validée, elle satisfait également à cette version minimale. Kiteworks n’a pas publié dans les sources consultées de chemin de mise à jour public, de problèmes connus ni de périodes de support pour EPG 9.5.1.
+
+## Sources
+
+1.  [Kiteworks: Precautionary Shutdown Advisory for Customers](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): Communication du fabricant du 25 septembre 2026 indiquant la version 9.5.1 comme version actuelle.
+
+2.  [Kiteworks Security Advisories](https://github.com/kiteworks/security-advisories/security/advisories): Aperçu officiel des avis publiés le 30 septembre 2026, dont les entrées EPG pour la version 9.5.1.
+
+3.  [GHSA-c9w5-4frw-7wqq: Account takeover (CVE-2026-102149)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-c9w5-4frw-7wqq): Faiblesse critique de contrôle d’accès, CVSS 9,4, corrigée dans EPG 9.5.1.
+
+4.  [GHSA-3p9g-jh62-8f89: Unauthorized file modification (CVE-2026-102143)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-3p9g-jh62-8f89): Écriture de fichiers non authentifiée, CVSS 7,5, corrigée dans EPG 9.5.1.
+
+5.  [GHSA-5pgq-v8g2-rg2f: Unauthorized file modification (CVE-2026-102146)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5pgq-v8g2-rg2f): Écriture de fichiers arbitraires avec des droits d’administrateur, CVSS 6,5, corrigée dans EPG 9.5.1.
+
+6.  [GHSA-wwhf-5862-rjxq: Denial of service (CVE-2026-102144)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-wwhf-5862-rjxq): Déni de service non authentifié, CVSS 5,3, corrigé dans EPG 9.5.1.
+
+7.  [Kiteworks: EPG with totemo Integration](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Indication du fabricant concernant la poursuite et le changement de nom de la technologie totemo en Email Protection Gateway.
+
+----
+
+# Proofpoint Protection Server 8.22.4 : le patch 5807 laisse le client SMTP sans certificat
 
 URL: https://rafaelpfister.ch/fr/blog/proofpoint-protection-server-8-22-4-un-correctif-peut-reinitialiser-la-configuration-du
 Datum: 2026-11-05
 
-J’ai analysé aujourd’hui une panne du flux de messagerie sortant sur un Proofpoint Protection Server (PPS) 8.22.4. Conclusion rapide : après l’installation automatique d’un correctif, sous **System > Certificates > Services**, l’association **SMTP Client** était définie sur `-none-`. Sendmail a alors établi des connexions sortantes sans certificat client TLS. Tous les serveurs distants qui identifient Proofpoint par ce certificat ont refusé les e-mails. Les destinataires ordinaires utilisant TLS opportuniste ont continué à accepter les messages ; le problème n’est donc apparu que lorsque certains partenaires sont devenus injoignables.
+J’ai aujourd’hui analysé une panne du flux de messagerie sortant d’un Proofpoint Protection Server (PPS) 8.22.4. Conclusion rapide : après l’installation automatique d’un patch, l’attribution **SMTP Client** sous **System > Certificates > Services** était définie sur `-none-`. Sendmail a alors établi des connexions sortantes sans certificat client TLS. Tous les systèmes distants qui identifient Proofpoint au moyen de ce certificat ont rejeté les e-mails. Les destinataires ordinaires avec TLS opportuniste ont continué à les accepter ; le problème n’est donc apparu que lorsque certains partenaires sont devenus injoignables.
 
-Si vous utilisez PPS avec des correctifs automatiques et avez des partenaires qui exigent un certificat client, vérifiez ce paramètre après chaque correctif.
+Si vous exploitez PPS avec des patchs automatiques et avez des partenaires qui exigent un certificat client, vérifiez ce paramètre après chaque patch.
 
 ## Symptôme
 
-Seules les connexions pour lesquelles le serveur distant vérifie le certificat client de Proofpoint sont concernées. Deux cas typiques :
+Seules les connexions pour lesquelles le système distant vérifie le certificat client de Proofpoint sont concernées. Deux cas typiques :
 
-- **Exchange Online avec un connecteur partenaire**, limité à un certificat par `RestrictDomainsToCertificate`. Le refus est `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
+- **Exchange Online avec un connecteur partenaire**, limité à un certificat via `RestrictDomainsToCertificate`. Le rejet est `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
 - **Smarthost qui n’autorise le relais qu’avec un certificat client.** La réponse est `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
 
-Tous les autres destinataires continuent à recevoir leurs e-mails. La matrice de test présente donc une image incohérente : les e-mails externes sont transmis, mais les e-mails vers certains partenaires ou via un Smarthost donné échouent.
+Tous les autres destinataires continuent à recevoir leurs e-mails. La matrice de tests présente donc un tableau hétérogène : les e-mails externes passent, mais ceux destinés à certains partenaires ou envoyés via un Smarthost donné échouent.
 
-Le journal de messagerie de l’agent contient l’un des deux messages suivants pour chaque connexion sortante. Si le fichier est entièrement absent :
+Le journal de messagerie de l’agent contient l’un des deux messages suivants pour chaque connexion sortante. Si le fichier est totalement absent :
 
 ```text
 sendmail[...]: STARTTLS=client: file /etc/pki/tls/certs/sendmail-client.pem unsafe:
   No such file or directory
 ```
 
-Si le fichier est présent mais vide :
+Si le fichier existe mais est vide :
 
 ```text
 sendmail[...]: STARTTLS=client, error:
@@ -40627,19 +40924,28 @@ sendmail[...]: STARTTLS=client, error:
   SSL_CTX_check_private_key failed(/etc/pki/tls/certs/sendmail-client.pem): 0
 ```
 
-Juste après, Sendmail établit tout de même la connexion avec TLS (`verify=OK`), mais sans certificat client. Pour le serveur distant, cela ressemble à un expéditeur inconnu.
+Juste après, Sendmail établit tout de même la connexion avec TLS (`verify=OK`), mais sans certificat client. Pour le système distant, cela ressemble à un expéditeur inconnu.
 
 ## Cause
 
-PPS associe un certificat à chaque service pour chaque serveur. Sous **System > Certificates > Services**, figurent notamment, pour chaque serveur, `SMTP Server`, `SMTP Client`, `Administration Server` et `End User Web Application / Encryption`. À partir de l’association pour `SMTP Client`, PPS génère le fichier `/etc/pki/tls/certs/sendmail-client.pem`, que Sendmail utilise comme certificat client. Si la valeur est `-none-`, PPS écrit un fichier vide ou ne l’écrit pas du tout.
+PPS attribue un certificat à chaque service sur chaque serveur. Sous **System > Certificates > Services**, chaque serveur affiche notamment `SMTP Server`, `SMTP Client`, `Administration Server` et `End User Web Application / Encryption`. À partir de l’attribution de `SMTP Client`, PPS génère le fichier `/etc/pki/tls/certs/sendmail-client.pem`, que Sendmail utilise comme certificat client. Si `-none-` y est défini, PPS écrit le fichier vide ou ne l’écrit pas du tout.
 
-Dans l’environnement étudié, l’association était définie sur `-none-` sur tous les serveurs après un correctif automatique. Sous **System > Config History**, le correctif était visible sous forme d’entrée `configuration changes for patch-…` créée par `system`; les fichiers sous `/etc/pki/tls/certs/` portaient le même horodatage. Les notes de version publiquement accessibles ne précisent pas si Proofpoint a introduit l’association avec ce correctif ou si celui-ci a réinitialisé une association existante. Je compléterai l’article dès que Proofpoint se prononcera à ce sujet.
+L’attribution `SMTP Client` n’existe dans la version 8.22.4 que depuis les patchs 5806 et 5807, publiés par Proofpoint le 29.10.2026. Les deux portent le titre « TLS client and server certificate authentication improvement » et corrigent, selon la Knowledge Base, l’impossibilité pour PPS 8.22.4 d’attribuer des certificats séparés au serveur SMTP et au client SMTP. Dans la version 8.23.0, la fonctionnalité est intégrée de manière standard (Release Notes, section « SMTP Client Certificate »).
 
-Un retour en arrière sous **Config History** vers l’instantané du correctif n’a pas aidé. PPS a ensuite réécrit le fichier, mais avec 0 octet.
+| Patch | Contenu selon la Knowledge Base |
+|---|---|
+| 5806 | Met notamment à jour `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` et le modèle `sendmail.mc`, redémarre l’interface d’administration (`admind`) et met à jour le RPM `pps-pfpt` |
+| 5807 | Nécessite 5806, ne modifie aucun fichier et ne redémarre aucun processus ; applique uniquement les modifications de configuration nécessaires à la séparation des certificats serveur et client |
+
+Proofpoint a donc introduit cette attribution, plutôt que de réinitialiser une attribution existante. Le patch ne reprend pas de certificat : après l’installation, la nouvelle ligne est définie sur `-none-`, et Sendmail n’utilise dès lors plus de certificat client. Les descriptions des patchs ne le signalent pas.
+
+Dans l’environnement étudié, l’attribution était ensuite définie sur `-none-` sur tous les serveurs. Sous **System > Config History**, le patch 5807 était visible comme entrée `configuration changes for patch-…` avec le créateur `system`, et les fichiers sous `/etc/pki/tls/certs/` portaient le même horodatage. En revanche, 5807 n’apparaissait pas dans **Software Patch History**. Cela correspond au fait que 5807 n’installe aucun logiciel, mais modifie uniquement la configuration. **Config History** indique donc le moment du changement, tandis que la modification logicielle proprement dite relève du patch 5806.
+
+Un retour en arrière sous **Config History** vers le snapshot du patch n’a pas aidé. PPS a ensuite réécrit le fichier, mais avec une taille de 0 octet.
 
 ## Vérifier
 
-Dans l’interface d’administration sur le serveur maître, sous **System > Certificates > Services**, sélectionnez successivement en haut, dans **Server**, chaque agent qui assure des livraisons sortantes, puis examinez la ligne `SMTP Client`.
+Dans l’interface d’administration du maître, sous **System > Certificates > Services**, sélectionnez successivement en haut, dans **Server**, chaque agent qui délivre des e-mails vers l’extérieur, puis examinez la ligne `SMTP Client`.
 
 Sur l’agent lui-même, deux commandes indiquent l’état :
 
@@ -40649,24 +40955,31 @@ grep -E 'sendmail-client.pem|SSL_CTX_' /var/log/maillog | tail -5
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
 | `-l` | Format long avec droits, propriétaire, taille et date |
-| `--time-style=full-iso` | Horodatage avec date, heure et fuseau horaire afin de le comparer à l’heure du correctif |
-| `grep -E` | Expressions régulières étendues permettant de combiner les deux termes de recherche avec `\|` |
+| `--time-style=full-iso` | Horodatage avec date, heure et fuseau horaire, pour le comparer à l’heure du patch |
+| `grep -E` | Expressions régulières étendues afin de pouvoir combiner les deux termes de recherche avec `\|` |
 | `tail -5` | Afficher uniquement les cinq derniers résultats |
 
 </details>
 
-Si `sendmail-client.pem` est absent ou si le fichier fait 0 octet alors que `sendmail.pem` fait plusieurs milliers d’octets, aucun certificat n’est associé au service `SMTP Client`.
+Si `sendmail-client.pem` est absent ou si le fichier fait 0 octet, alors que `sendmail.pem` fait plusieurs milliers d’octets, aucun certificat n’est attribué au service `SMTP Client`.
 
 ## Corriger
 
-Sous **System > Certificates > Services**, sélectionnez un certificat valide pour `SMTP Client` sur chaque agent concerné, puis enregistrez avec **Save Changes**. Il s’agit généralement du même certificat public que celui défini pour `SMTP Server`.
+Sous **System > Certificates > Services**, sélectionnez un certificat valide pour `SMTP Client` sur chaque agent concerné, puis enregistrez avec **Save Changes**. En règle générale, il s’agit du même certificat public que celui indiqué pour `SMTP Server`.
 
-La liste de sélection affiche tous les certificats importés, y compris les certificats expirés portant le même nom. Ils ne peuvent être distingués que par leur numéro de série entre parenthèses. Avant l’enregistrement, comparez le numéro de série avec la liste sous **System > Certificates > Certificates**, où figurent les dates d’émission et d’expiration.
+La liste de sélection peut contenir plusieurs certificats portant le même nom, y compris des certificats expirés. Ils ne se distinguent que par le numéro de série entre parenthèses. Avant l’enregistrement, comparez le numéro de série avec la liste sous **System > Certificates > Certificates**, où figurent les dates d’émission et d’expiration.
+
+La liste n’affiche pas nécessairement tous les certificats importés pour `SMTP Client`. Dans l’environnement étudié, certains certificats étaient absents bien qu’ils soient valides et que les exemplaires expirés aient déjà été supprimés. Ni les articles sur les patchs ni les Release Notes 8.23 ne décrivent les critères appliqués par PPS pour filtrer la liste. Si un certificat est absent, vérifiez deux points :
+
+- **Clé privée :** si le certificat a été importé comme PEM sans clé, PPS ne peut l’attribuer à aucun service. Les fichiers PKCS12 contiennent toujours la clé.
+- **Usage prévu :** le certificat contient-il, dans `Extended Key Usage`, l’usage `TLS Web Client Authentication` ? De nombreux certificats publics émis depuis l’automne 2025 ne le contiennent plus (voir ci-dessous). Pour le service `SMTP Client`, un certificat dépourvu de cet usage n’est de toute façon pas approprié.
+
+Dès que Proofpoint confirmera les critères, je les ajouterai ici.
 
 Après l’enregistrement, PPS distribue la configuration aux agents. Vérification sur l’agent :
 
@@ -40676,29 +40989,29 @@ grep -E 'STARTTLS=client|stat=' /var/log/maillog | tail -20
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
 | `ls -l` | Affiche la taille et les droits du fichier ; après correction, il n’est plus vide |
-| `grep -E 'STARTTLS=client\|stat='` | Filtre les messages TLS des connexions sortantes et le résultat de livraison |
+| `grep -E 'STARTTLS=client\|stat='` | Filtre les messages TLS des connexions sortantes et le résultat de remise |
 | `tail -20` | Afficher uniquement les vingt dernières lignes |
 
 </details>
 
-Les messages `SSL_CTX_… failed` et `unsafe` ne doivent plus apparaître après l’enregistrement, et les livraisons aux partenaires doivent se terminer par `stat=Sent`. Sendmail livre lui-même depuis la file d’attente les e-mails précédemment reportés avec un code 4xx. Les e-mails refusés avec un code 5xx doivent être renvoyés par les expéditeurs.
+Les messages `SSL_CTX_… failed` et `unsafe` ne doivent plus apparaître après l’enregistrement, et les remises aux partenaires doivent se terminer par `stat=Sent`. Les e-mails précédemment mis en attente avec un code 4xx sont remis par Sendmail depuis la file d’attente. Les e-mails rejetés avec un code 5xx doivent être renvoyés par les expéditeurs.
 
-Copier manuellement `sendmail.pem` vers `sendmail-client.pem` permet également de contourner la panne. PPS écrasera toutefois de nouveau le fichier lors du prochain déploiement de configuration tant que l’association manque dans l’interface.
+Copier manuellement `sendmail.pem` vers `sendmail-client.pem` permet également de contourner temporairement la panne. PPS écrase toutefois à nouveau le fichier lors du prochain push de configuration tant que l’attribution manque dans l’interface.
 
-## Contrôler après chaque correctif
+## Contrôler après chaque patch
 
-Tant que la raison pour laquelle le correctif modifie l’association n’est pas clarifiée, je recommande de vérifier la page **Services** après chaque correctif. Une supervision qui alerte lors du message `sendmail-client.pem` dans le journal de messagerie des agents est plus simple. Sous **Licenses and Updates > Settings**, il est en outre possible de définir à quel moment les correctifs sont installés. Une fenêtre durant laquelle quelqu’un peut vérifier le flux de messagerie réduit considérablement la durée d’une telle panne.
+Le patch 5807 a modifié la configuration sans que sa description n’indique les conséquences. Je recommande donc de contrôler la page **Services** après chaque patch et de consulter **Config History** pour savoir si le patch a apporté des modifications de configuration. Si le patch 5807 n’est pas encore installé sur un système 8.22.4, attribuez directement un certificat à `SMTP Client` après l’installation. Une surveillance qui alerte sur le message `sendmail-client.pem` dans le journal de messagerie des agents est plus simple. Sous **Licenses and Updates > Settings**, il est aussi possible de définir quand les patchs sont installés. Une fenêtre durant laquelle quelqu’un peut vérifier le flux de messagerie réduit fortement ce type de panne.
 
 ## Client Authentication disparaît des certificats publics
 
-Indépendamment du correctif, une deuxième évolution affecte précisément ces connexions. Jusqu’à présent, les certificats TLS publics contiennent généralement les deux usages dans l’extension `Extended Key Usage` : `TLS Web Server Authentication` et `TLS Web Client Authentication`. Les passerelles de messagerie utilisent donc leur certificat serveur également comme certificat client.
+Indépendamment du patch, une seconde modification affecte précisément ces connexions. Jusqu’à présent, les certificats TLS publics contenaient généralement les deux usages dans l’extension `Extended Key Usage` : `TLS Web Server Authentication` et `TLS Web Client Authentication`. Les passerelles de messagerie utilisent donc aussi leur certificat serveur comme certificat client.
 
-Le Chrome Root Program exige que les certificats publics délivrés à partir du 15.03.2027 ne contiennent plus que `serverAuth`. Depuis le 01.10.2025, DigiCert délivre par défaut des certificats TLS publics sans Client Authentication ; cet usage reste possible sur demande jusqu’au 01.03.2027. D’autres autorités de certification ont des calendriers comparables. OpenSSL indique si un certificat contient l’usage client :
+Le Chrome Root Program exige que les certificats publics émis à partir du 15.03.2027 ne contiennent plus que `serverAuth`. DigiCert émet par défaut des certificats TLS publics sans Client Authentication depuis le 01.10.2025 ; sur demande, cet usage reste possible jusqu’au 01.03.2027. D’autres AC suivent des calendriers comparables. OpenSSL indique si un certificat contient l’usage client :
 
 ```bash
 openssl x509 -in zertifikat.pem -noout \
@@ -40706,52 +41019,58 @@ openssl x509 -in zertifikat.pem -noout \
 ```
 
 <details class="options-details">
-<summary>Explication des options</summary>
+<summary>Options expliquées</summary>
 
 | Option | Effet |
 |---|---|
-| `x509` | Sous-commande pour afficher et traiter les certificats X.509 |
+| `x509` | Sous-commande servant à afficher et modifier des certificats X.509 |
 | `-in zertifikat.pem` | Fichier de certificat au format PEM |
-| `-noout` | Ne pas réafficher le certificat lui-même |
+| `-noout` | Ne pas afficher à nouveau le certificat lui-même |
 | `-subject` | Afficher le titulaire (CN et autres champs) |
 | `-enddate` | Afficher la date d’expiration |
 | `-ext extendedKeyUsage` | Afficher uniquement l’extension contenant les usages |
 
 </details>
 
-Sous Windows, un double-clic sur le fichier montre la même information : onglet **Détails**, champ **Utilisation avancée de la clé**.
+Sous Windows, un double-clic sur le fichier affiche la même information : onglet **Details**, champ **Enhanced Key Usage**.
 
-Les conséquences pour les connexions sortantes dépendent du serveur distant :
+Les conséquences pour les connexions sortantes dépendent du système distant :
 
-| Le serveur distant vérifie | Conséquence avec un certificat sans Client Authentication |
+| Le système distant vérifie | Conséquence avec un certificat sans Client Authentication |
 |---|---|
-| Le nom dans le certificat (p. ex. Exchange Online via `TlsSenderCertificateName`) | Il n’est pas documenté si Exchange Online vérifie l’usage ; testez avant le changement de certificat |
-| L’usage du certificat client | Refus, même si le nom et l’autorité de certification correspondent |
-| L’empreinte du certificat client | Refus à chaque changement de certificat jusqu’à l’enregistrement de la nouvelle empreinte |
+| Le nom dans le certificat (p. ex. Exchange Online via `TlsSenderCertificateName`) | Il n’est pas documenté qu’Exchange Online vérifie l’usage prévu ; testez avant de changer de certificat |
+| L’usage prévu du certificat client | Rejet, même si le nom et l’AC correspondent |
+| L’empreinte du certificat client | Rejet à chaque changement de certificat jusqu’à ce que la nouvelle empreinte soit enregistrée |
 
-À cela s’ajoute la durée de validité plus courte des certificats publics. Selon la décision SC-081v3 du CA/Browser Forum, elle diminue progressivement de 398 jours à 47 jours d’ici mars 2029 ; la première étape, à 200 jours, s’applique depuis mars 2026. Chaque changement de certificat est un moment où un serveur distant peut ne pas connaître le nouveau certificat.
+À cela s’ajoute la durée de validité plus courte des certificats publics. Après la décision SC-081v3 du CA/Browser Forum, elle diminue progressivement de 398 jours à 47 jours d’ici mars 2029 ; le premier palier, à 200 jours, s’applique depuis mars 2026. Chaque changement de certificat est un moment où un système distant peut ne pas connaître le nouveau certificat.
 
-Pour les connexions dans lesquelles les partenaires identifient Proofpoint par un certificat client, je recommande donc :
+Pour les connexions dans lesquelles des partenaires identifient Proofpoint par un certificat client, je recommande donc :
 
-1.  **Vérifier les certificats existants :** les certificats de passerelle actuels contiennent-ils encore l’usage client, et quand expirent-ils ?
+1.  **Vérifier les certificats existants :** les certificats actuels de la passerelle contiennent-ils encore l’usage client et quand expirent-ils ?
 
-2.  **Planifier un certificat client dédié**, qui contient durablement l’usage client, par exemple issu d’une PKI privée ou d’une offre de l’autorité de certification pour les connexions serveur à serveur. Les partenaires doivent le connaître.
+2.  **Prévoir un certificat client dédié**, contenant durablement l’usage client, par exemple issu d’une PKI privée ou d’une offre de l’AC pour les connexions serveur à serveur. Les partenaires doivent le connaître.
 
-3.  **Demander aux partenaires ce qu’ils vérifient :** nom, usage, émetteur ou empreinte. Cela détermine si un changement de certificat représente une modification pour eux.
+3.  **Demander aux partenaires ce qu’ils vérifient :** nom, usage prévu, émetteur ou empreinte. Cela détermine si un changement de certificat représente une modification pour eux.
 
-4.  **Gérer le changement de certificat comme un changement**, avec une liste de tous les serveurs distants qui doivent connaître le certificat et un test pour chacun.
+4.  **Gérer les changements de certificat comme des changements**, avec une liste de tous les systèmes distants qui doivent connaître le certificat et un test par système distant.
 
 ## Sources
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): paramètres `RestrictDomainsToCertificate` et `TlsSenderCertificateName` pour les connecteurs partenaires dans Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, connexion requise)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): article 000027579 du 29.10.2026, fichiers modifiés et redémarrage de l’interface d’administration.
 
-2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): section 1.3.2 sur les hiérarchies TLS dédiées aux serveurs ; les certificats à partir du 15.03.2027 ne contiennent plus que `serverAuth`.
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, connexion requise)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): article 000027580 du 29.10.2026, modification de configuration pure avec dépendance à 5806.
 
-3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): absence de Client Authentication par défaut depuis le 01.10.2025, possible sur demande jusqu’au 01.03.2027, alternatives pour les connexions serveur à serveur.
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, connexion requise)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): article 000027117, section « SMTP Client Certificate » à la page 5 de la révision A.
 
-4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): aperçu des échéances reportées pour Client Authentication et des paliers de durée de validité chez DigiCert et Sectigo.
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): paramètres `RestrictDomainsToCertificate` et `TlsSenderCertificateName` pour les connecteurs partenaires dans Exchange Online.
 
-5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): décision concernant la réduction progressive de la durée de validité des certificats TLS publics jusqu’en mars 2029.
+2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): section 1.3.2 sur les hiérarchies TLS serveur dédiées ; les certificats émis à partir du 15.03.2027 ne contiennent plus que `serverAuth`.
+
+3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): sans Client Authentication par défaut depuis le 01.10.2025, sur demande jusqu’au 01.03.2027, alternatives pour les connexions serveur à serveur.
+
+4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): aperçu des échéances reportées pour Client Authentication et des paliers de validité chez DigiCert et Sectigo.
+
+5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): décision relative à la réduction progressive de la durée de validité des certificats TLS publics jusqu’en mars 2029.
 
 ----
 
@@ -60828,32 +61147,80 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
-# Proofpoint Protection Server 8.22.4: la patch può reimpostare la configurazione del certificato per il client SMTP
+# Kiteworks EPG 9.5.1: quattro correzioni di sicurezza documentate pubblicamente
+
+URL: https://rafaelpfister.ch/it/blog/kiteworks-epg-9-5-1-quattro-correzioni-di-sicurezza-documentate-pubblicamente
+Datum: 2026-11-06
+
+# Kiteworks EPG 9.5.1: quattro correzioni di sicurezza documentate pubblicamente
+
+Kiteworks prosegue la precedente tecnologia totemo come Email Protection Gateway (EPG). La versione 9.5.1 era l’attuale versione Kiteworks al più tardi il 25 settembre 2026; il produttore non indica una data di rilascio pubblica. Gli advisory del produttore pubblicati il 30 settembre documentano quattro correzioni per EPG 9.5.1: una compromissione dell’account, due vulnerabilità non autenticate per la scrittura di file o l’attivazione di un Denial of Service, nonché una vulnerabilità che consentiva agli amministratori di scrivere file arbitrari. La classificazione per l’omonima versione totemomail è disponibile nell’articolo su [totemomail 9.5.1](/blog/totemomail-9-5-1-sicherheitsupdate).
+
+## Panoramica delle versioni
+
+| Versione | Data | Tipo | Punti principali |
+|---|---|---|---|
+| 9.5.1 | confermata pubblicamente al più tardi il 25.09.2026 | aggiornamento di sicurezza | Quattro correzioni EPG documentate pubblicamente, tra cui CVE-2026-102149 con CVSS 9.4 |
+
+## Correzioni di sicurezza nella 9.5.1
+
+Secondo Kiteworks, tutti e quattro gli advisory riguardano tutte le versioni EPG precedenti alla 9.5.1 e indicano la 9.5.1 come versione corretta. Gli advisory sono stati pubblicati il 30 settembre 2026. Descrivono retrospettivamente lo stato di sicurezza del rilascio, non la sua data di pubblicazione esatta.
+
+- **CVE-2026-102149, CVSS 9.4 (critico):** Una debolezza nel controllo degli accessi poteva consentire a un aggressore di accedere agli account utente tramite la rete. La valutazione CVSS non richiede né privilegi né interazione dell’utente. Kiteworks attribuisce la causa a CWE-306 (autenticazione mancante per funzioni critiche) e CWE-639 (aggiramento dell’autorizzazione tramite una chiave controllata dall’utente).
+- **CVE-2026-102143, CVSS 7.5 (alto):** Un aggressore non autenticato poteva scrivere file sull’appliance. Kiteworks cita un problema di autenticazione nonché CWE-306 e CWE-434 (caricamento illimitato di tipi di file pericolosi).
+- **CVE-2026-102146, CVSS 6.5 (medio):** Un amministratore poteva scrivere file arbitrari. Kiteworks descrive un errore di autorizzazione; la metrica CVSS richiede privilegi elevati. Il produttore indica come debolezze CWE-73 (controllo esterno del nome file o del percorso) e CWE-1336 (neutralizzazione insufficiente in un template engine).
+- **CVE-2026-102144, CVSS 5.3 (medio):** Un aggressore nella rete poteva attivare un Denial of Service. L’advisory cita l’autenticazione mancante per funzioni critiche e il consumo incontrollato di risorse (CWE-306, CWE-400). Anche questa valutazione non richiede privilegi né interazione dell’utente.
+
+Per gli operatori, la compromissione dell’account è la correzione prioritaria, poiché secondo l’advisory è possibile senza un account esistente. Anche le altre due vulnerabilità senza autenticazione riguardano tutte le versioni precedenti alla 9.5.1. Gli advisory del produttore non pubblicano dettagli tecnici su endpoint, configurazioni o soluzioni alternative.
+
+## Procedura consigliata
+
+Aggiornate EPG almeno alla versione 9.5.1 se utilizzate una versione precedente. Kiteworks indica esplicitamente per tutti e quattro gli advisory l’aggiornamento alla 9.5.1 o successiva come rimedio. Se è già stata approvata una versione successiva del produttore, anch’essa soddisfa questa versione minima. Kiteworks non ha pubblicato nelle fonti consultate un percorso di aggiornamento pubblico, problemi noti o termini di supporto per EPG 9.5.1.
+
+## Fonti
+
+1.  [Kiteworks: Precautionary Shutdown Advisory for Customers](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): Comunicazione del produttore del 25 settembre 2026 che indica la 9.5.1 come versione attuale.
+
+2.  [Kiteworks Security Advisories](https://github.com/kiteworks/security-advisories/security/advisories): Panoramica ufficiale degli advisory pubblicati il 30 settembre 2026, compresi gli elementi EPG per la 9.5.1.
+
+3.  [GHSA-c9w5-4frw-7wqq: Account takeover (CVE-2026-102149)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-c9w5-4frw-7wqq): Debolezza critica nel controllo degli accessi, CVSS 9.4, corretta in EPG 9.5.1.
+
+4.  [GHSA-3p9g-jh62-8f89: Unauthorized file modification (CVE-2026-102143)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-3p9g-jh62-8f89): Scrittura di file senza autenticazione, CVSS 7.5, corretta in EPG 9.5.1.
+
+5.  [GHSA-5pgq-v8g2-rg2f: Unauthorized file modification (CVE-2026-102146)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5pgq-v8g2-rg2f): Scrittura di file arbitrari con privilegi di amministratore, CVSS 6.5, corretta in EPG 9.5.1.
+
+6.  [GHSA-wwhf-5862-rjxq: Denial of service (CVE-2026-102144)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-wwhf-5862-rjxq): Denial of Service senza autenticazione, CVSS 5.3, corretto in EPG 9.5.1.
+
+7.  [Kiteworks: EPG with totemo Integration](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Indicazione del produttore sulla prosecuzione e ridenominazione della tecnologia totemo come Email Protection Gateway.
+
+----
+
+# Proofpoint Protection Server 8.22.4: Patch 5807 lascia SMTP Client senza certificato
 
 URL: https://rafaelpfister.ch/it/blog/proofpoint-protection-server-8-22-4-la-patch-puo-reimpostare-la-configurazione-del-certificato
 Datum: 2026-11-05
 
-Oggi ho analizzato un'interruzione del flusso di posta in uscita su un Proofpoint Protection Server (PPS) 8.22.4. In breve: dopo l'installazione automatica di una patch, in **System > Certificates > Services** l'associazione **SMTP Client** era impostata su `-none-`. Sendmail ha quindi stabilito connessioni in uscita senza certificato client TLS. Tutte le controparti che riconoscono Proofpoint tramite questo certificato hanno rifiutato le e-mail. I destinatari normali con TLS opportunistico hanno continuato ad accettarle, perciò l'errore è emerso solo quando singoli partner non erano più raggiungibili.
+Oggi ho analizzato un'interruzione del flusso di posta in uscita di un Proofpoint Protection Server (PPS) 8.22.4. In breve: dopo l'installazione automatica di una patch, in **System > Certificates > Services** l'assegnazione **SMTP Client** era impostata su `-none-`. Sendmail ha quindi stabilito connessioni in uscita senza certificato client TLS. Tutte le controparti che riconoscono Proofpoint tramite questo certificato hanno rifiutato i messaggi. I normali destinatari con TLS opportunistico hanno continuato ad accettarli, perciò il problema è emerso solo quando alcuni partner non erano più raggiungibili.
 
-Se utilizzate PPS con patch automatiche e avete partner che richiedono un certificato client, verificate questa impostazione dopo ogni patch.
+Se utilizzate PPS con patch automatiche e avete partner che richiedono un certificato client, controllate questa impostazione dopo ogni patch.
 
 ## Sintomo
 
-Sono interessate solo le connessioni per le quali la controparte verifica il certificato client di Proofpoint. Due casi tipici:
+Sono interessate solo le connessioni in cui la controparte verifica il certificato client di Proofpoint. Due casi tipici:
 
 - **Exchange Online con connettore partner**, limitato a un certificato tramite `RestrictDomainsToCertificate`. Il rifiuto è `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
 - **Smarthost che consente il relay solo con certificato client.** La risposta è `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
 
-Tutte le altre destinazioni continuano a ricevere le loro e-mail. La matrice di test mostra quindi un quadro incoerente: le e-mail esterne vengono recapitate, mentre quelle verso singoli partner o tramite uno Smarthost specifico falliscono.
+Tutte le altre destinazioni continuano a ricevere i messaggi. La matrice di test mostra quindi un quadro non uniforme: i messaggi esterni passano, mentre quelli verso singoli partner o tramite uno specifico Smarthost falliscono.
 
-Nel log di posta dell'agent compare uno dei due messaggi seguenti per ogni connessione in uscita. Se il file manca completamente:
+Nel log di posta dell'agent compare uno dei due messaggi seguenti per ogni connessione in uscita. Se il file manca del tutto:
 
 ```text
 sendmail[...]: STARTTLS=client: file /etc/pki/tls/certs/sendmail-client.pem unsafe:
   No such file or directory
 ```
 
-Se il file è presente ma vuoto:
+Se il file esiste ma è vuoto:
 
 ```text
 sendmail[...]: STARTTLS=client, error:
@@ -60864,19 +61231,28 @@ sendmail[...]: STARTTLS=client, error:
   SSL_CTX_check_private_key failed(/etc/pki/tls/certs/sendmail-client.pem): 0
 ```
 
-Subito dopo, Sendmail stabilisce comunque la connessione con TLS (`verify=OK`), ma senza certificato client. Per la controparte, appare come un mittente sconosciuto.
+Subito dopo, Sendmail stabilisce comunque la connessione con TLS (`verify=OK`), ma senza certificato client. Per la controparte, ciò appare come un mittente sconosciuto.
 
 ## Causa
 
-PPS assegna un certificato a ciascun servizio per server. In **System > Certificates > Services**, per ogni server sono presenti tra gli altri `SMTP Server`, `SMTP Client`, `Administration Server` e `End User Web Application / Encryption`. Dall'associazione in `SMTP Client`, PPS genera il file `/etc/pki/tls/certs/sendmail-client.pem`, che Sendmail usa come certificato client. Se è impostato su `-none-`, PPS scrive il file vuoto oppure non lo crea affatto.
+PPS assegna un certificato a ogni servizio per server. In **System > Certificates > Services**, per ogni server sono elencati tra gli altri `SMTP Server`, `SMTP Client`, `Administration Server` e `End User Web Application / Encryption`. Dall'assegnazione in `SMTP Client`, PPS genera il file `/etc/pki/tls/certs/sendmail-client.pem`, che Sendmail utilizza come certificato client. Se è impostato su `-none-`, PPS scrive il file vuoto oppure non lo crea affatto.
 
-Nell'ambiente analizzato, dopo una patch automatica l'associazione era impostata su `-none-` su tutti i server. In **System > Config History**, la patch era visibile come voce `configuration changes for patch-…` con autore `system`; i file in `/etc/pki/tls/certs/` riportavano lo stesso timestamp. Le note di rilascio pubblicamente disponibili non descrivono se Proofpoint abbia introdotto l'associazione con questa patch oppure se la patch abbia reimpostato un'associazione esistente. Aggiornerò l'articolo non appena Proofpoint rilascerà una dichiarazione in merito.
+L'assegnazione `SMTP Client` esiste in 8.22.4 solo a partire dalle patch 5806 e 5807, pubblicate da Proofpoint il 29.10.2026. Entrambe hanno il titolo «TLS client and server certificate authentication improvement» e, secondo la Knowledge Base, risolvono il problema per cui PPS 8.22.4 non può assegnare certificati separati per SMTP server e SMTP client. Nella release 8.23.0 la funzionalità è inclusa regolarmente (Release Notes, sezione «SMTP Client Certificate»).
 
-Un rollback in **Config History** allo snapshot della patch non è stato d'aiuto. PPS ha poi riscritto il file, ma con 0 byte.
+| Patch | Contenuto secondo la Knowledge Base |
+|---|---|
+| 5806 | Aggiorna tra l'altro `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` e il modello `sendmail.mc`, riavvia la GUI amministrativa (`admind`) e aggiorna l'RPM `pps-pfpt` |
+| 5807 | Richiede 5806, non modifica file né riavvia processi; applica solo le modifiche di configurazione necessarie per certificati server e client separati |
+
+Proofpoint ha quindi introdotto una nuova assegnazione e non ne ha ripristinata una esistente. La patch non rileva alcun certificato: dopo l'installazione, la nuova riga è impostata su `-none-`, e da quel momento Sendmail non utilizza più un certificato client. Le descrizioni delle patch non menzionano questo aspetto.
+
+Nell'ambiente analizzato, l'assegnazione era poi impostata su `-none-` su tutti i server. In **System > Config History**, la patch 5807 era visibile come voce `configuration changes for patch-…` con creatore `system`, e i file in `/etc/pki/tls/certs/` riportavano lo stesso timestamp. In **Software Patch History**, invece, 5807 non compariva. Ciò è coerente con il fatto che 5807 non installa software ma modifica soltanto la configurazione. **Config History** mostra quindi il momento della modifica, mentre la modifica software vera e propria appartiene alla patch 5806.
+
+Un rollback in **Config History** allo snapshot della patch non ha aiutato. PPS ha poi riscritto il file, ma con 0 byte.
 
 ## Verifica
 
-Nella GUI di amministrazione, sul master, andate a **System > Certificates > Services**, selezionate uno dopo l'altro in alto sotto **Server** ogni agent che effettua consegne verso l'esterno e controllate la riga `SMTP Client`.
+Nella GUI amministrativa sul master, in **System > Certificates > Services**, selezionate uno alla volta, in alto in **Server**, ogni agent che effettua consegne verso l'esterno e controllate la riga `SMTP Client`.
 
 Sull'agent stesso, due comandi mostrano lo stato:
 
@@ -60892,18 +61268,25 @@ grep -E 'sendmail-client.pem|SSL_CTX_' /var/log/maillog | tail -5
 |---|---|
 | `-l` | Formato esteso con permessi, proprietario, dimensione e data |
 | `--time-style=full-iso` | Timestamp con data, ora e fuso orario, per confrontarlo con il momento della patch |
-| `grep -E` | Espressioni regolari estese, per poter combinare entrambi i termini di ricerca con `\|` |
-| `tail -5` | Mostra solo gli ultimi cinque risultati |
+| `grep -E` | Espressioni regolari estese, per combinare entrambi i termini di ricerca con `\|` |
+| `tail -5` | Visualizza solo gli ultimi cinque risultati |
 
 </details>
 
-Se `sendmail-client.pem` manca oppure il file è di 0 byte, mentre `sendmail.pem` è grande alcune migliaia di byte, al servizio `SMTP Client` non è assegnato alcun certificato.
+Se `sendmail-client.pem` manca o il file ha 0 byte, mentre `sendmail.pem` è grande alcune migliaia di byte, al servizio `SMTP Client` non è assegnato alcun certificato.
 
-## Correzione
+## Risoluzione
 
-In **System > Certificates > Services**, per ogni agent interessato selezionate un certificato valido per `SMTP Client` e salvate con **Save Changes**. Di norma è lo stesso certificato pubblico indicato per `SMTP Server`.
+In **System > Certificates > Services**, per ogni agent interessato selezionate un certificato valido per `SMTP Client` e salvate con **Save Changes**. Di norma è lo stesso certificato pubblico assegnato a `SMTP Server`.
 
-L'elenco di selezione mostra tutti i certificati importati, inclusi quelli scaduti con lo stesso nome. Possono essere distinti solo tramite il numero di serie tra parentesi. Prima di salvare, confrontate il numero di serie con l'elenco in **System > Certificates > Certificates**, dove sono indicati la data di emissione e di scadenza.
+L'elenco di selezione può contenere più certificati con lo stesso nome, inclusi certificati scaduti. È possibile distinguerli solo tramite il numero di serie tra parentesi. Prima di salvare, confrontate il numero di serie con l'elenco in **System > Certificates > Certificates**, dove sono indicati data di emissione e data di scadenza.
+
+L'elenco per `SMTP Client` non mostra necessariamente tutti i certificati importati. Nell'ambiente analizzato mancavano alcuni certificati, sebbene fossero validi e gli esemplari scaduti fossero già stati eliminati. Né gli articoli sulle patch né le Release Notes 8.23 descrivono i criteri con cui PPS filtra l'elenco. Se manca un certificato, verificate due aspetti:
+
+- **Chiave privata:** Se il certificato è stato importato come PEM senza chiave, PPS non può assegnarlo a un servizio. I file PKCS12 contengono sempre la chiave.
+- **Scopo d'uso:** Il certificato contiene in `Extended Key Usage` lo scopo `TLS Web Client Authentication`? Molti certificati pubblici emessi dall'autunno 2025 non lo contengono più (vedi sotto). Per il servizio `SMTP Client`, un certificato senza questo scopo è comunque inadeguato.
+
+Quando Proofpoint confermerà i criteri, li aggiungerò qui.
 
 Dopo il salvataggio, PPS distribuisce la configurazione agli agent. Verifica sull'agent:
 
@@ -60918,24 +61301,24 @@ grep -E 'STARTTLS=client|stat=' /var/log/maillog | tail -20
 | Opzione | Effetto |
 |---|---|
 | `ls -l` | Mostra dimensione e permessi del file; dopo la correzione non è più vuoto |
-| `grep -E 'STARTTLS=client\|stat='` | Filtra i messaggi TLS delle connessioni in uscita e il risultato della consegna |
-| `tail -20` | Mostra solo le ultime venti righe |
+| `grep -E 'STARTTLS=client\|stat='` | Filtra i messaggi TLS delle connessioni in uscita e l'esito della consegna |
+| `tail -20` | Visualizza solo le ultime venti righe |
 
 </details>
 
-Dopo il salvataggio, i messaggi `SSL_CTX_… failed` e `unsafe` non devono più comparire e le consegne ai partner devono terminare con `stat=Sent`. Sendmail recapita autonomamente dalla coda le e-mail precedentemente rinviate con un codice 4xx. Le e-mail rifiutate con un codice 5xx devono essere inviate nuovamente dai mittenti.
+Dopo il salvataggio non devono più comparire i messaggi `SSL_CTX_… failed` e `unsafe`, mentre le consegne ai partner devono terminare con `stat=Sent`. I messaggi precedentemente rinviati con un codice 4xx vengono consegnati da Sendmail dalla coda. I messaggi rifiutati con un codice 5xx devono essere inviati di nuovo dai mittenti.
 
-Anche copiare manualmente `sendmail.pem` in `sendmail-client.pem` aggira temporaneamente l'interruzione. Tuttavia, PPS sovrascrive nuovamente il file al successivo push della configurazione, finché manca l'associazione nella GUI.
+Anche una copia manuale di `sendmail.pem` in `sendmail-client.pem` aggira l'interruzione. Tuttavia, PPS sovrascrive nuovamente il file al successivo push di configurazione finché manca l'assegnazione nella GUI.
 
 ## Controllare dopo ogni patch
 
-Finché non sarà chiarito perché la patch ha modificato l'associazione, consiglio di controllare la pagina **Services** dopo ogni patch. Ancora più semplice è un monitoraggio che generi un allarme alla comparsa del messaggio `sendmail-client.pem` nel log di posta degli agent. In **Licenses and Updates > Settings** potete inoltre definire quando installare le patch. Una finestra temporale in cui qualcuno possa verificare il flusso di posta riduce significativamente la durata di un'interruzione di questo tipo.
+La patch 5807 ha modificato la configurazione senza che la descrizione della patch indicasse le conseguenze. Consiglio quindi di controllare dopo ogni patch la pagina **Services** e **Config History**, per verificare se la patch ha introdotto modifiche di configurazione. Se la patch 5807 non è ancora installata su un sistema 8.22.4, assegnate un certificato a `SMTP Client` subito dopo l'installazione. Ancora più semplice è un monitoraggio che generi un allarme per il messaggio `sendmail-client.pem` nel log di posta degli agent. In **Licenses and Updates > Settings** è inoltre possibile definire quando installare le patch. Una finestra temporale in cui qualcuno può verificare il flusso di posta riduce sensibilmente la durata di un'interruzione simile.
 
 ## Client Authentication scompare dai certificati pubblici
 
-Indipendentemente dalla patch, una seconda modifica interessa proprio queste connessioni. Finora, i certificati TLS pubblici contenevano generalmente entrambi gli scopi d'uso nell'estensione `Extended Key Usage`: `TLS Web Server Authentication` e `TLS Web Client Authentication`. I gateway di posta usano quindi il proprio certificato server anche come certificato client.
+Indipendentemente dalla patch, una seconda modifica interessa proprio queste connessioni. Finora, i certificati TLS pubblici contenevano generalmente entrambi gli scopi d'uso nell'estensione `Extended Key Usage`: `TLS Web Server Authentication` e `TLS Web Client Authentication`. I gateway di posta utilizzano quindi il proprio certificato server anche come certificato client.
 
-Il Chrome Root Program richiede che i certificati pubblici emessi dal 15.03.2027 contengano solo `serverAuth`. DigiCert emette certificati TLS pubblici senza Client Authentication come impostazione predefinita dal 01.10.2025; su richiesta, lo scopo sarà ancora disponibile fino al 01.03.2027. Altre CA hanno calendari simili. OpenSSL mostra se un certificato include lo scopo client:
+Il Chrome Root Program richiede che i certificati pubblici emessi a partire dal 15.03.2027 contengano solo `serverAuth`. DigiCert emette certificati TLS pubblici senza Client Authentication come impostazione predefinita dal 01.10.2025; su richiesta, lo scopo è ancora possibile fino al 01.03.2027. Altre CA hanno calendari analoghi. OpenSSL mostra se un certificato contiene lo scopo client:
 
 ```bash
 openssl x509 -in zertifikat.pem -noout \
@@ -60950,45 +61333,51 @@ openssl x509 -in zertifikat.pem -noout \
 | `x509` | Sottocomando per visualizzare e modificare certificati X.509 |
 | `-in zertifikat.pem` | File del certificato in formato PEM |
 | `-noout` | Non visualizza nuovamente il certificato stesso |
-| `-subject` | Mostra il soggetto (CN e altri campi) |
-| `-enddate` | Mostra la data di scadenza |
-| `-ext extendedKeyUsage` | Mostra solo l'estensione con gli scopi d'uso |
+| `-subject` | Visualizza il soggetto (CN e altri campi) |
+| `-enddate` | Visualizza la data di scadenza |
+| `-ext extendedKeyUsage` | Visualizza solo l'estensione con gli scopi d'uso |
 
 </details>
 
-In Windows, un doppio clic sul file mostra la stessa informazione: scheda **Dettagli**, campo **Utilizzo avanzato chiave**.
+In Windows, un doppio clic sul file mostra la stessa informazione: scheda **Details**, campo **Enhanced Key Usage**.
 
 Le conseguenze per le connessioni in uscita dipendono dalla controparte:
 
 | La controparte verifica | Conseguenza con un certificato senza Client Authentication |
 |---|---|
-| Nome nel certificato (ad es. Exchange Online tramite `TlsSenderCertificateName`) | Non è documentato se Exchange Online verifichi lo scopo d'uso; testate prima di sostituire il certificato |
-| Scopo d'uso del certificato client | Rifiuto, anche se nome e CA sono corretti |
-| Impronta digitale del certificato client | Rifiuto a ogni sostituzione del certificato, finché non viene registrata la nuova impronta digitale |
+| Nome nel certificato (ad es. Exchange Online tramite `TlsSenderCertificateName`) | Non è documentato se Exchange Online verifica lo scopo d'uso; eseguire un test prima della sostituzione del certificato |
+| Scopo d'uso del certificato client | Rifiuto, anche se nome e CA corrispondono |
+| Impronta digitale del certificato client | Rifiuto a ogni sostituzione del certificato, finché non viene memorizzata la nuova impronta digitale |
 
-A questo si aggiunge la durata più breve dei certificati pubblici. In base alla decisione SC-081v3 del CA/Browser Forum, scende gradualmente da 398 giorni a 47 giorni entro marzo 2029; il primo livello, pari a 200 giorni, è in vigore da marzo 2026. Ogni sostituzione del certificato è un momento in cui una controparte potrebbe non conoscere il nuovo certificato.
+A ciò si aggiunge la durata più breve dei certificati pubblici. Dopo la decisione SC-081v3 del CA/Browser Forum, essa diminuisce gradualmente da 398 giorni a 47 giorni entro marzo 2029; il primo livello di 200 giorni è in vigore da marzo 2026. Ogni sostituzione del certificato è un momento in cui una controparte potrebbe non conoscere il nuovo certificato.
 
-Per le connessioni in cui i partner riconoscono Proofpoint tramite un certificato client, consiglio pertanto:
+Per le connessioni in cui i partner riconoscono Proofpoint tramite un certificato client, consiglio quindi:
 
-1.  **Verificare i certificati esistenti:** gli attuali certificati del gateway contengono ancora lo scopo client e quando scadono?
+1.  **Verificare i certificati esistenti:** I certificati gateway attuali contengono ancora lo scopo client e quando scadono?
 
-2.  **Pianificare un certificato client dedicato**, che includa stabilmente lo scopo client, ad esempio da una PKI privata o da un'offerta della CA per connessioni server-to-server. I partner devono conoscerlo.
+2.  **Pianificare un certificato client dedicato**, che contenga permanentemente lo scopo client, ad esempio da una PKI privata o da un'offerta della CA per connessioni server-to-server. I partner devono conoscerlo.
 
-3.  **Chiedere ai partner cosa verificano:** nome, scopo d'uso, emittente o impronta digitale. Da questo dipende se per loro una sostituzione del certificato costituisce una modifica.
+3.  **Chiedere ai partner cosa verificano:** nome, scopo d'uso, emittente o impronta digitale. Da questo dipende se una sostituzione del certificato costituisce una modifica per loro.
 
-4.  **Gestire la sostituzione del certificato come change**, con un elenco di tutte le controparti che devono conoscere il certificato e un test per ciascuna controparte.
+4.  **Gestire la sostituzione dei certificati come change**, con un elenco di tutte le controparti che devono conoscere il certificato e un test per ciascuna controparte.
 
 ## Fonti
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): parametri `RestrictDomainsToCertificate` e `TlsSenderCertificateName` per connettori partner in Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, accesso richiesto)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): articolo 000027579 del 29.10.2026, file modificati e riavvio della GUI amministrativa.
+
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, accesso richiesto)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): articolo 000027580 del 29.10.2026, sola modifica di configurazione con dipendenza da 5806.
+
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, accesso richiesto)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): articolo 000027117, sezione «SMTP Client Certificate» a pagina 5 della revisione A.
+
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): parametri `RestrictDomainsToCertificate` e `TlsSenderCertificateName` per connettori partner in Exchange Online.
 
 2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): sezione 1.3.2 sulle gerarchie TLS server dedicate; certificati dal 15.03.2027 solo con `serverAuth`.
 
 3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): impostazione predefinita senza Client Authentication dal 01.10.2025, su richiesta fino al 01.03.2027, alternative per connessioni server-to-server.
 
-4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): panoramica delle date posticipate per Client Authentication e dei livelli di durata presso DigiCert e Sectigo.
+4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): panoramica delle date rinviate per Client Authentication e dei livelli di durata presso DigiCert e Sectigo.
 
-5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): decisione sulla graduale riduzione della durata dei certificati TLS pubblici entro marzo 2029.
+5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): decisione sulla riduzione graduale della durata dei certificati TLS pubblici fino a marzo 2029.
 
 ----
 
@@ -81065,32 +81454,80 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
-# Proofpoint Protection Server 8.22.4: El parche puede restablecer la configuración del certificado para SMTP Client
+# Kiteworks EPG 9.5.1: Cuatro correcciones de seguridad documentadas públicamente
+
+URL: https://rafaelpfister.ch/es/blog/kiteworks-epg-9-5-1-cuatro-correcciones-de-seguridad-documentadas-publicamente
+Datum: 2026-11-06
+
+# Kiteworks EPG 9.5.1: Cuatro correcciones de seguridad documentadas públicamente
+
+Kiteworks continúa la antigua tecnología de totemo como Email Protection Gateway (EPG). La versión 9.5.1 era la versión actual de Kiteworks a más tardar el 25 de septiembre de 2026; el fabricante no indica una fecha de publicación pública. Los avisos del fabricante publicados el 30 de septiembre documentan cuatro correcciones para EPG 9.5.1: una toma de control de cuentas, dos fallos no autenticados para escribir archivos o provocar una denegación de servicio, así como un fallo que permitía a los administradores escribir archivos arbitrarios. La clasificación de la versión homónima de totemomail se encuentra en el artículo sobre [totemomail 9.5.1](/blog/totemomail-9-5-1-sicherheitsupdate).
+
+## Las versiones de un vistazo
+
+| Versión | Fecha | Tipo | Puntos clave |
+|---|---|---|---|
+| 9.5.1 | confirmada públicamente a más tardar el 25.09.2026 | Actualización de seguridad | Cuatro correcciones de EPG documentadas públicamente, incluida CVE-2026-102149 con CVSS 9.4 |
+
+## Correcciones de seguridad en 9.5.1
+
+Según Kiteworks, los cuatro avisos afectan a todas las versiones de EPG anteriores a 9.5.1 e indican la 9.5.1 como versión corregida. Los avisos se publicaron el 30 de septiembre de 2026. Describen retrospectivamente el estado de seguridad de la versión, no su fecha exacta de publicación.
+
+- **CVE-2026-102149, CVSS 9.4 (crítica):** Una debilidad en el control de acceso podía permitir a un atacante acceder a cuentas de usuario a través de la red. La evaluación CVSS no requiere privilegios ni interacción del usuario. Kiteworks atribuye la causa a CWE-306 (falta de autenticación para funciones críticas) y CWE-639 (omisión de autorización mediante una clave controlada por el usuario).
+- **CVE-2026-102143, CVSS 7.5 (alta):** Un atacante no autenticado podía escribir archivos en el dispositivo. Kiteworks menciona un problema de autenticación, así como CWE-306 y CWE-434 (carga sin restricciones de tipos de archivos peligrosos).
+- **CVE-2026-102146, CVSS 6.5 (media):** Un administrador podía escribir archivos arbitrarios. Kiteworks describe un error de permisos; la métrica CVSS requiere privilegios elevados. El fabricante menciona como debilidades CWE-73 (control externo del nombre o la ruta de un archivo) y CWE-1336 (neutralización insuficiente en un motor de plantillas).
+- **CVE-2026-102144, CVSS 5.3 (media):** Un atacante en la red podía provocar una denegación de servicio. El aviso menciona falta de autenticación para funciones críticas y consumo incontrolado de recursos (CWE-306, CWE-400). Esta evaluación tampoco requiere privilegios ni interacción del usuario.
+
+Para los operadores, la toma de control de cuentas es la corrección prioritaria, ya que, según el aviso, es posible sin una cuenta existente. Los otros dos fallos sin inicio de sesión también afectan a todas las versiones anteriores a 9.5.1. Los avisos del fabricante no publican detalles técnicos sobre puntos finales, configuraciones o soluciones alternativas.
+
+## Procedimiento recomendado
+
+Actualice EPG como mínimo a la versión 9.5.1 si utiliza una versión anterior. Kiteworks indica expresamente para los cuatro avisos la actualización a la versión 9.5.1 o posterior como medida correctiva. Si ya se ha publicado una versión posterior del fabricante, también cumple este requisito mínimo. Kiteworks no ha publicado en las Fuentes consultadas una ruta de actualización pública, problemas conocidos ni plazos de soporte para EPG 9.5.1.
+
+## Fuentes
+
+1.  [Kiteworks: Precautionary Shutdown Advisory for Customers](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): Comunicación del fabricante del 25 de septiembre de 2026 que menciona la 9.5.1 como versión actual.
+
+2.  [Kiteworks Security Advisories](https://github.com/kiteworks/security-advisories/security/advisories): Resumen oficial de los avisos publicados el 30 de septiembre de 2026, incluidas las entradas de EPG para la versión 9.5.1.
+
+3.  [GHSA-c9w5-4frw-7wqq: Account takeover (CVE-2026-102149)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-c9w5-4frw-7wqq): Debilidad crítica de control de acceso, CVSS 9.4, corregida en EPG 9.5.1.
+
+4.  [GHSA-3p9g-jh62-8f89: Unauthorized file modification (CVE-2026-102143)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-3p9g-jh62-8f89): Escritura de archivos no autenticada, CVSS 7.5, corregida en EPG 9.5.1.
+
+5.  [GHSA-5pgq-v8g2-rg2f: Unauthorized file modification (CVE-2026-102146)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5pgq-v8g2-rg2f): Escritura de archivos arbitrarios con privilegios de administrador, CVSS 6.5, corregida en EPG 9.5.1.
+
+6.  [GHSA-wwhf-5862-rjxq: Denial of service (CVE-2026-102144)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-wwhf-5862-rjxq): Denegación de servicio no autenticada, CVSS 5.3, corregida en EPG 9.5.1.
+
+7.  [Kiteworks: EPG with totemo Integration](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Información del fabricante sobre la continuación y el cambio de nombre de la tecnología totemo como Email Protection Gateway.
+
+----
+
+# Proofpoint Protection Server 8.22.4: el parche 5807 deja SMTP Client sin certificado
 
 URL: https://rafaelpfister.ch/es/blog/proofpoint-protection-server-8-22-4-el-parche-puede-restablecer-la-configuracion-del
 Datum: 2026-11-05
 
-Hoy investigué una interrupción en el flujo de correo saliente de un Proofpoint Protection Server (PPS) 8.22.4. Conclusión breve: tras instalarse automáticamente un parche, la asignación **SMTP Client** en **System > Certificates > Services** pasó a ser `-none-`. A continuación, Sendmail estableció conexiones salientes sin certificado de cliente TLS. Todos los destinos que identifican Proofpoint mediante este certificado rechazaron los correos. Los destinatarios habituales con TLS oportunista siguieron aceptándolos, por lo que el problema solo se detectó cuando algunos socios dejaron de estar accesibles.
+Hoy he investigado una interrupción en el flujo de correo saliente de un Proofpoint Protection Server (PPS) 8.22.4. Conclusión breve: tras un parche instalado automáticamente, la asignación **SMTP Client** en **System > Certificates > Services** estaba en `-none-`. A partir de entonces, Sendmail estableció conexiones salientes sin certificado TLS de cliente. Todos los sistemas remotos que identifican Proofpoint mediante este certificado rechazaron los correos. Los destinatarios habituales con TLS oportunista siguieron aceptándolos, por lo que el error solo se detectó cuando determinados socios dejaron de ser accesibles.
 
 Si utiliza PPS con parches automáticos y tiene socios que exigen un certificado de cliente, compruebe esta configuración después de cada parche.
 
 ## Síntoma
 
-Solo se ven afectadas las conexiones en las que el destino verifica el certificado de cliente de Proofpoint. Dos casos típicos:
+Solo se ven afectadas las conexiones en las que el sistema remoto verifica el certificado de cliente de Proofpoint. Dos casos típicos:
 
-- **Exchange Online con un conector de socios**, restringido a un certificado mediante `RestrictDomainsToCertificate`. El rechazo es `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
+- **Exchange Online con conector de socio**, limitado a un certificado mediante `RestrictDomainsToCertificate`. El rechazo es `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
 - **Smarthost que solo permite relay con certificado de cliente.** La respuesta es `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
 
-Todos los demás destinos siguen recibiendo sus correos. Por ello, la matriz de pruebas muestra una imagen desigual: los correos externos se entregan, pero los correos a determinados socios o a través de un Smarthost concreto fallan.
+Todos los demás destinos siguen recibiendo sus correos. Por eso, la matriz de pruebas ofrece una imagen desigual: los correos externos se entregan, mientras que los correos a determinados socios o a través de un smarthost concreto fallan.
 
-En el registro de correo del agente aparece uno de los dos siguientes mensajes en cada conexión saliente. Si el archivo no existe:
+En el registro de correo del agente aparece uno de los dos mensajes siguientes para cada conexión saliente. Si el archivo falta por completo:
 
 ```text
 sendmail[...]: STARTTLS=client: file /etc/pki/tls/certs/sendmail-client.pem unsafe:
   No such file or directory
 ```
 
-Si el archivo existe, pero está vacío:
+Si el archivo existe pero está vacío:
 
 ```text
 sendmail[...]: STARTTLS=client, error:
@@ -81101,19 +81538,28 @@ sendmail[...]: STARTTLS=client, error:
   SSL_CTX_check_private_key failed(/etc/pki/tls/certs/sendmail-client.pem): 0
 ```
 
-Inmediatamente después, Sendmail establece la conexión con TLS de todos modos (`verify=OK`), pero sin certificado de cliente. Para el destino, esto parece un remitente desconocido.
+Inmediatamente después, Sendmail establece la conexión con TLS de todos modos (`verify=OK`), pero sin certificado de cliente. Para el sistema remoto, esto parece un remitente desconocido.
 
 ## Causa
 
-PPS asigna un certificado a cada servicio por servidor. En **System > Certificates > Services**, cada servidor incluye, entre otros, `SMTP Server`, `SMTP Client`, `Administration Server` y `End User Web Application / Encryption`. A partir de la asignación en `SMTP Client`, PPS genera el archivo `/etc/pki/tls/certs/sendmail-client.pem`, que Sendmail utiliza como certificado de cliente. Si figura `-none-`, PPS deja el archivo vacío o no lo crea.
+PPS asigna un certificado a cada servicio por servidor. En **System > Certificates > Services** aparecen por servidor, entre otros, `SMTP Server`, `SMTP Client`, `Administration Server` y `End User Web Application / Encryption`. PPS genera el archivo `/etc/pki/tls/certs/sendmail-client.pem` a partir de la asignación de `SMTP Client`, que Sendmail utiliza como certificado de cliente. Si allí figura `-none-`, PPS deja el archivo vacío o ni siquiera lo escribe.
 
-En el entorno investigado, tras un parche automático la asignación aparecía como `-none-` en todos los servidores. En **System > Config History**, el parche era visible como entrada `configuration changes for patch-…` con el creador `system`, y los archivos bajo `/etc/pki/tls/certs/` tenían la misma marca de tiempo. Las notas de versión disponibles públicamente no indican si Proofpoint introdujo la asignación con este parche o si el parche restableció una asignación existente. Actualizaré el artículo en cuanto Proofpoint se pronuncie al respecto.
+La asignación `SMTP Client` solo existe en 8.22.4 desde los parches 5806 y 5807, publicados por Proofpoint el 29.10.2026. Ambos se titulan «TLS client and server certificate authentication improvement» y, según la Knowledge Base, corrigen que PPS 8.22.4 no pueda asignar certificados separados para SMTP Server y SMTP Client. En la versión 8.23.0, la función ya se incluye de forma regular (Release Notes, sección «SMTP Client Certificate»).
 
-Revertir en **Config History** a la instantánea del parche no ayudó. PPS volvió a escribir el archivo, pero con 0 bytes.
+| Parche | Contenido según la Knowledge Base |
+|---|---|
+| 5806 | Actualiza, entre otros, `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` y la plantilla `sendmail.mc`, reinicia la GUI de administración (`admind`) y actualiza el RPM `pps-pfpt` |
+| 5807 | Requiere 5806, no modifica archivos ni reinicia procesos; solo aplica los cambios de configuración necesarios para certificados separados de servidor y cliente |
+
+Por tanto, Proofpoint introdujo una nueva asignación y no restableció una existente. El parche no adopta ningún certificado: tras la instalación, la nueva línea queda en `-none-`, y Sendmail deja de utilizar un certificado de cliente a partir de ese momento. Las descripciones de los parches no lo indican.
+
+En el entorno investigado, la asignación quedó en todos los servidores en `-none-`. En **System > Config History**, el parche 5807 aparecía como entrada `configuration changes for patch-…` con el creador `system`, y los archivos en `/etc/pki/tls/certs/` tenían la misma marca de tiempo. En cambio, 5807 no aparecía en **Software Patch History**. Esto encaja con que 5807 no instala software, sino que solo cambia la configuración. Por ello, **Config History** muestra el momento del cambio, mientras que el cambio de software propiamente dicho corresponde al parche 5806.
+
+Una reversión en **Config History** al snapshot del parche no ayudó. PPS volvió a escribir el archivo después, pero con 0 bytes.
 
 ## Comprobar
 
-En la GUI de administración del maestro, en **System > Certificates > Services**, seleccione sucesivamente en la parte superior, en **Server**, cada agente que realiza entregas al exterior y revise la línea `SMTP Client`.
+En la GUI de administración del máster, en **System > Certificates > Services**, seleccione uno tras otro en la parte superior, en **Server**, cada agente que entregue correo al exterior y revise la línea `SMTP Client`.
 
 En el propio agente, dos comandos muestran el estado:
 
@@ -81128,21 +81574,28 @@ grep -E 'sendmail-client.pem|SSL_CTX_' /var/log/maillog | tail -5
 | Opción | Efecto |
 |---|---|
 | `-l` | Formato largo con permisos, propietario, tamaño y fecha |
-| `--time-style=full-iso` | Marca de tiempo con fecha, hora y zona horaria, para compararla con el momento del parche |
-| `grep -E` | Expresiones regulares ampliadas, para combinar ambos términos de búsqueda con `\|` |
+| `--time-style=full-iso` | Marca de tiempo con fecha, hora y zona horaria para compararla con el momento del parche |
+| `grep -E` | Expresiones regulares extendidas para poder combinar ambos términos de búsqueda con `\|` |
 | `tail -5` | Mostrar solo las cinco últimas coincidencias |
 
 </details>
 
-Si falta `sendmail-client.pem` o el archivo tiene 0 bytes, mientras que `sendmail.pem` tiene varios miles de bytes, no hay ningún certificado asignado al servicio `SMTP Client`.
+Si falta `sendmail-client.pem` o el archivo tiene 0 bytes, mientras que `sendmail.pem` ocupa varios miles de bytes, no hay ningún certificado asignado al servicio `SMTP Client`.
 
 ## Solucionar
 
-En **System > Certificates > Services**, seleccione un certificado válido para `SMTP Client` en cada agente afectado y guarde con **Save Changes**. Por regla general, es el mismo certificado público que figura en `SMTP Server`.
+En **System > Certificates > Services**, seleccione un certificado válido para cada agente afectado en `SMTP Client` y guarde con **Save Changes**. Por regla general, es el mismo certificado público que aparece en `SMTP Server`.
 
-La lista de selección muestra todos los certificados importados, incluidos los caducados con el mismo nombre. Solo pueden distinguirse mediante el número de serie entre paréntesis. Antes de guardar, compare el número de serie con la lista en **System > Certificates > Certificates**, donde figuran las fechas de emisión y caducidad.
+La lista de selección puede contener varios certificados con el mismo nombre, incluidos certificados caducados. Solo se pueden distinguir por el número de serie entre paréntesis. Antes de guardar, compare el número de serie con la lista de **System > Certificates > Certificates**, donde aparecen las fechas de emisión y caducidad.
 
-Tras guardar, PPS distribuye la configuración a los agentes. Comprobación en el agente:
+La lista de `SMTP Client` no muestra necesariamente todos los certificados importados. En el entorno investigado faltaban algunos certificados, aunque eran válidos y los ejemplares caducados ya se habían eliminado. Ni los artículos de los parches ni las Release Notes 8.23 describen según qué criterios PPS filtra la lista. Si falta un certificado, compruebe dos aspectos:
+
+- **Clave privada:** Si el certificado se importó como PEM sin clave, PPS no puede asignarlo a ningún servicio. Los archivos PKCS12 siempre contienen la clave.
+- **Uso previsto:** ¿Contiene el certificado en `Extended Key Usage` el propósito `TLS Web Client Authentication`? Muchos certificados públicos emitidos desde el otoño de 2025 ya no lo contienen (véase más abajo). Para el servicio `SMTP Client`, un certificado sin este propósito tampoco es adecuado.
+
+Cuando Proofpoint confirme los criterios, los añadiré aquí.
+
+Después de guardar, PPS distribuye la configuración a los agentes. Comprobación en el agente:
 
 ```bash
 ls -l /etc/pki/tls/certs/sendmail-client.pem
@@ -81155,24 +81608,24 @@ grep -E 'STARTTLS=client|stat=' /var/log/maillog | tail -20
 | Opción | Efecto |
 |---|---|
 | `ls -l` | Muestra el tamaño y los permisos del archivo; tras la corrección ya no estará vacío |
-| `grep -E 'STARTTLS=client\|stat='` | Filtra los mensajes TLS de las conexiones salientes y el resultado de la entrega |
-| `tail -20` | Mostrar solo las veinte últimas líneas |
+| `grep -E 'STARTTLS=client\|stat='` | Filtra los mensajes TLS de conexiones salientes y el resultado de la entrega |
+| `tail -20` | Mostrar solo las últimas veinte líneas |
 
 </details>
 
-Los mensajes `SSL_CTX_… failed` y `unsafe` ya no deben aparecer después de guardar, y las entregas a los socios deben terminar con `stat=Sent`. Sendmail entrega por sí mismo desde la cola los correos que anteriormente se aplazaron con un código 4xx. Los correos rechazados con un código 5xx deben reenviarlos los remitentes.
+Los mensajes `SSL_CTX_… failed` y `unsafe` ya no deben aparecer después de guardar, y las entregas a los socios deben terminar con `stat=Sent`. Sendmail entregará por sí mismo desde la cola los correos que antes se aplazaron con un código 4xx. Los remitentes deberán volver a enviar los correos rechazados con un código 5xx.
 
-Copiar manualmente `sendmail.pem` a `sendmail-client.pem` también permite sortear la interrupción. Sin embargo, PPS vuelve a sobrescribir el archivo con el siguiente envío de configuración mientras falte la asignación en la GUI.
+Copiar manualmente `sendmail.pem` a `sendmail-client.pem` también salva temporalmente la interrupción. Sin embargo, PPS volverá a sobrescribir el archivo en el siguiente envío de configuración mientras falte la asignación en la GUI.
 
 ## Comprobar después de cada parche
 
-Hasta que se aclare por qué el parche modificó la asignación, recomiendo comprobar la página **Services** después de cada parche. Más sencillo es implementar una supervisión que alerte cuando aparezca el mensaje `sendmail-client.pem` en el registro de correo de los agentes. En **Licenses and Updates > Settings** también se puede definir cuándo se instalan los parches. Una ventana de tiempo en la que alguien pueda comprobar el flujo de correo reduce considerablemente una interrupción de este tipo.
+El parche 5807 modificó la configuración sin que la descripción del parche advierta de las consecuencias. Por ello, recomiendo revisar la página **Services** después de cada parche y consultar **Config History** para comprobar si el parche incluyó cambios de configuración. Si el parche 5807 aún no está instalado en un sistema 8.22.4, asigne un certificado a `SMTP Client` inmediatamente después de la instalación. Es más sencillo contar con una supervisión que alerte cuando aparezca el mensaje `sendmail-client.pem` en el registro de correo de los agentes. En **Licenses and Updates > Settings** también se puede definir cuándo se instalan los parches. Una ventana en la que alguien pueda comprobar el flujo de correo reduce considerablemente este tipo de interrupciones.
 
 ## Client Authentication desaparece de los certificados públicos
 
-Independientemente del parche, un segundo cambio afecta precisamente a estas conexiones. Hasta ahora, los certificados TLS públicos solían incluir ambos usos en la extensión `Extended Key Usage`: `TLS Web Server Authentication` y `TLS Web Client Authentication`. Por ello, las pasarelas de correo utilizan su certificado de servidor también como certificado de cliente.
+Independientemente del parche, un segundo cambio afecta precisamente a estas conexiones. Hasta ahora, los certificados TLS públicos solían contener ambos usos en la extensión `Extended Key Usage`: `TLS Web Server Authentication` y `TLS Web Client Authentication`. Por ello, las pasarelas de correo también utilizan su certificado de servidor como certificado de cliente.
 
-El Chrome Root Program exige que los certificados públicos emitidos a partir del 15.03.2027 contengan únicamente `serverAuth`. Desde el 01.10.2025, DigiCert emite certificados TLS públicos sin Client Authentication de forma predeterminada; previa solicitud, este propósito seguirá siendo posible hasta el 01.03.2027. Otras CA tienen calendarios similares. OpenSSL muestra si un certificado incluye el propósito de cliente:
+El Chrome Root Program exige que los certificados públicos emitidos a partir del 15.03.2027 contengan únicamente `serverAuth`. DigiCert emite certificados TLS públicos sin Client Authentication de forma predeterminada desde el 01.10.2025; el propósito todavía puede solicitarse hasta el 01.03.2027. Otras CA tienen calendarios similares. OpenSSL permite comprobar si un certificado contiene el propósito de cliente:
 
 ```bash
 openssl x509 -in zertifikat.pem -noout \
@@ -81184,48 +81637,54 @@ openssl x509 -in zertifikat.pem -noout \
 
 | Opción | Efecto |
 |---|---|
-| `x509` | Subcomando para mostrar y editar certificados X.509 |
+| `x509` | Subcomando para visualizar y editar certificados X.509 |
 | `-in zertifikat.pem` | Archivo de certificado en formato PEM |
-| `-noout` | No volver a mostrar el certificado en sí |
+| `-noout` | No volver a mostrar el propio certificado |
 | `-subject` | Mostrar el titular (CN y otros campos) |
 | `-enddate` | Mostrar la fecha de caducidad |
-| `-ext extendedKeyUsage` | Mostrar únicamente la extensión con los propósitos de uso |
+| `-ext extendedKeyUsage` | Mostrar solo la extensión con los usos previstos |
 
 </details>
 
-En Windows, un doble clic en el archivo muestra lo mismo: pestaña **Details**, campo **Enhanced Key Usage**.
+En Windows, hacer doble clic en el archivo muestra lo mismo: pestaña **Details**, campo **Enhanced Key Usage**.
 
-Lo que esto significa para las conexiones salientes depende del destino:
+Lo que esto implica para las conexiones salientes depende del sistema remoto:
 
-| El destino verifica | Consecuencia con un certificado sin Client Authentication |
+| El sistema remoto verifica | Consecuencia con un certificado sin Client Authentication |
 |---|---|
-| Nombres en el certificado (p. ej., Exchange Online mediante `TlsSenderCertificateName`) | No está documentado si Exchange Online verifica el propósito de uso; pruébelo antes de cambiar el certificado |
-| Propósito de uso del certificado de cliente | Rechazo, aunque el nombre y la CA sean correctos |
+| Nombre en el certificado (p. ej., Exchange Online mediante `TlsSenderCertificateName`) | No está documentado si Exchange Online verifica el uso previsto; pruebe antes de cambiar el certificado |
+| Uso previsto del certificado de cliente | Rechazo, aunque el nombre y la CA sean correctos |
 | Huella digital del certificado de cliente | Rechazo en cada cambio de certificado hasta que se registre la nueva huella digital |
 
-A esto se suma la menor vigencia de los certificados públicos. Tras la decisión SC-081v3 del CA/Browser Forum, se reduce gradualmente de 398 días a 47 días hasta marzo de 2029; la primera etapa, de 200 días, está en vigor desde marzo de 2026. Cada cambio de certificado es un momento en el que un destino puede no conocer el nuevo certificado.
+A ello se suma la menor validez de los certificados públicos. Tras la decisión SC-081v3 del CA/Browser Forum, se reduce gradualmente de 398 días a 47 días hasta marzo de 2029; la primera etapa, con 200 días, está vigente desde marzo de 2026. Cada cambio de certificado es un momento en el que un sistema remoto puede no conocer el nuevo certificado.
 
-Por tanto, para las conexiones en las que los socios identifican Proofpoint mediante un certificado de cliente, recomiendo:
+Por ello, para las conexiones en las que los socios identifican Proofpoint mediante un certificado de cliente, recomiendo:
 
-1.  **Comprobar los certificados existentes:** ¿Los certificados actuales de las pasarelas aún contienen el propósito de cliente y cuándo caducan?
+1.  **Comprobar los certificados existentes:** ¿Los certificados actuales de la pasarela todavía contienen el propósito de cliente y cuándo caducan?
 
-2.  **Planificar un certificado de cliente propio** que incluya permanentemente el propósito de cliente, por ejemplo de una PKI privada o de una oferta de la CA para conexiones servidor a servidor. Los socios deben conocerlo.
+2.  **Planificar un certificado de cliente propio** que incluya permanentemente el propósito de cliente, por ejemplo de una PKI privada o de una oferta de la CA para conexiones de servidor a servidor. Los socios deben conocerlo.
 
-3.  **Preguntar a los socios qué verifican:** nombre, propósito de uso, emisor o huella digital. De ello depende si un cambio de certificado supone un cambio para ellos.
+3.  **Preguntar a los socios qué verifican:** nombre, uso previsto, emisor o huella digital. De ello depende si un cambio de certificado supone un cambio para ellos.
 
-4.  **Gestionar los cambios de certificado como un cambio**, con una lista de todos los destinos que deben conocer el certificado y una prueba para cada destino.
+4.  **Gestionar el cambio de certificado como un change**, con una lista de todos los sistemas remotos que deben conocer el certificado y una prueba para cada uno.
 
 ## Fuentes
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): parámetros `RestrictDomainsToCertificate` y `TlsSenderCertificateName` para conectores de socios en Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, requiere inicio de sesión)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): artículo 000027579 del 29.10.2026, archivos modificados y reinicio de la GUI de administración.
 
-2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): sección 1.3.2 sobre jerarquías TLS dedicadas para servidores; certificados emitidos a partir del 15.03.2027 únicamente con `serverAuth`.
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, requiere inicio de sesión)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): artículo 000027580 del 29.10.2026, cambio de configuración únicamente con dependencia de 5806.
 
-3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): estándar sin Client Authentication desde el 01.10.2025, previa solicitud hasta el 01.03.2027, alternativas para conexiones servidor a servidor.
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, requiere inicio de sesión)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): artículo 000027117, sección «SMTP Client Certificate» en la página 5 de la revisión A.
 
-4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): resumen de las fechas aplazadas para Client Authentication y de las etapas de vigencia en DigiCert y Sectigo.
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): parámetros `RestrictDomainsToCertificate` y `TlsSenderCertificateName` para conectores de socios en Exchange Online.
 
-5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): decisión sobre la reducción gradual de la vigencia de los certificados TLS públicos hasta marzo de 2029.
+2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): sección 1.3.2 sobre jerarquías TLS de servidor dedicadas; certificados emitidos a partir del 15.03.2027 solo con `serverAuth`.
+
+3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): estándar sin Client Authentication desde el 01.10.2025, disponible previa solicitud hasta el 01.03.2027, alternativas para conexiones de servidor a servidor.
+
+4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): resumen de las fechas aplazadas para Client Authentication y de las etapas de validez en DigiCert y Sectigo.
+
+5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): decisión sobre la reducción gradual de la validez de los certificados TLS públicos hasta marzo de 2029.
 
 ----
 
@@ -101299,32 +101758,80 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 
 ----
 
-# Proofpoint Protection Server 8.22.4: Patch kan återställa certifikatkonfigurationen för SMTP Client
+# Kiteworks EPG 9.5.1: Fyra offentligt dokumenterade säkerhetskorrigeringar
+
+URL: https://rafaelpfister.ch/sv/blog/kiteworks-epg-9-5-1-fyra-offentligt-dokumenterade-sakerhetskorrigeringar
+Datum: 2026-11-06
+
+# Kiteworks EPG 9.5.1: Fyra offentligt dokumenterade säkerhetskorrigeringar
+
+Kiteworks fortsätter den tidigare totemo-tekniken som Email Protection Gateway (EPG). Version 9.5.1 var senast den 25 september 2026 den aktuella Kiteworks-versionen; tillverkaren anger inget offentligt publiceringsdatum. Tillverkarens advisories, som publicerades den 30 september, dokumenterar fyra korrigeringar för EPG 9.5.1: ett kontoövertagande, två oautentiserade fel för att skriva filer respektive utlösa en Denial of Service samt ett fel som tillät administratörer att skriva godtyckliga filer. Klassificeringen för totemomail-versionen med samma namn finns i artikeln om [totemomail 9.5.1](/blog/totemomail-9-5-1-sicherheitsupdate).
+
+## Versionerna i översikt
+
+| Version | Datum | Typ | Huvudpunkter |
+|---|---|---|---|
+| 9.5.1 | offentligt bekräftad senast 25.09.2026 | säkerhetsuppdatering | Fyra offentligt dokumenterade EPG-korrigeringar, däribland CVE-2026-102149 med CVSS 9.4 |
+
+## Säkerhetskorrigeringar i 9.5.1
+
+Enligt Kiteworks berör alla fyra advisories samtliga EPG-versioner före 9.5.1 och anger 9.5.1 som korrigerad version. Advisories publicerades den 30 september 2026. De beskriver i efterhand säkerhetsstatusen för releasen, inte dess exakta publiceringsdatum.
+
+- **CVE-2026-102149, CVSS 9.4 (kritisk):** En svaghet i åtkomstkontrollen kunde ge en angripare åtkomst till användarkonton via nätverket. CVSS-bedömningen förutsätter varken behörigheter eller användarinteraktion. Kiteworks klassificerar orsaken som CWE-306 (saknad autentisering för kritiska funktioner) och CWE-639 (kringgående av auktorisering via en användarkontrollerad nyckel).
+- **CVE-2026-102143, CVSS 7.5 (hög):** En oautentiserad angripare kunde skriva filer till appliance-enheten. Kiteworks nämner ett autentiseringsproblem samt CWE-306 och CWE-434 (obegränsad uppladdning av farliga filtyper).
+- **CVE-2026-102146, CVSS 6.5 (medel):** En administratör kunde skriva godtyckliga filer. Kiteworks beskriver ett behörighetsfel; CVSS-måttet kräver höga behörigheter. Tillverkaren anger CWE-73 (extern kontroll av filnamn eller sökväg) och CWE-1336 (otillräcklig neutralisering i en Template Engine) som svagheter.
+- **CVE-2026-102144, CVSS 5.3 (medel):** En angripare i nätverket kunde utlösa en Denial of Service. Advisoret nämner saknad autentisering för kritiska funktioner och okontrollerad resursförbrukning (CWE-306, CWE-400). Inte heller denna bedömning förutsätter behörigheter eller användarinteraktion.
+
+För operatörer är kontoövertagandet den prioriterade korrigeringen, eftersom det enligt advisoret är möjligt utan ett befintligt konto. De två andra felen utan inloggning berör också alla versioner före 9.5.1. Tillverkarens advisories publicerar inga tekniska detaljer om slutpunkter, konfigurationer eller tillfälliga lösningar.
+
+## Rekommenderat tillvägagångssätt
+
+Uppdatera EPG till minst 9.5.1 om en äldre version används. Kiteworks anger uttryckligen uppgradering till 9.5.1 eller senare som åtgärd för alla fyra advisories. Om en senare tillverkarversion redan har godkänts uppfyller den också denna minimiversion. Kiteworks har inte publicerat någon offentlig uppdateringsväg, kända problem eller supportfrister för EPG 9.5.1 i de öppnade källorna.
+
+## Källor
+
+1.  [Kiteworks: Precautionary Shutdown Advisory for Customers](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): Tillverkarmeddelande från den 25 september 2026 som anger 9.5.1 som aktuell version.
+
+2.  [Kiteworks Security Advisories](https://github.com/kiteworks/security-advisories/security/advisories): Officiell översikt över advisories som publicerades den 30 september 2026, inklusive EPG-posterna för 9.5.1.
+
+3.  [GHSA-c9w5-4frw-7wqq: Account takeover (CVE-2026-102149)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-c9w5-4frw-7wqq): Kritisk svaghet i åtkomstkontrollen, CVSS 9.4, åtgärdad i EPG 9.5.1.
+
+4.  [GHSA-3p9g-jh62-8f89: Unauthorized file modification (CVE-2026-102143)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-3p9g-jh62-8f89): Oautentiserad skrivning av filer, CVSS 7.5, åtgärdad i EPG 9.5.1.
+
+5.  [GHSA-5pgq-v8g2-rg2f: Unauthorized file modification (CVE-2026-102146)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5pgq-v8g2-rg2f): Skrivning av godtyckliga filer med administratörsbehörighet, CVSS 6.5, åtgärdad i EPG 9.5.1.
+
+6.  [GHSA-wwhf-5862-rjxq: Denial of service (CVE-2026-102144)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-wwhf-5862-rjxq): Oautentiserad Denial of Service, CVSS 5.3, åtgärdad i EPG 9.5.1.
+
+7.  [Kiteworks: EPG with totemo Integration](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Tillverkaruppgift om att totemo-tekniken fortsätter och byter namn till Email Protection Gateway.
+
+----
+
+# Proofpoint Protection Server 8.22.4: Patch 5807 leaves SMTP Client without a certificate
 
 URL: https://rafaelpfister.ch/sv/blog/proofpoint-protection-server-8-22-4-patch-kan-aterstalla-certifikatkonfigurationen-for-smtp
 Datum: 2026-11-05
 
-Jag undersökte i dag ett avbrott i utgående e-postflöde på en Proofpoint Protection Server (PPS) 8.22.4. Kort slutsats: Efter en automatiskt installerad patch var tilldelningen **SMTP Client** under **System > Certificates > Services** inställd på `-none-`. Sendmail upprättade därefter utgående anslutningar utan TLS-klientcertifikat. Alla motparter som identifierar Proofpoint via detta certifikat avvisade e-postmeddelandena. Vanliga mottagare med opportunistisk TLS fortsatte att ta emot, så felet upptäcktes först när enskilda partner inte längre kunde nås.
+I investigated an outage in the outgoing mail flow of a Proofpoint Protection Server (PPS) 8.22.4 today. In short: after an automatically installed patch, the **SMTP Client** assignment under **System > Certificates > Services** was set to `-none-`. Sendmail subsequently established outgoing connections without a TLS client certificate. All peers that identify Proofpoint through this certificate rejected the mail. Regular recipients using opportunistic TLS continued to accept messages, so the issue only became apparent when individual partners could no longer be reached.
 
-Om du använder PPS med automatiska patchar och har partner som kräver ett klientcertifikat bör du kontrollera denna inställning efter varje patch.
+If you run PPS with automatic patches and have partners that require a client certificate, check this setting after every patch.
 
 ## Symptom
 
-Endast anslutningar där motparten kontrollerar Proofpoints klientcertifikat påverkas. Två typiska fall:
+Only connections where the peer verifies Proofpoint's client certificate are affected. Two typical cases:
 
-- **Exchange Online med partneranslutning**, som är begränsad till ett certifikat via `RestrictDomainsToCertificate`. Avvisningen lyder `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
-- **Smarthost som endast tillåter relä med klientcertifikat.** Svaret lyder `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
+- **Exchange Online with a partner connector** restricted to a certificate via `RestrictDomainsToCertificate`. The rejection is `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
+- **Smarthost that permits relaying only with a client certificate.** The response is `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
 
-Alla andra mål fortsätter att ta emot sina e-postmeddelanden. Testmatrisen ger därför en ojämn bild: e-post till externa mottagare går igenom, medan e-post till enskilda partner eller via en viss smarthost misslyckas.
+All other destinations continue to receive their mail. The test matrix therefore shows an inconsistent picture: mail to external recipients goes through, while mail to individual partners or via a specific smarthost fails.
 
-I agentens e-postlogg står ett av följande två meddelanden vid varje utgående anslutning. Om filen saknas helt:
+The agent's mail log contains one of the following two messages for every outgoing connection. If the file is missing entirely:
 
 ```text
 sendmail[...]: STARTTLS=client: file /etc/pki/tls/certs/sendmail-client.pem unsafe:
   No such file or directory
 ```
 
-Om filen finns men är tom:
+If the file exists but is empty:
 
 ```text
 sendmail[...]: STARTTLS=client, error:
@@ -101335,21 +101842,30 @@ sendmail[...]: STARTTLS=client, error:
   SSL_CTX_check_private_key failed(/etc/pki/tls/certs/sendmail-client.pem): 0
 ```
 
-Direkt därefter upprättar Sendmail ändå anslutningen med TLS (`verify=OK`), men utan klientcertifikat. För motparten ser detta ut som en okänd avsändare.
+Immediately afterwards, Sendmail still establishes the connection with TLS (`verify=OK`), but without a client certificate. To the peer, this looks like an unknown sender.
 
-## Orsak
+## Cause
 
-PPS tilldelar varje tjänst ett certifikat per server. Under **System > Certificates > Services** visas bland annat `SMTP Server`, `SMTP Client`, `Administration Server` och `End User Web Application / Encryption` per server. Utifrån tilldelningen för `SMTP Client` skapar PPS filen `/etc/pki/tls/certs/sendmail-client.pem`, som Sendmail använder som klientcertifikat. Om den är inställd på `-none-` skriver PPS filen tom eller inte alls.
+PPS assigns a certificate to every service on each server. Under **System > Certificates > Services**, each server lists, among other things, `SMTP Server`, `SMTP Client`, `Administration Server` and `End User Web Application / Encryption`. PPS generates the file `/etc/pki/tls/certs/sendmail-client.pem` from the assignment at `SMTP Client`, which Sendmail uses as its client certificate. If it is set to `-none-`, PPS writes the file as empty or does not write it at all.
 
-I den undersökta miljön var tilldelningen på alla servrar inställd på `-none-` efter en automatisk patch. Under **System > Config History** syntes patchen som posten `configuration changes for patch-…` med skaparen `system`, och filerna under `/etc/pki/tls/certs/` hade samma tidsstämpel. Det framgår inte av de offentligt tillgängliga versionsinformationen om Proofpoint införde tilldelningen med denna patch eller om patchen återställde en befintlig tilldelning. Jag uppdaterar artikeln så snart Proofpoint uttalar sig om detta.
+The `SMTP Client` assignment has only existed in 8.22.4 since patches 5806 and 5807, which Proofpoint released on 29 October 2026. Both are titled “TLS client and server certificate authentication improvement” and, according to the Knowledge Base, fix the inability of PPS 8.22.4 to assign separate certificates for the SMTP server and SMTP client. The feature is included regularly in release 8.23.0 (Release Notes, section “SMTP Client Certificate”).
 
-En återställning under **Config History** till patchens ögonblicksbild hjälpte inte. PPS skrev sedan om filen, men med 0 byte.
+| Patch | Content according to the Knowledge Base |
+|---|---|
+| 5806 | Updates, among other things, `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` and the template `sendmail.mc`, restarts the Admin GUI (`admind`) and updates the RPM `pps-pfpt` |
+| 5807 | Requires 5806, changes no files and restarts no processes; it only applies the configuration changes required for separate server and client certificates |
 
-## Kontrollera
+Proofpoint therefore introduced the assignment rather than resetting an existing one. The patch does not inherit a certificate: after installation, the new row is set to `-none-`, and from that point Sendmail no longer uses a client certificate. The patch descriptions do not mention this.
 
-I administrationsgränssnittet på mastern går du till **System > Certificates > Services**, väljer varje agent som levererar utgående e-post under **Server** högst upp och granskar raden `SMTP Client`.
+In the environment investigated, the assignment was set to `-none-` on all servers afterwards. Under **System > Config History**, patch 5807 was visible as an entry `configuration changes for patch-…` created by `system`, and the files under `/etc/pki/tls/certs/` had the same timestamp. However, 5807 did not appear under **Software Patch History**. This is consistent with 5807 not installing software but only changing configuration. **Config History** therefore shows when the change occurred, while the software change itself belongs to patch 5806.
 
-På själva agenten visar två kommandon statusen:
+A rollback under **Config History** to the patch snapshot did not help. PPS rewrote the file afterwards, but with 0 bytes.
+
+## Check
+
+In the Admin GUI on the master, go to **System > Certificates > Services**, then select each agent that delivers externally in turn under **Server** and inspect the `SMTP Client` row.
+
+On the agent itself, two commands show the status:
 
 ```bash
 ls -l --time-style=full-iso /etc/pki/tls/certs/
@@ -101357,26 +101873,33 @@ grep -E 'sendmail-client.pem|SSL_CTX_' /var/log/maillog | tail -5
 ```
 
 <details class="options-details">
-<summary>Alternativ förklaras</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `-l` | Långt format med behörigheter, ägare, storlek och datum |
-| `--time-style=full-iso` | Tidsstämpel med datum, tid och tidszon för jämförelse med tidpunkten för patchen |
-| `grep -E` | Utökade reguljära uttryck så att båda söktermerna kan kombineras med `\|` |
-| `tail -5` | Visa endast de fem senaste träffarna |
+| `-l` | Long format with permissions, owner, size and date |
+| `--time-style=full-iso` | Timestamp with date, time and time zone, for comparison with the patch time |
+| `grep -E` | Extended regular expressions so both search terms can be combined with `\|` |
+| `tail -5` | Show only the last five matches |
 
 </details>
 
-Om `sendmail-client.pem` saknas eller filen har 0 byte, medan `sendmail.pem` är flera tusen byte stor, är inget certifikat tilldelat tjänsten `SMTP Client`.
+If `sendmail-client.pem` is missing or the file has 0 bytes while `sendmail.pem` is several thousand bytes in size, no certificate is assigned to the `SMTP Client` service.
 
-## Åtgärda
+## Fix
 
-Under **System > Certificates > Services** väljer du ett giltigt certifikat för `SMTP Client` på varje berörd agent och sparar med **Save Changes**. Vanligtvis är det samma offentliga certifikat som står vid `SMTP Server`.
+Under **System > Certificates > Services**, select a valid certificate for `SMTP Client` on each affected agent and save with **Save Changes**. This is generally the same public certificate configured for `SMTP Server`.
 
-Urvalslistan visar alla importerade certifikat, även utgångna certifikat med samma namn. De kan endast skiljas åt genom serienumret inom parentes. Jämför serienumret före sparandet med listan under **System > Certificates > Certificates**, där utfärdande- och utgångsdatum anges.
+The selection list may contain several certificates with the same name, including expired ones. They can only be distinguished by the serial number in parentheses. Before saving, compare the serial number with the list under **System > Certificates > Certificates**, which shows the issue and expiry dates.
 
-Efter sparandet distribuerar PPS konfigurationen till agenterna. Kontroll på agenten:
+The list for `SMTP Client` does not necessarily show all imported certificates. In the environment investigated, some certificates were missing despite being valid and expired copies having already been deleted. Neither the patch articles nor the 8.23 Release Notes describe the criteria PPS uses to filter the list. If a certificate is missing, check two points:
+
+- **Private key:** If the certificate was imported as a PEM without a key, PPS cannot assign it to a service. PKCS12 files always contain the key.
+- **Intended use:** Does the certificate include the purpose `TLS Web Client Authentication` in `Extended Key Usage`? Many public certificates issued since autumn 2025 no longer include it (see below). A certificate without this purpose is unsuitable for the `SMTP Client` service anyway.
+
+Once Proofpoint confirms the criteria, I will add them here.
+
+After saving, PPS distributes the configuration to the agents. Check on the agent:
 
 ```bash
 ls -l /etc/pki/tls/certs/sendmail-client.pem
@@ -101384,29 +101907,29 @@ grep -E 'STARTTLS=client|stat=' /var/log/maillog | tail -20
 ```
 
 <details class="options-details">
-<summary>Alternativ förklaras</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `ls -l` | Visar filens storlek och behörigheter; efter korrigeringen är den inte längre tom |
-| `grep -E 'STARTTLS=client\|stat='` | Filtrerar TLS-meddelanden för utgående anslutningar och leveransresultatet |
-| `tail -20` | Visa endast de tjugo senaste raderna |
+| `ls -l` | Shows the file's size and permissions; after the fix, it is no longer empty |
+| `grep -E 'STARTTLS=client\|stat='` | Filters TLS messages from outgoing connections and the delivery result |
+| `tail -20` | Show only the last twenty lines |
 
 </details>
 
-Meddelandena `SSL_CTX_… failed` och `unsafe` får inte längre visas efter sparandet, och leveranser till partner måste avslutas med `stat=Sent`. E-post som tidigare köats med en 4xx-kod levererar Sendmail själv från kön. E-post som avvisats med en 5xx-kod måste avsändarna skicka på nytt.
+The messages `SSL_CTX_… failed` and `unsafe` must no longer appear after saving, and deliveries to partners must end with `stat=Sent`. Sendmail delivers messages previously deferred with a 4xx code from the queue itself. Senders must resend messages rejected with a 5xx code.
 
-Att manuellt kopiera `sendmail.pem` till `sendmail-client.pem` överbryggar också avbrottet. PPS skriver dock över filen vid nästa konfigurationspush så länge tilldelningen saknas i gränssnittet.
+Manually copying `sendmail.pem` to `sendmail-client.pem` also bridges the outage. However, PPS overwrites the file at the next configuration push as long as the assignment is missing in the GUI.
 
-## Kontrollera efter varje patch
+## Check after every patch
 
-Tills det är klarlagt varför patchen ändrar tilldelningen rekommenderar jag att sidan **Services** kontrolleras efter varje patch. Ännu enklare är övervakning som larmar vid meddelandet `sendmail-client.pem` i agenternas e-postlogg. Under **Licenses and Updates > Settings** kan du även ange när patchar ska installeras. Ett tidsfönster då någon kan kontrollera e-postflödet förkortar ett sådant avbrott avsevärt.
+Patch 5807 changed the configuration without the patch description indicating the consequences. I therefore recommend checking the **Services** page after every patch and reviewing **Config History** to see whether the patch included configuration changes. If patch 5807 has not yet been installed on an 8.22.4 system, assign a certificate to `SMTP Client` immediately after installation. Monitoring that alerts on the `sendmail-client.pem` message in the agents' mail logs is simpler. Under **Licenses and Updates > Settings**, you can also define when patches are installed. A maintenance window during which someone can check the mail flow significantly shortens such an outage.
 
-## Client Authentication försvinner från offentliga certifikat
+## Client Authentication is disappearing from public certificates
 
-Oberoende av patchen påverkar en andra förändring just dessa anslutningar. Offentliga TLS-certifikat har hittills oftast innehållit båda användningsändamålen i tillägget `Extended Key Usage`: `TLS Web Server Authentication` och `TLS Web Client Authentication`. E-postgateways använder därför även sitt servercertifikat som klientcertifikat.
+Independently of the patch, a second change affects exactly these connections. Until now, public TLS certificates have generally contained both purposes in the `Extended Key Usage` extension: `TLS Web Server Authentication` and `TLS Web Client Authentication`. Mail gateways therefore also use their server certificate as a client certificate.
 
-Chrome Root Program kräver att offentliga certifikat som utfärdas från och med 15.03.2027 endast innehåller `serverAuth`. DigiCert utfärdar sedan 01.10.2025 offentliga TLS-certifikat utan Client Authentication som standard; på begäran är ändamålet fortfarande möjligt till och med 01.03.2027. Andra CA:er har jämförbara tidsplaner. OpenSSL visar om ett certifikat innehåller klientändamålet:
+The Chrome Root Program requires public certificates issued from 15 March 2027 onwards to contain only `serverAuth`. DigiCert has issued public TLS certificates without Client Authentication by default since 1 October 2025; upon request, the purpose remains available until 1 March 2027. Other CAs have similar schedules. OpenSSL shows whether a certificate includes the client purpose:
 
 ```bash
 openssl x509 -in zertifikat.pem -noout \
@@ -101414,52 +101937,58 @@ openssl x509 -in zertifikat.pem -noout \
 ```
 
 <details class="options-details">
-<summary>Alternativ förklaras</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Effekt |
+| Option | Effect |
 |---|---|
-| `x509` | Underkommando för att visa och bearbeta X.509-certifikat |
-| `-in zertifikat.pem` | Certifikatfil i PEM-format |
-| `-noout` | Skriv inte ut själva certifikatet igen |
-| `-subject` | Visa innehavaren (CN och ytterligare fält) |
-| `-enddate` | Visa utgångsdatumet |
-| `-ext extendedKeyUsage` | Visa endast tillägget med användningsändamålen |
+| `x509` | Subcommand for displaying and processing X.509 certificates |
+| `-in zertifikat.pem` | Certificate file in PEM format |
+| `-noout` | Do not output the certificate itself again |
+| `-subject` | Display subject (CN and additional fields) |
+| `-enddate` | Display expiry date |
+| `-ext extendedKeyUsage` | Display only the extension with the intended uses |
 
 </details>
 
-I Windows visar ett dubbelklick på filen samma sak: fliken **Details**, fältet **Enhanced Key Usage**.
+In Windows, double-clicking the file shows the same information: the **Details** tab, **Enhanced Key Usage** field.
 
-Vad detta innebär för utgående anslutningar beror på motparten:
+What this means for outgoing connections depends on the peer:
 
-| Motparten kontrollerar | Följd med ett certifikat utan Client Authentication |
+| What the peer verifies | Result with a certificate without Client Authentication |
 |---|---|
-| Namn i certifikatet (t.ex. Exchange Online via `TlsSenderCertificateName`) | Det är inte dokumenterat om Exchange Online kontrollerar användningsändamålet; testa före certifikatbytet |
-| Klientcertifikatets användningsändamål | Avvisning, även om namn och CA stämmer |
-| Klientcertifikatets fingeravtryck | Avvisning vid varje certifikatbyte tills det nya fingeravtrycket har lagts in |
+| Name in the certificate (e.g. Exchange Online via `TlsSenderCertificateName`) | Whether Exchange Online verifies the intended use is not documented; test before changing the certificate |
+| Intended use of the client certificate | Rejection even if the name and CA are correct |
+| Fingerprint of the client certificate | Rejection with every certificate change until the new fingerprint has been stored |
 
-Därtill kommer den kortare giltighetstiden för offentliga certifikat. Enligt CA/Browser Forum-beslutet SC-081v3 minskar den stegvis från 398 dagar till 47 dagar fram till mars 2029, och den första nivån med 200 dagar gäller sedan mars 2026. Varje certifikatbyte är en tidpunkt då en motpart kanske inte känner till det nya certifikatet.
+There is also the shorter validity period for public certificates. Under CA/Browser Forum decision SC-081v3, it decreases gradually from 398 days to 47 days by March 2029; the first stage of 200 days has applied since March 2026. Every certificate change is a point at which a peer may not know the new certificate.
 
-För anslutningar där partner identifierar Proofpoint via ett klientcertifikat rekommenderar jag därför:
+For connections where partners identify Proofpoint through a client certificate, I therefore recommend:
 
-1.  **Kontrollera befintliga certifikat:** Innehåller dagens gatewaycertifikat fortfarande klientändamålet, och när löper de ut?
+1.  **Check existing certificates:** Do today's gateway certificates still include the client purpose, and when do they expire?
 
-2.  **Planera ett eget klientcertifikat** som varaktigt innehåller klientändamålet, exempelvis från en privat PKI eller från ett erbjudande från CA:n för server-till-server-anslutningar. Partnerna måste känna till det.
+2.  **Plan a dedicated client certificate** that permanently includes the client purpose, for example from a private PKI or a CA offering for server-to-server connections. Partners must know it.
 
-3.  **Fråga partnerna vad de kontrollerar:** namn, användningsändamål, utfärdare eller fingeravtryck. Detta avgör om ett certifikatbyte innebär en ändring för dem.
+3.  **Ask partners what they verify:** name, intended use, issuer or fingerprint. This determines whether a certificate change is a change for them.
 
-4.  **Hantera certifikatbyten som en ändring**, med en lista över alla motparter som måste känna till certifikatet och ett test per motpart.
+4.  **Handle certificate changes as a change**, with a list of all peers that need to know the certificate and a test for each peer.
 
 ## Källor
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parametrarna `RestrictDomainsToCertificate` och `TlsSenderCertificateName` för partneranslutningar i Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, login required)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Article 000027579 from 29 October 2026, modified files and restart of the Admin GUI.
 
-2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Avsnitt 1.3.2 om dedikerade TLS-serverhierarkier; certifikat från och med 15.03.2027 endast med `serverAuth`.
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, login required)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Article 000027580 from 29 October 2026, configuration-only change dependent on 5806.
 
-3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): Standard utan Client Authentication sedan 01.10.2025, på begäran till och med 01.03.2027, alternativ för server-till-server-anslutningar.
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, login required)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): Article 000027117, section “SMTP Client Certificate” on page 5 of revision A.
 
-4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): Översikt över de uppskjutna datumen för Client Authentication och giltighetsstegen hos DigiCert och Sectigo.
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameters `RestrictDomainsToCertificate` and `TlsSenderCertificateName` for partner connectors in Exchange Online.
 
-5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): Beslut om stegvis förkortning av giltighetstiden för offentliga TLS-certifikat fram till mars 2029.
+2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Section 1.3.2 on dedicated TLS server hierarchies; certificates from 15 March 2027 onwards only with `serverAuth`.
+
+3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): Default without Client Authentication since 1 October 2025, available on request until 1 March 2027, and alternatives for server-to-server connections.
+
+4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): Overview of postponed dates for Client Authentication and validity-period stages at DigiCert and Sectigo.
+
+5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): Decision on the gradual reduction of public TLS certificate validity periods until March 2029.
 
 ----
 
@@ -121537,32 +122066,80 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 
 ----
 
-# Proofpoint Protection Server 8.22.4: Patch kan tilbakestille sertifikatkonfigurasjonen for SMTP-klient
+# Kiteworks EPG 9.5.1: Fire offentlig dokumenterte sikkerhetsrettinger
+
+URL: https://rafaelpfister.ch/no/blog/kiteworks-epg-9-5-1-fire-offentlig-dokumenterte-sikkerhetsrettinger
+Datum: 2026-11-06
+
+# Kiteworks EPG 9.5.1: Fire offentlig dokumenterte sikkerhetsrettinger
+
+Kiteworks viderefører den tidligere totemo-teknologien som Email Protection Gateway (EPG). Versjon 9.5.1 var senest 25. september 2026 den gjeldende Kiteworks-versjonen; produsenten oppgir ingen offentlig publiseringsdato. Produsentens advisories, publisert 30. september, dokumenterer fire rettinger i EPG 9.5.1: en konto-overtakelse, to uautentiserte feil for henholdsvis skriving av filer og utløsing av tjenestenekt, samt en feil som gjorde det mulig for administratorer å skrive vilkårlige filer. Vurderingen for totemomail-versjonen med samme navn finnes i artikkelen om [totemomail 9.5.1](/blog/totemomail-9-5-1-sicherheitsupdate).
+
+## Versjonene i oversikt
+
+| Versjon | Dato | Type | Hovedpunkter |
+|---|---|---|---|
+| 9.5.1 | offentlig bekreftet senest 25.09.2026 | sikkerhetsoppdatering | Fire offentlig dokumenterte EPG-rettinger, inkludert CVE-2026-102149 med CVSS 9.4 |
+
+## Sikkerhetsrettinger i 9.5.1
+
+Alle de fire advisoryene gjelder ifølge Kiteworks alle EPG-versjoner før 9.5.1 og oppgir 9.5.1 som rettet versjon. Advisoryene ble publisert 30. september 2026. De beskriver sikkerhetsstatusen for utgivelsen i ettertid, ikke den nøyaktige publiseringsdatoen.
+
+- **CVE-2026-102149, CVSS 9.4 (kritisk):** En svakhet i tilgangskontrollen kunne gi en angriper tilgang til brukerkontoer via nettverket. CVSS-vurderingen forutsetter verken rettigheter eller brukerinteraksjon. Kiteworks klassifiserer årsaken som CWE-306 (manglende autentisering for kritiske funksjoner) og CWE-639 (omgåelse av autorisering via en brukerkontrollert nøkkel).
+- **CVE-2026-102143, CVSS 7.5 (høy):** En uautentisert angriper kunne skrive filer til apparatet. Kiteworks oppgir et autentiseringsproblem samt CWE-306 og CWE-434 (ubegrenset opplasting av farlige filtyper).
+- **CVE-2026-102146, CVSS 6.5 (middels):** En administrator kunne skrive vilkårlige filer. Kiteworks beskriver en rettighetsfeil; CVSS-metrikken krever høye rettigheter. Produsenten oppgir CWE-73 (ekstern kontroll av filnavn eller sti) og CWE-1336 (utilstrekkelig nøytralisering i en malmotor) som svakheter.
+- **CVE-2026-102144, CVSS 5.3 (middels):** En angriper i nettverket kunne utløse tjenestenekt. Advisoryet oppgir manglende autentisering for kritiske funksjoner og ukontrollert ressursforbruk (CWE-306, CWE-400). Denne vurderingen forutsetter heller ikke rettigheter eller brukerinteraksjon.
+
+For driftsansvarlige er konto-overtakelsen den viktigste rettingen, fordi den ifølge advisoryet er mulig uten en eksisterende konto. De to øvrige feilene uten innlogging gjelder også alle versjoner før 9.5.1. Produsentens advisories publiserer ingen tekniske detaljer om endepunkter, konfigurasjoner eller midlertidige løsninger.
+
+## Anbefalt fremgangsmåte
+
+Oppgrader EPG til minst 9.5.1 dersom en eldre versjon brukes. Kiteworks oppgir uttrykkelig oppgradering til 9.5.1 eller nyere som tiltak i alle fire advisoryene. Dersom en nyere produsentversjon allerede er frigitt, oppfyller den også denne minimumsversjonen. Kiteworks har ikke publisert en offentlig oppgraderingssti, kjente problemer eller støttefrister for EPG 9.5.1 i de åpne kildene.
+
+## Kilder
+
+1.  [Kiteworks: Precautionary Shutdown Advisory for Customers](https://www.kiteworks.com/company/press-releases/kiteworks-precautionary-shutdown-advisory/): Produsentmelding fra 25. september 2026 som oppgir 9.5.1 som gjeldende versjon.
+
+2.  [Kiteworks Security Advisories](https://github.com/kiteworks/security-advisories/security/advisories): Offisiell oversikt over advisoryene publisert 30. september 2026, inkludert EPG-oppføringene for 9.5.1.
+
+3.  [GHSA-c9w5-4frw-7wqq: Account takeover (CVE-2026-102149)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-c9w5-4frw-7wqq): Kritisk svakhet i tilgangskontroll, CVSS 9.4, rettet i EPG 9.5.1.
+
+4.  [GHSA-3p9g-jh62-8f89: Unauthorized file modification (CVE-2026-102143)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-3p9g-jh62-8f89): Uautentisert skriving av filer, CVSS 7.5, rettet i EPG 9.5.1.
+
+5.  [GHSA-5pgq-v8g2-rg2f: Unauthorized file modification (CVE-2026-102146)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-5pgq-v8g2-rg2f): Skriving av vilkårlige filer med administratorrettigheter, CVSS 6.5, rettet i EPG 9.5.1.
+
+6.  [GHSA-wwhf-5862-rjxq: Denial of service (CVE-2026-102144)](https://github.com/kiteworks/security-advisories/security/advisories/GHSA-wwhf-5862-rjxq): Uautentisert tjenestenekt, CVSS 5.3, rettet i EPG 9.5.1.
+
+7.  [Kiteworks: EPG with totemo Integration](https://www.kiteworks.com/video-why-kiteworks-and-totemo-are-better-together/): Produsentopplysning om videreføringen og omdøpingen av totemo-teknologien til Email Protection Gateway.
+
+----
+
+# Proofpoint Protection Server 8.22.4: Patch 5807 leaves SMTP Client without a certificate
 
 URL: https://rafaelpfister.ch/no/blog/proofpoint-protection-server-8-22-4-patch-kan-tilbakestille-sertifikatkonfigurasjonen-for-smtp
 Datum: 2026-11-05
 
-Jeg undersøkte i dag et utfall i utgående e-postflyt på en Proofpoint Protection Server (PPS) 8.22.4. Kort oppsummert: Etter en automatisk installert patch stod tilordningen **SMTP Client** under **System > Certificates > Services** på `-none-`. Sendmail opprettet deretter utgående forbindelser uten TLS-klientsertifikat. Alle motparter som identifiserer Proofpoint via dette sertifikatet, avviste e-postene. Vanlige mottakere med opportunistisk TLS fortsatte å ta imot, og feilen ble derfor først oppdaget da enkelte partnere ikke lenger kunne nås.
+I investigated an outage in the outbound mail flow of a Proofpoint Protection Server (PPS) 8.22.4 today. In short: after an automatically installed patch, the **SMTP Client** assignment under **System > Certificates > Services** was set to `-none-`. Sendmail subsequently established outbound connections without a TLS client certificate. All peers that identify Proofpoint through this certificate rejected the emails. Regular recipients using opportunistic TLS continued to accept mail, which is why the problem only became apparent when individual partners could no longer be reached.
 
-Hvis du kjører PPS med automatiske patcher og har partnere som krever et klientsertifikat, må du kontrollere denne innstillingen etter hver patch.
+If you operate PPS with automatic patches and have partners that require a client certificate, check this setting after every patch.
 
 ## Symptom
 
-Bare forbindelser der motparten kontrollerer klientsertifikatet til Proofpoint, er berørt. To typiske tilfeller:
+Only connections where the peer validates Proofpoint's client certificate are affected. Two typical cases:
 
-- **Exchange Online med partnerkobling**, som er begrenset til et sertifikat via `RestrictDomainsToCertificate`. Avvisningen lyder `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
-- **Smarthost som bare tillater relay med klientsertifikat.** Svaret lyder `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
+- **Exchange Online with a partner connector** restricted to a certificate via `RestrictDomainsToCertificate`. The rejection reads `550 5.7.51 TenantInboundAttribution; Rejecting. Recipient has a partner connector with RestrictDomainsToIPAddresses or RestrictDomainsToCertificate set.`
+- **Smarthost that permits relay only with a client certificate.** The response reads `554 5.7.1 <empfaenger@example.com>: Relay access denied`.
 
-Alle andre mål mottar fortsatt e-postene sine. Testmatrisen gir derfor et uensartet bilde: E-post til eksterne mottakere går gjennom, mens e-post til enkelte partnere eller via en bestemt smarthost feiler.
+All other destinations continue to receive their mail. The test matrix therefore shows an inconsistent picture: mail to external recipients goes through, while mail to individual partners or through a particular smarthost fails.
 
-I e-postloggen til agenten står én av de følgende to meldingene ved hver utgående forbindelse. Hvis filen mangler helt:
+The agent's mail log contains one of the following two messages for every outbound connection. If the file is missing altogether:
 
 ```text
 sendmail[...]: STARTTLS=client: file /etc/pki/tls/certs/sendmail-client.pem unsafe:
   No such file or directory
 ```
 
-Hvis filen finnes, men er tom:
+If the file exists but is empty:
 
 ```text
 sendmail[...]: STARTTLS=client, error:
@@ -121573,21 +122150,30 @@ sendmail[...]: STARTTLS=client, error:
   SSL_CTX_check_private_key failed(/etc/pki/tls/certs/sendmail-client.pem): 0
 ```
 
-Rett etterpå oppretter Sendmail likevel forbindelsen med TLS (`verify=OK`), men uten klientsertifikat. For motparten ser dette ut som en ukjent avsender.
+Immediately afterwards, Sendmail still establishes the connection using TLS (`verify=OK`), but without a client certificate. To the peer, this looks like an unknown sender.
 
-## Årsak
+## Cause
 
-PPS tilordner hvert tjeneste et sertifikat per server. Under **System > Certificates > Services** finnes blant annet `SMTP Server`, `SMTP Client`, `Administration Server` og `End User Web Application / Encryption` per server. PPS genererer filen `/etc/pki/tls/certs/sendmail-client.pem` fra tilordningen ved `SMTP Client`, som Sendmail bruker som klientsertifikat. Hvis den står på `-none-`, skriver PPS filen tom eller oppretter den ikke i det hele tatt.
+PPS assigns a certificate to each service on each server. Under **System > Certificates > Services**, each server lists, among other things, `SMTP Server`, `SMTP Client`, `Administration Server` and `End User Web Application / Encryption`. PPS generates the file `/etc/pki/tls/certs/sendmail-client.pem` from the assignment at `SMTP Client`, which Sendmail uses as its client certificate. If it is set to `-none-`, PPS writes the file empty or does not write it at all.
 
-I miljøet som ble undersøkt, stod tilordningen på alle servere på `-none-` etter en automatisk patch. Under **System > Config History** var patchen synlig som oppføringen `configuration changes for patch-…` med oppretteren `system`, og filene under `/etc/pki/tls/certs/` hadde samme tidsstempel. Om Proofpoint innførte tilordningen på nytt med denne patchen, eller om patchen tilbakestilte en eksisterende tilordning, er ikke beskrevet i de offentlig tilgjengelige utgivelsesnotatene. Jeg oppdaterer artikkelen så snart Proofpoint uttaler seg om dette.
+The `SMTP Client` assignment has only existed in 8.22.4 since patches 5806 and 5807, which Proofpoint released on 29 October 2026. Both are titled “TLS client and server certificate authentication improvement” and, according to the Knowledge Base, fix the inability of PPS 8.22.4 to assign separate certificates for the SMTP server and SMTP client. The feature is included as standard in release 8.23.0 (Release Notes, section “SMTP Client Certificate”).
 
-En rollback under **Config History** til patchens snapshot hjalp ikke. PPS skrev deretter filen på nytt, men med 0 byte.
+| Patch | Content according to the Knowledge Base |
+|---|---|
+| 5806 | Updates, among other things, `SysCertificates.pm`, `Certificate.pm`, `TLS.pm`, `pp-sendmail.pl` and the template `sendmail.mc`, restarts the Admin GUI (`admind`), and updates the RPM `pps-pfpt` |
+| 5807 | Requires 5806, changes no files and restarts no processes; it only applies the configuration changes required for separate server and client certificates |
 
-## Kontrollere
+Proofpoint therefore introduced the assignment rather than resetting an existing one. The patch does not carry over a certificate: after installation, the new line is set to `-none-`, and Sendmail no longer uses a client certificate from that point on. The patch descriptions contain no indication of this.
 
-I admin-GUI-en på masteren, under **System > Certificates > Services**, velger du øverst under **Server** etter tur hver agent som leverer utgående e-post, og ser på raden `SMTP Client`.
+In the environment investigated, the assignment was subsequently set to `-none-` on all servers. Under **System > Config History**, patch 5807 was visible as an entry `configuration changes for patch-…` created by `system`, while the files under `/etc/pki/tls/certs/` had the same timestamp. In contrast, 5807 did not appear under **Software Patch History**. This is consistent with 5807 not installing software, but only changing configuration. **Config History** therefore shows the time of the change, while the actual software change belongs to patch 5806.
 
-På selve agenten viser to kommandoer tilstanden:
+Rolling back under **Config History** to the patch snapshot did not help. PPS rewrote the file afterwards, but with 0 bytes.
+
+## Check
+
+In the Admin GUI on the master, go to **System > Certificates > Services**, then select each agent that delivers externally in turn at the top under **Server**, and inspect the `SMTP Client` line.
+
+On the agent itself, two commands show the status:
 
 ```bash
 ls -l --time-style=full-iso /etc/pki/tls/certs/
@@ -121595,26 +122181,33 @@ grep -E 'sendmail-client.pem|SSL_CTX_' /var/log/maillog | tail -5
 ```
 
 <details class="options-details">
-<summary>Alternativer forklart</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `-l` | Langt format med rettigheter, eier, størrelse og dato |
-| `--time-style=full-iso` | Tidsstempel med dato, klokkeslett og tidssone for å sammenligne det med patchtidspunktet |
-| `grep -E` | Utvidede regulære uttrykk, slik at begge søkeordene kan kombineres med `\|` |
-| `tail -5` | Vis bare de siste fem treffene |
+| `-l` | Long format with permissions, owner, size and date |
+| `--time-style=full-iso` | Timestamp with date, time and time zone for comparison with the patch time |
+| `grep -E` | Extended regular expressions, allowing both search terms to be combined with `\|` |
+| `tail -5` | Show only the last five matches |
 
 </details>
 
-Hvis `sendmail-client.pem` mangler eller filen har 0 byte, mens `sendmail.pem` er noen tusen byte stor, er det ikke tilordnet noe sertifikat til tjenesten `SMTP Client`.
+If `sendmail-client.pem` is missing or the file has 0 bytes while `sendmail.pem` is several thousand bytes in size, no certificate is assigned to the `SMTP Client` service.
 
-## Løse problemet
+## Fix
 
-Under **System > Certificates > Services** velger du et gyldig sertifikat for `SMTP Client` på hver berørte agent og lagrer med **Save Changes**. Vanligvis er dette det samme offentlige sertifikatet som står ved `SMTP Server`.
+Under **System > Certificates > Services**, select a valid certificate for `SMTP Client` on every affected agent and save it using **Save Changes**. In most cases, this is the same public certificate shown for `SMTP Server`.
 
-Utvalgslisten viser alle importerte sertifikater, også utløpte med samme navn. De kan bare skilles fra hverandre via serienummeret i parentes. Sammenlign serienummeret med listen under **System > Certificates > Certificates** før du lagrer; der står utstedelses- og utløpsdato.
+The selection list may contain multiple certificates with the same name, including expired ones. They can only be distinguished by the serial number in parentheses. Before saving, compare the serial number with the list under **System > Certificates > Certificates**, where the issue and expiry dates are shown.
 
-Etter lagring distribuerer PPS konfigurasjonen til agentene. Kontrollen på agenten:
+The list under `SMTP Client` does not necessarily show all imported certificates. In the environment investigated, some certificates were missing although they were valid and expired copies had already been deleted. Neither the patch articles nor the 8.23 Release Notes describe the criteria PPS uses to filter the list. If a certificate is missing, check two points:
+
+- **Private key:** If the certificate was imported as PEM without a key, PPS cannot assign it to a service. PKCS12 files always contain the key.
+- **Intended use:** Does the certificate contain the purpose `TLS Web Client Authentication` in `Extended Key Usage`? Many public certificates issued since autumn 2025 no longer contain it (see below). A certificate without this purpose is unsuitable for the `SMTP Client` service anyway.
+
+If Proofpoint confirms the criteria, I will add them here.
+
+After saving, PPS distributes the configuration to the agents. Check on the agent:
 
 ```bash
 ls -l /etc/pki/tls/certs/sendmail-client.pem
@@ -121622,29 +122215,29 @@ grep -E 'STARTTLS=client|stat=' /var/log/maillog | tail -20
 ```
 
 <details class="options-details">
-<summary>Alternativer forklart</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `ls -l` | Viser filens størrelse og rettigheter; etter korrigeringen er den ikke lenger tom |
-| `grep -E 'STARTTLS=client\|stat='` | Filtrerer TLS-meldingene for utgående forbindelser og leveringsresultatet |
-| `tail -20` | Vis bare de siste tjue linjene |
+| `ls -l` | Shows the file size and permissions; after the fix, it is no longer empty |
+| `grep -E 'STARTTLS=client\|stat='` | Filters TLS messages for outbound connections and the delivery result |
+| `tail -20` | Show only the last twenty lines |
 
 </details>
 
-Meldingene `SSL_CTX_… failed` og `unsafe` må ikke lenger vises etter lagring, og leveringene til partnerne må ende med `stat=Sent`. E-poster som tidligere ble utsatt med en 4xx-kode, leverer Sendmail selv fra køen. E-poster som ble avvist med en 5xx-kode, må avsenderne sende på nytt.
+The messages `SSL_CTX_… failed` and `unsafe` must no longer appear after saving, and deliveries to partners must end with `stat=Sent`. Sendmail delivers mail previously deferred with a 4xx code from the queue itself. Senders must resend mail rejected with a 5xx code.
 
-En manuell kopi av `sendmail.pem` til `sendmail-client.pem` kan også midlertidig løse utfallet. PPS overskriver imidlertid filen ved neste konfigurasjons-push så lenge tilordningen mangler i GUI-en.
+Manually copying `sendmail.pem` to `sendmail-client.pem` also bridges the outage. However, PPS overwrites the file again at the next configuration push as long as the assignment is missing in the GUI.
 
-## Kontroller etter hver patch
+## Check after every patch
 
-Inntil det er avklart hvorfor patchen endret tilordningen, anbefaler jeg å kontrollere siden **Services** etter hver patch. Enklere er overvåking som varsler ved meldingen `sendmail-client.pem` i e-postloggen på agentene. Under **Licenses and Updates > Settings** kan du også angi når patcher installeres. Et tidsvindu der noen kan kontrollere e-postflyten, forkorter et slikt utfall betydelig.
+Patch 5807 changed the configuration without the patch description indicating the consequences. I therefore recommend checking the **Services** page after every patch and looking in **Config History** to see whether the patch included configuration changes. If patch 5807 has not yet been installed on an 8.22.4 system, assign a certificate to `SMTP Client` immediately after installation. Even easier is monitoring that alerts on the message `sendmail-client.pem` in the agents' mail log. Under **Licenses and Updates > Settings**, you can also specify when patches are installed. A maintenance window during which someone can check the mail flow significantly shortens such an outage.
 
-## Client Authentication forsvinner fra offentlige sertifikater
+## Client Authentication is disappearing from public certificates
 
-Uavhengig av patchen påvirker en annen endring nettopp disse forbindelsene. Offentlige TLS-sertifikater har hittil som regel inneholdt begge bruksformålene i utvidelsen `Extended Key Usage`: `TLS Web Server Authentication` og `TLS Web Client Authentication`. E-postgatewayer bruker derfor også serversertifikatet sitt som klientsertifikat.
+Independently of the patch, a second change affects precisely these connections. Until now, public TLS certificates have generally contained both purposes in the `Extended Key Usage` extension: `TLS Web Server Authentication` and `TLS Web Client Authentication`. Mail gateways therefore also use their server certificate as a client certificate.
 
-Chrome Root Program krever at offentlige sertifikater utstedt fra 15.03.2027 bare inneholder `serverAuth`. DigiCert utsteder offentlige TLS-sertifikater som standard uten Client Authentication siden 01.10.2025; på forespørsel er formålet fortsatt mulig frem til 01.03.2027. Andre CA-er har tilsvarende tidsplaner. OpenSSL viser om et sertifikat inneholder klientformålet:
+The Chrome Root Program requires public certificates issued from 15 March 2027 onwards to contain only `serverAuth`. DigiCert has issued public TLS certificates without Client Authentication by default since 1 October 2025; the purpose is still available on request until 1 March 2027. Other CAs have comparable schedules. OpenSSL shows whether a certificate contains the client purpose:
 
 ```bash
 openssl x509 -in zertifikat.pem -noout \
@@ -121652,52 +122245,58 @@ openssl x509 -in zertifikat.pem -noout \
 ```
 
 <details class="options-details">
-<summary>Alternativer forklart</summary>
+<summary>Options explained</summary>
 
-| Alternativ | Virkning |
+| Option | Effect |
 |---|---|
-| `x509` | Underkommando for visning og behandling av X.509-sertifikater |
-| `-in zertifikat.pem` | Sertifikatfil i PEM-format |
-| `-noout` | Ikke skriv ut selve sertifikatet på nytt |
-| `-subject` | Vis innehaver (CN og flere felt) |
-| `-enddate` | Vis utløpsdato |
-| `-ext extendedKeyUsage` | Vis bare utvidelsen med bruksformålene |
+| `x509` | Subcommand for viewing and editing X.509 certificates |
+| `-in zertifikat.pem` | Certificate file in PEM format |
+| `-noout` | Do not output the certificate itself again |
+| `-subject` | Show subject (CN and additional fields) |
+| `-enddate` | Show expiry date |
+| `-ext extendedKeyUsage` | Show only the extension containing the intended uses |
 
 </details>
 
-I Windows viser et dobbeltklikk på filen det samme: fanen **Details**, feltet **Enhanced Key Usage**.
+On Windows, double-clicking the file shows the same information: the **Details** tab, **Enhanced Key Usage** field.
 
-Hva dette betyr for utgående forbindelser, avhenger av motparten:
+What this means for outbound connections depends on the peer:
 
-| Motparten kontrollerer | Konsekvens med et sertifikat uten Client Authentication |
+| Peer validates | Consequence with a certificate without Client Authentication |
 |---|---|
-| Navn i sertifikatet (f.eks. Exchange Online via `TlsSenderCertificateName`) | Det er ikke dokumentert om Exchange Online kontrollerer bruksformålet; test før sertifikatbyttet |
-| Bruksformålet til klientsertifikatet | Avvisning, selv om navn og CA stemmer |
-| Fingeravtrykket til klientsertifikatet | Avvisning ved hvert sertifikatbytte, til det nye fingeravtrykket er registrert |
+| Name in the certificate (e.g. Exchange Online via `TlsSenderCertificateName`) | Whether Exchange Online validates the intended use is not documented; test before changing the certificate |
+| Intended use of the client certificate | Rejection even if the name and CA match |
+| Fingerprint of the client certificate | Rejection at every certificate change until the new fingerprint has been configured |
 
-I tillegg kommer den kortere gyldighetstiden for offentlige sertifikater. Etter CA/Browser Forum-vedtaket SC-081v3 reduseres den trinnvis fra 398 dager til 47 dager innen mars 2029, og første trinn med 200 dager gjelder siden mars 2026. Hvert sertifikatbytte er et tidspunkt der en motpart kanskje ikke kjenner det nye sertifikatet.
+There is also the shorter lifetime of public certificates. Following CA/Browser Forum resolution SC-081v3, it is gradually reduced from 398 days to 47 days by March 2029; the first stage of 200 days has applied since March 2026. Every certificate change is a point at which a peer may not know the new certificate.
 
-For forbindelser der partnere identifiserer Proofpoint via et klientsertifikat, anbefaler jeg derfor:
+For connections where partners identify Proofpoint through a client certificate, I therefore recommend:
 
-1.  **Kontroller eksisterende sertifikater:** Inneholder dagens gateway-sertifikater fortsatt klientformålet, og når utløper de?
+1.  **Check existing certificates:** Do current gateway certificates still contain the client purpose, and when do they expire?
 
-2.  **Planlegg et eget klientsertifikat** som permanent inneholder klientformålet, for eksempel fra en privat PKI eller fra et CA-tilbud for server-til-server-forbindelser. Partnerne må kjenne det.
+2.  **Plan a dedicated client certificate** that permanently contains the client purpose, for example from a private PKI or a CA offering for server-to-server connections. Partners must know it.
 
-3.  **Spør partnerne hva de kontrollerer:** Navn, bruksformål, utsteder eller fingeravtrykk. Dette avgjør om et sertifikatbytte innebærer en endring for dem.
+3.  **Ask partners what they validate:** Name, intended use, issuer or fingerprint. This determines whether a certificate change constitutes a change for them.
 
-4.  **Håndter sertifikatbytter som en endring**, med en liste over alle motparter som må kjenne sertifikatet, og en test per motpart.
+4.  **Handle certificate changes as a change**, with a list of all peers that must know the certificate and a test for each peer.
 
 ## Kilder
 
-1.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameterne `RestrictDomainsToCertificate` og `TlsSenderCertificateName` for partnerkoblinger i Exchange Online.
+1.  [Patch 5806 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, login required)](https://proofpoint.my.site.com/community/s/article/Patch-5806---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Article 000027579 of 29 October 2026, modified files and Admin GUI restart.
 
-2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Avsnitt 1.3.2 om dedikerte TLS-serverhierarkier; sertifikater fra 15.03.2027 kun med `serverAuth`.
+2.  [Patch 5807 - TLS client and server certificate authentication improvement - Fix for 8.22.4 (Proofpoint Knowledge Base, login required)](https://proofpoint.my.site.com/community/s/article/Patch-5807---TLS-client-and-server-certificate-authentication-improvement---Fix-for-8-22-4): Article 000027580 of 29 October 2026, configuration-only change dependent on 5806.
 
-3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): Standard uten Client Authentication siden 01.10.2025, på forespørsel frem til 01.03.2027, alternativer for server-til-server-forbindelser.
+3.  [Proofpoint Enterprise Protection 8.23.X Release Notes (Proofpoint Knowledge Base, login required)](https://proofpoint.my.site.com/community/s/article/Email-Protection-PPS-PoD-Proofpoint-Enterprise-Protection-8-23-X-Release-Notes): Article 000027117, section “SMTP Client Certificate” on page 5 of revision A.
 
-4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): Oversikt over utsatte datoer for Client Authentication og gyldighetstrinnene hos DigiCert og Sectigo.
+4.  [Set-InboundConnector (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/exchange/set-inboundconnector): Parameters `RestrictDomainsToCertificate` and `TlsSenderCertificateName` for partner connectors in Exchange Online.
 
-5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): Vedtak om trinnvis forkorting av gyldighetstiden for offentlige TLS-sertifikater frem til mars 2029.
+2.  [Chrome Root Program Policy](https://googlechrome.github.io/chromerootprogram/crp/policy): Section 1.3.2 on dedicated TLS server hierarchies; certificates from 15 March 2027 onwards only with `serverAuth`.
+
+3.  [DigiCert: Removing the client authentication EKU from public TLS certificates](https://knowledge.digicert.com/alerts/sunsetting-client-authentication-eku-from-digicert-public-tls-certificates): Default without Client Authentication since 1 October 2025, available on request until 1 March 2027, alternatives for server-to-server connections.
+
+4.  [GeoCerts Change Log](https://www.geocerts.com/docs/change-log/): Overview of postponed dates for Client Authentication and lifetime stages at DigiCert and Sectigo.
+
+5.  [CA/Browser Forum: Ballot SC081v3](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/): Resolution on the gradual reduction of public TLS certificate lifetimes until March 2029.
 
 ----
 
