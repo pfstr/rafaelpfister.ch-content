@@ -155,6 +155,115 @@ NLA auf dem Zielsystem abzuschalten, behebt das Symptom ebenfalls, entfernt aber
 
 ----
 
+# Rclone 1.76.0: zahlreiche Sicherheitskorrekturen, VFS-Fixes und neue Backends
+
+URL: https://rafaelpfister.ch/blog/rclone-1-76-0
+Datum: 2026-11-11
+
+# Rclone 1.76.0: zahlreiche Sicherheitskorrekturen, VFS-Fixes und neue Backends
+
+Rclone 1.76.0 ist am 6. November 2026 erschienen, rund vier Wochen nach 1.75.2 (9. Oktober 2026). Der Changelog führt zwanzig Einträge im Abschnitt Security, darunter eine Lücke im Auth-Proxy von `rclone serve sftp` mit CVSS 8.1, Credential-Lecks bei Redirects in den Backends Swift, NetStorage, Seafile und Ulozto sowie mehrere Symlink-Ausbrüche im Backend `local`. Dazu kommen fünf Korrekturen im VFS-Layer, der `rclone mount` und die serve-Befehle trägt, Erweiterungen am S3-Backend, zwei neue Backends (Dosya und Infomaniak kDrive) und der neue Befehl `index`. Einige Standards ändern sich: HTTPS-zu-HTTP-Redirects werden abgelehnt, Multipath-TCP-Listener sind deaktiviert, und Glob-Muster in Filtern werden strenger ausgewertet. Das Release richtet sich an alle, die Rclone für Mounts, Synchronisation, Backups oder als Server mit `rclone serve` und `rclone rcd` betreiben. Hintergrund zu Mounts in Containern steht im Artikel [Rclone-Mounts in Docker zuverlässig betreiben](/blog/rclone-mount-in-docker-container).
+
+## Die Versionen im Überblick
+
+| Version | Datum | Art | Kernpunkte |
+|---|---|---|---|
+| 1.76.0 | 06.11.2026 | Feature-Release | Sicherheitskorrekturen in serve sftp (CVSS 8.1), rc, lib/http, local und vier Backends; Go 1.27.3; fünf VFS-Fixes; Redirect-Schutz `--allow-https-downgrade`; neue Backends Dosya und Infomaniak kDrive; Befehl `index` |
+
+Die bisher höchste Version war 1.75.2. Ein Patch-Release 1.76.x gab es bis zum 11. November 2026 nicht.
+
+## Sicherheitskorrekturen mit Advisory
+
+Die folgenden Lücken hat das Rclone-Projekt am 6. November 2026 als GitHub Security Advisory veröffentlicht. Alle nennen 1.76.0 als gepatchte Version, eine CVE-ID ist bei keinem vergeben (Stand 11. November 2026, im Changelog als „CVE-PENDING“ markiert).
+
+- **GHSA-66qv-66mg-9h74, CVSS 8.1 (High):** Bei `rclone serve sftp` mit `--auth-proxy` enthielt der Cache-Schlüssel des Auth-Proxys die Art der Anmeldung nicht. Ein bekannter Public Key liess sich dadurch als Passwort wiederverwenden, wenn der Auth-Proxy Key- und Passwort-Anmeldung unterschiedlich behandelt, Angreifer und Opfer denselben Benutzernamen und dieselbe Client-IP nutzen und der Cache-Eintrag noch gültig ist (Standard 300 Sekunden Inaktivität). Gleiche Client-IPs entstehen etwa hinter NAT, einem Bastion-Host oder einem Load Balancer. Andere serve-Protokolle sind laut Advisory nicht betroffen. Das Feld zu den betroffenen Versionen nennt „>= 1.51.0, <= 1.76.0“, das Feld zur gepatchten Version 1.76.0; massgeblich ist der Fix-Eintrag im Changelog von 1.76.0.
+- **GHSA-vmgx-g9c5-669p, CVSS 4.2:** Bei `serve sftp`, `serve ftp`, `serve http` und `serve webdav` mit `--auth-proxy` wirkte ein Widerruf im Auth-Proxy nicht, solange eine gecachte Antwort bestand. Ab 1.76.0 greift ein Widerruf innerhalb von fünf Minuten. `serve s3` ist nicht betroffen.
+- **GHSA-hwj7-wp9g-wrv9, CVSS 5.3:** Über die Antwortzeit der bcrypt-Prüfung liessen sich bei `--htpasswd` und `--user` gültige von ungültigen Benutzernamen unterscheiden. Betroffen sind unter anderem `serve http`, `serve webdav`, `serve restic`, `serve s3`, `rcd` mit `--rc-htpasswd` und der Metrics-Endpunkt mit `--metrics-htpasswd`, Versionen 1.56.0 bis 1.75.2. Passwörter werden dabei nicht offengelegt.
+- **GHSA-f8p4-8g4j-q3m2, CVSS 5.5:** Läuft der rc-Server ohne HTTP-Authentifizierung, konnte ein Client mit Zugriff auf den Port mit einem grossen JSON-Request an eine nicht autorisierte Methode den Speicher des Prozesses erschöpfen (Denial of Service, Versionen 1.46.0 bis 1.75.2). 1.76.0 begrenzt die Request-Grösse und lehnt nicht autorisierte Aufrufe vor dem Lesen des Bodys ab. Als Workaround nennt das Advisory HTTP-Authentifizierung für rc und ein Body-Limit am Reverse Proxy; die Bindung an localhost trennt laut Advisory lokale Benutzerkonten nicht voneinander.
+- **GHSA-m97j-7x65-wh93, CVSS 4.8:** Die Backends Swift, NetStorage und Seafile gaben Zugangsdaten bei Redirects auf einen anderen Host oder von HTTPS auf HTTP weiter. Ausnutzbar ist das nur, wenn der konfigurierte Endpunkt selbst umleitet, etwa über einen Proxy. Als Workaround nennt das Advisory ausschliesslich `https://`-Endpunkte und keinen Proxy, der auf HTTP herabstuft.
+- **GHSA-3xpx-hjg2-vrjh, CVSS 4.8:** Das Backend Ulozto sendete die Header `X-Auth-Token` und `X-User-Token` bei Redirects von Download-Links mit. Ein Angreifer braucht dafür eine Netzwerkposition, von der aus er den CDN-Verkehr umleiten kann.
+- **GHSA-r5wv-vqqh-2r9c, CVSS 4.0:** Mit `--links` und `--metadata` konnte das Backend `local` über einen eingeschleusten Symlink `user.*`-Attribute ausserhalb des Zielverzeichnisses schreiben. Bis zum Update empfiehlt das Advisory, beide Optionen nicht gemeinsam zu verwenden, wenn Dritte das Ziel beeinflussen können.
+
+Zusätzlich behebt 1.76.0 im Backend `local` weitere Fälle ohne eigenes Advisory, in denen `MkdirMetadata`, `Remove`, `Rmdir` und `DirMove` über Symlinks ausserhalb des Wurzelverzeichnisses wirken konnten.
+
+## Abhängigkeiten und geänderte Standards
+
+Rclone 1.76.0 ist mit Go 1.27.3 gebaut. Der Changelog nennt dazu CVE-2026-111943: Go ergänzt in `crypto/x509` eine Sperrliste für kompromittierte Zwischenzertifikate (CVSS 6.8 laut CISA-ADP-Bewertung, betroffen Go vor 1.26.10 und 1.27.0 bis vor 1.27.3). Ausserdem wurden `golang.org/x/net` auf v0.62.0 und `github.com/andybalholm/brotli` auf v1.2.7 aktualisiert, Letzteres wegen CVE-2026-111497; Hintergrund zu dieser Lücke steht im Artikel zu [CVE-2026-111497 im Brotli-Decoder](/blog/brotli-cve-2026-111497).
+
+Multipath-TCP-Listener sind ab 1.76.0 standardmässig deaktiviert. Der Changelog begründet das mit CVE-2026-98432; der CVE-Eintrag beschreibt einen Use-after-free im TCP-Stack des Linux-Kernels (CVSS 9.8, korrigiert unter anderem in 6.1.190, 6.6.159, 6.12.113 und 6.18.56). Die Korrektur selbst liefern die Kernel-Updates der Distribution; Rclone verringert nur die eigene Angriffsfläche. Ein Flag zum Wiedereinschalten nennt der Changelog nicht.
+
+Die Änderungen am Standardverhalten im Überblick:
+
+- **Redirects:** Rclone lehnt Redirects von HTTPS auf HTTP ab. Das neue Flag `--allow-https-downgrade` lässt sie wieder zu.
+- **Filter:** `[!...]` in Glob-Mustern ist nun eine negierte Zeichenklasse, `[^...]` schliesst `/` aus. Prüfen Sie Filterdateien und `--include`/`--exclude`-Regeln, die solche Klassen verwenden, vor dem produktiven Einsatz mit `--dry-run`.
+- **local:** `--copy-links` folgt keinen Symlink-Schleifen mehr. Ohne Root-Rechte setzt Rclone nur noch die Besitzverhältnisse, die ein normaler Benutzer setzen darf. Fehlender Speicherplatz bricht Multi-Thread-Transfers jetzt mit einem fatalen Fehler ab.
+- **Parameter-Prüfung:** Zu grosse Grössenangaben, NaN und überlaufende Dauern werden abgelehnt, ebenso `--bwlimit`-Zeitangaben ohne Doppelpunkt oder mit Vorzeichen.
+- **bisync:** `--max-delete` berücksichtigt `--track-renames`; Werte über 100 werden abgelehnt.
+- **operations:** `--immutable` wirkt nun auch bei `copyto`, `moveto` und beim Kopieren einzelner Dateien.
+- **Deprecated:** `--rc-web-gui` sowie bei `serve s3` die Option `--no-cleanup`, die nun ein Alias des neuen `--directory-markers` ist.
+
+Skripte und Units, die Rclone mit festen Parametern aufrufen, sollten Sie nach dem Update einmal ausführen und auf Fehlermeldungen zu abgelehnten Werten prüfen.
+
+## Mount und VFS-Cache
+
+Für `rclone mount` nennt der Changelog eine Korrektur: VFS-Instanzen wurden bei fehlgeschlagenen Mounts und beim Unmount nicht freigegeben. Im VFS-Layer, den Mount und die serve-Befehle gemeinsam nutzen, behebt 1.76.0 fünf Fehler:
+
+- Ein verkleinerndes Truncate auf eine nicht gecachte Datei ging verloren.
+- Das Umbenennen eines Verzeichnisses während des Ablaufs des Verzeichnis-Caches führte zum Absturz.
+- Virtuelle Einträge blieben in gelöschten Verzeichnissen bestehen.
+- Nach einer Umbenennung, die sich nur in Gross-/Kleinschreibung oder Unicode-Normalisierung unterschied, erschienen Einträge doppelt.
+- Uploads einer geänderten Datei starteten nicht, solange die Datei weiter gelesen wurde.
+
+Der letzte Punkt betrifft Mounts mit VFS-Cache, auf denen eine geänderte Datei weiter gelesen wird, während sie hochgeladen werden soll. Beobachten Sie in solchen Setups nach dem Update die Upload-Warteschlange und führen Sie einen Schreib- und Lesetest durch, wie im [Testplan für Rclone-Mounts](/blog/cloud-mount-testen-dummy-pdfs) beschrieben.
+
+## S3-Backend und Proton Drive
+
+Im S3-Backend puffert Rclone Uploads mit Object Lock nicht mehr zwischen, wenn der MD5-Wert der Quelle bekannt ist. Neu ist der Backend-Befehl `link` mit signierten Overrides für Response-Header. Hinzu kommen die Regionen Fastly EU Central 1 und Scaleway IT-MIL, mehrere Huawei-OBS-Regionen sowie die Anbieter Autonomys Auto Drive, Clever Cloud Cellar, Infomaniak Swiss Backup, Neon Object Storage und RelAix.Storage. Multi-Thread-Uploads berechnen Checksummen in Lesevorgängen von 1 MiB, nach einem Restore wird die tatsächliche Storage Class angezeigt. Korrigiert wurden `rmdir` auf der Root-Ebene mit `--s3-directory-markers` und presigned URLs für GCS, Linode und Ceph.
+
+Für `rclone serve s3` bringt 1.76.0 das Flag `--directory-markers` sowie Änderungen bei Tags, ETags, Multipart-ETags und Conditional Writes. Behoben ist ausserdem, dass sich Buckets nach einem abgebrochenen Multipart-Upload nicht löschen liessen.
+
+Zum Backend Proton Drive enthält der Changelog von 1.76.0 keinen Eintrag. Die letzten Korrekturen dazu stammen aus 1.75.0 (Retry-Logik, Hänger bei Validierungsfehlern, falsche Änderungszeiten) und 1.75.1 (mit 1.75.0 hochgeladene Dateien liessen sich in den Proton-Apps nicht lesen). Den Stand der Linux-Unterstützung von Proton Drive beschreibt der Artikel [Proton Drive unter Linux](/blog/proton-drive-linux-status).
+
+## Weitere Neuerungen
+
+Die beiden neuen Backends sind Dosya (Kaya) und Infomaniak kDrive. Der neue Befehl `index` schreibt statische Verzeichnislisten in ein Remote und kann bei Folgeläufen nur geänderte Verzeichnisse neu indexieren. Rclone unterstützt CRC-32C als Hash, `sync` kann die Reihenfolge der Transfers nach Mustern steuern, und die Verzeichnisansicht von `serve http` und `serve webdav` ist sortiert und neu gestaltet. Die GUI gilt laut Changelog nicht mehr als Beta. Die Statistik zählt `totalBytes` bei serverseitigen Kopien nicht mehr doppelt, und `serve sftp` meldet bei `rmdir` auf eine Datei einen Fehler, statt die Datei zu löschen.
+
+## Empfohlenes Vorgehen
+
+Zielversion ist 1.76.0. Besonders dringend ist das Update auf Systemen mit `rclone serve sftp --auth-proxy`, mit `rclone rcd` oder `--rc` ohne HTTP-Authentifizierung, mit `--htpasswd`-geschützten serve-Diensten sowie bei Remotes vom Typ Swift, NetStorage, Seafile oder Ulozto. Bei Installationen aus den offiziellen Binaries aktualisiert `rclone selfupdate` die ausführbare Datei und prüft den Download per Hash und Signatur; mit `rclone selfupdate --check` zeigt Rclone vorher an, welche Version installiert würde. Bei Installationen aus deb- oder rpm-Paketen nennt die Dokumentation `--package deb` bzw. `--package rpm`. Laufende Mounts und serve-Prozesse verwenden die neue Version erst nach einem Neustart. Prüfen Sie danach Filterregeln mit Zeichenklassen, `--bwlimit`-Zeitpläne und Setups, die auf HTTP-Redirects angewiesen sind. Known Issues zu 1.76.0 nennen Changelog und Release-Seite nicht (Stand 11. November 2026).
+
+## Quellen
+
+1.  [Rclone: Changelog](https://rclone.org/changelog/): Einträge zu 1.76.0 (6. November 2026) sowie 1.75.0 bis 1.75.2 mit Sicherheitskorrekturen, Mount-, VFS-, S3- und Proton-Drive-Änderungen.
+
+2.  [GitHub: rclone v1.76.0](https://github.com/rclone/rclone/releases/tag/v1.76.0): Release-Seite mit Binaries und Verweis auf den Changelog.
+
+3.  [GitHub: Security Advisories von rclone](https://github.com/rclone/rclone/security/advisories): Übersicht der am 6. November 2026 veröffentlichten Advisories.
+
+4.  [GHSA-66qv-66mg-9h74](https://github.com/rclone/rclone/security/advisories/GHSA-66qv-66mg-9h74): serve sftp, Auth-Proxy-Cache ohne Art der Anmeldung, CVSS 8.1.
+
+5.  [GHSA-vmgx-g9c5-669p](https://github.com/rclone/rclone/security/advisories/GHSA-vmgx-g9c5-669p): Widerruf im Auth-Proxy wirkt bei gecachter Antwort nicht, CVSS 4.2.
+
+6.  [GHSA-hwj7-wp9g-wrv9](https://github.com/rclone/rclone/security/advisories/GHSA-hwj7-wp9g-wrv9): Benutzernamen-Erkennung über bcrypt-Timing bei `--htpasswd`, CVSS 5.3.
+
+7.  [GHSA-f8p4-8g4j-q3m2](https://github.com/rclone/rclone/security/advisories/GHSA-f8p4-8g4j-q3m2): Speichererschöpfung im rc-Server durch übergrosse JSON-Requests, CVSS 5.5.
+
+8.  [GHSA-m97j-7x65-wh93](https://github.com/rclone/rclone/security/advisories/GHSA-m97j-7x65-wh93): Credential-Lecks bei Redirects in Swift, NetStorage und Seafile, CVSS 4.8.
+
+9.  [GHSA-3xpx-hjg2-vrjh](https://github.com/rclone/rclone/security/advisories/GHSA-3xpx-hjg2-vrjh): Token-Leck bei Redirects im Backend Ulozto, CVSS 4.8.
+
+10.  [GHSA-r5wv-vqqh-2r9c](https://github.com/rclone/rclone/security/advisories/GHSA-r5wv-vqqh-2r9c): Symlink-Ausbruch bei `--links --metadata` im Backend local, CVSS 4.0.
+
+11.  [CVE.org: CVE-2026-111943](https://www.cve.org/CVERecord?id=CVE-2026-111943): Sperrliste für kompromittierte Zwischenzertifikate in Go `crypto/x509`, behoben in Go 1.27.3.
+
+12.  [CVE.org: CVE-2026-98432](https://www.cve.org/CVERecord?id=CVE-2026-98432): Use-after-free im TCP-Stack des Linux-Kernels, CVSS 9.8, Anlass für die deaktivierten Multipath-TCP-Listener.
+
+13.  [Rclone: rclone selfupdate](https://rclone.org/commands/rclone_selfupdate/): Dokumentation zu Selbstaktualisierung, `--check` und `--package`.
+
+14.  [CVE-2026-111497: Lücke im Brotli-Decoder](/blog/brotli-cve-2026-111497): Hintergrund zur Brotli-Lücke, die 1.76.0 über das Abhängigkeits-Update adressiert.
+
+----
+
 # CVE-2026-124194: Outlook-Spoofing wird ausgenutzt - Update und Prüfung der Office-Version
 
 URL: https://rafaelpfister.ch/blog/outlook-cve-2026-124194
@@ -340,6 +449,122 @@ Installieren Sie das November-SU zeitnah auf allen Servern mit Exchange SE und a
 11. [Neue Sicherheitsupdates für Exchange Server (November 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-november-2026/): Deutschsprachige Aufschlüsselung der neun CVEs und Einordnung für Exchange 2016 und 2019.
 
 12. [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventarisierung von CU/SU-Ständen vor und nach der Installation.
+
+----
+
+# CVE-2026-116606: Barracuda-ESG-Authentifizierungsumgehung wird ausgenutzt - Update und Prüfung auf Kompromittierung
+
+URL: https://rafaelpfister.ch/blog/barracuda-esg-cve-2026-116606
+Datum: 2026-11-11
+
+# CVE-2026-116606: Barracuda-ESG-Authentifizierungsumgehung wird ausgenutzt - Update und Prüfung auf Kompromittierung
+
+Barracuda hat am 2. November 2026 ein Advisory zu zwei Lücken im Barracuda Email Security Gateway (ESG) veröffentlicht und am selben Tag Patches bereitgestellt. CVE-2026-116606 ist eine Authentifizierungsumgehung mit einer CVSS-4.0-Bewertung von 9.3: Ein Angreifer ohne Anmeldung kann über die Verwaltungsoberfläche eine Funktion zum Konfigurationsimport aufrufen, eine präparierte Sicherung einspielen und so die globale Konfiguration der Appliance ändern. Betroffen sind laut NVD und Mandiant alle ESG-Versionen vor 9.4.0.030. Zusammen mit der Command Injection CVE-2026-111560 ist laut Barracuda Root-Zugriff auf das Gerät möglich. Am 9. November 2026 hat Barracuda das Advisory um den Hinweis ergänzt, dass die Lücken bei einer kleinen Zahl von Organisationen ausgenutzt wurden. Die US-Behörde CISA hat beide CVEs am 10. November 2026 in ihren Katalog ausgenutzter Schwachstellen (KEV) aufgenommen.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Unterstützung bei Update und Prüfung</p>
+<p>Wenn Sie Hilfe beim Absichern, bei der Prüfung auf Kompromittierung oder beim Update von Barracuda Email Security Gateway brauchen, nutzen Sie bitte das <a href="https://adeptio.ch/">Kontaktformular auf adeptio.ch</a>. Ich melde mich auch kurzfristig.</p>
+</div>
+
+## Das Wichtigste in Kürze
+
+| Merkmal | Angabe |
+|---|---|
+| Advisory | Barracuda: Pre-Authentication Authorization Bypass and Command Injection Vulnerabilities in Certain Barracuda Products, veröffentlicht am 2. November 2026, zuletzt aktualisiert am 9. November 2026; Mandiant MNDT-2026-0042 |
+| CVE | CVE-2026-116606 (verkettbar mit CVE-2026-111560) |
+| Bewertung | CVSS 4.0: 9.3, `CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N`; NVD führt die Bewertung von Mandiant als kritisch, Barracuda stuft sie im Advisory als «High» ein |
+| Art der Lücke | Authentifizierungsumgehung über einen alternativen Pfad (CWE-288) |
+| Voraussetzung | keine Anmeldung; die Verwaltungsoberfläche muss für den Angreifer erreichbar sein (Korrektur im Advisory vom 5. November 2026) |
+| Betroffene Versionen | Barracuda Email Security Gateway vor 9.4.0.030 |
+| Behobene Versionen | Patch BNSF-40425 (Firmware 9.4.017 und neuer) bzw. BNSF-40430 (ältere Firmware); laut Beazley Security behebt 9.4.0.030 oder neuer beide CVEs |
+| Ausnutzung / KEV | von Barracuda am 9. November 2026 bestätigt; CISA KEV seit 10. November 2026, Ransomware-Bezug laut CISA unbekannt |
+| CISA-Frist für US-Bundesbehörden | 13. November 2026 |
+| Workaround | kein eigener Workaround; Barracuda empfiehlt, die Verwaltungsoberfläche auf vertrauenswürdige interne Netze zu beschränken |
+
+## Betroffene Versionen und Updates
+
+| Versionszweig | Betroffen | Behoben |
+|---|---|---|
+| ESG Firmware 9.4.017 und neuer | alle Versionen vor 9.4.0.030 | Patch BNSF-40425 bzw. Firmware 9.4.0.030 oder neuer |
+| ESG Firmware vor 9.4.017 | ja | Patch BNSF-40430; je nach Stand sind mehrere Update-Schritte nötig |
+
+Barracuda identifiziert die Fixes im Advisory über Patch-Kennungen; die Versionsgrenze 9.4.0.030 stammt aus dem CVE-Eintrag von Mandiant und aus NVD. Die Schreibweise «9.4.017» entspricht dem Advisory. Ist die Firmware mehrere Versionen im Rückstand, kann laut Barracuda mehr als ein Update nötig sein, bevor der Patch greift.
+
+CVE-2026-111560 (Command Injection, CVSS 4.0: 8.6) betrifft neben dem ESG weitere Produkte. Ohne CVE-2026-116606 setzt die Ausnutzung dort Administratorrechte voraus. Die Versionsgrenzen stammen aus der Übersicht von Beazley Security, die Patch-Kennungen aus dem Barracuda-Advisory:
+
+| Produkt | Betroffen | Patch |
+|---|---|---|
+| Load Balancer ADC | vor 6.4.0 | BNADC-16586 |
+| Web Application Firewall (WAF) | vor 11.0.1 | BNADC-16586 |
+| Web Security Gateway (WSG) | vor 16.1.100.100 | BNYF-24789 |
+| Message Archiver (BMA) | vor 5.5.4.0 | BNMA-32468 |
+| WAF Control Center (WCC) | vor 2.2.1 | BNWF-60060 |
+
+## Was über die Ausnutzung bekannt ist
+
+Barracuda schreibt im Update vom 9. November 2026, man habe Ausnutzung bei einer kleinen Zahl von Organisationen festgestellt. Zur Zahl der Betroffenen, zu den Angreifern und zum Vorgehen macht Barracuda keine Angaben; Indikatoren (IoCs) enthält das Advisory nicht. CISA führt CVE-2026-116606 und CVE-2026-111560 seit dem 10. November 2026 im KEV-Katalog und verlangt von US-Bundesbehörden bis zum 13. November 2026 die Massnahmen des Herstellers sowie eine forensische Sichtung nach BOD 26-04. Ist keine Abhilfe möglich, soll das Produkt laut CISA ausser Betrieb genommen werden.
+
+Gemeldet hat Barracuda die Lücke am 22. Oktober 2026; Mandiant hat am 2. November 2026 den CVE-Eintrag und das Advisory MNDT-2026-0042 veröffentlicht. Laut Mandiant führt der Angriff über den Konfigurationsimport: Eine präparierte, kompatible Sicherung wird ohne Anmeldung eingespielt und überschreibt die globale Konfiguration. CVE-2026-111560 liegt laut SecurityWeek in der Einstellung der Zeitzone und erlaubt Befehle mit Root-Rechten.
+
+Laut SecurityOnline hat watchTowr Labs eine technische Analyse und auf GitHub ein Skript zur Kette veröffentlicht. Das Repository ist öffentlich; watchTowr bezeichnet das Skript als «Detection Artifact Generator», laut SecurityOnline nimmt es beliebige Befehle entgegen. SecurityOnline beschreibt die Ursachen so: Ein fehlgeschlagener Passwortwechsel meldet zwar einen Fehler, bricht die Verarbeitung aber nicht ab; die Prüfsumme der Sicherungsdateien beruht auf einem fest eingebauten Geheimnis, wodurch sich gültige Sicherungen fälschen lassen; über einen Zeitzonenwert in der Sicherung wird dann der eingeschleuste Befehl als Root ausgeführt. Ob die beobachteten Angriffe dieses Skript nutzen, ist nicht bekannt.
+
+## Sofortmassnahmen
+
+1.  **Patch-Stand prüfen:** In der Weboberfläche unter ADVANCED > Firmware Update im Abschnitt «Firmware Patches» mit «Sync Now» die verfügbaren Patches abrufen und kontrollieren, ob BNSF-40425 bzw. BNSF-40430 angewendet ist. Laut Barracuda können die Patches automatisch eingespielt worden sein.
+
+2.  **Patch oder Firmware-Update einspielen:** Fehlt der Patch, spielen Sie ihn umgehend manuell ein. Im Modus «Automatic» startet die Appliance nach einem Patch laut Barracuda-Dokumentation nicht selbst neu; ist ein Neustart nötig, lösen Sie ihn manuell aus. Bei älterer Firmware zuerst die nötigen Update-Schritte durchführen.
+
+3.  **Automatisches Patchen aktivieren:** Steht «Apply Patches» auf «Disable» (Voreinstellung laut Dokumentation) oder «Manual», empfiehlt Barracuda, die automatische Anwendung wieder einzuschalten.
+
+4.  **Verwaltungsoberfläche abschotten:** Den Zugriff auf die Verwaltungsoberfläche auf vertrauenswürdige interne Netze beschränken, etwa ein Managementnetz oder ein VPN, und auf der vorgelagerten Firewall durchsetzen. Barracuda stuft Geräte ohne aus dem Internet erreichbare Verwaltungsoberfläche als weniger gefährdet ein. Die Massnahme ersetzt den Patch nicht.
+
+5.  **Weitere Barracuda-Produkte prüfen:** Load Balancer ADC, WAF, WSG, Message Archiver und WAF Control Center auf die Patches für CVE-2026-111560 kontrollieren.
+
+## Prüfung auf Kompromittierung
+
+Barracuda und CISA veröffentlichen keine Indikatoren. Da die Lücke ausgenutzt wird und sich ohne Anmeldung ansprechen lässt, sollte jedes Gerät geprüft werden, dessen Verwaltungsoberfläche vor dem Patch von ausserhalb des Managementnetzes erreichbar war. Field Effect empfiehlt dazu:
+
+1.  **Erreichbarkeit klären:** Feststellen, ob und seit wann die Verwaltungsoberfläche aus dem Internet oder aus Netzen ausserhalb der Administration erreichbar war; Firewall- und Proxy-Logs für diesen Zeitraum sichern.
+
+2.  **Administrative Zugriffe auswerten:** Zugriffe auf die Verwaltungsoberfläche von unbekannten Adressen prüfen.
+
+3.  **Konfigurationsimporte suchen:** Wiederherstellungen von Konfigurationssicherungen, die nicht von der eigenen Administration stammen, sind ein Hinweis auf CVE-2026-116606.
+
+4.  **Konfigurationsänderungen prüfen:** Änderungen an der Konfiguration auf unerwartete Einträge prüfen. Hilfreich ist ein Abgleich mit einer bekannten, sauberen Sicherung; dazu gehört auch die Zeitzoneneinstellung, über die CVE-2026-111560 ausgelöst wird.
+
+5.  **Zugangsdaten wechseln:** Bei Verdacht auf Kompromittierung alle Zugangsdaten, Schlüssel und Konten wechseln, die von der Appliance aus erreichbar sind.
+
+Ein erfolgreicher Angriff verändert laut CVE-Beschreibung die globale Konfiguration, in Verbindung mit CVE-2026-111560 ist Root-Zugriff möglich. Die Quellen äussern sich nicht dazu, ob der Patch solche Änderungen rückgängig macht. Prüfen Sie deshalb auch nach dem Update weiter, und sichern Sie Logs und Konfiguration vor Änderungen, damit eine forensische Auswertung möglich bleibt. Nach der Kampagne um CVE-2023-2868 hatte Barracuda laut SecurityWeek den Austausch kompromittierter Geräte verlangt; für die aktuellen Lücken liegt eine solche Empfehlung bisher nicht vor (Stand 11. November 2026).
+
+## Einordnung
+
+CVE-2026-116606 betrifft ausschliesslich Betreiber des Barracuda Email Security Gateway; CVE-2026-111560 trifft zusätzlich fünf weitere Barracuda-Produkte. Das ESG war schon früher Ziel gezielter Angriffe: CVE-2023-2868 wurde laut BleepingComputer seit mindestens Oktober 2022 von der Gruppe UNC4841 ausgenutzt, laut Mandiant (zitiert von BleepingComputer) gehörte knapp ein Drittel der damals kompromittierten Geräte zu Behörden. Meldungen von NCSC Schweiz, BSI oder CERT-FR zu CVE-2026-116606 waren bis zum 11. November 2026 nicht auffindbar.
+
+## Quellen
+
+1.  [Barracuda: Pre-Authentication Authorization Bypass and Command Injection Vulnerabilities in Certain Barracuda Products](https://trust.barracuda.com/security/pre-authentication-authorization-bypass-command-injection): Advisory vom 2. November 2026 mit Patch-Kennungen, Korrektur zur Authentifizierung (5. November) und Bestätigung der Ausnutzung (9. November).
+
+2.  [NVD: CVE-2026-116606](https://nvd.nist.gov/vuln/detail/CVE-2026-116606): Beschreibung, CVSS-4.0-Vektor, CWE-288 und KEV-Daten.
+
+3.  [CISA: Known Exploited Vulnerabilities Catalog, CVE-2026-116606](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-116606): Aufnahme am 10. November 2026, Frist 13. November 2026, geforderte Massnahmen nach BOD 26-04.
+
+4.  [CISA: Known Exploited Vulnerabilities Catalog, CVE-2026-111560](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-111560): Aufnahme der verketteten Command Injection am 10. November 2026.
+
+5.  [Mandiant: MNDT-2026-0042](https://github.com/mandiant/Vulnerability-Disclosures/blob/master/2026/MNDT-2026-0042.md): Advisory mit betroffenen Versionen, CVSS-Vektor und Zeitablauf der Meldung.
+
+6.  [Barracuda Campus: How to Apply the Latest Firmware Patches](https://documentation.campus.barracuda.com/wiki/spaces/BSFv51/pages/6695156/How+to+Apply+the+Latest+Firmware+Patches): Menüpfad und Modi für Firmware-Patches im Email Security Gateway.
+
+7.  [Beazley Security: BSL-A1240](https://labs.beazley.security/advisories/BSL-A1240): Übersicht der betroffenen Versionen aller Produkte und Hinweis auf 9.4.0.030 als Fixversion für beide CVEs.
+
+8.  [SecurityWeek: Barracuda ESG Authentication Bypass Flaw Opens Path to Root](https://www.securityweek.com/barracuda-email-security-gateway-authentication-bypass-opens-path-to-root/): Meldung vom 4. November 2026 zu beiden CVEs, Meldedaten und Hintergrund zu CVE-2023-2868.
+
+9.  [BleepingComputer: Barracuda warns of critical flaws allowing root access to devices](https://www.bleepingcomputer.com/news/security/barracuda-warns-of-critical-flaws-allowing-root-access-to-devices/): Meldung vom 3. November 2026 mit Patch-Tabelle und Hintergrund zu UNC4841.
+
+10. [SecurityOnline: Barracuda ESG Vulnerability Chain Exploited in the Wild After PoC Exploit Release](https://securityonline.info/barracuda-esg-vulnerability-exploited-poc/): Zusammenfassung der Analyse von watchTowr und der bestätigten Ausnutzung.
+
+11. [GitHub: watchTowr-vs-Barracuda-RCE-CVE-2026-116606-CVE-2026-111560](https://github.com/watchtowrlabs/watchTowr-vs-Barracuda-RCE-CVE-2026-116606-CVE-2026-111560): öffentliches Repository von watchTowr Labs zur Kette.
+
+12. [Field Effect: Barracuda ESG flaws can lead to root access](https://fieldeffect.com/blog/barracuda-esg-flaws-root-access): Hinweise zur Prüfung von Verwaltungszugriffen, Konfigurationsimporten und zum Wechsel von Zugangsdaten.
 
 ----
 
