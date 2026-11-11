@@ -363,6 +363,129 @@ Zielversion ist 1.76.0. Besonders dringend ist das Update auf Systemen mit `rclo
 
 ----
 
+# Outlook New nach Windows-Update zurückgesetzt: Konten weg, Ursache im Log
+
+URL: https://rafaelpfister.ch/blog/outlook-new-reset-nach-update
+Datum: 2026-11-11
+
+# Outlook New nach Windows-Update zurückgesetzt: Konten weg, Ursache im Log
+
+Nach dem Neustart für die Windows-Updates vom November 2026 startete das neue Outlook für Windows auf einem meiner Geräte wie nach einer Neuinstallation. Das Geschäftskonto, das als Hauptkonto eingebunden war, fehlte ebenso wie die übrigen Konten, die Signaturen und die persönlichen Einstellungen. Eine Fehlermeldung gab es nicht, Outlook zeigte direkt den Assistenten zum Hinzufügen eines Kontos.
+
+Die Ursache steht im lokalen Protokoll von Outlook: Die App hat ihre lokalen Daten selbst gelöscht, weil eine neu aktivierte Prüfung den Zustand als "Reset erforderlich" bewertet hat. Hinweise auf einen Eingriff durch Windows Update, einen Benutzer oder einen Angreifer gibt es keine.
+
+## Ablauf
+
+| Zeit (Lokalzeit) | Ereignis | Quelle |
+|---|---|---|
+| 18:26 | Letzter Eintrag der laufenden Outlook-Sitzung, kein geordnetes Beenden | `Olk\logs\olk_*.log` |
+| 18:27 und 18:28 | Zwei Neustarts durch Windows Update (`MoNotificationUx.exe`, danach `TrustedInstaller.exe`) | System-Log, Ereignis 1074 |
+| 18:41:55 | Outlook startet, Prüfung `nh-userDataSentinel` ist aktiv und meldet `ResetRequired` | neues `olk_*.log` |
+| 18:41:56 | Outlook löscht seine lokalen Daten und startet als Neuinstallation | neues `olk_*.log` |
+
+Die Zeitstempel im Olk-Log und in den Dateinamen der Logs sind in UTC. In der Tabelle sind sie in Lokalzeit (MEZ) umgerechnet.
+
+## Die Einträge im Log
+
+Die ersten Zeilen der neuen Sitzung zeigen die Prüfung und das Ergebnis:
+
+```text
+Checking flight enabled status  flightName nh-userDataSentinel  isEnabled true
+Reset sentinel check completed.  installState ResetRequired
+  settingsFound true  resetSentinelFlagFound true
+Reset sentinel check triggered user data reset.
+Prompted for clear local state  clearLocalStateName Silent
+```
+
+Danach folgen die Löschvorgänge, jeweils mit `succeeded true`:
+
+| Pfad unter `%LOCALAPPDATA%\Microsoft\Olk` | Inhalt |
+|---|---|
+| `EBWebView` | WebView2-Profil mit Anmeldestatus, Kontenliste und Offline-Daten |
+| `UserSettings.json` | Einstellungen der App |
+| `Attachments` | lokal zwischengespeicherte Anhänge |
+| `pst_index_v2` | Index eingebundener PST-Dateien |
+| `cache\Notification`, `cache\*.db` | Benachrichtigungs- und Hintergrund-Cache |
+| `updated.txt`, `xpdApi.log`, `Feedback` | Status- und Hilfsdateien |
+
+Einige Zeilen später steht `Last update date file missing, creating it. Barring clearing local state, this is likely a fresh install`. Ab diesem Punkt verhält sich Outlook wie eine Neuinstallation.
+
+## Warum die Prüfung angeschlagen hat
+
+`nh-userDataSentinel` ist ein Flight, also eine Funktion, die Microsoft serverseitig für einzelne Installationen einschaltet. In allen älteren Logs auf dem Gerät steht für diesen Flight `Flight status not set; using default (false)`, zuletzt um 13:23 UTC am selben Tag. Beim Start um 17:41 UTC war er erstmals aktiv.
+
+Die Prüfung sucht im Paketordner der App eine Markierungsdatei:
+
+```text
+%LOCALAPPDATA%\Packages\Microsoft.OutlookForWindows_8wekyb3d8bbwe\LocalState\OlkSentinel
+```
+
+Findet Outlook Benutzereinstellungen im Olk-Ordner (`settingsFound true`), aber keine passende Markierung im Paketordner, wertet es das als Hinweis, dass die App zurückgesetzt oder neu installiert wurde, und löscht die Benutzerdaten. Auf dem betroffenen Gerät wurde `OlkSentinel` um 18:41:56 neu angelegt, die übrigen Dateien in `LocalState` stammen vom September 2026. Der Paketordner selbst wurde also nicht zurückgesetzt, die Markierungsdatei gab es vorher schlicht nicht, weil die Prüfung neu war. Beim ersten Start mit aktivem Flight war das Ergebnis deshalb ein Reset, obwohl keiner nötig war.
+
+Der Neustart durch Windows Update ist nach den Logs nur der Zeitpunkt, nicht die Ursache: Der Flight wird beim Start ausgewertet, und der erste Start nach dem Update war der erste mit aktivem Flight. Die Version der App (1.2026.1026.100) war vor und nach dem Neustart dieselbe.
+
+## Den Fall auf eigenen Geräten nachweisen
+
+Die folgende Abfrage durchsucht alle Olk-Logs nach den Einträgen der Prüfung:
+
+```powershell
+$logs = "$env:LOCALAPPDATA\Microsoft\Olk\logs"
+Get-ChildItem $logs -Filter 'olk_*.log' |
+  Select-String -Pattern 'Reset sentinel|Delete directory tree' |
+  Select-Object Filename, LineNumber, Line
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Filter 'olk_*.log'` | nur die Sitzungslogs der App, ohne ZIP-Archive und Push-Logs |
+| `-Pattern` | regulärer Ausdruck; trifft die Prüfung und jeden Löschvorgang |
+| `Select-Object Filename, LineNumber, Line` | zeigt pro Treffer Logdatei, Zeilennummer und Text |
+
+</details>
+
+Ältere Sitzungen packt Outlook in ZIP-Archive im selben Ordner. Liegt der Reset einige Tage zurück, steht der Eintrag möglicherweise nur noch im Archiv und muss vorher entpackt werden.
+
+Als zweites Indiz eignen sich die Erstellungszeiten: Haben `EBWebView` und `UserSettings.json` im Olk-Ordner sowie `OlkSentinel` im Paketordner denselben Zeitstempel, ist der Reset zu diesem Zeitpunkt erfolgt.
+
+```powershell
+$olk = "$env:LOCALAPPDATA\Microsoft\Olk"
+$pkg = "$env:LOCALAPPDATA\Packages\Microsoft.OutlookForWindows_8wekyb3d8bbwe"
+Get-Item "$olk\EBWebView", "$olk\UserSettings.json", "$pkg\LocalState\OlkSentinel" |
+  Select-Object FullName, CreationTime
+```
+
+## Was verloren ist und was nicht
+
+Gelöscht wurden nur lokale Daten der App. Postfächer, Kalender und Kontakte liegen bei Microsoft 365 und Outlook.com auf dem Server und erscheinen nach dem erneuten Anmelden wieder. Die Anmeldung bei Windows (Web Account Manager) bleibt bestehen; Microsoft-Konten, die in Windows hinterlegt sind, bietet Outlook beim Hinzufügen direkt an.
+
+Neu einrichten müssen Sie:
+
+- alle Konten, in der gewünschten Reihenfolge (das zuerst hinzugefügte Konto ist das Hauptkonto, siehe unten)
+- lokal gespeicherte Signaturen, falls sie nicht über die Cloud-Synchronisation des Kontos zurückkommen
+- eingebundene PST-Dateien
+- Einstellungen der App wie Ansicht, Benachrichtigungen und Startverhalten
+
+Beim Hauptkonto ist die Reihenfolge entscheidend, weil das neue Outlook einige Funktionen nur im primären Konto anbietet, etwa S/MIME (siehe [S/MIME-Signatur im sekundären Konto](/blog/outlook-smime-sekundaeres-konto-anhaenge-fehlen)). Fügen Sie das Konto, das Hauptkonto sein soll, deshalb zuerst hinzu. Hat Outlook nach dem Reset bereits automatisch ein anderes Konto übernommen, entfernen Sie dieses, fügen das gewünschte Hauptkonto hinzu und binden die übrigen Konten danach wieder ein.
+
+## Für Administratoren
+
+Der Reset lässt sich nach dem Auftreten nicht rückgängig machen; eine Sicherung des Ordners `%LOCALAPPDATA%\Microsoft\Olk` vor dem Start ist die einzige Möglichkeit, den alten Stand zurückzuholen. In Umgebungen mit Profil-Containern (FSLogix) und nicht persistenten VDI-Sitzungen sollten Sie prüfen, ob sowohl der Olk-Ordner als auch der Paketordner `Microsoft.OutlookForWindows_8wekyb3d8bbwe` im Profil erhalten bleiben. Wird nur einer der beiden Ordner mitgenommen, entspricht das genau dem Zustand, den die Prüfung als Neuinstallation wertet.
+
+Meldungen von Anwendern, das neue Outlook habe "alle Konten vergessen", lassen sich mit der Log-Abfrage oben in wenigen Minuten einordnen. Steht dort `Reset sentinel check triggered user data reset`, liegt kein Kontoproblem und kein Sicherheitsvorfall vor.
+
+## Quellen
+
+1.  [Microsoft Learn: Deploy the new Outlook for Windows on VDI](https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/get-started/virtualized-desktop-infrastructure): Speicherorte der lokalen Daten des neuen Outlook und Hinweise zu Profil-Containern.
+
+2.  [Microsoft Learn: Control installing and using the new Outlook](https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/get-started/control-install): Verteilung und Steuerung der App in verwalteten Umgebungen.
+
+3.  [Microsoft Q&A: Outlook (new) won't open, makes me attempt to sign in](https://learn.microsoft.com/en-us/answers/questions/5863503/outlook-new-wont-open-makes-me-attempt-to-sign-in): Anwenderberichte zu verlorenen Konten nach dem Zurücksetzen der lokalen Daten.
+
+----
+
 # CVE-2026-124194: Outlook-Spoofing wird ausgenutzt - Update und Prüfung der Office-Version
 
 URL: https://rafaelpfister.ch/blog/outlook-cve-2026-124194
@@ -21178,6 +21301,256 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format von Internet-Textnachrichten (Header und Body).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-Konfiguration für den gesicherten Mailfluss zwischen Exchange Online und dem Gateway.
+
+----
+
+# RDP sign-in fails: Password must be changed before first sign-in
+
+URL: https://rafaelpfister.ch/en/blog/rdp-sign-in-fails-password-must-be-changed-before-first-sign-in
+Datum: 2026-11-11
+
+# RDP sign-in fails: Password must be changed before first sign-in
+
+I recently encountered the situation again with a newly configured account in a customer environment: The initial password is correct, but the Remote Desktop connection is still terminated immediately. The Windows client `mstsc` displays the following message:
+
+```text
+You must change your password before logging on the first time.
+Please update your password or contact your system administrator
+or technical support.
+```
+
+Other RDP clients and connection managers indicate the same condition in their own wording, for example, “The user password must be changed before logging on for the first time.” For an expired password, the message is “This user account's password has expired. The password must change in order to logon.” The cause and solution are the same in both cases.
+
+In short: The password cannot be changed through the RDP connection in this situation. It must be changed beforehand by another means, and in most cases, a network connection to a Domain Controller is sufficient.
+
+## Cause: NLA authenticates before the session is established
+
+The account has the **User must change password at next logon** option set in Active Directory (technically: `pwdLastSet` = 0). This is not a problem at a workstation in the domain: The sign-in screen recognizes the condition and immediately asks for the new password.
+
+With RDP, this step is missing as soon as Network Level Authentication (NLA) is enabled. NLA authenticates the user through CredSSP before a session with a sign-in screen is created on the target system. Authentication with a password that must be changed fails, and no password-change dialog is provided at this point. The client terminates the connection and displays only the message. NLA is the default in current Windows versions and is enforced by Group Policy in hardened environments.
+
+## Options for users
+
+There are four ways to change the password without using the affected RDP connection. Which one is suitable depends on what can be reached from the user's own workstation.
+
+| Option | Requirement |
+|---|---|
+| 1. Password portal or service desk | provided by the operator |
+| 2. Existing Windows session in the domain | access with another account or to another system |
+| 3. Password dialog on your own PC | Domain Controller reachable, for example through VPN |
+| 4. PowerShell with `NetUserChangePassword` | TCP 445 to the Domain Controller reachable |
+
+### Option 1: Password portal or service desk
+
+In larger environments, there is usually a designated route for external staff: a self-service portal, a password feature in the VPN or Citrix portal, or a PAM system. If none is available, the service desk can remove the flag or set a password without requiring it to be changed (see the section for administrators).
+
+### Option 2: Existing Windows session in the domain
+
+If a session already exists on a system in the domain, such as on a jump host or with a second account, the password can be changed there. In an RDP session, `Ctrl+Alt+End` opens the security screen of the remote system (`Ctrl+Alt+Del` would be processed on the local PC). Under **Change a password**, the username field can be edited: Enter the affected account there in the form `DOMAIN\benutzer`, followed by the initial password and the new password twice.
+
+### Option 3: Password dialog on your own PC
+
+The same dialog also works on a PC that is not a member of the domain, provided it can reach a Domain Controller, for example through a VPN connection. Press `Ctrl+Alt+Del`, choose **Change a password**, and replace the prefilled local username with `DOMAIN\benutzer`. The PC must be able to resolve the domain name through DNS; without the DNS servers of the target environment, Windows cannot find a Domain Controller.
+
+### Option 4: PowerShell with NetUserChangePassword
+
+The Windows API `NetUserChangePassword` changes a password directly on a Domain Controller. It verifies the previous password during the change itself and does not require prior sign-in. It therefore also works when the password has expired or must be changed, including from a PC outside the domain. The script imports the function through P/Invoke and prompts for both passwords without displaying them:
+
+```powershell
+$api = Add-Type -Namespace Win32 -Name NetApi32 -PassThru -MemberDefinition @'
+[DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+public static extern uint NetUserChangePassword(
+    string domainname, string username,
+    string oldpassword, string newpassword);
+'@
+
+$dc   = 'dc01.example.com'
+$user = 'm.muster'
+$alt  = Read-Host -AsSecureString 'Bisheriges Kennwort'
+$neu  = Read-Host -AsSecureString 'Neues Kennwort'
+
+$klartext = { param($s) [System.Net.NetworkCredential]::new('', $s).Password }
+$rc = $api::NetUserChangePassword(
+    $dc, $user, (& $klartext $alt), (& $klartext $neu))
+
+if ($rc -eq 0) { 'Kennwort geändert' } else { "Fehler $rc" }
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Argument | Effect |
+|---|---|
+| `domainname` | DNS or NetBIOS name of a Domain Controller or the domain. From a PC outside the domain, specify the Domain Controller directly (name or IP address). |
+| `username` | Sign-in name of the account (`sAMAccountName`), without the domain portion. |
+| `oldpassword` | Previous password, in this case the initial password. It must match exactly. |
+| `newpassword` | New password. It must meet the domain password policy. |
+
+</details>
+
+A return value of 0 indicates success. The most common error codes are:
+
+| Code | Meaning |
+|---|---|
+| 5 | Access denied, for example because the Domain Controller does not allow the call without authentication |
+| 86 | The previous password is incorrect |
+| 2221 | The username was not found |
+| 2245 | The new password does not meet the password policy (length, complexity, history, minimum age) |
+| 2351 | The specified server name is invalid |
+
+The call uses SMB and requires TCP port 445 to the Domain Controller. In heavily segmented networks, this port is often blocked from client networks or VPNs; in that case, option 1 remains.
+
+`Set-ADAccountPassword` from the Active Directory module does not help the affected user in this situation: The cmdlet requires an authenticated connection to Active Directory Web Services, and that very sign-in is not possible with the affected account. It is the tool for the administrator.
+
+## Disable NLA in the client: only without enforced NLA
+
+It is often recommended to disable CredSSP in the .rdp file:
+
+```text
+enablecredsspsupport:i:0
+```
+
+The client then connects without NLA and receives the classic sign-in screen of the target system, where the password can be changed. This works only if the target system accepts connections without NLA. If **Allow connections only from computers running Remote Desktop with Network Level Authentication** is enabled there, it rejects the connection. This is the default in current Windows Server versions.
+
+## Options for administrators
+
+On the administration side, the problem can be prevented or resolved:
+
+- **Remove the flag:** `Set-ADUser -Identity m.muster -ChangePasswordAtLogon $false` removes the requirement to change the password. The user can sign in with the initial password and change it during the session using `Ctrl+Alt+End`. The initial password remains valid until then and must therefore be transmitted through a secure channel.
+- **Reset the password:** `Set-ADAccountPassword -Identity m.muster -Reset` sets a new password. Then check whether the flag is still set.
+- **RD Web Access:** If the role is available, it can offer password changes for expired passwords. In IIS Manager, under **Sites → Default Web Site → RDWeb → Pages**, set the value `PasswordChangeEnabled` to `true` in **Application Settings**. The password-change page is located at `/RDWeb/Pages/en-US/password.aspx`.
+- **Accounts for RDP-only access:** For users who work exclusively through RDP (external service providers, administrators on jump hosts), the requirement to change the password at first sign-in cannot be fulfilled without one of the methods above. The process for the first password change should therefore be part of onboarding.
+
+Disabling NLA on the target system also resolves the symptom, but removes a layer of protection: Without NLA, every client on the network can reach the sign-in screen and thus the RDP service before authenticating. Microsoft advises against this.
+
+## Sources
+
+1.  [Remote Desktop Client Troubleshooting: Disconnect Codes and Reasons](https://learn.microsoft.com/en-us/archive/technet-wiki/37870.remote-desktop-client-troubleshooting-disconnect-codes-and-reasons): List of RDP client disconnect codes, including 4615 (password must be changed before first sign-in) and 3847 (password expired), with the message text.
+
+2.  [NetUserChangePassword function (lmaccess.h)](https://learn.microsoft.com/en-us/windows/win32/api/lmaccess/nf-lmaccess-netuserchangepassword): API reference with parameters, permissions, and return values.
+
+3.  [How to change your own expired password when you can't login to RDP](https://evotec.xyz/how-to-change-your-own-expired-password-when-you-cant-login-to-rdp/): Practical report by Evotec on changing a password through NetUserChangePassword from a PC outside the domain, including a note about TCP 445 and the ineffective enablecredsspsupport entry when NLA is enforced.
+
+4.  [Supported RDP properties](https://learn.microsoft.com/en-us/azure/virtual-desktop/rdp-properties): Reference for .rdp properties, including enablecredsspsupport with values and default.
+
+5.  [Remote Desktop Web Access troubleshooting](https://learn.microsoft.com/en-us/troubleshoot/windows-server/remote/remote-desktop-web-access-troubleshooting): Section on changing expired passwords through RD Web Access and the PasswordChangeEnabled setting.
+
+6.  [Set-ADAccountPassword](https://learn.microsoft.com/en-us/powershell/module/activedirectory/set-adaccountpassword): Cmdlet reference with the Reset, OldPassword, NewPassword, Credential, and Server parameters.
+
+7.  [User can't authenticate or must authenticate twice](https://learn.microsoft.com/en-us/troubleshoot/windows-server/remote/cannot-authenticate-must-authenticate-twice): Microsoft guidance on sign-in failures with NLA; disabling NLA is marked as not recommended.
+
+8.  [Change password in another domain](https://bartwullems.blogspot.com/2019/12/change-password-in-another-domain.html): Blog post on the editable username field in the “Change a password” dialog, which can be used to change the password of an account in another domain.
+
+9.  [Allow users to reset expired password via RD Web Access](https://woshub.com/allow-users-to-reset-expired-password-via-rd-webaccess-windows-server-2012/): Windows OS Hub guide to the PasswordChangeEnabled setting and the password.aspx page path.
+
+----
+
+# November 2026 Exchange security updates: nine vulnerabilities, first update only for Exchange SE
+
+URL: https://rafaelpfister.ch/en/blog/november-2026-exchange-security-updates-nine-vulnerabilities-first-update-only-for-exchange-se
+Datum: 2026-11-11
+
+# November 2026 Exchange security updates: nine vulnerabilities, first update only for Exchange SE
+
+Microsoft released a security update (SU) for Exchange Server SE on November 10, 2026. According to the KB article, it closes nine vulnerabilities. None of them was publicly known in advance, and according to the Security Update Guide, none is being actively exploited. Microsoft rates one remote code execution as *Critical* and “Exploitation More Likely”; a low-privileged account is sufficient for it. This month is notable for two reasons: it is the first SU released only for Exchange SE, and the Exchange outages following the October Windows Server updates are fixed by the November Windows updates.
+
+## Which Exchange versions the update is available for
+
+The November 10, 2026 SU is available for only one version:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5133453, build 15.2.2562.57; publicly available.
+
+You can compare your own version against the overview of [Exchange build numbers](/tools/exchange-builds).
+
+There is no update for Exchange 2016 and 2019. The [October SU](/blog/exchange-security-updates-oktober-2026) was the last one, including for customers in the Period 2 ESU program, and according to the announcement, this program has ended. According to Microsoft, Exchange Online is already protected; however, in hybrid environments, every Exchange server still needs the SU, including management-only servers and machines with the Exchange Management Tools.
+
+## Overview of the vulnerabilities
+
+| CVE | Type | CVSS |
+| --- | --- | --- |
+| CVE-2026-118207 | Remote Code Execution | 8.8 |
+| CVE-2026-118149 | Remote Code Execution | 8.8 |
+| CVE-2026-118150 | Elevation of Privilege | 8.8 |
+| CVE-2026-118154 | Elevation of Privilege | 8.8 |
+| CVE-2026-118153 | Denial of Service | 7.5 |
+| CVE-2026-118151 | Elevation of Privilege | 7.2 |
+| CVE-2026-118157 | Elevation of Privilege | 7.2 |
+| CVE-2026-118208 | Spoofing | 7.1 |
+| CVE-2026-118152 | Spoofing | 6.5 |
+
+All nine vulnerabilities are reachable over the network (AV:N) and have low attack complexity (AC:L) according to their CVSS vector. The Security Update Guide lists Exchange Server SE RTM as the only affected product.
+
+**[CVE-2026-118207](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118207) is the month's only vulnerability that Microsoft rates as *Critical* (Remote Code Execution, CVSS 8.8), and the only one assessed as “Exploitation More Likely.” According to the FAQ in the Security Update Guide, an authenticated low-privileged attacker can send a specially crafted request to an affected server and execute code on the server; no user interaction is required. Microsoft identifies insufficient input validation (CWE-706) as the cause. A regular mailbox account is therefore sufficient for the attack, for example one with a password obtained through phishing.
+
+**[CVE-2026-118149](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118149) is the second remote code execution (CVSS 8.8, *Important*). Here too, according to the FAQ, an authenticated attacker sends a specially crafted request to an affected service and can then execute code on the target system; the cause is code injection (CWE-94). Microsoft rates exploitation as “Exploitation Unlikely.”
+
+**[CVE-2026-118153](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118153) (Denial of Service, CVSS 7.5) is the only vulnerability that requires neither an account nor user interaction. According to the description, an unauthenticated attacker can take the service offline over the network; the cause is inefficient algorithmic complexity (CWE-407). According to the vector, only availability is affected, not confidentiality or integrity.
+
+The four elevation-of-privilege vulnerabilities differ in their prerequisites: [CVE-2026-118150](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118150) and [CVE-2026-118154](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118154) (both CVSS 8.8) require only a low-privileged account, while [CVE-2026-118151](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118151) and [CVE-2026-118157](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118157) (both CVSS 7.2) require the attacker to already have high privileges. According to the FAQ, CVE-2026-118151 can allow the attacker to obtain SYSTEM privileges.
+
+Of the two spoofing vulnerabilities, [CVE-2026-118208](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118208) (CVSS 7.1) requires a low-privileged account. [CVE-2026-118152](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118152) (CVSS 6.5) is a cross-site request forgery: the attacker does not need an account, but a user must participate (UI:R). All vulnerabilities except CVE-2026-118207 and CVE-2026-118149 are rated as “Exploitation Less Likely.”
+
+## Exchange 2016 and 2019: no update, no further testing
+
+The announcement mentions Exchange 2016 and 2019 only in a notice: these versions are no longer tested for vulnerabilities, and no further updates will be released. Microsoft writes that they should be considered permanently vulnerable (“permanently vulnerable”) and that organizations should upgrade immediately. The fact that the nine November CVEs list only Exchange SE therefore says nothing about whether older versions are affected. Frankys Web points out that Exchange SE and 2019 CU15 are technically close, and that at least some of the vulnerabilities are likely also present in Exchange 2019.
+
+For operations, this means:
+
+1. **Exchange 2019 CU15 and earlier, Exchange 2016**: Their state remains frozen at the October SU (with ESU) or earlier. The nine November vulnerabilities remain unpatched on these servers if they are present there, and Microsoft no longer tests this.
+
+2. **Migration**: Microsoft recommends immediately moving to Exchange SE.
+
+3. **Hybrid environments**: Exchange Online throttles and blocks mail flow from outdated on-premises servers; the rules are in the [article on transport enforcement](/blog/exchange-online-transport-enforcement-hybrid-server).
+
+## Fixed issues
+
+**Exchange outages after the October Windows Server updates** (all versions). The issue with `MapiExceptionMdbOffline` (ec=1142) is not fixed by the Exchange SU: according to the announcement, the November 2026 Windows Server updates must be installed. The release notes for these updates list the fix under “[Exchange Server]” and state that the issue is resolved with updates from November 10, 2026: KB5131080 for Windows Server 2025, KB5131090 for Windows Server 2022, KB5131085 for Windows Server 2019, and KB5131291 for Windows Server 2016. According to the announcement, the order in which you install the Exchange SU and the Windows update does not matter. If you set the registry value `EpmapSavedContextCap` from the [article on the Exchange outages](/blog/exchange-windows-updates-oktober-2026), you can leave it in place; according to Microsoft, it is no longer needed after installing the November Windows Server updates.
+
+**Incorrect free/busy display through Microsoft Graph in hybrid environments** (Exchange SE only). According to [KB5135867](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5135867), users with an on-premises mailbox did not see correct free/busy information for Exchange Online mailboxes in classic Outlook when the Graph API was enabled; only time blocks were displayed. The display was correct with Exchange Web Services (EWS) instead of the Graph API. The issue is fixed with KB5133453 or a newer update. The support article does not mention any follow-up action. If you switched back to EWS because of this issue, check the free/busy lookup for an Exchange Online mailbox after installation before re-enabling the Graph API.
+
+## Known issues
+
+Neither the announcement nor KB5133453 lists known issues for the November SU (as of November 11, 2026). The announcement has no comments from the Exchange team, and Microsoft notes that the documentation may still be incomplete at the time of publication. No known issue from previous months remains unresolved: the issues in the September updates have been resolved since the October SU, and the October Windows issue is fixed by the November Windows Server updates (see above).
+
+## Installation and follow-up
+
+In the announcement, Microsoft outlines the familiar process: use the [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) to inventory which servers need updates or manual steps, install the SU, restart the server, and check that all Exchange services are running. If services are disabled after setup, the installation was interrupted. For errors during or after installation, Microsoft refers to the [SetupAssist script](https://aka.ms/ExSetupAssist). According to KB5133453, after installation, Health Checker shows whether the SU was installed correctly and whether further steps are needed.
+
+According to KB5133453, the installation file is called `ExchangeSubscriptionEdition-KB5133453-x64-en.exe` (Download Center: “SU12”). The SU replaces the October SU KB5128895. SUs are cumulative: if you have an older SU installed on Exchange SE RTM, install the November SU directly.
+
+For hybrid environments, the FAQ states: if the Auth certificate is changed after installing an SU, the Hybrid Configuration Wizard must be run again. On Windows Server 2025, installed Exchange SUs do not appear in Control Panel; Microsoft advises against uninstalling SUs.
+
+The following follow-up tasks from previous months remain open if not yet completed: remove the free/busy override `EnableRouteThroughMSGraphFeature` (see [October article](/blog/exchange-security-updates-oktober-2026)), remove the wrapper SettingOverride `DisableBlockSharedAndUserMailboxHeaders` (see [September article](/blog/exchange-security-updates-september-2026)), and check whether the CVE-2026-42897 mitigation (M2.1.0) is still active (see [article on the July SU](/blog/exchange-security-updates-juli-2026)).
+
+## Recommended approach
+
+Install the November SU promptly on all servers running Exchange SE and on machines with the Management Tools: for the critical remote code execution CVE-2026-118207, a low-privileged account is sufficient, and Microsoft considers its exploitation more likely. In the same maintenance window, install the November Windows Server updates so that the cause of the October outages is fixed. There is no patch for Exchange 2016 and 2019; according to Microsoft, these servers should be considered permanently vulnerable and replaced with Exchange SE immediately.
+
+## Sources
+
+1.  [Released: November 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-november-2026-exchange-server-security-updates/4570368): Announcement from November 10, 2026, with the supported version, notice about Exchange 2016/2019, the fixed Windows issue, and FAQ (no comments from the Exchange team, as of November 11, 2026).
+
+2.  [Description of the security update for Microsoft Exchange Server Subscription Edition RTM November 10, 2026 (KB5133453) – Microsoft Support](https://support.microsoft.com/help/5133453): CVE list, fixed issue, installation file, replaced update, and notice about Health Checker.
+
+3.  [Security Update Guide – Microsoft Security Response Center](https://msrc.microsoft.com/update-guide/): Type, CVSS, severity, exploitation assessment, FAQ, and affected product for the nine November CVEs.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Build number of the November SU.
+
+5.  [Microsoft graph displays incorrect free/busy availability information in Microsoft Exchange server SE hybrid setup – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5135867): Symptoms and fix with KB5133453.
+
+6.  [Exchange servers may become unstable after installation of October 2026 Windows updates – Microsoft Community Hub](https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-servers-may-become-unstable-after-installation-of/ba-p/4565382): Exchange team post about the October Windows issue referenced by the announcement.
+
+7.  [November 10, 2026: KB5131080 (OS Build 26100.33822) – Microsoft Support](https://support.microsoft.com/help/5131080): Release notes for Windows Server 2025 with the Exchange fix and the known issue marked as resolved.
+
+8.  [November 10, 2026: KB5131090 (OS Build 20348.5870) – Microsoft Support](https://support.microsoft.com/help/5131090): Release notes for Windows Server 2022 with the same fix.
+
+9.  [November 10, 2026: KB5131085 (OS Build 17763.9487) – Microsoft Support](https://support.microsoft.com/help/5131085): Release notes for Windows Server 2019 with the same fix.
+
+10. [November 10, 2026: KB5131291 (OS Build 14393.9688) – Microsoft Support](https://support.microsoft.com/help/5131291): Release notes for Windows Server 2016 with the same fix.
+
+11. [New security updates for Exchange Server (November 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-november-2026/): German-language breakdown of the nine CVEs and assessment for Exchange 2016 and 2019.
+
+12. [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventory of CU/SU versions before and after installation.
 
 ----
 
