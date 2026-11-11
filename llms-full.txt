@@ -14,6 +14,194 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# CVE-2026-124194: Outlook-Spoofing wird ausgenutzt - Update und Prüfung der Office-Version
+
+URL: https://rafaelpfister.ch/blog/outlook-cve-2026-124194
+Datum: 2026-11-11
+
+# CVE-2026-124194: Outlook-Spoofing wird ausgenutzt - Update und Prüfung der Office-Version
+
+Microsoft hat am 10. November 2026 Sicherheitsupdates für CVE-2026-124194 veröffentlicht. Die Schwachstelle in Microsoft Office Outlook ermöglicht einem nicht angemeldeten Angreifer über das Netzwerk Spoofing, wenn eine Benutzerinteraktion erfolgt. Betroffen sind Microsoft 365 Apps for Enterprise sowie Microsoft Office LTSC 2021 und 2024. NVD bewertet die Lücke mit CVSS 3.1: 6.5 (Mittel); Microsoft kennzeichnet die Ausnutzung als erkannt, und CISA nahm sie am 10. November 2026 in den KEV-Katalog auf. Updates sind verfügbar.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Unterstützung bei Update und Prüfung</p>
+<p>Wenn Sie Hilfe beim Absichern, bei der Prüfung auf Kompromittierung oder beim Update von Outlook brauchen, nutzen Sie bitte das <a href="https://adeptio.ch/">Kontaktformular auf adeptio.ch</a>. Ich melde mich auch kurzfristig.</p>
+</div>
+
+## Das Wichtigste in Kürze
+
+| Merkmal | Angabe |
+|---|---|
+| Advisory | Microsoft Security Update Guide, CVE-2026-124194; Veröffentlichung am 10. November 2026 |
+| CVE | CVE-2026-124194 |
+| Bewertung | CVSS 3.1: 6.5 (Mittel), `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N/E:H/RL:O/RC:C` |
+| Art der Lücke | Fehlende Warnung der Produktoberfläche vor potenziell unsicheren Aktionen, CWE-356 |
+| Voraussetzung | Netzwerkzugriff und Benutzerinteraktion; keine Berechtigung erforderlich |
+| Betroffene Versionen | Microsoft 365 Apps for Enterprise, Office LTSC 2021 und Office LTSC 2024 auf 32-Bit- und x64-Systemen |
+| Behobene Versionen | Office LTSC 2021 ab Build 14334.21048, Office LTSC 2024 ab Build 17932.21140; für Microsoft 365 Apps stehen die Sicherheitsupdates vom 10. November 2026 bereit |
+| Ausnutzung / KEV-Datum | Microsoft meldet erkannte Ausnutzung; CISA KEV seit 10. November 2026 |
+| CISA-Frist für US-Bundesbehörden | 24. November 2026 |
+| Workaround | Microsoft und CISA nennen in den geöffneten Quellen keinen Workaround; Sicherheitsupdate installieren |
+
+## Betroffene Versionen und Updates
+
+| Versionszweig | Betroffen | Behoben |
+|---|---|---|
+| Microsoft 365 Apps for Enterprise | NVD führt Microsoft 365 Apps for Enterprise als betroffen. | Sicherheitsupdates vom 10. November 2026. Microsoft nennt dafür Builds in Current Channel, Monthly Enterprise Channel und Semi-Annual Enterprise Channel. |
+| Office LTSC 2021 | Versionen ab 16.0.1 unter Build 14334.21048 | Build 14334.21048 oder neuer |
+| Office LTSC 2024 | Versionen ab 16.0.0 unter Build 17932.21140 | Build 17932.21140 oder neuer |
+
+Für Microsoft 365 Apps for Enterprise führt Microsoft am 10. November 2026 unter anderem diese Builds auf: Current Channel 20527.20196, Monthly Enterprise Channel 20527.20194, 20430.20264 und 20326.20320 sowie Semi-Annual Enterprise Channel 20527.20192, 20430.20262 und 20326.20318. Welche Buildnummer für ein Gerät gilt, richtet sich nach dessen Updatekanal. Die Office-Sicherheitsrelease-Notes ordnen CVE-2026-124194 Outlook zu.
+
+## Was über die Ausnutzung bekannt ist
+
+Microsoft führt CVE-2026-124194 in den Sicherheitsupdates vom 10. November 2026 als Fall mit erkannter Ausnutzung. CISA bewertet die Schwachstelle als aktiv ausgenutzt und nahm sie am selben Tag in den KEV-Katalog auf. Die geöffneten Einträge von Microsoft, NVD und CISA enthalten keine Angaben zu Angreifern, Zielorganisationen, Angriffskampagnen oder zum technischen Ablauf der Ausnutzung.
+
+CISA kennzeichnet den Einsatz in Ransomware-Kampagnen mit «Unknown». Eine forensische Triage nach BOD 26-04 verlangt CISA für diesen KEV-Eintrag nicht.
+
+## Sofortmassnahmen
+
+1.  **Office-Versionen erfassen:** Ermitteln Sie bei Microsoft 365 Apps for Enterprise den Updatekanal und die installierte Buildnummer. Prüfen Sie bei Office LTSC 2021 und 2024 die Version gegen die Fix-Builds in der Tabelle.
+
+2.  **Sicherheitsupdates installieren:** Stellen Sie Microsoft 365 Apps for Enterprise auf den Sicherheitsstand vom 10. November 2026. Aktualisieren Sie Office LTSC 2021 mindestens auf Build 14334.21048 und Office LTSC 2024 mindestens auf Build 17932.21140.
+
+3.  **Update-Status dokumentieren:** Halten Sie pro Gerät Produkt, Architektur, Updatekanal, vorhandene Buildnummer und Zeitpunkt der Aktualisierung fest. Damit lässt sich der Stand für die betroffenen Office-Installationen nachvollziehen.
+
+4.  **Nicht aktualisierbare Installationen behandeln:** CISA verlangt für US-Bundesbehörden die Umsetzung der Hersteller-Massnahmen bis zum 24. November 2026 oder die Einstellung der Nutzung, falls keine Massnahmen verfügbar sind. Für alle Organisationen ist dies ein Anlass, nicht aktualisierbare Office-Installationen zeitnah zu ersetzen oder ausser Betrieb zu nehmen.
+
+Einen technischen Workaround, eine Konfigurationsänderung oder eine Einschränkung einer Outlook-Verwaltungsoberfläche nennen die geöffneten Hersteller- und Behördenquellen nicht. Die Massnahme gegen diese Schwachstelle ist deshalb das Update der betroffenen Office-Installation.
+
+## Prüfung auf Kompromittierung
+
+Microsoft, NVD und CISA veröffentlichen für CVE-2026-124194 in den geöffneten Quellen keine Indicators of Compromise, keine Dateinamen, keine IP-Adressen und keine Logsignaturen. Eine quellengestützte IOC-Suche lässt sich daher mit Stand vom 11. November 2026 nicht vorgeben.
+
+Prüfen Sie dennoch den Update-Status aller betroffenen Office-Installationen und bewahren Sie vorhandene Endpoint- und E-Mail-Sicherheitsprotokolle gemäss Ihrer Aufbewahrungsregel auf. Die verfügbaren Quellen beschreiben keine Hintertür und keine Bereinigungsschritte nach einer erfolgreichen Ausnutzung. Ein Update behebt die Schwachstelle, liefert jedoch keinen Nachweis darüber, ob ein bestimmter Vorgang bereits missbraucht wurde.
+
+## Einordnung
+
+Betroffen sind Organisationen und Einzelpersonen, die Outlook innerhalb von Microsoft 365 Apps for Enterprise oder Office LTSC 2021 beziehungsweise 2024 einsetzen. Die Schwachstelle erfordert laut CVSS-Vektor Benutzerinteraktion, hat jedoch keine Voraussetzung für Berechtigungen und kann über das Netzwerk ausgenutzt werden. Die Aufnahme in den CISA-KEV-Katalog zeigt, dass Ausnutzung bekannt ist und die Aktualisierung Priorität hat.
+
+## Quellen
+
+1.  [Microsoft Security Update Guide: CVE-2026-124194](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-124194): Hersteller-Advisory zur Outlook-Spoofing-Schwachstelle.
+
+2.  [Microsoft Learn: Release notes for Microsoft Office security updates](https://learn.microsoft.com/en-us/officeupdates/microsoft365-apps-security-updates): Sicherheitsupdates vom 10. November 2026, zugehörige Office-Builds und Zuordnung von CVE-2026-124194 zu Outlook.
+
+3.  [NVD: CVE-2026-124194](https://nvd.nist.gov/vuln/detail/CVE-2026-124194): Beschreibung, CVSS-Bewertung, CWE und betroffene Produkte sowie Fix-Builds für Office LTSC.
+
+4.  [CISA: Known Exploited Vulnerabilities Catalog, CVE-2026-124194](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-124194): KEV-Aufnahme vom 10. November 2026, Frist vom 24. November 2026 und behördliche Massnahme.
+
+----
+
+# Exchange-Sicherheitsupdates vom November 2026: neun Schwachstellen, erstes Update nur noch für Exchange SE
+
+URL: https://rafaelpfister.ch/blog/exchange-security-updates-november-2026
+Datum: 2026-11-11
+
+# Exchange-Sicherheitsupdates vom November 2026: neun Schwachstellen, erstes Update nur noch für Exchange SE
+
+Microsoft hat am 10. November 2026 ein Sicherheitsupdate (SU) für Exchange Server SE veröffentlicht. Laut KB-Artikel schliesst es neun Schwachstellen. Keine davon war vorab öffentlich bekannt, keine wird laut Security Update Guide aktiv ausgenutzt. Eine Remote-Code-Execution stuft Microsoft als *Critical* und als «Exploitation More Likely» ein; für sie genügt ein Konto mit geringen Rechten. Besonders ist dieser Monat aus zwei Gründen: Es ist das erste SU, das nur noch für Exchange SE erscheint, und die Exchange-Ausfälle nach den Windows-Server-Updates vom Oktober sind mit den Windows-Updates vom November behoben.
+
+## Für welche Exchange-Versionen das Update verfügbar ist
+
+Das SU vom 10. November 2026 steht nur für eine Version bereit:
+
+- **Exchange Server Subscription Edition (SE) RTM**: KB5133453, Build 15.2.2562.57; öffentlich verfügbar.
+
+Den eigenen Stand können Sie mit der Übersicht der [Exchange-Buildnummern](/tools/exchange-builds) abgleichen.
+
+Für Exchange 2016 und 2019 gibt es kein Update. Das [Oktober-SU](/blog/exchange-security-updates-oktober-2026) war das letzte, auch für Kunden im Period-2-ESU-Programm, und laut Ankündigung ist dieses Programm beendet. Exchange Online ist laut Microsoft bereits geschützt; in Hybrid-Umgebungen braucht trotzdem jeder Exchange-Server das SU, auch reine Management-Server und Maschinen mit den Exchange Management Tools.
+
+## Die Schwachstellen im Überblick
+
+| CVE | Typ | CVSS |
+| --- | --- | --- |
+| CVE-2026-118207 | Remote Code Execution | 8.8 |
+| CVE-2026-118149 | Remote Code Execution | 8.8 |
+| CVE-2026-118150 | Elevation of Privilege | 8.8 |
+| CVE-2026-118154 | Elevation of Privilege | 8.8 |
+| CVE-2026-118153 | Denial of Service | 7.5 |
+| CVE-2026-118151 | Elevation of Privilege | 7.2 |
+| CVE-2026-118157 | Elevation of Privilege | 7.2 |
+| CVE-2026-118208 | Spoofing | 7.1 |
+| CVE-2026-118152 | Spoofing | 6.5 |
+
+Alle neun Lücken sind über das Netzwerk erreichbar (AV:N) und haben laut CVSS-Vektor eine niedrige Angriffskomplexität (AC:L). Der Security Update Guide führt als betroffenes Produkt nur Exchange Server SE RTM.
+
+**[CVE-2026-118207](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118207)** ist die einzige Lücke des Monats, die Microsoft als *Critical* einstuft (Remote Code Execution, CVSS 8.8), und die einzige mit der Einschätzung «Exploitation More Likely». Laut FAQ im Security Update Guide kann ein authentifizierter Angreifer mit geringen Rechten eine präparierte Anfrage an einen betroffenen Server senden und damit Code auf dem Server ausführen; eine Benutzerinteraktion ist nicht nötig. Als Ursache nennt Microsoft eine unzureichende Eingabeprüfung (CWE-706). Für den Angriff reicht also ein gewöhnliches Postfachkonto, zum Beispiel eines mit einem per Phishing erbeuteten Kennwort.
+
+**[CVE-2026-118149](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118149)** ist die zweite Remote-Code-Execution (CVSS 8.8, *Important*). Auch hier sendet ein authentifizierter Angreifer laut FAQ eine präparierte Anfrage an einen betroffenen Dienst und kann danach Code auf dem Zielsystem ausführen; die Ursache ist eine Code-Injection (CWE-94). Microsoft bewertet die Ausnutzung als «Exploitation Unlikely».
+
+**[CVE-2026-118153](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118153)** (Denial of Service, CVSS 7.5) setzt als einzige Lücke weder ein Konto noch eine Benutzerinteraktion voraus. Laut Beschreibung kann ein nicht authentifizierter Angreifer den Dienst über das Netzwerk ausser Betrieb setzen; die Ursache ist eine ineffiziente algorithmische Komplexität (CWE-407). Betroffen ist laut Vektor nur die Verfügbarkeit, nicht die Vertraulichkeit oder Integrität.
+
+Die vier Rechteausweitungen unterscheiden sich in der Voraussetzung: Für [CVE-2026-118150](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118150) und [CVE-2026-118154](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118154) (beide CVSS 8.8) genügt ein Konto mit geringen Rechten, für [CVE-2026-118151](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118151) und [CVE-2026-118157](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118157) (beide CVSS 7.2) braucht der Angreifer bereits hohe Rechte. Bei CVE-2026-118151 kann er laut FAQ SYSTEM-Rechte erlangen.
+
+Von den beiden Spoofing-Lücken verlangt [CVE-2026-118208](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118208) (CVSS 7.1) ein Konto mit geringen Rechten. [CVE-2026-118152](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-118152) (CVSS 6.5) ist ein Cross-Site-Request-Forgery: Der Angreifer braucht kein Konto, ein Benutzer muss aber mitwirken (UI:R). Alle Lücken ausser CVE-2026-118207 und CVE-2026-118149 sind als «Exploitation Less Likely» eingestuft.
+
+## Exchange 2016 und 2019: kein Update, keine Prüfung mehr
+
+Die Ankündigung nennt Exchange 2016 und 2019 nur noch in einem Hinweis: Diese Versionen werden nicht mehr auf Schwachstellen getestet, und es erscheinen keine Updates mehr. Microsoft schreibt, man solle sie als dauerhaft verwundbar betrachten («permanently vulnerable») und die Organisation sofort aktualisieren. Dass die neun November-CVEs nur Exchange SE aufführen, sagt deshalb nichts darüber aus, ob die älteren Versionen betroffen sind. Frankys Web weist darauf hin, dass Exchange SE und 2019 CU15 technisch nahe beieinander liegen und zumindest ein Teil der Lücken vermutlich auch in Exchange 2019 vorhanden ist.
+
+Für den Betrieb heisst das:
+
+1. **Exchange 2019 CU15 und älter, Exchange 2016**: Der Stand bleibt auf dem Oktober-SU (mit ESU) oder älter eingefroren. Die neun Lücken vom November bleiben auf diesen Servern offen, falls sie dort vorhanden sind, und Microsoft prüft das nicht mehr.
+
+2. **Migration**: Microsoft empfiehlt den sofortigen Umstieg auf Exchange SE.
+
+3. **Hybrid-Umgebungen**: Exchange Online drosselt und blockiert den Mailfluss von veralteten On-Premises-Servern; die Regeln stehen im [Artikel zum Transport-Enforcement](/blog/exchange-online-transport-enforcement-hybrid-server).
+
+## Behobene Probleme
+
+**Exchange-Ausfälle nach den Windows-Server-Updates vom Oktober** (alle Versionen). Das Problem mit `MapiExceptionMdbOffline` (ec=1142) behebt nicht das Exchange-SU: Laut Ankündigung sind die Windows-Server-Updates vom November 2026 zu installieren. Die Release Notes dieser Updates führen den Fix unter «[Exchange Server]» und nennen das Problem als gelöst mit Updates ab dem 10. November 2026: KB5131080 für Windows Server 2025, KB5131090 für Windows Server 2022, KB5131085 für Windows Server 2019 und KB5131291 für Windows Server 2016. Die Reihenfolge, in der Sie das Exchange-SU und das Windows-Update installieren, spielt laut Ankündigung keine Rolle. Haben Sie den Registry-Wert `EpmapSavedContextCap` aus dem [Artikel zu den Exchange-Ausfällen](/blog/exchange-windows-updates-oktober-2026) gesetzt, können Sie ihn stehen lassen; nach der Installation der November-Updates für Windows Server ist er laut Microsoft nicht mehr nötig.
+
+**Falsche Frei/Gebucht-Anzeige über Microsoft Graph in Hybrid-Umgebungen** (nur Exchange SE). Laut [KB5135867](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5135867) sahen Benutzer mit On-Premises-Postfach im klassischen Outlook für Exchange-Online-Postfächer keine korrekten Frei/Gebucht-Informationen, wenn die Graph API aktiviert war; angezeigt wurden nur Zeitblöcke. Mit Exchange Web Services (EWS) statt der Graph API stimmte die Anzeige. Das Problem ist mit KB5133453 oder einem neueren Update behoben. Eine Nacharbeit nennt der Support-Artikel nicht. Haben Sie wegen dieses Fehlers auf EWS zurückgestellt, prüfen Sie nach der Installation die Frei/Gebucht-Abfrage eines Exchange-Online-Postfachs, bevor Sie die Graph API wieder aktivieren.
+
+## Bekannte Probleme
+
+Weder die Ankündigung noch KB5133453 nennen Known Issues für das November-SU (Stand 11. November 2026). Die Ankündigung hat keine Kommentare des Exchange-Teams, und Microsoft weist darauf hin, dass die Dokumentation zum Zeitpunkt der Veröffentlichung noch unvollständig sein kann. Aus den Vormonaten ist kein Known Issue mehr offen: Die Probleme der September-Updates sind seit dem Oktober-SU erledigt, und das Windows-Problem vom Oktober ist mit den November-Updates für Windows Server behoben (siehe oben).
+
+## Installation und Nachbereitung
+
+Microsoft nennt in der Ankündigung den bekannten Ablauf: mit dem [Exchange Health Checker](https://aka.ms/ExchangeHealthChecker) inventarisieren, welche Server Updates oder manuelle Schritte brauchen, das SU installieren, den Server neu starten und prüfen, ob alle Exchange-Dienste laufen. Sind Dienste nach dem Setup deaktiviert, wurde die Installation unterbrochen. Bei Fehlern während oder nach der Installation verweist Microsoft auf das [SetupAssist-Skript](https://aka.ms/ExSetupAssist). Nach der Installation zeigt der Health Checker laut KB5133453, ob das SU korrekt installiert ist und weitere Schritte nötig sind.
+
+Die Installationsdatei heisst laut KB5133453 `ExchangeSubscriptionEdition-KB5133453-x64-en.exe` (Download Center: «SU12»). Das SU ersetzt das Oktober-SU KB5128895. SUs sind kumulativ: Wer ein älteres SU auf Exchange SE RTM installiert hat, installiert direkt das November-SU.
+
+Für Hybrid-Umgebungen gilt laut FAQ: Wird nach der Installation eines SUs das Auth-Zertifikat gewechselt, ist der Hybrid Configuration Wizard erneut auszuführen. Auf Windows Server 2025 erscheinen installierte Exchange-SUs nicht in der Systemsteuerung; Microsoft rät davon ab, SUs zu deinstallieren.
+
+Aus den Vormonaten bleiben diese Nacharbeiten offen, falls noch nicht erledigt: den Frei/Gebucht-Override `EnableRouteThroughMSGraphFeature` zurücknehmen (siehe [Oktober-Artikel](/blog/exchange-security-updates-oktober-2026)), den Wrapper-SettingOverride `DisableBlockSharedAndUserMailboxHeaders` entfernen (siehe [September-Artikel](/blog/exchange-security-updates-september-2026)) und prüfen, ob die CVE-2026-42897-Mitigation (M2.1.0) noch aktiv ist (siehe [Artikel zum Juli-SU](/blog/exchange-security-updates-juli-2026)).
+
+## Empfohlenes Vorgehen
+
+Installieren Sie das November-SU zeitnah auf allen Servern mit Exchange SE und auf den Maschinen mit den Management Tools: Für die kritische Remote-Code-Execution CVE-2026-118207 genügt ein Konto mit geringen Rechten, und Microsoft hält ihre Ausnutzung für wahrscheinlicher. Installieren Sie im selben Wartungsfenster die November-Updates für Windows Server, damit die Ursache der Oktober-Ausfälle behoben ist. Für Exchange 2016 und 2019 gibt es keinen Patch mehr; diese Server sind laut Microsoft als dauerhaft verwundbar zu betrachten und sollten sofort durch Exchange SE ersetzt werden.
+
+## Quellen
+
+1.  [Released: November 2026 Exchange Server Security Updates – Microsoft Community Hub](https://techcommunity.microsoft.com/blog/exchange/released-november-2026-exchange-server-security-updates/4570368): Ankündigung vom 10. November 2026 mit unterstützter Version, Hinweis zu Exchange 2016/2019, dem behobenen Windows-Problem und FAQ (keine Kommentare des Exchange-Teams, Stand 11. November 2026).
+
+2.  [Description of the security update for Microsoft Exchange Server Subscription Edition RTM November 10, 2026 (KB5133453) – Microsoft Support](https://support.microsoft.com/help/5133453): CVE-Liste, behobenes Problem, Installationsdatei, ersetztes Update und Hinweis auf den Health Checker.
+
+3.  [Security Update Guide – Microsoft Security Response Center](https://msrc.microsoft.com/update-guide/): Typ, CVSS, Schweregrad, Ausnutzungseinschätzung, FAQ und betroffenes Produkt der neun November-CVEs.
+
+4.  [Exchange Server build numbers and release dates – Microsoft Learn](https://learn.microsoft.com/en-us/exchange/new-features/build-numbers-and-release-dates): Buildnummer des November-SUs.
+
+5.  [Microsoft graph displays incorrect free/busy availability information in Microsoft Exchange server SE hybrid setup – Microsoft Support](https://support.microsoft.com/en-us/servicing/exchange/server/update/2026/5135867): Symptome und Fix mit KB5133453.
+
+6.  [Exchange servers may become unstable after installation of October 2026 Windows updates – Microsoft Community Hub](https://techcommunity.microsoft.com/t5/exchange-team-blog/exchange-servers-may-become-unstable-after-installation-of/ba-p/4565382): Beitrag des Exchange-Teams zum Windows-Problem vom Oktober, auf den die Ankündigung verweist.
+
+7.  [November 10, 2026: KB5131080 (OS Build 26100.33822) – Microsoft Support](https://support.microsoft.com/help/5131080): Release Notes für Windows Server 2025 mit dem Exchange-Fix und dem als gelöst markierten Known Issue.
+
+8.  [November 10, 2026: KB5131090 (OS Build 20348.5870) – Microsoft Support](https://support.microsoft.com/help/5131090): Release Notes für Windows Server 2022 mit demselben Fix.
+
+9.  [November 10, 2026: KB5131085 (OS Build 17763.9487) – Microsoft Support](https://support.microsoft.com/help/5131085): Release Notes für Windows Server 2019 mit demselben Fix.
+
+10. [November 10, 2026: KB5131291 (OS Build 14393.9688) – Microsoft Support](https://support.microsoft.com/help/5131291): Release Notes für Windows Server 2016 mit demselben Fix.
+
+11. [Neue Sicherheitsupdates für Exchange Server (November 2026) – Frankys Web](https://www.frankysweb.de/neue-sicherheitsupdates-fuer-exchange-server-november-2026/): Deutschsprachige Aufschlüsselung der neun CVEs und Einordnung für Exchange 2016 und 2019.
+
+12. [Exchange Server Health Checker – Microsoft CSS-Exchange](https://aka.ms/ExchangeHealthChecker): Inventarisierung von CU/SU-Ständen vor und nach der Installation.
+
+----
+
 # Outlook.com lehnt Mails ohne DMARC-Record ab: Fehler AS9031519
 
 URL: https://rafaelpfister.ch/blog/outlook-com-dmarc-ablehnung-as9031519
@@ -20528,6 +20716,238 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# CVE-2026-124194: Outlook Spoofing Is Being Exploited - Update and Check Your Office Version
+
+URL: https://rafaelpfister.ch/en/blog/cve-2026-124194-outlook-spoofing-is-being-exploited-update-and-check-your-office-version
+Datum: 2026-11-11
+
+# CVE-2026-124194: Outlook Spoofing Is Being Exploited - Update and Check Your Office Version
+
+Microsoft released security updates for CVE-2026-124194 on November 10, 2026. The vulnerability in Microsoft Office Outlook allows an unauthenticated attacker to perform spoofing over the network if user interaction occurs. Microsoft 365 Apps for Enterprise and Microsoft Office LTSC 2021 and 2024 are affected. NVD rates the vulnerability CVSS 3.1: 6.5 (Medium); Microsoft marks exploitation as detected, and CISA added it to the KEV Catalog on November 10, 2026. Updates are available.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Help with updating and verification</p>
+<p>If you need help securing your environment, checking for compromise, or updating Outlook, please use the <a href="https://adeptio.ch/en">contact form on adeptio.ch</a>. I can also get back to you at short notice.</p>
+</div>
+
+## Key points at a glance
+
+| Feature | Details |
+|---|---|
+| Advisory | Microsoft Security Update Guide, CVE-2026-124194; published November 10, 2026 |
+| CVE | CVE-2026-124194 |
+| Rating | CVSS 3.1: 6.5 (Medium), `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N/E:H/RL:O/RC:C` |
+| Vulnerability type | Missing warning in the product interface before potentially unsafe actions, CWE-356 |
+| Prerequisites | Network access and user interaction; no privileges required |
+| Affected versions | Microsoft 365 Apps for Enterprise, Office LTSC 2021, and Office LTSC 2024 on 32-bit and x64 systems |
+| Fixed versions | Office LTSC 2021 from build 14334.21048, Office LTSC 2024 from build 17932.21140; security updates from November 10, 2026, are available for Microsoft 365 Apps |
+| Exploitation / KEV date | Microsoft reports detected exploitation; CISA KEV since November 10, 2026 |
+| CISA deadline for U.S. federal agencies | November 24, 2026 |
+| Workaround | Microsoft and CISA do not name a workaround in the available sources; install the security update |
+
+## Affected versions and updates
+
+| Version branch | Affected | Fixed |
+|---|---|---|
+| Microsoft 365 Apps for Enterprise | NVD lists Microsoft 365 Apps for Enterprise as affected. | Security updates from November 10, 2026. Microsoft lists builds for Current Channel, Monthly Enterprise Channel, and Semi-Annual Enterprise Channel. |
+| Office LTSC 2021 | Versions from 16.0.1 below build 14334.21048 | Build 14334.21048 or later |
+| Office LTSC 2024 | Versions from 16.0.0 below build 17932.21140 | Build 17932.21140 or later |
+
+For Microsoft 365 Apps for Enterprise, Microsoft lists, among others, these builds on November 10, 2026: Current Channel 20527.20196, Monthly Enterprise Channel 20527.20194, 20430.20264, and 20326.20320, as well as Semi-Annual Enterprise Channel 20527.20192, 20430.20262, and 20326.20318. The applicable build number for a device depends on its update channel. The Office security release notes assign CVE-2026-124194 to Outlook.
+
+## What is known about exploitation
+
+Microsoft lists CVE-2026-124194 in the security updates of November 10, 2026, as a case with detected exploitation. CISA considers the vulnerability actively exploited and added it to the KEV Catalog on the same day. The available Microsoft, NVD, and CISA entries contain no information about attackers, target organizations, attack campaigns, or the technical process of exploitation.
+
+CISA marks use in ransomware campaigns as “Unknown.” CISA does not require forensic triage under BOD 26-04 for this KEV entry.
+
+## Immediate actions
+
+1.  **Inventory Office versions:** For Microsoft 365 Apps for Enterprise, determine the update channel and installed build number. For Office LTSC 2021 and 2024, compare the version with the fixed builds in the table.
+
+2.  **Install security updates:** Update Microsoft 365 Apps for Enterprise to the security level of November 10, 2026. Update Office LTSC 2021 to at least build 14334.21048 and Office LTSC 2024 to at least build 17932.21140.
+
+3.  **Document update status:** Record the product, architecture, update channel, current build number, and update time for each device. This makes it possible to track the status of affected Office installations.
+
+4.  **Address installations that cannot be updated:** CISA requires U.S. federal agencies to implement vendor measures by November 24, 2026, or discontinue use if no measures are available. For all organizations, this is a reason to replace or retire Office installations that cannot be updated promptly.
+
+The available vendor and government sources do not mention a technical workaround, a configuration change, or a restriction of an Outlook management interface. The measure against this vulnerability is therefore to update the affected Office installation.
+
+## Checking for compromise
+
+Microsoft, NVD, and CISA do not publish any indicators of compromise, file names, IP addresses, or log signatures for CVE-2026-124194 in the available sources. Therefore, no source-based IOC search can be specified as of November 11, 2026.
+
+Nevertheless, check the update status of all affected Office installations and retain existing endpoint and email security logs according to your retention policy. The available sources do not describe a backdoor or remediation steps after successful exploitation. An update fixes the vulnerability but does not provide evidence of whether a specific process has already been abused.
+
+## Assessment
+
+Affected are organizations and individuals using Outlook within Microsoft 365 Apps for Enterprise or Office LTSC 2021 or 2024. According to the CVSS vector, the vulnerability requires user interaction, but it has no privilege requirement and can be exploited over the network. Its inclusion in the CISA KEV Catalog shows that exploitation is known and that updating is a priority.
+
+## Sources
+
+1.  [Microsoft Security Update Guide: CVE-2026-124194](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-124194): Vendor advisory on the Outlook spoofing vulnerability.
+
+2.  [Microsoft Learn: Release notes for Microsoft Office security updates](https://learn.microsoft.com/en-us/officeupdates/microsoft365-apps-security-updates): Security updates from November 10, 2026, associated Office builds, and assignment of CVE-2026-124194 to Outlook.
+
+3.  [NVD: CVE-2026-124194](https://nvd.nist.gov/vuln/detail/CVE-2026-124194): Description, CVSS rating, CWE, affected products, and fixed builds for Office LTSC.
+
+4.  [CISA: Known Exploited Vulnerabilities Catalog, CVE-2026-124194](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-124194): KEV addition on November 10, 2026, deadline of November 24, 2026, and government action.
+
+----
+
+# Outlook.com Rejects Email Without a DMARC Record: Error AS9031519
+
+URL: https://rafaelpfister.ch/en/blog/outlook-com-rejects-email-without-a-dmarc-record-error-as9031519
+Datum: 2026-11-10
+
+# Outlook.com Rejects Email Without a DMARC Record: Error AS9031519
+
+Since November 5, 2026, messages sent to mailboxes at Outlook.com, Hotmail, Live, and MSN have been bouncing with a new error when the sender domain has not published a DMARC record:
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+Information current as of November 10, 2026.
+
+## What Microsoft documents
+
+Outlook.com's postmaster policies still contain only the rule from May 5, 2025: Domains that send more than 5,000 messages per day to Outlook.com accounts must pass SPF and DKIM and publish a DMARC record with at least `p=none`, aligned through SPF or DKIM. Messages that do not meet these requirements first end up in the Junk Email folder and may later be rejected with the following error:
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+For all other senders, the same page merely makes a recommendation. The suffix `AS9031519` and the error text `Message lacks SPF/DKIM/DMARC Auth Records` appear neither in the postmaster policies nor in the support article on 5.7.515.
+
+Microsoft has commented on the current situation only in the Microsoft Q&A forums. On November 9, a moderator identified as “Microsoft External Staff” wrote that an ongoing issue in the Exchange service was affecting delivery to Outlook.com, Hotmail.com, and Live.com. It was classified as a service degradation, and Microsoft was investigating the cause. The post does not provide an incident number, a cause, or a date for a fix. There is no blog post, postmaster-policy entry, or public service-health notice.
+
+## What operators have observed
+
+The most reliable data comes from mail providers that analyzed their logs and published their findings on the mailop mailing list and in their own blog posts (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Their observations align:
+
+- **Trigger:** The sender domain has no DMARC record. SPF and DKIM were valid and aligned in the documented cases. Although the error text mentions all three mechanisms, rejection is due to the missing DMARC record.
+- **Volume:** Domains with only a few messages per week are also affected, far below the threshold of 5,000 per day.
+- **Recipients:** Only consumer mailboxes (outlook.com, hotmail.com, live.com, msn.com, and country variants such as hotmail.de or outlook.be). According to the available reports, Exchange Online tenants as recipients do not reject with this error.
+- **Intermittent:** Only some messages are rejected. Resending the same message may succeed.
+- **Resolution:** A record with `v=DMARC1; p=none` was sufficient in the documented cases. After publication, it took anywhere from a few minutes to about an hour and a half before Outlook.com accepted messages again.
+
+Two analyses narrow down the trigger further: At one.com, only domains whose query for `_dmarc.<domain>` ended with `NXDOMAIN` were rejected. Domains for which the name existed but no TXT record was present (`NOERROR` without an answer) were not affected there. MXroute found 367 rejected sender domains in one log, 286 of them with `NXDOMAIN` for `_dmarc`. This narrowing is based on data from individual operators and has not been conclusively clarified.
+
+Since midday on November 9, some affected users have reported that the rejections have stopped. Microsoft has not confirmed this.
+
+## Special case: Microsoft 365 as the sender
+
+Microsoft 365 tenants are disproportionately affected as senders. Microsoft 365 does not create a DMARC record for a custom domain, and until DKIM is enabled for the domain, Exchange Online signs with the tenant’s `onmicrosoft.com` domain. The non-delivery report additionally wraps the rejection in a second status code that refers to SPF:
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+In these cases, the SPF record is generally correct. What matters is the inner error after the arrow.
+
+## Checking your own domain
+
+The TXT record queried is under `_dmarc.<domain>`:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `+short` | `dig` outputs only the record contents |
+| `TXT` or `-Type TXT` | Query record type |
+| `_dmarc.example.com` or `-Name` | Queried name: the `_dmarc` label before the sender domain |
+
+</details>
+
+Empty output from `dig +short` or the error `DNS name does not exist` from `Resolve-DnsName` means that no DMARC record exists. For subdomains: If `news.example.com` sends mail and has no record of its own, RFC 7489 uses the record of the organizational domain `example.com`.
+
+The [Mail DNS Check](https://rafaelpfister.ch/tools/mail-check) on this site checks DMARC together with SPF, DKIM, and alignment in one pass.
+
+## Immediate action and what comes next
+
+If the record is missing, this entry restores delivery to Outlook.com:
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` does not change how other recipients handle your email and can therefore be published without preparation. The `rua` tag is not required for acceptance by Outlook.com. Without `rua`, however, you will not receive aggregate reports, and without those reports there is no basis for any further step. The address must reach a mailbox or analysis service that processes the XML reports.
+
+`p=none` does not protect the domain against abuse. The record merely meets the acceptance requirement. For effective protection, follow these steps:
+
+1. Identify all systems that send using the domain (mail servers, newsletter service, ERP, web store, scanners).
+2. Keep SPF complete and valid for these systems, with no more than ten DNS lookups.
+3. Enable DKIM with your own domain, in Microsoft 365 for each domain in the Defender portal.
+4. Analyze aggregate reports for several weeks and correct unaligned sources.
+5. Raise the policy to `p=quarantine` and then to `p=reject`.
+
+The [Guide for DNS admins](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine) describes common errors when publishing these records (duplicate SPF records, DKIM keys that are too long, automatically appended zone names).
+
+## The impact in Switzerland: 152 municipalities in five days
+
+The [Swiss Mail Security Index](https://rafaelpfister.ch/open-data/mail-security-index) checks the DNS records of 3,364 Swiss organizations every night, including 2,078 municipalities. The [change log](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) shows a wave of newly published DMARC records since November 6. Each date is that of the nightly comparison.
+
+| Comparison | Organizations newly with a DMARC record | Of these, municipalities |
+|---|---|---|
+| October 19 through November 5 | at most 5 per day | at most 4 per day |
+| November 6 | 4 | 4 |
+| November 7 | 22 | 21 |
+| November 8 | 1 | 1 |
+| November 9 | 2 | 2 |
+| November 10 | 140 | 124 |
+
+In five days, 169 organizations published a DMARC record for the first time, 152 of them municipalities. The number of organizations without DMARC in the index fell from 817 to 650. The timing coincides with the Outlook.com rejections. I did not ask the municipalities themselves about the reasons.
+
+The records have the following characteristics:
+
+- **Policy:** 139 of the 152 municipalities set `p=none`, five set `p=quarantine`, and three set `p=reject`. For five, the record consists only of `v=DMARC1` without a `p=` tag and is therefore invalid.
+- **Reports:** 114 records contain only `v=DMARC1; p=none`. In total, 124 of the 152 municipalities have not entered a `rua` address and therefore receive no reports.
+- **Centralized changes:** The changes occur in clusters. On November 10, 32 Geneva municipalities were added, whose mail servers all run under `acg-geneve.ch`, along with 26 Zurich and 19 Fribourg municipalities. On November 7, there were eight municipalities in Nidwalden and seven in Ticino. The clustering by mail server and canton suggests that IT service providers set the records for all managed municipalities in a single pass.
+
+These records are sufficient for delivery to Outlook.com. They do not yet protect municipal domains against forged senders: Without `rua`, the data needed to raise the policy later is missing. Of the 2,078 municipalities in the index, 537 still have no DMARC record.
+
+## Assessment
+
+Whether Microsoft withdraws the rejection or confirms it as a rule remains open. This matters little for planning: Google and Yahoo have required DMARC from bulk senders since February 2024, Microsoft since May 2025, and Outlook.com's postmaster policies recommend it to all senders. In recent days, a domain without a DMARC record was no longer reliably deliverable to one of the largest mail providers. The record with `p=none` and `rua` can be published in a few minutes and has no side effects on delivery.
+
+## Sources
+
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Official sender requirements; states the threshold of 5,000 messages per day, error 5.7.515, and the recommendation for all senders.
+
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Support article on the documented error for high-volume senders.
+
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Forum thread containing the moderator response of November 9, 2026, on the ongoing issue; a forum post, not an official service-health notice.
+
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Analysis of a mail provider's outgoing logs starting November 5, 2026.
+
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Hosting provider report with more than 500 rejections on the first day and resolution through `p=none`.
+
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Operator mailing-list thread with measurements from MXroute, Fastmail, and one.com, including the narrowing down to `NXDOMAIN`.
+
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Reproduced test with valid and aligned SPF and DKIM, without a DMARC record.
+
+8.  [heise online: Outlook.com: The email is genuine, yet it still does not arrive](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): German-language summary of the reports from November 9, 2026.
+
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Specification, including how to determine the record through the organizational domain.
+
+10.  [Swiss Mail Security Index: Change log](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Daily DNS record changes for 3,364 Swiss organizations; basis for the figures on municipalities.
+
+----
+
 # Kiteworks EPG 9.5.1: Four publicly documented security fixes
 
 URL: https://rafaelpfister.ch/en/blog/kiteworks-epg-9-5-1-four-publicly-documented-security-fixes
@@ -40833,6 +41253,159 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Outlook.com rejette les e-mails sans enregistrement DMARC : erreur AS9031519
+
+URL: https://rafaelpfister.ch/fr/blog/outlook-com-rejette-les-e-mails-sans-enregistrement-dmarc-erreur-as9031519
+Datum: 2026-11-10
+
+# Outlook.com rejette les e-mails sans enregistrement DMARC : erreur AS9031519
+
+Depuis le 5 novembre 2026, les messages envoyés vers des boîtes aux lettres Outlook.com, Hotmail, Live et MSN reviennent avec une nouvelle erreur lorsque le domaine expéditeur n’a pas publié d’enregistrement DMARC :
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+État des informations : 10 novembre 2026.
+
+## Ce que Microsoft documente
+
+Les politiques Postmaster d’Outlook.com ne contiennent toujours que la règle du 5 mai 2025 : les domaines qui envoient plus de 5 000 messages par jour à des comptes Outlook.com doivent passer SPF et DKIM et publier un enregistrement DMARC avec au minimum `p=none`, aligné via SPF ou DKIM. Les messages qui ne remplissent pas ces conditions arrivent d’abord dans le dossier Courrier indésirable et peuvent ensuite être rejetés avec l’erreur suivante :
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+Pour tous les autres expéditeurs, cette même page ne formule qu’une recommandation. La mention `AS9031519` et le texte d’erreur `Message lacks SPF/DKIM/DMARC Auth Records` ne figurent ni dans les politiques Postmaster ni dans l’article de support relatif à 5.7.515.
+
+Microsoft ne s’est exprimé sur la situation actuelle que dans les forums Microsoft Q&A. Le 9 novembre, un modérateur identifié comme « Microsoft External Staff » a écrit qu’une perturbation en cours touchait le service Exchange lors de la remise à Outlook.com, Hotmail.com et Live.com. Elle est classée comme une dégradation de service et Microsoft en examine la cause. La publication ne mentionne ni numéro d’incident, ni cause, ni date de résolution. Aucun article de blog, ajout aux politiques Postmaster ni message public de santé du service n’est disponible.
+
+## Ce que les opérateurs ont mesuré
+
+Les données les plus fiables proviennent de fournisseurs de messagerie ayant analysé leurs journaux et publié les résultats sur la liste de diffusion mailop ainsi que dans leurs propres articles de blog (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Les observations concordent :
+
+- **Déclencheur :** le domaine expéditeur ne possède pas d’enregistrement DMARC. SPF et DKIM étaient valides et alignés dans les cas documentés. Le texte de l’erreur mentionne les trois mécanismes, mais le rejet est dû à l’absence d’enregistrement DMARC.
+- **Volume :** même des domaines envoyant quelques messages par semaine sont touchés, bien en dessous du seuil de 5 000 par jour.
+- **Destinataires :** seules les boîtes grand public sont concernées (outlook.com, hotmail.com, live.com, msn.com et des variantes nationales telles que hotmail.de ou outlook.be). Selon les rapports disponibles, les tenants Exchange Online destinataires ne rejettent pas avec cette erreur.
+- **Irrégulier :** seule une partie des messages est rejetée. Un nouvel envoi du même message peut passer.
+- **Correction :** un enregistrement avec `v=DMARC1; p=none` a suffi dans les cas documentés. Après publication, Outlook.com a recommencé à accepter les messages après quelques minutes à environ une heure et demie.
+
+Deux analyses précisent davantage le déclencheur : chez one.com, seuls les domaines dont la requête pour `_dmarc.<domain>` se termine par `NXDOMAIN` ont été rejetés. Les domaines pour lesquels le nom existe mais sans enregistrement TXT (`NOERROR` sans réponse) n’y étaient pas concernés. Dans un journal, MXroute a trouvé 367 domaines expéditeurs rejetés, dont 286 avec `NXDOMAIN` sur `_dmarc`. Cette délimitation repose sur les données d’opérateurs individuels et n’est pas définitivement établie.
+
+Depuis midi le 9 novembre, certaines personnes concernées signalent que les rejets ont cessé. Microsoft ne l’a pas confirmé.
+
+## Cas particulier : Microsoft 365 comme expéditeur
+
+Les tenants Microsoft 365 sont touchés de manière disproportionnée en tant qu’expéditeurs. Microsoft 365 ne crée pas d’enregistrement DMARC pour un domaine propre et, tant que DKIM n’est pas activé pour le domaine, Exchange Online signe avec le domaine `onmicrosoft.com` du tenant. Le rapport de non-remise enveloppe en outre le rejet dans un second code d’état faisant référence à SPF :
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+Dans ces cas, l’enregistrement SPF est généralement correct. L’erreur interne après la flèche est déterminante.
+
+## Vérifier son propre domaine
+
+La requête porte sur l’enregistrement TXT sous `_dmarc.<domain>` :
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `+short` | `dig` affiche uniquement le contenu de l’enregistrement |
+| `TXT` ou `-Type TXT` | Type d’enregistrement de la requête |
+| `_dmarc.example.com` ou `-Name` | Nom interrogé : le label `_dmarc` avant le domaine expéditeur |
+
+</details>
+
+Une sortie vide avec `dig +short` ou l’erreur `DNS name does not exist` avec `Resolve-DnsName` signifie qu’aucun enregistrement DMARC n’existe. Pour les sous-domaines : si `news.example.com` envoie des messages et ne possède pas lui-même d’enregistrement, l’enregistrement du domaine organisationnel `example.com` s’applique selon la RFC 7489.
+
+Le [contrôle DNS des e-mails](https://rafaelpfister.ch/tools/mail-check) de cette page vérifie DMARC avec SPF, DKIM et l’alignement en une seule opération.
+
+## Mesure immédiate et suite de la démarche
+
+Si l’enregistrement manque, cette entrée rétablit la remise vers Outlook.com :
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` ne modifie pas le traitement de vos e-mails chez les autres destinataires et peut donc être publié sans préparation préalable. La balise `rua` n’est pas nécessaire pour l’acceptation par Outlook.com. Sans `rua`, vous ne recevez toutefois aucun rapport agrégé, et sans ces rapports, il manque la base nécessaire à toute étape ultérieure. L’adresse doit aboutir à une boîte aux lettres ou à un service d’analyse qui traite les rapports XML.
+
+`p=none` ne protège pas le domaine contre les abus. L’enregistrement ne remplit que la condition d’acceptation. Pour une protection efficace, suivez ces étapes :
+
+1. Recenser tous les systèmes qui envoient avec le domaine (serveur de messagerie, service de newsletter, ERP, boutique en ligne, scanner).
+2. Maintenir SPF complet et valide pour ces systèmes, avec au maximum dix recherches DNS.
+3. Activer DKIM avec le domaine propre, dans Microsoft 365 pour chaque domaine dans le portail Defender.
+4. Analyser les rapports agrégés pendant quelques semaines et corriger les sources non alignées.
+5. Relever la politique à `p=quarantine`, puis à `p=reject`.
+
+Le [guide pour administrateurs DNS](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine) décrit les erreurs typiques lors de la publication de ces enregistrements (enregistrements SPF en double, clés DKIM trop longues, nom de zone ajouté automatiquement).
+
+## L’effet en Suisse : 152 communes en cinq jours
+
+L’[indice de sécurité des e-mails Suisse](https://rafaelpfister.ch/open-data/mail-security-index) vérifie chaque nuit les enregistrements DNS de 3 364 organisations suisses, dont 2 078 communes. Le [journal des modifications](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) montre depuis le 6 novembre une vague de nouveaux enregistrements DMARC publiés. La date correspond à chaque fois à la synchronisation nocturne.
+
+| Synchronisation | Organisations nouvellement dotées d’un enregistrement DMARC | dont communes |
+|---|---|---|
+| 19 octobre au 5 novembre | au maximum 5 par jour | au maximum 4 par jour |
+| 6 novembre | 4 | 4 |
+| 7 novembre | 22 | 21 |
+| 8 novembre | 1 | 1 |
+| 9 novembre | 2 | 2 |
+| 10 novembre | 140 | 124 |
+
+En cinq jours, 169 organisations ont publié pour la première fois un enregistrement DMARC, dont 152 communes. Le nombre d’organisations sans DMARC dans l’indice est passé de 817 à 650. Le moment coïncide avec les rejets chez Outlook.com. Je n’ai pas demandé les raisons aux communes elles-mêmes.
+
+Les enregistrements présentent les caractéristiques suivantes :
+
+- **Politique :** 139 des 152 communes ont défini `p=none`, cinq `p=quarantine`, trois `p=reject`. Pour cinq communes, l’enregistrement se limite à `v=DMARC1` sans balise `p=` ; il est donc invalide.
+- **Rapports :** 114 enregistrements contiennent exclusivement `v=DMARC1; p=none`. Au total, 124 des 152 communes n’ont pas renseigné d’adresse `rua` et ne reçoivent donc aucun rapport.
+- **Conversions centralisées :** les changements apparaissent de manière groupée. Le 10 novembre, 32 communes genevoises ont été ajoutées, dont les serveurs de messagerie fonctionnent tous sous `acg-geneve.ch`, ainsi que 26 communes zurichoises et 19 communes fribourgeoises. Le 7 novembre, il s’agissait de huit communes nidwaldiennes et de sept communes tessinoises. Le regroupement par serveur de messagerie et par canton indique que des prestataires informatiques ont configuré les enregistrements pour toutes les communes qu’ils gèrent en une seule opération.
+
+Ces enregistrements suffisent pour la remise vers Outlook.com. Ils ne protègent pas encore les domaines des communes contre les expéditeurs falsifiés : sans `rua`, les données manquent pour pouvoir relever ultérieurement la politique. Parmi les 2 078 communes de l’indice, 537 n’ont toujours pas d’enregistrement DMARC.
+
+## Mise en perspective
+
+On ne sait pas si Microsoft retirera ce rejet ou le confirmera comme règle. Cela joue un rôle mineur pour la planification : Google et Yahoo exigent DMARC des expéditeurs de masse depuis février 2024, Microsoft depuis mai 2025, et les politiques Postmaster d’Outlook.com le recommandent à tous les expéditeurs. Ces derniers jours, un domaine sans enregistrement DMARC n’était plus remis de manière fiable chez l’un des plus grands fournisseurs de messagerie. L’enregistrement avec `p=none` et `rua` se publie en quelques minutes et n’a aucun effet secondaire sur la remise.
+
+## Sources
+
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies) : exigences officielles pour les expéditeurs ; mentionne le seuil de 5 000 messages par jour, l’erreur 5.7.515 et la recommandation à tous les expéditeurs.
+
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com) : article de support relatif à l’erreur documentée pour les expéditeurs à fort volume.
+
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error) : fil de forum contenant la réponse du modérateur du 9 novembre 2026 sur la perturbation en cours ; contribution de forum, pas un message officiel de santé du service.
+
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc) : analyse des journaux sortants d’un fournisseur de messagerie depuis le 5 novembre 2026.
+
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/) : rapport d’un hébergeur faisant état de plus de 500 rejets le premier jour et de leur résolution via `p=none`.
+
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html) : fil de la liste de diffusion des opérateurs avec les mesures de MXroute, Fastmail et one.com, notamment la délimitation à `NXDOMAIN`.
+
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/) : test reproduit avec SPF et DKIM valides et alignés, sans enregistrement DMARC.
+
+8.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html) : résumé en allemand des rapports du 9 novembre 2026.
+
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489) : spécification, notamment sur la détermination de l’enregistrement via le domaine organisationnel.
+
+10.  [Indice de sécurité des e-mails Suisse : journal des modifications](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) : modifications quotidiennes des enregistrements DNS de 3 364 organisations suisses ; base des chiffres concernant les communes.
 
 ----
 
@@ -61143,6 +61716,159 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# Outlook.com rifiuta le e-mail senza record DMARC: errore AS9031519
+
+URL: https://rafaelpfister.ch/it/blog/outlook-com-rifiuta-le-e-mail-senza-record-dmarc-errore-as9031519
+Datum: 2026-11-10
+
+# Outlook.com rifiuta le e-mail senza record DMARC: errore AS9031519
+
+Dal 5 novembre 2026, i messaggi destinati alle caselle di posta di Outlook.com, Hotmail, Live e MSN vengono restituiti con un nuovo errore se il dominio del mittente non ha pubblicato un record DMARC:
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+Dati aggiornati al 10 novembre 2026.
+
+## Cosa documenta Microsoft
+
+Le linee guida per i postmaster di Outlook.com continuano a contenere solo la regola del 5 maggio 2025: i domini che inviano più di 5000 messaggi al giorno a account Outlook.com devono superare SPF e DKIM e pubblicare un record DMARC con almeno `p=none`, allineato tramite SPF o DKIM. I messaggi che non soddisfano questi requisiti finiscono dapprima nella cartella Posta indesiderata e possono successivamente essere rifiutati con il seguente errore:
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+Per tutti gli altri mittenti, la stessa pagina formula soltanto una raccomandazione. L'aggiunta `AS9031519` e il testo dell'errore `Message lacks SPF/DKIM/DMARC Auth Records` non compaiono né nelle linee guida per i postmaster né nell'articolo di supporto relativo a 5.7.515.
+
+Microsoft si è espresso sulla situazione attuale soltanto nei forum Microsoft Q&A. Un moderatore contrassegnato come «Microsoft External Staff» ha scritto il 9 novembre che è in corso un problema nel servizio Exchange relativo alla consegna a Outlook.com, Hotmail.com e Live.com. È classificato come degrado del servizio e Microsoft ne sta indagando la causa. Il contributo non indica né un numero di incidente, né una causa, né una data per la risoluzione. Non sono disponibili un post sul blog, una voce nelle linee guida per i postmaster o un avviso pubblico sullo stato del servizio.
+
+## Cosa hanno misurato gli operatori
+
+I dati più attendibili provengono da provider di posta che hanno analizzato i propri log e li hanno pubblicati sulla mailing list mailop e nei propri blog (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Le osservazioni coincidono:
+
+- **Causa scatenante:** il dominio del mittente non ha un record DMARC. SPF e DKIM erano validi e allineati nei casi documentati. Sebbene il testo dell'errore menzioni tutte e tre le procedure, il rifiuto avviene per l'assenza del record DMARC.
+- **Volume:** sono interessati anche domini con pochi messaggi alla settimana, ben al di sotto della soglia di 5000 al giorno.
+- **Destinatari:** solo le caselle di posta consumer (outlook.com, hotmail.com, live.com, msn.com e varianti nazionali come hotmail.de o outlook.be). Secondo le segnalazioni disponibili, i tenant Exchange Online come destinatari non rifiutano con questo errore.
+- **Irregolare:** viene rifiutata solo una parte dei messaggi. Un nuovo invio dello stesso messaggio può andare a buon fine.
+- **Risoluzione:** nei casi documentati è stato sufficiente un record con `v=DMARC1; p=none`. Dopo la pubblicazione, Outlook.com ha ripreso ad accettare i messaggi in un periodo compreso tra pochi minuti e circa un'ora e mezza.
+
+Due analisi delimitano ulteriormente la causa scatenante: presso one.com venivano rifiutati solo i domini la cui interrogazione di `_dmarc.<domain>` terminava con `NXDOMAIN`. I domini per i quali il nome esisteva ma non era presente alcun record TXT (`NOERROR` senza risposta) non erano interessati. MXroute ha rilevato in un log 367 domini mittenti rifiutati, 286 dei quali con `NXDOMAIN` su `_dmarc`. Questa delimitazione si basa sui dati di singoli operatori e non è stata chiarita in modo definitivo.
+
+Dal pomeriggio del 9 novembre, alcuni interessati segnalano che i rifiuti sono cessati. Microsoft non lo ha confermato.
+
+## Caso particolare: Microsoft 365 come mittente
+
+I tenant in Microsoft 365 sono colpiti in modo superiore alla media come mittenti. Microsoft 365 non crea alcun record DMARC per un dominio proprio e, finché DKIM non è attivato per il dominio, Exchange Online firma con il dominio `onmicrosoft.com` del tenant. Il rapporto di mancata consegna racchiude inoltre il rifiuto in un secondo codice di stato che fa riferimento a SPF:
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+In questi casi, il record SPF è di norma corretto. Fa fede l'errore interno dopo la freccia.
+
+## Verificare il proprio dominio
+
+Viene interrogato il record TXT sotto `_dmarc.<domain>`:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `+short` | `dig` restituisce solo il contenuto del record |
+| `TXT` o `-Type TXT` | tipo di record dell'interrogazione |
+| `_dmarc.example.com` o `-Name` | nome interrogato: l'etichetta `_dmarc` prima del dominio del mittente |
+
+</details>
+
+Un output vuoto con `dig +short` o l'errore `DNS name does not exist` con `Resolve-DnsName` significa che non esiste alcun record DMARC. Per i sottodomini vale quanto segue: se invia `news.example.com` e non dispone di un proprio record, secondo RFC 7489 conta il record del dominio organizzativo `example.com`.
+
+Il [Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) in questa pagina verifica DMARC insieme a SPF, DKIM e all'allineamento in un'unica operazione.
+
+## Misura immediata e il percorso successivo
+
+Se manca il record, questa voce ripristina la consegna a Outlook.com:
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` non cambia nulla nel trattamento delle vostre e-mail presso altri destinatari e può quindi essere pubblicato senza preparativi. Il tag `rua` non è necessario per l'accettazione da parte di Outlook.com. Senza `rua`, tuttavia, non riceverete rapporti aggregati e senza questi rapporti manca la base per ogni passaggio successivo. L'indirizzo deve raggiungere una casella di posta o un servizio di analisi che elabori i rapporti XML.
+
+`p=none` non protegge il dominio da abusi. Il record soddisfa soltanto la condizione di accettazione. Per una protezione efficace occorrono questi passaggi:
+
+1. Censire tutti i sistemi che inviano con il dominio (server di posta, servizio newsletter, ERP, negozio online, scanner).
+2. Mantenere SPF completo e valido per questi sistemi, con al massimo dieci lookup DNS.
+3. Attivare DKIM con il proprio dominio, in Microsoft 365 per ogni dominio nel portale Defender.
+4. Analizzare i rapporti aggregati per alcune settimane e correggere le fonti non allineate.
+5. Elevare la policy a `p=quarantine` e successivamente a `p=reject`.
+
+La [guida per amministratori DNS](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine) descrive gli errori tipici nella pubblicazione di questi record (record SPF duplicati, chiavi DKIM troppo lunghe, nome della zona aggiunto automaticamente).
+
+## L'impatto in Svizzera: 152 comuni in cinque giorni
+
+L'[indice di sicurezza e-mail Svizzera](https://rafaelpfister.ch/open-data/mail-security-index) verifica ogni notte i record DNS di 3364 organizzazioni svizzere, tra cui 2078 comuni. Il [registro delle modifiche](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) mostra dal 6 novembre un'ondata di record DMARC appena pubblicati. La data è in ogni caso quella del confronto notturno.
+
+| Confronto | Organizzazioni con nuovo record DMARC | di cui comuni |
+|---|---|---|
+| Dal 19 ottobre al 5 novembre | al massimo 5 al giorno | al massimo 4 al giorno |
+| 6 novembre | 4 | 4 |
+| 7 novembre | 22 | 21 |
+| 8 novembre | 1 | 1 |
+| 9 novembre | 2 | 2 |
+| 10 novembre | 140 | 124 |
+
+In cinque giorni, 169 organizzazioni hanno pubblicato per la prima volta un record DMARC, di cui 152 comuni. Il numero di organizzazioni senza DMARC nell'indice è sceso da 817 a 650. Il momento coincide con i rifiuti presso Outlook.com. Non ho chiesto ai comuni stessi le ragioni.
+
+I record hanno le seguenti caratteristiche:
+
+- **Policy:** 139 dei 152 comuni hanno impostato `p=none`, cinque `p=quarantine`, tre `p=reject`. Per cinque, il record è costituito soltanto da `v=DMARC1` senza tag `p=` ed è quindi non valido.
+- **Rapporti:** 114 record contengono esclusivamente `v=DMARC1; p=none`. Complessivamente, 124 dei 152 comuni non hanno indicato un indirizzo `rua` e non ricevono quindi rapporti.
+- **Modifiche centralizzate:** le modifiche si verificano in blocchi. Il 10 novembre si sono aggiunti 32 comuni ginevrini, i cui server di posta operano tutti sotto `acg-geneve.ch`, oltre a 26 comuni zurighesi e 19 friburghesi. Il 7 novembre erano otto comuni nidvaldesi e sette ticinesi. Il raggruppamento per server di posta e cantone suggerisce che i fornitori di servizi informatici abbiano impostato i record per tutti i comuni assistiti in un'unica operazione.
+
+Per la consegna a Outlook.com questi record sono sufficienti. Non proteggono ancora i domini comunali da mittenti falsificati: senza `rua` mancano i dati per elevare in seguito la policy. 537 dei 2078 comuni nell'indice non hanno ancora alcun record DMARC.
+
+## Valutazione
+
+Non è chiaro se Microsoft ritirerà il rifiuto o lo confermerà come regola. Per la pianificazione, ciò ha poca importanza: Google e Yahoo richiedono DMARC dai mittenti di massa dal febbraio 2024, Microsoft dal maggio 2025, e le linee guida per i postmaster di Outlook.com lo raccomandano a tutti i mittenti. Negli ultimi giorni, un dominio senza record DMARC non era più consegnabile in modo affidabile presso uno dei maggiori provider di posta. Il record con `p=none` e `rua` si pubblica in pochi minuti e non ha effetti collaterali sulla consegna.
+
+## Fonti
+
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Requisiti ufficiali per i mittenti; indica la soglia di 5000 messaggi al giorno, l'errore 5.7.515 e la raccomandazione a tutti i mittenti.
+
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Articolo di supporto sull'errore documentato per mittenti con volumi elevati.
+
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Discussione nel forum con la risposta del moderatore del 9 novembre 2026 sul problema in corso; contributo nel forum, non un avviso ufficiale sullo stato del servizio.
+
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Analisi dei log in uscita di un provider di posta a partire dal 5 novembre 2026.
+
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Rapporto di un hosting provider con oltre 500 rifiuti il primo giorno e risoluzione tramite `p=none`.
+
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Discussione della mailing list degli operatori con le misurazioni di MXroute, Fastmail e one.com, inclusa la delimitazione a `NXDOMAIN`.
+
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Test riprodotto con SPF e DKIM validi e allineati, senza record DMARC.
+
+8.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Riassunto in lingua tedesca delle segnalazioni del 9 novembre 2026.
+
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Specifica, tra l'altro, relativa alla determinazione del record tramite il dominio organizzativo.
+
+10.  [Mail-Sicherheitsindex Schweiz: Änderungsprotokoll](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Modifiche quotidiane ai record DNS di 3364 organizzazioni svizzere; base delle cifre relative ai comuni.
+
+----
+
 # Kiteworks EPG 9.5.1: quattro correzioni di sicurezza documentate pubblicamente
 
 URL: https://rafaelpfister.ch/it/blog/kiteworks-epg-9-5-1-quattro-correzioni-di-sicurezza-documentate-pubblicamente
@@ -81450,6 +82176,159 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# Outlook.com rechaza correos sin registro DMARC: error AS9031519
+
+URL: https://rafaelpfister.ch/es/blog/outlook-com-rechaza-correos-sin-registro-dmarc-error-as9031519
+Datum: 2026-11-10
+
+# Outlook.com rechaza correos sin registro DMARC: error AS9031519
+
+Desde el 5 de noviembre de 2026, los mensajes a buzones de Outlook.com, Hotmail, Live y MSN se devuelven con un nuevo error si el dominio del remitente no ha publicado un registro DMARC:
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+Datos actualizados al 10 de noviembre de 2026.
+
+## Lo que documenta Microsoft
+
+Las directrices para postmasters de Outlook.com siguen incluyendo únicamente la regla del 5 de mayo de 2025: los dominios que envían más de 5000 mensajes al día a cuentas de Outlook.com deben superar SPF y DKIM y publicar un registro DMARC con al menos `p=none`, alineado mediante SPF o DKIM. Los mensajes que no cumplan estos requisitos llegan primero a la carpeta de correo no deseado y posteriormente pueden ser rechazados con el siguiente error:
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+Para todos los demás remitentes, la misma página solo formula una recomendación. El añadido `AS9031519` y el texto de error `Message lacks SPF/DKIM/DMARC Auth Records` no aparecen ni en las directrices para postmasters ni en el artículo de soporte sobre 5.7.515.
+
+Microsoft solo se ha pronunciado sobre la situación actual en los foros de Microsoft Q&A. Un moderador identificado como «Microsoft External Staff» escribió el 9 de noviembre que existe una incidencia en curso en el servicio Exchange en la entrega a Outlook.com, Hotmail.com y Live.com. Está clasificada como degradación del servicio y Microsoft está investigando la causa. La publicación no menciona número de incidente, causa ni fecha de resolución. No hay ninguna entrada de blog, actualización en las directrices para postmasters ni aviso público sobre el estado del servicio.
+
+## Lo que han medido los operadores
+
+Los datos más sólidos proceden de proveedores de correo que han analizado sus registros y los han publicado en la lista de correo mailop y en sus propios blogs (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Las observaciones coinciden:
+
+- **Desencadenante:** El dominio del remitente no tiene registro DMARC. En los casos documentados, SPF y DKIM eran válidos y estaban alineados. Aunque el texto del error menciona los tres procedimientos, el rechazo se debe a la falta del registro DMARC.
+- **Volumen:** También están afectados dominios con pocos mensajes por semana, muy por debajo del umbral de 5000 al día.
+- **Destinatarios:** Solo los buzones de consumidores (outlook.com, hotmail.com, live.com, msn.com y variantes nacionales como hotmail.de u outlook.be). Según los informes disponibles, los tenants de Exchange Online como destinatarios no rechazan con este error.
+- **Irregularidad:** Solo se rechaza una parte de los mensajes. Reenviar el mismo mensaje puede funcionar.
+- **Solución:** En los casos documentados, bastó un registro con `v=DMARC1; p=none`. Tras su publicación, Outlook.com volvió a aceptar mensajes entre unos pocos minutos y alrededor de hora y media después.
+
+Dos análisis delimitan aún más el desencadenante: en one.com solo se rechazaron dominios cuya consulta de `_dmarc.<domain>` terminaba con `NXDOMAIN`. Los dominios en los que el nombre existe pero no hay ningún registro TXT (`NOERROR` sin respuesta) no se vieron afectados allí. MXroute encontró en un registro 367 dominios de remitentes rechazados, 286 de ellos con `NXDOMAIN` en `_dmarc`. Esta delimitación se basa en datos de operadores individuales y no está aclarada de forma concluyente.
+
+Desde el mediodía del 9 de noviembre, algunos afectados informan de que los rechazos han cesado. Microsoft no lo ha confirmado.
+
+## Caso especial: Microsoft 365 como remitente
+
+Los tenants de Microsoft 365 se ven afectados de forma desproporcionada como remitentes. Microsoft 365 no crea un registro DMARC para un dominio propio y, mientras DKIM no esté activado para el dominio, Exchange Online firma con el dominio `onmicrosoft.com` del tenant. El informe de no entrega también encapsula el rechazo en un segundo código de estado que hace referencia a SPF:
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+Por lo general, el registro SPF es correcto en estos casos. Lo determinante es el error interno tras la flecha.
+
+## Comprobar el propio dominio
+
+Se consulta el registro TXT en `_dmarc.<domain>`:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `+short` | `dig` muestra únicamente el contenido del registro |
+| `TXT` o `-Type TXT` | Tipo de registro de la consulta |
+| `_dmarc.example.com` o `-Name` | Nombre consultado: la etiqueta `_dmarc` antes del dominio del remitente |
+
+</details>
+
+Una salida vacía con `dig +short` o el error `DNS name does not exist` con `Resolve-DnsName` significa que no existe ningún registro DMARC. Para los subdominios se aplica lo siguiente: si `news.example.com` envía y no tiene su propio registro, según RFC 7489 cuenta el registro del dominio organizativo `example.com`.
+
+La [comprobación DNS de correo](https://rafaelpfister.ch/tools/mail-check) de esta página verifica DMARC junto con SPF, DKIM y la alineación en una sola pasada.
+
+## Medida inmediata y el camino posterior
+
+Si falta el registro, esta entrada restablece la entrega a Outlook.com:
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` no cambia el tratamiento de sus correos por parte de otros destinatarios y, por tanto, puede publicarse sin trabajos previos. La etiqueta `rua` no es necesaria para la aceptación en Outlook.com. Sin `rua`, sin embargo, no recibirá informes agregados, y sin estos informes falta la base para cualquier paso posterior. La dirección debe llegar a un buzón o servicio de análisis que procese los informes XML.
+
+`p=none` no protege el dominio frente al uso indebido. El registro solo cumple la condición de aceptación. Para una protección efectiva, siga estos pasos:
+
+1. Inventariar todos los sistemas que envían con el dominio (servidor de correo, servicio de newsletter, ERP, tienda web, escáner).
+2. Mantener SPF completo y válido para estos sistemas, con un máximo de diez consultas DNS.
+3. Activar DKIM con el propio dominio, en Microsoft 365 para cada dominio en el portal Defender.
+4. Analizar los informes agregados durante algunas semanas y corregir las fuentes no alineadas.
+5. Elevar la política a `p=quarantine` y, posteriormente, a `p=reject`.
+
+La [guía para administradores de DNS](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine) describe los errores habituales al publicar estos registros (registros SPF duplicados, claves DKIM demasiado largas, nombre de zona añadido automáticamente).
+
+## El impacto en Suiza: 152 municipios en cinco días
+
+El [índice de seguridad del correo de Suiza](https://rafaelpfister.ch/open-data/mail-security-index) comprueba cada noche los registros DNS de 3364 organizaciones suizas, entre ellas 2078 municipios. El [registro de cambios](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) muestra desde el 6 de noviembre una oleada de registros DMARC recién publicados. La fecha corresponde en cada caso a la comparación nocturna.
+
+| Comparación | Organizaciones nuevas con registro DMARC | De ellas, municipios |
+|---|---|---|
+| Del 19 de octubre al 5 de noviembre | como máximo 5 al día | como máximo 4 al día |
+| 6 de noviembre | 4 | 4 |
+| 7 de noviembre | 22 | 21 |
+| 8 de noviembre | 1 | 1 |
+| 9 de noviembre | 2 | 2 |
+| 10 de noviembre | 140 | 124 |
+
+En cinco días, 169 organizaciones publicaron por primera vez un registro DMARC, 152 de ellas municipios. El número de organizaciones sin DMARC en el índice descendió de 817 a 650. El momento coincide con los rechazos en Outlook.com. No he preguntado a los municipios los motivos.
+
+Los registros presentan las siguientes características:
+
+- **Política:** 139 de los 152 municipios han establecido `p=none`, cinco `p=quarantine` y tres `p=reject`. En cinco casos, el registro solo consta de `v=DMARC1` sin la etiqueta `p=` y, por tanto, no es válido.
+- **Informes:** 114 registros contienen exclusivamente `v=DMARC1; p=none`. En total, 124 de los 152 municipios no han indicado una dirección `rua` y, por tanto, no reciben informes.
+- **Cambios centralizados:** Las modificaciones se producen de forma agrupada. El 10 de noviembre se sumaron 32 municipios ginebrinos, cuyos servidores de correo funcionan todos bajo `acg-geneve.ch`, además de 26 municipios de Zúrich y 19 de Friburgo. El 7 de noviembre fueron ocho municipios de Nidwalden y siete del Tesino. La agrupación por servidor de correo y cantón indica que los proveedores de servicios informáticos configuraron los registros para todos los municipios atendidos en una sola operación.
+
+Estos registros son suficientes para la entrega a Outlook.com. Sin embargo, todavía no protegen los dominios municipales frente a remitentes falsificados: sin `rua` faltan los datos para elevar posteriormente la política. 537 de los 2078 municipios del índice siguen sin tener registro DMARC.
+
+## Contexto
+
+No está claro si Microsoft retirará el rechazo o lo confirmará como norma. Para la planificación, esto tiene poca importancia: Google y Yahoo exigen DMARC desde febrero de 2024 a los remitentes masivos, Microsoft desde mayo de 2025, y las directrices para postmasters de Outlook.com lo recomiendan a todos los remitentes. En los últimos días, un dominio sin registro DMARC ya no podía entregarse de forma fiable a uno de los mayores proveedores de correo. El registro con `p=none` y `rua` se publica en pocos minutos y no tiene efectos secundarios en la entrega.
+
+## Fuentes
+
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Requisitos oficiales para remitentes; menciona el umbral de 5000 mensajes al día, el error 5.7.515 y la recomendación para todos los remitentes.
+
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Artículo de soporte sobre el error documentado para remitentes de gran volumen.
+
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Hilo del foro con la respuesta del moderador del 9 de noviembre de 2026 sobre la incidencia en curso; publicación en un foro, no aviso oficial sobre el estado del servicio.
+
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Análisis de los registros salientes de un proveedor de correo desde el 5 de noviembre de 2026.
+
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Informe de un proveedor de hosting con más de 500 rechazos el primer día y la solución mediante `p=none`.
+
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Hilo de la lista de correo de operadores con las mediciones de MXroute, Fastmail y one.com, incluida la delimitación a `NXDOMAIN`.
+
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Prueba reproducida con SPF y DKIM válidos y alineados, sin registro DMARC.
+
+8.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Resumen en alemán de los informes del 9 de noviembre de 2026.
+
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Especificación, entre otros aspectos, sobre la determinación del registro mediante el dominio organizativo.
+
+10.  [Índice de seguridad del correo de Suiza: registro de cambios](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Cambios diarios en los registros DNS de 3364 organizaciones suizas; base de las cifras sobre los municipios.
+
+----
+
 # Kiteworks EPG 9.5.1: Cuatro correcciones de seguridad documentadas públicamente
 
 URL: https://rafaelpfister.ch/es/blog/kiteworks-epg-9-5-1-cuatro-correcciones-de-seguridad-documentadas-publicamente
@@ -101751,6 +102630,159 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# Outlook.com avvisar e-post utan DMARC-post: fel AS9031519
+
+URL: https://rafaelpfister.ch/sv/blog/outlook-com-avvisar-e-post-utan-dmarc-post-fel-as9031519
+Datum: 2026-11-10
+
+# Outlook.com avvisar e-post utan DMARC-post: fel AS9031519
+
+Sedan den 5 november 2026 kommer meddelanden till inkorgar hos Outlook.com, Hotmail, Live och MSN tillbaka med ett nytt fel när avsändardomänen inte har publicerat någon DMARC-post:
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+Uppgifterna gäller per den 10 november 2026.
+
+## Vad Microsoft dokumenterar
+
+Outlook.coms postmaster-riktlinjer innehåller fortfarande endast regeln från den 5 maj 2025: Domäner som skickar fler än 5000 meddelanden per dag till Outlook.com-konton måste klara SPF och DKIM samt publicera en DMARC-post med minst `p=none`, som är anpassad via SPF eller DKIM. Meddelanden som inte uppfyller detta hamnar först i skräppostmappen och kan senare avvisas med följande fel:
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+För alla andra avsändare formulerar samma sida endast en rekommendation. Tillägget `AS9031519` och feltexten `Message lacks SPF/DKIM/DMARC Auth Records` förekommer varken i postmaster-riktlinjerna eller i supportartikeln om 5.7.515.
+
+Microsoft har endast uttalat sig om den aktuella situationen i Microsoft Q&A-forumen. En moderator märkt som ”Microsoft External Staff” skrev den 9 november att det finns en pågående störning i Exchange-tjänsten vid leverans till Outlook.com, Hotmail.com och Live.com. Den är klassad som Service Degradation och Microsoft undersöker orsaken. Inlägget nämner varken incidentnummer, orsak eller någon tidpunkt för åtgärd. Det finns inget blogginlägg, ingen post i postmaster-riktlinjerna och inget offentligt Service Health-meddelande.
+
+## Vad operatörer har mätt
+
+De mest tillförlitliga uppgifterna kommer från e-postleverantörer som har analyserat sina loggar och publicerat dem på sändlistan mailop samt i egna blogginlägg (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Observationerna stämmer överens:
+
+- **Utlösare:** Avsändardomänen saknar DMARC-post. SPF och DKIM var giltiga och anpassade i de dokumenterade fallen. Feltexten nämner visserligen alla tre mekanismerna, men avvisningen beror på den saknade DMARC-posten.
+- **Volym:** Även domäner med få meddelanden per vecka påverkas, långt under gränsen på 5000 per dag.
+- **Mottagare:** Endast konsumentinkorgarna (outlook.com, hotmail.com, live.com, msn.com och landsvarianter som hotmail.de eller outlook.be). Enligt tillgängliga rapporter avvisar Exchange Online-tenanter som mottagare inte med detta fel.
+- **Oregelbundet:** Endast en del av meddelandena avvisas. Att skicka samma meddelande på nytt kan fungera.
+- **Åtgärd:** En post med `v=DMARC1; p=none` räckte i de dokumenterade fallen. Efter publicering tog det mellan några minuter och ungefär en och en halv timme innan Outlook.com återigen accepterade meddelanden.
+
+Två analyser begränsar utlösaren ytterligare: Hos one.com avvisades endast domäner vars uppslagning av `_dmarc.<domain>` slutar med `NXDOMAIN`. Domäner där namnet finns men endast saknar en TXT-post (`NOERROR` utan svar) påverkades inte där. MXroute hittade i en logg 367 avvisade avsändardomäner, varav 286 med `NXDOMAIN` på `_dmarc`. Denna avgränsning bygger på data från enskilda operatörer och är inte slutgiltigt klarlagd.
+
+Sedan middagen den 9 november har enskilda berörda rapporterat att avvisningarna har upphört. Microsoft har inte bekräftat detta.
+
+## Särskilt fall: Microsoft 365 som avsändare
+
+Tenanter i Microsoft 365 är som avsändare oproportionerligt ofta berörda. Microsoft 365 skapar ingen DMARC-post för en egen domän, och så länge DKIM inte har aktiverats för domänen signerar Exchange Online med tenantens `onmicrosoft.com`-domän. Rapporten om utebliven leverans kapslar dessutom in avvisningen i en andra statuskod som hänvisar till SPF:
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+SPF-posten är i dessa fall vanligtvis korrekt. Det avgörande är det inre felet efter pilen.
+
+## Kontrollera din egen domän
+
+TXT-posten under `_dmarc.<domain>` efterfrågas:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Förklaringar av alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `+short` | `dig` visar endast postens innehåll |
+| `TXT` respektive `-Type TXT` | Typ av post för frågan |
+| `_dmarc.example.com` respektive `-Name` | Efterfrågat namn: etiketten `_dmarc` före avsändardomänen |
+
+</details>
+
+Tom utdata vid `dig +short` eller felet `DNS name does not exist` vid `Resolve-DnsName` betyder att ingen DMARC-post finns. För underdomäner gäller: Om `news.example.com` skickar och själv saknar en post, räknas enligt RFC 7489 posten för organisationsdomänen `example.com`.
+
+[Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) på den här sidan kontrollerar DMARC tillsammans med SPF, DKIM och anpassning i en enda körning.
+
+## Omedelbar åtgärd och vägen vidare
+
+Om posten saknas återställer denna post leveransen till Outlook.com:
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` ändrar inget i hanteringen av din e-post hos andra mottagare och kan därför publiceras utan förberedelser. Taggen `rua` krävs inte för acceptans hos Outlook.com. Utan `rua` får du dock inga aggregerade rapporter, och utan dessa rapporter saknas grunden för varje nästa steg. Adressen måste nå en inkorg eller en analystjänst som behandlar XML-rapporterna.
+
+`p=none` skyddar inte domänen mot missbruk. Posten uppfyller endast acceptansvillkoret. För ett effektivt skydd följer dessa steg:
+
+1. Kartlägg alla system som skickar med domänen (e-postservrar, nyhetsbrevstjänst, ERP, webbutik, skannrar).
+2. Håll SPF komplett och giltigt för dessa system, med högst tio DNS-uppslagningar.
+3. Aktivera DKIM med den egna domänen, i Microsoft 365 per domän i Defender-portalen.
+4. Analysera de aggregerade rapporterna under några veckor och korrigera källor som inte är anpassade.
+5. Höj policyn till `p=quarantine` och därefter till `p=reject`.
+
+De vanliga felen vid publicering av dessa poster (dubbla SPF-poster, för långa DKIM-nycklar, automatiskt tillagt zonnamn) beskrivs i [Guiden för DNS-administratörer](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine).
+
+## Effekten i Schweiz: 152 kommuner på fem dagar
+
+[Mail-säkerhetsindex Schweiz](https://rafaelpfister.ch/open-data/mail-security-index) kontrollerar varje natt DNS-posterna för 3364 schweiziska organisationer, däribland 2078 kommuner. [Ändringsloggen](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) visar sedan den 6 november en våg av nypublicerade DMARC-poster. Datumet är alltid datumet för den nattliga avstämningen.
+
+| Avstämning | Organisationer som nyligen fått DMARC-post | varav kommuner |
+|---|---|---|
+| 19 oktober till 5 november | högst 5 per dag | högst 4 per dag |
+| 6 november | 4 | 4 |
+| 7 november | 22 | 21 |
+| 8 november | 1 | 1 |
+| 9 november | 2 | 2 |
+| 10 november | 140 | 124 |
+
+På fem dagar har 169 organisationer publicerat en DMARC-post för första gången, varav 152 är kommuner. Antalet organisationer utan DMARC i indexet sjönk från 817 till 650. Tidpunkten sammanfaller med avvisningarna hos Outlook.com. Jag har inte frågat kommunerna själva om orsakerna.
+
+Posterna har följande egenskaper:
+
+- **Policy:** 139 av de 152 kommunerna har angett `p=none`, fem `p=quarantine`, tre `p=reject`. För fem består posten endast av `v=DMARC1` utan taggen `p=` och är därför ogiltig.
+- **Rapporter:** 114 poster innehåller enbart `v=DMARC1; p=none`. Totalt har 124 av de 152 kommunerna ingen `rua`-adress angiven och får därför inga rapporter.
+- **Centrala omläggningar:** Ändringarna sker samlat. Den 10 november tillkom 32 kommuner i Genève, vars e-postservrar alla körs under `acg-geneve.ch`, samt 26 kommuner i Zürich och 19 i Fribourg. Den 7 november var det åtta kommuner i Nidwalden och sju i Ticino. Samlingen efter e-postserver och kanton tyder på att IT-tjänsteleverantörer har satt posterna för alla kommuner de förvaltar i en enda omgång.
+
+För leverans till Outlook.com räcker dessa poster. De skyddar ännu inte kommunernas domäner mot förfalskade avsändare: Utan `rua` saknas data för att senare höja policyn. 537 av de 2078 kommunerna i indexet saknar fortfarande DMARC-post.
+
+## Bedömning
+
+Det är oklart om Microsoft återtar avvisningen eller bekräftar den som regel. För planeringen spelar det liten roll: Google och Yahoo har krävt DMARC av massavsändare sedan februari 2024, Microsoft sedan maj 2025, och Outlook.coms postmaster-riktlinjer rekommenderar det för alla avsändare. En domän utan DMARC-post kunde de senaste dagarna inte längre levereras tillförlitligt hos en av de största e-postleverantörerna. Posten med `p=none` och `rua` publiceras på några minuter och har inga bieffekter för leveransen.
+
+## Källor
+
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Officiella krav för avsändare; nämner gränsen på 5000 meddelanden per dag, felet 5.7.515 och rekommendationen till alla avsändare.
+
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Supportartikel om det dokumenterade felet för avsändare med hög volym.
+
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Forumtråd med moderatorns svar från den 9 november 2026 om den pågående störningen; foruminlägg, ingen officiell Service Health-rapport.
+
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Analys av en e-postleverantörs utgående loggar från den 5 november 2026.
+
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Rapport från ett webbhotell med över 500 avvisningar den första dagen och åtgärden via `p=none`.
+
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Tråd på operatörernas sändlista med mätningar från MXroute, Fastmail och one.com, bland annat avgränsningen till `NXDOMAIN`.
+
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Reproducerat test med giltig och anpassad SPF och DKIM, utan DMARC-post.
+
+8.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Tyskspråkig sammanfattning av rapporterna från den 9 november 2026.
+
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Specifikation, bland annat om hur posten fastställs via organisationsdomänen.
+
+10.  [Mail-säkerhetsindex Schweiz: Ändringslogg](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Dagliga ändringar av DNS-posterna för 3364 schweiziska organisationer; grund för siffrorna om kommunerna.
 
 ----
 
@@ -122059,6 +123091,159 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Outlook.com avviser e-post uten DMARC-post: Feil AS9031519
+
+URL: https://rafaelpfister.ch/no/blog/outlook-com-avviser-e-post-uten-dmarc-post-feil-as9031519
+Datum: 2026-11-10
+
+# Outlook.com avviser e-post uten DMARC-post: Feil AS9031519
+
+Siden 5. november 2026 har meldinger til postkasser hos Outlook.com, Hotmail, Live og MSN kommet tilbake med en ny feil når avsenderdomenet ikke har publisert en DMARC-post:
+
+```text
+550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC Auth Records
+(AS9031519)
+```
+
+Opplysningene gjelder per 10. november 2026.
+
+## Hva Microsoft dokumenterer
+
+Postmaster-retningslinjene for Outlook.com inneholder fortsatt bare regelen fra 5. mai 2025: Domener som sender mer enn 5000 meldinger per dag til Outlook.com-kontoer, må bestå SPF og DKIM og publisere en DMARC-post med minst `p=none`, som er justert via SPF eller DKIM. Meldinger som ikke oppfyller dette, havner først i søppelpostmappen og kan senere avvises med følgende feil:
+
+```text
+550; 5.7.515 Access denied, sending domain [SendingDomain] does not meet
+the required authentication level.
+```
+
+For alle andre avsendere formulerer samme side bare en anbefaling. Tillegget `AS9031519` og feilmeldingen `Message lacks SPF/DKIM/DMARC Auth Records` forekommer verken i Postmaster-retningslinjene eller i støtteartikkelen om 5.7.515.
+
+Microsoft har bare uttalt seg om den aktuelle situasjonen i Microsoft Q&A-forumene. En moderator merket «Microsoft External Staff» skrev 9. november at det pågikk en feil i Exchange-tjenesten ved levering til Outlook.com, Hotmail.com og Live.com. Den var klassifisert som Service Degradation, og Microsoft undersøkte årsaken. Innlegget oppgir verken et hendelsesnummer, en årsak eller en dato for utbedring. Det foreligger ikke noe blogginnlegg, noen oppføring i Postmaster-retningslinjene eller noen offentlig Service Health-melding.
+
+## Hva operatører har målt
+
+De mest pålitelige dataene kommer fra e-postleverandører som har analysert loggene sine og publisert dem på e-postlisten mailop samt i egne blogginnlegg (MailRoute, Mythic Beasts, MXroute, Fastmail, one.com, EasyDMARC). Observasjonene stemmer overens:
+
+- **Utløser:** Avsenderdomenet har ingen DMARC-post. SPF og DKIM var gyldige og justerte i de dokumenterte tilfellene. Feilmeldingen nevner riktignok alle tre metodene, men avvisningen skyldes den manglende DMARC-posten.
+- **Volum:** Også domener med få meldinger per uke er berørt, langt under grensen på 5000 per dag.
+- **Mottakere:** Bare forbrukerpostkassene (outlook.com, hotmail.com, live.com, msn.com og landsvarianter som hotmail.de eller outlook.be). Exchange Online-tenanter som mottakere avviser ifølge de foreliggende rapportene ikke med denne feilen.
+- **Uregelmessig:** Bare en del av meldingene blir avvist. En ny sending av samme melding kan gå gjennom.
+- **Utbedring:** En post med `v=DMARC1; p=none` var tilstrekkelig i de dokumenterte tilfellene. Etter publisering tok det mellom noen minutter og rundt halvannen time før Outlook.com godtok igjen.
+
+To analyser avgrenser utløseren ytterligere: Hos one.com ble bare domener avvist der oppslaget av `_dmarc.<domain>` ender med `NXDOMAIN`. Domener der navnet eksisterer, men det ikke finnes noen TXT-post (`NOERROR` uten svar), var der ikke berørt. MXroute fant i én logg 367 avviste avsenderdomener, hvorav 286 med `NXDOMAIN` på `_dmarc`. Denne avgrensningen bygger på data fra enkeltoperatører og er ikke endelig avklart.
+
+Siden middag 9. november har enkelte berørte meldt at avvisningene har opphørt. Microsoft har ikke bekreftet dette.
+
+## Særtilfelle Microsoft 365 som avsender
+
+Tenanter i Microsoft 365 er uforholdsmessig ofte berørt som avsendere. Microsoft 365 oppretter ingen DMARC-post for et eget domene, og så lenge DKIM ikke er aktivert for domenet, signerer Exchange Online med tenantens `onmicrosoft.com`-domene. Leveringsstatusrapporten pakker i tillegg avvisningen inn i en annen statuskode som viser til SPF:
+
+```text
+550 5.7.23 The message was rejected because of Sender Policy Framework
+violation -> 550 5.7.1 Message rejected: Message lacks SPF/DKIM/DMARC
+Auth Records (AS9031519)
+```
+
+SPF-posten er i disse tilfellene som regel korrekt. Det er den indre feilen etter pilen som er avgjørende.
+
+## Kontroller ditt eget domene
+
+TXT-posten under `_dmarc.<domain>` slås opp:
+
+```bash
+dig +short TXT _dmarc.example.com
+```
+
+```powershell
+Resolve-DnsName -Type TXT -Name _dmarc.example.com
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `+short` | `dig` viser bare innholdet i posten |
+| `TXT` eller `-Type TXT` | Posttype for oppslaget |
+| `_dmarc.example.com` eller `-Name` | Navnet som slås opp: etiketten `_dmarc` foran avsenderdomenet |
+
+</details>
+
+Tom utdata ved `dig +short` eller feilen `DNS name does not exist` ved `Resolve-DnsName` betyr at ingen DMARC-post finnes. For underdomener gjelder følgende: Hvis `news.example.com` sender og ikke selv har en post, gjelder posten for organisasjonsdomenet `example.com` i henhold til RFC 7489.
+
+[Mail-DNS-Check](https://rafaelpfister.ch/tools/mail-check) på denne siden kontrollerer DMARC sammen med SPF, DKIM og justering i én operasjon.
+
+## Umiddelbart tiltak og veien videre
+
+Hvis posten mangler, gjenoppretter denne oppføringen levering til Outlook.com:
+
+```text
+_dmarc.example.com.  3600  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com"
+```
+
+`p=none` endrer ingenting i behandlingen av e-postene dine hos andre mottakere og kan derfor publiseres uten forarbeid. `rua`-taggen er ikke nødvendig for at Outlook.com skal godta meldinger. Uten `rua` mottar du imidlertid ingen aggregatrapporter, og uten disse rapportene mangler grunnlaget for ethvert videre steg. Adressen må nå en postkasse eller en analysetjeneste som behandler XML-rapportene.
+
+`p=none` beskytter ikke domenet mot misbruk. Posten oppfyller kun vilkåret for godkjenning. For effektiv beskyttelse følger disse trinnene:
+
+1. Kartlegg alle systemer som sender med domenet (e-postserver, nyhetsbrevstjeneste, ERP, nettbutikk, skanner).
+2. Hold SPF for disse systemene komplett og gyldig, med maksimalt ti DNS-oppslag.
+3. Aktiver DKIM med eget domene, i Microsoft 365 per domene i Defender-portalen.
+4. Analyser aggregatrapportene i noen uker og korriger kilder som ikke er justert.
+5. Hev policyen til `p=quarantine` og deretter til `p=reject`.
+
+De typiske feilene ved publisering av disse postene (doble SPF-poster, for lange DKIM-nøkler, automatisk tilføyd sonenavn) beskrives i [veiledningen for DNS-administratorer](https://rafaelpfister.ch/blog/dns-records-e-mail-stolpersteine).
+
+## Virkningen i Sveits: 152 kommuner på fem dager
+
+[Mail-sikkerhetsindeksen for Sveits](https://rafaelpfister.ch/open-data/mail-security-index) kontrollerer hver natt DNS-postene for 3364 sveitsiske organisasjoner, deriblant 2078 kommuner. [Endringsloggen](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen) viser siden 6. november en bølge av nyopprettede DMARC-poster. Datoen er alltid datoen for den nattlige sammenligningen.
+
+| Sammenligning | Organisasjoner med ny DMARC-post | hvorav kommuner |
+|---|---|---|
+| 19. oktober til 5. november | maksimalt 5 per dag | maksimalt 4 per dag |
+| 6. november | 4 | 4 |
+| 7. november | 22 | 21 |
+| 8. november | 1 | 1 |
+| 9. november | 2 | 2 |
+| 10. november | 140 | 124 |
+
+På fem dager har 169 organisasjoner publisert en DMARC-post for første gang, hvorav 152 er kommuner. Antallet organisasjoner uten DMARC i indeksen sank fra 817 til 650. Tidspunktet sammenfaller med avvisningene hos Outlook.com. Jeg har ikke undersøkt årsakene hos kommunene selv.
+
+Postene har følgende kjennetegn:
+
+- **Policy:** 139 av de 152 kommunene har satt `p=none`, fem `p=quarantine`, tre `p=reject`. Hos fem består posten bare av `v=DMARC1` uten `p=`-tagg og er dermed ugyldig.
+- **Rapporter:** 114 poster inneholder utelukkende `v=DMARC1; p=none`. Til sammen har 124 av de 152 kommunene ingen `rua`-adresse oppført og mottar dermed ingen rapporter.
+- **Sentrale omlegginger:** Endringene opptrer samlet. Den 10. november kom 32 kommuner i Genève til, med e-postservere som alle kjører under `acg-geneve.ch`, i tillegg til 26 kommuner i Zürich og 19 i Fribourg. Den 7. november var det åtte kommuner i Nidwalden og sju i Ticino. Samlingen etter e-postserver og kanton tyder på at IT-tjenesteleverandører har satt postene for alle kommunene de forvalter i én operasjon.
+
+For levering til Outlook.com er disse postene tilstrekkelige. De beskytter ennå ikke kommunedomenene mot forfalskede avsendere: Uten `rua` mangler dataene for senere å kunne heve policyen. 537 av de 2078 kommunene i indeksen har fortsatt ingen DMARC-post.
+
+## Vurdering
+
+Det er åpent om Microsoft trekker tilbake avvisningen eller bekrefter den som regel. Dette spiller liten rolle for planleggingen: Google og Yahoo har krevd DMARC fra masseavsendere siden februar 2024, Microsoft siden mai 2025, og Postmaster-retningslinjene for Outlook.com anbefaler det for alle avsendere. Et domene uten DMARC-post kunne de siste dagene ikke lenger levere pålitelig til en av de største e-postleverandørene. Posten med `p=none` og `rua` kan publiseres på få minutter og har ingen bivirkninger for leveringen.
+
+## Kilder
+
+1.  [Outlook.com Postmaster: Policies, Practices, and Guidelines](https://substrate.office.com/ip-domain-management-snds/postmaster/Policies): Offisielle krav til avsendere; nevner grensen på 5000 meldinger per dag, feilen 5.7.515 og anbefalingen til alle avsendere.
+
+2.  [Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com](https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com): Støtteartikkel om den dokumenterte feilen for avsendere med høyt volum.
+
+3.  [Microsoft Q&A: SPF Validation Error](https://learn.microsoft.com/en-us/answers/questions/6063210/spf-validation-error): Forumtråd med moderatorens svar fra 9. november 2026 om den pågående feilen; foruminnlegg, ingen offisiell Service Health-melding.
+
+4.  [MailRoute: Outlook.com Is Quietly Rejecting Email From Domains Without DMARC](https://mailroute.net/blog/outlook-rejecting-email-without-dmarc): Analyse av utgående logger hos en e-postleverandør fra 5. november 2026.
+
+5.  [Mythic Beasts: Microsoft are rejecting your mail](https://www.mythic-beasts.com/blog/2026/11/09/microsoft-are-rejecting-your-mail/): Rapport fra en hostingleverandør med over 500 avvisninger første dag og utbedring via `p=none`.
+
+6.  [mailop: Microsoft requiring DMARC now or just us?](https://www.mail-archive.com/mailop@mailop.org/msg27569.html): Tråd fra operatørens e-postliste med målingene fra MXroute, Fastmail og one.com, blant annet avgrensningen til `NXDOMAIN`.
+
+7.  [EasyDMARC: Microsoft Rejecting Emails Without DMARC](https://easydmarc.com/blog/microsoft-rejecting-emails-without-dmarc/): Reprodusert test med gyldig og justert SPF og DKIM, uten DMARC-post.
+
+8.  [heise online: Outlook.com: Die Mail ist echt und sie kommt trotzdem nicht an](https://www.heise.de/news/Outlook-com-Die-Mail-ist-echt-und-sie-kommt-trotzdem-nicht-an-11517776.html): Tyskspråklig oppsummering av rapportene fra 9. november 2026.
+
+9.  [RFC 7489: Domain-based Message Authentication, Reporting, and Conformance (DMARC)](https://datatracker.ietf.org/doc/html/rfc7489): Spesifikasjon, blant annet om fastsetting av posten via organisasjonsdomenet.
+
+10.  [Mail-sikkerhetsindeksen for Sveits: Endringslogg](https://rafaelpfister.ch/open-data/mail-security-index/aenderungen): Daglige endringer i DNS-postene til 3364 sveitsiske organisasjoner; grunnlag for tallene om kommunene.
 
 ----
 
