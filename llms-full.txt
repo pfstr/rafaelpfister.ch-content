@@ -14,16 +14,16 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
-# S/MIME mit Banken: Silver- oder Gold-Zertifikat von SwissSign?
+# S/MIME für Banken: Silver- oder Gold-Zertifikat von SwissSign?
 
 URL: https://rafaelpfister.ch/blog/smime-silver-gold-schweiz
 Datum: 2026-11-16
 
-# S/MIME mit Banken: Silver- oder Gold-Zertifikat von SwissSign?
+# S/MIME für Banken: Silver- oder Gold-Zertifikat von SwissSign?
 
-Kurzfazit: Weder ein Schweizer Gesetz noch die FINMA schreibt eine bestimmte Zertifikatsstufe für S/MIME vor. Zum Verschlüsseln genügt ein Silver-Zertifikat technisch vollständig. Gold bestätigt zusätzlich Name und Organisation des Absenders und ist die passende Wahl, wenn die Bank keine Vorgabe macht.
+Kurzfazit: Eine Bank, die Mails an Kundinnen, Kunden und Geschäftspartner mit S/MIME signiert und verschlüsselt, sollte persönliche Postfächer mit Gold-Zertifikaten und Funktionspostfächer mit Organization-Validated-Zertifikaten von SwissSign ausstatten. Silver verschlüsselt gleich stark, im Zertifikat steht aber nur die E-Mail-Adresse und nicht der Name der Bank. Eine Vorgabe zur Zertifikatsstufe machen weder das Gesetz noch die FINMA.
 
-Die Frage, ob für den Mailverkehr mit einer Bank ein Silver- oder ein Gold-Zertifikat von SwissSign nötig ist, kommt in meinen Projekten regelmässig auf. Meist gibt es dazu kein Merkblatt der Bank, und die Kundenberaterin oder der Kundenberater kann die Frage nicht beantworten. Die Antwort hängt davon ab, wofür das Zertifikat eingesetzt wird: für die Verschlüsselung oder als Nachweis, wer eine Mail geschickt hat.
+Die Frage, welche Zertifikatsstufe für den Mailversand nötig ist, kommt in meinen Projekten mit Finanzinstituten regelmässig auf. Meist steht sie am Anfang eines Gateway-Projekts oder wenn Geschäftskunden verlangen, dass vertrauliche Unterlagen nur noch verschlüsselt verschickt werden. Für die Antwort sind zwei Aufgaben von S/MIME zu trennen: die Verschlüsselung, die den Inhalt schützt, und die Signatur, die gegenüber dem Empfänger belegt, wer die Mail verschickt hat.
 
 **Schweiz-Fokus:** Dieser Artikel behandelt die Rechtslage in der Schweiz. Wo die EU-Regeln abweichen, steht ein gekennzeichneter Hinweis.
 
@@ -37,76 +37,79 @@ Seit dem 1. September 2023 gelten für öffentlich vertrauenswürdige S/MIME-Zer
 | E-Mail ID Gold | `Sponsor-validated` | Organisation und Person | Vor- und Nachname (oder Pseudonym), Organisation, Organisationskennung, Land, E-Mail-Adresse |
 | Organization Validated | `Organization-validated` | Organisation | Organisationsname, keine Person |
 
-Bei Silver schickt SwissSign einen Bestätigungscode an die beantragte Adresse. Wer die Mail empfangen kann, erhält das Zertifikat. Die Identität der Person wird nicht geprüft, und im Zertifikat steht die Adresse auch als `Common Name`.
+Bei Silver schickt SwissSign einen Bestätigungscode an die beantragte Adresse. Wer die Mail empfangen kann, erhält das Zertifikat. Die Identität der Person und die Organisation werden nicht geprüft, und im Zertifikat steht die Adresse auch als `Common Name`.
 
-Gold ist bei SwissSign ausschliesslich als `Sponsor-validated` geführt. Die Organisation wird geprüft, und die Person ist ihr zugeordnet: Ihre Identität prüft entweder SwissSign oder die Organisation selbst als registrierende Stelle, etwa im Rahmen einer Managed PKI. Ein Profil für Privatpersonen ohne Organisation (`Individual-validated`) ist in den Zertifikatsprofilen nicht aufgeführt.
+Gold ist bei SwissSign ausschliesslich als `Sponsor-validated` geführt. SwissSign prüft die Organisation, und die Person ist ihr zugeordnet. Ihre Identität prüft entweder SwissSign oder die Organisation selbst als registrierende Stelle, in der Regel im Rahmen einer Managed PKI. Für Funktionspostfächer wie `kundendienst@` oder `zahlungsverkehr@` ist das Profil `Organization-validated` vorgesehen; dort steht die Bank als Organisation im Zertifikat, aber keine Person.
 
-Für Funktionspostfächer wie `support@` oder `buchhaltung@` ist das Profil `Organization-validated` vorgesehen. Gold-Anträge für solche Postfächer können scheitern, weil SwissSign Gattungsbegriffe wie «Support» oder «Helpdesk» im Feld `GivenName` ablehnt.
+Kryptografisch unterscheiden sich die Stufen nicht. Alle Profile verwenden RSA-Schlüssel ab 2048 Bit, die Schlüsselverwendung `digitalSignature` und `keyEncipherment` sowie die erweiterte Verwendung `id-kp-emailProtection`.
 
-Kryptografisch unterscheiden sich die Stufen nicht. Alle Profile verwenden RSA-Schlüssel ab 2048 Bit, die Schlüsselverwendung `digitalSignature` und `keyEncipherment` sowie die erweiterte Verwendung `id-kp-emailProtection`. Eine mit Silver verschlüsselte Mail ist genauso gut geschützt wie eine mit Gold verschlüsselte.
+## Was der Unterschied für eine Bank als Absender bedeutet
 
-## Was der Unterschied in der Praxis bedeutet
+| | Silver | Gold | Organization Validated |
+|---|---|---|---|
+| Mails verschlüsseln und entschlüsseln | ja | ja | ja |
+| Signatur zeigt im Mailprogramm | E-Mail-Adresse | Name und Bank | Bank |
+| Aussage der Signatur | Absender hat Zugriff auf das Postfach | geprüfte Person dieser Bank | Postfach dieser Bank |
+| Einsatz bei einer Bank | ungeeignet für Kundenkommunikation | persönliche Postfächer | Funktionspostfächer |
 
-| | Silver | Gold |
-|---|---|---|
-| Mails verschlüsseln und entschlüsseln | ja | ja |
-| Anzeige der Signatur in Outlook | E-Mail-Adresse | Name und Organisation |
-| Aussage der Signatur | Absender hat Zugriff auf das Postfach | Absender ist eine geprüfte Person dieser Organisation |
-| Aufwand bei der Beantragung | Bestätigung per Mail | Organisationsnachweis und Identitätsprüfung |
+Der Unterschied betrifft die Signatur. Eine Bank signiert ausgehende Mails, damit Empfängerinnen und Empfänger prüfen können, dass die Nachricht tatsächlich von ihr stammt und unterwegs nicht verändert wurde. Mit Silver ist das nur eingeschränkt möglich:
 
-Der Unterschied zeigt sich bei einer Kontoübernahme. Wer ein Postfach kontrolliert, kann für diese Adresse ein Silver-Zertifikat beantragen und damit gültig signierte Mails verschicken. Ein Gold-Zertifikat setzt dagegen voraus, dass die Organisation und die Person geprüft sind. Für eine Bank, die etwa Zahlungsaufträge oder Vertragskorrespondenz per Mail entgegennimmt, hat eine Gold-Signatur deshalb mehr Aussagekraft.
+- Wer eine ähnlich lautende Domain registriert, etwa `musterbank-ch.com` statt `musterbank.ch`, erhält für Adressen dieser Domain ohne weitere Prüfung ein Silver-Zertifikat. Seine Phishing-Mails sind dann genauso gültig signiert wie die echten Mails der Bank, und im Zertifikat steht in beiden Fällen nur eine E-Mail-Adresse.
+- Wer ein Postfach der Bank übernimmt, kann für diese Adresse ebenfalls ein Silver-Zertifikat beantragen.
 
-Für die Verschlüsselung spielt das keine Rolle. Die Bank braucht nur den öffentlichen Schlüssel des Empfängers, und der ist bei beiden Stufen gleichwertig.
+Ein Gold- oder Organization-Validated-Zertifikat enthält den geprüften Namen der Bank im Feld `Organization`. Diesen Eintrag erhält nur, wer die Organisationsprüfung durch SwissSign besteht. Für Empfänger, die die Signatur ansehen, ist das der relevante Nachweis.
+
+Für die Verschlüsselung spielt die Stufe keine Rolle. Eine mit Silver verschlüsselte Mail ist genauso gut geschützt wie eine mit Gold verschlüsselte.
+
+## Verschlüsseln setzt Zertifikate der Empfänger voraus
+
+Um eine Mail mit S/MIME zu verschlüsseln, braucht die Bank den öffentlichen Schlüssel des Empfängers. Das eigene Zertifikat der Bank wird dafür nicht verwendet; es dient der Signatur und dem Empfang verschlüsselter Antworten.
+
+Die meisten Privatkundinnen und Privatkunden haben kein S/MIME-Zertifikat. Banken stellen vertrauliche Mails an sie deshalb meist über ein Verschlüsselungs-Gateway zu, etwa SEPPmail (GINA) oder Kiteworks/Totemomail, das die Nachricht in einem Webportal oder als verschlüsselten Anhang bereitstellt. S/MIME-Verschlüsselung kommt vor allem bei Geschäftskunden und Partnern zum Einsatz, die selbst Zertifikate oder ein Gateway betreiben. Arbeiten beide Seiten mit einem Gateway, genügen oft Domain-Zertifikate oder erzwungenes TLS zwischen den Mailservern.
+
+## Zertifikate im Betrieb: Managed PKI und Gateway
+
+Bei mehr als einer Handvoll Postfächer bezieht eine Bank ihre Zertifikate über die Managed PKI von SwissSign. Die Bank tritt dabei als registrierende Stelle auf und bestätigt die Identität der Mitarbeitenden selbst; das entspricht dem Typ `Sponsor-validated`. Gateways wie SEPPmail und Kiteworks/Totemomail können über eine Schnittstelle zur Managed PKI Zertifikate automatisch beantragen, verlängern und den Postfächern zuordnen.
+
+Aus Projekten sind drei Punkte bekannt, die im Betrieb Probleme verursachen:
+
+- Gold-Anträge für Funktionspostfächer scheitern, weil das Gateway Vor- und Nachname aus dem Verzeichnis übernimmt und SwissSign Gattungsbegriffe wie «Support» oder «Helpdesk» im Feld `GivenName` ablehnt. Für solche Postfächer lässt sich im Gateway das Profil `Organization-validated` hinterlegen.
+- Automatische Verlängerungen können über Wochen fehlschlagen, ohne dass es auffällt, bis die ersten Zertifikate ablaufen und Kunden verschlüsselte Mails nicht mehr senden können. Die Ablaufdaten der ausgestellten Zertifikate und die Fehlermeldungen der Verlängerungsläufe sollten deshalb überwacht werden.
+- Das Gateway signiert seine Anträge an die Managed PKI mit einem eigenen Zertifikat der registrierenden Stelle. Läuft dieses ab, stoppt die gesamte Automatik.
 
 ## Rechtliche Vorgaben in der Schweiz
 
-Kein Schweizer Gesetz schreibt S/MIME vor, und keines unterscheidet zwischen Zertifikatsstufen. Es gibt allgemeine Pflichten zum Schutz von Daten, deren technische Umsetzung offen bleibt.
+Kein Schweizer Gesetz schreibt S/MIME vor, und keines unterscheidet zwischen Zertifikatsstufen. Die Pflichten einer Bank betreffen den Schutz der Kundendaten; wie sie diesen umsetzt, entscheidet sie selbst.
 
-| Regelung | Inhalt | Bezug zu S/MIME |
+| Regelung | Inhalt | Bedeutung für den Mailversand der Bank |
 |---|---|---|
-| DSG Art. 8 und DSV Art. 1 bis 6 | Datensicherheit, die dem Risiko angemessen ist | Verschlüsselung ist ein übliches Mittel für heikle Personendaten, ein bestimmtes Verfahren ist nicht vorgeschrieben |
-| BankG Art. 47 | Bankkundengeheimnis | verpflichtet die Bank, nicht ihre Kundschaft |
-| FINMA-RS 2023/1 | Schutz kritischer Daten bei Banken | technologieneutral, keine Vorgabe zu Zertifikaten |
-| ZertES und OR Art. 14 Abs. 2bis | nur die qualifizierte elektronische Signatur ist der eigenhändigen Unterschrift gleichgestellt | Silver und Gold sind keine qualifizierten Signaturen |
-| VeÜ-ZSSV | elektronische Eingaben an Gerichte und Betreibungsämter | qualifizierte Signatur und anerkannte Zustellplattform nötig, S/MIME genügt nicht |
-
-### Datenschutz: DSG und DSV
-
-Art. 8 DSG verpflichtet Verantwortliche und Auftragsbearbeiter, eine dem Risiko angemessene Datensicherheit zu gewährleisten. Die Datenschutzverordnung konkretisiert das mit Schutzzielen wie Vertraulichkeit und Integrität, nennt aber keine Verfahren. Ob jemand S/MIME, ein Gateway mit Webmail-Zustellung oder eine Austauschplattform einsetzt, ist eine Abwägung im Einzelfall.
+| BankG Art. 47 | Bankkundengeheimnis | Kundendaten dürfen nicht unbefugt offenbart werden; unverschlüsselter Versand über das Internet ist ein Risiko, das die Bank bewerten muss |
+| FINMA-RS 2023/1 | Schutz kritischer Daten | Schutz auch bei der Übertragung, technologieneutral, keine Vorgabe zu Zertifikaten |
+| DSG Art. 8 und DSV Art. 1 bis 6 | Datensicherheit, die dem Risiko angemessen ist | Verschlüsselung ist ein übliches Mittel, ein bestimmtes Verfahren ist nicht vorgeschrieben |
+| ZertES und OR Art. 14 Abs. 2bis | nur die qualifizierte elektronische Signatur ist der eigenhändigen Unterschrift gleichgestellt | S/MIME-Signaturen ersetzen keine Unterschrift |
 
 ### Bankkundengeheimnis und FINMA
 
-Das Bankkundengeheimnis nach Art. 47 BankG und das FINMA-Rundschreiben 2023/1 «Operationelle Risiken und Resilienz: Banken» richten sich an die Bank. Das Rundschreiben verlangt, dass Banken ihre kritischen Daten über den gesamten Lebenszyklus schützen, auch bei der Übertragung. Wie sie das umsetzen, legen die Banken in ihren eigenen Weisungen fest. Ob Silver akzeptiert wird, ist deshalb eine Frage der internen Policy der jeweiligen Bank.
+Das Bankkundengeheimnis nach Art. 47 BankG verpflichtet die Bank, ihre Organe und Mitarbeitenden, Kundendaten nicht unbefugt zu offenbaren. Das FINMA-Rundschreiben 2023/1 «Operationelle Risiken und Resilienz: Banken» verlangt, dass Banken ihre kritischen Daten über den gesamten Lebenszyklus schützen, auch bei der Übertragung. Wie das geschieht, legt die Bank in ihren eigenen Weisungen fest. Die Wahl der Zertifikatsstufe ist damit Teil der internen Policy und sollte dort dokumentiert sein.
+
+### Datenschutz: DSG und DSV
+
+Art. 8 DSG verpflichtet Verantwortliche, eine dem Risiko angemessene Datensicherheit zu gewährleisten. Die Datenschutzverordnung konkretisiert das mit Schutzzielen wie Vertraulichkeit und Integrität, nennt aber keine Verfahren. S/MIME, ein Gateway mit Webmail-Zustellung oder eine Austauschplattform erfüllen diese Anforderung gleichermassen, sofern sie dem Risiko angemessen eingesetzt werden.
 
 ### Elektronische Signatur: ZertES und OR
 
-Das ZertES unterscheidet die elektronische, die fortgeschrittene, die geregelte und die qualifizierte elektronische Signatur. Nach Art. 14 Abs. 2bis OR ist nur die qualifizierte elektronische Signatur mit qualifiziertem Zeitstempel der eigenhändigen Unterschrift gleichgestellt. Die S/MIME-Zertifikate von SwissSign werden nach den Regeln des CA/Browser Forum und den ETSI-Policies LCP (Silver) bzw. NCP (Gold) ausgestellt und sind keine qualifizierten Zertifikate nach ZertES.
-
-Ein Vertrag, für den die Schriftform vorgeschrieben ist, lässt sich mit einer S/MIME-signierten Mail daher nicht formgültig abschliessen, auch nicht mit Gold. Im Streitfall kann eine Gold-Signatur dennoch als Beweismittel dienen; ihr Gewicht beurteilt das Gericht frei.
-
-### Eingaben an Gerichte und Behörden
-
-Für elektronische Eingaben in Zivil-, Straf- sowie Schuldbetreibungs- und Konkursverfahren verlangt die VeÜ-ZSSV eine qualifizierte elektronische Signatur und die Übermittlung über eine anerkannte Zustellplattform. Eine S/MIME-Mail erfüllt diese Anforderungen nicht.
+Das ZertES unterscheidet die elektronische, die fortgeschrittene, die geregelte und die qualifizierte elektronische Signatur. Nach Art. 14 Abs. 2bis OR ist nur die qualifizierte elektronische Signatur mit qualifiziertem Zeitstempel der eigenhändigen Unterschrift gleichgestellt. Die S/MIME-Zertifikate von SwissSign werden nach den Regeln des CA/Browser Forum und den ETSI-Policies LCP (Silver) bzw. NCP (Gold) ausgestellt und sind keine qualifizierten Zertifikate nach ZertES. Verträge oder Erklärungen, für die die Schriftform vorgeschrieben ist, lassen sich mit einer S/MIME-signierten Mail nicht formgültig abgeben, auch nicht mit Gold.
 
 **EU-Hinweis:** In der EU ist nach Art. 25 Abs. 2 eIDAS ebenfalls nur die qualifizierte elektronische Signatur der handschriftlichen Unterschrift gleichgestellt.
 
-## Wenn die Bank keine Vorgabe macht
+## Empfehlung
 
-Fehlt ein Merkblatt, lässt sich die Lage mit drei Fragen an die Bank klären:
-
-1.  Verlangt die Bank für signierte Mails ein Zertifikat mit geprüfter Identität, oder genügt eine reine E-Mail-Validierung?
-
-2.  Arbeitet die Bank mit einem Verschlüsselungs-Gateway (z. B. SEPPmail oder Kiteworks/Totemomail) und einem Domain-Zertifikat, oder mit persönlichen Zertifikaten ihrer Mitarbeitenden?
-
-3.  Wie stellt die Bank ihre eigenen öffentlichen Schlüssel zur Verfügung?
-
-Eine kurze Anfrage an die Kundenberatung, die an die IT weitergeleitet werden kann:
-
-> Für den verschlüsselten Mailverkehr mit Ihnen beschaffe ich ein S/MIME-Zertifikat. Bitte teilen Sie mir mit, ob Sie ein Zertifikat mit geprüfter Identität (z. B. SwissSign E-Mail ID Gold mit Name und Organisation) voraussetzen oder ob ein Zertifikat mit reiner E-Mail-Validierung (Silver) genügt. Zudem bitte ich um Ihr öffentliches Zertifikat bzw. um die Angabe, ob Sie über ein Gateway mit Domain-Zertifikat arbeiten.
-
-Viele Banken verschicken vertrauliche Mails ohnehin über ein Gateway mit Webmail-Zustellung. Die Empfängerin oder der Empfänger meldet sich dann im Portal an und braucht kein eigenes Zertifikat. Arbeiten beide Seiten mit einem Gateway, genügen oft Domain-Zertifikate oder erzwungenes TLS zwischen den Mailservern, und persönliche Zertifikate sind nicht nötig.
-
-Bleibt die Frage offen, ist Gold für Firmenkorrespondenz die passende Wahl. Gold deckt Verschlüsselung und Signatur ab, und ein späterer Wechsel von Silver auf Gold bedeutet eine neue Beantragung und eine erneute Verteilung des öffentlichen Schlüssels an alle Gegenstellen. Silver reicht, wenn die Bank bestätigt, dass sie nur verschlüsselt und Signaturen nicht auswertet. Für Funktionspostfächer ist ein `Organization-validated`-Zertifikat vorgesehen.
+- **Persönliche Postfächer** der Kundenberatung und anderer Mitarbeitender mit Kundenkontakt: Gold (`Sponsor-validated`) über die Managed PKI.
+- **Funktionspostfächer:** `Organization-validated`, damit die Bank als Absender im Zertifikat steht.
+- **Silver** nicht für die Kundenkommunikation einsetzen, weil die Signatur die Bank nicht als Absender ausweist.
+- **Verschlüsselung an Privatkunden** über die Push- oder Portal-Zustellung des Gateways; S/MIME für Empfänger mit eigenem Zertifikat oder Gateway.
+- **Signatur und Absenderprüfung** ergänzen sich: Die S/MIME-Signatur ersetzt SPF, DKIM und DMARC nicht, sie zeigt dem Empfänger aber im Mailprogramm die geprüfte Organisation an.
+- **Merkblatt für Kunden:** Beschreiben Sie, welche Zertifikate die Bank verwendet, wie Kunden eine Signatur prüfen und welche Zertifikatsstufen die Bank von Kunden akzeptiert, die selbst verschlüsselt senden wollen. Fehlt ein solches Merkblatt, geht die Frage an die Kundenberatung, die sie meist nicht beantworten kann.
 
 ## Quellen
 
@@ -114,17 +117,19 @@ Bleibt die Frage offen, ist Gold für Firmenkorrespondenz die passende Wahl. Gol
 
 2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): verbindliche Regeln für öffentlich vertrauenswürdige S/MIME-Zertifikate, Definition der vier Validierungstypen.
 
-3.  [Bundesgesetz über den Datenschutz (DSG)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Art. 8 zur Datensicherheit.
+3.  [SEPPmail: Managed PKI SwissSign](https://docs.seppmail.com/en/07_mi_10_mpki_11_swisssign.html): Anbindung des SEPPmail-Gateways an die Managed PKI von SwissSign.
 
-4.  [Datenschutzverordnung (DSV)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Art. 1 bis 6 mit Grundsätzen und Schutzzielen der Datensicherheit.
+4.  [Bankengesetz (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): Art. 47 zum Bankkundengeheimnis.
 
-5.  [Bankengesetz (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): Art. 47 zum Bankkundengeheimnis.
+5.  [FINMA: Rundschreiben](https://www.finma.ch/de/dokumentation/rundschreiben/): Übersicht mit dem Rundschreiben 2023/1 «Operationelle Risiken und Resilienz: Banken», in Kraft seit 1. Januar 2024.
 
-6.  [FINMA: Rundschreiben](https://www.finma.ch/de/dokumentation/rundschreiben/): Übersicht mit dem Rundschreiben 2023/1 «Operationelle Risiken und Resilienz: Banken», in Kraft seit 1. Januar 2024.
+6.  [Bundesgesetz über den Datenschutz (DSG)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Art. 8 zur Datensicherheit.
 
-7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Arten der elektronischen Signatur und Anforderungen an qualifizierte Zertifikate.
+7.  [Datenschutzverordnung (DSV)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Art. 1 bis 6 mit Grundsätzen und Schutzzielen der Datensicherheit.
 
-8.  [Obligationenrecht (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 Abs. 2bis zur Gleichstellung der qualifizierten elektronischen Signatur mit der eigenhändigen Unterschrift.
+8.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Arten der elektronischen Signatur und Anforderungen an qualifizierte Zertifikate.
+
+9.  [Obligationenrecht (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 Abs. 2bis zur Gleichstellung der qualifizierten elektronischen Signatur mit der eigenhändigen Unterschrift.
 
 ----
 
@@ -22266,6 +22271,120 @@ When a person leaves, `directReports` on their object shows which mailboxes need
 
 ----
 
+# S/MIME with banks: SwissSign Silver or Gold certificate?
+
+URL: https://rafaelpfister.ch/en/blog/s-mime-with-banks-swisssign-silver-or-gold-certificate
+Datum: 2026-11-16
+
+# S/MIME with banks: SwissSign Silver or Gold certificate?
+
+In brief: Neither Swiss law nor FINMA mandates a specific certificate level for S/MIME. A Silver certificate is fully sufficient for encryption from a technical perspective. Gold additionally verifies the sender's name and organization, making it the appropriate choice if the bank does not specify a requirement.
+
+The question of whether a SwissSign Silver or Gold certificate is needed for email communication with a bank comes up regularly in my projects. Usually, the bank has no fact sheet on the matter, and the customer advisor cannot answer the question. The answer depends on what the certificate is used for: encryption or proof of who sent an email.
+
+**Switzerland focus:** This article covers the legal situation in Switzerland. Where EU rules differ, this is indicated accordingly.
+
+## What SwissSign verifies for Silver and Gold
+
+Since September 1, 2023, publicly trusted S/MIME certificates have been subject to the `S/MIME Baseline Requirements` of the CA/Browser Forum. They distinguish between four validation types, depending on what the certification authority verifies before issuance. SwissSign assigns its products to these types in the published certificate profiles (CPR S/MIME):
+
+| Product | CA/B Forum type | What is verified | What appears in the certificate |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Control over the mailbox | Email address only |
+| E-Mail ID Gold | `Sponsor-validated` | Organization and person | First and last name (or pseudonym), organization, organization identifier, country, email address |
+| Organization Validated | `Organization-validated` | Organization | Organization name, no individual |
+
+For Silver, SwissSign sends a confirmation code to the requested address. Anyone who can receive the email obtains the certificate. The person's identity is not verified, and the certificate also lists the address as the `Common Name`.
+
+SwissSign lists Gold exclusively as `Sponsor-validated`. The organization is verified, and the person is associated with it: their identity is verified either by SwissSign or by the organization itself as the registration authority, for example as part of a managed PKI. The certificate profiles do not list a profile for private individuals without an organization (`Individual-validated`).
+
+For functional mailboxes such as `support@` or `buchhaltung@`, the `Organization-validated` profile is intended. Gold applications for such mailboxes may fail because SwissSign rejects generic terms such as “Support” or “Helpdesk” in the `GivenName` field.
+
+The levels do not differ cryptographically. All profiles use RSA keys of at least 2048 bits, the `digitalSignature` and `keyEncipherment` key usages, and the `id-kp-emailProtection` extended usage. An email encrypted with Silver is protected just as well as one encrypted with Gold.
+
+## What the difference means in practice
+
+| | Silver | Gold |
+|---|---|---|
+| Encrypting and decrypting emails | yes | yes |
+| Signature display in Outlook | Email address | Name and organization |
+| What the signature indicates | Sender has access to the mailbox | Sender is a verified person at that organization |
+| Effort required to apply | Confirmation by email | Proof of organization and identity verification |
+
+The difference becomes apparent in the event of an account takeover. Anyone who controls a mailbox can apply for a Silver certificate for that address and use it to send validly signed emails. A Gold certificate, on the other hand, requires the organization and the person to be verified. For a bank that accepts payment orders or contractual correspondence by email, for example, a Gold signature therefore carries more weight.
+
+This does not matter for encryption. The bank only needs the recipient's public key, and it is equivalent at both levels.
+
+## Legal requirements in Switzerland
+
+No Swiss law requires S/MIME, and none distinguishes between certificate levels. There are general obligations to protect data, but their technical implementation remains open.
+
+| Regulation | Content | Relevance to S/MIME |
+|---|---|---|
+| DPA Art. 8 and DPO Art. 1 to 6 | Data security appropriate to the risk | Encryption is a common measure for sensitive personal data; no specific method is required |
+| Banking Act Art. 47 | Banking secrecy | Obligates the bank, not its customers |
+| FINMA Circular 2023/1 | Protection of critical data at banks | Technology-neutral; no certificate requirements |
+| ZertES and CO Art. 14 para. 2bis | Only the qualified electronic signature is equivalent to a handwritten signature | Silver and Gold are not qualified signatures |
+| VeÜ-ZSSV | Electronic submissions to courts and debt enforcement offices | Qualified signature and recognized delivery platform required; S/MIME is insufficient |
+
+### Data protection: DPA and DPO
+
+Article 8 of the DPA requires controllers and processors to ensure data security appropriate to the risk. The Data Protection Ordinance specifies this through protection objectives such as confidentiality and integrity, but does not prescribe any particular methods. Whether someone uses S/MIME, a gateway with webmail delivery, or an exchange platform is an assessment to be made on a case-by-case basis.
+
+### Banking secrecy and FINMA
+
+Banking secrecy under Article 47 of the Banking Act and FINMA Circular 2023/1, “Operational Risks and Resilience: Banks,” are addressed to the bank. The circular requires banks to protect their critical data throughout its entire lifecycle, including during transmission. Banks set out how they implement this in their own policies. Whether Silver is accepted is therefore a question of the individual bank's internal policy.
+
+### Electronic signature: ZertES and CO
+
+ZertES distinguishes between electronic, advanced, regulated, and qualified electronic signatures. Under Article 14 para. 2bis of the CO, only a qualified electronic signature with a qualified timestamp is equivalent to a handwritten signature. SwissSign S/MIME certificates are issued under the CA/Browser Forum rules and the ETSI LCP (Silver) and NCP (Gold) policies and are not qualified certificates under ZertES.
+
+A contract for which written form is required therefore cannot be validly concluded with an S/MIME-signed email, not even with Gold. In a dispute, a Gold signature may nevertheless serve as evidence; the court assesses its weight freely.
+
+### Submissions to courts and authorities
+
+For electronic submissions in civil, criminal, debt enforcement, and bankruptcy proceedings, VeÜ-ZSSV requires a qualified electronic signature and transmission via a recognized delivery platform. An S/MIME email does not meet these requirements.
+
+**EU note:** Under Article 25(2) eIDAS, only the qualified electronic signature is likewise equivalent to a handwritten signature in the EU.
+
+## If the bank does not specify a requirement
+
+If no fact sheet is available, the situation can be clarified with three questions for the bank:
+
+1.  Does the bank require a certificate with verified identity for signed emails, or is email-only validation sufficient?
+
+2.  Does the bank use an encryption gateway (e.g., SEPPmail or Kiteworks/Totemomail) with a domain certificate, or personal certificates for its employees?
+
+3.  How does the bank provide its own public keys?
+
+A short inquiry to customer service that can be forwarded to IT:
+
+> I am obtaining an S/MIME certificate for encrypted email communication with you. Please let me know whether you require a certificate with verified identity (e.g., SwissSign E-Mail ID Gold with name and organization), or whether a certificate with email-only validation (Silver) is sufficient. I would also appreciate your public certificate or information on whether you use a gateway with a domain certificate.
+
+Many banks send confidential emails through a gateway with webmail delivery anyway. The recipient then logs in to the portal and does not need their own certificate. If both sides use a gateway, domain certificates or enforced TLS between the mail servers are often sufficient, and personal certificates are not needed.
+
+If the question remains unanswered, Gold is the appropriate choice for business correspondence. Gold covers encryption and signing, and switching from Silver to Gold later means applying again and redistributing the public key to all counterparties. Silver is sufficient if the bank confirms that it only encrypts and does not evaluate signatures. An `Organization-validated` certificate is intended for functional mailboxes.
+
+## Sources
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): SwissSign certificate profiles (as of September 18, 2025), assignment of Silver, Gold, and Organization Validated to validation types, subject fields, and policy OIDs.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): binding rules for publicly trusted S/MIME certificates, definition of the four validation types.
+
+3.  [Federal Act on Data Protection (DPA)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Article 8 on data security.
+
+4.  [Data Protection Ordinance (DPO)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Articles 1 to 6 on the principles and protection objectives of data security.
+
+5.  [Banking Act](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): Article 47 on banking secrecy.
+
+6.  [FINMA: Circulars](https://www.finma.ch/de/dokumentation/rundschreiben/): overview including Circular 2023/1, “Operational Risks and Resilience: Banks,” in force since January 1, 2024.
+
+7.  [Federal Act on Electronic Signatures (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): types of electronic signatures and requirements for qualified certificates.
+
+8.  [Code of Obligations (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Article 14 para. 2bis on the equivalence of the qualified electronic signature to a handwritten signature.
+
+----
+
 # SQLite: Understanding and preventing “database is locked”
 
 URL: https://rafaelpfister.ch/en/blog/sqlite-understanding-and-preventing-database-is-locked
@@ -43892,6 +44011,120 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# S/MIME avec les banques : certificat Silver ou Gold de SwissSign ?
+
+URL: https://rafaelpfister.ch/fr/blog/s-mime-avec-les-banques-certificat-silver-ou-gold-de-swisssign
+Datum: 2026-11-16
+
+# S/MIME avec les banques : certificat Silver ou Gold de SwissSign ?
+
+En bref : ni une loi suisse ni la FINMA n’impose un niveau de certificat précis pour S/MIME. Pour le chiffrement, un certificat Silver suffit entièrement sur le plan technique. Gold confirme en plus le nom et l’organisation de l’expéditeur et constitue le choix approprié lorsque la banque ne donne aucune consigne.
+
+La question de savoir si un certificat Silver ou Gold de SwissSign est nécessaire pour les échanges d’e-mails avec une banque revient régulièrement dans mes projets. La banque ne fournit généralement aucune fiche d’information à ce sujet, et le ou la conseillère clientèle ne peut pas répondre à la question. La réponse dépend de l’usage du certificat : pour le chiffrement ou comme preuve de l’identité de l’expéditeur d’un e-mail.
+
+**Focus Suisse :** cet article traite de la situation juridique en Suisse. Lorsqu’elles diffèrent, les règles de l’UE font l’objet d’une indication spécifique.
+
+## Ce que SwissSign vérifie pour Silver et Gold
+
+Depuis le 1er septembre 2023, les `S/MIME Baseline Requirements` du CA/Browser Forum s’appliquent aux certificats S/MIME publiquement reconnus. Elles distinguent quatre types de validation selon ce que l’autorité de certification vérifie avant l’émission. Dans les profils de certificats publiés (CPR S/MIME), SwissSign attribue ses produits à ces types :
+
+| Produit | Type selon le CA/B Forum | Ce qui est vérifié | Ce qui figure dans le certificat |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Contrôle de la boîte aux lettres | uniquement l’adresse e-mail |
+| E-Mail ID Gold | `Sponsor-validated` | Organisation et personne | Prénom et nom (ou pseudonyme), organisation, identifiant de l’organisation, pays, adresse e-mail |
+| Organization Validated | `Organization-validated` | Organisation | Nom de l’organisation, sans personne |
+
+Pour Silver, SwissSign envoie un code de confirmation à l’adresse demandée. Quiconque peut recevoir l’e-mail obtient le certificat. L’identité de la personne n’est pas vérifiée et l’adresse figure également dans le certificat comme `Common Name`.
+
+Chez SwissSign, Gold est proposé exclusivement comme `Sponsor-validated`. L’organisation est vérifiée et la personne y est rattachée : son identité est vérifiée soit par SwissSign, soit par l’organisation elle-même en tant qu’autorité d’enregistrement, par exemple dans le cadre d’une PKI gérée. Un profil pour les particuliers sans organisation (`Individual-validated`) ne figure pas dans les profils de certificats.
+
+Pour les boîtes aux lettres fonctionnelles telles que `support@` ou `buchhaltung@`, le profil `Organization-validated` est prévu. Les demandes Gold pour de telles boîtes peuvent échouer, car SwissSign refuse les termes génériques tels que « Support » ou « Helpdesk » dans le champ `GivenName`.
+
+Les niveaux ne diffèrent pas sur le plan cryptographique. Tous les profils utilisent des clés RSA d’au moins 2048 bits, les usages de clé `digitalSignature` et `keyEncipherment` ainsi que l’usage étendu `id-kp-emailProtection`. Un e-mail chiffré avec Silver est tout aussi bien protégé qu’un e-mail chiffré avec Gold.
+
+## Ce que cette différence signifie dans la pratique
+
+| | Silver | Gold |
+|---|---|---|
+| Chiffrer et déchiffrer des e-mails | oui | oui |
+| Affichage de la signature dans Outlook | Adresse e-mail | Nom et organisation |
+| Ce que dit la signature | L’expéditeur a accès à la boîte aux lettres | L’expéditeur est une personne vérifiée de cette organisation |
+| Effort lors de la demande | Confirmation par e-mail | Justificatif de l’organisation et vérification de l’identité |
+
+La différence apparaît en cas de compromission d’un compte. Quiconque contrôle une boîte aux lettres peut demander un certificat Silver pour cette adresse et envoyer ainsi des e-mails valablement signés. Un certificat Gold exige en revanche que l’organisation et la personne soient vérifiées. Pour une banque qui reçoit par exemple des ordres de paiement ou une correspondance contractuelle par e-mail, une signature Gold a donc davantage de valeur probante.
+
+Cela ne joue aucun rôle pour le chiffrement. La banque a seulement besoin de la clé publique du destinataire, et elle est équivalente dans les deux niveaux.
+
+## Exigences légales en Suisse
+
+Aucune loi suisse n’impose S/MIME, et aucune ne distingue les niveaux de certificat. Il existe des obligations générales de protection des données, dont la mise en œuvre technique reste ouverte.
+
+| Réglementation | Contenu | Lien avec S/MIME |
+|---|---|---|
+| LPD art. 8 et OPDo art. 1 à 6 | sécurité des données adaptée au risque | Le chiffrement est un moyen courant pour les données personnelles sensibles ; aucune méthode précise n’est prescrite |
+| LB art. 47 | secret bancaire | oblige la banque, non sa clientèle |
+| Circ.-FINMA 2023/1 | protection des données critiques dans les banques | neutre sur le plan technologique, aucune exigence relative aux certificats |
+| SCSE et CO art. 14, al. 2bis | seule la signature électronique qualifiée est assimilée à la signature manuscrite | Silver et Gold ne sont pas des signatures qualifiées |
+| OCEI-PCPP | dépôts électroniques auprès des tribunaux et offices des poursuites | signature qualifiée et plateforme de transmission reconnue nécessaires ; S/MIME ne suffit pas |
+
+### Protection des données : LPD et OPDo
+
+L’art. 8 LPD oblige les responsables du traitement et les sous-traitants à garantir une sécurité des données adaptée au risque. L’ordonnance sur la protection des données précise cette obligation par des objectifs de protection tels que la confidentialité et l’intégrité, mais ne mentionne aucune procédure particulière. Le recours à S/MIME, à une passerelle avec remise par webmail ou à une plateforme d’échange doit être évalué au cas par cas.
+
+### Secret bancaire et FINMA
+
+Le secret bancaire prévu à l’art. 47 LB et la circulaire FINMA 2023/1 « Risques opérationnels et résilience : banques » s’adressent à la banque. La circulaire exige que les banques protègent leurs données critiques tout au long de leur cycle de vie, y compris lors de leur transmission. Les banques définissent elles-mêmes, dans leurs propres directives, la manière de le mettre en œuvre. L’acceptation de Silver dépend donc de la politique interne de chaque banque.
+
+### Signature électronique : SCSE et CO
+
+La SCSE distingue la signature électronique, la signature électronique avancée, la signature électronique réglementée et la signature électronique qualifiée. Selon l’art. 14, al. 2bis CO, seule la signature électronique qualifiée accompagnée d’un horodatage qualifié est assimilée à la signature manuscrite. Les certificats S/MIME de SwissSign sont émis selon les règles du CA/Browser Forum et les politiques ETSI LCP (Silver) et NCP (Gold), et ne sont pas des certificats qualifiés au sens de la SCSE.
+
+Un contrat pour lequel la forme écrite est prescrite ne peut donc pas être conclu valablement au moyen d’un e-mail signé S/MIME, même avec Gold. En cas de litige, une signature Gold peut néanmoins servir de preuve ; le tribunal en apprécie librement la valeur.
+
+### Dépôts auprès des tribunaux et autorités
+
+Pour les dépôts électroniques dans les procédures civiles, pénales, de poursuite pour dettes et de faillite, l’OCEI-PCPP exige une signature électronique qualifiée et une transmission par une plateforme de transmission reconnue. Un e-mail S/MIME ne répond pas à ces exigences.
+
+**Note UE :** dans l’UE également, selon l’art. 25, par. 2 eIDAS, seule la signature électronique qualifiée est assimilée à la signature manuscrite.
+
+## Lorsque la banque ne donne aucune consigne
+
+En l’absence de fiche d’information, trois questions permettent de clarifier la situation avec la banque :
+
+1.  La banque exige-t-elle, pour les e-mails signés, un certificat avec identité vérifiée, ou une simple validation de l’adresse e-mail suffit-elle ?
+
+2.  La banque utilise-t-elle une passerelle de chiffrement (par ex. SEPPmail ou Kiteworks/Totemomail) et un certificat de domaine, ou les certificats personnels de ses collaborateurs ?
+
+3.  Comment la banque met-elle ses propres clés publiques à disposition ?
+
+Voici une courte demande à adresser au conseil clientèle, qui peut être transmise à l’informatique :
+
+> Pour nos échanges d’e-mails chiffrés, je vais acquérir un certificat S/MIME. Merci de m’indiquer si vous exigez un certificat avec identité vérifiée (p. ex. SwissSign E-Mail ID Gold avec nom et organisation) ou si un certificat avec simple validation de l’adresse e-mail (Silver) suffit. Je vous prie également de me communiquer votre certificat public ou de m’indiquer si vous utilisez une passerelle avec certificat de domaine.
+
+De nombreuses banques envoient de toute façon les e-mails confidentiels via une passerelle avec remise par webmail. Le destinataire se connecte alors au portail et n’a pas besoin de son propre certificat. Lorsque les deux parties utilisent une passerelle, des certificats de domaine ou TLS imposé entre les serveurs de messagerie suffisent souvent, et les certificats personnels ne sont pas nécessaires.
+
+Si la question reste ouverte, Gold est le choix approprié pour la correspondance d’entreprise. Gold couvre le chiffrement et la signature, et un passage ultérieur de Silver à Gold implique une nouvelle demande ainsi qu’une nouvelle distribution de la clé publique à tous les correspondants. Silver suffit si la banque confirme qu’elle chiffre uniquement les messages et n’évalue pas les signatures. Pour les boîtes aux lettres fonctionnelles, un certificat `Organization-validated` est prévu.
+
+## Sources
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): profils de certificats de SwissSign (état au 18.09.2025), attribution de Silver, Gold et Organization Validated aux types de validation, champs Subject et OID de politiques.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): règles contraignantes pour les certificats S/MIME publiquement reconnus, définition des quatre types de validation.
+
+3.  [Loi fédérale sur la protection des données (LPD)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): art. 8 sur la sécurité des données.
+
+4.  [Ordonnance sur la protection des données (OPDo)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): art. 1 à 6 avec les principes et objectifs de protection de la sécurité des données.
+
+5.  [Loi sur les banques (LB)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): art. 47 sur le secret bancaire.
+
+6.  [FINMA : circulaires](https://www.finma.ch/de/dokumentation/rundschreiben/): aperçu comprenant la circulaire 2023/1 « Risques opérationnels et résilience : banques », en vigueur depuis le 1er janvier 2024.
+
+7.  [Loi fédérale sur la signature électronique (SCSE)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): types de signature électronique et exigences applicables aux certificats qualifiés.
+
+8.  [Code des obligations (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14, al. 2bis sur l’assimilation de la signature électronique qualifiée à la signature manuscrite.
 
 ----
 
@@ -65751,6 +65984,120 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# S/MIME con le banche: certificato Silver o Gold di SwissSign?
+
+URL: https://rafaelpfister.ch/it/blog/s-mime-con-le-banche-certificato-silver-o-gold-di-swisssign
+Datum: 2026-11-16
+
+# S/MIME con le banche: certificato Silver o Gold di SwissSign?
+
+In breve: né una legge svizzera né la FINMA prescrivono un determinato livello di certificato per S/MIME. Per crittografare, un certificato Silver è tecnicamente del tutto sufficiente. Gold conferma inoltre il nome e l'organizzazione del mittente ed è la scelta appropriata se la banca non fornisce indicazioni.
+
+La domanda se per lo scambio di e-mail con una banca sia necessario un certificato Silver o Gold di SwissSign ricorre regolarmente nei miei progetti. Di solito la banca non dispone di una scheda informativa al riguardo e la consulente o il consulente alla clientela non sa rispondere alla domanda. La risposta dipende dall'uso del certificato: per la crittografia o come prova di chi ha inviato un'e-mail.
+
+**Focus Svizzera:** questo articolo tratta la situazione giuridica in Svizzera. Laddove le norme UE divergono, è riportata una nota contrassegnata.
+
+## Cosa verifica SwissSign per Silver e Gold
+
+Dal 1° settembre 2023, per i certificati S/MIME pubblicamente attendibili si applicano i `S/MIME Baseline Requirements` del CA/Browser Forum. Essi distinguono quattro tipi di validazione, a seconda di ciò che l'autorità di certificazione verifica prima dell'emissione. SwissSign associa i propri prodotti a questi tipi nei profili di certificato pubblicati (CPR S/MIME):
+
+| Prodotto | Tipo secondo il CA/B Forum | Cosa viene verificato | Cosa contiene il certificato |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Controllo della casella e-mail | solo l'indirizzo e-mail |
+| E-Mail ID Gold | `Sponsor-validated` | Organizzazione e persona | Nome e cognome (o pseudonimo), organizzazione, identificativo dell'organizzazione, Paese, indirizzo e-mail |
+| Organization Validated | `Organization-validated` | Organizzazione | nome dell'organizzazione, nessuna persona |
+
+Per Silver, SwissSign invia un codice di conferma all'indirizzo richiesto. Chi può ricevere l'e-mail ottiene il certificato. L'identità della persona non viene verificata e l'indirizzo compare nel certificato anche come `Common Name`.
+
+Gold è gestito da SwissSign esclusivamente come `Sponsor-validated`. Vengono verificati l'organizzazione e l'associazione della persona a essa: la sua identità viene verificata da SwissSign oppure dall'organizzazione stessa in qualità di ente di registrazione, ad esempio nell'ambito di una Managed PKI. Nei profili di certificato non è elencato un profilo per privati senza organizzazione (`Individual-validated`).
+
+Per caselle funzionali quali `support@` o `buchhaltung@` è previsto il profilo `Organization-validated`. Le richieste Gold per tali caselle possono fallire perché SwissSign rifiuta termini generici quali «Support» o «Helpdesk» nel campo `GivenName`.
+
+Le due categorie non differiscono dal punto di vista crittografico. Tutti i profili utilizzano chiavi RSA da almeno 2048 bit, l'uso della chiave `digitalSignature` e `keyEncipherment` nonché l'uso esteso `id-kp-emailProtection`. Un'e-mail crittografata con Silver è protetta tanto bene quanto una crittografata con Gold.
+
+## Cosa significa la differenza nella pratica
+
+| | Silver | Gold |
+|---|---|---|
+| Crittografare e decrittografare e-mail | sì | sì |
+| Visualizzazione della firma in Outlook | Indirizzo e-mail | Nome e organizzazione |
+| Significato della firma | Il mittente ha accesso alla casella e-mail | Il mittente è una persona verificata di questa organizzazione |
+| Impegno per la richiesta | Conferma via e-mail | Prova dell'organizzazione e verifica dell'identità |
+
+La differenza emerge in caso di compromissione di un account. Chi controlla una casella e-mail può richiedere un certificato Silver per tale indirizzo e inviare così e-mail con firma valida. Un certificato Gold richiede invece che l'organizzazione e la persona siano state verificate. Per una banca che, ad esempio, riceve ordini di pagamento o corrispondenza contrattuale via e-mail, una firma Gold ha quindi maggiore valore informativo.
+
+Per la crittografia questo non ha alcuna rilevanza. La banca necessita soltanto della chiave pubblica del destinatario, che è equivalente per entrambi i livelli.
+
+## Requisiti legali in Svizzera
+
+Nessuna legge svizzera prescrive S/MIME e nessuna distingue tra livelli di certificato. Esistono obblighi generali di protezione dei dati, la cui attuazione tecnica resta aperta.
+
+| Normativa | Contenuto | Riferimento a S/MIME |
+|---|---|---|
+| LPD art. 8 e OPDa art. 1-6 | Sicurezza dei dati adeguata al rischio | La crittografia è uno strumento abituale per dati personali sensibili; non è prescritto un metodo specifico |
+| LBCR art. 47 | Segreto bancario | Obbliga la banca, non la sua clientela |
+| Circ. FINMA 2023/1 | Protezione dei dati critici presso le banche | Tecnologicamente neutrale, nessun requisito relativo ai certificati |
+| FiEle e CO art. 14 cpv. 2bis | Solo la firma elettronica qualificata equivale alla firma autografa | Silver e Gold non sono firme qualificate |
+| OCEI-CE | Invii elettronici a tribunali e uffici di esecuzione | Sono necessari una firma qualificata e una piattaforma di recapito riconosciuta; S/MIME non è sufficiente |
+
+### Protezione dei dati: LPD e OPDa
+
+L'art. 8 LPD obbliga i titolari del trattamento e i responsabili del trattamento a garantire una sicurezza dei dati adeguata al rischio. L'ordinanza sulla protezione dei dati precisa tale obbligo con obiettivi di protezione quali la riservatezza e l'integrità, ma non indica metodi specifici. Se utilizzare S/MIME, un gateway con recapito via webmail o una piattaforma di scambio dipende dalla valutazione del singolo caso.
+
+### Segreto bancario e FINMA
+
+Il segreto bancario ai sensi dell'art. 47 LBCR e la Circolare FINMA 2023/1 «Rischi operativi e resilienza: banche» si rivolgono alla banca. La circolare richiede alle banche di proteggere i loro dati critici per l'intero ciclo di vita, anche durante la trasmissione. Le banche stabiliscono nelle proprie direttive come attuare tali requisiti. L'accettazione di Silver è quindi una questione di policy interna della rispettiva banca.
+
+### Firma elettronica: FiEle e CO
+
+La FiEle distingue tra firma elettronica, firma elettronica avanzata, firma elettronica regolamentata e firma elettronica qualificata. Ai sensi dell'art. 14 cpv. 2bis CO, solo la firma elettronica qualificata con marca temporale qualificata equivale alla firma autografa. I certificati S/MIME di SwissSign sono emessi secondo le regole del CA/Browser Forum e le policy ETSI LCP (Silver) rispettivamente NCP (Gold) e non sono certificati qualificati ai sensi della FiEle.
+
+Un contratto per il quale è prescritta la forma scritta non può quindi essere concluso validamente nella forma con un'e-mail firmata S/MIME, neppure con Gold. In caso di controversia, una firma Gold può comunque servire come mezzo di prova; il tribunale ne valuta liberamente il peso.
+
+### Invii a tribunali e autorità
+
+Per gli invii elettronici nei procedimenti civili, penali, di esecuzione e fallimentari, l'OCEI-CE richiede una firma elettronica qualificata e la trasmissione tramite una piattaforma di recapito riconosciuta. Un'e-mail S/MIME non soddisfa questi requisiti.
+
+**Nota UE:** anche nell'UE, ai sensi dell'art. 25 par. 2 eIDAS, solo la firma elettronica qualificata equivale alla firma autografa.
+
+## Se la banca non fornisce indicazioni
+
+Se manca una scheda informativa, la situazione può essere chiarita con tre domande alla banca:
+
+1.  La banca richiede per le e-mail firmate un certificato con identità verificata oppure è sufficiente una mera validazione dell'indirizzo e-mail?
+
+2.  La banca utilizza un gateway di crittografia (ad es. SEPPmail o Kiteworks/Totemomail) e un certificato di dominio, oppure certificati personali dei propri collaboratori?
+
+3.  Come mette a disposizione la banca le proprie chiavi pubbliche?
+
+Una breve richiesta al servizio di consulenza alla clientela, che può essere inoltrata all'IT:
+
+> Per lo scambio di e-mail crittografate con voi, intendo acquistare un certificato S/MIME. Vi prego di comunicarmi se richiedete un certificato con identità verificata (ad es. SwissSign E-Mail ID Gold con nome e organizzazione) o se è sufficiente un certificato con mera validazione dell'indirizzo e-mail (Silver). Vi chiedo inoltre il vostro certificato pubblico oppure l'indicazione se utilizzate un gateway con certificato di dominio.
+
+Molte banche inviano comunque e-mail riservate tramite un gateway con recapito via webmail. La destinataria o il destinatario accede quindi al portale e non necessita di un proprio certificato. Se entrambe le parti lavorano con un gateway, spesso sono sufficienti certificati di dominio o TLS forzato tra i server di posta, e non sono necessari certificati personali.
+
+Se la questione resta aperta, Gold è la scelta appropriata per la corrispondenza aziendale. Gold copre la crittografia e la firma, e un successivo passaggio da Silver a Gold comporta una nuova richiesta e una nuova distribuzione della chiave pubblica a tutte le controparti. Silver è sufficiente se la banca conferma che effettua solo la crittografia e non valuta le firme. Per le caselle funzionali è previsto un certificato `Organization-validated`.
+
+## Fonti
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): profili di certificato di SwissSign (stato: 18.09.2025), associazione di Silver, Gold e Organization Validated ai tipi di validazione, campi Subject e OID delle policy.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): regole vincolanti per certificati S/MIME pubblicamente attendibili, definizione dei quattro tipi di validazione.
+
+3.  [Legge federale sulla protezione dei dati (LPD)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): art. 8 sulla sicurezza dei dati.
+
+4.  [Ordinanza sulla protezione dei dati (OPDa)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): art. 1-6 con principi e obiettivi di protezione della sicurezza dei dati.
+
+5.  [Legge sulle banche (LBCR)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): art. 47 sul segreto bancario.
+
+6.  [FINMA: circolari](https://www.finma.ch/de/dokumentation/rundschreiben/): panoramica con la Circolare 2023/1 «Rischi operativi e resilienza: banche», in vigore dal 1° gennaio 2024.
+
+7.  [Legge federale sulla firma elettronica (FiEle)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): tipi di firma elettronica e requisiti per i certificati qualificati.
+
+8.  [Codice delle obbligazioni (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14 cpv. 2bis sull'equivalenza della firma elettronica qualificata alla firma autografa.
+
+----
+
 # Memorizzare e leggere i responsabili delle cassette postali condivise in Active Directory
 
 URL: https://rafaelpfister.ch/it/blog/memorizzare-e-leggere-i-responsabili-delle-cassette-postali-condivise-in-active-directory
@@ -87607,6 +87954,120 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# S/MIME con bancos: ¿certificado Silver o Gold de SwissSign?
+
+URL: https://rafaelpfister.ch/es/blog/s-mime-con-bancos-certificado-silver-o-gold-de-swisssign
+Datum: 2026-11-16
+
+# S/MIME con bancos: ¿certificado Silver o Gold de SwissSign?
+
+Conclusión breve: ni una ley suiza ni la FINMA prescribe un nivel de certificado específico para S/MIME. Para cifrar, un certificado Silver es técnicamente plenamente suficiente. Gold también confirma el nombre y la organización del remitente, y es la elección adecuada si el banco no establece ningún requisito.
+
+La cuestión de si se necesita un certificado Silver o Gold de SwissSign para el tráfico de correo con un banco surge regularmente en mis proyectos. Por lo general, el banco no dispone de una hoja informativa al respecto, y la asesora o el asesor de clientes no puede responder a la pregunta. La respuesta depende de para qué se utilice el certificado: para el cifrado o como prueba de quién envió un correo.
+
+**Enfoque en Suiza:** Este artículo trata la situación jurídica en Suiza. Cuando las normas de la UE difieren, se indica expresamente.
+
+## Qué comprueba SwissSign en Silver y Gold
+
+Desde el 1 de septiembre de 2023, los certificados S/MIME de confianza pública están sujetos a los `S/MIME Baseline Requirements` del CA/Browser Forum. Estos distinguen cuatro tipos de validación, según lo que la autoridad de certificación compruebe antes de la emisión. SwissSign asigna sus productos a estos tipos en los perfiles de certificados publicados (CPR S/MIME):
+
+| Producto | Tipo según el CA/B Forum | Qué se comprueba | Qué figura en el certificado |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Control sobre el buzón de correo | solo la dirección de correo electrónico |
+| E-Mail ID Gold | `Sponsor-validated` | Organización y persona | nombre y apellidos (o seudónimo), organización, identificador de la organización, país, dirección de correo electrónico |
+| Organization Validated | `Organization-validated` | Organización | nombre de la organización, sin persona |
+
+Para Silver, SwissSign envía un código de confirmación a la dirección solicitada. Quien pueda recibir el correo obtiene el certificado. No se comprueba la identidad de la persona, y la dirección también figura en el certificado como `Common Name`.
+
+Gold se gestiona en SwissSign exclusivamente como `Sponsor-validated`. Se comprueba la organización y la persona queda vinculada a ella: SwissSign o la propia organización, como entidad de registro, comprueba su identidad, por ejemplo, en el marco de una PKI gestionada. Los perfiles de certificados no incluyen un perfil para particulares sin organización (`Individual-validated`).
+
+Para buzones funcionales como `support@` o `buchhaltung@` está previsto el perfil `Organization-validated`. Las solicitudes Gold para estos buzones pueden fallar porque SwissSign rechaza términos genéricos como «Support» o «Helpdesk» en el campo `GivenName`.
+
+Criptográficamente, los niveles no se diferencian. Todos los perfiles utilizan claves RSA de al menos 2048 bits, el uso de clave `digitalSignature` y `keyEncipherment` y el uso ampliado `id-kp-emailProtection`. Un correo cifrado con Silver está tan bien protegido como uno cifrado con Gold.
+
+## Qué significa la diferencia en la práctica
+
+| | Silver | Gold |
+|---|---|---|
+| Cifrar y descifrar correos | sí | sí |
+| Visualización de la firma en Outlook | Dirección de correo electrónico | Nombre y organización |
+| Qué acredita la firma | El remitente tiene acceso al buzón de correo | El remitente es una persona verificada de esta organización |
+| Esfuerzo al solicitarlo | Confirmación por correo | Prueba de la organización y verificación de identidad |
+
+La diferencia se aprecia cuando se compromete una cuenta. Quien controla un buzón puede solicitar un certificado Silver para esa dirección y enviar con él correos válidamente firmados. En cambio, un certificado Gold exige que se comprueben la organización y la persona. Por ello, para un banco que recibe por correo, por ejemplo, órdenes de pago o correspondencia contractual, una firma Gold tiene mayor valor probatorio.
+
+Para el cifrado, esto no importa. El banco solo necesita la clave pública del destinatario, y es equivalente en ambos niveles.
+
+## Requisitos legales en Suiza
+
+Ninguna ley suiza prescribe S/MIME, y ninguna distingue entre niveles de certificado. Existen obligaciones generales de proteger los datos, cuya implementación técnica queda abierta.
+
+| Normativa | Contenido | Relación con S/MIME |
+|---|---|---|
+| DSG art. 8 y DSV arts. 1 a 6 | Seguridad de los datos adecuada al riesgo | El cifrado es un medio habitual para datos personales sensibles; no se prescribe un procedimiento concreto |
+| BankG art. 47 | Secreto bancario | Obliga al banco, no a su clientela |
+| FINMA-RS 2023/1 | Protección de datos críticos en los bancos | Tecnológicamente neutral, sin requisito sobre certificados |
+| ZertES y OR art. 14 apdo. 2bis | Solo la firma electrónica cualificada equivale a la firma manuscrita | Silver y Gold no son firmas cualificadas |
+| VeÜ-ZSSV | Presentaciones electrónicas ante tribunales y oficinas de ejecución de deudas | Se requiere firma cualificada y una plataforma de entrega reconocida; S/MIME no basta |
+
+### Protección de datos: DSG y DSV
+
+El art. 8 DSG obliga a los responsables y encargados del tratamiento a garantizar una seguridad de los datos adecuada al riesgo. La ordenanza de protección de datos lo concreta con objetivos de protección como la confidencialidad y la integridad, pero no menciona procedimientos específicos. Que se utilice S/MIME, una pasarela con entrega por webmail o una plataforma de intercambio es una ponderación caso por caso.
+
+### Secreto bancario y FINMA
+
+El secreto bancario conforme al art. 47 BankG y la circular 2023/1 de la FINMA «Riesgos operativos y resiliencia: bancos» se dirigen al banco. La circular exige que los bancos protejan sus datos críticos durante todo su ciclo de vida, también durante la transmisión. Los bancos determinan cómo lo implementan en sus propias directrices. Por tanto, que se acepte Silver depende de la política interna de cada banco.
+
+### Firma electrónica: ZertES y OR
+
+La ZertES distingue entre firma electrónica, avanzada, regulada y cualificada. Según el art. 14 apdo. 2bis OR, solo la firma electrónica cualificada con sello de tiempo cualificado equivale a la firma manuscrita. Los certificados S/MIME de SwissSign se emiten según las normas del CA/Browser Forum y las políticas ETSI LCP (Silver) y NCP (Gold), respectivamente, y no son certificados cualificados conforme a la ZertES.
+
+Por tanto, un contrato para el que se prescribe la forma escrita no puede celebrarse válidamente mediante un correo firmado con S/MIME, tampoco con Gold. Sin embargo, en caso de litigio una firma Gold puede servir como prueba; el tribunal valora libremente su fuerza probatoria.
+
+### Presentaciones ante tribunales y autoridades
+
+Para las presentaciones electrónicas en procedimientos civiles, penales, de ejecución de deudas y de quiebra, la VeÜ-ZSSV exige una firma electrónica cualificada y la transmisión a través de una plataforma de entrega reconocida. Un correo S/MIME no cumple estos requisitos.
+
+**Nota sobre la UE:** En la UE, conforme al art. 25 apdo. 2 eIDAS, también solo la firma electrónica cualificada equivale a la firma manuscrita.
+
+## Si el banco no establece requisitos
+
+Si falta una hoja informativa, la situación puede aclararse con tres preguntas al banco:
+
+1.  ¿El banco exige para los correos firmados un certificado con identidad verificada o basta una mera validación de la dirección de correo electrónico?
+
+2.  ¿El banco trabaja con una pasarela de cifrado (p. ej., SEPPmail o Kiteworks/Totemomail) y un certificado de dominio, o con certificados personales de sus empleados?
+
+3.  ¿Cómo pone el banco a disposición sus propias claves públicas?
+
+Una consulta breve para el servicio de atención al cliente, que pueda remitirse al departamento de TI:
+
+> Para el tráfico de correo cifrado con ustedes, voy a adquirir un certificado S/MIME. Les ruego que me indiquen si exigen un certificado con identidad verificada (p. ej., SwissSign E-Mail ID Gold con nombre y organización) o si basta un certificado con mera validación de la dirección de correo electrónico (Silver). Asimismo, les solicito su certificado público o que indiquen si trabajan mediante una pasarela con certificado de dominio.
+
+Muchos bancos envían de todos modos correos confidenciales mediante una pasarela con entrega por webmail. La destinataria o el destinatario inicia sesión en el portal y no necesita un certificado propio. Si ambas partes trabajan con una pasarela, suelen bastar certificados de dominio o TLS forzado entre los servidores de correo, y no se necesitan certificados personales.
+
+Si la cuestión sigue abierta, Gold es la elección adecuada para la correspondencia empresarial. Gold cubre el cifrado y la firma, y un cambio posterior de Silver a Gold implica una nueva solicitud y una nueva distribución de la clave pública a todas las contrapartes. Silver basta si el banco confirma que solo cifra y no evalúa las firmas. Para buzones funcionales está previsto un certificado `Organization-validated`.
+
+## Fuentes
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): perfiles de certificados de SwissSign (a fecha de 18.09.2025), asignación de Silver, Gold y Organization Validated a los tipos de validación, campos Subject y OID de políticas.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): normas vinculantes para certificados S/MIME de confianza pública, definición de los cuatro tipos de validación.
+
+3.  [Ley federal de protección de datos (DSG)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): art. 8 sobre la seguridad de los datos.
+
+4.  [Ordenanza de protección de datos (DSV)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): arts. 1 a 6 con principios y objetivos de protección de la seguridad de los datos.
+
+5.  [Ley bancaria (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): art. 47 sobre el secreto bancario.
+
+6.  [FINMA: Circular](https://www.finma.ch/de/dokumentation/rundschreiben/): resumen con la circular 2023/1 «Riesgos operativos y resiliencia: bancos», en vigor desde el 1 de enero de 2024.
+
+7.  [Ley federal sobre la firma electrónica (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): tipos de firma electrónica y requisitos para certificados cualificados.
+
+8.  [Código de obligaciones (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14 apdo. 2bis sobre la equivalencia de la firma electrónica cualificada con la firma manuscrita.
+
+----
+
 # Registrar y consultar responsables de buzones compartidos en Active Directory
 
 URL: https://rafaelpfister.ch/es/blog/registrar-y-consultar-responsables-de-buzones-compartidos-en-active-directory
@@ -109457,6 +109918,120 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# S/MIME med banker: Silver- eller Gold-certifikat från SwissSign?
+
+URL: https://rafaelpfister.ch/sv/blog/s-mime-med-banker-silver-eller-gold-certifikat-fran-swisssign
+Datum: 2026-11-16
+
+# S/MIME med banker: Silver- eller Gold-certifikat från SwissSign?
+
+Kort slutsats: Varken schweizisk lag eller FINMA föreskriver en viss certifikatnivå för S/MIME. För kryptering räcker ett Silver-certifikat fullt ut rent tekniskt. Gold bekräftar dessutom avsändarens namn och organisation och är rätt val om banken inte har några särskilda krav.
+
+Frågan om ett Silver- eller Gold-certifikat från SwissSign behövs för e-postkommunikation med en bank återkommer regelbundet i mina projekt. Oftast finns inget informationsblad från banken, och kundrådgivaren kan inte svara på frågan. Svaret beror på vad certifikatet ska användas till: för kryptering eller som bevis på vem som har skickat ett e-postmeddelande.
+
+**Fokus på Schweiz:** Den här artikeln behandlar rättsläget i Schweiz. Där EU-reglerna skiljer sig åt finns en markerad anmärkning.
+
+## Vad SwissSign kontrollerar för Silver och Gold
+
+Sedan den 1 september 2023 gäller `S/MIME Baseline Requirements` från CA/Browser Forum för offentligt betrodda S/MIME-certifikat. De skiljer mellan fyra valideringstyper, beroende på vad certifikatutfärdaren kontrollerar före utfärdandet. SwissSign tilldelar sina produkter dessa typer i de publicerade certifikatprofilerna (CPR S/MIME):
+
+| Produkt | Typ enligt CA/B Forum | Vad som kontrolleras | Vad som står i certifikatet |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Kontroll över e-postlådan | endast e-postadressen |
+| E-Mail ID Gold | `Sponsor-validated` | Organisation och person | För- och efternamn (eller pseudonym), organisation, organisationsidentifierare, land, e-postadress |
+| Organization Validated | `Organization-validated` | Organisation | Organisationsnamn, ingen person |
+
+För Silver skickar SwissSign en bekräftelsekod till den ansökta adressen. Den som kan ta emot e-postmeddelandet får certifikatet. Personens identitet kontrolleras inte, och adressen anges i certifikatet även som `Common Name`.
+
+Gold anges hos SwissSign uteslutande som `Sponsor-validated`. Organisationen kontrolleras och personen kopplas till den: Identiteten kontrolleras antingen av SwissSign eller av organisationen själv som registrerande instans, exempelvis inom ramen för en Managed PKI. En profil för privatpersoner utan organisation (`Individual-validated`) anges inte i certifikatprofilerna.
+
+För funktionsbrevlådor som `support@` eller `buchhaltung@` är profilen `Organization-validated` avsedd. Gold-ansökningar för sådana brevlådor kan misslyckas eftersom SwissSign avvisar generiska begrepp som «Support» eller «Helpdesk» i fältet `GivenName`.
+
+Kryptografiskt skiljer sig nivåerna inte åt. Alla profiler använder RSA-nycklar från 2048 bitar, nyckelanvändningarna `digitalSignature` och `keyEncipherment` samt den utökade användningen `id-kp-emailProtection`. Ett e-postmeddelande som krypteras med Silver är lika väl skyddat som ett med Gold.
+
+## Vad skillnaden innebär i praktiken
+
+| | Silver | Gold |
+|---|---|---|
+| Kryptera och dekryptera e-postmeddelanden | ja | ja |
+| Visning av signaturen i Outlook | E-postadress | Namn och organisation |
+| Vad signaturen intygar | Avsändaren har åtkomst till e-postlådan | Avsändaren är en kontrollerad person i denna organisation |
+| Arbetsinsats vid ansökan | Bekräftelse via e-post | Bevis på organisation och identitetskontroll |
+
+Skillnaden blir tydlig vid ett kontokapande. Den som kontrollerar en e-postlåda kan ansöka om ett Silver-certifikat för denna adress och därmed skicka giltigt signerade e-postmeddelanden. Ett Gold-certifikat förutsätter däremot att organisationen och personen har kontrollerats. För en bank som exempelvis tar emot betalningsuppdrag eller avtalskorrespondens via e-post har en Gold-signatur därför högre bevisvärde.
+
+För kryptering spelar detta ingen roll. Banken behöver endast mottagarens offentliga nyckel, och den är likvärdig på båda nivåerna.
+
+## Rättsliga krav i Schweiz
+
+Ingen schweizisk lag föreskriver S/MIME, och ingen skiljer mellan certifikatnivåer. Det finns allmänna skyldigheter att skydda data, medan den tekniska implementeringen är öppen.
+
+| Regelverk | Innehåll | Koppling till S/MIME |
+|---|---|---|
+| DSG art. 8 och DSV art. 1–6 | Datasäkerhet som är anpassad till risken | Kryptering är ett vanligt medel för känsliga personuppgifter, men någon viss metod föreskrivs inte |
+| BankG art. 47 | Banksekretess | förpliktar banken, inte dess kunder |
+| FINMA-RS 2023/1 | Skydd av kritiska data hos banker | teknikneutral, inga krav på certifikat |
+| ZertES och OR art. 14 punkt 2bis | endast den kvalificerade elektroniska signaturen är likställd med egenhändig underskrift | Silver och Gold är inte kvalificerade signaturer |
+| VeÜ-ZSSV | elektroniska inlagor till domstolar och indrivningsmyndigheter | kvalificerad signatur och erkänd delgivningsplattform krävs, S/MIME räcker inte |
+
+### Dataskydd: DSG och DSV
+
+Art. 8 DSG förpliktar personuppgiftsansvariga och personuppgiftsbiträden att säkerställa en datasäkerhet som är anpassad till risken. Dataskyddsförordningen konkretiserar detta med skyddsmål som konfidentialitet och integritet, men nämner inga metoder. Om man använder S/MIME, en gateway med webbmailleverans eller en utbytesplattform är en bedömning i det enskilda fallet.
+
+### Banksekretess och FINMA
+
+Banksekretessen enligt art. 47 BankG och FINMA:s cirkulär 2023/1 «Operationella risker och resiliens: Banker» riktar sig till banken. Cirkuläret kräver att bankerna skyddar sina kritiska data under hela livscykeln, även vid överföring. Hur de genomför detta fastställer bankerna i sina egna riktlinjer. Om Silver accepteras är därför en fråga om den aktuella bankens interna policy.
+
+### Elektronisk signatur: ZertES och OR
+
+ZertES skiljer mellan elektronisk, avancerad, reglerad och kvalificerad elektronisk signatur. Enligt art. 14 punkt 2bis OR är endast den kvalificerade elektroniska signaturen med kvalificerad tidsstämpel likställd med egenhändig underskrift. SwissSigns S/MIME-certifikat utfärdas enligt reglerna från CA/Browser Forum och ETSI-policyerna LCP (Silver) respektive NCP (Gold) och är inte kvalificerade certifikat enligt ZertES.
+
+Ett avtal som kräver skriftlig form kan därför inte ingås formellt giltigt med ett S/MIME-signerat e-postmeddelande, inte ens med Gold. Vid tvist kan en Gold-signatur ändå fungera som bevis; domstolen bedömer dess vikt fritt.
+
+### Inlagor till domstolar och myndigheter
+
+För elektroniska inlagor i civilrättsliga, straffrättsliga samt utsöknings- och konkursförfaranden kräver VeÜ-ZSSV en kvalificerad elektronisk signatur och överföring via en erkänd delgivningsplattform. Ett S/MIME-e-postmeddelande uppfyller inte dessa krav.
+
+**EU-anmärkning:** I EU är enligt art. 25 punkt 2 eIDAS också endast den kvalificerade elektroniska signaturen likställd med handskriven underskrift.
+
+## När banken inte har några krav
+
+Om det saknas ett informationsblad kan situationen klarläggas med tre frågor till banken:
+
+1.  Kräver banken ett certifikat med kontrollerad identitet för signerade e-postmeddelanden, eller räcker en ren e-postvalidering?
+
+2.  Arbetar banken med en krypteringsgateway (t.ex. SEPPmail eller Kiteworks/Totemomail) och ett domäncertifikat, eller med personliga certifikat för sina medarbetare?
+
+3.  Hur tillhandahåller banken sina egna offentliga nycklar?
+
+En kort förfrågan till kundrådgivningen som kan vidarebefordras till IT-avdelningen:
+
+> För den krypterade e-postkommunikationen med er kommer jag att skaffa ett S/MIME-certifikat. Vänligen meddela om ni kräver ett certifikat med kontrollerad identitet (t.ex. SwissSign E-Mail ID Gold med namn och organisation) eller om ett certifikat med enbart e-postvalidering (Silver) är tillräckligt. Jag ber även om ert offentliga certifikat eller information om huruvida ni använder en gateway med domäncertifikat.
+
+Många banker skickar ändå konfidentiella e-postmeddelanden via en gateway med webbmailleverans. Mottagaren loggar då in i portalen och behöver inget eget certifikat. Om båda parter arbetar med en gateway räcker ofta domäncertifikat eller tvingad TLS mellan e-postservrarna, och personliga certifikat behövs inte.
+
+Om frågan förblir öppen är Gold rätt val för företagskorrespondens. Gold täcker kryptering och signatur, och ett senare byte från Silver till Gold innebär en ny ansökan och en ny distribution av den offentliga nyckeln till alla motparter. Silver räcker om banken bekräftar att den endast krypterar och inte utvärderar signaturer. För funktionsbrevlådor är ett `Organization-validated`-certifikat avsett.
+
+## Källor
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): SwissSigns certifikatprofiler (status 18.09.2025), tilldelning av Silver, Gold och Organization Validated till valideringstyperna, Subject-fält och policy-OID:er.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): bindande regler för offentligt betrodda S/MIME-certifikat, definition av de fyra valideringstyperna.
+
+3.  [Federala dataskyddslagen (DSG)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): art. 8 om datasäkerhet.
+
+4.  [Dataskyddsförordningen (DSV)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): art. 1–6 med principer och skyddsmål för datasäkerhet.
+
+5.  [Banklagen (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): art. 47 om banksekretess.
+
+6.  [FINMA: Cirkulär](https://www.finma.ch/de/dokumentation/rundschreiben/): översikt med cirkulär 2023/1 «Operationella risker och resiliens: Banker», i kraft sedan den 1 januari 2024.
+
+7.  [Federala lagen om elektronisk signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): typer av elektronisk signatur och krav på kvalificerade certifikat.
+
+8.  [Obligationsrätt (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14 punkt 2bis om likställandet av den kvalificerade elektroniska signaturen med egenhändig underskrift.
 
 ----
 
@@ -131314,6 +131889,120 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# S/MIME med banker: Silver- eller Gold-sertifikat fra SwissSign?
+
+URL: https://rafaelpfister.ch/no/blog/s-mime-med-banker-silver-eller-gold-sertifikat-fra-swisssign
+Datum: 2026-11-16
+
+# S/MIME med banker: Silver- eller Gold-sertifikat fra SwissSign?
+
+Kort konklusjon: Verken sveitsisk lov eller FINMA krever et bestemt sertifikatnivå for S/MIME. For kryptering er et Silver-sertifikat teknisk sett fullt tilstrekkelig. Gold bekrefter i tillegg avsenderens navn og organisasjon, og er det riktige valget dersom banken ikke stiller krav.
+
+Spørsmålet om et Silver- eller Gold-sertifikat fra SwissSign er nødvendig for e-postkommunikasjon med en bank, dukker jevnlig opp i prosjektene mine. Som regel finnes det ikke noe informasjonsskriv fra banken, og kundekonsulenten kan ikke svare på spørsmålet. Svaret avhenger av hva sertifikatet brukes til: kryptering eller dokumentasjon på hvem som har sendt en e-post.
+
+**Sveits-fokus:** Denne artikkelen omhandler rettstilstanden i Sveits. Der EU-reglene avviker, finnes det en merket merknad.
+
+## Hva SwissSign kontrollerer for Silver og Gold
+
+Siden 1. september 2023 har `S/MIME Baseline Requirements` fra CA/Browser Forum vært gjeldende for offentlig pålitelige S/MIME-sertifikater. De skiller mellom fire valideringstyper, avhengig av hva sertifiseringsinstansen kontrollerer før utstedelse. SwissSign tilordner produktene sine til disse typene i de publiserte sertifikatprofilene (CPR S/MIME):
+
+| Produkt | Type etter CA/B Forum | Hva som kontrolleres | Hva som står i sertifikatet |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Kontroll over postkassen | kun e-postadressen |
+| E-Mail ID Gold | `Sponsor-validated` | Organisasjon og person | Fornavn og etternavn (eller pseudonym), organisasjon, organisasjonsidentifikator, land, e-postadresse |
+| Organization Validated | `Organization-validated` | Organisasjon | Organisasjonsnavn, ingen person |
+
+For Silver sender SwissSign en bekreftelseskode til den søkte adressen. Den som kan motta e-posten, får sertifikatet. Personens identitet kontrolleres ikke, og adressen står også i sertifikatet som `Common Name`.
+
+Gold er hos SwissSign utelukkende oppført som `Sponsor-validated`. Organisasjonen kontrolleres, og personen knyttes til den: Identiteten kontrolleres enten av SwissSign eller av organisasjonen selv som registreringsinstans, for eksempel innenfor en Managed PKI. En profil for privatpersoner uten organisasjon (`Individual-validated`) er ikke oppført i sertifikatprofilene.
+
+For funksjonspostkasser som `support@` eller `buchhaltung@` er profilen `Organization-validated` beregnet. Gold-søknader for slike postkasser kan mislykkes fordi SwissSign avviser generiske betegnelser som «Support» eller «Helpdesk» i feltet `GivenName`.
+
+Kryptografisk er det ingen forskjell mellom nivåene. Alle profilene bruker RSA-nøkler fra 2048 bit, nøkkelbruken `digitalSignature` og `keyEncipherment` samt den utvidede bruken `id-kp-emailProtection`. En e-post kryptert med Silver er like godt beskyttet som en med Gold.
+
+## Hva forskjellen betyr i praksis
+
+| | Silver | Gold |
+|---|---|---|
+| Kryptere og dekryptere e-poster | ja | ja |
+| Visning av signaturen i Outlook | E-postadresse | Navn og organisasjon |
+| Hva signaturen bekrefter | Avsenderen har tilgang til postkassen | Avsenderen er en kontrollert person i denne organisasjonen |
+| Arbeid ved søknad | Bekreftelse per e-post | Dokumentasjon av organisasjon og identitetskontroll |
+
+Forskjellen blir tydelig ved overtakelse av en konto. Den som kontrollerer en postkasse, kan søke om et Silver-sertifikat for denne adressen og dermed sende gyldig signerte e-poster. Et Gold-sertifikat forutsetter derimot at organisasjonen og personen er kontrollert. For en bank som for eksempel mottar betalingsoppdrag eller kontraktskorrespondanse per e-post, har en Gold-signatur derfor større utsagnskraft.
+
+For kryptering spiller dette ingen rolle. Banken trenger bare mottakerens offentlige nøkkel, og den er likeverdig på begge nivåer.
+
+## Juridiske krav i Sveits
+
+Ingen sveitsisk lov krever S/MIME, og ingen skiller mellom sertifikatnivåer. Det finnes generelle plikter til å beskytte data, mens den tekniske gjennomføringen er åpen.
+
+| Regelverk | Innhold | Tilknytning til S/MIME |
+|---|---|---|
+| DSG art. 8 og DSV art. 1 til 6 | Datasikkerhet som er tilpasset risikoen | Kryptering er et vanlig tiltak for sensitive personopplysninger, men en bestemt metode er ikke foreskrevet |
+| BankG art. 47 | Bankkundekonfidensialitet | Forplikter banken, ikke kundene dens |
+| FINMA-RS 2023/1 | Beskyttelse av kritiske data i banker | Teknologinøytral, ingen krav til sertifikater |
+| ZertES og OR art. 14 nr. 2bis | Bare den kvalifiserte elektroniske signaturen er likestilt med håndskrevet underskrift | Silver og Gold er ikke kvalifiserte signaturer |
+| VeÜ-ZSSV | Elektroniske innleveringer til domstoler og inkassomyndigheter | Kvalifisert signatur og anerkjent leveringsplattform kreves, S/MIME er ikke tilstrekkelig |
+
+### Personvern: DSG og DSV
+
+Art. 8 DSG forplikter behandlingsansvarlige og databehandlere til å sikre datasikkerhet som er tilpasset risikoen. Personvernforordningen konkretiserer dette med beskyttelsesmål som konfidensialitet og integritet, men nevner ingen metoder. Om man bruker S/MIME, en gateway med webmail-levering eller en utvekslingsplattform, er en vurdering i hvert enkelt tilfelle.
+
+### Bankkundekonfidensialitet og FINMA
+
+Bankkundekonfidensialiteten etter art. 47 BankG og FINMA-rundskriv 2023/1 «Operasjonelle risikoer og robusthet: Banker» retter seg mot banken. Rundskrivet krever at bankene beskytter sine kritiske data gjennom hele livssyklusen, også ved overføring. Hvordan dette gjennomføres, fastsetter bankene i egne retningslinjer. Om Silver aksepteres, er derfor et spørsmål om den enkelte bankens interne policy.
+
+### Elektronisk signatur: ZertES og OR
+
+ZertES skiller mellom elektronisk, avansert, regulert og kvalifisert elektronisk signatur. Etter art. 14 nr. 2bis OR er bare den kvalifiserte elektroniske signaturen med kvalifisert tidsstempel likestilt med håndskrevet underskrift. S/MIME-sertifikatene fra SwissSign utstedes etter reglene til CA/Browser Forum og ETSI-policyene LCP (Silver) og NCP (Gold), og er ikke kvalifiserte sertifikater etter ZertES.
+
+En avtale som krever skriftlig form, kan derfor ikke inngås formgyldig med en S/MIME-signert e-post, heller ikke med Gold. Ved tvist kan en Gold-signatur likevel brukes som bevis; retten vurderer bevisverdien fritt.
+
+### Innleveringer til domstoler og myndigheter
+
+For elektroniske innleveringer i sivile saker, straffesaker samt gjeldsinndrivelses- og konkurssaker krever VeÜ-ZSSV en kvalifisert elektronisk signatur og overføring via en anerkjent leveringsplattform. En S/MIME-e-post oppfyller ikke disse kravene.
+
+**EU-merknad:** I EU er det etter art. 25 nr. 2 eIDAS også bare den kvalifiserte elektroniske signaturen som er likestilt med håndskrevet underskrift.
+
+## Når banken ikke stiller krav
+
+Hvis det mangler et informasjonsskriv, kan situasjonen avklares med tre spørsmål til banken:
+
+1.  Krever banken et sertifikat med kontrollert identitet for signerte e-poster, eller er ren e-postvalidering tilstrekkelig?
+
+2.  Bruker banken en krypteringsgateway (f.eks. SEPPmail eller Kiteworks/Totemomail) og et domene-sertifikat, eller personlige sertifikater for sine ansatte?
+
+3.  Hvordan gjør banken sine egne offentlige nøkler tilgjengelige?
+
+En kort forespørsel til kundeservice, som kan videresendes til IT-avdelingen:
+
+> For kryptert e-postkommunikasjon med dere anskaffer jeg et S/MIME-sertifikat. Vennligst opplys om dere krever et sertifikat med kontrollert identitet (f.eks. SwissSign E-Mail ID Gold med navn og organisasjon), eller om et sertifikat med bare e-postvalidering (Silver) er tilstrekkelig. Jeg ber også om det offentlige sertifikatet deres, eventuelt informasjon om dere bruker en gateway med domene-sertifikat.
+
+Mange banker sender uansett konfidensielle e-poster via en gateway med webmail-levering. Mottakeren logger seg da inn i portalen og trenger ikke eget sertifikat. Hvis begge sider bruker en gateway, er domene-sertifikater eller tvungen TLS mellom e-postserverne ofte tilstrekkelig, og personlige sertifikater er ikke nødvendig.
+
+Hvis spørsmålet forblir uavklart, er Gold det riktige valget for bedriftskorrespondanse. Gold dekker kryptering og signatur, og et senere bytte fra Silver til Gold innebærer en ny søknad og ny distribusjon av den offentlige nøkkelen til alle motparter. Silver er tilstrekkelig hvis banken bekrefter at den bare krypterer og ikke evaluerer signaturer. For funksjonspostkasser er et `Organization-validated`-sertifikat beregnet.
+
+## Kilder
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): Sertifikatprofiler fra SwissSign (status 18.09.2025), tilordning av Silver, Gold og Organization Validated til valideringstypene, Subject-felter og Policy-OID-er.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Bindende regler for offentlig pålitelige S/MIME-sertifikater, definisjon av de fire valideringstypene.
+
+3.  [Forbundslov om personvern (DSG)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Art. 8 om datasikkerhet.
+
+4.  [Personvernforordning (DSV)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Art. 1 til 6 med prinsipper og beskyttelsesmål for datasikkerhet.
+
+5.  [Bankloven (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): Art. 47 om bankkundekonfidensialitet.
+
+6.  [FINMA: Rundskriv](https://www.finma.ch/de/dokumentation/rundschreiben/): Oversikt over rundskrivet 2023/1 «Operasjonelle risikoer og robusthet: Banker», i kraft siden 1. januar 2024.
+
+7.  [Forbundslov om elektronisk signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Typer elektroniske signaturer og krav til kvalifiserte sertifikater.
+
+8.  [Obligasjonsretten (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 nr. 2bis om likestilling av kvalifisert elektronisk signatur med håndskrevet underskrift.
 
 ----
 
