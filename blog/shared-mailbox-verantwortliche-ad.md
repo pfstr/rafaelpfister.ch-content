@@ -15,6 +15,7 @@ produkte:
 protokolle:
   - "ldap"
   - "powershell"
+startseiteAb: "2026-12-07"
 slug: "shared-mailbox-verantwortliche-ad"
 translationId: "article-ed41bd7fefc08361"
 url: "https://rafaelpfister.ch/blog/shared-mailbox-verantwortliche-ad"
