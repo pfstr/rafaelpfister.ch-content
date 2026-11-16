@@ -14,6 +14,120 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# S/MIME mit Banken: Silver- oder Gold-Zertifikat von SwissSign?
+
+URL: https://rafaelpfister.ch/blog/smime-silver-gold-schweiz
+Datum: 2026-11-16
+
+# S/MIME mit Banken: Silver- oder Gold-Zertifikat von SwissSign?
+
+Kurzfazit: Weder ein Schweizer Gesetz noch die FINMA schreibt eine bestimmte Zertifikatsstufe für S/MIME vor. Zum Verschlüsseln genügt ein Silver-Zertifikat technisch vollständig. Gold bestätigt zusätzlich Name und Organisation des Absenders und ist die passende Wahl, wenn die Bank keine Vorgabe macht.
+
+Die Frage, ob für den Mailverkehr mit einer Bank ein Silver- oder ein Gold-Zertifikat von SwissSign nötig ist, kommt in meinen Projekten regelmässig auf. Meist gibt es dazu kein Merkblatt der Bank, und die Kundenberaterin oder der Kundenberater kann die Frage nicht beantworten. Die Antwort hängt davon ab, wofür das Zertifikat eingesetzt wird: für die Verschlüsselung oder als Nachweis, wer eine Mail geschickt hat.
+
+**Schweiz-Fokus:** Dieser Artikel behandelt die Rechtslage in der Schweiz. Wo die EU-Regeln abweichen, steht ein gekennzeichneter Hinweis.
+
+## Was SwissSign bei Silver und Gold prüft
+
+Seit dem 1. September 2023 gelten für öffentlich vertrauenswürdige S/MIME-Zertifikate die `S/MIME Baseline Requirements` des CA/Browser Forum. Sie unterscheiden vier Validierungstypen, je nachdem, was die Zertifizierungsstelle vor der Ausstellung prüft. SwissSign ordnet seine Produkte in den veröffentlichten Zertifikatsprofilen (CPR S/MIME) diesen Typen zu:
+
+| Produkt | Typ nach CA/B Forum | Was geprüft wird | Was im Zertifikat steht |
+|---|---|---|---|
+| E-Mail ID Silver | `Mailbox-validated` | Kontrolle über das Postfach | nur die E-Mail-Adresse |
+| E-Mail ID Gold | `Sponsor-validated` | Organisation und Person | Vor- und Nachname (oder Pseudonym), Organisation, Organisationskennung, Land, E-Mail-Adresse |
+| Organization Validated | `Organization-validated` | Organisation | Organisationsname, keine Person |
+
+Bei Silver schickt SwissSign einen Bestätigungscode an die beantragte Adresse. Wer die Mail empfangen kann, erhält das Zertifikat. Die Identität der Person wird nicht geprüft, und im Zertifikat steht die Adresse auch als `Common Name`.
+
+Gold ist bei SwissSign ausschliesslich als `Sponsor-validated` geführt. Die Organisation wird geprüft, und die Person ist ihr zugeordnet: Ihre Identität prüft entweder SwissSign oder die Organisation selbst als registrierende Stelle, etwa im Rahmen einer Managed PKI. Ein Profil für Privatpersonen ohne Organisation (`Individual-validated`) ist in den Zertifikatsprofilen nicht aufgeführt.
+
+Für Funktionspostfächer wie `support@` oder `buchhaltung@` ist das Profil `Organization-validated` vorgesehen. Gold-Anträge für solche Postfächer können scheitern, weil SwissSign Gattungsbegriffe wie «Support» oder «Helpdesk» im Feld `GivenName` ablehnt.
+
+Kryptografisch unterscheiden sich die Stufen nicht. Alle Profile verwenden RSA-Schlüssel ab 2048 Bit, die Schlüsselverwendung `digitalSignature` und `keyEncipherment` sowie die erweiterte Verwendung `id-kp-emailProtection`. Eine mit Silver verschlüsselte Mail ist genauso gut geschützt wie eine mit Gold verschlüsselte.
+
+## Was der Unterschied in der Praxis bedeutet
+
+| | Silver | Gold |
+|---|---|---|
+| Mails verschlüsseln und entschlüsseln | ja | ja |
+| Anzeige der Signatur in Outlook | E-Mail-Adresse | Name und Organisation |
+| Aussage der Signatur | Absender hat Zugriff auf das Postfach | Absender ist eine geprüfte Person dieser Organisation |
+| Aufwand bei der Beantragung | Bestätigung per Mail | Organisationsnachweis und Identitätsprüfung |
+
+Der Unterschied zeigt sich bei einer Kontoübernahme. Wer ein Postfach kontrolliert, kann für diese Adresse ein Silver-Zertifikat beantragen und damit gültig signierte Mails verschicken. Ein Gold-Zertifikat setzt dagegen voraus, dass die Organisation und die Person geprüft sind. Für eine Bank, die etwa Zahlungsaufträge oder Vertragskorrespondenz per Mail entgegennimmt, hat eine Gold-Signatur deshalb mehr Aussagekraft.
+
+Für die Verschlüsselung spielt das keine Rolle. Die Bank braucht nur den öffentlichen Schlüssel des Empfängers, und der ist bei beiden Stufen gleichwertig.
+
+## Rechtliche Vorgaben in der Schweiz
+
+Kein Schweizer Gesetz schreibt S/MIME vor, und keines unterscheidet zwischen Zertifikatsstufen. Es gibt allgemeine Pflichten zum Schutz von Daten, deren technische Umsetzung offen bleibt.
+
+| Regelung | Inhalt | Bezug zu S/MIME |
+|---|---|---|
+| DSG Art. 8 und DSV Art. 1 bis 6 | Datensicherheit, die dem Risiko angemessen ist | Verschlüsselung ist ein übliches Mittel für heikle Personendaten, ein bestimmtes Verfahren ist nicht vorgeschrieben |
+| BankG Art. 47 | Bankkundengeheimnis | verpflichtet die Bank, nicht ihre Kundschaft |
+| FINMA-RS 2023/1 | Schutz kritischer Daten bei Banken | technologieneutral, keine Vorgabe zu Zertifikaten |
+| ZertES und OR Art. 14 Abs. 2bis | nur die qualifizierte elektronische Signatur ist der eigenhändigen Unterschrift gleichgestellt | Silver und Gold sind keine qualifizierten Signaturen |
+| VeÜ-ZSSV | elektronische Eingaben an Gerichte und Betreibungsämter | qualifizierte Signatur und anerkannte Zustellplattform nötig, S/MIME genügt nicht |
+
+### Datenschutz: DSG und DSV
+
+Art. 8 DSG verpflichtet Verantwortliche und Auftragsbearbeiter, eine dem Risiko angemessene Datensicherheit zu gewährleisten. Die Datenschutzverordnung konkretisiert das mit Schutzzielen wie Vertraulichkeit und Integrität, nennt aber keine Verfahren. Ob jemand S/MIME, ein Gateway mit Webmail-Zustellung oder eine Austauschplattform einsetzt, ist eine Abwägung im Einzelfall.
+
+### Bankkundengeheimnis und FINMA
+
+Das Bankkundengeheimnis nach Art. 47 BankG und das FINMA-Rundschreiben 2023/1 «Operationelle Risiken und Resilienz: Banken» richten sich an die Bank. Das Rundschreiben verlangt, dass Banken ihre kritischen Daten über den gesamten Lebenszyklus schützen, auch bei der Übertragung. Wie sie das umsetzen, legen die Banken in ihren eigenen Weisungen fest. Ob Silver akzeptiert wird, ist deshalb eine Frage der internen Policy der jeweiligen Bank.
+
+### Elektronische Signatur: ZertES und OR
+
+Das ZertES unterscheidet die elektronische, die fortgeschrittene, die geregelte und die qualifizierte elektronische Signatur. Nach Art. 14 Abs. 2bis OR ist nur die qualifizierte elektronische Signatur mit qualifiziertem Zeitstempel der eigenhändigen Unterschrift gleichgestellt. Die S/MIME-Zertifikate von SwissSign werden nach den Regeln des CA/Browser Forum und den ETSI-Policies LCP (Silver) bzw. NCP (Gold) ausgestellt und sind keine qualifizierten Zertifikate nach ZertES.
+
+Ein Vertrag, für den die Schriftform vorgeschrieben ist, lässt sich mit einer S/MIME-signierten Mail daher nicht formgültig abschliessen, auch nicht mit Gold. Im Streitfall kann eine Gold-Signatur dennoch als Beweismittel dienen; ihr Gewicht beurteilt das Gericht frei.
+
+### Eingaben an Gerichte und Behörden
+
+Für elektronische Eingaben in Zivil-, Straf- sowie Schuldbetreibungs- und Konkursverfahren verlangt die VeÜ-ZSSV eine qualifizierte elektronische Signatur und die Übermittlung über eine anerkannte Zustellplattform. Eine S/MIME-Mail erfüllt diese Anforderungen nicht.
+
+**EU-Hinweis:** In der EU ist nach Art. 25 Abs. 2 eIDAS ebenfalls nur die qualifizierte elektronische Signatur der handschriftlichen Unterschrift gleichgestellt.
+
+## Wenn die Bank keine Vorgabe macht
+
+Fehlt ein Merkblatt, lässt sich die Lage mit drei Fragen an die Bank klären:
+
+1.  Verlangt die Bank für signierte Mails ein Zertifikat mit geprüfter Identität, oder genügt eine reine E-Mail-Validierung?
+
+2.  Arbeitet die Bank mit einem Verschlüsselungs-Gateway (z. B. SEPPmail oder Kiteworks/Totemomail) und einem Domain-Zertifikat, oder mit persönlichen Zertifikaten ihrer Mitarbeitenden?
+
+3.  Wie stellt die Bank ihre eigenen öffentlichen Schlüssel zur Verfügung?
+
+Eine kurze Anfrage an die Kundenberatung, die an die IT weitergeleitet werden kann:
+
+> Für den verschlüsselten Mailverkehr mit Ihnen beschaffe ich ein S/MIME-Zertifikat. Bitte teilen Sie mir mit, ob Sie ein Zertifikat mit geprüfter Identität (z. B. SwissSign E-Mail ID Gold mit Name und Organisation) voraussetzen oder ob ein Zertifikat mit reiner E-Mail-Validierung (Silver) genügt. Zudem bitte ich um Ihr öffentliches Zertifikat bzw. um die Angabe, ob Sie über ein Gateway mit Domain-Zertifikat arbeiten.
+
+Viele Banken verschicken vertrauliche Mails ohnehin über ein Gateway mit Webmail-Zustellung. Die Empfängerin oder der Empfänger meldet sich dann im Portal an und braucht kein eigenes Zertifikat. Arbeiten beide Seiten mit einem Gateway, genügen oft Domain-Zertifikate oder erzwungenes TLS zwischen den Mailservern, und persönliche Zertifikate sind nicht nötig.
+
+Bleibt die Frage offen, ist Gold für Firmenkorrespondenz die passende Wahl. Gold deckt Verschlüsselung und Signatur ab, und ein späterer Wechsel von Silver auf Gold bedeutet eine neue Beantragung und eine erneute Verteilung des öffentlichen Schlüssels an alle Gegenstellen. Silver reicht, wenn die Bank bestätigt, dass sie nur verschlüsselt und Signaturen nicht auswertet. Für Funktionspostfächer ist ein `Organization-validated`-Zertifikat vorgesehen.
+
+## Quellen
+
+1.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): Zertifikatsprofile von SwissSign (Stand 18.09.2025), Zuordnung von Silver, Gold und Organization Validated zu den Validierungstypen, Subject-Felder und Policy-OIDs.
+
+2.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): verbindliche Regeln für öffentlich vertrauenswürdige S/MIME-Zertifikate, Definition der vier Validierungstypen.
+
+3.  [Bundesgesetz über den Datenschutz (DSG)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Art. 8 zur Datensicherheit.
+
+4.  [Datenschutzverordnung (DSV)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Art. 1 bis 6 mit Grundsätzen und Schutzzielen der Datensicherheit.
+
+5.  [Bankengesetz (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): Art. 47 zum Bankkundengeheimnis.
+
+6.  [FINMA: Rundschreiben](https://www.finma.ch/de/dokumentation/rundschreiben/): Übersicht mit dem Rundschreiben 2023/1 «Operationelle Risiken und Resilienz: Banken», in Kraft seit 1. Januar 2024.
+
+7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Arten der elektronischen Signatur und Anforderungen an qualifizierte Zertifikate.
+
+8.  [Obligationenrecht (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 Abs. 2bis zur Gleichstellung der qualifizierten elektronischen Signatur mit der eigenhändigen Unterschrift.
+
+----
+
 # Verantwortliche für freigegebene Postfächer im Active Directory hinterlegen und auslesen
 
 URL: https://rafaelpfister.ch/blog/shared-mailbox-verantwortliche-ad
@@ -21924,6 +22038,234 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Store and retrieve shared mailbox owners in Active Directory
+
+URL: https://rafaelpfister.ch/en/blog/store-and-retrieve-shared-mailbox-owners-in-active-directory
+Datum: 2026-11-16
+
+# Store and retrieve shared mailbox owners in Active Directory
+
+The following request came across my desk during a data loss prevention project: Whenever a message from a shared mailbox is blocked, the people responsible should be notified so they can respond. The vendor of the DLP solution should retrieve this mapping automatically from Active Directory. The question is: Where in AD does it say who is responsible for a shared mailbox?
+
+In short: AD knows access permissions, not responsibility. Some attributes show who can access a mailbox or send from it, and even those are incomplete once the mailbox is in Exchange Online. For reliable automation, the responsible person must be explicitly maintained in an attribute. The standard `manager` attribute is suitable for this, is synchronized by Entra Connect, and can be queried through LDAP and Microsoft Graph.
+
+## Access is not responsibility
+
+In AD, a shared mailbox is a disabled user object with Exchange attributes. The people who use it are defined by permissions: Full Access, Send As, and Send on Behalf. These lists often contain ten or twenty people, as well as delegates, trainees, and service accounts. A DLP alert sent to everyone with permissions reaches many people, none of whom feels responsible.
+
+The question of responsibility is organizational: One person (or a small group) decides whether a blocked message was legitimate and maintains the permissions. This information exists in AD only if someone enters it.
+
+## Which AD attributes are candidates
+
+| Attribute | Content | Suitability for responsible persons |
+|---|---|---|
+| `manager` | DN of one person, single-valued, part of the person classes and therefore available on the mailbox user object | Suitable. Synchronized by Entra Connect to Entra ID and readable through Graph |
+| `managedBy` | DN of one manager, single-valued | Not available on the user object. According to the schema, defined for groups, contacts, computers, and OUs, among others, but not for the User class |
+| `msExchDelegateListLink` | DNs of people who have Full Access with automapping, multi-valued; back link `msExchDelegateListLinkBL` on the user | Access only, and incomplete: Full Access without automapping, permissions through groups, and permissions assigned in Exchange Online are missing |
+| `publicDelegates` | DNs of people with Send on Behalf permissions, multi-valued | Access only. Written back by Entra Connect in hybrid environments |
+| Permission list (`nTSecurityDescriptor`) | Extended “Send As” right on the user object | Only Send As assigned locally. Permissions assigned in Exchange Online are not stored there |
+| `msExchMailboxSecurityDescriptor` | Mailbox permissions for on-premises mailboxes, binary | Access only, only for mailboxes on on-premises Exchange servers, difficult for vendors to evaluate |
+| `extensionAttribute1` through `extensionAttribute15` | Free-text fields | Possible, but text only; no reference to an object and no automatic cleanup when a person is renamed or leaves |
+
+In practice, the claim that the mapping is stored “directly in AD” usually refers to `msExchDelegateListLink`: ADUC or ADSI Edit does indeed show people there. However, the attribute is created only as a side effect of Outlook automapping and is not suitable as a data source for responsibilities.
+
+## Where the mailbox is located determines the data source
+
+If mailboxes are in Exchange Online and users are synchronized from on-premises AD (hybrid), the following applies: Permissions assigned in Exchange Online remain in Exchange Online. For Exchange Hybrid, Entra Connect writes back only a small list of attributes (including `publicDelegates` and `proxyAddresses`), but neither `msExchDelegateListLink` nor Send As permissions. In this case, on-premises AD shows the state before migration plus anything maintained locally since then.
+
+For Exchange Online, only Exchange Online itself provides the actual state of permissions (`Get-EXOMailboxPermission`, `Get-EXORecipientPermission`). The vendor would need access to Exchange Online PowerShell, which is disproportionate for a simple mapping. A maintained attribute on the user object is simpler and works regardless of where the mailbox is located.
+
+## Recommendation: `manager` as the responsibility attribute
+
+For every shared mailbox, enter the responsible person in the `manager` attribute. Reasons:
+
+- The attribute is part of the standard schema, so no schema extension is needed.
+- It contains a reference (DN) rather than text. If the person is renamed or moved, the reference remains valid.
+- Entra Connect synchronizes `manager` to Entra ID. The vendor can read it either through LDAP in on-premises AD or through Microsoft Graph.
+- Through the `directReports` back link, every responsible person (and every report) can see which mailboxes they are responsible for.
+
+The limitation is that `manager` is single-valued. Where a backup is essential, there are two options. Option 1: A group per mailbox whose members are the responsible people; its name follows a convention (for example, `SM-Verantwortlich-buchhaltung`) or is stored in an `extensionAttribute`. Option 2: The backup is derived by the vendor not from AD, but from the `manager` of the responsible person (escalation to their manager). Option 2 requires no additional objects and is sufficient in most organizations.
+
+The attribute is set only in the authoritative system: in on-premises AD for synchronized objects, and in Entra ID for cloud-only objects.
+
+## Assessing the current state: Who has access today?
+
+For the initial population, a list of the people with current permissions is helpful. The responsible person is usually among them; the business department confirms the selection. For mailboxes in Exchange Online:
+
+```powershell
+Connect-ExchangeOnline
+
+$postfaecher = Get-EXOMailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited
+
+$bestand = foreach ($pf in $postfaecher) {
+    $voll = Get-EXOMailboxPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'FullAccess' -and
+            -not $_.IsInherited -and
+            $_.User -notlike 'NT AUTHORITY\*'
+        }
+    $sendas = Get-EXORecipientPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'SendAs' -and
+            $_.Trustee -notlike 'NT AUTHORITY\*'
+        }
+    [pscustomobject]@{
+        Postfach  = $pf.PrimarySmtpAddress
+        Vollzugriff = ($voll.User -join '; ')
+        SendenAls = ($sendas.Trustee -join '; ')
+    }
+}
+
+$bestand | Export-Csv -Path .\shared-mailbox-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-RecipientTypeDetails SharedMailbox` | Shared mailboxes only; no user, room, or equipment mailboxes |
+| `-ResultSize Unlimited` | All mailboxes instead of the default limit of 1,000 |
+| `-Identity` | Mailbox whose permissions are queried |
+| `AccessRights -contains 'FullAccess'` | Filters for Full Access; other mailbox permissions are excluded |
+| `-not $_.IsInherited` | Removes inherited entries (administrators, system accounts) |
+| `User -notlike 'NT AUTHORITY\*'` | Removes the mailbox’s own `NT AUTHORITY\SELF` entry |
+| `-NoTypeInformation` | No type line at the beginning of the CSV file |
+| `-Encoding UTF8` | Preserves umlauts in names |
+
+</details>
+
+If a group has permissions, its name appears in the list; members can be resolved with `Get-DistributionGroupMember` or `Get-ADGroupMember`.
+
+## Setting responsible persons
+
+Prepare the confirmed mapping as a CSV with the columns `Postfach` and `Verantwortlich` (email addresses in both cases), then set it in on-premises AD:
+
+```powershell
+Import-Module ActiveDirectory
+
+$zuordnung = Import-Csv -Path .\shared-mailbox-verantwortliche.csv
+
+foreach ($eintrag in $zuordnung) {
+    $postfach = Get-ADUser -Filter "mail -eq '$($eintrag.Postfach)'"
+    $person = Get-ADUser -Filter "mail -eq '$($eintrag.Verantwortlich)'"
+    Set-ADUser -Identity $postfach -Manager $person
+}
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-Filter "mail -eq '…'"` | Finds the object using its primary email address |
+| `-Identity` | User object of the shared mailbox |
+| `-Manager` | Writes the DN of the responsible person to the `manager` attribute |
+
+</details>
+
+For cloud-only objects without on-premises AD, `Set-MgUserManagerByRef` from the Microsoft Graph PowerShell SDK sets the same value in Entra ID.
+
+## Retrieval by the vendor: LDAP
+
+Shared mailboxes can be identified in AD through `msExchRecipientTypeDetails`: `4` represents a shared mailbox on an on-premises Exchange server, while `34359738368` represents a shared mailbox in Exchange Online (RemoteSharedMailbox). The query the vendor can incorporate into its solution is:
+
+```text
+Basis:     DC=example,DC=com (Unterbaum)
+Filter:    (&(objectClass=user)(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368)))
+Attribute: mail, proxyAddresses, manager
+```
+
+The value in `manager` is a DN. The responsible person’s email address is obtained by a second query of that DN for the `mail` attribute. A read account without further permissions is sufficient because `manager` and `mail` are readable by authenticated users. The connection should use LDAPS (port 636).
+
+To verify the mapping in PowerShell:
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+$verantwortlich = @{
+    Name       = 'Verantwortlich'
+    Expression = {
+        if ($_.manager) {
+            (Get-ADUser -Identity $_.manager -Properties mail).mail
+        }
+    }
+}
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Select-Object mail, $verantwortlich |
+    Sort-Object mail
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-LDAPFilter` | LDAP filter for the two recipient types of shared mailboxes |
+| `-Properties mail, manager` | Loads the two attributes that `Get-ADUser` does not return by default |
+| `Expression = { … }` | Resolves the DN in `manager` to the responsible person’s email address |
+
+</details>
+
+For message mapping, the vendor should consider all addresses in `proxyAddresses`, not just `mail`: A message may be sent using a secondary mailbox address.
+
+## Retrieval by the vendor: Microsoft Graph
+
+If the vendor has no LDAP access to the internal network, Microsoft Graph is a good option. Shared mailboxes exist in Entra ID as disabled user objects, and `manager` is available there through synchronization:
+
+```http
+GET https://graph.microsoft.com/v1.0/users/buchhaltung@example.com/manager?$select=displayName,mail
+```
+
+The vendor’s app registration requires the `User.Read.All` application permission. Graph does not provide a direct list of all shared mailboxes because Entra ID does not know the mailbox type. The vendor therefore queries the sender address of the blocked message specifically, which is sufficient for the DLP use case anyway.
+
+## Integration into the DLP notification
+
+How the notification is technically triggered depends on the DLP solution. With Microsoft Purview DLP, note that notifications can additionally be sent to fixed individuals, but only to individual recipients, not to groups or distribution lists. A dynamic “mailbox-to-responsible-person” mapping is generally not provided. For a small number of mailboxes, one rule per mailbox is conceivable; for many mailboxes, a downstream process is needed that retrieves incidents, resolves the sender address through LDAP or Graph, and notifies the responsible person.
+
+The same logic applies to an external solution: Determine the sender address of the blocked message, find the mailbox through `mail` or `proxyAddresses`, resolve `manager`, and notify. If `manager` is missing, the solution should report to a defined shared address (service desk or data protection) rather than discard the alert.
+
+## Ongoing maintenance
+
+In practice, two rules are enough to keep the mapping current:
+
+- New shared mailboxes are created only with a responsible person entered; the request includes the field.
+- A monthly report lists mailboxes without `manager` and mailboxes whose responsible person is disabled.
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Where-Object {
+        -not $_.manager -or
+        -not (Get-ADUser -Identity $_.manager).Enabled
+    } |
+    Select-Object mail, manager
+```
+
+When a person leaves, `directReports` on their object shows which mailboxes need a new responsible person. This check can be included in the offboarding process.
+
+## Sources
+
+1.  [Manager attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-manager): single-valued DN attribute of the person classes, back link `directReports`.
+
+2.  [Managed-By attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-managedby): list of classes for which `managedBy` is defined; the User class is not included.
+
+3.  [Microsoft Entra Connect Sync: Attributes synchronized to Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-sync-attributes-synchronized): synchronized attributes including `manager`, as well as the list of Exchange Hybrid writeback attributes.
+
+4.  [Get-EXOMailboxPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exomailboxpermission): query mailbox permissions in Exchange Online.
+
+5.  [Get-EXORecipientPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exorecipientpermission): query Send As permissions in Exchange Online.
+
+6.  [Adding or removing mailbox permission in EAC doesn't address the msExchDelegateListLink attribute](https://support.microsoft.com/en-us/help/4502159): Microsoft support article on the relationship between Full Access and `msExchDelegateListLink` in Exchange 2016 and 2019.
+
+7.  [List manager (Microsoft Graph)](https://learn.microsoft.com/en-us/graph/api/user-list-manager): Graph endpoint and required permissions for retrieving the manager.
+
+8.  [Send email notifications and show policy tips for DLP policies](https://learn.microsoft.com/en-us/purview/dlp-use-notifications-and-policy-tips): recipients of DLP notifications in Microsoft Purview; individual recipients only, no groups.
+
+----
+
 # SQLite: Understanding and preventing “database is locked”
 
 URL: https://rafaelpfister.ch/en/blog/sqlite-understanding-and-preventing-database-is-locked
@@ -43550,6 +43892,234 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Enregistrer et consulter les responsables de boîtes aux lettres partagées dans Active Directory
+
+URL: https://rafaelpfister.ch/fr/blog/enregistrer-et-consulter-les-responsables-de-boites-aux-lettres-partagees-dans-active-directory
+Datum: 2026-11-16
+
+# Enregistrer et consulter les responsables de boîtes aux lettres partagées dans Active Directory
+
+Dans le cadre d’un projet de prévention de la perte de données, la demande suivante m’est parvenue : dès qu’un message provenant d’une boîte aux lettres partagée (Shared Mailbox) est bloqué, les personnes responsables doivent être informées afin de pouvoir réagir. Le fournisseur de la solution DLP doit lire automatiquement cette attribution dans Active Directory. La question est donc la suivante : où l’AD indique-t-il qui est responsable d’une boîte aux lettres partagée ?
+
+En bref : l’AD ne connaît que les droits d’accès, pas les responsabilités. Certains attributs indiquent qui peut accéder à une boîte aux lettres ou envoyer des messages en son nom, et même ceux-ci ne sont qu’incomplets dès lors que la boîte aux lettres se trouve dans Exchange Online. Pour une automatisation fiable, la personne responsable doit être explicitement renseignée dans un attribut. L’attribut standard `manager` convient à cet effet, est synchronisé par Entra Connect et peut être interrogé via LDAP et Microsoft Graph.
+
+## L’accès n’est pas la responsabilité
+
+Dans l’AD, une boîte aux lettres partagée est un objet utilisateur désactivé doté d’attributs Exchange. Les personnes qui l’utilisent sont déterminées par les autorisations : accès complet (FullAccess), envoyer en tant que (Send As) et envoyer de la part de (Send on Behalf). Ces listes contiennent souvent dix ou vingt personnes, ainsi que des suppléants, des apprentis et des comptes de service. Une alerte DLP envoyée à toutes les personnes autorisées atteint de nombreuses personnes dont aucune ne se sent responsable.
+
+La question de la responsabilité est organisationnelle : une personne (ou un petit groupe) décide si un message bloqué était légitime et gère les autorisations. Cette information n’existe dans l’AD que si quelqu’un la renseigne.
+
+## Attributs AD envisageables
+
+| Attribut | Contenu | Pertinence pour les responsables |
+|---|---|---|
+| `manager` | DN d’une personne, à valeur unique, faisant partie des classes de personnes et donc disponible sur l’objet utilisateur de la boîte aux lettres | Adapté. Est synchronisé par Entra Connect vers Entra ID et peut être lu via Graph |
+| `managedBy` | DN d’un gestionnaire, à valeur unique | Non disponible sur l’objet utilisateur. Selon le schéma, défini entre autres pour les groupes, contacts, ordinateurs et unités d’organisation, mais pas pour la classe User |
+| `msExchDelegateListLink` | DN des personnes disposant d’un accès complet avec Automapping, à valeurs multiples ; référence inverse `msExchDelegateListLinkBL` sur l’utilisateur | Accès uniquement et incomplet : accès complet sans Automapping, droits via des groupes et droits attribués dans Exchange Online absents |
+| `publicDelegates` | DN des personnes pouvant envoyer de la part de, à valeurs multiples | Accès uniquement. Est réécrit par Entra Connect dans les environnements hybrides |
+| Liste d’autorisations (`nTSecurityDescriptor`) | Droit étendu « Send As » sur l’objet utilisateur | Uniquement l’envoi en tant que attribué localement. Les droits attribués dans Exchange Online n’y figurent pas |
+| `msExchMailboxSecurityDescriptor` | Autorisations de boîte aux lettres pour les boîtes locales, binaire | Accès uniquement, uniquement pour les boîtes aux lettres sur des serveurs Exchange locaux, difficile à évaluer pour le fournisseur |
+| `extensionAttribute1` à `extensionAttribute15` | Champs de texte libres | Possible, mais uniquement sous forme de texte ; aucune référence à un objet, aucun nettoyage automatique en cas de renommage ou de départ |
+
+En pratique, l’indication selon laquelle l’attribution se trouve « directement dans l’AD » fait généralement référence à `msExchDelegateListLink` : dans ADUC ou ADSI Edit, on y voit effectivement des personnes. Cet attribut n’est toutefois créé que comme effet secondaire de l’Automapping Outlook et ne convient pas comme source de données pour les responsabilités.
+
+## L’emplacement de la boîte aux lettres détermine la source de données
+
+Si les boîtes aux lettres se trouvent dans Exchange Online et que les utilisateurs sont synchronisés depuis l’AD local (hybride), la règle suivante s’applique : les autorisations attribuées dans Exchange Online restent dans Exchange Online. Entra Connect ne réécrit pour Exchange Hybrid qu’une petite liste d’attributs (dont `publicDelegates` et `proxyAddresses`), mais ni `msExchDelegateListLink` ni les droits Send As. Dans ce cas, un AD local affiche l’état antérieur à la migration, complété par ce qui a été maintenu localement depuis.
+
+Pour Exchange Online, seul Exchange Online lui-même fournit l’état réel des autorisations (`Get-EXOMailboxPermission`, `Get-EXORecipientPermission`). Le fournisseur aurait besoin pour cela d’un accès à Exchange Online PowerShell, ce qui est disproportionné pour une simple attribution. Un attribut maintenu sur l’objet utilisateur est plus simple et fonctionne indépendamment de l’emplacement de la boîte aux lettres.
+
+## Recommandation : `manager` comme attribut du responsable
+
+Pour chaque boîte aux lettres partagée, la personne responsable est renseignée dans l’attribut `manager`. Raisons :
+
+- L’attribut fait partie du schéma standard ; aucune extension du schéma n’est nécessaire.
+- Il contient une référence (DN) plutôt que du texte. Si la personne est renommée ou déplacée, la référence reste valide.
+- Entra Connect synchronise `manager` vers Entra ID. Le fournisseur peut lire au choix via LDAP dans l’AD local ou via Microsoft Graph.
+- Grâce à la référence inverse `directReports`, chaque personne responsable (et chaque rapport) voit de quelles boîtes aux lettres elle est responsable.
+
+La limite : `manager` est à valeur unique. Lorsqu’un suppléant est indispensable, deux possibilités existent. Possibilité 1 : un groupe par boîte aux lettres, dont les membres sont les responsables ; son nom suit une convention (par exemple `SM-Verantwortlich-buchhaltung`) ou figure dans un `extensionAttribute`. Possibilité 2 : le suppléant n’est pas déduit par le fournisseur depuis l’AD, mais depuis le `manager` de la personne responsable (escalade vers le supérieur hiérarchique). La possibilité 2 ne nécessite aucun objet supplémentaire et suffit dans la plupart des organisations.
+
+L’attribut n’est défini que dans le système source : dans l’AD local pour les objets synchronisés, dans Entra ID pour les objets exclusivement cloud.
+
+## Établir l’inventaire : qui a aujourd’hui accès ?
+
+Pour le remplissage initial, une liste des personnes actuellement autorisées est utile. La personne responsable en fait généralement partie ; le service métier confirme le choix. Pour les boîtes aux lettres dans Exchange Online :
+
+```powershell
+Connect-ExchangeOnline
+
+$postfaecher = Get-EXOMailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited
+
+$bestand = foreach ($pf in $postfaecher) {
+    $voll = Get-EXOMailboxPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'FullAccess' -and
+            -not $_.IsInherited -and
+            $_.User -notlike 'NT AUTHORITY\*'
+        }
+    $sendas = Get-EXORecipientPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'SendAs' -and
+            $_.Trustee -notlike 'NT AUTHORITY\*'
+        }
+    [pscustomobject]@{
+        Postfach  = $pf.PrimarySmtpAddress
+        Vollzugriff = ($voll.User -join '; ')
+        SendenAls = ($sendas.Trustee -join '; ')
+    }
+}
+
+$bestand | Export-Csv -Path .\shared-mailbox-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-RecipientTypeDetails SharedMailbox` | Uniquement les boîtes aux lettres partagées, pas les boîtes utilisateur, de salle ou d’équipement |
+| `-ResultSize Unlimited` | Toutes les boîtes aux lettres au lieu de la limite standard de 1000 |
+| `-Identity` | Boîte aux lettres dont les autorisations sont interrogées |
+| `AccessRights -contains 'FullAccess'` | Filtre sur l’accès complet ; les autres droits de boîte aux lettres sont exclus |
+| `-not $_.IsInherited` | Supprime les entrées héritées (administrateurs, comptes système) |
+| `User -notlike 'NT AUTHORITY\*'` | Supprime l’entrée `NT AUTHORITY\SELF` de la boîte aux lettres elle-même |
+| `-NoTypeInformation` | Aucune ligne de type au début du fichier CSV |
+| `-Encoding UTF8` | Les caractères accentués dans les noms sont conservés |
+
+</details>
+
+Si un groupe est autorisé, son nom apparaît dans la liste ; ses membres peuvent être résolus avec `Get-DistributionGroupMember` ou `Get-ADGroupMember`.
+
+## Définir les responsables
+
+L’attribution confirmée est préparée sous forme de CSV avec les colonnes `Postfach` et `Verantwortlich` (adresses e-mail dans les deux cas), puis définie dans l’AD local :
+
+```powershell
+Import-Module ActiveDirectory
+
+$zuordnung = Import-Csv -Path .\shared-mailbox-verantwortliche.csv
+
+foreach ($eintrag in $zuordnung) {
+    $postfach = Get-ADUser -Filter "mail -eq '$($eintrag.Postfach)'"
+    $person = Get-ADUser -Filter "mail -eq '$($eintrag.Verantwortlich)'"
+    Set-ADUser -Identity $postfach -Manager $person
+}
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-Filter "mail -eq '…'"` | Recherche l’objet à l’aide de l’adresse e-mail principale |
+| `-Identity` | Objet utilisateur de la boîte aux lettres partagée |
+| `-Manager` | Écrit le DN de la personne responsable dans l’attribut `manager` |
+
+</details>
+
+Pour les objets exclusivement cloud sans AD local, `Set-MgUserManagerByRef` du SDK PowerShell Microsoft Graph définit la même valeur dans Entra ID.
+
+## Consultation par le fournisseur : LDAP
+
+Les boîtes aux lettres partagées peuvent être identifiées dans l’AD via `msExchRecipientTypeDetails` : `4` désigne une boîte aux lettres partagée sur un serveur Exchange local, `34359738368` une boîte aux lettres partagée dans Exchange Online (RemoteSharedMailbox). La requête que le fournisseur peut intégrer à sa solution :
+
+```text
+Basis:     DC=example,DC=com (Unterbaum)
+Filter:    (&(objectClass=user)(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368)))
+Attribute: mail, proxyAddresses, manager
+```
+
+La valeur de `manager` est un DN. L’adresse e-mail de la personne responsable est obtenue par une seconde requête sur ce DN avec l’attribut `mail`. Un compte de lecture sans droits supplémentaires suffit, car `manager` et `mail` sont lisibles par les utilisateurs authentifiés. La connexion doit utiliser LDAPS (port 636).
+
+Pour vérifier l’attribution dans PowerShell :
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+$verantwortlich = @{
+    Name       = 'Verantwortlich'
+    Expression = {
+        if ($_.manager) {
+            (Get-ADUser -Identity $_.manager -Properties mail).mail
+        }
+    }
+}
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Select-Object mail, $verantwortlich |
+    Sort-Object mail
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-LDAPFilter` | Filtre LDAP sur les deux types de destinataires pour les boîtes aux lettres partagées |
+| `-Properties mail, manager` | Charge les deux attributs que `Get-ADUser` ne fournit pas par défaut |
+| `Expression = { … }` | Résout le DN dans `manager` en adresse e-mail de la personne responsable |
+
+</details>
+
+Pour l’attribution des messages, le fournisseur doit prendre en compte toutes les adresses de `proxyAddresses`, et non seulement `mail` : un message peut être envoyé avec une adresse secondaire de la boîte aux lettres.
+
+## Consultation par le fournisseur : Microsoft Graph
+
+Si le fournisseur n’a pas d’accès LDAP au réseau interne, Microsoft Graph est une bonne option. Les boîtes aux lettres partagées existent dans Entra ID sous forme d’objets utilisateur (désactivés), et `manager` y est disponible grâce à la synchronisation :
+
+```http
+GET https://graph.microsoft.com/v1.0/users/buchhaltung@example.com/manager?$select=displayName,mail
+```
+
+L’inscription d’application du fournisseur nécessite pour cela l’autorisation d’application `User.Read.All`. Graph ne fournit pas directement la liste de toutes les boîtes aux lettres partagées, car Entra ID ne connaît pas le type de boîte aux lettres. Le fournisseur interroge donc de manière ciblée l’adresse de l’expéditeur du message bloqué, ce qui suffit de toute façon pour le cas d’utilisation DLP.
+
+## Intégration dans la notification DLP
+
+La manière dont la notification est déclenchée techniquement dépend de la solution DLP. Avec Microsoft Purview DLP, il convient de noter que les notifications peuvent être envoyées en plus à des personnes renseignées de manière fixe, mais uniquement à des destinataires individuels, et non à des groupes ou listes de distribution. Une attribution dynamique « boîte aux lettres vers personne responsable » n’est généralement pas prévue. Pour un petit nombre de boîtes aux lettres, une règle par boîte est envisageable ; pour un grand nombre, il faut un processus en aval qui récupère les incidents, résout l’adresse de l’expéditeur via LDAP ou Graph et informe la personne responsable.
+
+La même logique s’applique à une solution externe : déterminer l’adresse de l’expéditeur du message bloqué, trouver la boîte aux lettres via `mail` ou `proxyAddresses`, résoudre `manager`, notifier. Si `manager` est absent, la solution doit signaler l’incident à une adresse collective définie (service desk ou protection des données) plutôt que de rejeter l’alerte.
+
+## Maintenance en exploitation
+
+Pour maintenir l’attribution à jour, deux règles suffisent en pratique :
+
+- Les nouvelles boîtes aux lettres partagées ne sont créées qu’avec une personne responsable renseignée ; le formulaire de demande contient ce champ.
+- Un rapport mensuel répertorie les boîtes aux lettres sans `manager` et celles dont la personne responsable est désactivée.
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Where-Object {
+        -not $_.manager -or
+        -not (Get-ADUser -Identity $_.manager).Enabled
+    } |
+    Select-Object mail, manager
+```
+
+Lors du départ d’une personne, `directReports` sur son objet indique quelles boîtes aux lettres nécessitent une nouvelle personne responsable. Cette vérification peut être intégrée au processus de départ.
+
+## Sources
+
+1.  [Attribut Manager (schéma Active Directory)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-manager): attribut DN à valeur unique des classes de personnes, référence inverse `directReports`.
+
+2.  [Attribut Managed-By (schéma Active Directory)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-managedby): liste des classes pour lesquelles `managedBy` est défini ; la classe User n’en fait pas partie.
+
+3.  [Microsoft Entra Connect Sync : attributs synchronisés vers Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-sync-attributes-synchronized): attributs synchronisés, y compris `manager`, ainsi que la liste des attributs de réécriture Exchange Hybrid.
+
+4.  [Get-EXOMailboxPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exomailboxpermission): interrogation des autorisations de boîte aux lettres dans Exchange Online.
+
+5.  [Get-EXORecipientPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exorecipientpermission): interrogation des autorisations Send As dans Exchange Online.
+
+6.  [Adding or removing mailbox permission in EAC doesn't address the msExchDelegateListLink attribute](https://support.microsoft.com/en-us/help/4502159): article du support Microsoft sur le lien entre l’accès complet et `msExchDelegateListLink` dans Exchange 2016 et 2019.
+
+7.  [List manager (Microsoft Graph)](https://learn.microsoft.com/en-us/graph/api/user-list-manager): point de terminaison Graph et autorisations nécessaires pour consulter le manager.
+
+8.  [Send email notifications and show policy tips for DLP policies](https://learn.microsoft.com/en-us/purview/dlp-use-notifications-and-policy-tips): destinataires des notifications DLP dans Microsoft Purview ; uniquement des destinataires individuels, pas de groupes.
 
 ----
 
@@ -65181,6 +65751,234 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# Memorizzare e leggere i responsabili delle cassette postali condivise in Active Directory
+
+URL: https://rafaelpfister.ch/it/blog/memorizzare-e-leggere-i-responsabili-delle-cassette-postali-condivise-in-active-directory
+Datum: 2026-11-16
+
+# Memorizzare e leggere i responsabili delle cassette postali condivise in Active Directory
+
+In un progetto di Data Loss Prevention mi è giunta la seguente richiesta: non appena un messaggio proveniente da una cassetta postale condivisa (Shared Mailbox) viene bloccato, le persone responsabili devono essere avvisate affinché possano intervenire. Il fornitore della soluzione DLP deve leggere automaticamente questa associazione da Active Directory. La domanda è quindi: dove viene indicato nell'AD chi è responsabile di una cassetta postale condivisa?
+
+In breve: l'AD conosce solo i diritti di accesso, non la responsabilità. Alcuni attributi indicano chi può accedere a una cassetta postale o inviare messaggi da essa, e anche questi in modo incompleto non appena la cassetta postale si trova in Exchange Online. Per un'automazione affidabile, la persona responsabile deve essere registrata esplicitamente in un attributo. L'attributo standard `manager` è adatto a questo scopo, viene sincronizzato da Entra Connect e può essere interrogato tramite LDAP e Microsoft Graph.
+
+## L'accesso non è responsabilità
+
+Nell'AD, una cassetta postale condivisa è un oggetto utente disabilitato con attributi Exchange. Chi la utilizza risulta dalle autorizzazioni: accesso completo (FullAccess), invio come (Send As) e invio per conto di (Send on Behalf). Questi elenchi contengono spesso dieci o venti persone, oltre a delegati, apprendisti e account di servizio. Una notifica DLP inviata a tutti gli autorizzati raggiunge molte persone, senza che nessuna si senta responsabile.
+
+La questione della responsabilità è organizzativa: una persona, o un piccolo gruppo, decide se un messaggio bloccato era legittimo e gestisce le autorizzazioni. Questa informazione esiste nell'AD solo se qualcuno la inserisce.
+
+## Quali attributi AD possono essere presi in considerazione
+
+| Attributo | Contenuto | Idoneità per i responsabili |
+|---|---|---|
+| `manager` | DN di una persona, a valore singolo, parte delle classi di persone e quindi disponibile nell'oggetto utente della cassetta postale | Adatto. Viene sincronizzato da Entra Connect in Entra ID ed è leggibile tramite Graph |
+| `managedBy` | DN di un gestore, a valore singolo | Non disponibile nell'oggetto utente. Secondo lo schema, è definito tra l'altro per gruppi, contatti, computer e OU, non per la classe User |
+| `msExchDelegateListLink` | DN delle persone che hanno accesso completo con Automapping, a valori multipli; riferimento inverso `msExchDelegateListLinkBL` nell'utente | Solo accesso, e incompleto: mancano l'accesso completo senza Automapping, i diritti tramite gruppi e i diritti assegnati in Exchange Online |
+| `publicDelegates` | DN delle persone con invio per conto di, a valori multipli | Solo accesso. Negli ambienti ibridi viene riscritto da Entra Connect |
+| Elenco autorizzazioni (`nTSecurityDescriptor`) | Diritto esteso «Send As» nell'oggetto utente | Solo invio come assegnato localmente. I diritti assegnati in Exchange Online non sono presenti |
+| `msExchMailboxSecurityDescriptor` | Autorizzazioni delle cassette postali locali, binario | Solo accesso, solo per cassette postali su server Exchange locali, difficile da valutare per i fornitori |
+| `extensionAttribute1` fino a `extensionAttribute15` | Campi di testo liberi | Possibile, ma solo come testo; nessun riferimento a un oggetto, nessun aggiornamento automatico in caso di rinomina o uscita |
+
+In pratica, l'indicazione che l'associazione sia presente «direttamente nell'AD» si riferisce di solito a `msExchDelegateListLink`: in ADUC o ADSI Edit vi si vedono effettivamente delle persone. Tuttavia, l'attributo nasce solo come effetto collaterale dell'Automapping di Outlook e non è adatto come fonte dati per le responsabilità.
+
+## La posizione della cassetta postale determina la fonte dati
+
+Se le cassette postali si trovano in Exchange Online e gli utenti vengono sincronizzati dall'AD locale (ibrido), vale quanto segue: le autorizzazioni assegnate in Exchange Online rimangono in Exchange Online. Per Exchange Hybrid, Entra Connect riscrive solo un piccolo elenco di attributi, tra cui `publicDelegates` e `proxyAddresses`, ma né `msExchDelegateListLink` né i diritti Send As. In questo caso, un AD locale mostra lo stato precedente alla migrazione più quanto è stato successivamente aggiornato localmente.
+
+Per Exchange Online, lo stato effettivo delle autorizzazioni è fornito solo da Exchange Online stesso (`Get-EXOMailboxPermission`, `Get-EXORecipientPermission`). Il fornitore avrebbe bisogno dell'accesso a Exchange Online PowerShell, che risulta sproporzionato per una semplice associazione. Un attributo gestito nell'oggetto utente è più semplice e funziona indipendentemente da dove si trova la cassetta postale.
+
+## Raccomandazione: `manager` come attributo del responsabile
+
+Per ogni cassetta postale condivisa, la persona responsabile viene inserita nell'attributo `manager`. Motivi:
+
+- L'attributo fa parte dello schema standard, quindi non è necessaria un'estensione dello schema.
+- Contiene un riferimento (DN) anziché testo. Se la persona viene rinominata o spostata, il riferimento resta valido.
+- Entra Connect sincronizza `manager` in Entra ID. Il fornitore può leggere a scelta tramite LDAP nell'AD locale o tramite Microsoft Graph.
+- Tramite il riferimento inverso `directReports`, ogni persona responsabile, e ogni report, può vedere di quali cassette postali è responsabile.
+
+La limitazione: `manager` è a valore singolo. Quando una delega è indispensabile, esistono due possibilità. Possibilità 1: un gruppo per cassetta postale, i cui membri sono i responsabili; il suo nome segue una convenzione, ad esempio `SM-Verantwortlich-buchhaltung`, oppure è riportato in un `extensionAttribute`. Possibilità 2: la delega non viene ricavata dal fornitore dall'AD, ma dal `manager` della persona responsabile, con escalation alla persona superiore. La possibilità 2 non richiede oggetti aggiuntivi ed è sufficiente nella maggior parte delle organizzazioni.
+
+L'attributo viene impostato solo nel sistema master: nell'AD locale per gli oggetti sincronizzati, in Entra ID per gli oggetti esclusivamente cloud.
+
+## Rilevare lo stato attuale: chi ha oggi accesso?
+
+Per il popolamento iniziale è utile un elenco degli attuali autorizzati. La persona responsabile è solitamente tra questi; il reparto competente conferma la scelta. Per le cassette postali in Exchange Online:
+
+```powershell
+Connect-ExchangeOnline
+
+$postfaecher = Get-EXOMailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited
+
+$bestand = foreach ($pf in $postfaecher) {
+    $voll = Get-EXOMailboxPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'FullAccess' -and
+            -not $_.IsInherited -and
+            $_.User -notlike 'NT AUTHORITY\*'
+        }
+    $sendas = Get-EXORecipientPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'SendAs' -and
+            $_.Trustee -notlike 'NT AUTHORITY\*'
+        }
+    [pscustomobject]@{
+        Postfach  = $pf.PrimarySmtpAddress
+        Vollzugriff = ($voll.User -join '; ')
+        SendenAls = ($sendas.Trustee -join '; ')
+    }
+}
+
+$bestand | Export-Csv -Path .\shared-mailbox-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-RecipientTypeDetails SharedMailbox` | Solo cassette postali condivise, nessuna cassetta postale utente, di sala o di apparecchiatura |
+| `-ResultSize Unlimited` | Tutte le cassette postali anziché il limite standard di 1000 |
+| `-Identity` | Cassetta postale di cui vengono interrogate le autorizzazioni |
+| `AccessRights -contains 'FullAccess'` | Filtra per accesso completo; le altre autorizzazioni della cassetta postale vengono escluse |
+| `-not $_.IsInherited` | Rimuove le voci ereditate, come amministratori e account di sistema |
+| `User -notlike 'NT AUTHORITY\*'` | Rimuove la voce `NT AUTHORITY\SELF` della cassetta postale stessa |
+| `-NoTypeInformation` | Nessuna riga del tipo all'inizio del file CSV |
+| `-Encoding UTF8` | I caratteri accentati nei nomi vengono mantenuti |
+
+</details>
+
+Se è autorizzato un gruppo, il suo nome appare nell'elenco; i membri possono essere risolti con `Get-DistributionGroupMember` o `Get-ADGroupMember`.
+
+## Impostare i responsabili
+
+L'associazione confermata viene preparata come CSV con le colonne `Postfach` e `Verantwortlich` (entrambe indirizzi e-mail) e impostata nell'AD locale:
+
+```powershell
+Import-Module ActiveDirectory
+
+$zuordnung = Import-Csv -Path .\shared-mailbox-verantwortliche.csv
+
+foreach ($eintrag in $zuordnung) {
+    $postfach = Get-ADUser -Filter "mail -eq '$($eintrag.Postfach)'"
+    $person = Get-ADUser -Filter "mail -eq '$($eintrag.Verantwortlich)'"
+    Set-ADUser -Identity $postfach -Manager $person
+}
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Filter "mail -eq '…'"` | Cerca l'oggetto in base all'indirizzo e-mail principale |
+| `-Identity` | Oggetto utente della cassetta postale condivisa |
+| `-Manager` | Scrive il DN della persona responsabile nell'attributo `manager` |
+
+</details>
+
+Per gli oggetti esclusivamente cloud senza AD locale, `Set-MgUserManagerByRef` dell'SDK PowerShell di Microsoft Graph imposta lo stesso valore in Entra ID.
+
+## Lettura da parte del fornitore: LDAP
+
+Le cassette postali condivise possono essere riconosciute nell'AD tramite `msExchRecipientTypeDetails`: `4` indica una cassetta postale condivisa su un server Exchange locale, `34359738368` una cassetta postale condivisa in Exchange Online (RemoteSharedMailbox). La query che il fornitore può integrare nella propria soluzione:
+
+```text
+Basis:     DC=example,DC=com (Unterbaum)
+Filter:    (&(objectClass=user)(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368)))
+Attribute: mail, proxyAddresses, manager
+```
+
+Il valore in `manager` è un DN. L'indirizzo e-mail della persona responsabile si ottiene con una seconda query su questo DN con l'attributo `mail`. È sufficiente un account di lettura senza ulteriori diritti, poiché `manager` e `mail` sono leggibili dagli utenti autenticati. La connessione deve avvenire tramite LDAPS, porta 636.
+
+Per verificare l'associazione in PowerShell:
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+$verantwortlich = @{
+    Name       = 'Verantwortlich'
+    Expression = {
+        if ($_.manager) {
+            (Get-ADUser -Identity $_.manager -Properties mail).mail
+        }
+    }
+}
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Select-Object mail, $verantwortlich |
+    Sort-Object mail
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-LDAPFilter` | Filtro LDAP sui due tipi di destinatario per cassette postali condivise |
+| `-Properties mail, manager` | Carica i due attributi che `Get-ADUser` non fornisce per impostazione predefinita |
+| `Expression = { … }` | Risolve il DN in `manager` nell'indirizzo e-mail della persona responsabile |
+
+</details>
+
+Per l'associazione dei messaggi, il fornitore deve considerare tutti gli indirizzi in `proxyAddresses`, non solo `mail`: un messaggio può essere inviato con un indirizzo secondario della cassetta postale.
+
+## Lettura da parte del fornitore: Microsoft Graph
+
+Se il fornitore non dispone di accesso LDAP alla rete interna, Microsoft Graph è un'alternativa adatta. Le cassette postali condivise esistono in Entra ID come oggetti utente disabilitati e `manager` vi è presente grazie alla sincronizzazione:
+
+```http
+GET https://graph.microsoft.com/v1.0/users/buchhaltung@example.com/manager?$select=displayName,mail
+```
+
+A tale scopo, la registrazione dell'app del fornitore richiede l'autorizzazione applicativa `User.Read.All`. Graph non fornisce direttamente un elenco di tutte le cassette postali condivise, poiché Entra ID non conosce il tipo di cassetta postale. Il fornitore interroga quindi in modo mirato l'indirizzo del mittente del messaggio bloccato, il che è comunque sufficiente per il caso d'uso DLP.
+
+## Integrazione nella notifica DLP
+
+Il modo in cui la notifica viene attivata tecnicamente dipende dalla soluzione DLP. Per Microsoft Purview DLP, va osservato che le notifiche possono essere inviate anche a persone indicate in modo fisso, ma solo a singoli destinatari, non a gruppi o liste di distribuzione. Un'associazione dinamica «cassetta postale a persona responsabile» in genere non è prevista. Con poche cassette postali è ipotizzabile una regola per ciascuna; con molte cassette postali è necessario un processo a valle che recuperi gli incidenti, risolva l'indirizzo del mittente tramite LDAP o Graph e informi la persona responsabile.
+
+Per una soluzione esterna vale la stessa logica: determinare l'indirizzo del mittente del messaggio bloccato, trovare la cassetta postale tramite `mail` o `proxyAddresses`, risolvere `manager`, inviare la notifica. Se manca `manager`, la soluzione dovrebbe segnalare a un indirizzo collettivo definito, ad esempio Service Desk o protezione dei dati, anziché scartare la notifica.
+
+## Gestione operativa
+
+Per mantenere aggiornata l'associazione, nella pratica sono sufficienti due regole:
+
+- Le nuove cassette postali condivise vengono create solo con una persona responsabile registrata; la richiesta contiene il relativo campo.
+- Un report mensile elenca le cassette postali senza `manager` e quelle la cui persona responsabile è disabilitata.
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Where-Object {
+        -not $_.manager -or
+        -not (Get-ADUser -Identity $_.manager).Enabled
+    } |
+    Select-Object mail, manager
+```
+
+In caso di uscita di una persona, `directReports` nel suo oggetto mostra quali cassette postali necessitano di una nuova persona responsabile. Questo controllo può essere integrato nel processo di uscita.
+
+## Fonti
+
+1.  [Manager attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-manager): attributo DN a valore singolo delle classi di persone, riferimento inverso `directReports`.
+
+2.  [Managed-By attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-managedby): elenco delle classi per le quali è definito `managedBy`; la classe User non ne fa parte.
+
+3.  [Microsoft Entra Connect Sync: Attributes synchronized to Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-sync-attributes-synchronized): attributi sincronizzati, incluso `manager`, nonché l'elenco degli attributi di writeback di Exchange Hybrid.
+
+4.  [Get-EXOMailboxPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exomailboxpermission): query delle autorizzazioni delle cassette postali in Exchange Online.
+
+5.  [Get-EXORecipientPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exorecipientpermission): query delle autorizzazioni Send As in Exchange Online.
+
+6.  [Adding or removing mailbox permission in EAC doesn't address the msExchDelegateListLink attribute](https://support.microsoft.com/en-us/help/4502159): articolo di supporto Microsoft sulla relazione tra accesso completo e `msExchDelegateListLink` in Exchange 2016 e 2019.
+
+7.  [List manager (Microsoft Graph)](https://learn.microsoft.com/en-us/graph/api/user-list-manager): endpoint Graph e autorizzazioni necessarie per leggere il manager.
+
+8.  [Send email notifications and show policy tips for DLP policies](https://learn.microsoft.com/en-us/purview/dlp-use-notifications-and-policy-tips): destinatari delle notifiche DLP in Microsoft Purview; solo singoli destinatari, nessun gruppo.
+
+----
+
 # SQLite: comprendere e prevenire «database is locked»
 
 URL: https://rafaelpfister.ch/it/blog/sqlite-comprendere-e-prevenire-database-is-locked
@@ -86809,6 +87607,234 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# Registrar y consultar responsables de buzones compartidos en Active Directory
+
+URL: https://rafaelpfister.ch/es/blog/registrar-y-consultar-responsables-de-buzones-compartidos-en-active-directory
+Datum: 2026-11-16
+
+# Registrar y consultar responsables de buzones compartidos en Active Directory
+
+En un proyecto de prevención de pérdida de datos surgió la siguiente consulta: en cuanto se bloquee un mensaje procedente de un buzón compartido (Shared Mailbox), se debe notificar a las personas responsables para que puedan actuar. El proveedor de la solución DLP debe leer esta asignación automáticamente desde Active Directory. La pregunta es: ¿dónde indica AD quién es responsable de un buzón compartido?
+
+Conclusión breve: AD solo conoce permisos de acceso, no responsabilidades. Algunos atributos indican quién puede acceder a un buzón o enviar desde él, e incluso estos son incompletos cuando el buzón se encuentra en Exchange Online. Para una automatización fiable, la persona responsable debe mantenerse explícitamente en un atributo. El atributo estándar `manager` es adecuado para ello, Entra Connect lo sincroniza y se puede consultar mediante LDAP y Microsoft Graph.
+
+## El acceso no es responsabilidad
+
+Un buzón compartido es, en AD, un objeto de usuario deshabilitado con atributos de Exchange. Quién lo utiliza se determina mediante permisos: acceso total (FullAccess), enviar como (Send As) y enviar en nombre de (Send on Behalf). Estas listas suelen contener diez o veinte personas, además de suplentes, aprendices y cuentas de servicio. Una alerta DLP dirigida a todas las personas autorizadas llega a muchas personas, ninguna de las cuales se siente responsable.
+
+La cuestión de la responsabilidad es organizativa: una persona, o un grupo reducido, decide si un mensaje bloqueado era legítimo y mantiene los permisos. Esta información solo existe en AD si alguien la registra.
+
+## Qué atributos de AD pueden considerarse
+
+| Atributo | Contenido | Idoneidad para responsables |
+|---|---|---|
+| `manager` | DN de una persona, valor único, parte de las clases de personas y, por tanto, disponible en el objeto de usuario del buzón | Adecuado. Entra Connect lo sincroniza con Entra ID y se puede leer mediante Graph |
+| `managedBy` | DN de un administrador, valor único | No está disponible en el objeto de usuario. Según el esquema, está definido, entre otros, para grupos, contactos, equipos y UO, no para la clase User |
+| `msExchDelegateListLink` | DN de las personas que han recibido acceso total con Automapping, multivalor; referencia inversa `msExchDelegateListLinkBL` en el usuario | Solo acceso y, además, incompleto: faltan el acceso total sin Automapping, los permisos mediante grupos y los permisos otorgados en Exchange Online |
+| `publicDelegates` | DN de las personas con permiso de enviar en nombre de, multivalor | Solo acceso. En entornos híbridos, Entra Connect lo escribe de vuelta |
+| Lista de permisos (`nTSecurityDescriptor`) | Derecho extendido «Send As» en el objeto de usuario | Solo el permiso de enviar como otorgado localmente. Los permisos otorgados en Exchange Online no aparecen ahí |
+| `msExchMailboxSecurityDescriptor` | Permisos de buzones locales, binario | Solo acceso, solo para buzones en servidores Exchange locales y difícil de evaluar para los proveedores |
+| `extensionAttribute1` hasta `extensionAttribute15` | Campos de texto libre | Posible, pero solo como texto; sin referencia a un objeto ni limpieza automática al cambiar de nombre o al salir de la organización |
+
+En la práctica, la indicación de que la asignación está «directamente en AD» suele referirse a `msExchDelegateListLink`: en ADUC o ADSI Edit se pueden ver personas allí. Sin embargo, el atributo solo se crea como efecto secundario de Outlook Automapping y no sirve como fuente de datos para responsabilidades.
+
+## La ubicación del buzón determina la fuente de datos
+
+Si los buzones están en Exchange Online y los usuarios se sincronizan desde AD local (híbrido), se aplica lo siguiente: los permisos otorgados en Exchange Online permanecen en Exchange Online. Para Exchange Hybrid, Entra Connect solo escribe de vuelta una pequeña lista de atributos, entre ellos `publicDelegates` y `proxyAddresses`, pero ni `msExchDelegateListLink` ni los permisos Send As. En este caso, un AD local muestra el estado previo a la migración más lo que se haya mantenido localmente desde entonces.
+
+Para Exchange Online, solo Exchange Online proporciona el estado real de los permisos (`Get-EXOMailboxPermission`, `Get-EXORecipientPermission`). Para ello, el proveedor necesitaría acceso a Exchange Online PowerShell, lo cual es desproporcionado para una simple asignación. Un atributo mantenido en el objeto de usuario es más sencillo y funciona independientemente de dónde se encuentre el buzón.
+
+## Recomendación: `manager` como atributo de responsable
+
+Para cada buzón compartido, se registra la persona responsable en el atributo `manager`. Motivos:
+
+- El atributo forma parte del esquema estándar, por lo que no es necesaria una ampliación del esquema.
+- Contiene una referencia (DN) en lugar de texto. Si la persona cambia de nombre o de ubicación, la referencia sigue siendo válida.
+- Entra Connect sincroniza `manager` con Entra ID. El proveedor puede leerlo mediante LDAP en el AD local o mediante Microsoft Graph.
+- Mediante la referencia inversa `directReports`, cada persona responsable —y cualquier informe— puede ver de qué buzones es responsable.
+
+La limitación: `manager` admite un único valor. Cuando sea imprescindible contar con una suplencia, hay dos posibilidades. Opción 1: un grupo por buzón cuyos miembros sean los responsables; su nombre sigue una convención (por ejemplo, `SM-Verantwortlich-buchhaltung`) o figura en un `extensionAttribute`. Opción 2: el proveedor no deriva la suplencia desde AD, sino desde el `manager` de la persona responsable (escalación a la persona superior). La opción 2 no requiere objetos adicionales y es suficiente en la mayoría de las organizaciones.
+
+El atributo solo se establece en el sistema maestro: en el AD local para objetos sincronizados y en Entra ID para objetos exclusivamente en la nube.
+
+## Inventario: ¿quién tiene acceso actualmente?
+
+Para la carga inicial resulta útil una lista de las personas autorizadas actualmente. La persona responsable suele estar entre ellas; el departamento especializado confirma la selección. Para buzones en Exchange Online:
+
+```powershell
+Connect-ExchangeOnline
+
+$postfaecher = Get-EXOMailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited
+
+$bestand = foreach ($pf in $postfaecher) {
+    $voll = Get-EXOMailboxPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'FullAccess' -and
+            -not $_.IsInherited -and
+            $_.User -notlike 'NT AUTHORITY\*'
+        }
+    $sendas = Get-EXORecipientPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'SendAs' -and
+            $_.Trustee -notlike 'NT AUTHORITY\*'
+        }
+    [pscustomobject]@{
+        Postfach  = $pf.PrimarySmtpAddress
+        Vollzugriff = ($voll.User -join '; ')
+        SendenAls = ($sendas.Trustee -join '; ')
+    }
+}
+
+$bestand | Export-Csv -Path .\shared-mailbox-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-RecipientTypeDetails SharedMailbox` | Solo buzones compartidos, sin buzones de usuario, sala o equipo |
+| `-ResultSize Unlimited` | Todos los buzones en lugar del límite predeterminado de 1000 |
+| `-Identity` | Buzón cuyos permisos se consultan |
+| `AccessRights -contains 'FullAccess'` | Filtra por acceso total; se excluyen otros permisos de buzón |
+| `-not $_.IsInherited` | Elimina entradas heredadas (administradores, cuentas del sistema) |
+| `User -notlike 'NT AUTHORITY\*'` | Elimina la entrada `NT AUTHORITY\SELF` del propio buzón |
+| `-NoTypeInformation` | Sin línea de tipo al inicio del archivo CSV |
+| `-Encoding UTF8` | Se conservan los caracteres especiales en los nombres |
+
+</details>
+
+Si un grupo tiene permisos, su nombre aparece en la lista; sus miembros se pueden resolver con `Get-DistributionGroupMember` o `Get-ADGroupMember`.
+
+## Establecer responsables
+
+La asignación confirmada se prepara como CSV con las columnas `Postfach` y `Verantwortlich` (ambas direcciones de correo electrónico) y se establece en el AD local:
+
+```powershell
+Import-Module ActiveDirectory
+
+$zuordnung = Import-Csv -Path .\shared-mailbox-verantwortliche.csv
+
+foreach ($eintrag in $zuordnung) {
+    $postfach = Get-ADUser -Filter "mail -eq '$($eintrag.Postfach)'"
+    $person = Get-ADUser -Filter "mail -eq '$($eintrag.Verantwortlich)'"
+    Set-ADUser -Identity $postfach -Manager $person
+}
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-Filter "mail -eq '…'"` | Busca el objeto mediante la dirección de correo electrónico principal |
+| `-Identity` | Objeto de usuario del buzón compartido |
+| `-Manager` | Escribe el DN de la persona responsable en el atributo `manager` |
+
+</details>
+
+Para objetos exclusivamente en la nube sin AD local, `Set-MgUserManagerByRef` del SDK de PowerShell de Microsoft Graph establece el mismo valor en Entra ID.
+
+## Consulta por el proveedor: LDAP
+
+Los buzones compartidos se pueden identificar en AD mediante `msExchRecipientTypeDetails`: `4` representa un buzón compartido en un servidor Exchange local y `34359738368` un buzón compartido en Exchange Online (RemoteSharedMailbox). La consulta que el proveedor puede incorporar a su solución:
+
+```text
+Basis:     DC=example,DC=com (Unterbaum)
+Filter:    (&(objectClass=user)(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368)))
+Attribute: mail, proxyAddresses, manager
+```
+
+El valor de `manager` es un DN. La dirección de correo electrónico de la persona responsable se obtiene mediante una segunda consulta a este DN con el atributo `mail`. Basta una cuenta de lectura sin permisos adicionales, ya que `manager` y `mail` son legibles para usuarios autenticados. La conexión debe realizarse mediante LDAPS (puerto 636).
+
+Para comprobar la asignación en PowerShell:
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+$verantwortlich = @{
+    Name       = 'Verantwortlich'
+    Expression = {
+        if ($_.manager) {
+            (Get-ADUser -Identity $_.manager -Properties mail).mail
+        }
+    }
+}
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Select-Object mail, $verantwortlich |
+    Sort-Object mail
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-LDAPFilter` | Filtro LDAP para los dos tipos de destinatario de buzones compartidos |
+| `-Properties mail, manager` | Carga los dos atributos que `Get-ADUser` no proporciona de forma predeterminada |
+| `Expression = { … }` | Resuelve el DN de `manager` en la dirección de correo electrónico de la persona responsable |
+
+</details>
+
+Para asignar los mensajes, el proveedor debe considerar todas las direcciones de `proxyAddresses`, no solo `mail`: un mensaje puede enviarse con una dirección secundaria del buzón.
+
+## Consulta por el proveedor: Microsoft Graph
+
+Si el proveedor no tiene acceso LDAP a la red interna, Microsoft Graph es una buena alternativa. Los buzones compartidos existen en Entra ID como objetos de usuario deshabilitados y `manager` está disponible allí mediante la sincronización:
+
+```http
+GET https://graph.microsoft.com/v1.0/users/buchhaltung@example.com/manager?$select=displayName,mail
+```
+
+Para ello, el registro de aplicaciones del proveedor necesita el permiso de aplicación `User.Read.All`. Graph no proporciona directamente una lista de todos los buzones compartidos, ya que Entra ID no conoce el tipo de buzón. Por tanto, el proveedor consulta específicamente la dirección del remitente del mensaje bloqueado, lo cual es suficiente para el caso de uso DLP.
+
+## Integración en la notificación DLP
+
+La forma en que se activa técnicamente la notificación depende de la solución DLP. Con Microsoft Purview DLP debe tenerse en cuenta lo siguiente: las notificaciones pueden enviarse adicionalmente a personas introducidas de forma fija, pero solo a destinatarios individuales, no a grupos ni listas de distribución. Por lo general, no se contempla una asignación dinámica «buzón a persona responsable». Con pocos buzones, puede plantearse una regla por buzón; con muchos buzones, se requiere un proceso posterior que recupere los incidentes, resuelva la dirección del remitente mediante LDAP o Graph e informe a la persona responsable.
+
+Para una solución externa se aplica la misma lógica: determinar la dirección del remitente del mensaje bloqueado, encontrar el buzón mediante `mail` o `proxyAddresses`, resolver `manager` y notificar. Si falta `manager`, la solución debe informar a una dirección colectiva definida, como el servicio de soporte o protección de datos, en lugar de descartar la alerta.
+
+## Mantenimiento operativo
+
+Para mantener actualizada la asignación, en la práctica bastan dos reglas:
+
+- Los nuevos buzones compartidos solo se crean con una persona responsable registrada; la solicitud incluye este campo.
+- Un informe mensual enumera los buzones sin `manager` y aquellos cuya persona responsable está deshabilitada.
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Where-Object {
+        -not $_.manager -or
+        -not (Get-ADUser -Identity $_.manager).Enabled
+    } |
+    Select-Object mail, manager
+```
+
+Cuando una persona deja la organización, `directReports` en su objeto indica qué buzones necesitan una nueva persona responsable. Esta comprobación se puede incorporar al proceso de salida.
+
+## Fuentes
+
+1.  [Atributo Manager (esquema de Active Directory)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-manager): atributo DN de valor único de las clases de personas, referencia inversa `directReports`.
+
+2.  [Atributo Managed-By (esquema de Active Directory)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-managedby): lista de las clases para las que está definido `managedBy`; la clase User no está incluida.
+
+3.  [Microsoft Entra Connect Sync: atributos sincronizados con Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-sync-attributes-synchronized): atributos sincronizados, incluido `manager`, así como la lista de atributos de escritura de vuelta de Exchange Hybrid.
+
+4.  [Get-EXOMailboxPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exomailboxpermission): consulta de permisos de buzón en Exchange Online.
+
+5.  [Get-EXORecipientPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exorecipientpermission): consulta de permisos Send As en Exchange Online.
+
+6.  [Adding or removing mailbox permission in EAC doesn't address the msExchDelegateListLink attribute](https://support.microsoft.com/en-us/help/4502159): artículo de soporte de Microsoft sobre la relación entre acceso total y `msExchDelegateListLink` en Exchange 2016 y 2019.
+
+7.  [List manager (Microsoft Graph)](https://learn.microsoft.com/en-us/graph/api/user-list-manager): punto de conexión de Graph y permisos necesarios para consultar el administrador.
+
+8.  [Send email notifications and show policy tips for DLP policies](https://learn.microsoft.com/en-us/purview/dlp-use-notifications-and-policy-tips): destinatarios de notificaciones DLP en Microsoft Purview; solo destinatarios individuales, no grupos.
+
+----
+
 # SQLite: entender y evitar «database is locked»
 
 URL: https://rafaelpfister.ch/es/blog/sqlite-entender-y-evitar-database-is-locked
@@ -108431,6 +109457,234 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# Ange och läsa ansvariga för delade postlådor i Active Directory
+
+URL: https://rafaelpfister.ch/sv/blog/ange-och-lasa-ansvariga-for-delade-postlador-i-active-directory
+Datum: 2026-11-16
+
+# Ange och läsa ansvariga för delade postlådor i Active Directory
+
+I ett Data Loss Prevention-projekt hamnade följande förfrågan på mitt bord: Så snart ett meddelande från en delad postlåda (Shared Mailbox) blockeras ska de ansvariga personerna meddelas så att de kan agera. Leverantören av DLP-lösningen ska läsa denna koppling automatiskt från Active Directory. Frågan är: Var anges i AD vem som ansvarar för en delad postlåda?
+
+Kort slutsats: AD känner bara till åtkomsträttigheter, inte ansvar. Vissa attribut visar vem som kan komma åt eller skicka från en postlåda, och även dessa bara ofullständigt när postlådan finns i Exchange Online. För tillförlitlig automatisering måste den ansvariga personen uttryckligen registreras i ett attribut. Standardattributet `manager` lämpar sig för detta, synkroniseras av Entra Connect och kan efterfrågas via LDAP och Microsoft Graph.
+
+## Åtkomst är inte ansvar
+
+En delad postlåda är i AD ett inaktiverat användarobjekt med Exchange-attribut. Vem som använder den framgår av behörigheter: fullständig åtkomst (FullAccess), Skicka som (Send As) och Skicka för (Send on Behalf). Dessa listor innehåller ofta tio eller tjugo personer, samt ställföreträdare, praktikanter och tjänstkonton. Ett DLP-meddelande till alla behöriga når många personer, utan att någon känner sig ansvarig.
+
+Frågan om ansvar är organisatorisk: En person (eller en liten grupp) avgör om ett blockerat meddelande var legitimt och hanterar behörigheterna. Denna information finns bara i AD om någon anger den.
+
+## Vilka attribut i AD som kan komma i fråga
+
+| Attribut | Innehåll | Lämplighet för ansvariga |
+|---|---|---|
+| `manager` | DN för en person, enkelvärd, del av personklasserna och därmed tillgängligt på postlådans användarobjekt | Lämpligt. Synkroniseras av Entra Connect till Entra ID och kan läsas via Graph |
+| `managedBy` | DN för en förvaltare, enkelvärd | Inte tillgängligt på användarobjektet. Enligt schemat definierat bland annat för grupper, kontakter, datorer och OU:er, inte för klassen User |
+| `msExchDelegateListLink` | DN:er för personer som har fullständig åtkomst med Automapping, flervärdigt; bakåtreferens `msExchDelegateListLinkBL` på användaren | Endast åtkomst och ofullständigt: fullständig åtkomst utan Automapping, rättigheter via grupper och rättigheter som tilldelats i Exchange Online saknas |
+| `publicDelegates` | DN:er för personer med Skicka för-behörighet, flervärdigt | Endast åtkomst. Skrivs tillbaka av Entra Connect i hybridmiljöer |
+| Behörighetslista (`nTSecurityDescriptor`) | Utökad rättighet «Send As» på användarobjektet | Endast lokalt tilldelad Skicka som-behörighet. Rättigheter som tilldelats i Exchange Online finns inte där |
+| `msExchMailboxSecurityDescriptor` | Postlådebehörigheter för lokala postlådor, binärt | Endast åtkomst, endast för postlådor på lokala Exchange-servrar, svår för leverantörer att utvärdera |
+| `extensionAttribute1` till `extensionAttribute15` | Fria textfält | Möjligt, men endast som text; ingen referens till ett objekt, ingen automatisk rensning vid namnbyte eller avgång |
+
+Hänvisningen till att kopplingen finns «direkt i AD» avser i praktiken oftast `msExchDelegateListLink`: I ADUC eller ADSI Edit syns där faktiskt personer. Attributet uppstår dock endast som en bieffekt av Outlook Automapping och lämpar sig inte som datakälla för ansvarsfördelning.
+
+## Var postlådan finns avgör datakällan
+
+Om postlådorna finns i Exchange Online och användarna synkroniseras från det lokala AD:t (hybrid) gäller följande: Behörigheter som tilldelas i Exchange Online stannar i Exchange Online. Entra Connect skriver bara tillbaka en liten attributlista för Exchange Hybrid (däribland `publicDelegates` och `proxyAddresses`), men varken `msExchDelegateListLink` eller Send As-rättigheter. Ett lokalt AD visar i detta fall läget före migreringen samt det som sedan dess har uppdaterats lokalt.
+
+Det faktiska behörighetsläget för Exchange Online tillhandahålls endast av Exchange Online självt (`Get-EXOMailboxPermission`, `Get-EXORecipientPermission`). Leverantören skulle behöva åtkomst till Exchange Online PowerShell, vilket är oproportionerligt för en ren koppling. Ett underhållet attribut på användarobjektet är enklare och fungerar oberoende av var postlådan finns.
+
+## Rekommendation: `manager` som attribut för ansvarig
+
+För varje delad postlåda anges den ansvariga personen i attributet `manager`. Skälen är:
+
+- Attributet ingår i standardschemat, så någon schemautökning behövs inte.
+- Det innehåller en referens (DN) i stället för text. Om personen byter namn eller flyttas förblir kopplingen giltig.
+- Entra Connect synkroniserar `manager` till Entra ID. Leverantören kan läsa det antingen via LDAP i det lokala AD:t eller via Microsoft Graph.
+- Via bakåtreferensen `directReports` ser varje ansvarig person (och varje rapport) vilka postlådor personen ansvarar för.
+
+Begränsningen är att `manager` är enkelvärdigt. Där en ställföreträdare är nödvändig finns två möjligheter. Möjlighet 1: En grupp per postlåda där medlemmarna är de ansvariga; dess namn följer en konvention (till exempel `SM-Verantwortlich-buchhaltung`) eller anges i ett `extensionAttribute`. Möjlighet 2: Ställföreträdaren härleds hos leverantören inte från AD utan från `manager` för den ansvariga personen (eskalering till överordnad person). Möjlighet 2 kräver inga ytterligare objekt och räcker i de flesta organisationer.
+
+Attributet anges endast i det ledande systemet: för synkroniserade objekt i det lokala AD:t, för rena molnobjekt i Entra ID.
+
+## Inventera befintligt läge: Vem har åtkomst i dag?
+
+För den första ifyllningen hjälper en lista över dagens behöriga. Den ansvariga personen finns oftast med bland dem; verksamhetsavdelningen bekräftar valet. För postlådor i Exchange Online:
+
+```powershell
+Connect-ExchangeOnline
+
+$postfaecher = Get-EXOMailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited
+
+$bestand = foreach ($pf in $postfaecher) {
+    $voll = Get-EXOMailboxPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'FullAccess' -and
+            -not $_.IsInherited -and
+            $_.User -notlike 'NT AUTHORITY\*'
+        }
+    $sendas = Get-EXORecipientPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'SendAs' -and
+            $_.Trustee -notlike 'NT AUTHORITY\*'
+        }
+    [pscustomobject]@{
+        Postfach  = $pf.PrimarySmtpAddress
+        Vollzugriff = ($voll.User -join '; ')
+        SendenAls = ($sendas.Trustee -join '; ')
+    }
+}
+
+$bestand | Export-Csv -Path .\shared-mailbox-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-RecipientTypeDetails SharedMailbox` | Endast delade postlådor, inga användar-, rums- eller utrustningspostlådor |
+| `-ResultSize Unlimited` | Alla postlådor i stället för standardgränsen på 1000 |
+| `-Identity` | Postlåda vars behörigheter efterfrågas |
+| `AccessRights -contains 'FullAccess'` | Filtrerar på fullständig åtkomst; andra postlådebehörigheter utelämnas |
+| `-not $_.IsInherited` | Tar bort ärvda poster (administratörer, systemkonton) |
+| `User -notlike 'NT AUTHORITY\*'` | Tar bort posten `NT AUTHORITY\SELF` för själva postlådan |
+| `-NoTypeInformation` | Ingen typrad i början av CSV-filen |
+| `-Encoding UTF8` | Umlauter i namn bevaras |
+
+</details>
+
+Om en grupp är behörig visas dess namn i listan; medlemmarna kan lösas upp med `Get-DistributionGroupMember` eller `Get-ADGroupMember`.
+
+## Ange ansvariga
+
+Den bekräftade kopplingen förbereds som en CSV med kolumnerna `Postfach` och `Verantwortlich` (båda e-postadresser) och anges i det lokala AD:t:
+
+```powershell
+Import-Module ActiveDirectory
+
+$zuordnung = Import-Csv -Path .\shared-mailbox-verantwortliche.csv
+
+foreach ($eintrag in $zuordnung) {
+    $postfach = Get-ADUser -Filter "mail -eq '$($eintrag.Postfach)'"
+    $person = Get-ADUser -Filter "mail -eq '$($eintrag.Verantwortlich)'"
+    Set-ADUser -Identity $postfach -Manager $person
+}
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-Filter "mail -eq '…'"` | Söker efter objektet utifrån den primära e-postadressen |
+| `-Identity` | Användarobjekt för den delade postlådan |
+| `-Manager` | Skriver den ansvariga personens DN till attributet `manager` |
+
+</details>
+
+För rena molnobjekt utan lokalt AD anger `Set-MgUserManagerByRef` från Microsoft Graph PowerShell SDK samma värde i Entra ID.
+
+## Läsning hos leverantören: LDAP
+
+Delade postlådor kan identifieras i AD via `msExchRecipientTypeDetails`: `4` står för en delad postlåda på en lokal Exchange-server, `34359738368` för en delad postlåda i Exchange Online (RemoteSharedMailbox). Frågan som leverantören kan använda i sin lösning:
+
+```text
+Basis:     DC=example,DC=com (Unterbaum)
+Filter:    (&(objectClass=user)(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368)))
+Attribute: mail, proxyAddresses, manager
+```
+
+Värdet i `manager` är ett DN. E-postadressen till den ansvariga personen fås genom en andra fråga mot detta DN med attributet `mail`. Ett läskonto utan ytterligare rättigheter räcker, eftersom `manager` och `mail` kan läsas av autentiserade användare. Anslutningen bör ske via LDAPS (port 636).
+
+För att kontrollera kopplingen i PowerShell:
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+$verantwortlich = @{
+    Name       = 'Verantwortlich'
+    Expression = {
+        if ($_.manager) {
+            (Get-ADUser -Identity $_.manager -Properties mail).mail
+        }
+    }
+}
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Select-Object mail, $verantwortlich |
+    Sort-Object mail
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-LDAPFilter` | LDAP-filter för de två mottagartyperna för delade postlådor |
+| `-Properties mail, manager` | Läser in de två attribut som `Get-ADUser` inte levererar som standard |
+| `Expression = { … }` | Löser upp DN:et i `manager` till e-postadressen för den ansvariga personen |
+
+</details>
+
+För meddelandekopplingen bör leverantören beakta alla adresser i `proxyAddresses`, inte bara `mail`: Ett meddelande kan skickas med en sekundär adress för postlådan.
+
+## Läsning hos leverantören: Microsoft Graph
+
+Om leverantören inte har LDAP-åtkomst till det interna nätet är Microsoft Graph lämpligt. Delade postlådor finns i Entra ID som (inaktiverade) användarobjekt, och `manager` finns där genom synkroniseringen:
+
+```http
+GET https://graph.microsoft.com/v1.0/users/buchhaltung@example.com/manager?$select=displayName,mail
+```
+
+Leverantörens appregistrering behöver för detta programbehörigheten `User.Read.All`. Graph tillhandahåller inte direkt en lista över alla delade postlådor, eftersom Entra ID inte känner till postlådetypen. Leverantören frågar därför specifikt efter avsändaradressen för det blockerade meddelandet, vilket ändå räcker för DLP-användningsfallet.
+
+## Integrering i DLP-meddelandet
+
+Hur meddelandet utlöses tekniskt beror på DLP-lösningen. För Microsoft Purview DLP bör följande beaktas: Meddelanden kan dessutom skickas till fast angivna personer, men endast till enskilda mottagare, inte till grupper eller distributionslistor. En dynamisk koppling «postlåda till ansvarig person» är normalt inte avsedd. Vid få postlådor kan en regel per postlåda vara tänkbar; vid många postlådor krävs en efterföljande process som hämtar incidenter, löser upp avsändaradressen via LDAP eller Graph och informerar den ansvariga personen.
+
+Samma logik gäller för en extern lösning: Fastställ avsändaradressen för det blockerade meddelandet, hitta postlådan via `mail` eller `proxyAddresses`, lös upp `manager`, meddela. Om `manager` saknas bör lösningen rapportera till en definierad gemensam adress (servicedesk eller dataskydd) i stället för att förkasta meddelandet.
+
+## Förvaltning i drift
+
+För att kopplingen ska hållas aktuell räcker i praktiken två regler:
+
+- Nya delade postlådor skapas endast med en angiven ansvarig person; formuläret innehåller fältet.
+- En månatlig rapport listar postlådor utan `manager` och postlådor vars ansvariga person är inaktiverad.
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Where-Object {
+        -not $_.manager -or
+        -not (Get-ADUser -Identity $_.manager).Enabled
+    } |
+    Select-Object mail, manager
+```
+
+När en person slutar visar `directReports` på personens objekt vilka postlådor som behöver en ny ansvarig person. Denna kontroll kan läggas till i avgångsprocessen.
+
+## Källor
+
+1.  [Manager attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-manager): enkelvärdigt DN-attribut för personklasserna, bakåtreferens `directReports`.
+
+2.  [Managed-By attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-managedby): lista över klasser för vilka `managedBy` är definierat; klassen User ingår inte.
+
+3.  [Microsoft Entra Connect Sync: Attributes synchronized to Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-sync-attributes-synchronized): synkroniserade attribut inklusive `manager` samt listan över Exchange Hybrid-writeback-attribut.
+
+4.  [Get-EXOMailboxPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exomailboxpermission): fråga om postlådebehörigheter i Exchange Online.
+
+5.  [Get-EXORecipientPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exorecipientpermission): fråga om Send As-behörigheter i Exchange Online.
+
+6.  [Adding or removing mailbox permission in EAC doesn't address the msExchDelegateListLink attribute](https://support.microsoft.com/en-us/help/4502159): Microsoft-supportartikel om sambandet mellan fullständig åtkomst och `msExchDelegateListLink` i Exchange 2016 och 2019.
+
+7.  [List manager (Microsoft Graph)](https://learn.microsoft.com/en-us/graph/api/user-list-manager): Graph-slutpunkt och nödvändiga behörigheter för att läsa ut chef.
+
+8.  [Send email notifications and show policy tips for DLP policies](https://learn.microsoft.com/en-us/purview/dlp-use-notifications-and-policy-tips): mottagare av DLP-meddelanden i Microsoft Purview; endast enskilda mottagare, inga grupper.
 
 ----
 
@@ -130060,6 +131314,234 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Registrere og hente ansvarlige for delte postbokser i Active Directory
+
+URL: https://rafaelpfister.ch/no/blog/registrere-og-hente-ansvarlige-for-delte-postbokser-i-active-directory
+Datum: 2026-11-16
+
+# Registrere og hente ansvarlige for delte postbokser i Active Directory
+
+I et Data Loss Prevention-prosjekt fikk jeg følgende forespørsel: Så snart en melding fra en delt postboks (Shared Mailbox) blokkeres, skal de ansvarlige personene varsles slik at de kan reagere. Leverandøren av DLP-løsningen skal lese denne tilordningen automatisk fra Active Directory. Spørsmålet er: Hvor står det i AD hvem som er ansvarlig for en delt postboks?
+
+Kort konklusjon: AD kjenner bare tilgangsrettigheter, ikke ansvar. Enkelte attributter viser hvem som kan få tilgang til eller sende fra en postboks, og også disse bare ufullstendig når postboksen ligger i Exchange Online. For pålitelig automatisering må den ansvarlige personen registreres eksplisitt i et attributt. Standardattributtet `manager` egner seg til dette, synkroniseres av Entra Connect og kan spørres via LDAP og Microsoft Graph.
+
+## Tilgang er ikke ansvar
+
+En delt postboks er i AD et deaktivert brukerobjekt med Exchange-attributter. Hvem som bruker den, fremgår av tillatelser: full tilgang (FullAccess), send som (Send As) og send på vegne av (Send on Behalf). Disse listene inneholder ofte ti eller tjue personer, i tillegg til stedfortredere, lærlinger og tjenestekontoer. Et DLP-varsel til alle med tillatelser når mange personer, uten at noen føler seg ansvarlig.
+
+Spørsmålet om ansvar er organisatorisk: Én person (eller en liten gruppe) avgjør om en blokkert melding var legitim, og vedlikeholder tillatelsene. Denne informasjonen finnes bare i AD dersom noen registrerer den.
+
+## Hvilke attributter i AD som kan være aktuelle
+
+| Attributt | Innhold | Egnethet for ansvarlige |
+|---|---|---|
+| `manager` | DN for én person, enkeltverdi, del av personklassene og dermed tilgjengelig på postboksens brukerobjekt | Egnet. Synkroniseres av Entra Connect til Entra ID og kan leses via Graph |
+| `managedBy` | DN for én administrator, enkeltverdi | Ikke tilgjengelig på brukerobjektet. Ifølge skjemaet definert blant annet for grupper, kontakter, datamaskiner og OU-er, ikke for klassen User |
+| `msExchDelegateListLink` | DN-er for personer som har full tilgang med Automapping, flerverdi; tilbakekobling `msExchDelegateListLinkBL` på brukeren | Kun tilgang, og ufullstendig: full tilgang uten Automapping, rettigheter via grupper og rettigheter tildelt i Exchange Online mangler |
+| `publicDelegates` | DN-er for personer med send på vegne av, flerverdi | Kun tilgang. Skrives tilbake av Entra Connect i hybridmiljøer |
+| Tillatelsesliste (`nTSecurityDescriptor`) | Utvidet rettighet «Send As» på brukerobjektet | Kun send som tildelt lokalt. Rettigheter tildelt i Exchange Online finnes ikke der |
+| `msExchMailboxSecurityDescriptor` | Postbokstillatelser for lokale postbokser, binær | Kun tilgang, kun for postbokser på lokale Exchange-servere, vanskelig for leverandører å evaluere |
+| `extensionAttribute1` til `extensionAttribute15` | Frie tekstfelt | Mulig, men bare som tekst; ingen referanse til et objekt, ingen automatisk opprydding ved navneendring eller fratredelse |
+
+Henvisningen til at tilordningen finnes «direkte i AD», viser i praksis oftest til `msExchDelegateListLink`: I ADUC eller ADSI Edit ser man faktisk personer der. Attributtet oppstår imidlertid bare som en bieffekt av Outlook-Automapping og egner seg ikke som datakilde for ansvar.
+
+## Hvor postboksen ligger, avgjør datakilden
+
+Hvis postboksene ligger i Exchange Online og brukerne synkroniseres fra det lokale AD (hybrid), gjelder følgende: Tillatelser som tildeles i Exchange Online, forblir i Exchange Online. Entra Connect skriver bare en liten attributtliste tilbake for Exchange Hybrid (blant annet `publicDelegates` og `proxyAddresses`), men verken `msExchDelegateListLink` eller Send As-rettigheter. Et lokalt AD viser i dette tilfellet statusen før migreringen pluss det som siden har blitt vedlikeholdt lokalt.
+
+Kun Exchange Online selv leverer faktisk status for tillatelsene i Exchange Online (`Get-EXOMailboxPermission`, `Get-EXORecipientPermission`). Leverandøren ville trenge tilgang til Exchange Online PowerShell, noe som er uforholdsmessig for en ren tilordning. Et vedlikeholdt attributt på brukerobjektet er enklere og fungerer uavhengig av hvor postboksen ligger.
+
+## Anbefaling: `manager` som attributt for ansvarlig
+
+For hver delte postboks registreres den ansvarlige personen i attributtet `manager`. Begrunnelser:
+
+- Attributtet er en del av standardskjemaet, så en skjemautvidelse er ikke nødvendig.
+- Det inneholder en referanse (DN) i stedet for tekst. Dersom personen får nytt navn eller flyttes, forblir koblingen gyldig.
+- Entra Connect synkroniserer `manager` til Entra ID. Leverandøren kan lese enten via LDAP i lokalt AD eller via Microsoft Graph.
+- Gjennom tilbakekoblingen `directReports` kan hver ansvarlige person (og hver rapport) se hvilke postbokser vedkommende er ansvarlig for.
+
+Begrensningen: `manager` har én enkeltverdi. Der stedfortreder er påkrevd, finnes det to muligheter. Mulighet 1: En gruppe per postboks, der medlemmene er de ansvarlige; navnet følger en konvensjon (for eksempel `SM-Verantwortlich-buchhaltung`) eller står i et `extensionAttribute`. Mulighet 2: Stedfortrederen utledes hos leverandøren ikke fra AD, men fra `manager` til den ansvarlige personen (eskalering til nærmeste leder). Mulighet 2 krever ingen ekstra objekter og er tilstrekkelig i de fleste organisasjoner.
+
+Attributtet settes bare i det autoritative systemet: i lokalt AD for synkroniserte objekter, i Entra ID for rene skyobjekter.
+
+## Kartlegg eksisterende situasjon: Hvem har tilgang i dag?
+
+For første utfylling er en liste over dagens autoriserte nyttig. Den ansvarlige personen er som regel blant dem; fagavdelingen bekrefter valget. For postbokser i Exchange Online:
+
+```powershell
+Connect-ExchangeOnline
+
+$postfaecher = Get-EXOMailbox -RecipientTypeDetails SharedMailbox -ResultSize Unlimited
+
+$bestand = foreach ($pf in $postfaecher) {
+    $voll = Get-EXOMailboxPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'FullAccess' -and
+            -not $_.IsInherited -and
+            $_.User -notlike 'NT AUTHORITY\*'
+        }
+    $sendas = Get-EXORecipientPermission -Identity $pf.UserPrincipalName |
+        Where-Object {
+            $_.AccessRights -contains 'SendAs' -and
+            $_.Trustee -notlike 'NT AUTHORITY\*'
+        }
+    [pscustomobject]@{
+        Postfach  = $pf.PrimarySmtpAddress
+        Vollzugriff = ($voll.User -join '; ')
+        SendenAls = ($sendas.Trustee -join '; ')
+    }
+}
+
+$bestand | Export-Csv -Path .\shared-mailbox-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-RecipientTypeDetails SharedMailbox` | Kun delte postbokser, ikke bruker-, rom- eller utstyrspostbokser |
+| `-ResultSize Unlimited` | Alle postbokser i stedet for standardgrensen på 1000 |
+| `-Identity` | Postboks som tillatelsene hentes for |
+| `AccessRights -contains 'FullAccess'` | Filtrerer på full tilgang; andre postbokstillatelser utelates |
+| `-not $_.IsInherited` | Fjerner arvede oppføringer (administratorer, systemkontoer) |
+| `User -notlike 'NT AUTHORITY\*'` | Fjerner postboksens egen oppføring `NT AUTHORITY\SELF` |
+| `-NoTypeInformation` | Ingen typeoverskrift i starten av CSV-filen |
+| `-Encoding UTF8` | Spesialtegn i navn beholdes |
+
+</details>
+
+Hvis en gruppe har tillatelse, vises gruppenavnet i listen; medlemmene kan løses opp med `Get-DistributionGroupMember` eller `Get-ADGroupMember`.
+
+## Angi ansvarlige
+
+Den bekreftede tilordningen forberedes som CSV med kolonnene `Postfach` og `Verantwortlich` (begge e-postadresser) og settes i lokalt AD:
+
+```powershell
+Import-Module ActiveDirectory
+
+$zuordnung = Import-Csv -Path .\shared-mailbox-verantwortliche.csv
+
+foreach ($eintrag in $zuordnung) {
+    $postfach = Get-ADUser -Filter "mail -eq '$($eintrag.Postfach)'"
+    $person = Get-ADUser -Filter "mail -eq '$($eintrag.Verantwortlich)'"
+    Set-ADUser -Identity $postfach -Manager $person
+}
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-Filter "mail -eq '…'"` | Finner objektet ved hjelp av den primære e-postadressen |
+| `-Identity` | Brukerobjektet for den delte postboksen |
+| `-Manager` | Skriver DN-en til den ansvarlige personen i attributtet `manager` |
+
+</details>
+
+For rene skyobjekter uten lokalt AD setter `Set-MgUserManagerByRef` fra Microsoft Graph PowerShell SDK den samme verdien i Entra ID.
+
+## Henting for leverandøren: LDAP
+
+Delte postbokser kan gjenkjennes i AD via `msExchRecipientTypeDetails`: `4` står for en delt postboks på en lokal Exchange-server, `34359738368` for en delt postboks i Exchange Online (RemoteSharedMailbox). Forespørselen som leverandøren kan ta inn i sin løsning:
+
+```text
+Basis:     DC=example,DC=com (Unterbaum)
+Filter:    (&(objectClass=user)(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368)))
+Attribute: mail, proxyAddresses, manager
+```
+
+Verdien i `manager` er en DN. E-postadressen til den ansvarlige personen hentes med en ny forespørsel mot denne DN-en med attributtet `mail`. En lesekonto uten ytterligere rettigheter er tilstrekkelig, siden `manager` og `mail` kan leses av autentiserte brukere. Tilkoblingen bør gå over LDAPS (port 636).
+
+For å kontrollere tilordningen i PowerShell:
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+$verantwortlich = @{
+    Name       = 'Verantwortlich'
+    Expression = {
+        if ($_.manager) {
+            (Get-ADUser -Identity $_.manager -Properties mail).mail
+        }
+    }
+}
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Select-Object mail, $verantwortlich |
+    Sort-Object mail
+```
+
+<details class="options-details">
+<summary>Alternativer forklart</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-LDAPFilter` | LDAP-filter for de to mottakertypene for delte postbokser |
+| `-Properties mail, manager` | Laster inn de to attributtene som `Get-ADUser` ikke leverer som standard |
+| `Expression = { … }` | Løser DN-en i `manager` til e-postadressen til den ansvarlige personen |
+
+</details>
+
+For meldingstilordningen bør leverandøren ta hensyn til alle adresser i `proxyAddresses`, ikke bare `mail`: En melding kan sendes med en sekundær adresse til postboksen.
+
+## Henting for leverandøren: Microsoft Graph
+
+Dersom leverandøren ikke har LDAP-tilgang til det interne nettverket, er Microsoft Graph et godt alternativ. Delte postbokser finnes i Entra ID som (deaktiverte) brukerobjekter, og `manager` er tilgjengelig der gjennom synkroniseringen:
+
+```http
+GET https://graph.microsoft.com/v1.0/users/buchhaltung@example.com/manager?$select=displayName,mail
+```
+
+Leverandørens appregistrering trenger apptillatelsen `User.Read.All`. Graph tilbyr ikke direkte en liste over alle delte postbokser, siden Entra ID ikke kjenner postbokstypen. Leverandøren spør derfor målrettet etter avsenderadressen til den blokkerte meldingen, noe som uansett er tilstrekkelig for DLP-brukstilfellet.
+
+## Integrering i DLP-varslingen
+
+Hvordan varslingen utløses teknisk, avhenger av DLP-løsningen. For Microsoft Purview DLP må det tas hensyn til at varsler i tillegg kan sendes til fast angitte personer, men bare til enkeltmottakere, ikke til grupper eller distribusjonslister. En dynamisk tilordning «postboks til ansvarlig person» er som regel ikke planlagt. Ved få postbokser kan én regel per postboks være mulig; ved mange postbokser trengs en etterfølgende prosess som henter hendelser, løser avsenderadressen via LDAP eller Graph og informerer den ansvarlige personen.
+
+For en ekstern løsning gjelder samme logikk: Finn avsenderadressen til den blokkerte meldingen, finn postboksen via `mail` eller `proxyAddresses`, løs opp `manager`, varsle. Hvis `manager` mangler, bør løsningen varsle en definert fellesadresse (servicedesk eller personvern) i stedet for å forkaste varselet.
+
+## Vedlikehold i drift
+
+For å holde tilordningen oppdatert er to regler tilstrekkelige i praksis:
+
+- Nye delte postbokser opprettes bare med en registrert ansvarlig person; forespørselen inneholder feltet.
+- En månedlig rapport lister postbokser uten `manager` og postbokser der den ansvarlige personen er deaktivert.
+
+```powershell
+$filter = '(|(msExchRecipientTypeDetails=4)(msExchRecipientTypeDetails=34359738368))'
+
+Get-ADUser -LDAPFilter $filter -Properties mail, manager |
+    Where-Object {
+        -not $_.manager -or
+        -not (Get-ADUser -Identity $_.manager).Enabled
+    } |
+    Select-Object mail, manager
+```
+
+Ved en persons fratredelse viser `directReports` på vedkommendes objekt hvilke postbokser som trenger en ny ansvarlig person. Denne kontrollen kan tas inn i fratredelsesprosessen.
+
+## Kilder
+
+1.  [Manager attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-manager): enkeltverdi-DN-attributt for personklassene, tilbakekobling `directReports`.
+
+2.  [Managed-By attribute (Active Directory Schema)](https://learn.microsoft.com/en-us/windows/win32/adschema/a-managedby): liste over klassene som `managedBy` er definert for; klassen User er ikke blant dem.
+
+3.  [Microsoft Entra Connect Sync: Attributes synchronized to Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/reference-connect-sync-attributes-synchronized): synkroniserte attributter inkludert `manager`, samt listen over tilbakeføringsattributter for Exchange Hybrid.
+
+4.  [Get-EXOMailboxPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exomailboxpermission): henting av postbokstillatelser i Exchange Online.
+
+5.  [Get-EXORecipientPermission](https://learn.microsoft.com/en-us/powershell/module/exchangepowershell/get-exorecipientpermission): henting av Send As-tillatelser i Exchange Online.
+
+6.  [Adding or removing mailbox permission in EAC doesn't address the msExchDelegateListLink attribute](https://support.microsoft.com/en-us/help/4502159): Microsoft-støtteartikkel om sammenhengen mellom full tilgang og `msExchDelegateListLink` i Exchange 2016 og 2019.
+
+7.  [List manager (Microsoft Graph)](https://learn.microsoft.com/en-us/graph/api/user-list-manager): Graph-endepunkt og nødvendige tillatelser for å hente manageren.
+
+8.  [Send email notifications and show policy tips for DLP policies](https://learn.microsoft.com/en-us/purview/dlp-use-notifications-and-policy-tips): mottakere av DLP-varsler i Microsoft Purview; bare enkeltmottakere, ingen grupper.
 
 ----
 
