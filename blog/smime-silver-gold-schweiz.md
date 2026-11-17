@@ -4,7 +4,7 @@ navTitle: "S/MIME Silver/Gold"
 description: "Welche rechtlichen Vorgaben gelten, wenn eine Schweizer Bank Mails an Kunden signiert und verschlüsselt: Bankkundengeheimnis, FINMA-Rundschreiben 2023/1, DSG, ZertES, Beweisrecht und Aufbewahrung. Dazu, welche SwissSign-Zertifikatsstufe sich daraus ableitet."
 date: "2026-11-16"
 kategorie: "E-Mail-Verschlüsselung"
-timeToRead: "11 Min. Lesezeit"
+timeToRead: "12 Min. Lesezeit"
 themen:
   - "e-mail-verschluesselung"
 produkte: []
@@ -107,6 +107,25 @@ Nach Art. 958f OR sind Geschäftsbücher und Buchungsbelege zehn Jahre aufzubewa
 - Soll eine Signatur noch nach Jahren als Beweis dienen, muss nachvollziehbar bleiben, dass das Zertifikat zum Zeitpunkt des Signierens gültig war. Dafür sind die Prüfergebnisse oder die Sperrinformationen zum Signaturzeitpunkt mit zu archivieren.
 
 **EU-Hinweis:** In der EU ist nach Art. 25 Abs. 2 eIDAS ebenfalls nur die qualifizierte elektronische Signatur der handschriftlichen Unterschrift gleichgestellt. Für Finanzunternehmen in der EU gilt seit dem 17. Januar 2025 zusätzlich die DORA-Verordnung mit eigenen Anforderungen an das IKT-Risikomanagement.
+
+## Beispiel: Ein Gateway für alle Mitarbeitenden
+
+Viele Banken setzen ein zentrales Verschlüsselungs-Gateway ein, etwa PrivaSphere, SEPPmail oder Totemomail, damit alle Mitarbeitenden Mails verschlüsseln und signieren können, ohne selbst Zertifikate zu verwalten. Die Schlüssel liegen auf dem Gateway, und das Gateway signiert und verschlüsselt stellvertretend für die einzelnen Postfächer. Für diesen Aufbau ergibt sich aus den vorangehenden Abschnitten folgende Wahl:
+
+| Postfach | Stufe | Grund |
+|---|---|---|
+| persönliche Postfächer | E-Mail ID Gold | weist die Bank mit geprüftem Namen und Organisationskennung als Absender aus |
+| Funktionspostfächer (Kundendienst, Zahlungsverkehr) | Organization Validated | weist die Bank aus, ohne eine einzelne Person zu nennen |
+| keine | E-Mail ID Silver | belegt nur den Zugriff auf ein Postfach; Mails von ähnlich lautenden Domains sind genauso gültig signiert |
+
+Weil das Gateway signiert und nicht die einzelne Person, stehen die Schlüssel nicht unter der alleinigen Kontrolle der Mitarbeitenden. Die Signatur wirkt rechtlich wie ein Siegel der Bank und nicht wie eine persönliche Signatur. Entscheidend ist darum, dass die Organisation im Zertifikat geprüft ausgewiesen ist, und das leisten nur Gold und Organization Validated. Für die Verschlüsselung selbst ist die Stufe ohne Bedeutung.
+
+Vor der Einführung sind mit dem Gateway-Anbieter und der Zertifizierungsstelle folgende Punkte zu klären:
+
+- **Ausstellung und Erneuerung:** Ob das Gateway Gold-Zertifikate automatisiert über die Managed PKI der Zertifizierungsstelle bezieht und erneuert. Bei Gold bestätigt die Bank als registrierende Stelle die Identität jeder Person; dafür braucht es einen Prozess für Ein- und Austritte, Namensänderungen und Sperrungen.
+- **Dienstleisterprüfung:** Gateway-Anbieter und Managed PKI bearbeiten kritische Daten im Sinne von Rz 82 des FINMA-Rundschreibens 2023/1. Der Standort von Schlüsseln und Daten ist zu dokumentieren; bei Speicherung im Ausland oder Zugriff von dort gilt zusätzlich Rz 79.
+- **Archivierung:** Die privaten Schlüssel abgelaufener Zertifikate und die Prüfdaten zum Signaturzeitpunkt müssen über die gesamte Aufbewahrungsfrist verfügbar bleiben.
+- **Weisung:** Die gewählten Stufen und die zugelassenen Verfahren gehören in die interne Weisung, die gegenüber FINMA und Revision als Nachweis dient.
 
 ## Empfehlung
 
