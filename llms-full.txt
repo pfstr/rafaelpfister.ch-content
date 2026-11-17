@@ -14,6 +14,366 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Proofpoint Essentials November 2026: neue Graph-Berechtigung für Message Pull bis Januar 2027
+
+URL: https://rafaelpfister.ch/blog/proofpoint-essentials-november-2026
+Datum: 2026-11-17
+
+# Proofpoint Essentials November 2026: neue Graph-Berechtigung für Message Pull bis Januar 2027
+
+Proofpoint hat am 12. November 2026 Release Notes für Proofpoint Essentials veröffentlicht, den Cloud-Dienst für E-Mail-Sicherheit in kleinen und mittleren Unternehmen. Der Eintrag ist das einzige Release im November 2026 und enthält keine neuen Funktionen oder Fehlerbehebungen: Er kündigt an, dass One-Click Message Pull und Automatic Remediation nach dem 1. Januar 2027 nur noch mit der zusätzlichen Microsoft-Graph-Berechtigung `Mail-Advanced.ReadWrite.All` funktionieren. Hintergrund ist eine Änderung von Microsoft, die ab dem 31. Dezember 2026 das Bearbeiten sensibler Eigenschaften versendeter oder empfangener Nachrichten über die Graph-API einschränkt. Der Hinweis richtet sich an Administratoren und Partner, die Proofpoint Essentials mit Microsoft 365 integriert haben und eine der beiden Funktionen nutzen. Betreiber des Proofpoint Protection Server (PPS, On-Premises) betrifft dieses Release nicht.
+
+## Die Versionen im Überblick
+
+| Version | Datum | Art | Kernpunkte |
+|---|---|---|---|
+| Release vom 12. November 2026 | 12.11.2026 | Hinweis zu Berechtigungen | `Mail-Advanced.ReadWrite.All` für One-Click Message Pull und Automatic Remediation ab 1. Januar 2027 erforderlich |
+
+## Microsoft-Graph-Berechtigung Mail-Advanced.ReadWrite.All
+
+Laut Release Notes müssen Kunden, die One-Click Message Pull und Automatic Remediation über den 1. Januar 2027 hinaus nutzen wollen, ihre Microsoft-365-Integration um die Application Permission `Mail-Advanced.ReadWrite.All` (Microsoft Graph) erweitern. Die bestehenden Berechtigungen bleiben unverändert erhalten. In Proofpoint Essentials selbst ist keine weitere Konfiguration nötig.
+
+Die Ursache liegt bei Microsoft. Im Microsoft 365 Developer Blog hat das Exchange-Team am 26. März 2026 angekündigt, dass Anwendungen sensible Eigenschaften von Nachrichten, die keine Entwürfe sind, ab dem 31. Dezember 2026 nur noch mit einer der Berechtigungen `Mail-Advanced.ReadWrite`, `Mail-Advanced.ReadWrite.All` oder `Mail-Advanced.ReadWrite.Shared` ändern dürfen. Als Beispiele nennt Microsoft Betreff, Nachrichtentext und Empfänger. Mit `Mail.ReadWrite` lassen sich danach nur noch Entwürfe in diesen Eigenschaften bearbeiten. Alle Mail-Advanced-Berechtigungen erfordern die Zustimmung eines Tenant-Administrators. Laut Microsoft stehen die Berechtigungen bereits zur Verfügung, die Ergänzung ist also vor dem Stichtag möglich.
+
+Die Dokumentation zur Microsoft-365-Integration von Proofpoint Essentials führt für One-Click Message Pull bisher nur `Mail.ReadWrite` auf (Stand 17. November 2026). Mit dieser Berechtigung verschiebt Proofpoint Essentials Nachrichten direkt im Postfach des Benutzers, etwa in die oder aus der Quarantäne.
+
+## Integration über die Microsoft Integration App
+
+Wurde die Azure- bzw. Entra-Anwendung für Proofpoint Essentials automatisch über die Microsoft Integration App angelegt, ergänzen Sie die Berechtigung laut Release Notes so:
+
+1. Melden Sie sich als Administrator mit Zugriff auf den betreffenden Kunden bei Proofpoint Essentials an (Partner-Admin, Channel-Admin oder Org-Admin).
+2. Öffnen Sie **Account Management > Integrations**.
+3. Klicken Sie auf der Kachel **Microsoft 365** auf **Details**.
+4. Klicken Sie auf **Update Permissions**.
+5. Lassen Sie die anschliessende Consent-Abfrage von einem Microsoft-365-Administrator mit ausreichender Rolle bestätigen, zum Beispiel Global Administrator oder Privileged Role Administrator.
+
+Danach ergänzt die App die Berechtigung `Mail-Advanced.ReadWrite.All`.
+
+## Manuell angelegte Entra-Anwendung
+
+Wurde die Anwendung manuell registriert, gilt laut Release Notes dieses Vorgehen:
+
+1. Melden Sie sich im Microsoft Entra Admin Center (`https://entra.microsoft.com`) mit einem Konto an, das Admin-Zustimmungen erteilen darf (zum Beispiel Global Administrator oder Privileged Role Administrator).
+2. Öffnen Sie **Identity > Applications > App registrations**.
+3. Öffnen Sie die App-Registrierung für Proofpoint Essentials. Erscheint sie nicht, wechseln Sie auf den Reiter **All applications**.
+4. Wählen Sie **API permissions** und dann **Add a permission > Microsoft Graph > Application permissions**.
+5. Suchen Sie `Mail-Advanced.ReadWrite.All`, markieren Sie die Berechtigung und wählen Sie **Add permissions**.
+6. Wählen Sie **Grant admin consent for <Organisation>** und bestätigen Sie.
+7. Prüfen Sie, dass beim Status der Berechtigung **Granted for <Organisation>** steht.
+
+Alle bestehenden Berechtigungen bleiben laut Proofpoint erhalten.
+
+## Empfohlenes Vorgehen
+
+Ergänzen Sie `Mail-Advanced.ReadWrite.All` vor dem 31. Dezember 2026, dem Datum, ab dem Microsoft die Einschränkung durchsetzt; Proofpoint nennt als Stichtag den 1. Januar 2027. Klären Sie zuerst, ob die Entra-Anwendung über die Microsoft Integration App oder manuell angelegt wurde, und folgen Sie dem passenden Ablauf. Halten Sie dafür einen Administrator mit der Rolle Global Administrator oder Privileged Role Administrator bereit. Prüfen Sie nach der Zustimmung im Entra Admin Center, dass die Berechtigung als erteilt angezeigt wird. Was ohne die neue Berechtigung nach dem Stichtag im Detail geschieht, beschreiben die Release Notes nicht; sie nennen nur, dass die Berechtigung für die weitere Nutzung der beiden Funktionen erforderlich ist (Stand 17. November 2026).
+
+## Quellen
+
+1.  [Proofpoint Essentials: Release Notes](https://help.proofpoint.com/Essentials/Additional_Resources/Release_Notes): Eintrag vom 12. November 2026 mit der neuen Berechtigung, dem Stichtag 1. Januar 2027 und den Schritten für beide Integrationsarten.
+
+2.  [Proofpoint Essentials: Microsoft 365 Integration MX](https://help.proofpoint.com/Essentials/Product_Documentation/Account_Management/Integrations/Microsoft_365_Integration_MX): Bisherige Graph-Berechtigungen der Integration, darunter `Mail.ReadWrite` für One-Click Message Pull.
+
+3.  [Microsoft 365 Developer Blog: Graph API updates to sensitive email properties](https://devblogs.microsoft.com/microsoft365dev/graph-api-updates-to-sensitive-email-properties/): Ankündigung vom 26. März 2026, Durchsetzung ab 31. Dezember 2026, Mail-Advanced-Berechtigungen mit Admin-Zustimmung.
+
+----
+
+# Paperless-ngx 3.4.1, 3.4.2 und 3.5.0: strengere ALLOWED_HOSTS, korrigierte OIDC-2FA, asynchrone Bulk-Operationen
+
+URL: https://rafaelpfister.ch/blog/paperless-ngx-3-5-0
+Datum: 2026-11-17
+
+# Paperless-ngx 3.4.1, 3.4.2 und 3.5.0: strengere ALLOWED_HOSTS, korrigierte OIDC-2FA, asynchrone Bulk-Operationen
+
+Seit 3.4.0 hat das Paperless-ngx-Projekt drei Versionen veröffentlicht: die Bugfix-Releases 3.4.1 am 31. Oktober 2026 und 3.4.2 am 3. November 2026 sowie das Feature-Release 3.5.0 am 17. November 2026. Die beiden Patch-Versionen korrigieren vor allem Darstellungsfehler der überarbeiteten Weboberfläche und aktualisieren Django und weitere Abhängigkeiten. 3.5.0 ändert den Standardwert für die erlaubten Hostnamen, behebt einen Fehler, durch den die in 3.4.0 eingeführte Einstellung `PAPERLESS_SOCIAL_ACCOUNT_MFA_TRUSTED_AMR` ohne Wirkung blieb, führt alle Bulk-Operationen asynchron aus, räumt abgelaufene Sessions automatisch auf und bringt manuell auslösbare Workflows. Eine Sicherheitsmeldung mit CVE oder GHSA nennt keines der drei Releases. Der vorherige Stand ist im Artikel [Paperless-ngx 3.4.0: OIDC-Login ohne doppelte 2FA, Thumbnails ohne ImageMagick](/blog/paperless-ngx-3-4-0) beschrieben. Die Updates richten sich an alle Betreiber von Paperless-ngx 3.x; besonders betroffen sind Installationen, die über interne Hostnamen angesprochen werden, und Installationen mit OIDC-Anmeldung.
+
+## Die Versionen im Überblick
+
+| Version | Datum | Art | Kernpunkte |
+|---|---|---|---|
+| 3.4.1 | 31.10.2026 | Bugfix-Release | Korrekturen am API-Schema und an der Weboberfläche, geringerer Speicherbedarf im Leerlauf |
+| 3.4.2 | 03.11.2026 | Bugfix-Release | Bulk-Edit-Tasks in Celery-Workern, Tesseract-Sprachinstallation vor Indexaufbau, filelock 4.2.6, Updates von Django und Frontend-Abhängigkeiten |
+| 3.5.0 | 17.11.2026 | Feature-Release | ALLOWED_HOSTS ohne Wildcard bei gesetzter PAPERLESS_URL, AMR-Standardwert korrigiert, asynchrone Bulk-Operationen, automatisches Aufräumen von Sessions, manueller Workflow-Trigger, Tag-Hierarchie ohne django-treenode |
+
+## 3.4.1 und 3.4.2: Korrekturen nach dem Feature-Release
+
+3.4.1 korrigiert die Platzierung einer Schema-Korrektur für `id`-Felder (PR #14604), entfernt doppelte Berechtigungsprüfungen beim Öffnen-Button der Dokumentkarten (PR #14601), blendet die neuen PDF-Steuerelemente weitgehend aus (PR #14595), verschiebt den Vorschau-Button in der Dokumentliste (PR #14594) und behebt die Anzeige der Prüfsumme im hellen Modus sowie die Position des Custom-Field-Dropdowns auf Mobilgeräten (PR #14590). Zusätzlich lädt Paperless-ngx mehr Module erst bei Bedarf, was den Speicherbedarf im Leerlauf senkt (PR #14599).
+
+3.4.2 enthält elf Fehlerbehebungen. Für den Betrieb relevant sind:
+
+- Importaufgaben aus `bulk_edit` laufen sicher in den Celery-Workern (PR #14653).
+- Der Aufbau des Suchindex und des LLM-Index wartet, bis die Tesseract-Sprachpakete installiert sind (PR #14670).
+- filelock steht auf 4.2.6; die Release Notes begründen das Update mit Korrekturen zu ACLs (PR #14656).
+- Die Dokumenthistorie zeigt Tag-Namen statt IDs (PR #14625), Zoom-Buttons lösen kein Absenden von Formularen mehr aus (PR #14624), und der Name einer gespeicherten Ansicht bleibt beim Speichern und Schliessen erhalten (PR #14667).
+
+Bei den Abhängigkeiten aktualisiert 3.4.2 Django, django-guardian, django-filter und drf-spectacular-sidecar (PR #14661), turbohtml auf 1.15.3 (PR #14662) und pdfjs-dist auf 6.4.299 (PR #14644). Die nicht mehr gepflegte Bibliothek ngx-bootstrap-icons ersetzt das Projekt durch eine eigene Lösung (PR #14665). In den Beispiel-Compose-Dateien steigen Gotenberg auf 8.38 (PR #14634) und nginx auf 1.31.7 (PR #14633). Als Sicherheitsupdates kennzeichnen die Release Notes von 3.4.1 und 3.4.2 keinen dieser Einträge.
+
+## 3.5.0: ALLOWED_HOSTS ohne Wildcard
+
+Die Release Notes von 3.5.0 beginnen mit dem Hinweis, dass manche Benutzer ihre Einstellung `PAPERLESS_ALLOWED_HOSTS` anpassen müssen (PR #14735). Bis 3.4.2 dokumentierte das Projekt für `PAPERLESS_ALLOWED_HOSTS` den Standardwert `*`, also alle Hosts. Ab 3.5.0 gilt laut Konfigurationsdokumentation:
+
+- Ist weder `PAPERLESS_URL` noch `PAPERLESS_ALLOWED_HOSTS` gesetzt, akzeptiert Paperless-ngx weiterhin jeden Host.
+- Ist nur `PAPERLESS_URL` gesetzt, akzeptiert Paperless-ngx nur den Hostnamen aus dieser URL und `localhost`.
+- `PAPERLESS_ALLOWED_HOSTS` ergänzt weitere Hosts zu `localhost` und dem Hostnamen aus `PAPERLESS_URL`. `localhost` bleibt immer erlaubt, weil der Docker-Healthcheck ihn braucht.
+- `PAPERLESS_ALLOWED_HOSTS=*` erlaubt jeden Host, auch wenn `PAPERLESS_URL` gesetzt ist.
+
+Betroffen sind Installationen mit gesetzter `PAPERLESS_URL`, die zusätzlich über andere Namen erreicht werden, etwa über einen internen Hostnamen, eine IP-Adresse oder den Dienstnamen in einem Container-Netz, über den andere Dienste die API aufrufen. Solche Anfragen lehnt Django nach dem Update ab. Tragen Sie alle zusätzlichen Namen vor dem Update in `PAPERLESS_ALLOWED_HOSTS` ein, zum Beispiel:
+
+```shell
+PAPERLESS_URL=https://paperless.example.com
+PAPERLESS_ALLOWED_HOSTS=paperless.intern.example.com
+```
+
+Den Wildcard-Wert `*` sollten Sie nur setzen, wenn Paperless-ngx ausschliesslich in einem abgeschotteten Netz erreichbar ist; die Dokumentation rät für Installationen im offenen Internet ausdrücklich dazu, die erlaubten Hosts festzulegen.
+
+## 3.5.0: OIDC-Anmeldung und Sessions
+
+Mit 3.4.0 kam die Einstellung `PAPERLESS_SOCIAL_ACCOUNT_MFA_TRUSTED_AMR`, mit der Paperless-ngx die lokale Zwei-Faktor-Abfrage überspringt, wenn der OIDC-Provider im `amr`-Claim einen vertrauenswürdigen zweiten Faktor meldet. Laut Issue #14692 blieb die Liste der vertrauenswürdigen Werte in 3.4.x immer leer: Der Code übergab `mfa` als Trennzeichen statt als Standardwert. Ohne gesetzte Variable und auch mit `PAPERLESS_SOCIAL_ACCOUNT_MFA_TRUSTED_AMR=mfa` fragte Paperless-ngx deshalb weiterhin nach dem lokalen zweiten Faktor. PR #14693 behebt das in 3.5.0. Der dokumentierte Standardwert ist `mfa`; Logins mit Passwort verlangen weiterhin den Code aus Paperless-ngx.
+
+Damit tritt die im Artikel zu 3.4.0 beschriebene Verhaltensänderung erst mit 3.5.0 tatsächlich ein: Benutzer mit lokal eingerichteter 2FA, deren Identity Provider `mfa` im `amr`-Claim liefert, sehen nach dem Update keine zweite Abfrage mehr. Prüfen Sie vor dem Update, welche AMR-Werte Ihr Provider sendet. Die Dokumentation verlangt, nur Werte einzutragen, die bedeuten, dass beim Login tatsächlich ein zweiter Faktor verwendet wurde. Gleichzeitig steigt django-allauth auf 65.21.1 (PR #14672).
+
+Paperless-ngx hat abgelaufene Sessions bisher nie aus der Datenbank entfernt. Auslöser für die Änderung war Issue #14721: Mit `PAPERLESS_AUTO_LOGIN_USERNAME` entstand alle 30 Sekunden eine neue Session, die nie gelöscht wurde. Ab 3.5.0 entfernt eine geplante Aufgabe abgelaufene Sessions (PR #14722). Den Zeitpunkt steuert `PAPERLESS_SESSION_CLEANUP_TASK_CRON`, Standard ist `0 3 * * *`, also täglich um 03:00 Uhr.
+
+## 3.5.0: Bulk-Operationen, Workflows und Tags
+
+- **Asynchrone Bulk-Operationen:** Alle Bulk-Operationen auf Dokumente und die Bulk-Bearbeitung von Metadaten laufen über die Aufgabenwarteschlange (PR #14773, #14711) und erscheinen in der Aufgabenliste. Laut API-Dokumentation antworten eingereihte Bulk-Operationen mit `{"result":"OK","task_id":"…"}`; den Ausgang fragen Sie über `/api/tasks/?task_id=<uuid>` ab. Ist die Bulk-Aufgabe abgeschlossen, sind Folgeaufgaben wie das Neuverarbeiten von Dateien erst eingeplant, nicht erledigt. Skripte, die direkt nach dem Aufruf mit dem Ergebnis weiterarbeiten, sollten Sie entsprechend anpassen.
+- **Manueller Workflow-Trigger:** Workflows lassen sich mit dem neuen Trigger-Typ manuell auf ausgewählte Dokumente anwenden, in der Bulk-Bearbeitung und in den Dokumentdetails (PR #14704).
+- **Tag-Hierarchie:** Paperless-ngx speichert die Tag-Hierarchie neu als Adjazenzliste und verzichtet auf django-treenode (PR #14612). Das Update enthält dafür eine Datenbankmigration. Der Autor misst in einem Prototyp mit 6000 Tags auf SQLite deutlich kürzere Zeiten, etwa 1,3 statt 4409 Millisekunden für das Anlegen eines Tags; die Werte sind nicht unabhängig geprüft. Beim Löschen eines Tags prüft Paperless-ngx zusätzlich die Berechtigungen auf untergeordnete Tags (PR #14687).
+- **Weitere Neuerungen:** Notizen zu Dokumenten werden als Markdown dargestellt (PR #14626). Ein lokal zwischengespeichertes Hugging-Face-Embedding-Modell lädt ohne Verbindung zum Hub (PR #14728), und der KI-Chat filtert auch über mehr als 32 700 Dokumente (PR #14754).
+
+## 3.5.0: weitere Fehlerbehebungen
+
+- **OCR-Argumente:** Die Argumente, die Paperless-ngx selbst an OCRmyPDF übergibt (`input_file_or_options`, `output_file` und `sidecar`), weist die API zurück; in `PAPERLESS_OCR_USER_ARGS` werden sie ignoriert (PR #14734). Prüfen Sie, ob Ihre Konfiguration diese Argumente enthält.
+- **Workflows:** Der Dateinamenfilter geplanter Workflows nutzt einen mit PostgreSQL kompatiblen regulären Ausdruck (PR #14783).
+- **Mail:** Gespeicherte E-Mails werden mit CRLF-Zeilenenden geschrieben (PR #14745), und die PDF/A-Konvertierung von Mail-Archiven läuft nur einmal (PR #14698).
+- **Vorschaubilder:** Für Bilder ohne Archivversion erzeugt Paperless-ngx wieder Vorschaubilder (PR #14741).
+- **Berechtigungen und Konten:** Die Berechtigungen der Konfigurationsansicht sind vereinheitlicht (PR #14709), bei der Registrierung des ersten Benutzers sperrt Paperless-ngx die betroffenen Datenbankzeilen (PR #14688), und Passwörter werden mit einer konstanten Maske angezeigt (PR #14784). Der Autor von PR #14709 stuft die Änderung ausdrücklich nicht als Schwachstelle ein.
+
+## Abhängigkeiten und Sicherheit
+
+Ein Security Advisory des Projekts zu 3.4.1, 3.4.2 oder 3.5.0 gibt es nicht (Stand 17. November 2026). Das jüngste Advisory GHSA-c8f3-pqr2-rr24 vom 16. Oktober 2026 betrifft KI-Klassifizierungs-Workflows auf Dokumenten ohne Eigentümer und ist seit 3.3.2 behoben; Details stehen im Artikel zu 3.4.0. Systeme auf einer älteren 3.x-Version schliessen diese Lücke mit dem Update auf 3.5.0 ebenfalls.
+
+## Bekannte Probleme
+
+- **Lokale 2FA bei OIDC trotz AMR `mfa` (3.4.0 bis 3.4.2):** behoben in 3.5.0 (Issue #14692, PR #14693).
+- **Known Issues zu 3.5.0:** Die Release Notes nennen keine (Stand 17. November 2026). Der Hinweis zu `PAPERLESS_ALLOWED_HOSTS` ist eine beabsichtigte Verhaltensänderung.
+
+## Empfohlenes Vorgehen
+
+Zielversion ist 3.5.0. Legen Sie vor dem Update fest, über welche Hostnamen Paperless-ngx erreicht wird, und ergänzen Sie diese in `PAPERLESS_ALLOWED_HOSTS`; prüfen Sie ausserdem die Werte in `PAPERLESS_SOCIAL_ACCOUNT_MFA_TRUSTED_AMR`. Stoppen Sie laufende Verarbeitungen wie den Dokumenteneinzug und erstellen Sie ein Backup, wie es die Administrationsdokumentation verlangt. Bei Docker-Installationen mit Image von Docker Hub stoppen Sie den Stack mit `docker compose down`, laden das neue Image mit `docker compose pull` und starten mit `docker compose up`; dabei laufen die Datenbankmigrationen, darunter die neue Migration der Tag-Hierarchie, automatisch. Bei Bare-Metal-Installationen aktualisieren Sie die Python-Pakete mit `pip install -r requirements.txt` und führen im Verzeichnis `src` die Migrationen mit `python3 manage.py migrate` aus; anschliessend aktualisieren `python3 manage.py document_index reindex --if-needed` und `python3 manage.py document_llmindex migrate` bei Bedarf den Suchindex und den LLM-Index. Bei einem Update direkt von 3.3.x gelten zusätzlich die Hinweise aus dem Artikel zu 3.4.0, insbesondere zu `pdftoppm`. Eine Docker-Installation mit ausgelagertem Dokumentenspeicher beschreibt der Artikel [Paperless-ngx mit wenig Speicherplatz betreiben](/blog/paperless-dokumente-clouddienst-auslagern).
+
+## Quellen
+
+1.  [GitHub: Paperless-ngx Release v3.5.0](https://github.com/paperless-ngx/paperless-ngx/releases/tag/v3.5.0): Release Notes mit Hinweis zu `PAPERLESS_ALLOWED_HOSTS`, neuen Funktionen und Fehlerbehebungen.
+
+2.  [GitHub: Paperless-ngx Release v3.4.2](https://github.com/paperless-ngx/paperless-ngx/releases/tag/v3.4.2): Fehlerbehebungen und aktualisierte Abhängigkeiten.
+
+3.  [GitHub: Paperless-ngx Release v3.4.1](https://github.com/paperless-ngx/paperless-ngx/releases/tag/v3.4.1): Fehlerbehebungen und geringerer Speicherbedarf im Leerlauf.
+
+4.  [GitHub API: Paperless-ngx Releases](https://api.github.com/repos/paperless-ngx/paperless-ngx/releases): Veröffentlichungsdaten von 3.4.1, 3.4.2 und 3.5.0.
+
+5.  [Paperless-ngx: Konfigurationsdokumentation 3.5.0](https://github.com/paperless-ngx/paperless-ngx/blob/v3.5.0/docs/configuration.md): neues Verhalten von `PAPERLESS_ALLOWED_HOSTS`, Standardwert von `PAPERLESS_SOCIAL_ACCOUNT_MFA_TRUSTED_AMR`, `PAPERLESS_SESSION_CLEANUP_TASK_CRON` und ignorierte OCR-Argumente.
+
+6.  [Paperless-ngx: Konfigurationsdokumentation 3.4.2](https://github.com/paperless-ngx/paperless-ngx/blob/v3.4.2/docs/configuration.md): bisheriger Standardwert `*` für `PAPERLESS_ALLOWED_HOSTS`.
+
+7.  [GitHub: Issue #14692, MFA trusted AMR immer leer](https://github.com/paperless-ngx/paperless-ngx/issues/14692): Ursache und Symptome des wirkungslosen AMR-Standardwerts in 3.4.x.
+
+8.  [GitHub: PR #14722, automatisches Aufräumen von Sessions](https://github.com/paperless-ngx/paperless-ngx/pull/14722): Hintergrund zu nie gelöschten Sessions bei Auto-Login.
+
+9.  [GitHub: PR #14612, Tag-Hierarchie als Adjazenzliste](https://github.com/paperless-ngx/paperless-ngx/pull/14612): Ablösung von django-treenode, Migration und Messwerte des Autors.
+
+10.  [Paperless-ngx: API-Dokumentation 3.5.0](https://github.com/paperless-ngx/paperless-ngx/blob/v3.5.0/docs/api.md): asynchrone Bulk-Operationen und Abfrage über `task_id`.
+
+11.  [Paperless-ngx: Administrationsdokumentation 3.5.0](https://github.com/paperless-ngx/paperless-ngx/blob/v3.5.0/docs/administration.md): Update-Vorgehen für Docker und Bare Metal.
+
+12.  [GitHub: Paperless-ngx Security Advisories](https://github.com/paperless-ngx/paperless-ngx/security/advisories): Übersicht der Advisories, keines zu 3.4.1 bis 3.5.0.
+
+----
+
+# KB5131085 auf Windows Server 2019: Send-MailMessage scheitert nach der NTLM-Signierung
+
+URL: https://rafaelpfister.ch/blog/kb5131085-send-mailmessage-ntlm
+Datum: 2026-11-17
+
+# KB5131085 auf Windows Server 2019: Send-MailMessage scheitert nach der NTLM-Signierung
+
+Seit dem Patchday vom 10. November 2026 melden Administratoren, dass Skripte auf Windows Server 2019 keine Mails mehr versenden. Betroffen sind Backup-Reports, Monitoring-Meldungen und ähnliche Aufgaben, die seit Jahren mit dem PowerShell-Cmdlet `Send-MailMessage` an einen Postfix-Server senden. Nach der Deinstallation des kumulativen Updates KB5131085 (OS Build 17763.9487) funktioniert der Versand wieder. Günter Born hat den Fall am 17. November 2026 auf Borns IT- und Windows-Blog beschrieben, ausgelöst durch die Meldung eines Lesers.
+
+Microsoft führt das Problem bisher nicht als Known Issue. Der einzige Known-Issue-Eintrag zu KB5131085 betrifft Aktivierungsbefehle mit Fehler `0x80041008`. Die Ursache ist deshalb nicht offiziell bestätigt, sie lässt sich aber aus den Änderungen des Updates und aus dem Verhalten der .NET-Klasse `SmtpClient` gut herleiten.
+
+## Was KB5131085 an NTLM ändert
+
+Das Update enthält Schutzmassnahmen gegen NTLM-Relay-Angriffe, die Microsoft in KB5135557 („NTLM signing security improvements in Windows") beschreibt. Sie gelten für Windows 11, Windows 10 Enterprise LTSC 2021 und Windows Server 2016 bis 2025. Im Changelog von KB5131085 steht dazu, dass Clients ab sofort NTLM Message Signing standardmässig für alle nicht-anonymen Verbindungen anbieten.
+
+Technisch heisst das: Ein Windows-Client setzt in der NTLM-Aushandlung jetzt das Flag `NTLMSSP_NEGOTIATE_SIGN` (`0x00000010`) und das dafür nötige `NTLMSSP_NEGOTIATE_KEY_EXCH` (`0x40000000`), auch wenn die Anwendung keine Integrität angefordert hat. Bisher bekamen solche Anwendungen nur `NTLMSSP_NEGOTIATE_ALWAYS_SIGN`, einen Platzhalter ohne kryptografischen Schutz. Microsoft verteilt die Änderung in zwei Phasen:
+
+| Phase | Datum | Verhalten |
+|---|---|---|
+| 1 | 10. November 2026 | Clients bieten Signing auf allen Verbindungen an. Server akzeptieren signierte und unsignierte Clients und protokollieren unsignierte. |
+| 2 | Mai 2027 | Windows-Server verlangen Signing standardmässig und lehnen Clients ohne Signing mit `SEC_E_UNSUPPORTED_FUNCTION` (`0x80090302`) ab. |
+
+Laut Microsoft fällt ein Windows-Client ohne Fehler auf das alte Verhalten zurück, wenn der Server Signing nicht bestätigt. Alle Windows-Server tun das. Gegenstellen mit einer eigenen NTLM-Implementierung, etwa ein Linux-Mailserver, sind in dieser Aussage nicht berücksichtigt.
+
+## Warum ein SMTP-Client NTLM verwendet
+
+`Send-MailMessage` in Windows PowerShell 5.1 verwendet intern die .NET-Klasse `System.Net.Mail.SmtpClient`. Diese prüft die `AUTH`-Zeile in der EHLO-Antwort des Servers und probiert die Verfahren in einer festen Reihenfolge: zuerst `GSSAPI` (Negotiate), dann `NTLM`, dann `WDigest`, zuletzt `LOGIN`. Bietet der Server NTLM an, nimmt `SmtpClient` NTLM, auch wenn Benutzername und Passwort per `-Credential` übergeben werden.
+
+Postfix selbst implementiert keine SMTP-Authentifizierung, es delegiert sie an Cyrus SASL oder Dovecot. Beide können NTLM anbieten: Cyrus SASL über ein eigenes Plugin, Dovecot bis Version 2.3 über `ntlm` in `auth_mechanisms` (Dovecot 2.4 führt NTLM nicht mehr). Ist NTLM aktiv, kündigt Postfix etwa `AUTH PLAIN LOGIN NTLM` an, und jeder Windows-Client authentifiziert sich per NTLM, ohne dass es jemand bemerkt. Mit KB5131085 bietet der Client in dieser Aushandlung zusätzlich Signing und Schlüsselaustausch an. Wenn die NTLM-Implementierung des Mailservers damit nicht umgehen kann, scheitert die Anmeldung, und `Send-MailMessage` bricht ab. Ein Kommentator im Born-Artikel nennt die NTLM-Signierung als Ursache, und der Befund passt dazu: Der Workaround des Lesers funktioniert, weil er NTLM ausschliesst.
+
+## Den Fall prüfen
+
+Klären Sie zuerst, ob der Mailserver NTLM anbietet. Von einem Linux-Rechner aus zeigt die EHLO-Antwort nach STARTTLS die angebotenen Verfahren:
+
+```bash
+openssl s_client -starttls smtp -crlf -quiet \
+  -connect mail.example.com:587
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-starttls smtp` | Baut die Verbindung im Klartext auf und wechselt per STARTTLS auf TLS |
+| `-crlf` | Sendet Zeilenenden als CRLF, wie SMTP es verlangt |
+| `-quiet` | Unterdrückt Zertifikats- und Sitzungsdetails |
+| `-connect mail.example.com:587` | Ziel-Host und Submission-Port |
+
+</details>
+
+Geben Sie nach dem Verbindungsaufbau `EHLO test` ein. Enthält die Zeile `250-AUTH` den Eintrag `NTLM`, ist der Server betroffen. Auf dem Postfix-Server selbst zeigen zwei Befehle, welches SASL-Backend aktiv ist und welche Verfahren Dovecot anbietet:
+
+```bash
+postconf smtpd_sasl_type
+doveconf auth_mechanisms
+```
+
+Auf dem Windows-Server protokolliert das NTLM-Log ab Windows Server 2019 Verbindungen mit den ausgehandelten Flags. Event 4022 ist der Client-Eintrag:
+
+```powershell
+Get-WinEvent -LogName 'Microsoft-Windows-NTLM/Operational' -MaxEvents 50 |
+  Where-Object { $_.Id -in 4022, 4023 } |
+  Format-List TimeCreated, Id, Message
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-LogName 'Microsoft-Windows-NTLM/Operational'` | Liest das operative NTLM-Protokoll |
+| `-MaxEvents 50` | Begrenzt die Ausgabe auf die 50 neuesten Einträge |
+| `Where-Object { $_.Id -in 4022, 4023 }` | Filtert auf die Audit-Events für Client (4022) und Server (4023) |
+| `Format-List TimeCreated, Id, Message` | Zeigt Zeitpunkt, Event-ID und den Text mit den Negotiated Flags |
+
+</details>
+
+Ein Eintrag zum Zeitpunkt des Versandversuchs mit dem Mailserver als Ziel bestätigt, dass `SmtpClient` NTLM verwendet hat.
+
+## Workaround 1: AUTH LOGIN im Skript erzwingen
+
+`Send-MailMessage` bietet keinen Parameter, um das Anmeldeverfahren festzulegen. Die Klasse `SmtpClient` direkt aufgerufen kann das: Ein `CredentialCache` liefert die Anmeldedaten nur für ein bestimmtes Verfahren aus. Ist nur `Login` hinterlegt, überspringt `SmtpClient` NTLM und nimmt `AUTH LOGIN`. Das folgende Skript basiert auf dem Beispiel des Lesers aus dem Born-Artikel:
+
+```powershell
+$server = 'mail.example.com'
+$port   = 587
+$cred   = Import-Clixml -Path 'C:\Skripte\smtp.cred'
+
+$cache = New-Object System.Net.CredentialCache
+$cache.Add($server, $port, 'Login', $cred.GetNetworkCredential())
+
+$smtp = New-Object System.Net.Mail.SmtpClient($server, $port)
+$smtp.EnableSsl   = $true
+$smtp.Credentials = $cache
+
+$msg = New-Object System.Net.Mail.MailMessage
+$msg.From = 'backup@example.com'
+$msg.To.Add('admin@example.com')
+$msg.Subject      = 'Backup-Report'
+$msg.Body         = 'Sicherung abgeschlossen.'
+$msg.BodyEncoding = [System.Text.Encoding]::UTF8
+
+try {
+    $smtp.Send($msg)
+}
+finally {
+    $msg.Dispose()
+    $smtp.Dispose()
+}
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Import-Clixml -Path …` | Lädt ein zuvor mit `Get-Credential \| Export-Clixml` gespeichertes PSCredential; per DPAPI an Benutzer und Rechner gebunden |
+| `$cache.Add($server, $port, 'Login', …)` | Hinterlegt die Anmeldedaten nur für Host, Port und das Verfahren `Login` |
+| `SmtpClient($server, $port)` | Erstellt den SMTP-Client für Server und Submission-Port |
+| `EnableSsl = $true` | Wechselt per STARTTLS auf TLS, bevor die Anmeldedaten übertragen werden |
+| `Credentials = $cache` | Übergibt den CredentialCache statt einer einfachen NetworkCredential |
+| `BodyEncoding = [System.Text.Encoding]::UTF8` | Kodiert den Text als UTF-8, damit Umlaute korrekt ankommen |
+
+</details>
+
+`EnableSsl` ist hier zwingend: `AUTH LOGIN` überträgt Benutzername und Passwort nur Base64-kodiert, ohne TLS also im Klartext. Der Workaround ist ein Eingriff pro Skript, ändert aber nichts an der Systemkonfiguration und lässt den NTLM-Schutz des Updates intakt.
+
+## Workaround 2: NTLM auf dem Mailserver abschalten
+
+Wenn Sie den Postfix-Server selbst betreiben, können Sie das Problem zentral beheben: Entfernen Sie `ntlm` aus `auth_mechanisms` in der Dovecot-Konfiguration (meist `/etc/dovecot/conf.d/10-auth.conf`), sodass nur noch `plain login` übrig bleibt, und laden Sie Dovecot neu:
+
+```bash
+sudo systemctl reload dovecot
+```
+
+Bei Cyrus SASL beschränkt `mech_list: plain login` in der Datei `smtpd.conf` des SASL-Konfigurationsverzeichnisses die Verfahren entsprechend. Danach kündigt Postfix kein NTLM mehr an, und `Send-MailMessage` fällt ohne Skriptänderung auf `LOGIN` zurück. Prüfen Sie vorher, ob andere Clients auf NTLM angewiesen sind, etwa ältere Outlook-Profile mit der Option „Gesicherte Kennwortauthentifizierung (SPA)". Für Submission über TLS bringt NTLM gegenüber `PLAIN` und `LOGIN` keinen Sicherheitsgewinn.
+
+## Workaround 3: Registry, nur vorübergehend
+
+KB5135557 dokumentiert einen Registry-Wert, mit dem der Client Signing nicht mehr anbietet:
+
+```powershell
+reg add 'HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0' /v ClientAllowUnsignedNtlm /t REG_DWORD /d 1 /f
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `HKLM\…\Lsa\MSV1_0` | Schlüssel des NTLM-Authentifizierungspakets |
+| `/v ClientAllowUnsignedNtlm` | Name des Werts; `0` (Standard) bietet Signing an, `1` stellt das alte Verhalten wieder her |
+| `/t REG_DWORD` | Datentyp des Werts |
+| `/d 1` | Setzt den Wert auf 1 |
+| `/f` | Überschreibt ohne Rückfrage |
+
+</details>
+
+Laut Microsoft ist kein Neustart nötig. Der Wert gilt allerdings für alle NTLM-Verbindungen des Servers, nicht nur für den Mailversand, und hebt damit den Relay-Schutz des Updates für das ganze System auf. Microsoft beschreibt ihn als reine Kompatibilitätsmassnahme und behält sich vor, die Registry-Werte später zu entfernen. Er überbrückt höchstens die Zeit, bis Workaround 1 oder 2 umgesetzt ist. Das Deinstallieren von KB5131085 ist keine Alternative, weil damit alle Sicherheitskorrekturen des November-Patchdays fehlen.
+
+## Mittelfristig: Send-MailMessage ersetzen
+
+Microsoft führt `Send-MailMessage` seit Jahren als veraltet und rät von der Verwendung ab, weil das Cmdlet keine sicheren Verbindungen garantiert. Auch für `SmtpClient` empfiehlt die .NET-Dokumentation für neue Entwicklungen andere Bibliotheken wie MailKit. Für Skripte, die Mails über Exchange Online versenden, ist die Microsoft Graph API mit `Send-MgUserMail` und App-Registrierung der unterstützte Weg; die Einrichtung ist im Artikel [Mit PowerShell auf Exchange Online zugreifen: EWS durch Microsoft Graph ersetzen](/blog/microsoft-graph-powershell-postfach-anbindung) beschrieben. Spätestens mit Phase 2 im Mai 2027 lohnt sich eine Bestandsaufnahme, welche Skripte und Dienste noch NTLM verwenden: Die Audit-Events 4022 und 4023 liefern dafür die Liste.
+
+## Quellen
+
+1.  [Windows Server 2019: KB5131085 stört Mail-Versand per PowerShell (Borns IT- und Windows-Blog)](https://borncity.com/blog/2026/11/17/windows-server-2019-kb5131085-stoert-mail-versand-per-powershell/): Leserbericht vom 17. November 2026 mit Symptom, Deinstallations-Test, CredentialCache-Skript und dem Hinweis auf die NTLM-Signierung in den Kommentaren.
+
+2.  [KB5131085 (OS Build 17763.9487)](https://support.microsoft.com/help/5131085): Changelog des November-Updates für Windows Server 2019 und Windows 10 Enterprise LTSC 2019 mit dem NTLM-Eintrag und dem Known Issue zu Fehler 0x80041008.
+
+3.  [KB5135557: NTLM signing security improvements in Windows](https://support.microsoft.com/en-us/help/5135557): Flags, Zeitplan der zwei Phasen, Audit-Events 4022/4023 und die Registry-Werte ClientAllowUnsignedNtlm und ServerRequireNtlmSign.
+
+4.  [SmtpAuthenticationManager.cs (.NET Framework Reference Source)](https://github.com/microsoft/referencesource/blob/master/System/net/System/Net/mail/SmtpAuthenticationManager.cs): Registrierungsreihenfolge der SMTP-Anmeldemodule Negotiate, NTLM, Digest und Login in SmtpClient.
+
+5.  [Send-MailMessage (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/send-mailmessage): Hinweis, dass das Cmdlet veraltet ist und keine sicheren Verbindungen garantiert.
+
+6.  [SmtpClient Class (Microsoft Learn)](https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient): Empfehlung, für neue Entwicklungen MailKit oder andere Bibliotheken zu verwenden.
+
+7.  [Postfix SASL Howto](https://www.postfix.org/SASL_README.html): SMTP-Authentifizierung in Postfix über Cyrus SASL oder Dovecot, inklusive Einschränkung der angebotenen Verfahren.
+
+8.  [Dovecot: Authentication Mechanisms Overview](https://doc.dovecot.org/main/core/config/auth/mechanisms/overview.html): Aktuelle Liste der SASL-Verfahren in Dovecot, in der NTLM nicht mehr enthalten ist.
+
+----
+
 # S/MIME bei Banken: Rechtslage in der Schweiz und die Wahl zwischen Silver und Gold
 
 URL: https://rafaelpfister.ch/blog/smime-silver-gold-schweiz
@@ -22268,6 +22628,191 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# KB5131085 on Windows Server 2019: Send-MailMessage fails after NTLM signing
+
+URL: https://rafaelpfister.ch/en/blog/kb5131085-on-windows-server-2019-send-mailmessage-fails-after-ntlm-signing
+Datum: 2026-11-17
+
+# KB5131085 on Windows Server 2019: Send-MailMessage fails after NTLM signing
+
+Since the November 10, 2026 Patch Tuesday, administrators have reported that scripts on Windows Server 2019 can no longer send mail. Backup reports, monitoring alerts, and similar tasks that have been sending to a Postfix server for years using the PowerShell cmdlet `Send-MailMessage` are affected. Sending works again after uninstalling cumulative update KB5131085 (OS Build 17763.9487). Günter Born described the case on November 17, 2026, on Born's IT and Windows Blog, prompted by a reader report.
+
+Microsoft has not yet listed the issue as a Known Issue. The only Known Issue entry for KB5131085 concerns activation commands with error `0x80041008`. The cause is therefore not officially confirmed, but it can be inferred from the changes in the update and the behavior of the .NET class `SmtpClient`.
+
+## What KB5131085 changes in NTLM
+
+The update contains protections against NTLM relay attacks, which Microsoft describes in KB5135557 ("NTLM signing security improvements in Windows"). They apply to Windows 11, Windows 10 Enterprise LTSC 2021, and Windows Server 2016 through 2025. The KB5131085 changelog states that clients now offer NTLM Message Signing by default for all non-anonymous connections.
+
+Technically, this means that a Windows client now sets the flag `NTLMSSP_NEGOTIATE_SIGN` (`0x00000010`) and the required `NTLMSSP_NEGOTIATE_KEY_EXCH` (`0x40000000`) in NTLM negotiation, even if the application did not request integrity. Previously, such applications received only `NTLMSSP_NEGOTIATE_ALWAYS_SIGN`, a placeholder without cryptographic protection. Microsoft is rolling out the change in two phases:
+
+| Phase | Date | Behavior |
+|---|---|---|
+| 1 | November 10, 2026 | Clients offer signing on all connections. Servers accept signed and unsigned clients and log unsigned ones. |
+| 2 | May 2027 | Windows servers require signing by default and reject clients without signing with `SEC_E_UNSUPPORTED_FUNCTION` (`0x80090302`). |
+
+According to Microsoft, a Windows client falls back to the old behavior without error if the server does not confirm signing. All Windows servers do so. This statement does not account for peers with their own NTLM implementation, such as a Linux mail server.
+
+## Why an SMTP client uses NTLM
+
+`Send-MailMessage` in Windows PowerShell 5.1 internally uses the .NET class `System.Net.Mail.SmtpClient`. It checks the `AUTH` line in the server's EHLO response and tries mechanisms in a fixed order: first `GSSAPI` (Negotiate), then `NTLM`, then `WDigest`, and finally `LOGIN`. If the server offers NTLM, `SmtpClient` uses NTLM, even when the username and password are supplied through `-Credential`.
+
+Postfix itself does not implement SMTP authentication; it delegates it to Cyrus SASL or Dovecot. Both can offer NTLM: Cyrus SASL through its own plugin, and Dovecot up to version 2.3 through `ntlm` in `auth_mechanisms` (Dovecot 2.4 no longer includes NTLM). If NTLM is enabled, Postfix announces something like `AUTH PLAIN LOGIN NTLM`, and every Windows client authenticates via NTLM without anyone noticing. With KB5131085, the client additionally offers signing and key exchange in this negotiation. If the mail server's NTLM implementation cannot handle this, authentication fails and `Send-MailMessage` aborts. A commenter on the Born article identifies NTLM signing as the cause, and the finding fits: the reader's workaround works because it excludes NTLM.
+
+## Investigating the case
+
+First, determine whether the mail server offers NTLM. From a Linux machine, the EHLO response after STARTTLS shows the offered mechanisms:
+
+```bash
+openssl s_client -starttls smtp -crlf -quiet \
+  -connect mail.example.com:587
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-starttls smtp` | Establishes the connection in plaintext and switches to TLS via STARTTLS |
+| `-crlf` | Sends line endings as CRLF, as required by SMTP |
+| `-quiet` | Suppresses certificate and session details |
+| `-connect mail.example.com:587` | Destination host and submission port |
+
+</details>
+
+After establishing the connection, enter `EHLO test`. If the line `250-AUTH` contains `NTLM`, the server is affected. On the Postfix server itself, two commands show which SASL backend is active and which mechanisms Dovecot offers:
+
+```bash
+postconf smtpd_sasl_type
+doveconf auth_mechanisms
+```
+
+On the Windows server, the NTLM log records connections with the negotiated flags starting with Windows Server 2019. Event 4022 is the client entry:
+
+```powershell
+Get-WinEvent -LogName 'Microsoft-Windows-NTLM/Operational' -MaxEvents 50 |
+  Where-Object { $_.Id -in 4022, 4023 } |
+  Format-List TimeCreated, Id, Message
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-LogName 'Microsoft-Windows-NTLM/Operational'` | Reads the operational NTLM log |
+| `-MaxEvents 50` | Limits output to the 50 most recent entries |
+| `Where-Object { $_.Id -in 4022, 4023 }` | Filters for audit events for client (4022) and server (4023) |
+| `Format-List TimeCreated, Id, Message` | Displays the timestamp, event ID, and text with the Negotiated Flags |
+
+</details>
+
+An entry at the time of the sending attempt with the mail server as its destination confirms that `SmtpClient` used NTLM.
+
+## Workaround 1: Force AUTH LOGIN in the script
+
+`Send-MailMessage` does not provide a parameter to specify the authentication mechanism. Calling the `SmtpClient` class directly can do so: a `CredentialCache` provides credentials only for a specific mechanism. If only `Login` is configured, `SmtpClient` skips NTLM and uses `AUTH LOGIN`. The following script is based on the reader's example from the Born article:
+
+```powershell
+$server = 'mail.example.com'
+$port   = 587
+$cred   = Import-Clixml -Path 'C:\Skripte\smtp.cred'
+
+$cache = New-Object System.Net.CredentialCache
+$cache.Add($server, $port, 'Login', $cred.GetNetworkCredential())
+
+$smtp = New-Object System.Net.Mail.SmtpClient($server, $port)
+$smtp.EnableSsl   = $true
+$smtp.Credentials = $cache
+
+$msg = New-Object System.Net.Mail.MailMessage
+$msg.From = 'backup@example.com'
+$msg.To.Add('admin@example.com')
+$msg.Subject      = 'Backup-Report'
+$msg.Body         = 'Sicherung abgeschlossen.'
+$msg.BodyEncoding = [System.Text.Encoding]::UTF8
+
+try {
+    $smtp.Send($msg)
+}
+finally {
+    $msg.Dispose()
+    $smtp.Dispose()
+}
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Import-Clixml -Path …` | Loads a PSCredential previously saved with `Get-Credential \| Export-Clixml`; bound to the user and computer through DPAPI |
+| `$cache.Add($server, $port, 'Login', …)` | Stores the credentials only for the host, port, and mechanism `Login` |
+| `SmtpClient($server, $port)` | Creates the SMTP client for the server and submission port |
+| `EnableSsl = $true` | Switches to TLS via STARTTLS before transmitting credentials |
+| `Credentials = $cache` | Passes the CredentialCache instead of a simple NetworkCredential |
+| `BodyEncoding = [System.Text.Encoding]::UTF8` | Encodes the text as UTF-8 so umlauts are delivered correctly |
+
+</details>
+
+`EnableSsl` is mandatory here: `AUTH LOGIN` transmits the username and password only Base64-encoded, meaning in plaintext without TLS. The workaround requires a change to each script, but does not change the system configuration and leaves the update's NTLM protection intact.
+
+## Workaround 2: Disable NTLM on the mail server
+
+If you operate the Postfix server yourself, you can fix the problem centrally: remove `ntlm` from `auth_mechanisms` in the Dovecot configuration (usually `/etc/dovecot/conf.d/10-auth.conf`), leaving only `plain login`, then reload Dovecot:
+
+```bash
+sudo systemctl reload dovecot
+```
+
+For Cyrus SASL, `mech_list: plain login` in the file `smtpd.conf` in the SASL configuration directory restricts the mechanisms accordingly. Postfix then no longer announces NTLM, and `Send-MailMessage` falls back to `LOGIN` without script changes. First check whether other clients depend on NTLM, such as older Outlook profiles with the "Secure Password Authentication (SPA)" option. For TLS submission, NTLM provides no security benefit over `PLAIN` and `LOGIN`.
+
+## Workaround 3: Registry, temporary only
+
+KB5135557 documents a registry value that prevents the client from offering signing:
+
+```powershell
+reg add 'HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0' /v ClientAllowUnsignedNtlm /t REG_DWORD /d 1 /f
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `HKLM\…\Lsa\MSV1_0` | Key for the NTLM authentication package |
+| `/v ClientAllowUnsignedNtlm` | Value name; `0` (default) offers signing, while `1` restores the old behavior |
+| `/t REG_DWORD` | Value data type |
+| `/d 1` | Sets the value to 1 |
+| `/f` | Overwrites without prompting |
+
+</details>
+
+According to Microsoft, no restart is required. However, the value applies to all NTLM connections on the server, not just mail sending, and thus removes the update's relay protection for the entire system. Microsoft describes it as a compatibility measure only and reserves the right to remove the registry values later. It can at most bridge the time until workaround 1 or 2 is implemented. Uninstalling KB5131085 is not an alternative because it removes all security fixes from the November Patch Tuesday.
+
+## In the medium term: Replace Send-MailMessage
+
+Microsoft has listed `Send-MailMessage` as obsolete for years and advises against its use because the cmdlet does not guarantee secure connections. The .NET documentation also recommends other libraries such as MailKit for new development instead of `SmtpClient`. For scripts that send mail through Exchange Online, the supported approach is the Microsoft Graph API with `Send-MgUserMail` and app registration; setup is described in the article [Accessing Exchange Online with PowerShell: Replacing EWS with Microsoft Graph](/blog/microsoft-graph-powershell-postfach-anbindung). At the latest with phase 2 in May 2027, it is worthwhile to inventory which scripts and services still use NTLM: audit events 4022 and 4023 provide the list.
+
+## Sources
+
+1.  [Windows Server 2019: KB5131085 disrupts mail sending with PowerShell (Born's IT and Windows Blog)](https://borncity.com/blog/2026/11/17/windows-server-2019-kb5131085-stoert-mail-versand-per-powershell/): Reader report from November 17, 2026, including the symptom, uninstallation test, CredentialCache script, and the note about NTLM signing in the comments.
+
+2.  [KB5131085 (OS Build 17763.9487)](https://support.microsoft.com/help/5131085): Changelog for the November update for Windows Server 2019 and Windows 10 Enterprise LTSC 2019, including the NTLM entry and the Known Issue for error 0x80041008.
+
+3.  [KB5135557: NTLM signing security improvements in Windows](https://support.microsoft.com/en-us/help/5135557): Flags, timeline for the two phases, audit events 4022/4023, and the ClientAllowUnsignedNtlm and ServerRequireNtlmSign registry values.
+
+4.  [SmtpAuthenticationManager.cs (.NET Framework Reference Source)](https://github.com/microsoft/referencesource/blob/master/System/net/System/Net/mail/SmtpAuthenticationManager.cs): Registration order of the SMTP authentication modules Negotiate, NTLM, Digest, and Login in SmtpClient.
+
+5.  [Send-MailMessage (Microsoft Learn)](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/send-mailmessage): Note that the cmdlet is obsolete and does not guarantee secure connections.
+
+6.  [SmtpClient Class (Microsoft Learn)](https://learn.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient): Recommendation to use MailKit or other libraries for new development.
+
+7.  [Postfix SASL Howto](https://www.postfix.org/SASL_README.html): SMTP authentication in Postfix through Cyrus SASL or Dovecot, including restrictions on the offered mechanisms.
+
+8.  [Dovecot: Authentication Mechanisms Overview](https://doc.dovecot.org/main/core/config/auth/mechanisms/overview.html): Current list of SASL mechanisms in Dovecot, which no longer includes NTLM.
+
+----
+
 # Store and retrieve shared mailbox owners in Active Directory
 
 URL: https://rafaelpfister.ch/en/blog/store-and-retrieve-shared-mailbox-owners-in-active-directory
@@ -22503,71 +23048,71 @@ Datum: 2026-11-16
 
 # S/MIME for Banks: Legal Framework in Switzerland and the Choice Between Silver and Gold
 
-In brief: No Swiss law requires a bank to use S/MIME or a particular certificate level. However, banking secrecy, FINMA Circular 2023/1, and the Data Protection Act require customer data to be adequately protected when sent, and the bank must be able to justify and document its solution. An S/MIME signature does not replace a signature, even with a Gold certificate. As evidence and proof of origin, Gold is clearly superior to a Silver certificate because only Gold contains the verified name of the bank.
+In brief: No Swiss law requires a bank to use S/MIME or a specific certificate level. However, banking secrecy, FINMA Circular 2023/1, and the Data Protection Act require customer data to be adequately protected when sent, and the bank must be able to justify and document its solution. An S/MIME signature does not replace a signature, not even with a Gold certificate. As evidence and proof of origin, Gold is clearly superior to the Silver certificate because only Gold contains the verified name of the bank.
 
-The question of which SwissSign certificate a bank needs for sending email regularly arises in my projects with financial institutions. Behind the technical question is usually a legal one: What must the bank do to fulfill its obligations when sending customer data by email, and what legal effect does a signed email have?
+The question of which SwissSign certificate a bank needs for sending email comes up regularly in my projects with financial institutions. Behind the technical question is usually a legal one: What must the bank do to fulfill its obligations when sending customer data by email, and what effect does a signed email have?
 
-**Switzerland focus:** This article addresses the legal situation in Switzerland. Where EU rules differ, this is indicated in a labeled note. It does not replace legal advice in individual cases.
+**Switzerland focus:** This article covers the legal framework in Switzerland. Where EU rules differ, this is indicated in a marked note. It is not a substitute for legal advice in individual cases.
 
 ## Overview of the legal framework
 
-| Regulation | Content | Significance for sending email |
+| Regulation | Content | Significance for email delivery |
 |---|---|---|
-| Banking Act, Art. 47 | Banking secrecy, punishable even if breached negligently | Customer data must not be disclosed without authorization |
-| FINMA Circular 2023/1, margin nos. 73 to 82 | Protection of critical data throughout its entire lifecycle | Protection also during transmission, technology-neutral |
-| Data Protection Act, Arts. 8 and 24; Data Protection Ordinance, Arts. 1 to 6 | Data security, reporting of breaches | Appropriate measures, report to the FDPIC where there is high risk |
-| ZertES and Code of Obligations, Art. 14 para. 2bis | Types of electronic signatures, formal validity | S/MIME signatures do not replace a signature |
-| Civil Procedure Code, Arts. 157 and 177 | Evidence and free assessment of evidence | Signed emails are documents whose evidentiary value is freely assessed |
-| Code of Obligations, Art. 958f; GeBüV | Retention of business records | Encrypted emails must remain readable |
+| Banking Act, Art. 47 | Banking secrecy, punishable even if negligent | Customer data must not be disclosed without authorization |
+| FINMA Circular 2023/1, paras. 73 to 82 | Protection of critical data throughout its entire life cycle | Protection also during delivery, technology-neutral |
+| DPA, Arts. 8 and 24; DPO, Arts. 1 to 6 | Data security, notification of breaches | Appropriate measures, notification to the FDPIC in case of high risk |
+| ZertES and CO Art. 14(2bis) | Types of electronic signatures, formal validity | S/MIME signatures do not replace a signature |
+| CPC Arts. 157 and 177 | Evidence and free assessment of evidence | Signed emails are documents whose evidentiary value is freely assessed |
+| CO Art. 958f, GeBüV | Retention of business records | Encrypted emails must remain readable |
 
-None of these laws mentions S/MIME or a certificate level. They establish protection objectives and legal consequences; the bank decides how to achieve them.
+None of these enactments mentions S/MIME or a certificate level. They establish protection objectives and legal consequences; the bank decides how to achieve them.
 
 ## Banking secrecy
 
-Art. 47 of the Banking Act punishes anyone who, as an officer, employee, or agent of a bank, discloses a secret entrusted to them in that capacity. Negligent conduct is also punishable. The provision is addressed to natural persons; however, it is based on the contractual relationship between the customer as holder of the secret and the bank.
+Art. 47 of the Banking Act penalizes anyone who, as an officer, employee, or agent of a bank, discloses a secret entrusted to them in that capacity. Negligent conduct is also punishable. The provision is directed at natural persons, but it is based on the contractual relationship between the customer, as holder of the secret, and the bank.
 
-For sending email, this means: An unencrypted email containing customer data that is sent to the wrong address or read in transit may constitute negligent disclosure. The bank must therefore use organizational and technical measures to ensure that employees send customer data only in protected form.
+For email delivery, this means that an unencrypted email containing customer data that is sent to the wrong address or read in transit may constitute negligent disclosure. The bank must therefore ensure, through organizational and technical measures, that employees send customer data only in protected form.
 
-As the holder of the secret, the customer can consent to disclosure. Many banks therefore obtain confirmation in their general terms and conditions or in a separate agreement that the customer knows and wishes to accept the risks of unencrypted email communication. Such consent covers only communication with that customer and only to the agreed extent. It does not replace encryption for documents concerning third parties or for communication with business partners.
+As the holder of the secret, the customer may consent to disclosure. Many banks therefore have customers confirm in their general terms and conditions or a separate agreement that they know and wish to accept the risks of unencrypted email communication. Such consent covers communication only with that customer and only to the agreed extent. It does not replace encryption for documents concerning third parties or for communication with business partners.
 
 ## FINMA Circular 2023/1: critical data
 
-FINMA Circular 2023/1, “Operational Risks and Resilience: Banks,” has been in force since January 1, 2024, and replaced Circular 2008/21. FINMA expanded the previous focus on the confidentiality of customer identification data (CID) to critical data in general. Each bank determines what is critical based on risk; customer data will generally fall into this category with regard to confidentiality.
+FINMA Circular 2023/1 “Operational Risks and Resilience: Banks” has been in force since January 1, 2024, replacing Circular 2008/21. FINMA expanded the previous focus on the confidentiality of customer identification data (CID) to critical data in general. Each bank determines on a risk-based basis what is critical; customer data will generally be included in that category with respect to confidentiality.
 
-For sending email, the following margin numbers are particularly relevant:
+The following margin numbers are particularly relevant for email delivery:
 
-| Margin no. | Content | Relevance to sending email |
+| Para. | Content | Relevance to email delivery |
 |---|---|---|
-| 73 | Identify critical data and categorize it by criticality | Determine which data may be sent only in protected form |
-| 74, 75 | Ensure confidentiality, integrity, and availability throughout the entire lifecycle | Sending is part of the lifecycle |
-| 76 | Protect critical data against access by unauthorized persons | Protection of email in transit and at the recipient |
-| 79 | Limit increased risks associated with storage in or access from abroad | Applies to gateways and email platforms located abroad |
-| 81 | Report material incidents to FINMA without delay | For example, mass sending of customer data to incorrect recipients |
-| 82 | Carefully select and monitor service providers processing critical data | Applies to providers of encryption gateways and certification authorities with managed PKI |
+| 73 | Identify critical data and categorize it by criticality | Determine which data may only be sent in protected form |
+| 74, 75 | Ensure confidentiality, integrity, and availability throughout the entire life cycle | Delivery is part of the life cycle |
+| 76 | Protect critical data against access by unauthorized persons | Protect email in transit and at the recipient |
+| 79 | Limit increased risks where data is stored abroad or accessed from abroad | Applies to gateways and email platforms located abroad |
+| 81 | Report material incidents to FINMA without delay | Such as bulk delivery of customer data to incorrect recipients |
+| 82 | Carefully select and monitor service providers processing critical data | Applies to providers of encryption gateways and certification authorities with Managed PKI |
 
-The circular is technology-neutral and mentions neither S/MIME nor certificate levels. In its consultation explanations, FINMA cites data encryption as an example of the special measures used to secure critical data. The bank must define its solution in its own internal directives and also specify there which certificate level it uses and why.
+The circular is technology-neutral and mentions neither S/MIME nor certificate levels. In its consultation explanations, FINMA cites data encryption as an example of the special measures used to secure critical data. The bank must define its solution in its own policies and state there which certificate level it uses and why.
 
-## Data protection: Data Protection Act and Data Protection Ordinance
+## Data protection: DPA and DPO
 
-Art. 8 of the Data Protection Act requires controllers to ensure data security appropriate to the risk. The Data Protection Ordinance elaborates on this with protection objectives such as confidentiality, integrity, and traceability, but does not prescribe a particular method. S/MIME, a gateway delivering through a web portal, or an exchange platform all meet the requirement if used in a manner appropriate to the risk.
+Art. 8 DPA requires controllers to ensure data security appropriate to the risk. The Data Protection Ordinance specifies this through protection objectives such as confidentiality, integrity, and traceability, but does not prescribe a particular method. S/MIME, a gateway delivering through a web portal, or an exchange platform all meet the requirement if used in a manner appropriate to the risk.
 
-If a data security breach is likely to result in a high risk to the personality or fundamental rights of the persons concerned, the bank must report it to the FDPIC as soon as possible under Art. 24 of the Data Protection Act. This reporting obligation exists alongside the obligation to report to FINMA. If the email was encrypted, the risk in the event of misdelivery is generally low and no report is required.
+If a data security breach is likely to result in a high risk to the personality or fundamental rights of the individuals concerned, the bank must report it to the FDPIC as soon as possible under Art. 24 DPA. This reporting obligation exists alongside the obligation to report to FINMA. If the email was encrypted, the risk in the event of misdelivery is generally low and no report is required.
 
-## The legal effect of an S/MIME signature
+## Legal effect of an S/MIME signature
 
-### Not a signature within the meaning of the Code of Obligations
+### Not a signature within the meaning of the CO
 
-ZertES distinguishes between electronic, advanced, regulated, and qualified electronic signatures, as well as regulated electronic seals for companies. Under Art. 14 para. 2bis of the Code of Obligations, only a qualified electronic signature with a qualified timestamp is equivalent to a handwritten signature.
+ZertES distinguishes between electronic, advanced, regulated, and qualified electronic signatures, as well as the regulated electronic seal for companies. Under Art. 14(2bis) CO, only a qualified electronic signature with a qualified timestamp is equivalent to a handwritten signature.
 
-SwissSign S/MIME certificates are issued under the CA/Browser Forum rules and the ETSI policies LCP (Silver) and NCP (Gold), respectively. They are not qualified certificates under ZertES. A bank therefore cannot make declarations that require written form by law or contract in formally valid form through an S/MIME-signed email, not even with Gold.
+SwissSign S/MIME certificates are issued under the CA/Browser Forum rules and the ETSI LCP (Silver) and NCP (Gold) policies. They are not qualified certificates under ZertES. A bank therefore cannot make declarations validly in the required form by S/MIME-signed email where legislation or a contract requires written form, even with Gold.
 
 ### Personal signature and gateway signature
 
-Among other things, an advanced signature requires that the signature key remain under the sole control of the signing person. If a gateway centrally signs all outgoing emails using keys stored on the gateway, this requirement is not met. The signature then proves that the email originated from the bank’s system and has not been altered, but not that a particular person approved it. Its substance is therefore closer to an organizational seal, without meeting the requirements for a regulated seal under ZertES.
+An advanced signature requires, among other things, that the signature key be under the sole control of the signing person. If a gateway centrally signs all outgoing emails with keys held on the gateway, this requirement is not met. The signature then proves that the email originated from the bank’s system and was not altered, but not that a specific person approved it. In substance, it is therefore more like an organization’s seal, without meeting the requirements for a regulated seal under ZertES.
 
 ### Evidentiary value
 
-Under Art. 177 of the Civil Procedure Code, an email is a document, and the court freely assesses its evidentiary value under Art. 157 of the Civil Procedure Code. A valid S/MIME signature shows that the email has not been altered since signing and was signed using the key of a particular certificate. How much this says about the sender depends on what the certification authority verified before issuance. This is where the legally relevant difference between Silver and Gold lies.
+Under Art. 177 CPC, an email is a document, and the court freely assesses its evidentiary value under Art. 157 CPC. A valid S/MIME signature shows that the email has not been altered since signing and was signed with the key of a particular certificate. How much that says about the sender depends on what the certification authority verified before issuance. This is where the legally relevant difference between Silver and Gold lies.
 
 ## Silver or Gold from a legal perspective
 
@@ -22575,56 +23120,75 @@ Since September 1, 2023, publicly trusted S/MIME certificates have been subject 
 
 | Product | CA/B Forum type | What SwissSign verifies | What the certificate contains | What the signature states |
 |---|---|---|---|---|
-| E-Mail ID Silver | `Mailbox-validated` | Control over the mailbox | Only the email address | Someone with access to this mailbox |
+| E-Mail ID Silver | `Mailbox-validated` | Control of the mailbox | Only the email address | Someone with access to this mailbox |
 | E-Mail ID Gold | `Sponsor-validated` | Organization and person | Name, organization, organization identifier, country, email address | A verified person at this bank |
-| Organization Validated | `Organization-validated` | Organization | Organization name, no person | A mailbox of this bank |
+| Organization Validated | `Organization-validated` | Organization | Name of the organization, no person | A mailbox of this bank |
 
-The levels are cryptographically equivalent. For encryption, and thus for the protection obligations arising from banking secrecy, the FINMA Circular, and the Data Protection Act, the level therefore makes no difference.
+The levels are cryptographically equivalent. For encryption, and thus for the protection obligations arising from banking secrecy, the FINMA circular, and the DPA, the level is therefore irrelevant.
 
-For signatures, the difference is substantial. Anyone who can receive email at an address can obtain a Silver certificate. Someone who registers a similarly named domain, such as `musterbank-ch.com` instead of `musterbank.ch`, can use it to send emails with signatures that are just as valid as the bank’s genuine emails. In a dispute over whether an email originated from the bank, a Silver signature therefore proves little. By contrast, a Gold or Organization Validated certificate contains the bank’s name verified by SwissSign. With Gold, there is also an assignment to a person whose identity the bank confirms as the registration authority within the managed PKI.
+For the signature, the difference is significant. Anyone who can receive emails at an address can obtain a Silver certificate. Someone who registers a similarly named domain, for example `musterbank-ch.com` instead of `musterbank.ch`, can use it to send emails that are signed just as validly as the bank’s genuine emails. In a dispute over whether an email originated from the bank, a Silver signature therefore proves little. By contrast, a Gold or Organization Validated certificate contains the name of the bank verified by SwissSign. Gold additionally associates it with a person whose identity the bank confirms as the registration authority within the Managed PKI.
 
-## Retention: Code of Obligations and GeBüV
+## Retention: CO and GeBüV
 
-Under Art. 958f of the Code of Obligations, business records and accounting vouchers must be retained for ten years, and the Ordinance on the Keeping and Retention of Business Records (GeBüV) requires electronically retained documents to remain readable during that time. Banks are also subject to supervisory and contractual retention obligations. This results in two requirements for S/MIME operations:
+Under Art. 958f CO, business books and accounting records must be retained for ten years, and the Ordinance on Business Records (GeBüV) requires electronically retained documents to remain readable throughout that period. Banks also have supervisory and contractual retention obligations. This results in two requirements for S/MIME operations:
 
-- Encrypted emails must be decryptable throughout the entire retention period. The bank must therefore securely retain the private keys of expired certificates or decrypt emails before archiving them.
-- If a signature is to serve as evidence years later, it must remain possible to establish that the certificate was valid at the time of signing. The verification results or revocation information applicable at the time of signing must therefore also be archived.
+- Encrypted emails must be capable of being decrypted throughout the entire retention period. The bank must therefore securely retain the private keys of expired certificates or decrypt the emails before archiving.
+- If a signature is to serve as evidence years later, it must remain possible to determine that the certificate was valid when the email was signed. The validation results or revocation information at the time of signing must therefore also be archived.
 
-**EU note:** In the EU, Art. 25(2) eIDAS likewise recognizes only the qualified electronic signature as equivalent to a handwritten signature. Since January 17, 2025, financial institutions in the EU have additionally been subject to the DORA Regulation, with its own requirements for ICT risk management.
+**EU note:** In the EU, Art. 25(2) eIDAS likewise provides that only a qualified electronic signature is equivalent to a handwritten signature. Since January 17, 2025, the DORA Regulation has also applied to financial undertakings in the EU, with its own requirements for ICT risk management.
+
+## Example: One gateway for all employees
+
+Many banks use a central encryption gateway, such as PrivaSphere, SEPPmail, or TotemoMail, so that all employees can encrypt and sign emails without having to manage certificates themselves. The keys are held on the gateway, which signs and encrypts on behalf of the individual mailboxes. Based on the preceding sections, the following choice applies to this setup:
+
+| Mailbox | Level | Reason |
+|---|---|---|
+| Personal mailboxes | E-Mail ID Gold | Identifies the bank as the sender with a verified name and organization identifier |
+| Functional mailboxes (customer service, payment transactions) | Organization Validated | Identifies the bank without naming an individual person |
+| None | E-Mail ID Silver | Proves only access to a mailbox; emails from similarly named domains are signed just as validly |
+
+Because the gateway signs rather than the individual person, the keys are not under the sole control of employees. Legally, the signature functions as a seal of the bank rather than a personal signature. It is therefore crucial that the organization is identified in the certificate as verified, which only Gold and Organization Validated provide. The level is irrelevant to encryption itself.
+
+Before implementation, the following points should be clarified with the gateway provider and certification authority:
+
+- **Issuance and renewal:** Whether the gateway obtains and renews Gold certificates automatically through the certification authority’s Managed PKI. For Gold, the bank, as the registration authority, confirms the identity of each person; this requires a process for hires and departures, name changes, and revocations.
+- **Service provider assessment:** Gateway providers and Managed PKI process critical data within the meaning of para. 82 of FINMA Circular 2023/1. The location of keys and data must be documented; where data is stored abroad or accessed from abroad, para. 79 also applies.
+- **Archiving:** The private keys of expired certificates and the validation data at the time of signing must remain available throughout the entire retention period.
+- **Policy:** The selected levels and approved procedures belong in the internal policy, which serves as evidence for FINMA and audit purposes.
 
 ## Recommendation
 
-- **Establish an internal directive:** The bank defines in an internal directive which data may be sent only in encrypted form, which procedures are permitted for this purpose, and which certificate levels it uses. This is the basis for demonstrating compliance with the requirements of the FINMA Circular and the Data Protection Act.
-- **Gold for personal mailboxes, Organization Validated for functional mailboxes:** Only these levels identify the bank as the sender in the certificate and therefore have evidentiary value beyond access to a mailbox. Silver is not suitable for communication with customers.
-- **Clarify consent:** Anyone communicating with customers by unencrypted email needs their documented consent. It does not replace encryption in relation to third parties and business partners.
-- **Do not use email for declarations requiring a specific form:** Declarations requiring written form need a qualified electronic signature or a handwritten signature.
-- **Review service providers:** Gateway providers and the certification authority’s managed PKI fall under margin no. 82 of the FINMA Circular, and, where locations abroad are involved, additionally under margin no. 79.
-- **Archive keys and verification data:** Private keys for decryption and data for signature verification must remain available throughout the retention period.
-- **Combine reporting processes:** Misdelivery of customer data can simultaneously trigger a report to FINMA (margin no. 81) and to the FDPIC (Art. 24 of the Data Protection Act). Both obligations can be handled in a single incident process.
+- **Define a policy:** The bank defines in an internal policy which data may only be sent encrypted, which methods are approved for this purpose, and which certificate levels it uses. This is the basis for demonstrating compliance with the requirements of the FINMA circular and the DPA.
+- **Gold for personal mailboxes, Organization Validated for functional mailboxes:** Only these levels identify the bank in the certificate as the sender and therefore have evidentiary value beyond access to a mailbox. Silver is not suitable for communication with customers.
+- **Clarify consents:** Anyone communicating with customers by unencrypted email needs their documented consent. It does not replace encryption for third parties and business partners.
+- **Do not use email for declarations subject to formal requirements:** Declarations requiring written form need a qualified electronic signature or a handwritten signature.
+- **Assess service providers:** Gateway providers and the certification authority’s Managed PKI fall under para. 82 of the FINMA circular and, where located abroad, also under para. 79.
+- **Archive keys and validation data:** Private keys for decryption and data for signature validation must remain available throughout the retention period.
+- **Combine reporting processes:** Misdelivery of customer data can trigger a report to FINMA (para. 81) and to the FDPIC (Art. 24 DPA) at the same time. Both obligations can be covered in a joint incident process.
 
 ## Sources
 
-1.  [FINMA Circular 2023/1 “Operational Risks and Resilience: Banks”](https://www.finma.ch/de/~/media/finma/dokumente/dokumentencenter/myfinma/rundschreiben/finma-rs-2023-01-20221207.pdf): Margin nos. 73 to 82 on critical data, in force since January 1, 2024.
+1.  [FINMA Circular 2023/1 “Operational Risks and Resilience: Banks”](https://www.finma.ch/de/~/media/finma/dokumente/dokumentencenter/myfinma/rundschreiben/finma-rs-2023-01-20221207.pdf): paras. 73 to 82 on critical data, in force since January 1, 2024.
 
-2.  [datenrecht.ch: FINMA Circular 2023/1 with explanations](https://datenrecht.ch/wp-content/uploads/FINMA-RS-OpRisk-%E2%80%93-Text-revidiert-1.1.2024.pdf): Revised text with FINMA’s statements from the consultation, including on data encryption as a protective measure.
+2.  [datenrecht.ch: FINMA Circular 2023/1 with explanations](https://datenrecht.ch/wp-content/uploads/FINMA-RS-OpRisk-%E2%80%93-Text-revidiert-1.1.2024.pdf): revised text with FINMA’s consultation comments, including data encryption as a protective measure.
 
 3.  [Banking Act (BankG)](https://www.fedlex.admin.ch/eli/cc/51/117_121_129/de): Art. 47 on banking secrecy.
 
-4.  [Swissbanking: Banking secrecy and cloud, legal opinion 2019](https://www.swissbanking.ch/_Resources/Persistent/b/1/3/3/b13339fe5dcd344e715dbe0a899afe3c8c56ed0b/SBVg_Bankgeheimnis_und_Cloud_Gutachten_LLAG_2019_DE.pdf): Legal opinion on the interpretation of Art. 47 of the Banking Act, including customer consent.
+4.  [Swissbanking: Banking secrecy and cloud, 2019 legal opinion](https://www.swissbanking.ch/_Resources/Persistent/b/1/3/3/b13339fe5dcd344e715dbe0a899afe3c8c56ed0b/SBVg_Bankgeheimnis_und_Cloud_Gutachten_LLAG_2019_DE.pdf): legal opinion on the interpretation of Art. 47 BankG, including customer consent.
 
-5.  [Federal Act on Data Protection (Data Protection Act)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Art. 8 on data security, Art. 24 on reporting data security breaches.
+5.  [Federal Act on Data Protection (DPA)](https://www.fedlex.admin.ch/eli/cc/2022/491/de): Art. 8 on data security, Art. 24 on notification of data security breaches.
 
-6.  [Data Protection Ordinance](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Arts. 1 to 6 on data security principles and protection objectives.
+6.  [Data Protection Ordinance (DPO)](https://www.fedlex.admin.ch/eli/cc/2022/568/de): Arts. 1 to 6 on the principles and protection objectives of data security.
 
-7.  [Federal Act on Electronic Signatures (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Types of electronic signatures and seals, requirements for qualified certificates.
+7.  [Federal Act on Electronic Signatures (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): types of electronic signatures and seals, requirements for qualified certificates.
 
-8.  [Code of Obligations](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 para. 2bis on the equivalence of qualified electronic signatures to handwritten signatures, Art. 958f on retention.
+8.  [Swiss Code of Obligations (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14(2bis) on the equivalence of the qualified electronic signature to a handwritten signature, Art. 958f on retention.
 
-9.  [Civil Procedure Code](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 on free assessment of evidence, Art. 177 on the definition of documents.
+9.  [Swiss Civil Procedure Code (CPC)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 on free assessment of evidence, Art. 177 on the concept of documents.
 
-10.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): SwissSign certificate profiles (as of September 18, 2025), assignment of Silver, Gold, and Organization Validated to validation types and subject fields.
+10.  [SwissSign CPR S/MIME: Certificate, CRL and OCSP Profiles for S/MIME Certificates](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): SwissSign certificate profiles (as of September 18, 2025), assignment of Silver, Gold, and Organization Validated to validation types and Subject fields.
 
-11.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Binding rules for publicly trusted S/MIME certificates, definition of validation types.
+11.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): binding rules for publicly trusted S/MIME certificates, definition of validation types.
 
 ----
 
