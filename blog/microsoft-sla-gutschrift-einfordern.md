@@ -11,7 +11,7 @@ produkte:
   - "exchange-online"
 protokolle:
   - "lizenzierung"
-  - "betrieb"
+  - "powershell"
 slug: "microsoft-sla-gutschrift-einfordern"
 translationId: "article-0e96d35615b0d8d9"
 url: "https://rafaelpfister.ch/blog/microsoft-sla-gutschrift-einfordern"
