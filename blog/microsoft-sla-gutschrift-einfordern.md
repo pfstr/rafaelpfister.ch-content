@@ -12,12 +12,18 @@ produkte:
 protokolle:
   - "lizenzierung"
   - "powershell"
+featured: "2026-12-31"
 slug: "microsoft-sla-gutschrift-einfordern"
 translationId: "article-0e96d35615b0d8d9"
 url: "https://rafaelpfister.ch/blog/microsoft-sla-gutschrift-einfordern"
 ---
 
 # Nach dem Exchange-Online-Ausfall: SLA-Gutschrift bei Microsoft einfordern
+
+<div class="notfall-hinweis notfall-hinweis--gross">
+<p class="notfall-hinweis__titel">Kostenlose Unterstützung beim SLA-Antrag</p>
+<p>Wir helfen Ihnen kostenlos, die Gutschrift für den Exchange-Online-Ausfall vom 12. und 13. November 2026 bei Microsoft oder Ihrem Partner zu beantragen: Verfügbarkeit berechnen, Belege zusammenstellen, Antrag einreichen. Die Frist läuft bis zum 31. Dezember 2026. Melden Sie sich über das <a href="https://rafaelpfister.ch/kontakt">Kontaktformular</a>.</p>
+</div>
 
 Vom 12. November 2026, 18:54 Uhr, bis zum 13. November 2026, 17:10 Uhr (Schweizer Zeit), hatten viele Organisationen keinen oder nur zeitweisen Zugriff auf ihre Exchange-Online-Postfächer. Microsoft führte die Störung im Admin Center unter EX1550543 (Exchange Online) und MO1550821 (weitere Microsoft-365-Dienste). Den Verlauf habe ich im [Liveticker zum Ausfall](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11) dokumentiert. Für Exchange Online sichert Microsoft eine monatliche Verfügbarkeit von 99,9 Prozent zu. Ein Ausfall von gut 22 Stunden liegt deutlich darunter. Eine Gutschrift erhalten Sie aber nur, wenn Sie sie beantragen, und der Weg dorthin hängt davon ab, wie Ihre Organisation Microsoft 365 eingekauft hat.
 

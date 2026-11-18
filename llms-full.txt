@@ -14,6 +14,240 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Nach dem Exchange-Online-Ausfall: SLA-Gutschrift bei Microsoft einfordern
+
+URL: https://rafaelpfister.ch/blog/microsoft-sla-gutschrift-einfordern
+Datum: 2026-11-18
+
+# Nach dem Exchange-Online-Ausfall: SLA-Gutschrift bei Microsoft einfordern
+
+Vom 12. November 2026, 18:54 Uhr, bis zum 13. November 2026, 17:10 Uhr (Schweizer Zeit), hatten viele Organisationen keinen oder nur zeitweisen Zugriff auf ihre Exchange-Online-Postfächer. Microsoft führte die Störung im Admin Center unter EX1550543 (Exchange Online) und MO1550821 (weitere Microsoft-365-Dienste). Den Verlauf habe ich im [Liveticker zum Ausfall](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11) dokumentiert. Für Exchange Online sichert Microsoft eine monatliche Verfügbarkeit von 99,9 Prozent zu. Ein Ausfall von gut 22 Stunden liegt deutlich darunter. Eine Gutschrift erhalten Sie aber nur, wenn Sie sie beantragen, und der Weg dorthin hängt davon ab, wie Ihre Organisation Microsoft 365 eingekauft hat.
+
+## Was das SLA zusichert
+
+Massgebend ist das «Service Level Agreement for Microsoft Online Services», das Microsoft monatlich neu veröffentlicht. Dieser Artikel stützt sich auf die Fassung vom 17. November 2026. Für Exchange Online definiert das SLA eine Ausfallzeit als jede Zeitspanne, in der Benutzer mit Outlook im Web keine E-Mails senden oder empfangen können. Geplante Wartungsfenster gibt es für Exchange Online nicht.
+
+Die Verfügbarkeit wird in Benutzerminuten gerechnet:
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+Die Benutzerminuten sind die Minuten des Monats mal die Zahl der Benutzer. Die Ausfallminuten sind die Dauer jedes Vorfalls mal die Zahl der davon betroffenen Benutzer. Unterschreitet die Verfügbarkeit eine Schwelle, gibt es eine Gutschrift auf die Monatsgebühr des betroffenen Dienstes:
+
+| Verfügbarkeit im Monat | Gutschrift |
+|---|---|
+| unter 99,9 % | 25 % |
+| unter 99 % | 50 % |
+| unter 95 % | 100 % |
+
+Für Microsoft Teams, SharePoint Online und OneDrive gelten dieselben Schwellen mit eigenen Definitionen der Ausfallzeit. Bei Teams zählt nur, wenn Benutzer keine Chats führen oder keine Besprechungen starten können. Während EX1550543 funktionierten Chats und Besprechungen laut Microsoft grösstenteils, gestört waren Kalender und Einladungen. Ein Teams-Antrag dürfte deshalb wenig Aussicht haben.
+
+Exchange Online hat neben der Postfach-Verfügbarkeit weitere Service Levels, etwa die Zustellzeit innerhalb von Microsoft 365 und die Annahme eingehender Mails. Trifft ein Vorfall mehrere davon, müssen Sie sich laut SLA für einen entscheiden. Für den November-Ausfall ist die Postfach-Verfügbarkeit über Outlook im Web der naheliegende Massstab.
+
+## Was der Ausfall in Prozent bedeutet
+
+Der November 2026 hat 30 Tage, also 43'200 Minuten pro Benutzer. Daraus ergeben sich diese Grenzwerte pro Benutzer:
+
+| Schwelle | Zulässige Ausfallzeit im November |
+|---|---|
+| 99,9 % | 43 Minuten |
+| 99 % | 7 Stunden 12 Minuten |
+| 95 % | 36 Stunden |
+
+Die Störung dauerte von der ersten Meldung bis zur Behebung 1'336 Minuten. Zwei Beispielrechnungen für eine Organisation mit 200 Postfächern:
+
+| Fall | Ausfallminuten | Verfügbarkeit | Gutschrift |
+|---|---|---|---|
+| Alle 200 Benutzer während der ganzen Störung ohne Zugriff | 200 x 1'336 = 267'200 | 96,91 % | 50 % |
+| 120 Benutzer während 10 Stunden ohne Zugriff | 120 x 600 = 72'000 | 99,17 % | 25 % |
+
+Die Gesamtzahl der Benutzerminuten beträgt in beiden Fällen 200 x 43'200 = 8'640'000. Entscheidend ist, wie viele Benutzer tatsächlich wie lange betroffen waren. Microsoft prüft das anhand eigener Telemetrie, verlangt aber im Antrag Ihre Angaben dazu. Viele Tenants in Europa waren erst ab dem späten Abend des 12. November oder nur zeitweise betroffen. Rechnen Sie deshalb mit den Zeiten, die Sie belegen können, und nicht mit der Gesamtdauer der Microsoft-Meldung.
+
+## Was die Gutschrift ist und was nicht
+
+Das SLA regelt einige Punkte, die vor dem Antrag klar sein sollten:
+
+1.  **Nur auf Antrag.** Microsoft prüft und gewährt Gutschriften nicht von sich aus. Eine Statusmeldung von Microsoft gilt laut SLA ausdrücklich nicht als Bestätigung, dass ein Service Level verfehlt wurde.
+
+2.  **Gutschrift, keine Rückzahlung.** Die Gutschrift wird mit einer künftigen Rechnung verrechnet. Sie ist auf die Monatsgebühr des betroffenen Dienstes begrenzt.
+
+3.  **Einziges Rechtsmittel.** Laut SLA sind Gutschriften das einzige Rechtsmittel für Verfügbarkeitsprobleme. Umsatzausfall, Überstunden oder andere Folgekosten ersetzt Microsoft nicht. Rechnungen dürfen Sie nicht eigenmächtig kürzen.
+
+4.  **Nur der betroffene Dienst.** Haben Sie eine Suite wie Microsoft 365 E3 oder Business Premium, bezieht sich die Gutschrift auf den Anteil von Exchange Online, nicht auf den ganzen Lizenzpreis. Wie hoch dieser Anteil ist, legt Microsoft bei der Prüfung fest; das SLA nennt dafür keine Formel.
+
+5.  **Keine Gutschrift für Gratis- und Testangebote.** Testversionen, Previews und kostenlose Dienste sind ausgeschlossen, ebenso gespendete Lizenzen für Non-Profit-Organisationen. Privatkunden mit Microsoft 365 Personal oder Family fallen nicht unter dieses SLA.
+
+6.  **Open-Verträge in Tagen.** Wer über Open, Open Value oder Open Value Subscription lizenziert hat, erhält eine allfällige Gutschrift als zusätzliche Nutzungstage statt als Geldbetrag.
+
+7.  **Frist.** Für Microsoft-365-Dienste muss der Antrag mit allen Angaben bis zum Ende des Monats eingehen, der auf den Vorfallmonat folgt. Für den November-Ausfall ist das der **31. Dezember 2026**. Für Azure gilt eine eigene Frist von 60 Tagen.
+
+## Welche Angaben Microsoft verlangt
+
+Das SLA nennt fünf Pflichtangaben. Fehlen sie, lehnt Microsoft den Antrag ab:
+
+1.  eine genaue Beschreibung des Vorfalls,
+2.  Zeitpunkt und Dauer der Ausfallzeit,
+3.  die betroffenen Ressourcen (bei Exchange Online: Tenant und Dienst),
+4.  Zahl und Standorte der betroffenen Benutzer,
+5.  eine Beschreibung der aufgetretenen Fehler.
+
+Die Kennung des Vorfalls (EX1550543) und die Tenant-ID gehören immer dazu. Beides lässt sich mit Microsoft Graph PowerShell abfragen:
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | Berechtigung zum Lesen der Dienstintegritätsmeldungen |
+| `-Scopes "Organization.Read.All"` | Berechtigung zum Lesen der Organisationsdaten, darunter die Tenant-ID |
+| `(Get-MgOrganization).Id` | gibt die Tenant-ID aus |
+| `-ServiceHealthIssueId "EX1550543"` | ruft genau diesen Vorfall ab |
+| `Select-Object …` | zeigt Kennung, Titel, Beginn, Ende und Einstufung des Vorfalls |
+
+</details>
+
+Die Einstufung (`Classification`) zeigt, ob Microsoft den Vorfall als `incident` oder als `advisory` führt. Hinweise der Stufe «Advisory» sind nach Microsofts Partnerdokumentation in der Regel nicht gutschriftberechtigt. EX1550543 war als Incident eingestuft.
+
+Für Zahl und Standort der Benutzer genügt eine Auswertung der lizenzierten Postfächer nach Nutzungsstandort:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `$abfrage = @{ … }` | sammelt die Parameter für `Get-MgUser` in einer Hashtable (Splatting), damit die Zeile kurz bleibt |
+| `All` | liest alle Benutzer, nicht nur die erste Seite |
+| `Filter 'assignedLicenses/$count ne 0'` | nur Benutzer mit mindestens einer zugewiesenen Lizenz |
+| `ConsistencyLevel eventual` | für den `$count`-Filter erforderlich (erweiterte Abfrage) |
+| `CountVariable anzahl` | legt die Gesamtzahl in der Variablen `$anzahl` ab |
+| `Property UsageLocation` | lädt den Nutzungsstandort mit |
+| `Group-Object UsageLocation` | zählt die Benutzer pro Land |
+
+</details>
+
+Diese Zahl ist die Obergrenze. Wie viele Benutzer tatsächlich keinen Zugriff hatten, belegen Sie mit eigenen Daten: Helpdesk-Tickets mit Zeitstempel, Fehlermeldungen aus Outlook und Outlook im Web (Screenshots), Ergebnisse von Verfügbarkeitstests aus Ihrem Monitoring sowie Anmelde- und Zugriffsprotokolle. Je genauer diese Angaben sind, desto weniger hängt das Ergebnis allein von Microsofts Telemetrie ab.
+
+## Kleine Firmen: meist über den Partner
+
+Kleine und mittlere Firmen kaufen Microsoft 365 in der Schweiz meist über einen Partner im Cloud Solution Provider Program (CSP) oder direkt mit Kreditkarte im Admin Center. Welcher Weg gilt, sehen Sie im Microsoft 365 Admin Center unter **Abrechnung > Ihre Produkte**: Steht dort ein Partner als Bezugsquelle, ist der Vertrag ein CSP-Vertrag.
+
+### Gekauft über einen CSP-Partner
+
+Microsoft nimmt den Antrag in diesem Fall nicht von Ihnen entgegen. Laut Partner Center dürfen nur CSP-Direktanbieter und indirekte Anbieter (Distributoren) Gutschriften beantragen, indirekte Reseller nicht. Ist Ihr IT-Dienstleister ein indirekter Reseller, läuft der Antrag also über ihn an seinen Distributor und von dort an Microsoft. Jede Stufe hat eigene, oft frühere Fristen. Melden Sie sich deshalb jetzt und nicht erst Ende Dezember.
+
+Ihr Partner braucht von Ihnen:
+
+1.  die Tenant-ID,
+2.  die Kennung des Vorfalls (EX1550543),
+3.  Zeitraum, Zahl und Standorte der betroffenen Benutzer sowie die beobachteten Fehler,
+4.  eine E-Mail, in der Sie die SLA-Gutschrift beantragen. Sie muss von einer Adresse der betroffenen Domain kommen; eine Mail von einer privaten Adresse akzeptiert Microsoft nicht.
+
+Den Vorfall selbst kennt Microsoft. Belegen muss der Antrag, dass Ihre Organisation betroffen war: Name, Tenant-ID und Ticketnummer allein reichen laut Microsoft nicht. Wird die Gutschrift gewährt, schreibt Microsoft sie dem Partner gut, und der Partner gibt sie an Sie weiter. Ob und wie er das tut, regelt Ihr Vertrag mit dem Partner. Fragen Sie nach, wenn auf der nächsten Rechnung nichts erscheint.
+
+### Direkt bei Microsoft gekauft
+
+Haben Sie Microsoft 365 direkt bei Microsoft bezahlt, stellen Sie den Antrag selbst im Admin Center. Dazu braucht es eine Administratorrolle:
+
+1.  Unter `admin.cloud.microsoft` rechts unten **Hilfe und Support** öffnen.
+2.  Das Anliegen beschreiben, zum Beispiel «Request an SLA service credit for a Microsoft 365 outage», und **Support kontaktieren** wählen.
+3.  Als Kontaktweg E-Mail wählen. In den Titel gehören «SLA service credit request» und die Kennung EX1550543.
+4.  In der Beschreibung die fünf Pflichtangaben aus dem vorherigen Abschnitt aufführen und die Belege anhängen.
+
+Pro Dienst und Vorfall ist ein eigener Antrag nötig. Microsoft bearbeitet Anträge laut SLA in der Regel innert 45 Tagen.
+
+### Lohnt sich das für kleine Firmen
+
+Bei zehn Benutzern ist die Gutschrift klein: Bei einer Suite zählt nur der Exchange-Anteil, davon 25 oder 50 Prozent für einen Monat. Der Aufwand ist ebenfalls klein, wenn Sie die Angaben jetzt zusammenstellen. Der Antrag hat einen zweiten Nutzen: Er dokumentiert gegenüber Partner und Geschäftsleitung, wie stark Ihre Organisation betroffen war. Das hilft später bei der Frage, ob ein Fallback für E-Mail nötig ist.
+
+## Grosse Firmen: direkt mit Microsoft, mit eigenen Messdaten
+
+Grosse Organisationen lizenzieren Microsoft 365 meist über ein Enterprise Agreement (EA) oder das Microsoft Customer Agreement for Enterprise (MCA-E). Der Antrag geht hier direkt an Microsoft, entweder über das Admin Center wie oben beschrieben oder über den Unified-Support-Vertrag. Haben Sie einen Customer Success Account Manager (CSAM), informieren Sie ihn über den Antrag; er kann die Bearbeitung verfolgen. Bei einem EA über einen Licensing Solution Partner (LSP) klären Sie zusätzlich, auf welcher Rechnung die Gutschrift erscheint.
+
+Bei mehreren tausend Benutzern geht es um nennenswerte Beträge, und Microsoft prüft die Angaben entsprechend genau. Der Unterschied zum kleinen Tenant liegt in der Beweisführung:
+
+1.  **Betroffene Benutzer genau ermitteln.** Grosse Tenants verteilen sich auf mehrere Datenbanken und Regionen in Microsofts Rechenzentren, nicht alle Postfächer waren gleich lang gestört. Pauschal alle Benutzer als betroffen zu melden, ist bei grossen Tenants angreifbar. Belastbarer sind Messdaten: synthetische Tests gegen Outlook im Web pro Standort, Verfügbarkeitsdaten aus dem eigenen Monitoring, Auswertungen der Helpdesk-Tickets nach Standort und Zeit.
+
+2.  **Standorte angeben.** Das SLA verlangt die Standorte der betroffenen Benutzer. Bei internationalen Organisationen lohnt sich die Aufteilung nach Land, weil die Störung zuerst Nord- und Südamerika und erst später andere Regionen traf.
+
+3.  **Hybrid sauber abgrenzen.** Verzögerungen im eigenen Rechenzentrum, etwa Mails in der Warteschlange lokaler Exchange-Server zum Tenant, schliesst das SLA aus. Belegen Sie, dass der Fehler innerhalb von Microsoft 365 lag. Die Warteschlangen der lokalen Server sind dafür ein guter Beleg, weil sie zeigen, dass Exchange Online Mails nicht oder nur verzögert angenommen hat.
+
+4.  **Den Service Level wählen.** Waren bei Ihnen vor allem die Zustellzeiten betroffen und weniger der Postfachzugriff, kann das Service Level für die Zustellzeit die bessere Grundlage sein. Pro Vorfall und Dienst ist nur ein Antrag zulässig, die Wahl sollte deshalb vor dem Antrag fallen.
+
+5.  **Einkauf und Lizenzmanagement einbeziehen.** Die Gutschrift erscheint auf der Rechnung, nicht in der IT-Kostenstelle. Stimmen Sie mit dem Einkauf ab, wer den Antrag stellt, wer die Gutschrift kontrolliert und wie sie verbucht wird.
+
+Grosse Organisationen sollten den Vorgang zudem für den nächsten Ausfall vorbereiten: eine Vorlage mit den fünf Pflichtangaben, ein Monitoring, das die Verfügbarkeit von Outlook im Web pro Standort misst, und eine klare Zuständigkeit für SLA-Anträge.
+
+## Vorlage für den Antrag
+
+Die folgende Vorlage enthält die Pflichtangaben aus dem SLA. Microsoft bearbeitet Anträge auf Englisch am schnellsten:
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Quellen
+
+1.  [Service Level Agreement for Microsoft Online Services (Übersicht der Fassungen)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services): Fassung vom 17. November 2026, Definition der Ausfallzeit für Exchange Online, Gutschriftstufen, Pflichtangaben, Fristen und Ausschlüsse.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit): Antragsweg für CSP-Partner, Ausschluss indirekter Reseller, erforderliche Belege, Einstufung von Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue): Cmdlet zum Abrufen eines Dienstintegritäts-Vorfalls über Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/): öffentliche Statusmeldungen zu EX1550543 und MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/): Antragsweg im Admin Center für den November-Ausfall, Hinweis zu Privatkunden.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178): Ausschluss von Privat-, Gratis- und Non-Profit-Lizenzen, ein Antrag pro Dienst und Vorfall.
+
+7.  [Liveticker: Exchange Online, weltweiter Ausfall der Postfachzugriffe](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11): Verlauf der Störung vom 12. und 13. November 2026 mit Microsoft-Chronik.
+
+----
+
 # Downdetector in der Kritik: Was die US-Ausfallwoche über Störungsmeldungen zeigt
 
 URL: https://rafaelpfister.ch/blog/downdetector-kritik-ausfallwoche
@@ -22790,6 +23024,240 @@ I concluded the live ticker on the outage series with this article. It remains o
 
 ----
 
+# After the Exchange Online outage: Request an SLA credit from Microsoft
+
+URL: https://rafaelpfister.ch/en/blog/after-the-exchange-online-outage-request-an-sla-credit-from-microsoft
+Datum: 2026-11-18
+
+# After the Exchange Online outage: Request an SLA credit from Microsoft
+
+From November 12, 2026, 6:54 PM, to November 13, 2026, 5:10 PM (Swiss time), many organizations had no or only intermittent access to their Exchange Online mailboxes. Microsoft listed the disruption in the Admin Center under EX1550543 (Exchange Online) and MO1550821 (other Microsoft 365 services). I documented the timeline in the [live ticker on the outage](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11). Microsoft guarantees monthly availability of 99.9 percent for Exchange Online. An outage of more than 22 hours is well below that. However, you will only receive a credit if you request it, and the process depends on how your organization purchased Microsoft 365.
+
+## What the SLA guarantees
+
+The relevant document is the “Service Level Agreement for Microsoft Online Services,” which Microsoft republishes monthly. This article is based on the version dated November 17, 2026. For Exchange Online, the SLA defines downtime as any period during which users cannot send or receive email using Outlook on the web. There are no scheduled maintenance windows for Exchange Online.
+
+Availability is calculated in user minutes:
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+User minutes are the number of minutes in the month multiplied by the number of users. Downtime minutes are the duration of each incident multiplied by the number of affected users. If availability falls below a threshold, a credit is issued against the monthly fee for the affected service:
+
+| Monthly availability | Credit |
+|---|---|
+| below 99.9% | 25% |
+| below 99% | 50% |
+| below 95% | 100% |
+
+The same thresholds apply to Microsoft Teams, SharePoint Online, and OneDrive, each with its own definition of downtime. For Teams, it only counts if users cannot chat or start meetings. During EX1550543, chats and meetings largely continued to work according to Microsoft; calendars and invitations were affected. A Teams claim is therefore unlikely to succeed.
+
+In addition to mailbox availability, Exchange Online has other service levels, such as delivery time within Microsoft 365 and acceptance of incoming email. If an incident affects more than one of these, the SLA requires you to choose one. For the November outage, mailbox availability through Outlook on the web is the obvious metric.
+
+## What the outage means in percentage terms
+
+November 2026 has 30 days, or 43,200 minutes per user. This results in the following limits per user:
+
+| Threshold | Permitted downtime in November |
+|---|---|
+| 99.9% | 43 minutes |
+| 99% | 7 hours 12 minutes |
+| 95% | 36 hours |
+
+The disruption lasted 1,336 minutes from the initial report until resolution. Two examples for an organization with 200 mailboxes:
+
+| Scenario | Downtime minutes | Availability | Credit |
+|---|---|---|---|
+| All 200 users had no access throughout the entire disruption | 200 x 1,336 = 267,200 | 96.91% | 50% |
+| 120 users had no access for 10 hours | 120 x 600 = 72,000 | 99.17% | 25% |
+
+The total number of user minutes is 200 x 43,200 = 8,640,000 in both cases. What matters is how many users were actually affected and for how long. Microsoft checks this using its own telemetry, but requires you to provide this information in the request. Many tenants in Europe were affected only from late in the evening on November 12 or only intermittently. Therefore, calculate using the times you can document, not the full duration of the Microsoft notice.
+
+## What the credit is—and is not
+
+The SLA addresses several points that should be clear before submitting a request:
+
+1.  **Request required.** Microsoft does not review or grant credits on its own initiative. According to the SLA, a Microsoft status notice explicitly does not constitute confirmation that a service level was missed.
+
+2.  **Credit, not refund.** The credit is applied against a future invoice. It is limited to the monthly fee for the affected service.
+
+3.  **Exclusive remedy.** According to the SLA, credits are the exclusive remedy for availability issues. Microsoft does not reimburse lost revenue, overtime, or other consequential costs. You may not reduce invoices on your own.
+
+4.  **Affected service only.** If you have a suite such as Microsoft 365 E3 or Business Premium, the credit applies to the Exchange Online portion, not the full license price. Microsoft determines that portion during its review; the SLA provides no formula for it.
+
+5.  **No credit for free and trial offers.** Trials, previews, and free services are excluded, as are donated licenses for nonprofit organizations. Consumers with Microsoft 365 Personal or Family are not covered by this SLA.
+
+6.  **Open agreements in days.** Those licensed through Open, Open Value, or Open Value Subscription receive any credit as additional usage days rather than a monetary amount.
+
+7.  **Deadline.** For Microsoft 365 services, the request with all information must be received by the end of the month following the incident month. For the November outage, this is **December 31, 2026**. Azure has its own 60-day deadline.
+
+## What information Microsoft requires
+
+The SLA lists five required pieces of information. If any are missing, Microsoft will reject the request:
+
+1.  a precise description of the incident,
+2.  the time and duration of the downtime,
+3.  the affected resources (for Exchange Online: tenant and service),
+4.  the number and locations of affected users,
+5.  a description of the errors that occurred.
+
+The incident ID (EX1550543) and tenant ID should always be included. Both can be queried with Microsoft Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | Permission to read service health notifications |
+| `-Scopes "Organization.Read.All"` | Permission to read organization data, including the tenant ID |
+| `(Get-MgOrganization).Id` | outputs the tenant ID |
+| `-ServiceHealthIssueId "EX1550543"` | retrieves this exact incident |
+| `Select-Object …` | displays the incident ID, title, start, end, and classification |
+
+</details>
+
+The classification (`Classification`) shows whether Microsoft lists the incident as an `incident` or an `advisory`. According to Microsoft’s partner documentation, notices classified as “Advisory” are generally not eligible for credits. EX1550543 was classified as an Incident.
+
+For the number and location of users, an analysis of licensed mailboxes by usage location is sufficient:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `$abfrage = @{ … }` | collects the parameters for `Get-MgUser` in a hashtable (splatting), keeping the line short |
+| `All` | retrieves all users, not just the first page |
+| `Filter 'assignedLicenses/$count ne 0'` | only users with at least one assigned license |
+| `ConsistencyLevel eventual` | required for the `$count` filter (advanced query) |
+| `CountVariable anzahl` | stores the total count in the variable `$anzahl` |
+| `Property UsageLocation` | also retrieves the usage location |
+| `Group-Object UsageLocation` | counts users by country |
+
+</details>
+
+This number is the upper limit. Document how many users actually had no access using your own data: timestamped help desk tickets, error messages from Outlook and Outlook on the web (screenshots), results from availability tests in your monitoring system, and sign-in and access logs. The more precise this information is, the less the outcome depends solely on Microsoft’s telemetry.
+
+## Small companies: usually through the partner
+
+Small and medium-sized companies in Switzerland typically purchase Microsoft 365 through a partner in the Cloud Solution Provider Program (CSP) or directly by credit card in the Admin Center. You can see which route applies in the Microsoft 365 Admin Center under **Billing > Your products**: if a partner is listed as the source, the agreement is a CSP agreement.
+
+### Purchased through a CSP partner
+
+In this case, Microsoft does not accept the request directly from you. According to Partner Center, only CSP direct-bill partners and indirect providers (distributors) can request credits, not indirect resellers. If your IT service provider is an indirect reseller, the request therefore goes through them to their distributor and then to Microsoft. Each level has its own, often earlier deadlines. Contact them now rather than waiting until the end of December.
+
+Your partner needs from you:
+
+1.  the tenant ID,
+2.  the incident ID (EX1550543),
+3.  the period, number and locations of affected users, as well as the observed errors,
+4.  an email requesting the SLA credit. It must come from an address in the affected domain; Microsoft does not accept email from a private address.
+
+Microsoft already knows about the incident itself. The request must document that your organization was affected: according to Microsoft, the name, tenant ID, and ticket number alone are not sufficient. If the credit is granted, Microsoft credits it to the partner, who passes it on to you. Whether and how it does so is governed by your agreement with the partner. Ask if nothing appears on the next invoice.
+
+### Purchased directly from Microsoft
+
+If you paid Microsoft directly for Microsoft 365, submit the request yourself in the Admin Center. An administrator role is required:
+
+1.  At `admin.cloud.microsoft` open **Help & support** in the lower-right corner.
+2.  Describe the issue, for example, “Request an SLA service credit for a Microsoft 365 outage,” and select **Contact Support**.
+3.  Choose email as the contact method. The subject should include “SLA service credit request” and the ID EX1550543.
+4.  List the five required items from the previous section in the description and attach the evidence.
+
+A separate request is required for each service and incident. According to the SLA, Microsoft generally processes requests within 45 days.
+
+### Is it worthwhile for small companies?
+
+For ten users, the credit is small: for a suite, only the Exchange portion counts, with 25 or 50 percent of that for one month. The effort is also small if you compile the information now. The request has a second benefit: it documents for your partner and management how severely your organization was affected. This helps later when considering whether an email fallback is necessary.
+
+## Large companies: directly with Microsoft, using their own measurement data
+
+Large organizations generally license Microsoft 365 through an Enterprise Agreement (EA) or the Microsoft Customer Agreement for Enterprise (MCA-E). The request goes directly to Microsoft, either through the Admin Center as described above or through the Unified Support agreement. If you have a Customer Success Account Manager (CSAM), inform them about the request; they can track its processing. For an EA through a Licensing Solution Partner (LSP), also clarify which invoice will show the credit.
+
+With several thousand users, the amounts are substantial, and Microsoft reviews the information accordingly closely. The difference from a small tenant is in the evidence:
+
+1.  **Determine affected users precisely.** Large tenants are distributed across multiple databases and regions in Microsoft data centers, and not all mailboxes were disrupted for the same length of time. Reporting all users as affected across the board is vulnerable to challenge in large tenants. Measurement data is more robust: synthetic tests against Outlook on the web by location, availability data from your own monitoring, and analysis of help desk tickets by location and time.
+
+2.  **Specify locations.** The SLA requires the locations of affected users. For international organizations, it is worthwhile to break this down by country because the disruption affected North and South America first and other regions only later.
+
+3.  **Clearly separate hybrid issues.** The SLA excludes delays in your own data center, such as email in the queue of local Exchange servers to the tenant. Document that the error occurred within Microsoft 365. The queues of local servers are good evidence because they show that Exchange Online did not accept email or accepted it only with delays.
+
+4.  **Choose the service level.** If delivery times were primarily affected rather than mailbox access, the service level for delivery time may be the better basis. Only one request is permitted per incident and service, so the choice should be made before submitting the request.
+
+5.  **Involve procurement and license management.** The credit appears on the invoice, not in the IT cost center. Coordinate with procurement on who submits the request, who verifies the credit, and how it is recorded.
+
+Large organizations should also prepare the process for the next outage: a template containing the five required items, monitoring that measures the availability of Outlook on the web by location, and clear responsibility for SLA requests.
+
+## Request template
+
+The following template contains the information required by the SLA. Microsoft processes requests in English most quickly:
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Sources
+
+1.  [Service Level Agreement for Microsoft Online Services (version overview)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services): version dated November 17, 2026, definition of downtime for Exchange Online, credit tiers, required information, deadlines, and exclusions.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit): request process for CSP partners, exclusion of indirect resellers, required evidence, classification of Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue): cmdlet for retrieving a service health incident through Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/): public status messages for EX1550543 and MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/): request process in the Admin Center for the November outage, note regarding consumers.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178): exclusion of consumer, free, and nonprofit licenses; one request per service and incident.
+
+7.  [Live ticker: Exchange Online, worldwide mailbox access outage](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11): timeline of the disruption on November 12 and 13, 2026, including Microsoft’s chronology.
+
+----
+
 # Proofpoint Essentials November 2026: New Graph Permission for Message Pull Required by January 2027
 
 URL: https://rafaelpfister.ch/en/blog/proofpoint-essentials-november-2026-new-graph-permission-for-message-pull-required-by-january
@@ -45429,6 +45897,240 @@ J’ai clôturé le fil en direct consacré à la série de pannes avec cet arti
 8.  [Hacker News : Discussion sur la méthodologie de Downdetector](https://news.ycombinator.com/item?id=50521819) : hypothèses sur les signalements implicites et leur propagation entre services similaires, non confirmées par Downdetector.
 
 9.  [WMTV : Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/) : évaluation d’un expert en sécurité, aucun indice d’un lien entre les incidents.
+
+----
+
+# Après la panne d’Exchange Online : demander un avoir SLA à Microsoft
+
+URL: https://rafaelpfister.ch/fr/blog/apres-la-panne-d-exchange-online-demander-un-avoir-sla-a-microsoft
+Datum: 2026-11-18
+
+# Après la panne d’Exchange Online : demander un avoir SLA à Microsoft
+
+Du 12 novembre 2026 à 18 h 54 au 13 novembre 2026 à 17 h 10 (heure suisse), de nombreuses organisations n’ont pas pu accéder à leurs boîtes aux lettres Exchange Online, ou seulement de manière intermittente. Microsoft a répertorié la perturbation dans le Centre d’administration sous EX1550543 (Exchange Online) et MO1550821 (autres services Microsoft 365). J’ai documenté son déroulement dans le [live ticker sur la panne](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11). Pour Exchange Online, Microsoft garantit une disponibilité mensuelle de 99,9 %. Une panne de plus de 22 heures est nettement inférieure à ce seuil. Vous ne recevez toutefois un avoir que si vous le demandez, et la procédure dépend de la manière dont votre organisation a acheté Microsoft 365.
+
+## Ce que garantit le SLA
+
+Le document de référence est le « Service Level Agreement for Microsoft Online Services », que Microsoft publie à nouveau chaque mois. Cet article se fonde sur la version du 17 novembre 2026. Pour Exchange Online, le SLA définit une indisponibilité comme toute période durant laquelle les utilisateurs ne peuvent pas envoyer ou recevoir d’e-mails avec Outlook sur le web. Il n’existe pas de fenêtres de maintenance planifiées pour Exchange Online.
+
+La disponibilité est calculée en minutes-utilisateur :
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+Les minutes-utilisateur correspondent au nombre de minutes du mois multiplié par le nombre d’utilisateurs. Les minutes d’indisponibilité correspondent à la durée de chaque incident multipliée par le nombre d’utilisateurs concernés. Si la disponibilité passe sous un seuil, un avoir est accordé sur les frais mensuels du service concerné :
+
+| Disponibilité mensuelle | Avoir |
+|---|---|
+| inférieure à 99,9 % | 25 % |
+| inférieure à 99 % | 50 % |
+| inférieure à 95 % | 100 % |
+
+Pour Microsoft Teams, SharePoint Online et OneDrive, les mêmes seuils s’appliquent, avec leurs propres définitions d’indisponibilité. Pour Teams, cela ne compte que si les utilisateurs ne peuvent pas discuter ou démarrer des réunions. Durant EX1550543, les discussions et les réunions ont largement fonctionné selon Microsoft ; les calendriers et les invitations étaient perturbés. Une demande pour Teams a donc peu de chances d’aboutir.
+
+Outre la disponibilité des boîtes aux lettres, Exchange Online comporte d’autres niveaux de service, par exemple le délai de remise au sein de Microsoft 365 et l’acceptation des e-mails entrants. Si un incident en touche plusieurs, vous devez, selon le SLA, en choisir un. Pour la panne de novembre, la disponibilité des boîtes aux lettres via Outlook sur le web est le critère le plus évident.
+
+## Ce que représente la panne en pourcentage
+
+Novembre 2026 compte 30 jours, soit 43'200 minutes par utilisateur. Cela donne les limites suivantes par utilisateur :
+
+| Seuil | Durée d’indisponibilité admissible en novembre |
+|---|---|
+| 99,9 % | 43 minutes |
+| 99 % | 7 heures 12 minutes |
+| 95 % | 36 heures |
+
+La perturbation a duré 1'336 minutes, de la première annonce jusqu’à sa résolution. Voici deux exemples de calcul pour une organisation comptant 200 boîtes aux lettres :
+
+| Cas | Minutes d’indisponibilité | Disponibilité | Avoir |
+|---|---|---|---|
+| Les 200 utilisateurs sans accès pendant toute la perturbation | 200 x 1'336 = 267'200 | 96,91 % | 50 % |
+| 120 utilisateurs sans accès pendant 10 heures | 120 x 600 = 72'000 | 99,17 % | 25 % |
+
+Le nombre total de minutes-utilisateur est, dans les deux cas, de 200 x 43'200 = 8'640'000. Ce qui compte est le nombre d’utilisateurs réellement concernés et la durée pendant laquelle ils l’ont été. Microsoft le vérifie à l’aide de sa propre télémétrie, mais exige vos indications à ce sujet dans la demande. De nombreux tenants en Europe n’ont été touchés qu’à partir de la fin de soirée du 12 novembre, ou de manière intermittente. Calculez donc avec les périodes que vous pouvez justifier, et non avec la durée totale du message Microsoft.
+
+## Ce qu’est l’avoir, et ce qu’il n’est pas
+
+Le SLA règle plusieurs points qui devraient être clairs avant la demande :
+
+1.  **Uniquement sur demande.** Microsoft ne vérifie ni n’accorde d’avoirs de sa propre initiative. Selon le SLA, un message d’état de Microsoft ne constitue expressément pas une confirmation qu’un niveau de service n’a pas été atteint.
+
+2.  **Avoir, pas remboursement.** L’avoir est déduit d’une facture future. Il est limité aux frais mensuels du service concerné.
+
+3.  **Recours exclusif.** Selon le SLA, les avoirs constituent le seul recours en cas de problèmes de disponibilité. Microsoft ne rembourse pas les pertes de chiffre d’affaires, les heures supplémentaires ni d’autres coûts indirects. Vous ne pouvez pas réduire vous-même les factures.
+
+4.  **Uniquement le service concerné.** Si vous avez une suite telle que Microsoft 365 E3 ou Business Premium, l’avoir porte sur la part d’Exchange Online, et non sur le prix total de la licence. Microsoft détermine cette part lors de l’examen ; le SLA ne fournit aucune formule à cet effet.
+
+5.  **Pas d’avoir pour les offres gratuites et d’essai.** Les versions d’essai, les préversions et les services gratuits sont exclus, de même que les licences données aux organisations à but non lucratif. Les clients particuliers disposant de Microsoft 365 Personal ou Family ne sont pas couverts par ce SLA.
+
+6.  **Contrats Open en jours.** Les titulaires de licences via Open, Open Value ou Open Value Subscription reçoivent un éventuel avoir sous la forme de jours d’utilisation supplémentaires plutôt que d’un montant.
+
+7.  **Délai.** Pour les services Microsoft 365, la demande accompagnée de toutes les informations doit parvenir avant la fin du mois suivant le mois de l’incident. Pour la panne de novembre, la date limite est le **31 décembre 2026**. Azure applique son propre délai de 60 jours.
+
+## Les informations exigées par Microsoft
+
+Le SLA mentionne cinq informations obligatoires. Si elles manquent, Microsoft rejette la demande :
+
+1.  une description précise de l’incident,
+2.  le moment et la durée de l’indisponibilité,
+3.  les ressources concernées (pour Exchange Online : tenant et service),
+4.  le nombre et les emplacements des utilisateurs concernés,
+5.  une description des erreurs survenues.
+
+L’identifiant de l’incident (EX1550543) et l’ID du tenant doivent toujours être inclus. Les deux peuvent être interrogés avec Microsoft Graph PowerShell :
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | autorisation de lire les messages d’intégrité des services |
+| `-Scopes "Organization.Read.All"` | autorisation de lire les données de l’organisation, dont l’ID du tenant |
+| `(Get-MgOrganization).Id` | affiche l’ID du tenant |
+| `-ServiceHealthIssueId "EX1550543"` | récupère précisément cet incident |
+| `Select-Object …` | affiche l’identifiant, le titre, le début, la fin et la classification de l’incident |
+
+</details>
+
+La classification (`Classification`) indique si Microsoft traite l’incident comme `incident` ou comme `advisory`. Selon la documentation partenaire de Microsoft, les avis de niveau « Advisory » ne donnent en règle générale pas droit à un avoir. EX1550543 était classé comme Incident.
+
+Pour le nombre et l’emplacement des utilisateurs, une analyse des boîtes aux lettres sous licence par emplacement d’utilisation suffit :
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `$abfrage = @{ … }` | collecte les paramètres pour `Get-MgUser` dans une table de hachage (splatting), afin que la ligne reste courte |
+| `All` | lit tous les utilisateurs, et pas seulement la première page |
+| `Filter 'assignedLicenses/$count ne 0'` | uniquement les utilisateurs disposant d’au moins une licence attribuée |
+| `ConsistencyLevel eventual` | requis pour le filtre `$count` (requête avancée) |
+| `CountVariable anzahl` | enregistre le nombre total dans la variable `$anzahl` |
+| `Property UsageLocation` | charge également l’emplacement d’utilisation |
+| `Group-Object UsageLocation` | compte les utilisateurs par pays |
+
+</details>
+
+Ce nombre constitue la limite supérieure. Vous démontrez le nombre d’utilisateurs qui n’ont réellement pas eu accès à l’aide de vos propres données : tickets du helpdesk horodatés, messages d’erreur d’Outlook et d’Outlook sur le web (captures d’écran), résultats des tests de disponibilité de votre monitoring ainsi que journaux de connexion et d’accès. Plus ces informations sont précises, moins le résultat dépend uniquement de la télémétrie de Microsoft.
+
+## Petites entreprises : généralement via le partenaire
+
+En Suisse, les petites et moyennes entreprises achètent généralement Microsoft 365 via un partenaire du Cloud Solution Provider Program (CSP) ou directement par carte de crédit dans le Centre d’administration. Vous voyez quelle voie s’applique dans le Centre d’administration Microsoft 365, sous **Facturation > Vos produits** : si un partenaire y est indiqué comme source d’approvisionnement, il s’agit d’un contrat CSP.
+
+### Achat via un partenaire CSP
+
+Dans ce cas, Microsoft n’accepte pas votre demande directement. Selon le Partner Center, seuls les fournisseurs directs CSP et les fournisseurs indirects (distributeurs) peuvent demander des avoirs, pas les revendeurs indirects. Si votre prestataire informatique est un revendeur indirect, la demande passe donc par lui vers son distributeur, puis vers Microsoft. Chaque niveau applique ses propres délais, souvent plus courts. Contactez-les donc maintenant, et non à la fin décembre.
+
+Votre partenaire a besoin de votre part :
+
+1.  l’ID du tenant,
+2.  l’identifiant de l’incident (EX1550543),
+3.  la période, le nombre et les emplacements des utilisateurs concernés, ainsi que les erreurs observées,
+4.  un e-mail dans lequel vous demandez l’avoir SLA. Il doit provenir d’une adresse du domaine concerné ; Microsoft n’accepte pas les e-mails provenant d’une adresse privée.
+
+Microsoft connaît l’incident lui-même. La demande doit démontrer que votre organisation a été touchée : selon Microsoft, le nom, l’ID du tenant et le numéro de ticket ne suffisent pas à eux seuls. Si l’avoir est accordé, Microsoft le crédite au partenaire, qui vous le transmet ensuite. Les modalités de cette transmission sont régies par votre contrat avec le partenaire. Demandez des précisions si rien n’apparaît sur la facture suivante.
+
+### Achat direct auprès de Microsoft
+
+Si vous avez payé Microsoft 365 directement auprès de Microsoft, vous soumettez vous-même la demande dans le Centre d’administration. Un rôle d’administrateur est nécessaire :
+
+1.  Sous `admin.cloud.microsoft` , ouvrez **Aide et support** en bas à droite.
+2.  Décrivez la demande, par exemple « Request an SLA service credit for a Microsoft 365 outage », puis choisissez **Contacter le support**.
+3.  Choisissez l’e-mail comme méthode de contact. Le titre doit contenir « SLA service credit request » et l’identifiant EX1550543.
+4.  Dans la description, indiquez les cinq informations obligatoires de la section précédente et joignez les justificatifs.
+
+Une demande distincte est nécessaire pour chaque service et chaque incident. Selon le SLA, Microsoft traite généralement les demandes dans un délai de 45 jours.
+
+### Est-ce intéressant pour les petites entreprises ?
+
+Pour dix utilisateurs, l’avoir est faible : dans le cas d’une suite, seule la part d’Exchange est prise en compte, dont 25 ou 50 % pour un mois. L’effort est également faible si vous rassemblez maintenant les informations. La demande présente un second avantage : elle documente auprès du partenaire et de la direction dans quelle mesure votre organisation a été affectée. Cela sera utile ultérieurement pour déterminer si une solution de secours pour les e-mails est nécessaire.
+
+## Grandes entreprises : directement auprès de Microsoft, avec leurs propres données de mesure
+
+Les grandes organisations obtiennent généralement leurs licences Microsoft 365 via un Enterprise Agreement (EA) ou le Microsoft Customer Agreement for Enterprise (MCA-E). La demande est alors adressée directement à Microsoft, soit par le Centre d’administration comme décrit ci-dessus, soit par le contrat Unified Support. Si vous avez un Customer Success Account Manager (CSAM), informez-le de la demande ; il peut suivre son traitement. Dans le cas d’un EA via un Licensing Solution Partner (LSP), clarifiez également sur quelle facture l’avoir apparaîtra.
+
+Avec plusieurs milliers d’utilisateurs, les montants sont significatifs et Microsoft vérifie donc les informations avec une attention correspondante. La différence avec un petit tenant réside dans l’établissement des preuves :
+
+1.  **Déterminer précisément les utilisateurs concernés.** Les grands tenants sont répartis sur plusieurs bases de données et régions dans les centres de données de Microsoft ; toutes les boîtes aux lettres n’ont pas été perturbées durant la même période. Déclarer forfaitairement tous les utilisateurs comme concernés est contestable pour les grands tenants. Les données de mesure sont plus solides : tests synthétiques contre Outlook sur le web par emplacement, données de disponibilité de votre propre monitoring, analyses des tickets de helpdesk par emplacement et par période.
+
+2.  **Indiquer les emplacements.** Le SLA exige les emplacements des utilisateurs concernés. Pour les organisations internationales, une répartition par pays est utile, car la perturbation a d’abord touché l’Amérique du Nord et l’Amérique du Sud, puis les autres régions plus tard.
+
+3.  **Délimiter proprement l’hybride.** Le SLA exclut les retards dans votre propre centre de données, par exemple les e-mails dans la file d’attente des serveurs Exchange locaux vers le tenant. Démontrez que l’erreur se situait au sein de Microsoft 365. Les files d’attente des serveurs locaux constituent une bonne preuve, car elles montrent qu’Exchange Online n’a pas accepté les e-mails, ou seulement avec retard.
+
+4.  **Choisir le niveau de service.** Si, chez vous, les délais de remise ont été principalement touchés et que l’accès aux boîtes aux lettres l’a été dans une moindre mesure, le niveau de service relatif au délai de remise peut constituer une meilleure base. Une seule demande est autorisée par incident et par service ; ce choix doit donc être fait avant la demande.
+
+5.  **Impliquer les achats et la gestion des licences.** L’avoir apparaît sur la facture, et non dans le centre de coûts informatique. Convenez avec les achats qui soumet la demande, qui contrôle l’avoir et comment il est comptabilisé.
+
+Les grandes organisations devraient en outre préparer la procédure pour la prochaine panne : un modèle incluant les cinq informations obligatoires, un monitoring qui mesure la disponibilité d’Outlook sur le web par emplacement, et une responsabilité clairement définie pour les demandes SLA.
+
+## Modèle de demande
+
+Le modèle suivant contient les informations obligatoires prévues par le SLA. Microsoft traite le plus rapidement les demandes rédigées en anglais :
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Sources
+
+1.  [Service Level Agreement for Microsoft Online Services (aperçu des versions)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services) : version du 17 novembre 2026, définition de l’indisponibilité pour Exchange Online, niveaux d’avoir, informations obligatoires, délais et exclusions.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit) : procédure de demande pour les partenaires CSP, exclusion des revendeurs indirects, justificatifs nécessaires, classification des Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue) : cmdlet permettant de récupérer un incident d’intégrité de service via Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/) : messages d’état publics relatifs à EX1550543 et MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/) : procédure de demande dans le Centre d’administration pour la panne de novembre, remarque concernant les clients particuliers.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178) : exclusion des licences privées, gratuites et destinées aux organisations à but non lucratif, une demande par service et par incident.
+
+7.  [Live ticker : Exchange Online, panne mondiale d’accès aux boîtes aux lettres](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11) : déroulement de la perturbation des 12 et 13 novembre 2026 avec la chronologie de Microsoft.
 
 ----
 
@@ -68073,6 +68775,240 @@ Ho concluso il live ticker sulla serie di interruzioni con questo articolo. Rima
 
 ----
 
+# Dopo l'interruzione di Exchange Online: richiedere un accredito SLA a Microsoft
+
+URL: https://rafaelpfister.ch/it/blog/dopo-l-interruzione-di-exchange-online-richiedere-un-accredito-sla-a-microsoft
+Datum: 2026-11-18
+
+# Dopo l'interruzione di Exchange Online: richiedere un accredito SLA a Microsoft
+
+Dal 12 novembre 2026 alle 18:54 al 13 novembre 2026 alle 17:10 (ora svizzera), molte organizzazioni non hanno avuto accesso, o lo hanno avuto solo in modo intermittente, alle proprie caselle di posta di Exchange Online. Microsoft ha registrato l'interruzione nell'Admin Center con i codici EX1550543 (Exchange Online) e MO1550821 (altri servizi Microsoft 365). Ho documentato l'andamento nel [live ticker sull'interruzione](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11). Per Exchange Online, Microsoft garantisce una disponibilità mensile del 99,9 per cento. Un'interruzione di oltre 22 ore è nettamente al di sotto di tale soglia. Tuttavia, l'accredito viene riconosciuto solo se lo si richiede, e la procedura dipende da come la vostra organizzazione ha acquistato Microsoft 365.
+
+## Cosa garantisce lo SLA
+
+Fa fede il «Service Level Agreement for Microsoft Online Services», pubblicato nuovamente da Microsoft ogni mese. Questo articolo si basa sulla versione del 17 novembre 2026. Per Exchange Online, lo SLA definisce come tempo di inattività qualsiasi periodo in cui gli utenti non possono inviare o ricevere e-mail con Outlook sul Web. Per Exchange Online non sono previste finestre di manutenzione pianificate.
+
+La disponibilità viene calcolata in minuti utente:
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+I minuti utente corrispondono ai minuti del mese moltiplicati per il numero di utenti. I minuti di inattività corrispondono alla durata di ciascun incidente moltiplicata per il numero di utenti interessati. Se la disponibilità scende sotto una soglia, viene riconosciuto un accredito sulla quota mensile del servizio interessato:
+
+| Disponibilità nel mese | Accredito |
+|---|---|
+| inferiore al 99,9 % | 25 % |
+| inferiore al 99 % | 50 % |
+| inferiore al 95 % | 100 % |
+
+Per Microsoft Teams, SharePoint Online e OneDrive valgono le stesse soglie, con definizioni proprie del tempo di inattività. Per Teams conta solo quando gli utenti non possono chattare o avviare riunioni. Durante EX1550543, secondo Microsoft chat e riunioni hanno funzionato per lo più; a essere compromessi erano calendari e inviti. Una richiesta per Teams avrebbe quindi poche probabilità di successo.
+
+Oltre alla disponibilità della casella di posta, Exchange Online dispone di altri livelli di servizio, quali il tempo di recapito all'interno di Microsoft 365 e l'accettazione delle e-mail in entrata. Se un incidente ne coinvolge più di uno, secondo lo SLA dovete sceglierne uno. Per l'interruzione di novembre, la disponibilità della casella tramite Outlook sul Web è il parametro più ovvio.
+
+## Cosa significa l'interruzione in percentuale
+
+Novembre 2026 conta 30 giorni, cioè 43'200 minuti per utente. Ne risultano le seguenti soglie per utente:
+
+| Soglia | Tempo di inattività consentito a novembre |
+|---|---|
+| 99,9 % | 43 minuti |
+| 99 % | 7 ore e 12 minuti |
+| 95 % | 36 ore |
+
+L'interruzione è durata 1'336 minuti dalla prima segnalazione alla risoluzione. Due esempi di calcolo per un'organizzazione con 200 caselle di posta:
+
+| Caso | Minuti di inattività | Disponibilità | Accredito |
+|---|---|---|---|
+| Tutti i 200 utenti senza accesso per l'intera durata dell'interruzione | 200 x 1'336 = 267'200 | 96,91 % | 50 % |
+| 120 utenti senza accesso per 10 ore | 120 x 600 = 72'000 | 99,17 % | 25 % |
+
+Il numero totale di minuti utente è in entrambi i casi 200 x 43'200 = 8'640'000. È determinante quanti utenti siano stati effettivamente interessati e per quanto tempo. Microsoft lo verifica con la propria telemetria, ma nella richiesta esige i vostri dati al riguardo. Molti tenant in Europa sono stati interessati solo dalla tarda serata del 12 novembre o solo in modo intermittente. Calcolate pertanto usando i periodi che potete documentare, non l'intera durata indicata nella comunicazione Microsoft.
+
+## Cos'è l'accredito e cosa non è
+
+Lo SLA disciplina alcuni aspetti che dovrebbero essere chiari prima della richiesta:
+
+1.  **Solo su richiesta.** Microsoft non verifica né concede accrediti di propria iniziativa. Secondo lo SLA, una comunicazione di stato di Microsoft non costituisce esplicitamente conferma che un livello di servizio non sia stato rispettato.
+
+2.  **Accredito, non rimborso.** L'accredito viene compensato con una fattura futura. È limitato alla quota mensile del servizio interessato.
+
+3.  **Unico rimedio.** Secondo lo SLA, gli accrediti sono l'unico rimedio per i problemi di disponibilità. Microsoft non rimborsa perdite di fatturato, ore supplementari o altri costi conseguenti. Non potete ridurre autonomamente le fatture.
+
+4.  **Solo il servizio interessato.** Se avete una suite come Microsoft 365 E3 o Business Premium, l'accredito riguarda la quota di Exchange Online, non l'intero prezzo della licenza. Microsoft determina tale quota durante la verifica; lo SLA non fornisce alcuna formula.
+
+5.  **Nessun accredito per offerte gratuite e di prova.** Sono esclusi versioni di prova, preview e servizi gratuiti, nonché licenze donate a organizzazioni non profit. I clienti privati con Microsoft 365 Personal o Family non rientrano in questo SLA.
+
+6.  **Contratti Open in giorni.** Chi ha ottenuto licenze tramite Open, Open Value o Open Value Subscription riceve un eventuale accredito sotto forma di giorni d'uso aggiuntivi anziché come importo monetario.
+
+7.  **Termine.** Per i servizi Microsoft 365, la richiesta completa di tutte le informazioni deve pervenire entro la fine del mese successivo a quello dell'incidente. Per l'interruzione di novembre, il termine è il **31 dicembre 2026**. Per Azure si applica un termine separato di 60 giorni.
+
+## Quali informazioni richiede Microsoft
+
+Lo SLA indica cinque informazioni obbligatorie. Se mancano, Microsoft respinge la richiesta:
+
+1.  una descrizione precisa dell'incidente,
+2.  data, ora e durata del tempo di inattività,
+3.  le risorse interessate (per Exchange Online: tenant e servizio),
+4.  numero e località degli utenti interessati,
+5.  una descrizione degli errori verificatisi.
+
+L'identificativo dell'incidente (EX1550543) e l'ID tenant devono sempre essere inclusi. Entrambi possono essere interrogati con Microsoft Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | autorizzazione per leggere le comunicazioni sull'integrità del servizio |
+| `-Scopes "Organization.Read.All"` | autorizzazione per leggere i dati dell'organizzazione, incluso l'ID tenant |
+| `(Get-MgOrganization).Id` | restituisce l'ID tenant |
+| `-ServiceHealthIssueId "EX1550543"` | recupera esattamente questo incidente |
+| `Select-Object …` | mostra identificativo, titolo, inizio, fine e classificazione dell'incidente |
+
+</details>
+
+La classificazione (`Classification`) indica se Microsoft gestisce l'incidente come `incident` o come `advisory`. Secondo la documentazione per partner di Microsoft, gli avvisi di livello «Advisory» non danno generalmente diritto a crediti. EX1550543 era classificato come Incident.
+
+Per il numero e la località degli utenti è sufficiente una valutazione delle caselle di posta con licenza per località di utilizzo:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `$abfrage = @{ … }` | raccoglie i parametri per `Get-MgUser` in una hashtable (splatting), per mantenere breve la riga |
+| `All` | legge tutti gli utenti, non solo la prima pagina |
+| `Filter 'assignedLicenses/$count ne 0'` | solo utenti con almeno una licenza assegnata |
+| `ConsistencyLevel eventual` | necessario per il filtro `$count` (query avanzata) |
+| `CountVariable anzahl` | memorizza il numero totale nella variabile `$anzahl` |
+| `Property UsageLocation` | carica anche la località di utilizzo |
+| `Group-Object UsageLocation` | conta gli utenti per Paese |
+
+</details>
+
+Questo numero è il limite massimo. Il numero di utenti che non hanno effettivamente avuto accesso va documentato con dati propri: ticket dell'helpdesk con marca temporale, messaggi di errore da Outlook e Outlook sul Web (screenshot), risultati dei test di disponibilità del monitoraggio, nonché log di accesso e autenticazione. Più precisi sono questi dati, meno il risultato dipende esclusivamente dalla telemetria di Microsoft.
+
+## Piccole aziende: di norma tramite il partner
+
+Le piccole e medie aziende in Svizzera acquistano Microsoft 365 per lo più tramite un partner nel Cloud Solution Provider Program (CSP) oppure direttamente con carta di credito nell'Admin Center. Potete verificare quale percorso si applica nel Microsoft 365 Admin Center in **Fatturazione > I tuoi prodotti**: se come fonte di acquisto compare un partner, il contratto è un contratto CSP.
+
+### Acquistato tramite un partner CSP
+
+In questo caso Microsoft non accetta la richiesta direttamente da voi. Secondo il Partner Center, solo i fornitori diretti CSP e i fornitori indiretti (distributori) possono richiedere accrediti, non i rivenditori indiretti. Se il vostro fornitore IT è un rivenditore indiretto, la richiesta passa quindi da lui al suo distributore e da quest'ultimo a Microsoft. Ogni livello ha termini propri, spesso più anticipati. Contattateli quindi subito e non solo alla fine di dicembre.
+
+Il vostro partner ha bisogno di:
+
+1.  l'ID tenant,
+2.  l'identificativo dell'incidente (EX1550543),
+3.  periodo, numero e località degli utenti interessati, nonché gli errori osservati,
+4.  un'e-mail con cui richiedete l'accredito SLA. Deve provenire da un indirizzo del dominio interessato; Microsoft non accetta e-mail da un indirizzo privato.
+
+Microsoft conosce l'incidente stesso. La richiesta deve dimostrare che la vostra organizzazione è stata interessata: secondo Microsoft, nome, ID tenant e numero di ticket da soli non sono sufficienti. Se l'accredito viene concesso, Microsoft lo accredita al partner, che lo trasferisce a voi. Se e in che modo ciò avvenga è disciplinato dal vostro contratto con il partner. Chiedete informazioni se non compare nulla sulla fattura successiva.
+
+### Acquistato direttamente da Microsoft
+
+Se avete pagato Microsoft 365 direttamente a Microsoft, inviate voi stessi la richiesta nell'Admin Center. È necessario un ruolo di amministratore:
+
+1.  In `admin.cloud.microsoft` aprite in basso a destra **Guida e supporto**.
+2.  Descrivete la richiesta, ad esempio «Request an SLA service credit for a Microsoft 365 outage», e selezionate **Contatta il supporto**.
+3.  Scegliete l'e-mail come canale di contatto. Il titolo deve contenere «SLA service credit request» e l'identificativo EX1550543.
+4.  Nella descrizione indicate le cinque informazioni obbligatorie della sezione precedente e allegate le prove.
+
+È necessaria una richiesta separata per ogni servizio e incidente. Secondo lo SLA, Microsoft elabora di norma le richieste entro 45 giorni.
+
+### Vale la pena per le piccole aziende?
+
+Con dieci utenti l'accredito è modesto: per una suite conta solo la quota di Exchange, di cui il 25 o il 50 per cento per un mese. Anche l'impegno è ridotto se raccogliete ora le informazioni. La richiesta ha un secondo vantaggio: documenta per il partner e la direzione quanto la vostra organizzazione sia stata colpita. Ciò aiuta in seguito a valutare se sia necessario un fallback per l'e-mail.
+
+## Grandi aziende: direttamente con Microsoft, con dati di misurazione propri
+
+Le grandi organizzazioni ottengono licenze Microsoft 365 per lo più tramite un Enterprise Agreement (EA) oppure il Microsoft Customer Agreement for Enterprise (MCA-E). In questo caso la richiesta va direttamente a Microsoft, tramite l'Admin Center come descritto sopra oppure tramite il contratto Unified Support. Se avete un Customer Success Account Manager (CSAM), informatelo della richiesta; potrà seguirne l'elaborazione. In caso di EA tramite un Licensing Solution Partner (LSP), chiarite inoltre su quale fattura comparirà l'accredito.
+
+Con diverse migliaia di utenti sono in gioco importi significativi e Microsoft verifica quindi le informazioni con particolare attenzione. La differenza rispetto a un tenant piccolo sta nelle prove:
+
+1.  **Determinare con precisione gli utenti interessati.** I tenant grandi sono distribuiti su più database e regioni nei data center Microsoft; non tutte le caselle di posta hanno subito disservizi per lo stesso tempo. Dichiarare forfettariamente tutti gli utenti come interessati è contestabile per i tenant grandi. Sono più solidi i dati di misurazione: test sintetici contro Outlook sul Web per sede, dati di disponibilità del monitoraggio interno, analisi dei ticket helpdesk per sede e orario.
+
+2.  **Indicare le sedi.** Lo SLA richiede le località degli utenti interessati. Per le organizzazioni internazionali conviene suddividere per Paese, poiché l'interruzione ha colpito prima il Nord e il Sud America e solo successivamente altre regioni.
+
+3.  **Delimitare correttamente l'ambiente ibrido.** Lo SLA esclude ritardi nel proprio data center, quali e-mail nella coda dei server Exchange locali dirette al tenant. Documentate che l'errore era interno a Microsoft 365. Le code dei server locali sono una buona prova, perché mostrano che Exchange Online non ha accettato le e-mail o le ha accettate solo con ritardo.
+
+4.  **Scegliere il livello di servizio.** Se per voi erano interessati soprattutto i tempi di recapito e meno l'accesso alle caselle di posta, il livello di servizio per il tempo di recapito può essere una base migliore. È consentita una sola richiesta per incidente e servizio, quindi la scelta va fatta prima della richiesta.
+
+5.  **Coinvolgere acquisti e gestione delle licenze.** L'accredito compare in fattura, non nel centro di costo IT. Coordinatevi con gli acquisti su chi presenta la richiesta, chi controlla l'accredito e come viene contabilizzato.
+
+Le grandi organizzazioni dovrebbero inoltre preparare il processo per la prossima interruzione: un modello con le cinque informazioni obbligatorie, un monitoraggio che misuri la disponibilità di Outlook sul Web per sede e una responsabilità chiara per le richieste SLA.
+
+## Modello per la richiesta
+
+Il seguente modello contiene le informazioni obbligatorie previste dallo SLA. Microsoft elabora più rapidamente le richieste in inglese:
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Fonti
+
+1.  [Service Level Agreement for Microsoft Online Services (panoramica delle versioni)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services): versione del 17 novembre 2026, definizione del tempo di inattività per Exchange Online, livelli di accredito, informazioni obbligatorie, termini ed esclusioni.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit): procedura di richiesta per partner CSP, esclusione dei rivenditori indiretti, prove richieste, classificazione degli Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue): cmdlet per recuperare un incidente di integrità del servizio tramite Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/): comunicazioni di stato pubbliche su EX1550543 e MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/): procedura di richiesta nell'Admin Center per l'interruzione di novembre, indicazione sui clienti privati.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178): esclusione di licenze private, gratuite e non profit, una richiesta per servizio e incidente.
+
+7.  [Live ticker: Exchange Online, interruzione mondiale dell'accesso alle caselle di posta](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11): andamento dell'interruzione del 12 e 13 novembre 2026 con cronologia Microsoft.
+
+----
+
 # Proofpoint Essentials novembre 2026: nuova autorizzazione Graph per Message Pull entro gennaio 2027
 
 URL: https://rafaelpfister.ch/it/blog/proofpoint-essentials-novembre-2026-nuova-autorizzazione-graph-per-message-pull-entro-gennaio
@@ -90630,6 +91566,240 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato dei messaggi di testo Internet (header e body).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configurazione del connettore per il flusso di posta sicuro tra Exchange Online e il gateway.
+
+----
+
+# Tras la interrupción de Exchange Online: solicitar un crédito de SLA a Microsoft
+
+URL: https://rafaelpfister.ch/es/blog/tras-la-interrupcion-de-exchange-online-solicitar-un-credito-de-sla-a-microsoft
+Datum: 2026-11-18
+
+# Tras la interrupción de Exchange Online: solicitar un crédito de SLA a Microsoft
+
+Del 12 de noviembre de 2026 a las 18:54 hasta el 13 de noviembre de 2026 a las 17:10 (hora suiza), muchas organizaciones no tuvieron acceso a sus buzones de Exchange Online o solo lo tuvieron de forma intermitente. Microsoft registró la incidencia en el Admin Center con EX1550543 (Exchange Online) y MO1550821 (otros servicios de Microsoft 365). He documentado el desarrollo en el [minuto a minuto de la interrupción](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11). Para Exchange Online, Microsoft garantiza una disponibilidad mensual del 99,9 %. Una interrupción de más de 22 horas queda claramente por debajo de ese valor. Sin embargo, solo recibirá un crédito si lo solicita, y el procedimiento depende de cómo haya adquirido su organización Microsoft 365.
+
+## Lo que garantiza el SLA
+
+El documento determinante es el «Service Level Agreement for Microsoft Online Services», que Microsoft publica cada mes. Este artículo se basa en la versión del 17 de noviembre de 2026. Para Exchange Online, el SLA define como tiempo de inactividad cualquier periodo durante el cual los usuarios no pueden enviar ni recibir correos electrónicos con Outlook en la web. No hay ventanas de mantenimiento programadas para Exchange Online.
+
+La disponibilidad se calcula en minutos de usuario:
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+Los minutos de usuario son los minutos del mes multiplicados por el número de usuarios. Los minutos de inactividad son la duración de cada incidente multiplicada por el número de usuarios afectados. Si la disponibilidad cae por debajo de un umbral, se concede un crédito sobre la cuota mensual del servicio afectado:
+
+| Disponibilidad mensual | Crédito |
+|---|---|
+| inferior al 99,9 % | 25 % |
+| inferior al 99 % | 50 % |
+| inferior al 95 % | 100 % |
+
+Para Microsoft Teams, SharePoint Online y OneDrive se aplican los mismos umbrales, con sus propias definiciones de tiempo de inactividad. En Teams, solo cuenta si los usuarios no pueden chatear ni iniciar reuniones. Según Microsoft, durante EX1550543 los chats y las reuniones funcionaron en su mayor parte; se vieron afectados los calendarios y las invitaciones. Por ello, una solicitud para Teams probablemente tenga pocas posibilidades.
+
+Además de la disponibilidad del buzón, Exchange Online cuenta con otros niveles de servicio, como el tiempo de entrega dentro de Microsoft 365 y la aceptación de correos entrantes. Si un incidente afecta a varios de ellos, según el SLA debe elegir uno. Para la interrupción de noviembre, la disponibilidad del buzón a través de Outlook en la web es el criterio más evidente.
+
+## Qué representa la interrupción en porcentaje
+
+Noviembre de 2026 tiene 30 días, es decir, 43'200 minutos por usuario. De ello resultan estos límites por usuario:
+
+| Umbral | Tiempo de inactividad permitido en noviembre |
+|---|---|
+| 99,9 % | 43 minutos |
+| 99 % | 7 horas y 12 minutos |
+| 95 % | 36 horas |
+
+La incidencia duró 1'336 minutos desde el primer aviso hasta su resolución. Dos ejemplos de cálculo para una organización con 200 buzones:
+
+| Caso | Minutos de inactividad | Disponibilidad | Crédito |
+|---|---|---|---|
+| Los 200 usuarios sin acceso durante toda la interrupción | 200 x 1'336 = 267'200 | 96,91 % | 50 % |
+| 120 usuarios sin acceso durante 10 horas | 120 x 600 = 72'000 | 99,17 % | 25 % |
+
+El número total de minutos de usuario asciende en ambos casos a 200 x 43'200 = 8'640'000. Lo determinante es cuántos usuarios resultaron realmente afectados y durante cuánto tiempo. Microsoft lo verifica mediante su propia telemetría, pero solicita sus datos al presentar la solicitud. Muchos tenants en Europa se vieron afectados solo desde la noche del 12 de noviembre o de forma intermitente. Por ello, calcule con los periodos que pueda demostrar, no con la duración total indicada por Microsoft.
+
+## Qué es el crédito y qué no es
+
+El SLA regula varios puntos que conviene tener claros antes de presentar la solicitud:
+
+1.  **Solo previa solicitud.** Microsoft no revisa ni concede créditos por iniciativa propia. Según el SLA, un aviso de estado de Microsoft no constituye expresamente una confirmación de que no se haya cumplido un nivel de servicio.
+
+2.  **Crédito, no reembolso.** El crédito se compensa con una factura futura. Está limitado a la cuota mensual del servicio afectado.
+
+3.  **Recurso exclusivo.** Según el SLA, los créditos son el único recurso para problemas de disponibilidad. Microsoft no indemniza pérdidas de ingresos, horas extra ni otros costes indirectos. No puede reducir facturas por su cuenta.
+
+4.  **Solo el servicio afectado.** Si dispone de una suite como Microsoft 365 E3 o Business Premium, el crédito se refiere a la parte correspondiente a Exchange Online, no al precio completo de la licencia. Microsoft determina esa proporción durante la revisión; el SLA no indica ninguna fórmula para ello.
+
+5.  **Sin crédito para ofertas gratuitas y de prueba.** Quedan excluidas las versiones de prueba, las previews y los servicios gratuitos, así como las licencias donadas a organizaciones sin ánimo de lucro. Los clientes particulares con Microsoft 365 Personal o Family no están cubiertos por este SLA.
+
+6.  **Contratos Open en días.** Quien haya adquirido licencias mediante Open, Open Value u Open Value Subscription recibe un posible crédito como días de uso adicionales en lugar de una cantidad monetaria.
+
+7.  **Plazo.** Para los servicios de Microsoft 365, la solicitud con todos los datos debe recibirse antes de que termine el mes siguiente al mes del incidente. Para la interrupción de noviembre, la fecha límite es el **31 de diciembre de 2026**. Azure tiene su propio plazo de 60 días.
+
+## Qué datos exige Microsoft
+
+El SLA menciona cinco datos obligatorios. Si faltan, Microsoft rechaza la solicitud:
+
+1.  una descripción precisa del incidente,
+2.  el momento y la duración del tiempo de inactividad,
+3.  los recursos afectados (en Exchange Online: tenant y servicio),
+4.  el número y las ubicaciones de los usuarios afectados,
+5.  una descripción de los errores ocurridos.
+
+El identificador del incidente (EX1550543) y el ID del tenant deben incluirse siempre. Ambos pueden consultarse con Microsoft Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | Permiso para leer avisos sobre el estado del servicio |
+| `-Scopes "Organization.Read.All"` | Permiso para leer los datos de la organización, incluido el ID del tenant |
+| `(Get-MgOrganization).Id` | muestra el ID del tenant |
+| `-ServiceHealthIssueId "EX1550543"` | consulta exactamente este incidente |
+| `Select-Object …` | muestra el identificador, título, inicio, fin y clasificación del incidente |
+
+</details>
+
+La clasificación (`Classification`) indica si Microsoft considera el incidente como `incident` o como `advisory`. Según la documentación para partners de Microsoft, los avisos de nivel «Advisory» por lo general no dan derecho a crédito. EX1550543 se clasificó como Incident.
+
+Para el número y la ubicación de los usuarios basta con un análisis de los buzones con licencia por ubicación de uso:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `$abfrage = @{ … }` | recopila los parámetros para `Get-MgUser` en una tabla hash (splatting), para que la línea sea más corta |
+| `All` | lee todos los usuarios, no solo la primera página |
+| `Filter 'assignedLicenses/$count ne 0'` | solo usuarios con al menos una licencia asignada |
+| `ConsistencyLevel eventual` | necesario para el filtro `$count` (consulta avanzada) |
+| `CountVariable anzahl` | guarda el número total en la variable `$anzahl` |
+| `Property UsageLocation` | carga también la ubicación de uso |
+| `Group-Object UsageLocation` | cuenta los usuarios por país |
+
+</details>
+
+Esta cifra es el límite máximo. Demuestre cuántos usuarios se quedaron realmente sin acceso con sus propios datos: tickets de helpdesk con marcas de tiempo, mensajes de error de Outlook y Outlook en la web (capturas de pantalla), resultados de pruebas de disponibilidad de su monitorización, así como registros de inicio de sesión y acceso. Cuanto más precisos sean estos datos, menos dependerá el resultado exclusivamente de la telemetría de Microsoft.
+
+## Empresas pequeñas: normalmente a través del partner
+
+Las pequeñas y medianas empresas en Suiza suelen adquirir Microsoft 365 a través de un partner del Cloud Solution Provider Program (CSP) o directamente con tarjeta de crédito en el Admin Center. Puede ver qué vía se aplica en el Microsoft 365 Admin Center, en **Facturación > Sus productos**: si aparece un partner como fuente de adquisición, se trata de un contrato CSP.
+
+### Adquirido a través de un partner CSP
+
+En este caso, Microsoft no acepta la solicitud directamente de usted. Según Partner Center, solo los proveedores directos de CSP y los proveedores indirectos (distribuidores) pueden solicitar créditos; los revendedores indirectos no. Si su proveedor de servicios de TI es un revendedor indirecto, la solicitud pasa a través de él a su distribuidor y de este a Microsoft. Cada nivel tiene sus propios plazos, a menudo más tempranos. Por ello, póngase en contacto ahora y no espere hasta finales de diciembre.
+
+Su partner necesita de usted:
+
+1.  el ID del tenant,
+2.  el identificador del incidente (EX1550543),
+3.  el periodo, el número y las ubicaciones de los usuarios afectados, así como los errores observados,
+4.  un correo electrónico en el que solicite el crédito de SLA. Debe proceder de una dirección del dominio afectado; Microsoft no acepta correos de direcciones privadas.
+
+Microsoft ya conoce el incidente. La solicitud debe demostrar que su organización se vio afectada: según Microsoft, el nombre, el ID del tenant y el número de ticket por sí solos no bastan. Si se concede el crédito, Microsoft lo abona al partner y el partner se lo transfiere a usted. Si lo hace y cómo lo hace se rige por su contrato con el partner. Pregunte si no aparece nada en la próxima factura.
+
+### Adquirido directamente de Microsoft
+
+Si pagó Microsoft 365 directamente a Microsoft, presente la solicitud usted mismo en el Admin Center. Para ello necesita un rol de administrador:
+
+1.  En `admin.cloud.microsoft` abra **Ayuda y soporte técnico** abajo a la derecha.
+2.  Describa el asunto, por ejemplo «Request an SLA service credit for a Microsoft 365 outage», y seleccione **Contactar con soporte técnico**.
+3.  Seleccione el correo electrónico como vía de contacto. El título debe incluir «SLA service credit request» y el identificador EX1550543.
+4.  En la descripción, indique los cinco datos obligatorios de la sección anterior y adjunte las pruebas.
+
+Se requiere una solicitud independiente por servicio e incidente. Según el SLA, Microsoft suele tramitar las solicitudes en un plazo de 45 días.
+
+### ¿Merece la pena para las empresas pequeñas?
+
+Con diez usuarios, el crédito es reducido: en una suite solo cuenta la parte de Exchange, de la cual se aplica el 25 o el 50 % durante un mes. El esfuerzo también es reducido si reúne ahora los datos. La solicitud tiene un segundo beneficio: documenta ante el partner y la dirección hasta qué punto se vio afectada su organización. Esto ayuda posteriormente a decidir si se necesita una alternativa para el correo electrónico.
+
+## Empresas grandes: directamente con Microsoft y con sus propios datos de medición
+
+Las grandes organizaciones suelen licenciar Microsoft 365 mediante un Enterprise Agreement (EA) o el Microsoft Customer Agreement for Enterprise (MCA-E). En este caso, la solicitud se presenta directamente a Microsoft, ya sea mediante el Admin Center como se ha descrito anteriormente o a través del contrato de Unified Support. Si dispone de un Customer Success Account Manager (CSAM), infórmele de la solicitud; puede seguir su tramitación. En el caso de un EA a través de un Licensing Solution Partner (LSP), aclare además en qué factura aparecerá el crédito.
+
+Con varios miles de usuarios, se trata de importes considerables y Microsoft revisa los datos con el correspondiente detalle. La diferencia frente a un tenant pequeño está en las pruebas:
+
+1.  **Determinar con precisión los usuarios afectados.** Los tenants grandes se distribuyen entre varias bases de datos y regiones de los centros de datos de Microsoft; no todos los buzones se vieron afectados durante el mismo tiempo. Declarar de forma generalizada que todos los usuarios se vieron afectados es discutible en tenants grandes. Son más sólidos los datos de medición: pruebas sintéticas contra Outlook en la web por ubicación, datos de disponibilidad de la monitorización propia y análisis de los tickets de helpdesk por ubicación y momento.
+
+2.  **Indicar las ubicaciones.** El SLA exige las ubicaciones de los usuarios afectados. En organizaciones internacionales, conviene desglosarlas por país, ya que la interrupción afectó primero a Norteamérica y Sudamérica, y solo después a otras regiones.
+
+3.  **Delimitar correctamente los entornos híbridos.** El SLA excluye retrasos en su propio centro de datos, por ejemplo correos en la cola de servidores Exchange locales hacia el tenant. Demuestre que el error se produjo dentro de Microsoft 365. Las colas de los servidores locales son una buena prueba, ya que muestran que Exchange Online no aceptó los correos o los aceptó con retraso.
+
+4.  **Elegir el nivel de servicio.** Si en su caso se vieron afectados sobre todo los tiempos de entrega y menos el acceso al buzón, el nivel de servicio relativo al tiempo de entrega puede ser una mejor base. Solo se permite una solicitud por incidente y servicio, por lo que debe decidirlo antes de presentarla.
+
+5.  **Involucrar a compras y a la gestión de licencias.** El crédito aparece en la factura, no en el centro de costes de TI. Coordine con compras quién presenta la solicitud, quién controla el crédito y cómo se contabiliza.
+
+Las grandes organizaciones también deberían preparar el proceso para la próxima interrupción: una plantilla con los cinco datos obligatorios, una monitorización que mida la disponibilidad de Outlook en la web por ubicación y una responsabilidad clara para las solicitudes de SLA.
+
+## Plantilla para la solicitud
+
+La siguiente plantilla contiene los datos obligatorios del SLA. Microsoft tramita las solicitudes en inglés con mayor rapidez:
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Fuentes
+
+1.  [Service Level Agreement for Microsoft Online Services (resumen de versiones)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services): versión del 17 de noviembre de 2026, definición del tiempo de inactividad para Exchange Online, niveles de crédito, datos obligatorios, plazos y exclusiones.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit): procedimiento de solicitud para partners CSP, exclusión de revendedores indirectos, pruebas requeridas, clasificación de Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue): cmdlet para recuperar un incidente de estado del servicio mediante Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/): avisos públicos de estado sobre EX1550543 y MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/): procedimiento de solicitud en el Admin Center para la interrupción de noviembre, nota sobre clientes particulares.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178): exclusión de licencias particulares, gratuitas y sin ánimo de lucro; una solicitud por servicio e incidente.
+
+7.  [Minuto a minuto: Exchange Online, interrupción mundial del acceso a buzones](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11): desarrollo de la incidencia del 12 y 13 de noviembre de 2026 con la cronología de Microsoft.
 
 ----
 
@@ -113268,6 +114438,240 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# Efter Exchange Online-avbrottet: begär en SLA-kreditering från Microsoft
+
+URL: https://rafaelpfister.ch/sv/blog/efter-exchange-online-avbrottet-begar-en-sla-kreditering-fran-microsoft
+Datum: 2026-11-18
+
+# Efter Exchange Online-avbrottet: begär en SLA-kreditering från Microsoft
+
+Från den 12 november 2026 klockan 18:54 till den 13 november 2026 klockan 17:10 (schweizisk tid) saknade många organisationer helt eller delvis åtkomst till sina Exchange Online-postlådor. Microsoft registrerade störningen i Admin Center under EX1550543 (Exchange Online) och MO1550821 (andra Microsoft 365-tjänster). Jag har dokumenterat förloppet i [liverapporteringen om avbrottet](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11). För Exchange Online garanterar Microsoft en månatlig tillgänglighet på 99,9 procent. Ett avbrott på drygt 22 timmar ligger tydligt under detta. Du får dock bara en kreditering om du ansöker om den, och vägen dit beror på hur din organisation har köpt Microsoft 365.
+
+## Vad SLA:t garanterar
+
+Det avgörande dokumentet är ”Service Level Agreement for Microsoft Online Services”, som Microsoft publicerar på nytt varje månad. Den här artikeln bygger på versionen från den 17 november 2026. För Exchange Online definierar SLA:t en driftstörning som varje tidsperiod då användare inte kan skicka eller ta emot e-post med Outlook på webben. Det finns inga planerade underhållsfönster för Exchange Online.
+
+Tillgängligheten beräknas i användarminuter:
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+Användarminuter är antalet minuter i månaden multiplicerat med antalet användare. Avbrottsminuter är varje incidentens varaktighet multiplicerad med antalet berörda användare. Om tillgängligheten understiger en tröskel ges en kreditering på månadsavgiften för den berörda tjänsten:
+
+| Tillgänglighet under månaden | Kreditering |
+|---|---|
+| under 99,9 % | 25 % |
+| under 99 % | 50 % |
+| under 95 % | 100 % |
+
+För Microsoft Teams, SharePoint Online och OneDrive gäller samma trösklar med egna definitioner av avbrottstid. För Teams räknas det bara om användare inte kan chatta eller starta möten. Under EX1550543 fungerade chattar och möten enligt Microsoft till största delen, medan kalendrar och inbjudningar stördes. En Teams-ansökan har därför sannolikt små utsikter.
+
+Utöver postlådetillgänglighet har Exchange Online ytterligare service levels, till exempel leveranstiden inom Microsoft 365 och mottagandet av inkommande e-post. Om en incident berör flera av dem måste du enligt SLA:t välja ett. För novemberavbrottet är postlådetillgängligheten via Outlook på webben den mest närliggande måttstocken.
+
+## Vad avbrottet innebär i procent
+
+November 2026 har 30 dagar, alltså 43'200 minuter per användare. Detta ger följande gränsvärden per användare:
+
+| Tröskel | Tillåten avbrottstid i november |
+|---|---|
+| 99,9 % | 43 minuter |
+| 99 % | 7 timmar 12 minuter |
+| 95 % | 36 timmar |
+
+Störningen varade 1'336 minuter från den första rapporten till åtgärdandet. Två räkneexempel för en organisation med 200 postlådor:
+
+| Fall | Avbrottsminuter | Tillgänglighet | Kreditering |
+|---|---|---|---|
+| Samtliga 200 användare utan åtkomst under hela störningen | 200 x 1'336 = 267'200 | 96,91 % | 50 % |
+| 120 användare utan åtkomst under 10 timmar | 120 x 600 = 72'000 | 99,17 % | 25 % |
+
+Det totala antalet användarminuter är i båda fallen 200 x 43'200 = 8'640'000. Avgörande är hur många användare som faktiskt var berörda och under hur lång tid. Microsoft granskar detta utifrån sin egen telemetri, men kräver dina uppgifter i ansökan. Många klientorganisationer i Europa påverkades först sent på kvällen den 12 november eller endast periodvis. Beräkna därför med de tider som du kan styrka, inte med den totala varaktigheten i Microsofts meddelande.
+
+## Vad krediteringen är och inte är
+
+SLA:t reglerar några punkter som bör vara klara innan ansökan:
+
+1.  **Endast efter ansökan.** Microsoft granskar och beviljar inte krediteringar på eget initiativ. En statusrapport från Microsoft utgör enligt SLA:t uttryckligen inte en bekräftelse på att en service level inte har uppnåtts.
+
+2.  **Kreditering, ingen återbetalning.** Krediteringen kvittas mot en framtida faktura. Den är begränsad till månadsavgiften för den berörda tjänsten.
+
+3.  **Exklusivt rättsmedel.** Enligt SLA:t är krediteringar det enda rättsmedlet vid tillgänglighetsproblem. Microsoft ersätter inte intäktsbortfall, övertid eller andra följdkostnader. Du får inte på eget initiativ minska fakturor.
+
+4.  **Endast den berörda tjänsten.** Om du har en svit som Microsoft 365 E3 eller Business Premium avser krediteringen Exchange Online-andelen, inte hela licenspriset. Microsoft fastställer hur stor denna andel är vid granskningen; SLA:t anger ingen formel för detta.
+
+5.  **Ingen kreditering för gratis- och testerbjudanden.** Testversioner, förhandsversioner och kostnadsfria tjänster är undantagna, liksom donerade licenser till ideella organisationer. Privatkunder med Microsoft 365 Personal eller Family omfattas inte av detta SLA.
+
+6.  **Open-avtal i dagar.** Den som har licensierat via Open, Open Value eller Open Value Subscription får en eventuell kreditering som ytterligare användningsdagar i stället för ett penningbelopp.
+
+7.  **Tidsfrist.** För Microsoft 365-tjänster måste ansökan med alla uppgifter ha inkommit senast i slutet av månaden efter incidentmånaden. För novemberavbrottet är det **31 december 2026**. Azure har en egen tidsfrist på 60 dagar.
+
+## Vilka uppgifter Microsoft kräver
+
+SLA:t anger fem obligatoriska uppgifter. Om de saknas avvisar Microsoft ansökan:
+
+1.  en exakt beskrivning av incidenten,
+2.  tidpunkt och varaktighet för avbrottet,
+3.  de berörda resurserna (för Exchange Online: klientorganisation och tjänst),
+4.  antal och platser för de berörda användarna,
+5.  en beskrivning av de fel som uppstod.
+
+Incidentens identifierare (EX1550543) och klientorganisations-ID:t ska alltid ingå. Båda kan hämtas med Microsoft Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Alternativen förklaras</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | behörighet att läsa meddelanden om tjänsthälsa |
+| `-Scopes "Organization.Read.All"` | behörighet att läsa organisationsdata, inklusive klientorganisations-ID:t |
+| `(Get-MgOrganization).Id` | visar klientorganisations-ID:t |
+| `-ServiceHealthIssueId "EX1550543"` | hämtar exakt denna incident |
+| `Select-Object …` | visar identifierare, titel, start, slut och incidentklassificering |
+
+</details>
+
+Klassificeringen (`Classification`) visar om Microsoft hanterar incidenten som en `incident` eller som en `advisory`. Meddelanden på nivån ”Advisory” berättigar enligt Microsofts partnerdokumentation vanligtvis inte till kreditering. EX1550543 var klassificerad som Incident.
+
+För antal och plats för användarna räcker en sammanställning av de licensierade postlådorna efter användningsplats:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Alternativen förklaras</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `$abfrage = @{ … }` | samlar parametrarna för `Get-MgUser` i en hashtabell (splatting), så att raden hålls kort |
+| `All` | läser alla användare, inte bara första sidan |
+| `Filter 'assignedLicenses/$count ne 0'` | endast användare med minst en tilldelad licens |
+| `ConsistencyLevel eventual` | krävs för filtret `$count` (utökad fråga) |
+| `CountVariable anzahl` | lagrar det totala antalet i variabeln `$anzahl` |
+| `Property UsageLocation` | hämtar även användningsplatsen |
+| `Group-Object UsageLocation` | räknar användarna per land |
+
+</details>
+
+Detta antal är den övre gränsen. Hur många användare som faktiskt saknade åtkomst ska du styrka med egna data: helpdeskärenden med tidsstämplar, felmeddelanden från Outlook och Outlook på webben (skärmbilder), resultat från tillgänglighetstester i din övervakning samt inloggnings- och åtkomstloggar. Ju mer exakta dessa uppgifter är, desto mindre beror resultatet enbart på Microsofts telemetri.
+
+## Små företag: oftast via partnern
+
+Små och medelstora företag köper vanligtvis Microsoft 365 i Schweiz via en partner i Cloud Solution Provider Program (CSP) eller direkt med kreditkort i Admin Center. Vilken väg som gäller ser du i Microsoft 365 Admin Center under **Fakturering > Dina produkter**: om en partner anges som inköpskälla är avtalet ett CSP-avtal.
+
+### Köpt via en CSP-partner
+
+Microsoft tar i detta fall inte emot ansökan direkt från dig. Enligt Partner Center får endast CSP-direktleverantörer och indirekta leverantörer (distributörer) ansöka om krediteringar, inte indirekta återförsäljare. Om din IT-leverantör är en indirekt återförsäljare går ansökan alltså via denne till distributören och därifrån till Microsoft. Varje led har egna, ofta tidigare tidsfrister. Kontakta därför partnern nu och inte först i slutet av december.
+
+Din partner behöver från dig:
+
+1.  klientorganisations-ID:t,
+2.  incidentens identifierare (EX1550543),
+3.  tidsperiod, antal och platser för de berörda användarna samt de observerade felen,
+4.  ett e-postmeddelande där du ansöker om SLA-krediteringen. Det måste skickas från en adress i den berörda domänen; Microsoft accepterar inte e-post från en privat adress.
+
+Microsoft känner redan till själva incidenten. Ansökan måste styrka att din organisation var berörd: enbart namn, klientorganisations-ID och ärendenummer räcker enligt Microsoft inte. Om krediteringen beviljas krediterar Microsoft partnern, som sedan förmedlar den till dig. Om och hur detta sker regleras av ditt avtal med partnern. Fråga om inget syns på nästa faktura.
+
+### Köpt direkt från Microsoft
+
+Om du har betalat Microsoft 365 direkt till Microsoft skickar du själv in ansökan i Admin Center. Det kräver en administratörsroll:
+
+1.  Öppna **Hjälp och support** längst ned till höger under `admin.cloud.microsoft`.
+2.  Beskriv ärendet, till exempel ”Request an SLA service credit for a Microsoft 365 outage”, och välj **Kontakta support**.
+3.  Välj e-post som kontaktväg. Rubriken ska innehålla ”SLA service credit request” och identifieraren EX1550543.
+4.  Ange de fem obligatoriska uppgifterna från föregående avsnitt i beskrivningen och bifoga underlagen.
+
+En separat ansökan krävs för varje tjänst och incident. Enligt SLA:t handlägger Microsoft normalt ansökningar inom 45 dagar.
+
+### Är det värt det för små företag?
+
+För tio användare är krediteringen liten: för en svit räknas endast Exchange Online-andelen, och av denna 25 eller 50 procent för en månad. Arbetet är också begränsat om du sammanställer uppgifterna nu. Ansökan har en andra nytta: den dokumenterar för partnern och ledningen hur hårt din organisation påverkades. Det hjälper senare vid frågan om en reservlösning för e-post behövs.
+
+## Stora företag: direkt med Microsoft, med egna mätdata
+
+Stora organisationer licensierar vanligtvis Microsoft 365 via ett Enterprise Agreement (EA) eller Microsoft Customer Agreement for Enterprise (MCA-E). Ansökan går då direkt till Microsoft, antingen via Admin Center enligt beskrivningen ovan eller via Unified-supportavtalet. Om du har en Customer Success Account Manager (CSAM) bör du informera denne om ansökan; personen kan följa handläggningen. Vid ett EA via en Licensing Solution Partner (LSP) bör du dessutom klargöra på vilken faktura krediteringen visas.
+
+Vid flera tusen användare handlar det om betydande belopp, och Microsoft granskar därför uppgifterna särskilt noggrant. Skillnaden jämfört med en liten klientorganisation ligger i bevisningen:
+
+1.  **Fastställ berörda användare exakt.** Stora klientorganisationer är fördelade över flera databaser och regioner i Microsofts datacenter, och alla postlådor var inte störda lika länge. Att schablonmässigt rapportera alla användare som berörda är sårbart för stora klientorganisationer. Mätdata är mer tillförlitliga: syntetiska tester mot Outlook på webben per plats, tillgänglighetsdata från den egna övervakningen och analyser av helpdeskärenden efter plats och tid.
+
+2.  **Ange platser.** SLA:t kräver platserna för de berörda användarna. För internationella organisationer lönar det sig att dela upp efter land, eftersom störningen först drabbade Nord- och Sydamerika och först senare andra regioner.
+
+3.  **Avgränsa hybridmiljön tydligt.** Fördröjningar i det egna datacentret, exempelvis e-post i kön på lokala Exchange-servrar på väg till klientorganisationen, undantas av SLA:t. Styrk att felet låg inom Microsoft 365. Köerna på de lokala servrarna är ett bra underlag för detta, eftersom de visar att Exchange Online inte tog emot e-post eller bara tog emot den fördröjt.
+
+4.  **Välj service level.** Om det hos er främst var leveranstiderna som påverkades och postlådeåtkomsten i mindre grad, kan service level för leveranstid vara en bättre grund. Endast en ansökan är tillåten per incident och tjänst, så valet bör göras före ansökan.
+
+5.  **Involvera inköp och licenshantering.** Krediteringen visas på fakturan, inte i IT-kostnadsstället. Stäm av med inköp vem som skickar ansökan, vem som kontrollerar krediteringen och hur den bokförs.
+
+Stora organisationer bör dessutom förbereda processen inför nästa avbrott: en mall med de fem obligatoriska uppgifterna, övervakning som mäter tillgängligheten för Outlook på webben per plats och ett tydligt ansvar för SLA-ansökningar.
+
+## Mall för ansökan
+
+Följande mall innehåller de obligatoriska uppgifterna från SLA:t. Microsoft handlägger ansökningar på engelska snabbast:
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Källor
+
+1.  [Service Level Agreement for Microsoft Online Services (översikt över versioner)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services): version från den 17 november 2026, definition av avbrottstid för Exchange Online, krediteringsnivåer, obligatoriska uppgifter, tidsfrister och undantag.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit): ansökningsprocess för CSP-partner, undantag för indirekta återförsäljare, nödvändiga underlag, klassificering av Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue): cmdlet för att hämta en tjänsthälsoincident via Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/): offentliga statusmeddelanden om EX1550543 och MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/): ansökningsväg i Admin Center för novemberavbrottet, information om privatkunder.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178): undantag för privat-, gratis- och ideella licenser, en ansökan per tjänst och incident.
+
+7.  [Liverapportering: Exchange Online, globalt avbrott i postlådeåtkomst](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11): störningens förlopp den 12 och 13 november 2026 med Microsofts kronologi.
 
 ----
 
@@ -135910,6 +137314,240 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Etter Exchange Online-utfallet: Krev SLA-kreditt hos Microsoft
+
+URL: https://rafaelpfister.ch/no/blog/etter-exchange-online-utfallet-krev-sla-kreditt-hos-microsoft
+Datum: 2026-11-18
+
+# Etter Exchange Online-utfallet: Krev SLA-kreditt hos Microsoft
+
+Fra 12. november 2026 kl. 18.54 til 13. november 2026 kl. 17.10 (sveitsisk tid) hadde mange organisasjoner ingen eller bare periodisk tilgang til Exchange Online-postboksene sine. Microsoft førte hendelsen i Admin Center under EX1550543 (Exchange Online) og MO1550821 (andre Microsoft 365-tjenester). Jeg har dokumentert forløpet i [liveoppdateringen om utfallet](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11). For Exchange Online garanterer Microsoft en månedlig tilgjengelighet på 99,9 prosent. Et utfall på godt over 22 timer ligger betydelig under dette. Du får imidlertid bare en kreditt dersom du søker om den, og fremgangsmåten avhenger av hvordan organisasjonen din har kjøpt Microsoft 365.
+
+## Hva SLA-en garanterer
+
+Det avgjørende dokumentet er «Service Level Agreement for Microsoft Online Services», som Microsoft publiserer på nytt hver måned. Denne artikkelen bygger på versjonen av 17. november 2026. For Exchange Online definerer SLA-en nedetid som enhver periode der brukere med Outlook på nettet ikke kan sende eller motta e-post. Det finnes ingen planlagte vedlikeholdsvinduer for Exchange Online.
+
+Tilgjengeligheten beregnes i brukerminutter:
+
+```text
+Verfügbarkeit (%) = (Benutzerminuten - Ausfallminuten) / Benutzerminuten x 100
+```
+
+Brukerminutter er antall minutter i måneden multiplisert med antall brukere. Nedetidsminutter er varigheten av hver hendelse multiplisert med antall brukere som ble berørt. Dersom tilgjengeligheten faller under en terskel, gis det en kreditt på månedsavgiften for den berørte tjenesten:
+
+| Tilgjengelighet i måneden | Kreditt |
+|---|---|
+| under 99,9 % | 25 % |
+| under 99 % | 50 % |
+| under 95 % | 100 % |
+
+For Microsoft Teams, SharePoint Online og OneDrive gjelder de samme tersklene, men med egne definisjoner av nedetid. For Teams teller det bare når brukere ikke kan chatte eller starte møter. Under EX1550543 fungerte chatter og møter ifølge Microsoft stort sett, mens kalender og invitasjoner var forstyrret. En Teams-søknad har derfor trolig liten utsikt til å lykkes.
+
+Exchange Online har i tillegg til postbokstilgjengelighet andre tjenestenivåer, som leveringstid innen Microsoft 365 og mottak av innkommende e-post. Dersom en hendelse rammer flere av disse, må du ifølge SLA-en velge ett av dem. For november-utfallet er postbokstilgjengeligheten via Outlook på nettet den mest nærliggende målestokken.
+
+## Hva utfallet betyr i prosent
+
+November 2026 har 30 dager, altså 43'200 minutter per bruker. Dette gir følgende terskelverdier per bruker:
+
+| Terskel | Tillatt nedetid i november |
+|---|---|
+| 99,9 % | 43 minutter |
+| 99 % | 7 timer og 12 minutter |
+| 95 % | 36 timer |
+
+Forstyrrelsen varte 1'336 minutter fra første melding til den ble løst. To regneeksempler for en organisasjon med 200 postbokser:
+
+| Tilfelle | Nedetidsminutter | Tilgjengelighet | Kreditt |
+|---|---|---|---|
+| Alle 200 brukere uten tilgang under hele forstyrrelsen | 200 x 1'336 = 267'200 | 96,91 % | 50 % |
+| 120 brukere uten tilgang i 10 timer | 120 x 600 = 72'000 | 99,17 % | 25 % |
+
+Det totale antallet brukerminutter er i begge tilfeller 200 x 43'200 = 8'640'000. Det avgjørende er hvor mange brukere som faktisk var berørt, og hvor lenge. Microsoft kontrollerer dette ut fra egen telemetri, men krever opplysningene dine i søknaden. Mange leietakere i Europa ble først berørt sent på kvelden 12. november eller bare periodevis. Beregn derfor med tidene du kan dokumentere, og ikke med den samlede varigheten i Microsoft-meldingen.
+
+## Hva kreditten er og ikke er
+
+SLA-en regulerer noen punkter som bør være klare før du søker:
+
+1.  **Kun etter søknad.** Microsoft vurderer og innvilger ikke kreditter på eget initiativ. En statusmelding fra Microsoft regnes ifølge SLA-en uttrykkelig ikke som en bekreftelse på at et tjenestenivå ikke ble oppfylt.
+
+2.  **Kreditt, ikke tilbakebetaling.** Kreditten motregnes på en fremtidig faktura. Den er begrenset til månedsavgiften for den berørte tjenesten.
+
+3.  **Eneste rettsmiddel.** Ifølge SLA-en er kreditter det eneste rettsmiddelet ved tilgjengelighetsproblemer. Microsoft erstatter ikke tapt omsetning, overtid eller andre følgekostnader. Du kan ikke redusere fakturaer på egen hånd.
+
+4.  **Kun den berørte tjenesten.** Har du en pakke som Microsoft 365 E3 eller Business Premium, gjelder kreditten Exchange Online-andelen, ikke hele lisensprisen. Microsoft fastsetter størrelsen på denne andelen ved vurderingen; SLA-en oppgir ingen formel for dette.
+
+5.  **Ingen kreditt for gratis- og prøvetilbud.** Prøveversjoner, forhåndsvisninger og gratis tjenester er unntatt, det samme gjelder donerte lisenser til ideelle organisasjoner. Privatkunder med Microsoft 365 Personal eller Family omfattes ikke av denne SLA-en.
+
+6.  **Open-avtaler i dager.** De som har lisensiert via Open, Open Value eller Open Value Subscription, får eventuell kreditt som ekstra bruksdager i stedet for et pengebeløp.
+
+7.  **Frist.** For Microsoft 365-tjenester må søknaden med alle opplysninger være mottatt innen utgangen av måneden etter hendelsesmåneden. For november-utfallet er det **31. desember 2026**. Azure har en egen frist på 60 dager.
+
+## Hvilke opplysninger Microsoft krever
+
+SLA-en oppgir fem obligatoriske opplysninger. Mangler de, avviser Microsoft søknaden:
+
+1.  en nøyaktig beskrivelse av hendelsen,
+2.  tidspunkt og varighet for nedetiden,
+3.  de berørte ressursene (for Exchange Online: leietaker og tjeneste),
+4.  antall og lokasjoner for de berørte brukerne,
+5.  en beskrivelse av feilene som oppsto.
+
+Hendelses-ID-en (EX1550543) og leietaker-ID-en skal alltid inkluderes. Begge kan hentes med Microsoft Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "ServiceHealth.Read.All", "Organization.Read.All"
+(Get-MgOrganization).Id
+Get-MgServiceAnnouncementIssue -ServiceHealthIssueId "EX1550543" |
+    Select-Object Id, Title, StartDateTime, EndDateTime, Classification
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-Scopes "ServiceHealth.Read.All"` | tillatelse til å lese meldinger om tjenestetilstand |
+| `-Scopes "Organization.Read.All"` | tillatelse til å lese organisasjonsdata, inkludert leietaker-ID-en |
+| `(Get-MgOrganization).Id` | skriver ut leietaker-ID-en |
+| `-ServiceHealthIssueId "EX1550543"` | henter nøyaktig denne hendelsen |
+| `Select-Object …` | viser ID, tittel, start, slutt og klassifisering for hendelsen |
+
+</details>
+
+Klassifiseringen (`Classification`) viser om Microsoft fører hendelsen som `incident` eller som `advisory`. Varsler på nivået «Advisory» gir ifølge Microsofts partnerdokumentasjon normalt ikke rett til kreditt. EX1550543 var klassifisert som Incident.
+
+For antall og lokasjon for brukerne er det tilstrekkelig med en oversikt over lisensierte postbokser etter brukssted:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+$abfrage = @{
+    All              = $true
+    Filter           = 'assignedLicenses/$count ne 0'
+    ConsistencyLevel = 'eventual'
+    CountVariable    = 'anzahl'
+    Property         = 'UsageLocation'
+}
+Get-MgUser @abfrage |
+    Group-Object UsageLocation |
+    Select-Object Name, Count
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `$abfrage = @{ … }` | samler parameterne for `Get-MgUser` i en hashtabell (splatting), slik at linjen holdes kort |
+| `All` | leser alle brukere, ikke bare første side |
+| `Filter 'assignedLicenses/$count ne 0'` | kun brukere med minst én tildelt lisens |
+| `ConsistencyLevel eventual` | nødvendig for `$count`-filteret (utvidet spørring) |
+| `CountVariable anzahl` | lagrer totalantallet i variabelen `$anzahl` |
+| `Property UsageLocation` | henter også bruksstedet |
+| `Group-Object UsageLocation` | teller brukerne per land |
+
+</details>
+
+Dette tallet er øvre grense. Hvor mange brukere som faktisk ikke hadde tilgang, dokumenterer du med egne data: helpdesk-saker med tidsstempel, feilmeldinger fra Outlook og Outlook på nettet (skjermbilder), resultater fra tilgjengelighetstester i overvåkingen din samt påloggings- og tilgangslogger. Jo mer presise disse opplysningene er, desto mindre avhenger resultatet bare av Microsofts telemetri.
+
+## Små bedrifter: vanligvis via partneren
+
+Små og mellomstore bedrifter kjøper vanligvis Microsoft 365 i Sveits via en partner i Cloud Solution Provider Program (CSP) eller direkte med kredittkort i Admin Center. Hvilken vei som gjelder, ser du i Microsoft 365 Admin Center under **Fakturering > Produktene dine**: Dersom en partner står oppført som kjøpskilde, er avtalen en CSP-avtale.
+
+### Kjøpt via en CSP-partner
+
+Microsoft mottar i dette tilfellet ikke søknaden fra deg. Ifølge Partner Center kan bare CSP-direkteleverandører og indirekte leverandører (distributører) søke om kreditter, ikke indirekte forhandlere. Dersom IT-leverandøren din er en indirekte forhandler, går søknaden derfor via denne til distributøren og derfra til Microsoft. Hvert ledd har egne, ofte tidligere frister. Ta derfor kontakt nå, og ikke først i slutten av desember.
+
+Partneren din trenger fra deg:
+
+1.  leietaker-ID-en,
+2.  hendelses-ID-en (EX1550543),
+3.  tidsrom, antall og lokasjoner for de berørte brukerne samt de observerte feilene,
+4.  en e-post der du søker om SLA-kreditten. Den må komme fra en adresse i det berørte domenet; Microsoft godtar ikke e-post fra en privat adresse.
+
+Microsoft kjenner selve hendelsen. Søknaden må dokumentere at organisasjonen din var berørt: Navn, leietaker-ID og saksnummer alene er ifølge Microsoft ikke tilstrekkelig. Dersom kreditten innvilges, krediterer Microsoft partneren, og partneren gir den videre til deg. Om og hvordan dette gjøres, reguleres av avtalen din med partneren. Spør dersom ingenting vises på neste faktura.
+
+### Kjøpt direkte hos Microsoft
+
+Dersom du har betalt Microsoft 365 direkte til Microsoft, søker du selv i Admin Center. Dette krever en administratorrolle:
+
+1.  Åpne **Hjelp og støtte** nederst til høyre under `admin.cloud.microsoft`.
+2.  Beskriv henvendelsen, for eksempel «Request an SLA service credit for a Microsoft 365 outage», og velg **Kontakt støtte**.
+3.  Velg e-post som kontaktmåte. Tittelen skal inneholde «SLA service credit request» og ID-en EX1550543.
+4.  Oppgi de fem obligatoriske opplysningene fra forrige avsnitt i beskrivelsen, og legg ved dokumentasjonen.
+
+Det kreves en separat søknad per tjeneste og hendelse. Ifølge SLA-en behandler Microsoft vanligvis søknader innen 45 dager.
+
+### Lønner det seg for små bedrifter
+
+For ti brukere er kreditten liten: For en pakke teller bare Exchange Online-andelen, og av den 25 eller 50 prosent for én måned. Innsatsen er også liten dersom du samler opplysningene nå. Søknaden har en annen fordel: Den dokumenterer overfor partneren og ledelsen hvor sterkt organisasjonen din ble berørt. Det hjelper senere når dere vurderer om dere trenger en reserveordning for e-post.
+
+## Store bedrifter: direkte med Microsoft, med egne måledata
+
+Store organisasjoner lisensierer vanligvis Microsoft 365 via en Enterprise Agreement (EA) eller Microsoft Customer Agreement for Enterprise (MCA-E). Søknaden går her direkte til Microsoft, enten gjennom Admin Center som beskrevet over eller gjennom Unified Support-avtalen. Har du en Customer Success Account Manager (CSAM), informer vedkommende om søknaden; han eller hun kan følge behandlingen. Ved en EA via en Licensing Solution Partner (LSP) bør du i tillegg avklare hvilken faktura kreditten vises på.
+
+Ved flere tusen brukere dreier det seg om betydelige beløp, og Microsoft gransker derfor opplysningene tilsvarende nøye. Forskjellen fra en liten leietaker ligger i dokumentasjonen:
+
+1.  **Fastslå berørte brukere nøyaktig.** Store leietakere er fordelt over flere databaser og regioner i Microsofts datasentre, og ikke alle postbokser var forstyrret like lenge. Å oppgi alle brukere som berørt er sårbart ved store leietakere. Måledata er mer holdbare: syntetiske tester mot Outlook på nettet per lokasjon, tilgjengelighetsdata fra egen overvåking, analyser av helpdesk-saker etter lokasjon og tid.
+
+2.  **Oppgi lokasjoner.** SLA-en krever lokasjonene til de berørte brukerne. For internasjonale organisasjoner lønner det seg å dele opp per land, fordi forstyrrelsen først rammet Nord- og Sør-Amerika og først senere andre regioner.
+
+3.  **Avgrens hybridløsninger tydelig.** Forsinkelser i eget datasenter, for eksempel e-poster i kø på lokale Exchange-servere på vei til leietakeren, er unntatt fra SLA-en. Dokumenter at feilen lå i Microsoft 365. Køene på de lokale serverne er et godt bevis på dette, fordi de viser at Exchange Online ikke tok imot e-post eller bare tok den imot forsinket.
+
+4.  **Velg tjenestenivå.** Dersom det hos dere først og fremst var leveringstidene som ble berørt, og postbokstilgangen i mindre grad, kan tjenestenivået for leveringstid være et bedre grunnlag. Det er bare tillatt med én søknad per hendelse og tjeneste, så valget bør tas før søknaden sendes.
+
+5.  **Involver innkjøp og lisensadministrasjon.** Kreditten vises på fakturaen, ikke i IT-kostnadsstedet. Avklar med innkjøp hvem som sender søknaden, hvem som kontrollerer kreditten og hvordan den bokføres.
+
+Store organisasjoner bør dessuten forberede prosessen for neste utfall: en mal med de fem obligatoriske opplysningene, overvåking som måler tilgjengeligheten til Outlook på nettet per lokasjon, og et tydelig ansvar for SLA-søknader.
+
+## Mal for søknaden
+
+Følgende mal inneholder de obligatoriske opplysningene fra SLA-en. Microsoft behandler søknader på engelsk raskest:
+
+```text
+Subject: SLA service credit request: EX1550543, Exchange Online
+
+Tenant ID: <Tenant-ID>
+Service: Exchange Online
+Incident ID: EX1550543 (related: MO1550821)
+Service level: Exchange Online availability (Outlook on the web)
+
+Description of the incident:
+Users were unable to send or receive email using Outlook on the web,
+Outlook for Windows and mobile clients.
+
+Time and duration of downtime:
+From 2026-11-12 <hh:mm> UTC to 2026-11-13 <hh:mm> UTC (<n> minutes).
+
+Affected users:
+<n> of <total> licensed users, locations: <Land: Anzahl, ...>
+
+Errors observed:
+<Fehlermeldungen, z. B. Verbindungsfehler in Outlook, HTTP 5xx in Outlook on the web>
+
+Uptime calculation (November 2026):
+(<total> x 43,200 - <Ausfallminuten>) / (<total> x 43,200) x 100 = <xx.xx> %
+
+Attachments: helpdesk ticket export, monitoring data, screenshots.
+```
+
+## Kilder
+
+1.  [Service Level Agreement for Microsoft Online Services (oversikt over versjoner)](https://www.microsoft.com/licensing/docs/view/Service-Level-Agreements-SLA-for-Online-Services): versjon av 17. november 2026, definisjon av nedetid for Exchange Online, kredittrinn, obligatoriske opplysninger, frister og unntak.
+
+2.  [Microsoft Learn: How and when to request a credit from Microsoft](https://learn.microsoft.com/en-us/partner-center/billing/request-credit): søknadsprosess for CSP-partnere, unntak for indirekte forhandlere, nødvendig dokumentasjon, klassifisering av Advisories.
+
+3.  [Microsoft Learn: Get-MgServiceAnnouncementIssue](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.devices.serviceannouncement/get-mgserviceannouncementissue): cmdlet for å hente en tjenestetilstandshendelse via Microsoft Graph.
+
+4.  [Microsoft 365 Status (status.cloud.microsoft)](https://status.cloud.microsoft/): offentlige statusmeldinger om EX1550543 og MO1550821.
+
+5.  [Windows Latest: Microsoft 365 outage, you may get money off your bill](https://www.windowslatest.com/2026/11/13/microsoft-365-outage-you-may-get-money-off-your-bill-if-you-use-it-for-work-but-youll-have-to-ask-microsoft-for-it-as-a-server-failure-takes-down-outlook-teams-and-exchange/): søknadsprosess i Admin Center for november-utfallet, merknad om privatkunder.
+
+6.  [Office Watch: Microsoft 365 went down? How to claim your SLA credit](https://office-watch.com/?p=78178): unntak for privat-, gratis- og ideelle lisenser, én søknad per tjeneste og hendelse.
+
+7.  [Liveoppdatering: Exchange Online, globalt utfall i postbokstilgang](https://rafaelpfister.ch/liveticker/exchange-online-ausfall-2026-11): forløpet av forstyrrelsen 12. og 13. november 2026 med Microsoft-kronologi.
 
 ----
 
