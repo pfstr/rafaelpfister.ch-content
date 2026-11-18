@@ -14,6 +14,87 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Downdetector in der Kritik: Was die US-Ausfallwoche über Störungsmeldungen zeigt
+
+URL: https://rafaelpfister.ch/blog/downdetector-kritik-ausfallwoche
+Datum: 2026-11-18
+
+# Downdetector in der Kritik: Was die US-Ausfallwoche über Störungsmeldungen zeigt
+
+Vom 13. bis 17. November 2026 fielen in den USA mehrere grosse Systeme aus: die Flugsicherung FAA mit einem landesweiten Startverbot, Teile von AWS in der Region us-east-1, die Bank JPMorgan Chase, die Abfertigung von United Airlines und am Dienstag die iCloud-Anmeldung und weitere Dienste von Apple. Ich habe die Serie in einem [Liveticker](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11) verfolgt. Nach Abschluss der Woche steht fest: Die Ausfälle hatten getrennte Ursachen, Hinweise auf einen Cyberangriff gibt es keine, und Europa war nur am Rand betroffen. In der öffentlichen Wahrnehmung entstand trotzdem das Bild eines Internets, das an allen Ecken gleichzeitig ausfällt. Ein grosser Teil dieses Bildes stammt aus den Diagrammen von Downdetector, die in fast jedem Medienbericht zitiert wurden. Daran setzt seit Montag breite Kritik an.
+
+## Was Downdetector misst
+
+Downdetector gehört zu Ookla und damit seit dem 17. Juni 2026 zu Accenture. Die Plattform sammelt Problemmeldungen von Benutzern, die auf der Seite eines Dienstes ein Problem melden, und ergänzt sie laut eigener Beschreibung um Signale aus sozialen Medien und anderen Online-Quellen. Für jeden Dienst berechnet Downdetector eine Grundlinie: die durchschnittliche Zahl der Meldungen zur selben Tageszeit über das vergangene Jahr. Liegt die aktuelle Zahl deutlich darüber, gilt das als Störung. Wie die Quellen gewichtet werden und ab welchem Faktor ein Ausschlag als Störung zählt, veröffentlicht Downdetector nicht.
+
+Daraus folgen drei Eigenschaften, die in der Berichterstattung oft untergehen:
+
+1.  **Meldungen sind keine betroffenen Benutzer.** Eine Zahl wie «20'000 Meldungen» sagt nichts darüber, wie viele Kunden tatsächlich keinen Zugriff hatten. Sie zählt Menschen, die ein Problem bemerkt und Downdetector aufgerufen haben.
+
+2.  **Benutzer melden den Dienst, den sie sehen.** Fällt ein Zahlungsnetz, ein Cloud-Anbieter oder ein Identitätsdienst aus, erscheinen die Meldungen bei den Banken, Apps und Shops, die davon abhängen. Die Ursache ist im Diagramm nicht erkennbar.
+
+3.  **Die Grundlinie bildet keine Ausnahmewochen ab.** Berichten Medien laufend über Ausfälle, prüfen mehr Menschen bei jeder Verzögerung, ob ein Dienst gestört ist. Jede neue Schlagzeile erhöht die Zahl der Meldungen auch bei Diensten, die normal laufen.
+
+## Die Zahlen der Woche
+
+Laut Axios gingen bei Downdetector in den sieben Tagen bis zum 16. November fast 6 Millionen Problemmeldungen aus den USA ein, der höchste Wochenwert seit einem Jahr. Dieselbe Auswertung zeigt aber auch: Über 30 Tage betrachtet gab es drei grosse Ausfälle, üblich sind fünf. Die Rekordzahl an Meldungen steht damit einer eher unterdurchschnittlichen Zahl tatsächlicher Grossstörungen gegenüber.
+
+Mehrere Fälle der Woche zeigen, wie weit Meldungen und Lage auseinanderliegen können:
+
+- **Banken am 16. November:** Medien schrieben unter Berufung auf Downdetector, dass Benutzer bei «praktisch jeder grossen US-Bank» Probleme meldeten, darunter Chase, Wells Fargo und Capital One. Chase selbst sprach von Transaktionen, die länger dauerten; Kunden hätten weiterhin Zugriff auf Konten und Guthaben. Laut New York Times lag die Ursache in einem Softwarefehler in eigener Hardware von JPMorgan Chase, der andere Banken über gemeinsame Transaktionen mitbetroffen haben könnte. Eigene Störungen haben die anderen Banken nicht bestätigt.
+
+- **Gmail am 16. und 17. November:** Downdetector zeigte über 2'800 Meldungen, vor allem zu nicht zugestellten E-Mails. Google erklärte, es gebe keine Hinweise auf eine breite Störung, das Workspace Status Dashboard blieb ohne Eintrag.
+
+- **Charles Schwab am 17. November:** Laut Wall Street Journal stiegen die Meldungen gegen 9:50 Uhr Ortszeit an und fielen eine halbe Stunde später wieder ab. Eine Störungsmeldung von Schwab dazu gibt es nicht.
+
+- **Exchange Online am 12. November:** Für dieselbe Störung nannte Reuters über 97'000 Meldungen, ein Lokalsender fast 119'000, beide zu unterschiedlichen Zeitpunkten. Die Meldungen stiegen laut Downdetector erst rund 68 Minuten nach dem Beginn, den Microsoft im Admin Center angibt.
+
+Die Ausfälle bei FAA, AWS, Chase, United und Apple waren real und durch die Betreiber bestätigt. Übertrieben war die Verknüpfung: Aus fünf unabhängigen Störungen und einem allgemeinen Anstieg der Meldungen entstand die Erzählung einer koordinierten Attacke. Die Sprecherin des Weissen Hauses sagte am 17. November, es gebe keine Krise, über die sich Amerikaner Sorgen machen müssten. Liz Fong-Jones (Honeycomb) sagte Axios, die Vorfälle hätten sehr wenig gemeinsam.
+
+## Wo die Kritik ansetzt
+
+Die Kritik kommt aus mehreren Richtungen. Betreiber wie Google widersprechen öffentlich, wenn Downdetector eine Störung anzeigt, die sie in ihren eigenen Daten nicht sehen. Fachmedien weisen darauf hin, dass Downdetector Meldungen statt betroffener Benutzer zählt, Störungen verspätet anzeigt und Ausfälle in Komponenten, die Endkunden nicht sehen, gar nicht erfasst. In Diskussionen unter Entwicklern, etwa auf Hacker News, kursiert zudem die Vermutung, dass schon der Aufruf einer Seite wie «Ist Chase gestört?» als implizite Meldung zählt und sich so Ausschläge von einem Dienst auf ähnliche Dienste übertragen. Downdetector hat diese Vermutung nicht bestätigt; belegt ist nur, dass die Plattform neben aktiven Meldungen weitere Online-Quellen auswertet und deren Gewichtung nicht offenlegt.
+
+Die Verteidiger der Plattform halten dagegen, dass Downdetector Störungen oft früher zeigt als die Statusseiten der Anbieter. Beim Apple-Ausfall am 17. November meldete die Apple-Statusseite noch normale Verfügbarkeit, als die Meldungen bereits stark anstiegen. Als Frühwarnung ist der Dienst brauchbar. Als Mass für das Ausmass einer Störung ist er es nicht, und genau so wurde er in dieser Woche verwendet: Schlagzeilen wie «Tausende melden Probleme» standen ohne Einordnung neben bestätigten Ausfällen.
+
+## Störungen besser einordnen
+
+Für Administratoren, die bei einer gemeldeten Störung entscheiden müssen, ob sie Benutzer informieren oder Massnahmen einleiten, ergibt sich eine einfache Reihenfolge:
+
+1.  **Statusseite und Admin-Portal des Anbieters prüfen.** Für Microsoft 365 ist das Service Health im Admin Center, nicht die öffentliche Statusseite. AWS, Google Cloud, Cloudflare und Apple führen eigene Statusseiten mit Zeitstempeln.
+
+2.  **Eigene Messung heranziehen.** Ein einfacher synthetischer Test (Anmeldung, Mailversand, Abruf einer Seite) aus dem eigenen Netz zeigt, ob die eigene Organisation betroffen ist. Mein [M365-Verbindungsmonitor](https://rafaelpfister.ch/liveticker) prüft dafür alle fünf Minuten die Erreichbarkeit der Microsoft-365-Endpunkte aus Europa.
+
+3.  **Downdetector nur als Hinweis lesen.** Ein Ausschlag ist ein Anlass, nachzusehen. Die absolute Zahl und Ausschläge bei mehreren ähnlichen Diensten gleichzeitig sagen wenig über Ursache und Ausmass.
+
+4.  **Regionale Herkunft beachten.** Die meisten Zahlen in Medienberichten beziehen sich auf die US-Seite von Downdetector. Für Benutzer in der Schweiz sind sie nur dann relevant, wenn der Anbieter die Störung auch für europäische Regionen bestätigt.
+
+## Der Liveticker
+
+Den Liveticker zur Ausfallserie habe ich mit diesem Artikel abgeschlossen. Er bleibt als Chronik der Woche online, mit einem Schlussfazit zu den einzelnen Ursachen und dem Hinweis, dass Europa ausser bei Transatlantikflügen und der weltweiten iCloud-Störung nicht betroffen war.
+
+## Quellen
+
+1.  [Axios: Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking): fast 6 Millionen Downdetector-Meldungen in sieben Tagen, drei statt üblich fünf grosse Ausfälle in 30 Tagen, Einschätzung von Liz Fong-Jones.
+
+2.  [PPC Land: Downdetector](https://ppc.land/downdetector/): Funktionsweise, Grundlinie pro Tageszeit, Übernahme durch Accenture, abweichende Zahlen zur Exchange-Online-Störung vom 12. November.
+
+3.  [Futurism: Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage): Downdetector-Meldungen bei mehreren US-Banken, Stellungnahme von Chase.
+
+4.  [Hot Air: More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101): zitiert New York Times und Wall Street Journal zu Apple, Charles Schwab und der Ursache bei JPMorgan Chase.
+
+5.  [Pasquale Pillitteri: Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports): Downdetector-Meldungen zu Gmail und Dementi von Google.
+
+6.  [Forbes: Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/): Übersicht der Erklärungen der Betreiber.
+
+7.  [Time: What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/): Verlauf des Apple-Ausfalls, Statusseite hinter den Meldungen.
+
+8.  [Hacker News: Diskussion zur Methodik von Downdetector](https://news.ycombinator.com/item?id=50521819): Vermutungen zu impliziten Meldungen und Übertragung zwischen ähnlichen Diensten, nicht von Downdetector bestätigt.
+
+9.  [WMTV: Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/): Einschätzung eines Sicherheitsexperten, keine Hinweise auf einen Zusammenhang.
+
+----
+
 # Proofpoint Essentials November 2026: neue Graph-Berechtigung für Message Pull bis Januar 2027
 
 URL: https://rafaelpfister.ch/blog/proofpoint-essentials-november-2026
@@ -22628,6 +22709,87 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Downdetector Under Fire: What the U.S. Outage Week Reveals About Incident Reports
+
+URL: https://rafaelpfister.ch/en/blog/downdetector-under-fire-what-the-u-s-outage-week-reveals-about-incident-reports
+Datum: 2026-11-18
+
+# Downdetector Under Fire: What the U.S. Outage Week Reveals About Incident Reports
+
+From November 13 to 17, 2026, several major systems went down in the United States: the FAA's air traffic control system, with a nationwide ground stop; parts of AWS in the us-east-1 region; JPMorgan Chase; United Airlines' ground operations; and, on Tuesday, iCloud sign-in and other Apple services. I followed the series in a [live ticker](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11). After the week ended, one thing was clear: the outages had separate causes, there is no indication of a cyberattack, and Europe was affected only marginally. Yet the public perception was that the internet was failing everywhere at once. A large part of that impression came from Downdetector charts, which were cited in almost every media report. That has drawn widespread criticism since Monday.
+
+## What Downdetector measures
+
+Downdetector belongs to Ookla and, since June 17, 2026, to Accenture. The platform collects problem reports from users who report an issue on a service's page and, according to its own description, supplements them with signals from social media and other online sources. For each service, Downdetector calculates a baseline: the average number of reports at the same time of day over the past year. If the current number is significantly higher, it is considered an outage. Downdetector does not publish how it weights its sources or the multiplier at which a spike counts as an outage.
+
+This has three implications that are often overlooked in reporting:
+
+1.  **Reports are not affected users.** A figure such as “20,000 reports” says nothing about how many customers actually lost access. It counts people who noticed a problem and visited Downdetector.
+
+2.  **Users report the service they see.** If a payment network, cloud vendor, or identity service goes down, reports appear under the banks, apps, and stores that depend on it. The cause cannot be identified in the chart.
+
+3.  **The baseline does not account for exceptional weeks.** If media outlets continuously report outages, more people check whether a service is disrupted whenever there is a delay. Every new headline increases the number of reports, including for services operating normally.
+
+## The week's figures
+
+According to Axios, Downdetector received nearly 6 million problem reports from the United States in the seven days through November 16, the highest weekly total in a year. However, the same analysis also shows that there were three major outages over 30 days, compared with the usual five. The record number of reports therefore coincided with a somewhat below-average number of actual major disruptions.
+
+Several cases from the week show how far apart reports and the actual situation can be:
+
+- **Banks on November 16:** Citing Downdetector, media outlets wrote that users were reporting problems at “virtually every major U.S. bank,” including Chase, Wells Fargo, and Capital One. Chase itself said transactions were taking longer; customers still had access to accounts and balances. According to the New York Times, the cause was a software error in JPMorgan Chase's own hardware, which may have affected other banks through shared transactions. The other banks did not confirm outages of their own.
+
+- **Gmail on November 16 and 17:** Downdetector showed more than 2,800 reports, mainly concerning undelivered emails. Google said there was no indication of a widespread outage, and the Workspace Status Dashboard remained without an entry.
+
+- **Charles Schwab on November 17:** According to the Wall Street Journal, reports rose around 9:50 a.m. local time and fell again half an hour later. There is no outage notice from Schwab.
+
+- **Exchange Online on November 12:** For the same outage, Reuters cited more than 97,000 reports, while a local TV station cited nearly 119,000, both at different times. According to Downdetector, reports did not start rising until about 68 minutes after the start time Microsoft lists in the Admin Center.
+
+The outages at the FAA, AWS, Chase, United, and Apple were real and confirmed by the operators. What was exaggerated was the connection drawn between them: five independent incidents and a general increase in reports became the narrative of a coordinated attack. The White House spokesperson said on November 17 that there was no crisis Americans needed to worry about. Liz Fong-Jones of Honeycomb told Axios the incidents had very little in common.
+
+## Where the criticism begins
+
+The criticism comes from several directions. Operators such as Google publicly object when Downdetector shows an outage that they do not see in their own data. Trade media point out that Downdetector counts reports rather than affected users, displays outages with a delay, and does not capture outages in components that end customers cannot see at all. Discussions among developers, such as on Hacker News, have also raised the theory that simply visiting a page such as “Is Chase down?” counts as an implicit report, allowing spikes to spread from one service to similar services. Downdetector has not confirmed this theory; the only established fact is that the platform evaluates other online sources in addition to active reports and does not disclose their weighting.
+
+Defenders of the platform counter that Downdetector often shows outages earlier than vendors' status pages. During the Apple outage on November 17, Apple's status page still showed normal availability when reports were already rising sharply. The service is useful as an early warning system. It is not a measure of an outage's scope, yet that is exactly how it was used that week: headlines such as “Thousands report problems” appeared alongside confirmed outages without context.
+
+## Better assessing incidents
+
+For administrators who need to decide whether to inform users or initiate action when an outage is reported, the sequence is straightforward:
+
+1.  **Check the vendor's status page and admin portal.** For Microsoft 365, that means Service Health in the Admin Center, not the public status page. AWS, Google Cloud, Cloudflare, and Apple maintain their own timestamped status pages.
+
+2.  **Use your own measurements.** A simple synthetic test—sign-in, sending email, retrieving a page—from your own network shows whether your organization is affected. My [M365 connectivity monitor](https://rafaelpfister.ch/liveticker) checks the reachability of Microsoft 365 endpoints from Europe every five minutes.
+
+3.  **Read Downdetector only as an indication.** A spike is a reason to investigate. The absolute number and spikes across several similar services at the same time say little about the cause or scope.
+
+4.  **Consider regional origin.** Most figures in media reports refer to Downdetector's U.S. site. For users in Switzerland, they are relevant only if the vendor also confirms the outage for European regions.
+
+## The live ticker
+
+I concluded the live ticker on the outage series with this article. It remains online as a chronicle of the week, including a final assessment of the individual causes and the note that Europe was not affected except for transatlantic flights and the worldwide iCloud outage.
+
+## Sources
+
+1.  [Axios: Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking): nearly 6 million Downdetector reports in seven days, three major outages rather than the usual five over 30 days, and Liz Fong-Jones's assessment.
+
+2.  [PPC Land: Downdetector](https://ppc.land/downdetector/): how it works, baseline by time of day, acquisition by Accenture, and differing figures for the Exchange Online outage on November 12.
+
+3.  [Futurism: Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage): Downdetector reports at several U.S. banks and Chase's statement.
+
+4.  [Hot Air: More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101): cites the New York Times and Wall Street Journal on Apple, Charles Schwab, and the cause at JPMorgan Chase.
+
+5.  [Pasquale Pillitteri: Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports): Downdetector reports concerning Gmail and Google's denial.
+
+6.  [Forbes: Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/): overview of the operators' explanations.
+
+7.  [Time: What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/): timeline of the Apple outage, with the status page lagging behind reports.
+
+8.  [Hacker News: Discussion of Downdetector's methodology](https://news.ycombinator.com/item?id=50521819): theories about implicit reports and spillover between similar services, not confirmed by Downdetector.
+
+9.  [WMTV: Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/): assessment by a security expert, with no indication of a connection.
+
+----
+
 # Proofpoint Essentials November 2026: New Graph Permission for Message Pull Required by January 2027
 
 URL: https://rafaelpfister.ch/en/blog/proofpoint-essentials-november-2026-new-graph-permission-for-message-pull-required-by-january
@@ -45186,6 +45348,87 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Downdetector sous le feu des critiques : ce que la semaine de pannes aux États-Unis révèle sur les signalements d’incidents
+
+URL: https://rafaelpfister.ch/fr/blog/downdetector-sous-le-feu-des-critiques-ce-que-la-semaine-de-pannes-aux-etats-unis-revele-sur
+Datum: 2026-11-18
+
+# Downdetector sous le feu des critiques : ce que la semaine de pannes aux États-Unis révèle sur les signalements d’incidents
+
+Du 13 au 17 novembre 2026, plusieurs grands systèmes sont tombés en panne aux États-Unis : le contrôle aérien de la FAA avec une interdiction nationale de décollage, certaines parties d’AWS dans la région us-east-1, la banque JPMorgan Chase, les opérations au sol de United Airlines et, mardi, la connexion à iCloud ainsi que d’autres services d’Apple. J’ai suivi cette série dans un [fil en direct](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11). À l’issue de la semaine, le constat est clair : les pannes avaient des causes distinctes, rien n’indique une cyberattaque et l’Europe n’a été touchée qu’à la marge. Dans l’opinion publique, l’image d’un Internet qui tombe simultanément en panne de toutes parts s’est pourtant imposée. Une grande partie de cette image provient des graphiques de Downdetector, cités dans presque tous les articles de presse. C’est là que s’inscrit la critique généralisée depuis lundi.
+
+## Ce que mesure Downdetector
+
+Downdetector appartient à Ookla et donc, depuis le 17 juin 2026, à Accenture. La plateforme collecte les signalements de problèmes de la part d’utilisateurs qui signalent un incident sur la page d’un service et les complète, selon sa propre description, par des signaux issus des médias sociaux et d’autres sources en ligne. Pour chaque service, Downdetector calcule une référence : le nombre moyen de signalements à la même heure de la journée au cours de l’année écoulée. Si le nombre actuel est nettement supérieur, il est considéré comme une panne. Downdetector ne publie ni la pondération des sources ni le facteur à partir duquel un pic est considéré comme une panne.
+
+Il en découle trois caractéristiques souvent négligées dans la couverture médiatique :
+
+1.  **Les signalements ne correspondent pas au nombre d’utilisateurs touchés.** Un chiffre tel que « 20’000 signalements » ne dit rien du nombre de clients qui n’avaient effectivement plus accès au service. Il compte les personnes qui ont constaté un problème et consulté Downdetector.
+
+2.  **Les utilisateurs signalent le service qu’ils voient.** Lorsqu’un réseau de paiement, un fournisseur cloud ou un service d’identité tombe en panne, les signalements apparaissent chez les banques, applications et boutiques qui en dépendent. La cause n’est pas identifiable dans le graphique.
+
+3.  **La référence ne reflète pas les semaines exceptionnelles.** Lorsque les médias parlent continuellement de pannes, davantage de personnes vérifient, au moindre retard, si un service est perturbé. Chaque nouveau titre augmente le nombre de signalements, même pour des services qui fonctionnent normalement.
+
+## Les chiffres de la semaine
+
+Selon Axios, Downdetector a reçu près de 6 millions de signalements de problèmes en provenance des États-Unis au cours des sept jours précédant le 16 novembre, soit le total hebdomadaire le plus élevé depuis un an. La même analyse montre toutefois que, sur 30 jours, il y a eu trois pannes majeures, contre cinq habituellement. Le nombre record de signalements contraste donc avec un nombre de pannes majeures réelles plutôt inférieur à la moyenne.
+
+Plusieurs cas de la semaine montrent à quel point les signalements peuvent différer de la situation réelle :
+
+- **Banques le 16 novembre :** les médias ont écrit, en se référant à Downdetector, que des utilisateurs signalaient des problèmes auprès de « pratiquement toutes les grandes banques américaines », notamment Chase, Wells Fargo et Capital One. Chase a elle-même indiqué que certaines transactions prenaient plus de temps ; les clients continuaient d’avoir accès à leurs comptes et à leurs soldes. Selon le New York Times, la cause était un bug logiciel dans le matériel propre à JPMorgan Chase, qui aurait pu affecter d’autres banques via des transactions partagées. Les autres banques n’ont pas confirmé leurs propres incidents.
+
+- **Gmail les 16 et 17 novembre :** Downdetector a affiché plus de 2’800 signalements, principalement concernant des e-mails non distribués. Google a déclaré n’avoir aucun indice d’une panne généralisée ; le Workspace Status Dashboard ne comportait aucune entrée.
+
+- **Charles Schwab le 17 novembre :** selon le Wall Street Journal, les signalements ont augmenté vers 9 h 50, heure locale, puis sont retombés une demi-heure plus tard. Aucun avis d’incident de Schwab n’existe à ce sujet.
+
+- **Exchange Online le 12 novembre :** Reuters a fait état de plus de 97’000 signalements pour la même panne, contre près de 119’000 pour une chaîne locale, tous deux à des moments différents. Selon Downdetector, les signalements n’ont commencé à augmenter qu’environ 68 minutes après le début indiqué par Microsoft dans l’Admin Center.
+
+Les pannes de la FAA, d’AWS, de Chase, de United et d’Apple étaient réelles et confirmées par les opérateurs. C’est leur mise en relation qui était exagérée : cinq incidents indépendants et une hausse générale des signalements ont donné naissance au récit d’une attaque coordonnée. La porte-parole de la Maison-Blanche a déclaré le 17 novembre qu’il n’y avait pas de crise dont les Américains devaient s’inquiéter. Liz Fong-Jones (Honeycomb) a déclaré à Axios que les incidents avaient très peu de choses en commun.
+
+## D’où vient la critique
+
+Les critiques viennent de plusieurs côtés. Des opérateurs tels que Google contredisent publiquement Downdetector lorsque celui-ci affiche une panne qu’ils ne constatent pas dans leurs propres données. Les médias spécialisés soulignent que Downdetector compte les signalements plutôt que les utilisateurs touchés, affiche les pannes avec retard et ne détecte pas du tout les défaillances de composants invisibles pour les clients finaux. Dans les discussions entre développeurs, notamment sur Hacker News, circule en outre l’hypothèse que le simple appel d’une page telle que « Chase est-il en panne ? » compte comme un signalement implicite et que les pics se propagent ainsi d’un service à des services similaires. Downdetector n’a pas confirmé cette hypothèse ; il est seulement établi que la plateforme analyse, en plus des signalements actifs, d’autres sources en ligne et ne divulgue pas leur pondération.
+
+Les défenseurs de la plateforme rétorquent que Downdetector montre souvent les pannes plus tôt que les pages de statut des fournisseurs. Lors de la panne d’Apple le 17 novembre, la page de statut d’Apple indiquait encore une disponibilité normale alors que les signalements augmentaient déjà fortement. Le service est utile comme alerte précoce. En revanche, il ne constitue pas une mesure de l’ampleur d’une panne, et c’est précisément ainsi qu’il a été utilisé cette semaine : des titres tels que « Des milliers de personnes signalent des problèmes » côtoyaient, sans mise en contexte, des pannes confirmées.
+
+## Mieux interpréter les incidents
+
+Pour les administrateurs qui doivent décider, face à un incident signalé, s’ils doivent informer les utilisateurs ou prendre des mesures, une séquence simple se dégage :
+
+1.  **Vérifier la page de statut et le portail d’administration du fournisseur.** Pour Microsoft 365, il s’agit de Service Health dans l’Admin Center, et non de la page de statut publique. AWS, Google Cloud, Cloudflare et Apple disposent de leurs propres pages de statut horodatées.
+
+2.  **S’appuyer sur ses propres mesures.** Un simple test synthétique (connexion, envoi d’e-mail, consultation d’une page) depuis son propre réseau montre si sa propre organisation est touchée. Mon [moniteur de connectivité M365](https://rafaelpfister.ch/liveticker) vérifie toutes les cinq minutes l’accessibilité des points de terminaison Microsoft 365 depuis l’Europe.
+
+3.  **Ne considérer Downdetector que comme un indice.** Un pic est une raison de vérifier. Le chiffre absolu et les pics simultanés chez plusieurs services similaires disent peu de chose sur la cause et l’ampleur.
+
+4.  **Tenir compte de l’origine régionale.** La plupart des chiffres cités dans les médias se rapportent à la version américaine de Downdetector. Pour les utilisateurs en Suisse, ils ne sont pertinents que si le fournisseur confirme également l’incident pour les régions européennes.
+
+## Le fil en direct
+
+J’ai clôturé le fil en direct consacré à la série de pannes avec cet article. Il reste disponible en ligne comme chronique de la semaine, avec une conclusion sur les différentes causes et la précision que l’Europe n’a pas été touchée, sauf pour les vols transatlantiques et la panne mondiale d’iCloud.
+
+## Sources
+
+1.  [Axios : Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking) : près de 6 millions de signalements Downdetector en sept jours, trois pannes majeures au lieu des cinq habituelles en 30 jours, évaluation de Liz Fong-Jones.
+
+2.  [PPC Land : Downdetector](https://ppc.land/downdetector/) : fonctionnement, référence par heure de la journée, acquisition par Accenture, chiffres divergents concernant la panne d’Exchange Online du 12 novembre.
+
+3.  [Futurism : Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage) : signalements Downdetector auprès de plusieurs banques américaines, déclaration de Chase.
+
+4.  [Hot Air : More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101) : cite le New York Times et le Wall Street Journal au sujet d’Apple, de Charles Schwab et de la cause chez JPMorgan Chase.
+
+5.  [Pasquale Pillitteri : Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports) : signalements Downdetector concernant Gmail et démenti de Google.
+
+6.  [Forbes : Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/) : aperçu des explications des opérateurs.
+
+7.  [Time : What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/) : déroulement de la panne d’Apple, page de statut en retard sur les signalements.
+
+8.  [Hacker News : Discussion sur la méthodologie de Downdetector](https://news.ycombinator.com/item?id=50521819) : hypothèses sur les signalements implicites et leur propagation entre services similaires, non confirmées par Downdetector.
+
+9.  [WMTV : Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/) : évaluation d’un expert en sécurité, aucun indice d’un lien entre les incidents.
 
 ----
 
@@ -67749,6 +67992,87 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# Downdetector sotto accusa: cosa mostra la settimana di interruzioni negli USA sulle segnalazioni di disservizi
+
+URL: https://rafaelpfister.ch/it/blog/downdetector-sotto-accusa-cosa-mostra-la-settimana-di-interruzioni-negli-usa-sulle-segnalazioni
+Datum: 2026-11-18
+
+# Downdetector sotto accusa: cosa mostra la settimana di interruzioni negli USA sulle segnalazioni di disservizi
+
+Dal 13 al 17 novembre 2026, negli USA sono andati in tilt diversi grandi sistemi: il controllo del traffico aereo FAA con un divieto di decollo a livello nazionale, parti di AWS nella regione us-east-1, la banca JPMorgan Chase, le operazioni di assistenza a terra di United Airlines e, martedì, l’accesso a iCloud e altri servizi di Apple. Ho seguito la serie in un [live ticker](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11). Alla fine della settimana è chiaro: le interruzioni avevano cause distinte, non ci sono indizi di un attacco informatico e l’Europa è stata coinvolta solo marginalmente. Nell’opinione pubblica si è comunque diffusa l’immagine di un Internet che smette di funzionare contemporaneamente ovunque. Gran parte di questa immagine proviene dai grafici di Downdetector, citati in quasi tutti gli articoli dei media. Da lunedì sono al centro di ampie critiche.
+
+## Cosa misura Downdetector
+
+Downdetector appartiene a Ookla e, dal 17 giugno 2026, quindi ad Accenture. La piattaforma raccoglie le segnalazioni di problemi degli utenti, che indicano un problema sulla pagina di un servizio, e le integra, secondo la propria descrizione, con segnali provenienti dai social media e da altre fonti online. Per ciascun servizio, Downdetector calcola una linea di base: il numero medio di segnalazioni alla stessa ora del giorno nell’ultimo anno. Se il numero attuale è sensibilmente superiore, viene considerato un disservizio. Downdetector non pubblica né la ponderazione delle fonti né il fattore oltre il quale un picco viene classificato come disservizio.
+
+Ne derivano tre caratteristiche che spesso passano inosservate nella copertura mediatica:
+
+1.  **Le segnalazioni non corrispondono agli utenti interessati.** Un numero come «20'000 segnalazioni» non dice nulla sul numero di clienti che non hanno effettivamente avuto accesso. Conta le persone che hanno notato un problema e hanno aperto Downdetector.
+
+2.  **Gli utenti segnalano il servizio che vedono.** Se una rete di pagamenti, un provider cloud o un servizio di identità smette di funzionare, le segnalazioni compaiono presso le banche, le app e i negozi che ne dipendono. La causa non è riconoscibile nel grafico.
+
+3.  **La linea di base non rappresenta settimane eccezionali.** Se i media riferiscono continuamente di interruzioni, più persone verificano a ogni ritardo se un servizio è in panne. Ogni nuovo titolo aumenta il numero delle segnalazioni anche per servizi che funzionano normalmente.
+
+## I numeri della settimana
+
+Secondo Axios, nei sette giorni fino al 16 novembre Downdetector ha ricevuto dagli USA quasi 6 milioni di segnalazioni di problemi, il valore settimanale più alto dell’ultimo anno. La stessa analisi mostra però anche che, considerando 30 giorni, si sono verificati tre grandi disservizi, mentre normalmente sono cinque. Il numero record di segnalazioni si contrappone quindi a un numero di grandi interruzioni effettive piuttosto inferiore alla media.
+
+Diversi casi della settimana mostrano quanto possano divergere le segnalazioni e la situazione reale:
+
+- **Banche il 16 novembre:** i media hanno scritto, citando Downdetector, che gli utenti segnalavano problemi presso «praticamente ogni grande banca statunitense», fra cui Chase, Wells Fargo e Capital One. Chase stessa ha parlato di transazioni più lente; i clienti continuavano ad avere accesso ai conti e ai saldi. Secondo il New York Times, la causa era un errore software nell’hardware proprietario di JPMorgan Chase, che potrebbe aver coinvolto altre banche attraverso transazioni condivise. Le altre banche non hanno confermato propri disservizi.
+
+- **Gmail il 16 e 17 novembre:** Downdetector ha mostrato oltre 2'800 segnalazioni, soprattutto relative a e-mail non recapitate. Google ha dichiarato che non vi erano indizi di un disservizio diffuso; il Workspace Status Dashboard è rimasto senza avvisi.
+
+- **Charles Schwab il 17 novembre:** secondo il Wall Street Journal, le segnalazioni sono aumentate verso le 9:50 ora locale e sono nuovamente diminuite mezz’ora dopo. Non esiste una segnalazione di disservizio di Schwab in merito.
+
+- **Exchange Online il 12 novembre:** per lo stesso disservizio Reuters ha indicato oltre 97'000 segnalazioni, mentre un’emittente locale quasi 119'000, entrambe in momenti diversi. Secondo Downdetector, le segnalazioni sono aumentate solo circa 68 minuti dopo l’inizio indicato da Microsoft nell’Admin Center.
+
+Le interruzioni di FAA, AWS, Chase, United e Apple erano reali e confermate dagli operatori. Esagerato era il collegamento: da cinque disservizi indipendenti e da un aumento generale delle segnalazioni è nata la narrazione di un attacco coordinato. La portavoce della Casa Bianca ha dichiarato il 17 novembre che non c’era alcuna crisi di cui gli americani dovessero preoccuparsi. Liz Fong-Jones (Honeycomb) ha detto ad Axios che gli incidenti avevano ben poco in comune.
+
+## Su cosa si concentrano le critiche
+
+Le critiche provengono da più direzioni. Operatori come Google contraddicono pubblicamente Downdetector quando mostra un disservizio che non rilevano nei propri dati. Le testate specializzate sottolineano che Downdetector conta le segnalazioni anziché gli utenti interessati, indica i disservizi in ritardo e non rileva affatto le interruzioni nei componenti che i clienti finali non vedono. Nelle discussioni fra sviluppatori, per esempio su Hacker News, circola inoltre l’ipotesi che già l’apertura di una pagina come «Chase è in panne?» venga conteggiata come segnalazione implicita e che i picchi possano così trasferirsi da un servizio a servizi simili. Downdetector non ha confermato questa ipotesi; è documentato soltanto che, oltre alle segnalazioni attive, la piattaforma valuta altre fonti online e non ne divulga la ponderazione.
+
+I difensori della piattaforma ribattono che Downdetector spesso mostra i disservizi prima delle pagine di stato dei provider. Durante l’interruzione di Apple del 17 novembre, la pagina di stato di Apple indicava ancora disponibilità normale quando le segnalazioni erano già in forte aumento. Come sistema di allerta precoce, il servizio è utile. Non lo è come misura dell’entità di un disservizio, ed è proprio così che è stato usato quella settimana: titoli come «Migliaia segnalano problemi» apparivano senza contesto accanto a interruzioni confermate.
+
+## Interpretare meglio i disservizi
+
+Per gli amministratori che, a fronte di un disservizio segnalato, devono decidere se informare gli utenti o avviare misure, ne deriva una semplice sequenza:
+
+1.  **Controllare la pagina di stato e il portale di amministrazione del provider.** Per Microsoft 365 si tratta di Service Health nell’Admin Center, non della pagina di stato pubblica. AWS, Google Cloud, Cloudflare e Apple gestiscono pagine di stato proprie con indicazioni orarie.
+
+2.  **Fare riferimento alle proprie misurazioni.** Un semplice test sintetico (accesso, invio di e-mail, recupero di una pagina) dalla propria rete mostra se la propria organizzazione è coinvolta. Il mio [monitor di connettività M365](https://rafaelpfister.ch/liveticker) verifica ogni cinque minuti la raggiungibilità degli endpoint Microsoft 365 dall’Europa.
+
+3.  **Leggere Downdetector solo come indicazione.** Un picco è un motivo per verificare. Il numero assoluto e i picchi simultanei presso più servizi simili dicono poco sulla causa e sull’entità.
+
+4.  **Considerare l’origine regionale.** La maggior parte dei numeri riportati dai media si riferisce alla versione statunitense di Downdetector. Per gli utenti in Svizzera sono rilevanti solo se il provider conferma il disservizio anche per le regioni europee.
+
+## Il live ticker
+
+Ho concluso il live ticker sulla serie di interruzioni con questo articolo. Rimane online come cronaca della settimana, con una conclusione sulle singole cause e l’indicazione che l’Europa non è stata coinvolta, fatta eccezione per i voli transatlantici e il disservizio globale di iCloud.
+
+## Fonti
+
+1.  [Axios: Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking): quasi 6 milioni di segnalazioni Downdetector in sette giorni, tre anziché i consueti cinque grandi disservizi in 30 giorni, valutazione di Liz Fong-Jones.
+
+2.  [PPC Land: Downdetector](https://ppc.land/downdetector/): funzionamento, linea di base per ora del giorno, acquisizione da parte di Accenture, cifre divergenti sul disservizio di Exchange Online del 12 novembre.
+
+3.  [Futurism: Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage): segnalazioni Downdetector presso diverse banche statunitensi, dichiarazione di Chase.
+
+4.  [Hot Air: More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101): cita New York Times e Wall Street Journal su Apple, Charles Schwab e la causa presso JPMorgan Chase.
+
+5.  [Pasquale Pillitteri: Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports): segnalazioni Downdetector su Gmail e smentita di Google.
+
+6.  [Forbes: Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/): panoramica delle spiegazioni degli operatori.
+
+7.  [Time: What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/): andamento dell’interruzione di Apple, pagina di stato in ritardo rispetto alle segnalazioni.
+
+8.  [Hacker News: Discussione sulla metodologia di Downdetector](https://news.ycombinator.com/item?id=50521819): ipotesi sulle segnalazioni implicite e sul trasferimento fra servizi simili, non confermate da Downdetector.
+
+9.  [WMTV: Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/): valutazione di un esperto di sicurezza, nessun indizio di un collegamento.
+
+----
+
 # Proofpoint Essentials novembre 2026: nuova autorizzazione Graph per Message Pull entro gennaio 2027
 
 URL: https://rafaelpfister.ch/it/blog/proofpoint-essentials-novembre-2026-nuova-autorizzazione-graph-per-message-pull-entro-gennaio
@@ -90309,6 +90633,87 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# Downdetector bajo crítica: lo que la semana de caídas en EE. UU. revela sobre los reportes de incidencias
+
+URL: https://rafaelpfister.ch/es/blog/downdetector-bajo-critica-lo-que-la-semana-de-caidas-en-ee-uu-revela-sobre-los-reportes-de
+Datum: 2026-11-18
+
+# Downdetector bajo crítica: lo que la semana de caídas en EE. UU. revela sobre los reportes de incidencias
+
+Del 13 al 17 de noviembre de 2026 fallaron varios sistemas importantes en Estados Unidos: la administración de aviación FAA, con una prohibición nacional de despegues; partes de AWS en la región us-east-1; el banco JPMorgan Chase; la facturación de United Airlines y, el martes, el inicio de sesión de iCloud y otros servicios de Apple. Seguí la serie en un [minuto a minuto](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11). Al concluir la semana, queda claro que las caídas tuvieron causas independientes, que no hay indicios de un ciberataque y que Europa solo se vio afectada de forma marginal. Sin embargo, en la percepción pública surgió la imagen de una Internet que falla simultáneamente por todas partes. Gran parte de esta imagen procede de los gráficos de Downdetector, citados en casi todos los informes de prensa. Desde el lunes, estos gráficos son objeto de amplias críticas.
+
+## Qué mide Downdetector
+
+Downdetector pertenece a Ookla y, desde el 17 de junio de 2026, por tanto a Accenture. La plataforma recopila reportes de problemas de usuarios que informan de una incidencia en la página de un servicio y, según su propia descripción, los complementa con señales de redes sociales y otras fuentes en línea. Para cada servicio, Downdetector calcula una línea de base: el promedio de reportes a la misma hora del día durante el último año. Si la cifra actual es significativamente superior, se considera una incidencia. Downdetector no publica cómo pondera las fuentes ni a partir de qué factor considera que un pico constituye una incidencia.
+
+De ello se derivan tres características que a menudo se pasan por alto en la cobertura informativa:
+
+1.  **Los reportes no son usuarios afectados.** Una cifra como «20.000 reportes» no dice nada sobre cuántos clientes realmente no tenían acceso. Cuenta a las personas que detectaron un problema y accedieron a Downdetector.
+
+2.  **Los usuarios reportan el servicio que ven.** Si falla una red de pagos, un proveedor de nube o un servicio de identidad, los reportes aparecen en los bancos, aplicaciones y tiendas que dependen de ellos. La causa no se aprecia en el gráfico.
+
+3.  **La línea de base no refleja semanas excepcionales.** Si los medios informan continuamente sobre caídas, más personas comprueban ante cada retraso si un servicio está afectado. Cada nuevo titular incrementa el número de reportes, incluso para servicios que funcionan con normalidad.
+
+## Las cifras de la semana
+
+Según Axios, Downdetector recibió casi 6 millones de reportes de problemas procedentes de Estados Unidos durante los siete días hasta el 16 de noviembre, el valor semanal más alto en un año. Sin embargo, el mismo análisis también muestra que, considerando 30 días, hubo tres grandes caídas, cuando lo habitual son cinco. Por tanto, la cifra récord de reportes contrasta con un número de grandes incidencias reales más bien inferior a la media.
+
+Varios casos de la semana muestran hasta qué punto pueden diferir los reportes de la situación real:
+
+- **Bancos el 16 de noviembre:** Los medios escribieron, citando a Downdetector, que los usuarios reportaban problemas en «prácticamente todos los grandes bancos estadounidenses», entre ellos Chase, Wells Fargo y Capital One. Chase afirmó que algunas transacciones tardaban más; los clientes seguían teniendo acceso a sus cuentas y saldos. Según The New York Times, la causa fue un error de software en hardware propio de JPMorgan Chase, que podría haber afectado a otros bancos mediante transacciones compartidas. Los demás bancos no confirmaron incidencias propias.
+
+- **Gmail el 16 y 17 de noviembre:** Downdetector mostró más de 2.800 reportes, principalmente sobre correos electrónicos no entregados. Google explicó que no había indicios de una incidencia generalizada y el Workspace Status Dashboard permaneció sin ninguna entrada.
+
+- **Charles Schwab el 17 de noviembre:** Según The Wall Street Journal, los reportes aumentaron hacia las 9:50 hora local y volvieron a descender media hora después. No existe ningún aviso de incidencia de Schwab al respecto.
+
+- **Exchange Online el 12 de noviembre:** Para la misma incidencia, Reuters mencionó más de 97.000 reportes y una emisora local casi 119.000, ambos en momentos distintos. Según Downdetector, los reportes no aumentaron hasta unos 68 minutos después del inicio indicado por Microsoft en el Admin Center.
+
+Las caídas de FAA, AWS, Chase, United y Apple fueron reales y confirmadas por los operadores. Lo exagerado fue vincularlas: de cinco incidencias independientes y un aumento general de los reportes surgió la narrativa de un ataque coordinado. La portavoz de la Casa Blanca dijo el 17 de noviembre que no había ninguna crisis de la que los estadounidenses debieran preocuparse. Liz Fong-Jones (Honeycomb) dijo a Axios que los incidentes tenían muy poco en común.
+
+## Dónde se centra la crítica
+
+Las críticas proceden de varias direcciones. Operadores como Google contradicen públicamente a Downdetector cuando este indica una incidencia que no observan en sus propios datos. Los medios especializados señalan que Downdetector cuenta reportes en lugar de usuarios afectados, muestra las incidencias con retraso y no registra en absoluto fallos en componentes que los clientes finales no ven. En debates entre desarrolladores, por ejemplo en Hacker News, también circula la hipótesis de que incluso abrir una página como «¿Está Chase caído?» cuenta como un reporte implícito y que, de ese modo, los picos se transfieren de un servicio a otros similares. Downdetector no ha confirmado esta hipótesis; solo está demostrado que la plataforma evalúa otras fuentes en línea además de los reportes activos y no revela su ponderación.
+
+Los defensores de la plataforma replican que Downdetector a menudo muestra incidencias antes que las páginas de estado de los proveedores. Durante la caída de Apple del 17 de noviembre, la página de estado de Apple aún mostraba disponibilidad normal cuando los reportes ya aumentaban considerablemente. Como alerta temprana, el servicio es útil. No lo es como medida de la magnitud de una incidencia, y precisamente así se utilizó esa semana: titulares como «Miles reportan problemas» aparecían sin contexto junto a caídas confirmadas.
+
+## Interpretar mejor las incidencias
+
+Para los administradores que, ante una incidencia reportada, deben decidir si informan a los usuarios o inician medidas, se desprende un orden sencillo:
+
+1.  **Comprobar la página de estado y el portal de administración del proveedor.** Para Microsoft 365, se trata de Service Health en el Admin Center, no de la página de estado pública. AWS, Google Cloud, Cloudflare y Apple mantienen sus propias páginas de estado con marcas de tiempo.
+
+2.  **Recurrir a mediciones propias.** Una prueba sintética sencilla (inicio de sesión, envío de correo, consulta de una página) desde la propia red muestra si la propia organización está afectada. Mi [monitor de conectividad de M365](https://rafaelpfister.ch/liveticker) comprueba cada cinco minutos la disponibilidad de los puntos de conexión de Microsoft 365 desde Europa.
+
+3.  **Leer Downdetector solo como indicio.** Un pico es un motivo para comprobar la situación. La cifra absoluta y los picos simultáneos en varios servicios similares dicen poco sobre la causa y la magnitud.
+
+4.  **Tener en cuenta el origen regional.** La mayoría de las cifras de los informes de prensa se refieren al sitio estadounidense de Downdetector. Para los usuarios en Suiza, solo son relevantes si el proveedor también confirma la incidencia para las regiones europeas.
+
+## El minuto a minuto
+
+He cerrado el minuto a minuto sobre la serie de caídas con este artículo. Permanece en línea como crónica de la semana, con una conclusión final sobre las causas individuales y la indicación de que Europa no se vio afectada, salvo en los vuelos transatlánticos y la incidencia mundial de iCloud.
+
+## Fuentes
+
+1.  [Axios: Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking): casi 6 millones de reportes de Downdetector en siete días, tres grandes caídas en 30 días en lugar de las cinco habituales, valoración de Liz Fong-Jones.
+
+2.  [PPC Land: Downdetector](https://ppc.land/downdetector/): funcionamiento, línea de base por hora del día, adquisición por Accenture, cifras divergentes sobre la incidencia de Exchange Online del 12 de noviembre.
+
+3.  [Futurism: Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage): reportes de Downdetector en varios bancos estadounidenses, declaración de Chase.
+
+4.  [Hot Air: More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101): cita a The New York Times y The Wall Street Journal sobre Apple, Charles Schwab y la causa en JPMorgan Chase.
+
+5.  [Pasquale Pillitteri: Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports): reportes de Downdetector sobre Gmail y desmentido de Google.
+
+6.  [Forbes: Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/): resumen de las explicaciones de los operadores.
+
+7.  [Time: What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/): desarrollo de la caída de Apple, página de estado por detrás de los reportes.
+
+8.  [Hacker News: Discusión sobre la metodología de Downdetector](https://news.ycombinator.com/item?id=50521819): hipótesis sobre reportes implícitos y transferencia entre servicios similares, no confirmadas por Downdetector.
+
+9.  [WMTV: Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/): valoración de un experto en seguridad, sin indicios de relación entre los incidentes.
+
+----
+
 # Proofpoint Essentials noviembre de 2026: nuevo permiso de Graph para Message Pull hasta enero de 2027
 
 URL: https://rafaelpfister.ch/es/blog/proofpoint-essentials-noviembre-de-2026-nuevo-permiso-de-graph-para-message-pull-hasta-enero-de
@@ -112863,6 +113268,87 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# Downdetector under kritik: Vad den amerikanska driftavbrottsveckan visar om felrapporter
+
+URL: https://rafaelpfister.ch/sv/blog/downdetector-under-kritik-vad-den-amerikanska-driftavbrottsveckan-visar-om-felrapporter
+Datum: 2026-11-18
+
+# Downdetector under kritik: Vad den amerikanska driftavbrottsveckan visar om felrapporter
+
+Mellan den 13 och 17 november 2026 drabbades flera stora system i USA av avbrott: flygtrafikledningen FAA med ett landsomfattande startförbud, delar av AWS i regionen us-east-1, banken JPMorgan Chase, markservicen hos United Airlines samt iCloud-inloggningen och andra tjänster från Apple på tisdagen. Jag följde händelseförloppet i en [liverapport](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11). När veckan var över stod det klart: Avbrotten hade separata orsaker, det finns inga tecken på en cyberattack och Europa berördes endast marginellt. Ändå uppstod i allmänhetens ögon bilden av ett internet som faller samman överallt samtidigt. En stor del av den bilden kommer från Downdetectors diagram, som citerades i nästan varje medierapport. Sedan i måndags har detta mött bred kritik.
+
+## Vad Downdetector mäter
+
+Downdetector tillhör Ookla och därmed Accenture sedan den 17 juni 2026. Plattformen samlar in problemrapporter från användare som rapporterar ett problem på en tjänsts sida och kompletterar enligt sin egen beskrivning detta med signaler från sociala medier och andra onlinekällor. För varje tjänst beräknar Downdetector en baslinje: det genomsnittliga antalet rapporter vid samma tid på dygnet under det senaste året. Om det aktuella antalet ligger tydligt över detta betraktas det som en störning. Downdetector publicerar inte hur källorna viktas eller vid vilken faktor en topp räknas som en störning.
+
+Detta medför tre egenskaper som ofta förbises i rapporteringen:
+
+1.  **Rapporter är inte detsamma som berörda användare.** En siffra som «20'000 rapporter» säger inget om hur många kunder som faktiskt saknade åtkomst. Den räknar personer som har märkt ett problem och öppnat Downdetector.
+
+2.  **Användare rapporterar den tjänst de ser.** Om ett betalningsnätverk, en molnleverantör eller en identitetstjänst slutar fungera, visas rapporterna hos de banker, appar och butiker som är beroende av dem. Orsaken syns inte i diagrammet.
+
+3.  **Baslinjen avspeglar inte exceptionella veckor.** Om medier löpande rapporterar om avbrott kontrollerar fler personer vid varje fördröjning om en tjänst är störd. Varje ny rubrik ökar antalet rapporter även för tjänster som fungerar normalt.
+
+## Veckans siffror
+
+Enligt Axios tog Downdetector emot nästan 6 miljoner problemrapporter från USA under de sju dagarna fram till den 16 november, det högsta veckovärdet på ett år. Samma analys visar dock också att det under en 30-dagarsperiod förekom tre stora avbrott, jämfört med normalt fem. Rekordantalet rapporter står därmed i kontrast till ett snarare undergenomsnittligt antal faktiska större störningar.
+
+Flera fall under veckan visar hur stort avståndet kan vara mellan rapporter och det faktiska läget:
+
+- **Banker den 16 november:** Medier skrev med hänvisning till Downdetector att användare rapporterade problem hos «nästan alla stora amerikanska banker», däribland Chase, Wells Fargo och Capital One. Chase uppgav självt att transaktioner tog längre tid; kunderna hade fortsatt åtkomst till konton och tillgodohavanden. Enligt New York Times låg orsaken i ett programvarufel i JPMorgan Chases egen hårdvara, vilket kan ha påverkat andra banker via gemensamma transaktioner. De andra bankerna bekräftade inga egna störningar.
+
+- **Gmail den 16 och 17 november:** Downdetector visade över 2'800 rapporter, främst om e-post som inte levererades. Google uppgav att det inte fanns några tecken på en omfattande störning och Workspace Status Dashboard förblev utan notis.
+
+- **Charles Schwab den 17 november:** Enligt Wall Street Journal steg rapporterna omkring klockan 9:50 lokal tid och föll igen en halvtimme senare. Det finns ingen störningsrapport från Schwab om detta.
+
+- **Exchange Online den 12 november:** Reuters angav över 97'000 rapporter för samma störning, medan en lokal tv-station angav nästan 119'000, båda vid olika tidpunkter. Enligt Downdetector började rapporterna först stiga omkring 68 minuter efter den starttid som Microsoft anger i Admin Center.
+
+Avbrotten hos FAA, AWS, Chase, United och Apple var verkliga och bekräftade av operatörerna. Det överdrivna var sammankopplingen: Fem oberoende störningar och en allmän ökning av rapporterna blev berättelsen om en samordnad attack. Vita husets talesperson sade den 17 november att det inte fanns någon kris som amerikaner behövde oroa sig för. Liz Fong-Jones (Honeycomb) sade till Axios att incidenterna hade mycket lite gemensamt.
+
+## Var kritiken riktas
+
+Kritiken kommer från flera håll. Operatörer som Google säger offentligt emot när Downdetector visar en störning som de inte ser i sina egna data. Fackmedier påpekar att Downdetector räknar rapporter i stället för berörda användare, visar störningar med fördröjning och inte alls fångar avbrott i komponenter som slutkunder inte ser. I diskussioner bland utvecklare, till exempel på Hacker News, förekommer dessutom antagandet att redan ett besök på en sida som «Är Chase störd?» räknas som en implicit rapport och att toppar på så sätt överförs från en tjänst till liknande tjänster. Downdetector har inte bekräftat detta antagande; det är endast belagt att plattformen utvärderar ytterligare onlinekällor utöver aktiva rapporter och inte redovisar deras viktning.
+
+Plattformens försvarare invänder att Downdetector ofta visar störningar tidigare än leverantörernas statussidor. Vid Apple-avbrottet den 17 november visade Apples statussida fortfarande normal tillgänglighet när rapporterna redan ökade kraftigt. Tjänsten är användbar som tidig varning. Den är inte ett mått på en störnings omfattning, och det var just så den användes denna vecka: Rubriker som «Tusentals rapporterar problem» stod utan sammanhang bredvid bekräftade avbrott.
+
+## Bedöm störningar bättre
+
+För administratörer som vid en rapporterad störning måste avgöra om de ska informera användare eller vidta åtgärder finns en enkel ordning:
+
+1.  **Kontrollera leverantörens statussida och administrationsportal.** För Microsoft 365 är det Service Health i Admin Center, inte den offentliga statussidan. AWS, Google Cloud, Cloudflare och Apple har egna statussidor med tidsstämplar.
+
+2.  **Använd egna mätningar.** Ett enkelt syntetiskt test (inloggning, e-postutskick, hämtning av en sida) från det egna nätverket visar om den egna organisationen påverkas. Min [M365-anslutningsmonitor](https://rafaelpfister.ch/liveticker) kontrollerar var femte minut tillgängligheten till Microsoft 365-slutpunkter från Europa.
+
+3.  **Läs Downdetector endast som en indikation.** En topp är en anledning att undersöka saken. Det absoluta antalet och toppar hos flera liknande tjänster samtidigt säger lite om orsak och omfattning.
+
+4.  **Beakta regionalt ursprung.** De flesta siffror i medierapporter avser den amerikanska versionen av Downdetector. För användare i Schweiz är de bara relevanta om leverantören också bekräftar störningen för europeiska regioner.
+
+## Liverapporten
+
+Jag avslutade liverapporten om serien av avbrott med denna artikel. Den finns kvar online som en krönika över veckan, med en slutlig bedömning av de enskilda orsakerna och uppgiften att Europa, förutom vid transatlantiska flygningar och den globala iCloud-störningen, inte påverkades.
+
+## Källor
+
+1.  [Axios: Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking): nästan 6 miljoner Downdetector-rapporter på sju dagar, tre stora avbrott i stället för de vanliga fem under 30 dagar, bedömning av Liz Fong-Jones.
+
+2.  [PPC Land: Downdetector](https://ppc.land/downdetector/): funktion, baslinje per tid på dygnet, uppköpet av Accenture, avvikande siffror för Exchange Online-störningen den 12 november.
+
+3.  [Futurism: Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage): Downdetector-rapporter hos flera amerikanska banker, uttalande från Chase.
+
+4.  [Hot Air: More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101): citerar New York Times och Wall Street Journal om Apple, Charles Schwab och orsaken hos JPMorgan Chase.
+
+5.  [Pasquale Pillitteri: Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports): Downdetector-rapporter om Gmail och Googles dementi.
+
+6.  [Forbes: Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/): översikt över operatörernas förklaringar.
+
+7.  [Time: What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/): förloppet vid Apple-avbrottet, statussidan låg efter rapporterna.
+
+8.  [Hacker News: Diskussion om Downdetectors metodik](https://news.ycombinator.com/item?id=50521819): antaganden om implicita rapporter och överföring mellan liknande tjänster, inte bekräftat av Downdetector.
+
+9.  [WMTV: Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/): bedömning från en säkerhetsexpert, inga tecken på ett samband.
 
 ----
 
@@ -135424,6 +135910,87 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Downdetector under kritikk: Hva den amerikanske uken med driftsavbrudd viser om feilmeldinger
+
+URL: https://rafaelpfister.ch/no/blog/downdetector-under-kritikk-hva-den-amerikanske-uken-med-driftsavbrudd-viser-om-feilmeldinger
+Datum: 2026-11-18
+
+# Downdetector under kritikk: Hva den amerikanske uken med driftsavbrudd viser om feilmeldinger
+
+Fra 13. til 17. november 2026 sviktet flere store systemer i USA: luftfartsmyndigheten FAA med et landsdekkende startforbud, deler av AWS i regionen us-east-1, banken JPMorgan Chase, bakketjenestene til United Airlines og tirsdag iCloud-påloggingen samt andre tjenester fra Apple. Jeg fulgte serien i en [liveoppdatering](https://rafaelpfister.ch/liveticker/usa-ausfallserie-2026-11). Etter at uken er over, er det klart: Avbruddene hadde separate årsaker, det finnes ingen tegn på et cyberangrep, og Europa ble bare marginalt berørt. Likevel oppstod det offentlig et bilde av et internett som sviktet samtidig overalt. En stor del av dette bildet stammer fra diagrammene til Downdetector, som ble sitert i nesten alle medieoppslag. Siden mandag har dette møtt bred kritikk.
+
+## Hva Downdetector måler
+
+Downdetector tilhører Ookla og dermed Accenture siden 17. juni 2026. Plattformen samler inn problemrapporter fra brukere som melder et problem på en tjenestes side, og supplerer ifølge sin egen beskrivelse med signaler fra sosiale medier og andre nettbaserte kilder. For hver tjeneste beregner Downdetector en grunnlinje: det gjennomsnittlige antallet rapporter på samme tidspunkt av dagen gjennom det siste året. Ligger det aktuelle tallet klart over dette, regnes det som et driftsavbrudd. Downdetector offentliggjør ikke hvordan kildene vektes, eller ved hvilken faktor en topp teller som et driftsavbrudd.
+
+Dette gir tre egenskaper som ofte forsvinner i dekningen:
+
+1.  **Rapporter er ikke det samme som berørte brukere.** Et tall som «20 000 rapporter» sier ingenting om hvor mange kunder som faktisk ikke hadde tilgang. Det teller personer som la merke til et problem og besøkte Downdetector.
+
+2.  **Brukerne rapporterer tjenesten de ser.** Når et betalingsnettverk, en skyleverandør eller en identitetstjeneste svikter, dukker rapportene opp hos bankene, appene og nettbutikkene som er avhengige av dem. Årsaken er ikke synlig i diagrammet.
+
+3.  **Grunnlinjen gjenspeiler ikke uker med ekstraordinære hendelser.** Når mediene fortløpende rapporterer om driftsavbrudd, sjekker flere mennesker ved enhver forsinkelse om en tjeneste har problemer. Hver ny overskrift øker antallet rapporter, også for tjenester som fungerer normalt.
+
+## Tallene for uken
+
+Ifølge Axios mottok Downdetector nesten 6 millioner problemrapporter fra USA i de sju dagene frem til 16. november, den høyeste ukesverdien på ett år. Den samme analysen viser imidlertid også at det over 30 dager var tre store avbrudd, mens fem er vanlig. Rekordtallet for rapporter står dermed opp mot et heller under gjennomsnittlig antall faktiske store driftsavbrudd.
+
+Flere tilfeller fra uken viser hvor stor avstanden kan være mellom rapporter og den faktiske situasjonen:
+
+- **Banker 16. november:** Medier skrev med henvisning til Downdetector at brukere rapporterte problemer hos «nesten alle store amerikanske banker», deriblant Chase, Wells Fargo og Capital One. Chase sa selv at transaksjoner tok lengre tid, mens kundene fortsatt hadde tilgang til kontoer og saldoer. Ifølge New York Times lå årsaken i en programvarefeil i JPMorgan Chase-maskinvare, som kan ha påvirket andre banker via felles transaksjoner. De andre bankene har ikke bekreftet egne driftsavbrudd.
+
+- **Gmail 16. og 17. november:** Downdetector viste over 2 800 rapporter, først og fremst om e-poster som ikke ble levert. Google opplyste at det ikke fantes tegn på et omfattende driftsavbrudd, og Workspace Status Dashboard hadde ingen oppføring.
+
+- **Charles Schwab 17. november:** Ifølge Wall Street Journal steg antallet rapporter rundt klokken 9.50 lokal tid og falt igjen en halv time senere. Det finnes ingen driftsmelding fra Schwab om dette.
+
+- **Exchange Online 12. november:** Reuters oppga over 97 000 rapporter for samme driftsavbrudd, mens en lokal TV-stasjon oppga nesten 119 000, begge på forskjellige tidspunkter. Ifølge Downdetector begynte rapportene først å stige rundt 68 minutter etter starten som Microsoft oppgir i Admin Center.
+
+Avbruddene hos FAA, AWS, Chase, United og Apple var reelle og bekreftet av operatørene. Det overdrevne var sammenkoblingen: Fem uavhengige driftsavbrudd og en generell økning i rapporter ble til fortellingen om et koordinert angrep. Det hvite hus' talsperson sa 17. november at det ikke var noen krise amerikanere trengte å bekymre seg for. Liz Fong-Jones (Honeycomb) sa til Axios at hendelsene hadde svært lite til felles.
+
+## Hvor kritikken retter seg
+
+Kritikken kommer fra flere hold. Operatører som Google motsier offentlig Downdetector når tjenesten viser et driftsavbrudd de ikke ser i egne data. Fagmedier påpeker at Downdetector teller rapporter i stedet for berørte brukere, viser driftsavbrudd forsinket og ikke fanger opp feil i komponenter som sluttkundene ikke ser. I diskusjoner blant utviklere, for eksempel på Hacker News, sirkulerer dessuten antakelsen om at bare det å åpne en side som «Har Chase problemer?» teller som en implisitt rapport, slik at topper kan overføres fra én tjeneste til lignende tjenester. Downdetector har ikke bekreftet denne antakelsen; det eneste som er dokumentert, er at plattformen i tillegg til aktive rapporter evaluerer andre nettbaserte kilder og ikke opplyser om vektingen av dem.
+
+Forsvarerne av plattformen innvender at Downdetector ofte viser driftsavbrudd tidligere enn leverandørenes statussider. Under Apple-avbruddet 17. november viste Apples statusside fortsatt normal tilgjengelighet da rapportene allerede steg kraftig. Som tidlig varsling er tjenesten nyttig. Som mål på omfanget av et driftsavbrudd er den det ikke, og det var nettopp slik den ble brukt denne uken: Overskrifter som «Tusenvis rapporterer problemer» stod uten kontekst ved siden av bekreftede driftsavbrudd.
+
+## Vurder driftsavbrudd bedre
+
+For administratorer som ved et rapportert driftsavbrudd må avgjøre om de skal informere brukere eller sette i verk tiltak, følger en enkel rekkefølge:
+
+1.  **Kontroller leverandørens statusside og administratorportal.** For Microsoft 365 er dette Service Health i Admin Center, ikke den offentlige statussiden. AWS, Google Cloud, Cloudflare og Apple har egne statussider med tidsstempler.
+
+2.  **Bruk egne målinger.** En enkel syntetisk test (pålogging, sending av e-post, henting av en side) fra eget nettverk viser om organisasjonen selv er berørt. Min [M365-tilkoblingsmonitor](https://rafaelpfister.ch/liveticker) kontrollerer hvert femte minutt tilgjengeligheten til Microsoft 365-endepunktene fra Europa.
+
+3.  **Les Downdetector kun som en indikasjon.** En topp er en grunn til å undersøke nærmere. Det absolutte tallet og topper hos flere lignende tjenester samtidig sier lite om årsak og omfang.
+
+4.  **Ta hensyn til regional opprinnelse.** De fleste tallene i medieoppslag gjelder den amerikanske siden av Downdetector. For brukere i Sveits er de bare relevante dersom leverandøren også bekrefter driftsavbruddet for europeiske regioner.
+
+## Liveoppdateringen
+
+Jeg avsluttet liveoppdateringen om serien av driftsavbrudd med denne artikkelen. Den forblir på nett som en kronikk over uken, med en avsluttende vurdering av de enkelte årsakene og opplysningen om at Europa, med unntak av transatlantiske flyvninger og det verdensomspennende iCloud-avbruddet, ikke ble berørt.
+
+## Kilder
+
+1.  [Axios: Tech outages spark fears over AI and cybersecurity](https://www.axios.com/2026/11/17/tech-outages-ai-fears-internet-breaking): nesten 6 millioner Downdetector-rapporter på sju dager, tre store avbrudd i stedet for de vanlige fem over 30 dager, vurdering fra Liz Fong-Jones.
+
+2.  [PPC Land: Downdetector](https://ppc.land/downdetector/): funksjonsmåte, grunnlinje per tidspunkt på dagen, oppkjøp av Accenture, avvikende tall for Exchange Online-avbruddet 12. november.
+
+3.  [Futurism: Wait, Why Did Every Major Bank Just Go Down?](https://futurism.com/future-society/banks-go-down-outage): Downdetector-rapporter hos flere amerikanske banker, uttalelse fra Chase.
+
+4.  [Hot Air: More Outages Today, Still No Evidence of Cyberattacks](https://hotair.com/john-s-2/2026/11/17/more-outages-today-still-no-evidence-of-cyberattacks-n3821101): siterer New York Times og Wall Street Journal om Apple, Charles Schwab og årsaken hos JPMorgan Chase.
+
+5.  [Pasquale Pillitteri: Gmail down, Google denies a broad outage after 2,800 reports](https://pasqualepillitteri.it/en/news/34509/gmail-down-google-denies-broad-outage-2800-reports): Downdetector-rapporter om Gmail og Googles avvisning.
+
+6.  [Forbes: Why Are So Many Outages Happening? Companies Deny Cyberattacks](https://www.forbes.com/sites/conormurray/2026/11/17/outages-plague-america-these-are-the-explanations/): oversikt over operatørenes forklaringer.
+
+7.  [Time: What to Know About the Apple Outage](https://time.com/article/2026/11/17/apple-outage-down-update-issue/): forløpet for Apple-avbruddet, statussiden lå etter rapportene.
+
+8.  [Hacker News: Diskussion zur Methodik von Downdetector](https://news.ycombinator.com/item?id=50521819): antakelser om implisitte rapporter og overføring mellom lignende tjenester, ikke bekreftet av Downdetector.
+
+9.  [WMTV: Apple, banks, FAA and Microsoft outages raise questions](https://www.wmtv15news.com/2026/11/18/apple-banks-faa-microsoft-outages-raise-questions-cybersecurity-expert-weighs/): vurdering fra en sikkerhetsekspert, ingen tegn på en sammenheng.
 
 ----
 
