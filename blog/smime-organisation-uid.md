@@ -1,10 +1,10 @@
 ---
 title: "S/MIME mit Organisationseintrag: organizationIdentifier und UID im Zertifikat"
 navTitle: "S/MIME mit Organisation"
-description: "Was ein S/MIME-Zertifikat mit Organisationseintrag enthält, wie die UID als organizationIdentifier ins Zertifikat kommt und was die Zertifizierungsstelle dafür prüft. Dazu ein Vergleich der Produkte von SwissSign und DigiCert, Befehle zur Prüfung des Zertifikatstyps und die Abgrenzung zum ZertES."
+description: "Was ein S/MIME-Zertifikat mit Organisationseintrag enthält, wie die UID als organizationIdentifier ins Zertifikat kommt und was die Zertifizierungsstelle bei Firma und Person prüft. Dazu ein Vergleich von SwissSign und DigiCert, Befehle zur Prüfung des Zertifikatstyps und die Abgrenzung zum ZertES."
 date: "2026-12-15"
 kategorie: "E-Mail-Verschlüsselung"
-timeToRead: "11 Min. Lesezeit"
+timeToRead: "13 Min. Lesezeit"
 themen:
   - "e-mail-verschluesselung"
 produkte: []
@@ -77,9 +77,25 @@ Bevor eine CA ein OV- oder SV-Zertifikat ausstellt, muss sie nach den BR folgend
 - **Registernummer:** Die CA bestätigt, dass die Nummer im `organizationIdentifier` zur Organisation im Feld `O` gehört.
 - **Vollmacht:** Über einen zuverlässigen Kommunikationsweg prüft die CA, dass die antragstellende Person für die Organisation Zertifikate beantragen oder als `Enterprise RA` handeln darf.
 - **Postfach oder Maildomain:** Die CA prüft die Kontrolle über die Mailadressen im Zertifikat. Handelt die Organisation als `Enterprise RA`, muss sie die Kontrolle über die ganze Maildomain nachweisen.
-- **Person (nur SV):** Die BR erlauben, dass die Organisation als `Enterprise RA` ihre Mitarbeitenden selbst bestätigt. Die CA prüft dann die Organisation und nicht jede einzelne Person.
+- **Person (nur SV):** Name oder Pseudonym der Person. Welche Nachweise dafür zulässig sind, beschreibt der nächste Abschnitt.
 
 Die Ergebnisse dieser Prüfungen darf eine CA wiederverwenden: die Prüfung der Organisation und der Vollmacht während 825 Tagen, die Prüfung der Domainkontrolle während 398 Tagen. Ein Zertifikat der Generationen `Multipurpose` und `Strict` ist höchstens 825 Tage gültig.
+
+## Wie die Person bei SV geprüft wird
+
+Die BR lassen für die Identität der Person diese Nachweise zu:
+
+| Nachweis | Ablauf |
+|---|---|
+| amtlicher Ausweis | Original vor Ort oder in Echtzeit vor einer Kamera; die prüfende Person vergleicht das Ausweisfoto mit der Person und hält Aussteller, Gültigkeit und Ausweisnummer fest |
+| Chip im Pass oder in der Identitätskarte | Prüfung der Ausstellersignatur auf den Chipdaten, dazu der Fotovergleich |
+| eID | nur notifizierte eID-Systeme nach eIDAS mit dem Vertrauensniveau «substanziell» oder «hoch» |
+| mobiler Führerausweis (mDL) | Abfrage in Echtzeit nach ISO/IEC 18013-5 und 18013-7 mit Prüfung der Signaturkette des Ausstellers |
+| digitale Signatur | Signatur des Antrags mit einem bestehenden persönlichen Zertifikat aus einem anerkannten Rahmenwerk; die Liste dieser Rahmenwerke ist in den BR noch leer |
+| Bestätigung durch Notariat oder Anwaltskanzlei | schriftliche Bestätigung aus dem Land der antragstellenden Person |
+| Unterlagen der `Enterprise RA` | Die Firma prüft ihre Mitarbeitenden selbst und darf sich auf vorhandene interne Daten stützen, etwa aus dem Personalwesen |
+
+Welche dieser Nachweise eine CA akzeptiert, muss sie in ihrem CPS veröffentlichen. Die Prüfung der Person darf bei der Ausstellung höchstens 825 Tage zurückliegen. Prüft die Firma als `Enterprise RA` selbst, muss die CA sie vertraglich verpflichten und mindestens einmal jährlich kontrollieren, sofern die Firma nicht selbst jährlich auditiert wird. Die Zuordnung zur Person ist in diesem Fall so zuverlässig wie der interne Prozess der Firma.
 
 ## SwissSign und DigiCert im Vergleich
 
@@ -91,11 +107,16 @@ Beide CAs bieten die Typen MV, SV und OV unter eigenen Produktnamen an. Ein IV-Z
 | SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (früher Secure Email for Business) |
 | OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
 | IV | nicht im Angebot | nicht im Angebot |
-| Generation bei SV und OV | `Multipurpose` laut Zertifikatsprofilen | `Strict` als Standard, `Multipurpose` wählbar |
+| Bezug | Silver im Webshop oder über die Managed PKI, Gold und OV nur über die Managed PKI der Firma | alle drei über das CertCentral-Konto der Firma |
+| Prüfung der Person bei SV | amtlicher Ausweis im Original, vor Ort oder in einem gleichwertigen Verfahren; andere Nachweise nur mit Genehmigung durch SwissSign | Bestätigung durch die Firma; DigiCert prüft die Person nicht |
+| Gültigkeit der Prüfungen | Angaben und Nachweise höchstens 398 Tage | Organisation 825 Tage, Domain 398 Tage |
+| Generation bei SV und OV | `Multipurpose`; eine Zwischen-CA für SV in der Generation `Strict` ist im CP/CPS bereits beschrieben | `Strict` als Standard, `Multipurpose` wählbar |
 | Person bei SV | Vor- und Nachname oder Pseudonym mit Präfix `pseudo:` im `CN` | Vor- und Nachname oder Pseudonym; im `CN` wahlweise der Name oder die Mailadresse |
-| Zusätzliche Verwendungen bei SV | im Profil mit Authentifizierung: Client-Authentifizierung, Smartcard-Anmeldung, EFS | bei `Strict` Nichtabstreitbarkeit, bei `Multipurpose` zusätzlich Datenverschlüsselung und Client-Authentifizierung |
+| Zusätzliche Verwendungen bei SV | im Standardprofil keine; im Profil mit Authentifizierung Client-Authentifizierung, Smartcard-Anmeldung und EFS | bei `Strict` Nichtabstreitbarkeit, bei `Multipurpose` zusätzlich Datenverschlüsselung und Client-Authentifizierung |
 
-DigiCert beschreibt das SV-Produkt ausdrücklich nach dem Modell der `Enterprise RA`: Die Organisation bestätigt, dass die Person im Zertifikat zu ihren Mitarbeitenden oder Vertretern gehört, und bewahrt die Belege dafür auf. DigiCert selbst prüft nur die Organisation. Bei OV und SV verlangt DigiCert immer den Nachweis der Domainkontrolle. Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Als Laufzeit stehen ein oder zwei Jahre oder ein eigenes Ablaufdatum bis höchstens 824 Tage zur Wahl. Die früheren Produkte Premium, Email Security Plus, Digital Signature Plus und Class 1 S/MIME hat DigiCert am 10. Juli 2025 eingestellt und durch diese Produkte ersetzt.
+DigiCert beschreibt das SV-Produkt ausdrücklich nach dem Modell der `Enterprise RA`: Die Organisation bestätigt, dass die Person im Zertifikat zu ihren Mitarbeitenden oder Vertretern gehört, und bewahrt die Belege dafür auf. DigiCert selbst prüft nur die Organisation. Wer im CertCentral-Konto der Firma bestellen darf, kann damit jeden Namen auf eine Adresse der eigenen Domains eintragen. Bei OV und SV verlangt DigiCert immer den Nachweis der Domainkontrolle. Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Als Laufzeit stehen ein oder zwei Jahre oder ein eigenes Ablaufdatum bis höchstens 824 Tage zur Wahl. Die früheren Produkte Premium, Email Security Plus, Digital Signature Plus und Class 1 S/MIME hat DigiCert am 10. Juli 2025 eingestellt und durch diese Produkte ersetzt.
+
+SwissSign stellt Gold- und OV-Zertifikate nur über die Managed PKI der Firma aus. Die Person muss sich trotzdem mit einem amtlichen Ausweis im Original identifizieren, persönlich oder in einem gleichwertigen Verfahren nach ETSI EN 319 411-1. Die Identifikation führt die registrierende Stelle durch, die den Antrag bearbeitet, oder ein geschulter Identifikationspartner unter Vertrag: Ausweis kopieren, scannen oder fotografieren, das Foto mit der Person vergleichen und den Vorgang gegenüber SwissSign bestätigen. Die Verwendung des Firmennamens muss die im Handelsregister eingetragene Geschäftsleitung oder der Verwaltungsrat freigeben, und die Personen, die in der Managed PKI Zertifikate beantragen, werden ebenfalls mit Ausweis identifiziert. Ein anderes Verfahren, etwa auf Basis von Personaldaten, darf eine Firma nur einsetzen, wenn SwissSign es geprüft und als gleichwertig genehmigt hat. Angaben und Nachweise gelten bei SwissSign höchstens 398 Tage, danach prüft SwissSign neu.
 
 Bei SwissSign enthält das OV-Zertifikat im `CN` den Namen der Organisation wie im Feld `O`. Welche Stufe eine Bank für welches Postfach wählen sollte und was das rechtlich bedeutet, beschreibt der Artikel [S/MIME bei Banken: Rechtslage in der Schweiz und die Wahl zwischen Silver und Gold](/blog/smime-silver-gold-schweiz).
 
@@ -249,7 +270,7 @@ Inhaltlich gibt es Parallelen. Ein geregeltes Zertifikat für eine UID-Einheit m
 | Grundlage | S/MIME Baseline Requirements des CA/Browser Forum | ZertES und Ausführungsbestimmungen |
 | Ausstellerin | öffentlich vertrauenswürdige CA | nach ZertES anerkannte Anbieterin |
 | Organisationskennung | `organizationIdentifier`, bei Schweizer Firmen mit der UID | UID, Pflicht bei UID-Einheiten |
-| Prüfung der Person | bei SV durch die CA oder durch die Organisation als `Enterprise RA` | grundsätzlich persönliches Erscheinen mit Identitätsnachweis; bei UID-Einheiten eine Vertretung mit Nachweis der Vertretungsmacht (Art. 9 ZertES) |
+| Prüfung der Person | bei SV je nach CA mit Ausweis oder durch Bestätigung der Organisation als `Enterprise RA` | grundsätzlich persönliches Erscheinen mit Identitätsnachweis; bei UID-Einheiten eine Vertretung mit Nachweis der Vertretungsmacht (Art. 9 ZertES) |
 | Schlüssel | nach den Vorgaben der CA, auch auf einem Gateway | Anforderungen nach Art. 6 ZertES |
 
 Der eigenhändigen Unterschrift gleichgestellt ist nach Art. 14 Abs. 2bis OR nur die qualifizierte elektronische Signatur mit qualifiziertem Zeitstempel, und ein qualifiziertes Zertifikat darf nur auf eine natürliche Person ausgestellt werden (Art. 8 Abs. 1 ZertES). Für die Signatur einer Organisation sieht das ZertES das geregelte elektronische Siegel vor: eine fortgeschrittene elektronische Signatur, die mit einer sicheren Siegelerstellungseinheit erstellt wird und auf einem geregelten Zertifikat einer UID-Einheit beruht (Art. 2 Bst. d ZertES). Eine S/MIME-signierte Mail ist ein Beweismittel, dessen Wert das Gericht frei würdigt (Art. 157 ZPO); ein geprüfter Organisationseintrag stützt dabei die Zuordnung zur absendenden Firma.
@@ -262,21 +283,21 @@ Der eigenhändigen Unterschrift gleichgestellt ist nach Art. 14 Abs. 2bis OR nur
 - **Persönliche Postfächer mit Signatur gegenüber Kunden und Partnern:** SV-Zertifikat (SwissSign Gold, DigiCert Secure Email for Employee). Es weist Person und Firma aus.
 - **Nur Verschlüsselung:** Kryptografisch sind alle Typen gleichwertig. Für die Verschlüsselung allein genügt ein MV-Zertifikat.
 - **Prüfungen einplanen:** Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Nach einer Änderung von Firmenname oder Sitz stimmen die Angaben im Zertifikat nicht mehr mit dem Register überein; planen Sie dann neue Zertifikate ein.
-- **Beim Empfang prüfen:** Policy-OID und UID zeigen, ob eine Signatur tatsächlich einer geprüften Firma zugeordnet ist.
+- **Beim Empfang prüfen:** Policy-OID und UID zeigen, ob eine Signatur einer geprüften Firma zugeordnet ist. Wie gut die Person geprüft wurde, hängt bei SV vom Verfahren der CA ab: Bei SwissSign steht eine Ausweisprüfung dahinter, bei DigiCert die Bestätigung der Firma.
 
 ## Quellen
 
-1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 vom 20. November 2026; Zertifikatstypen und Policy-OIDs (Abschnitt 1.1), Prüfung der Organisation (3.2.3), Prüfung der Vollmacht (3.2.6), Wiederverwendung von Prüfergebnissen (4.2.1), Laufzeiten (6.3.2), Subject-Felder (7.1.4.2) und Registrierungsschemata (Anhang A).
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 vom 20. November 2026; Zertifikatstypen und Policy-OIDs (Abschnitt 1.1), `Enterprise RA` (1.3.2), Prüfung der Organisation (3.2.3), Prüfung der Person (3.2.4), Prüfung der Vollmacht (3.2.6), Wiederverwendung von Prüfergebnissen (4.2.1), Laufzeiten (6.3.2), Subject-Felder (7.1.4.2) und Registrierungsschemata (Anhang A).
 
 2.  [cabforum/smime auf GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): Markdown-Fassung der S/MIME Baseline Requirements mit Versionsverlauf, unter anderem EUID ab Version 1.0.9.
 
 3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): Produktbezeichnungen Silver und Gold, Beispiel `NTRCH-CHE-109.357.012`, UID als Registernummer und EUID für deutsche Firmen (28.04.2025).
 
-4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): Zertifikatsprofile von SwissSign für MV, SV und OV mit Subject-Feldern, Verwendungszwecken und Policy-OIDs, Version 14 vom 18.09.2025.
+4.  [SwissSign CP/CPS S/MIME](https://repository.swisssign.com/SwissSign_CPS_SMIME.pdf): kombiniertes Regelwerk von SwissSign, Version 1.0 vom 31.08.2026, ersetzt unter anderem die CPR S/MIME; Identifikation der Person (3.2.3), Vollmacht (3.2.5), Gültigkeit der Nachweise (3.3.1), Bezugswege (4.1.1) und Zertifikatsprofile für MV, SV und OV (7.1).
 
 5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): Produktübersicht mit Zuordnung zu MV, OV und SV, Ende der Generation `Legacy` und der früheren S/MIME-Produkte am 10. Juli 2025.
 
-6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisations- und Domainprüfung, Bestätigung der Mitarbeitenden durch die Organisation, Profile `Strict` und `Multipurpose`, Laufzeiten.
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisations- und Domainprüfung, Bestätigung der Mitarbeitenden durch die Organisation ohne eigene Personenprüfung durch DigiCert, Profile `Strict` und `Multipurpose`, Laufzeiten.
 
 7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Art. 2 (Begriffe, geregeltes Siegel), Art. 6 (Schlüssel), Art. 7 (Inhalt geregelter Zertifikate, UID), Art. 8 (qualifizierte Zertifikate) und Art. 9 (Identitätsprüfung).
 

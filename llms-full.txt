@@ -78,9 +78,25 @@ Bevor eine CA ein OV- oder SV-Zertifikat ausstellt, muss sie nach den BR folgend
 - **Registernummer:** Die CA bestätigt, dass die Nummer im `organizationIdentifier` zur Organisation im Feld `O` gehört.
 - **Vollmacht:** Über einen zuverlässigen Kommunikationsweg prüft die CA, dass die antragstellende Person für die Organisation Zertifikate beantragen oder als `Enterprise RA` handeln darf.
 - **Postfach oder Maildomain:** Die CA prüft die Kontrolle über die Mailadressen im Zertifikat. Handelt die Organisation als `Enterprise RA`, muss sie die Kontrolle über die ganze Maildomain nachweisen.
-- **Person (nur SV):** Die BR erlauben, dass die Organisation als `Enterprise RA` ihre Mitarbeitenden selbst bestätigt. Die CA prüft dann die Organisation und nicht jede einzelne Person.
+- **Person (nur SV):** Name oder Pseudonym der Person. Welche Nachweise dafür zulässig sind, beschreibt der nächste Abschnitt.
 
 Die Ergebnisse dieser Prüfungen darf eine CA wiederverwenden: die Prüfung der Organisation und der Vollmacht während 825 Tagen, die Prüfung der Domainkontrolle während 398 Tagen. Ein Zertifikat der Generationen `Multipurpose` und `Strict` ist höchstens 825 Tage gültig.
+
+## Wie die Person bei SV geprüft wird
+
+Die BR lassen für die Identität der Person diese Nachweise zu:
+
+| Nachweis | Ablauf |
+|---|---|
+| amtlicher Ausweis | Original vor Ort oder in Echtzeit vor einer Kamera; die prüfende Person vergleicht das Ausweisfoto mit der Person und hält Aussteller, Gültigkeit und Ausweisnummer fest |
+| Chip im Pass oder in der Identitätskarte | Prüfung der Ausstellersignatur auf den Chipdaten, dazu der Fotovergleich |
+| eID | nur notifizierte eID-Systeme nach eIDAS mit dem Vertrauensniveau «substanziell» oder «hoch» |
+| mobiler Führerausweis (mDL) | Abfrage in Echtzeit nach ISO/IEC 18013-5 und 18013-7 mit Prüfung der Signaturkette des Ausstellers |
+| digitale Signatur | Signatur des Antrags mit einem bestehenden persönlichen Zertifikat aus einem anerkannten Rahmenwerk; die Liste dieser Rahmenwerke ist in den BR noch leer |
+| Bestätigung durch Notariat oder Anwaltskanzlei | schriftliche Bestätigung aus dem Land der antragstellenden Person |
+| Unterlagen der `Enterprise RA` | Die Firma prüft ihre Mitarbeitenden selbst und darf sich auf vorhandene interne Daten stützen, etwa aus dem Personalwesen |
+
+Welche dieser Nachweise eine CA akzeptiert, muss sie in ihrem CPS veröffentlichen. Die Prüfung der Person darf bei der Ausstellung höchstens 825 Tage zurückliegen. Prüft die Firma als `Enterprise RA` selbst, muss die CA sie vertraglich verpflichten und mindestens einmal jährlich kontrollieren, sofern die Firma nicht selbst jährlich auditiert wird. Die Zuordnung zur Person ist in diesem Fall so zuverlässig wie der interne Prozess der Firma.
 
 ## SwissSign und DigiCert im Vergleich
 
@@ -92,11 +108,16 @@ Beide CAs bieten die Typen MV, SV und OV unter eigenen Produktnamen an. Ein IV-Z
 | SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (früher Secure Email for Business) |
 | OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
 | IV | nicht im Angebot | nicht im Angebot |
-| Generation bei SV und OV | `Multipurpose` laut Zertifikatsprofilen | `Strict` als Standard, `Multipurpose` wählbar |
+| Bezug | Silver im Webshop oder über die Managed PKI, Gold und OV nur über die Managed PKI der Firma | alle drei über das CertCentral-Konto der Firma |
+| Prüfung der Person bei SV | amtlicher Ausweis im Original, vor Ort oder in einem gleichwertigen Verfahren; andere Nachweise nur mit Genehmigung durch SwissSign | Bestätigung durch die Firma; DigiCert prüft die Person nicht |
+| Gültigkeit der Prüfungen | Angaben und Nachweise höchstens 398 Tage | Organisation 825 Tage, Domain 398 Tage |
+| Generation bei SV und OV | `Multipurpose`; eine Zwischen-CA für SV in der Generation `Strict` ist im CP/CPS bereits beschrieben | `Strict` als Standard, `Multipurpose` wählbar |
 | Person bei SV | Vor- und Nachname oder Pseudonym mit Präfix `pseudo:` im `CN` | Vor- und Nachname oder Pseudonym; im `CN` wahlweise der Name oder die Mailadresse |
-| Zusätzliche Verwendungen bei SV | im Profil mit Authentifizierung: Client-Authentifizierung, Smartcard-Anmeldung, EFS | bei `Strict` Nichtabstreitbarkeit, bei `Multipurpose` zusätzlich Datenverschlüsselung und Client-Authentifizierung |
+| Zusätzliche Verwendungen bei SV | im Standardprofil keine; im Profil mit Authentifizierung Client-Authentifizierung, Smartcard-Anmeldung und EFS | bei `Strict` Nichtabstreitbarkeit, bei `Multipurpose` zusätzlich Datenverschlüsselung und Client-Authentifizierung |
 
-DigiCert beschreibt das SV-Produkt ausdrücklich nach dem Modell der `Enterprise RA`: Die Organisation bestätigt, dass die Person im Zertifikat zu ihren Mitarbeitenden oder Vertretern gehört, und bewahrt die Belege dafür auf. DigiCert selbst prüft nur die Organisation. Bei OV und SV verlangt DigiCert immer den Nachweis der Domainkontrolle. Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Als Laufzeit stehen ein oder zwei Jahre oder ein eigenes Ablaufdatum bis höchstens 824 Tage zur Wahl. Die früheren Produkte Premium, Email Security Plus, Digital Signature Plus und Class 1 S/MIME hat DigiCert am 10. Juli 2025 eingestellt und durch diese Produkte ersetzt.
+DigiCert beschreibt das SV-Produkt ausdrücklich nach dem Modell der `Enterprise RA`: Die Organisation bestätigt, dass die Person im Zertifikat zu ihren Mitarbeitenden oder Vertretern gehört, und bewahrt die Belege dafür auf. DigiCert selbst prüft nur die Organisation. Wer im CertCentral-Konto der Firma bestellen darf, kann damit jeden Namen auf eine Adresse der eigenen Domains eintragen. Bei OV und SV verlangt DigiCert immer den Nachweis der Domainkontrolle. Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Als Laufzeit stehen ein oder zwei Jahre oder ein eigenes Ablaufdatum bis höchstens 824 Tage zur Wahl. Die früheren Produkte Premium, Email Security Plus, Digital Signature Plus und Class 1 S/MIME hat DigiCert am 10. Juli 2025 eingestellt und durch diese Produkte ersetzt.
+
+SwissSign stellt Gold- und OV-Zertifikate nur über die Managed PKI der Firma aus. Die Person muss sich trotzdem mit einem amtlichen Ausweis im Original identifizieren, persönlich oder in einem gleichwertigen Verfahren nach ETSI EN 319 411-1. Die Identifikation führt die registrierende Stelle durch, die den Antrag bearbeitet, oder ein geschulter Identifikationspartner unter Vertrag: Ausweis kopieren, scannen oder fotografieren, das Foto mit der Person vergleichen und den Vorgang gegenüber SwissSign bestätigen. Die Verwendung des Firmennamens muss die im Handelsregister eingetragene Geschäftsleitung oder der Verwaltungsrat freigeben, und die Personen, die in der Managed PKI Zertifikate beantragen, werden ebenfalls mit Ausweis identifiziert. Ein anderes Verfahren, etwa auf Basis von Personaldaten, darf eine Firma nur einsetzen, wenn SwissSign es geprüft und als gleichwertig genehmigt hat. Angaben und Nachweise gelten bei SwissSign höchstens 398 Tage, danach prüft SwissSign neu.
 
 Bei SwissSign enthält das OV-Zertifikat im `CN` den Namen der Organisation wie im Feld `O`. Welche Stufe eine Bank für welches Postfach wählen sollte und was das rechtlich bedeutet, beschreibt der Artikel [S/MIME bei Banken: Rechtslage in der Schweiz und die Wahl zwischen Silver und Gold](/blog/smime-silver-gold-schweiz).
 
@@ -250,7 +271,7 @@ Inhaltlich gibt es Parallelen. Ein geregeltes Zertifikat für eine UID-Einheit m
 | Grundlage | S/MIME Baseline Requirements des CA/Browser Forum | ZertES und Ausführungsbestimmungen |
 | Ausstellerin | öffentlich vertrauenswürdige CA | nach ZertES anerkannte Anbieterin |
 | Organisationskennung | `organizationIdentifier`, bei Schweizer Firmen mit der UID | UID, Pflicht bei UID-Einheiten |
-| Prüfung der Person | bei SV durch die CA oder durch die Organisation als `Enterprise RA` | grundsätzlich persönliches Erscheinen mit Identitätsnachweis; bei UID-Einheiten eine Vertretung mit Nachweis der Vertretungsmacht (Art. 9 ZertES) |
+| Prüfung der Person | bei SV je nach CA mit Ausweis oder durch Bestätigung der Organisation als `Enterprise RA` | grundsätzlich persönliches Erscheinen mit Identitätsnachweis; bei UID-Einheiten eine Vertretung mit Nachweis der Vertretungsmacht (Art. 9 ZertES) |
 | Schlüssel | nach den Vorgaben der CA, auch auf einem Gateway | Anforderungen nach Art. 6 ZertES |
 
 Der eigenhändigen Unterschrift gleichgestellt ist nach Art. 14 Abs. 2bis OR nur die qualifizierte elektronische Signatur mit qualifiziertem Zeitstempel, und ein qualifiziertes Zertifikat darf nur auf eine natürliche Person ausgestellt werden (Art. 8 Abs. 1 ZertES). Für die Signatur einer Organisation sieht das ZertES das geregelte elektronische Siegel vor: eine fortgeschrittene elektronische Signatur, die mit einer sicheren Siegelerstellungseinheit erstellt wird und auf einem geregelten Zertifikat einer UID-Einheit beruht (Art. 2 Bst. d ZertES). Eine S/MIME-signierte Mail ist ein Beweismittel, dessen Wert das Gericht frei würdigt (Art. 157 ZPO); ein geprüfter Organisationseintrag stützt dabei die Zuordnung zur absendenden Firma.
@@ -263,21 +284,21 @@ Der eigenhändigen Unterschrift gleichgestellt ist nach Art. 14 Abs. 2bis OR nur
 - **Persönliche Postfächer mit Signatur gegenüber Kunden und Partnern:** SV-Zertifikat (SwissSign Gold, DigiCert Secure Email for Employee). Es weist Person und Firma aus.
 - **Nur Verschlüsselung:** Kryptografisch sind alle Typen gleichwertig. Für die Verschlüsselung allein genügt ein MV-Zertifikat.
 - **Prüfungen einplanen:** Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Nach einer Änderung von Firmenname oder Sitz stimmen die Angaben im Zertifikat nicht mehr mit dem Register überein; planen Sie dann neue Zertifikate ein.
-- **Beim Empfang prüfen:** Policy-OID und UID zeigen, ob eine Signatur tatsächlich einer geprüften Firma zugeordnet ist.
+- **Beim Empfang prüfen:** Policy-OID und UID zeigen, ob eine Signatur einer geprüften Firma zugeordnet ist. Wie gut die Person geprüft wurde, hängt bei SV vom Verfahren der CA ab: Bei SwissSign steht eine Ausweisprüfung dahinter, bei DigiCert die Bestätigung der Firma.
 
 ## Quellen
 
-1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 vom 20. November 2026; Zertifikatstypen und Policy-OIDs (Abschnitt 1.1), Prüfung der Organisation (3.2.3), Prüfung der Vollmacht (3.2.6), Wiederverwendung von Prüfergebnissen (4.2.1), Laufzeiten (6.3.2), Subject-Felder (7.1.4.2) und Registrierungsschemata (Anhang A).
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 vom 20. November 2026; Zertifikatstypen und Policy-OIDs (Abschnitt 1.1), `Enterprise RA` (1.3.2), Prüfung der Organisation (3.2.3), Prüfung der Person (3.2.4), Prüfung der Vollmacht (3.2.6), Wiederverwendung von Prüfergebnissen (4.2.1), Laufzeiten (6.3.2), Subject-Felder (7.1.4.2) und Registrierungsschemata (Anhang A).
 
 2.  [cabforum/smime auf GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): Markdown-Fassung der S/MIME Baseline Requirements mit Versionsverlauf, unter anderem EUID ab Version 1.0.9.
 
 3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): Produktbezeichnungen Silver und Gold, Beispiel `NTRCH-CHE-109.357.012`, UID als Registernummer und EUID für deutsche Firmen (28.04.2025).
 
-4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): Zertifikatsprofile von SwissSign für MV, SV und OV mit Subject-Feldern, Verwendungszwecken und Policy-OIDs, Version 14 vom 18.09.2025.
+4.  [SwissSign CP/CPS S/MIME](https://repository.swisssign.com/SwissSign_CPS_SMIME.pdf): kombiniertes Regelwerk von SwissSign, Version 1.0 vom 31.08.2026, ersetzt unter anderem die CPR S/MIME; Identifikation der Person (3.2.3), Vollmacht (3.2.5), Gültigkeit der Nachweise (3.3.1), Bezugswege (4.1.1) und Zertifikatsprofile für MV, SV und OV (7.1).
 
 5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): Produktübersicht mit Zuordnung zu MV, OV und SV, Ende der Generation `Legacy` und der früheren S/MIME-Produkte am 10. Juli 2025.
 
-6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisations- und Domainprüfung, Bestätigung der Mitarbeitenden durch die Organisation, Profile `Strict` und `Multipurpose`, Laufzeiten.
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisations- und Domainprüfung, Bestätigung der Mitarbeitenden durch die Organisation ohne eigene Personenprüfung durch DigiCert, Profile `Strict` und `Multipurpose`, Laufzeiten.
 
 7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Art. 2 (Begriffe, geregeltes Siegel), Art. 6 (Schlüssel), Art. 7 (Inhalt geregelter Zertifikate, UID), Art. 8 (qualifizierte Zertifikate) und Art. 9 (Identitätsprüfung).
 
@@ -23573,6 +23594,285 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# S/MIME with an Organization Entry: organizationIdentifier and UID in the Certificate
+
+URL: https://rafaelpfister.ch/en/blog/s-mime-with-an-organization-entry-organizationidentifier-and-uid-in-the-certificate
+Datum: 2026-12-15
+
+# S/MIME with an Organization Entry: organizationIdentifier and UID in the Certificate
+
+Certification authorities (CAs) distinguish between S/MIME certificates with and without an organization entry. In addition to the email address, a certificate with an organization entry identifies the company to which the mailbox belongs: by its verified name and a registry number. For Swiss companies, this registry number is the UID, i.e., the CHE number from the commercial register.
+
+In brief: An organization entry is available only for the `Organization-validated` and `Sponsor-validated` certificate types under the S/MIME Baseline Requirements. It consists of the company name in the `O` field and the `organizationIdentifier` field (OID 2.5.4.97), for a Swiss company, for example, `NTRCH-CHE-123.456.789`. The CA verifies the company in an official registry before entering this information in the certificate. By contrast, a mailbox-validated certificate proves only access to a mailbox. With SwissSign, this corresponds to choosing between Silver and Gold; with DigiCert, to choosing between “Secure Email for Individual Mailbox” and the “for Employee” and “for Organization” products. An organization entry does not create a qualified signature under ZertES.
+
+**Switzerland focus:** The legal classification follows Swiss law (ZertES, CO). Where EU rules differ, a labeled note is provided.
+
+## The Four Certificate Types
+
+Since September 1, 2023, the `S/MIME Baseline Requirements` (BR) of the CA/Browser Forum have applied to publicly trusted S/MIME certificates. They distinguish four certificate types based on who is listed as the holder (`Subject`) in the certificate:
+
+| Type | Holder in the certificate | Organization entry | What the CA verifies |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | only the email address | not permitted | Control of the mailbox or email domain |
+| `Organization-validated` (OV) | an organization, no person | required | Organization and mailbox or email domain |
+| `Sponsor-validated` (SV) | a person affiliated with an organization | required | As for OV, plus the person; the CA or the organization itself verifies that person |
+| `Individual-validated` (IV) | a person without an organization | not permitted | The person’s identity and mailbox |
+
+“S/MIME with an organization entry” refers to the OV and SV types. For both, the BR require the `organizationName` and `organizationIdentifier` fields in all three generations: `Legacy`, `Multipurpose`, and `Strict`. The generations differ in the permitted Subject fields, extensions, and purposes. The BR deprecated the `Legacy` generation as of July 15, 2025; SwissSign and DigiCert have not issued it since then.
+
+OV certificates are suitable for functional mailboxes such as `info@` or `buchhaltung@`, which are not assigned to an individual. SV certificates are intended for employees’ personal mailboxes and additionally include the person’s name or a pseudonym.
+
+## Structure of the organizationIdentifier
+
+The `organizationIdentifier` field (OID 2.5.4.97) contains an organization registry number. Certificates under eIDAS and ZertES use the same field. For S/MIME certificates, the BR prescribe the following structure:
+
+| Part | Example | Meaning |
+|---|---|---|
+| Registration scheme, 3 characters | `NTR` | `National Trade Register`, the commercial register |
+| Country code under ISO 3166-1 | `CH` | Country in which the registry is maintained |
+| Hyphen | `-` | Separator |
+| Registry number | `CHE-123.456.789` | Organization’s number in the registry |
+
+Combined, this results in `NTRCH-CHE-123.456.789`. Because the UID itself contains a hyphen, the BR specify that the scheme and country code must never contain a hyphen. The first hyphen from the left therefore separates the scheme from the registry number; all subsequent hyphens belong to the number. If a registry issues numbers only at the level of a state or province, the country code is followed by a `+` with the region code, such as `NTRUS+CA-12345678` for California.
+
+The BR recognize these registration schemes:
+
+| Scheme | Origin of the number | Example from the BR |
+|---|---|---|
+| `NTR` | Commercial or business register | `NTRGB-12345678` |
+| `VAT` | Tax authority (VAT number) | `VATEL-123456789` |
+| `PSD` | Authorization number of a payment service provider under EU Directive 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` under ISO 17442, country code always `XG` | `LEIXG-` followed by the LEI |
+| `GOV` | Government entities without a number from one of the other schemes | `GOVUS` |
+| `INT` | International organizations | `INTXG` |
+
+For Swiss companies, `NTR` with the UID is the standard case. The UID is assigned by the Federal Statistical Office. Commercial registers use it as the company number; it also serves as the VAT number, and it remains unchanged when a company moves its registered office to another canton. A VAT number, by contrast, may cease to apply when tax liability ends, and not every organization has one. SwissSign adopts the UID with the periods, as listed in the UID register, and gives `NTRCH-CHE-109.357.012` as an example for SwissSign AG.
+
+**EU note:** In Germany, the local courts assign commercial register numbers, and the same number may occur at multiple courts. Since version 1.0.9 of May 2025, the BR have therefore allowed the `European Unique Identifier` (EUID) under the `NTR` scheme and recommend it for German companies, for example `NTRDE-DER3306.HRB12345` for a company in the commercial register of the Cologne Local Court. Under the BR, the registry number must be unique only where the registry and legal system issue unique numbers.
+
+## What the CA Verifies
+
+Before issuing an OV or SV certificate, a CA must verify the following information under the BR:
+
+- **Name and existence of the organization:** Through a government authority in the organization’s country, LEI data, an on-site visit, or confirmation with a registry extract. For a Swiss company, this means the commercial register and the UID register. If the company is listed there as deleted or inactive, the CA must not issue the certificate.
+- **Registry number:** The CA confirms that the number in the `organizationIdentifier` belongs to the organization in the `O` field.
+- **Authorization:** Through a reliable communication channel, the CA verifies that the applicant is authorized to apply for certificates for the organization or act as an `Enterprise RA`.
+- **Mailbox or email domain:** The CA verifies control of the email addresses in the certificate. If the organization acts as an `Enterprise RA`, it must demonstrate control over the entire email domain.
+- **Person (SV only):** The BR allow the organization, as an `Enterprise RA`, to confirm its employees itself. The CA then verifies the organization rather than each individual person.
+
+A CA may reuse the results of these verifications: verification of the organization and authorization for 825 days, and verification of domain control for 398 days. A certificate in the `Multipurpose` and `Strict` generations is valid for no more than 825 days.
+
+## SwissSign and DigiCert Compared
+
+Both CAs offer the MV, SV, and OV types under their own product names. Neither offers an IV certificate. The BR define the structure of the `organizationIdentifier`, and it is the same for both vendors.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (formerly Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | not offered | not offered |
+| Generation for SV and OV | `Multipurpose` according to certificate profiles | `Strict` as standard, `Multipurpose` selectable |
+| Person in SV | First and last name or pseudonym with the `pseudo:` prefix in the `CN` | First and last name or pseudonym; the `CN` can contain either the name or the email address |
+| Additional purposes in SV | In the profile with authentication: client authentication, smart card logon, EFS | For `Strict`, non-repudiation; for `Multipurpose`, additionally data encryption and client authentication |
+
+DigiCert explicitly describes the SV product under the `Enterprise RA` model: the organization confirms that the person in the certificate is one of its employees or representatives and retains the supporting documentation. DigiCert itself verifies only the organization. For OV and SV, DigiCert always requires proof of domain control. Organization verification is valid for 825 days, and domain verification for 398 days. Available validity periods are one or two years, or a custom expiration date of up to 824 days. DigiCert discontinued its former Premium, Email Security Plus, Digital Signature Plus, and Class 1 S/MIME products on July 10, 2025, replacing them with these products.
+
+For SwissSign, the OV certificate contains the organization’s name in the `CN`, as in the `O` field. The article [S/MIME at Banks: Legal Situation in Switzerland and Choosing Between Silver and Gold](/blog/smime-silver-gold-schweiz) describes which level a bank should choose for which mailbox and what this means legally.
+
+## Checking the Certificate Type
+
+In Outlook and other email clients, you can open the certificate details of a signed email through the signature icon. In Windows, the fields appear on the “Details” tab under “Subject.” Windows has no display name for OID 2.5.4.97 and displays it as `OID.2.5.4.97`.
+
+### Displaying the Holder with PowerShell
+
+For an exported certificate (for example, from the certificate details of a signed email):
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Get-PfxCertificate` | reads a certificate from a file, including a `.cer` file without a private key |
+| `-FilePath .\zertifikat.cer` | path to the certificate file |
+| `SubjectName.Format($true)` | outputs the holder’s fields one per line |
+
+</details>
+
+Output for an SV certificate (example):
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+For an MV certificate, the output contains only `CN=` with the email address.
+
+### Determining Type and Generation Using the Policy OID
+
+Every certificate under the BR contains an OID in the `Certificate Policies` extension following the pattern `2.23.140.1.5.<Typ>.<Generation>`:
+
+| Position | Value | Meaning |
+|---|---|---|
+| Type | `1` | `Mailbox-validated` |
+| Type | `2` | `Organization-validated` |
+| Type | `3` | `Sponsor-validated` |
+| Type | `4` | `Individual-validated` |
+| Generation | `1` | `Legacy` |
+| Generation | `2` | `Multipurpose` |
+| Generation | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `$zert.Extensions` | extensions of the previously loaded certificate |
+| `'2.5.29.32'` | OID of the `Certificate Policies` extension |
+| `Format($true)` | outputs the extension’s contents across multiple lines |
+
+</details>
+
+Output (abbreviated):
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` represents an SV certificate of the `Multipurpose` generation. Additional entries with the CA’s own OIDs are normal.
+
+### Listing S/MIME Certificates in Your Own Certificate Store
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `Cert:\CurrentUser\My` | personal certificate store of the signed-in user |
+| `EnhancedKeyUsageList.ObjectId` | extended key usages of the certificate |
+| `'1.3.6.1.5.5.7.3.4'` | OID for email protection (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | displays holder and expiration date |
+
+</details>
+
+### With OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `x509` | certificate subcommand |
+| `-in zertifikat.pem` | input file in PEM format; for a DER file, additionally use `-inform der` |
+| `-noout` | suppresses output of the encoded certificate |
+| `-subject` | outputs the holder |
+| `-nameopt multiline` | one field per line with full field names |
+
+</details>
+
+OpenSSL 3 recognizes the field name and displays it in full:
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Verifying the Registry Number
+
+As the recipient of a signed email, you can verify the organization entry in four steps:
+
+1. The email client reports the signature as valid, and the certificate comes from a CA trusted by the email client.
+2. The policy OID begins with `2.23.140.1.5.2` or `2.23.140.1.5.3`, and the certificate contains the `O` and `organizationIdentifier` fields.
+3. The UID from the `organizationIdentifier` belongs to the expected company in the UID register, and the company is active there.
+4. The sender address’s domain belongs to that company.
+
+## Distinction from ZertES
+
+The organization entry does not make an S/MIME certificate a regulated certificate under ZertES. Only providers recognized under ZertES issue regulated certificates, and the certificate must indicate that it is a regulated certificate (Art. 2 para. g and Art. 7 para. 2 lit. b ZertES).
+
+There are substantive parallels. A regulated certificate for a UID entity must contain its UID (Art. 7 para. 2 lit. e ZertES), just as the `organizationIdentifier` contains it for OV and SV. A certificate for a natural person may also contain an indication that the person is authorized to represent a specific UID entity (Art. 7 para. 3 lit. b ZertES); in structure, this corresponds to an SV certificate.
+
+| | S/MIME with organization entry | Regulated certificate under ZertES |
+|---|---|---|
+| Basis | S/MIME Baseline Requirements of the CA/Browser Forum | ZertES and implementing provisions |
+| Issuer | publicly trusted CA | provider recognized under ZertES |
+| Organization identifier | `organizationIdentifier`, for Swiss companies with the UID | UID, mandatory for UID entities |
+| Verification of the person | For SV, by the CA or the organization as an `Enterprise RA` | generally personal appearance with proof of identity; for UID entities, a representative with proof of authority to represent (Art. 9 ZertES) |
+| Key | under the CA’s requirements, including on a gateway | requirements under Art. 6 ZertES |
+
+Under Art. 14 para. 2bis CO, only a qualified electronic signature with a qualified timestamp is equivalent to a handwritten signature, and a qualified certificate may be issued only to a natural person (Art. 8 para. 1 ZertES). For an organization’s signature, ZertES provides for the regulated electronic seal: an advanced electronic signature created using a secure seal-creation device and based on a regulated certificate of a UID entity (Art. 2 para. d ZertES). An S/MIME-signed email is evidence whose weight is freely assessed by the court (Art. 157 CPC); a verified organization entry supports its attribution to the sending company.
+
+**EU note:** In the EU, the eIDAS Regulation governs electronic signatures and seals. Under Art. 25 para. 2 eIDAS, only the qualified electronic signature is likewise equivalent to a handwritten signature.
+
+## Recommendation
+
+- **Functional mailboxes:** OV certificate (SwissSign Organization Validated, DigiCert Secure Email for Organization). It identifies the company without naming an individual.
+- **Personal mailboxes used to sign communications with customers and partners:** SV certificate (SwissSign Gold, DigiCert Secure Email for Employee). It identifies the person and company.
+- **Encryption only:** Cryptographically, all types are equivalent. An MV certificate is sufficient for encryption alone.
+- **Plan for verification:** Organization verification is valid for 825 days, and domain verification for 398 days. After a change of company name or registered office, the information in the certificate no longer matches the registry; plan for new certificates in that case.
+- **Verify on receipt:** The policy OID and UID show whether a signature is actually assigned to a verified company.
+
+## Sources
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 of November 20, 2026; certificate types and policy OIDs (Section 1.1), organization verification (3.2.3), authorization verification (3.2.6), reuse of verification results (4.2.1), validity periods (6.3.2), Subject fields (7.1.4.2), and registration schemes (Appendix A).
+
+2.  [cabforum/smime on GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): Markdown version of the S/MIME Baseline Requirements with version history, including EUID from version 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): Silver and Gold product names, example `NTRCH-CHE-109.357.012`, UID as registry number, and EUID for German companies (April 28, 2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): SwissSign certificate profiles for MV, SV, and OV with Subject fields, purposes, and policy OIDs, version 14 of September 18, 2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): Product overview mapping to MV, OV, and SV; end of the `Legacy` generation and the former S/MIME products on July 10, 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organization and domain verification, confirmation of employees by the organization, `Strict` and `Multipurpose` profiles, and validity periods.
+
+7.  [Federal Act on Electronic Signatures (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Art. 2 (terms, regulated seal), Art. 6 (keys), Art. 7 (content of regulated certificates, UID), Art. 8 (qualified certificates), and Art. 9 (identity verification).
+
+8.  [Swiss Code of Obligations (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 para. 2bis on equivalence of the qualified electronic signature to a handwritten signature.
+
+9.  [UID Register](https://www.uid.admin.ch): Lookup of a UID with name, registered office, and status, maintained by the Federal Statistical Office.
+
+10.  [Zefix](https://www.zefix.ch): Central company index of the cantonal commercial registers.
+
+11.  [Swiss Civil Procedure Code (CPC)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 on the free assessment of evidence.
+
+12.  [Regulation (EU) No. 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): Art. 25 para. 2 on equivalence of the qualified electronic signature to a handwritten signature.
+
+----
+
 # Microsoft To Do Is Being Retired: Moving to Planner from an Admin Perspective
 
 URL: https://rafaelpfister.ch/en/blog/microsoft-to-do-is-being-retired-moving-to-planner-from-an-admin-perspective
@@ -46797,6 +47097,285 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# S/MIME avec mention de l’organisation : organizationIdentifier et UID dans le certificat
+
+URL: https://rafaelpfister.ch/fr/blog/s-mime-avec-mention-de-l-organisation-organizationidentifier-et-uid-dans-le-certificat
+Datum: 2026-12-15
+
+# S/MIME avec mention de l’organisation : organizationIdentifier et UID dans le certificat
+
+Les autorités de certification (CA) distinguent les certificats S/MIME avec et sans mention de l’organisation. Outre l’adresse e-mail, un certificat avec mention de l’organisation indique l’entreprise à laquelle appartient la boîte aux lettres : avec son nom vérifié et un numéro de registre. Pour les entreprises suisses, ce numéro de registre est l’UID, c’est-à-dire le numéro CHE du registre du commerce.
+
+En bref : une mention de l’organisation n’existe que pour les types de certificat `Organization-validated` et `Sponsor-validated` des S/MIME Baseline Requirements. Elle se compose du nom de l’entreprise dans le champ `O` et du champ `organizationIdentifier` (OID 2.5.4.97), par exemple `NTRCH-CHE-123.456.789` pour une entreprise suisse. La CA vérifie l’entreprise dans un registre officiel avant d’inscrire ces informations dans le certificat. Un certificat validé par boîte aux lettres prouve en revanche uniquement l’accès à une boîte aux lettres. Chez SwissSign, cela correspond au choix entre Silver et Gold, chez DigiCert au choix entre « Secure Email for Individual Mailbox » et les produits « for Employee » et « for Organization ». Une signature qualifiée au sens de ZertES ne résulte pas de la mention de l’organisation.
+
+**Focus Suisse :** la qualification juridique suit le droit suisse (ZertES, CO). Lorsque les règles de l’UE diffèrent, une remarque signalée est fournie.
+
+## Les quatre types de certificat
+
+Depuis le 1er septembre 2023, les `S/MIME Baseline Requirements` (BR) du CA/Browser Forum s’appliquent aux certificats S/MIME publiquement reconnus. Elles distinguent quatre types de certificat selon la personne ou l’entité qui figure comme titulaire (`Subject`) dans le certificat :
+
+| Type | Titulaire dans le certificat | Mention de l’organisation | Ce que la CA vérifie |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | uniquement l’adresse e-mail | non autorisée | contrôle de la boîte aux lettres ou du domaine de messagerie |
+| `Organization-validated` (OV) | une organisation, aucune personne | obligatoire | organisation ainsi que boîte aux lettres ou domaine de messagerie |
+| `Sponsor-validated` (SV) | une personne appartenant à une organisation | obligatoire | comme OV, plus la personne ; la CA ou l’organisation elle-même la vérifie |
+| `Individual-validated` (IV) | une personne sans organisation | non autorisée | identité de la personne et boîte aux lettres |
+
+Par « S/MIME avec mention de l’organisation », on entend les types OV et SV. Pour les deux, les BR imposent les champs `organizationName` et `organizationIdentifier`, dans les trois générations `Legacy`, `Multipurpose` et `Strict`. Les générations se distinguent par les champs Subject, extensions et usages autorisés. Les BR ont retiré la génération `Legacy` le 15 juillet 2025 ; SwissSign et DigiCert ne l’émettent plus depuis lors.
+
+Les certificats OV conviennent aux boîtes aux lettres fonctionnelles telles que `info@` ou `buchhaltung@`, qui ne sont attribuées à aucune personne. Les certificats SV sont destinés aux boîtes aux lettres personnelles des collaborateurs et contiennent en outre le nom de la personne ou un pseudonyme.
+
+## Structure de l’organizationIdentifier
+
+Le champ `organizationIdentifier` (OID 2.5.4.97) contient un numéro de registre de l’organisation. Les certificats selon eIDAS et ZertES utilisent également ce champ. Pour les certificats S/MIME, les BR imposent la structure suivante :
+
+| Partie | Exemple | Signification |
+|---|---|---|
+| Schéma d’enregistrement, 3 caractères | `NTR` | `National Trade Register`, le registre du commerce |
+| Code pays selon ISO 3166-1 | `CH` | pays dans lequel le registre est tenu |
+| Trait d’union | `-` | séparateur |
+| Numéro de registre | `CHE-123.456.789` | numéro de l’organisation dans le registre |
+
+L’ensemble donne `NTRCH-CHE-123.456.789`. Comme l’UID contient elle-même un trait d’union, les BR précisent que le schéma et le code pays ne contiennent jamais de trait d’union. Le premier trait d’union à partir de la gauche sépare donc le schéma du numéro de registre ; tous les suivants font partie du numéro. Si un registre attribue des numéros uniquement au niveau d’un État fédéré ou d’une province, le code pays est suivi d’un `+` et du code de la région, par exemple `NTRUS+CA-12345678` pour la Californie.
+
+Les BR connaissent les schémas d’enregistrement suivants :
+
+| Schéma | Origine du numéro | Exemple des BR |
+|---|---|---|
+| `NTR` | registre du commerce ou des entreprises | `NTRGB-12345678` |
+| `VAT` | autorité fiscale (numéro de TVA) | `VATEL-123456789` |
+| `PSD` | numéro d’agrément d’un prestataire de services de paiement selon la directive UE 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` selon ISO 17442, code pays toujours `XG` | `LEIXG-` suivi du LEI |
+| `GOV` | autorités sans numéro relevant de l’un des autres schémas | `GOVUS` |
+| `INT` | organisations internationales | `INTXG` |
+
+Pour les entreprises suisses, `NTR` avec l’UID est le cas habituel. L’UID est attribué par l’Office fédéral de la statistique. Les registres du commerce l’utilisent comme numéro d’entreprise, il sert également de numéro de TVA et reste identique lorsqu’une entreprise transfère son siège dans un autre canton. En revanche, un numéro de TVA peut disparaître lorsque l’assujettissement prend fin, et toutes les organisations n’en possèdent pas. SwissSign reprend l’UID avec les points, tel qu’il figure dans le registre UID, et cite `NTRCH-CHE-109.357.012` comme exemple pour SwissSign AG.
+
+**Remarque UE :** en Allemagne, les tribunaux d’instance attribuent les numéros du registre du commerce, et le même numéro peut apparaître auprès de plusieurs tribunaux. Depuis la version 1.0.9 de mai 2025, les BR autorisent donc, dans le schéma `NTR`, l’`European Unique Identifier` (EUID) et la recommandent pour les entreprises allemandes, par exemple `NTRDE-DER3306.HRB12345` pour une entreprise inscrite au registre du commerce du tribunal d’instance de Cologne. Selon les BR, le numéro de registre doit être univoque uniquement là où le registre et l’ordre juridique attribuent des numéros univoques.
+
+## Ce que la CA vérifie
+
+Avant qu’une CA n’émette un certificat OV ou SV, elle doit vérifier les informations suivantes selon les BR :
+
+- **Nom et existence de l’organisation :** auprès d’une autorité du pays de l’organisation, au moyen de données LEI, d’une visite sur place ou d’une confirmation accompagnée d’un extrait de registre. Pour une entreprise suisse, il s’agit du registre du commerce et du registre UID. Si l’entreprise y est indiquée comme radiée ou inactive, la CA ne peut pas émettre le certificat.
+- **Numéro de registre :** la CA confirme que le numéro figurant dans l’`organizationIdentifier` appartient à l’organisation figurant dans le champ `O`.
+- **Pouvoir de représentation :** par un canal de communication fiable, la CA vérifie que la personne requérante est habilitée à demander des certificats pour l’organisation ou à agir comme `Enterprise RA`.
+- **Boîte aux lettres ou domaine de messagerie :** la CA vérifie le contrôle des adresses e-mail contenues dans le certificat. Si l’organisation agit comme `Enterprise RA`, elle doit prouver le contrôle de l’ensemble du domaine de messagerie.
+- **Personne (SV uniquement) :** les BR permettent à l’organisation, en tant que `Enterprise RA`, de confirmer elle-même ses collaborateurs. La CA vérifie alors l’organisation et non chaque personne individuellement.
+
+Une CA peut réutiliser les résultats de ces vérifications : la vérification de l’organisation et du pouvoir de représentation pendant 825 jours, celle du contrôle du domaine pendant 398 jours. Un certificat des générations `Multipurpose` et `Strict` est valable au maximum 825 jours.
+
+## Comparaison entre SwissSign et DigiCert
+
+Les deux CA proposent les types MV, SV et OV sous leurs propres noms de produits. Aucune des deux ne propose de certificat IV. Les BR définissent la structure de l’`organizationIdentifier`, qui est identique pour les deux fournisseurs.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (anciennement Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | non proposé | non proposé |
+| Génération pour SV et OV | `Multipurpose` selon les profils de certificat | `Strict` par défaut, `Multipurpose` au choix |
+| Personne pour SV | prénom et nom ou pseudonyme avec le préfixe `pseudo:` dans le `CN` | prénom et nom ou pseudonyme ; dans le `CN`, le nom ou l’adresse e-mail au choix |
+| Usages supplémentaires pour SV | dans le profil avec authentification : authentification client, connexion par carte à puce, EFS | pour `Strict`, non-répudiation ; pour `Multipurpose`, en plus chiffrement des données et authentification client |
+
+DigiCert décrit explicitement le produit SV selon le modèle de l’`Enterprise RA` : l’organisation confirme que la personne figurant dans le certificat fait partie de ses collaborateurs ou représentants et conserve les preuves correspondantes. DigiCert ne vérifie elle-même que l’organisation. Pour OV et SV, DigiCert exige toujours la preuve du contrôle du domaine. La vérification de l’organisation est valable 825 jours, celle du domaine 398 jours. Une durée d’un ou deux ans, ou une date d’expiration personnalisée n’excédant pas 824 jours, peut être choisie. DigiCert a retiré les anciens produits Premium, Email Security Plus, Digital Signature Plus et Class 1 S/MIME le 10 juillet 2025 et les a remplacés par ces produits.
+
+Chez SwissSign, le certificat OV contient dans le `CN` le nom de l’organisation, comme dans le champ `O`. L’article [S/MIME dans les banques : situation juridique en Suisse et choix entre Silver et Gold](/blog/smime-silver-gold-schweiz) explique quel niveau une banque devrait choisir pour quelle boîte aux lettres et ce que cela signifie juridiquement.
+
+## Vérifier le type de certificat
+
+Dans Outlook et d’autres programmes de messagerie, les détails du certificat d’un e-mail signé s’ouvrent via l’icône de signature. Sous Windows, les champs figurent dans l’onglet « Détails », sous l’entrée « Sujet ». Windows ne connaît pas de nom d’affichage pour l’OID 2.5.4.97 et l’affiche comme `OID.2.5.4.97`.
+
+### Afficher le titulaire avec PowerShell
+
+Pour un certificat exporté (par exemple depuis les détails du certificat d’un e-mail signé) :
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `Get-PfxCertificate` | lit un certificat depuis un fichier, y compris depuis un fichier `.cer` sans clé privée |
+| `-FilePath .\zertifikat.cer` | chemin vers le fichier de certificat |
+| `SubjectName.Format($true)` | affiche les champs du titulaire, un par ligne |
+
+</details>
+
+Sortie pour un certificat SV (exemple) :
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+Pour un certificat MV, la sortie contient uniquement `CN=` avec l’adresse e-mail.
+
+### Déterminer le type et la génération via l’OID de politique
+
+Chaque certificat conforme aux BR contient dans l’extension `Certificate Policies` une OID suivant le modèle `2.23.140.1.5.<Typ>.<Generation>` :
+
+| Position | Valeur | Signification |
+|---|---|---|
+| Type | `1` | `Mailbox-validated` |
+| Type | `2` | `Organization-validated` |
+| Type | `3` | `Sponsor-validated` |
+| Type | `4` | `Individual-validated` |
+| Génération | `1` | `Legacy` |
+| Génération | `2` | `Multipurpose` |
+| Génération | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `$zert.Extensions` | extensions du certificat précédemment chargé |
+| `'2.5.29.32'` | OID de l’extension `Certificate Policies` |
+| `Format($true)` | affiche le contenu de l’extension sur plusieurs lignes |
+
+</details>
+
+Sortie (abrégée) :
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` correspond à un certificat SV de la génération `Multipurpose`. D’autres entrées avec des OID de la CA elle-même sont normales.
+
+### Lister les certificats S/MIME dans son propre magasin de certificats
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `Cert:\CurrentUser\My` | magasin de certificats personnel de l’utilisateur connecté |
+| `EnhancedKeyUsageList.ObjectId` | usages étendus de clé du certificat |
+| `'1.3.6.1.5.5.7.3.4'` | OID pour la protection des e-mails (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | affiche le titulaire et la date d’expiration |
+
+</details>
+
+### Avec OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Options expliquées</summary>
+
+| Option | Effet |
+|---|---|
+| `x509` | sous-commande pour les certificats |
+| `-in zertifikat.pem` | fichier d’entrée au format PEM ; pour un fichier DER, ajouter `-inform der` |
+| `-noout` | supprime l’affichage du certificat encodé |
+| `-subject` | affiche le titulaire |
+| `-nameopt multiline` | un champ par ligne avec les noms de champs développés |
+
+</details>
+
+OpenSSL 3 connaît le nom du champ et l’affiche en toutes lettres :
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Contrôler le numéro de registre
+
+En tant que destinataire d’un e-mail signé, vous pouvez vérifier la mention de l’organisation en quatre étapes :
+
+1. Le programme de messagerie indique que la signature est valide et le certificat provient d’une CA à laquelle le programme fait confiance.
+2. L’OID de politique commence par `2.23.140.1.5.2` ou `2.23.140.1.5.3`, et le certificat contient les champs `O` et `organizationIdentifier`.
+3. L’UID de l’`organizationIdentifier` appartient, dans le registre UID, à l’entreprise attendue, et l’entreprise y est active.
+4. Le domaine de l’adresse de l’expéditeur appartient à cette entreprise.
+
+## Distinction avec ZertES
+
+La mention de l’organisation ne transforme pas un certificat S/MIME en certificat réglementé selon ZertES. Seuls des prestataires reconnus selon ZertES émettent des certificats réglementés, et le certificat doit indiquer qu’il s’agit d’un certificat réglementé (art. 2, let. g, et art. 7, al. 2, let. b, ZertES).
+
+Sur le fond, il existe des parallèles. Un certificat réglementé pour une unité UID doit contenir son UID (art. 7, al. 2, let. e, ZertES), tout comme l’`organizationIdentifier` la contient pour OV et SV. Un certificat pour une personne physique peut en outre indiquer qu’elle est habilitée à représenter une unité UID déterminée (art. 7, al. 3, let. b, ZertES) ; cela correspond, dans sa structure, à un certificat SV.
+
+| | S/MIME avec mention de l’organisation | certificat réglementé selon ZertES |
+|---|---|---|
+| Base | S/MIME Baseline Requirements du CA/Browser Forum | ZertES et dispositions d’exécution |
+| Émettrice | CA publiquement reconnue | prestataire reconnu selon ZertES |
+| Identifiant de l’organisation | `organizationIdentifier`, avec l’UID pour les entreprises suisses | UID, obligatoire pour les unités UID |
+| Vérification de la personne | pour SV, par la CA ou par l’organisation en tant qu’`Enterprise RA` | en principe, comparution personnelle avec justificatif d’identité ; pour les unités UID, un représentant avec preuve du pouvoir de représentation (art. 9 ZertES) |
+| Clé | selon les exigences de la CA, également sur une passerelle | exigences selon l’art. 6 ZertES |
+
+Selon l’art. 14, al. 2bis CO, seule la signature électronique qualifiée assortie d’un horodatage qualifié est assimilée à la signature manuscrite, et un certificat qualifié ne peut être délivré qu’à une personne physique (art. 8, al. 1, ZertES). Pour la signature d’une organisation, ZertES prévoit le sceau électronique réglementé : une signature électronique avancée créée au moyen d’une unité de création de sceau sécurisée et reposant sur un certificat réglementé d’une unité UID (art. 2, let. d, ZertES). Un e-mail signé S/MIME est un moyen de preuve dont le tribunal apprécie librement la valeur (art. 157 CPC) ; une mention de l’organisation vérifiée étaye alors l’attribution à l’entreprise expéditrice.
+
+**Remarque UE :** dans l’UE, le règlement eIDAS régit les signatures et sceaux électroniques. Selon l’art. 25, al. 2, eIDAS, seule la signature électronique qualifiée est également assimilée à la signature manuscrite.
+
+## Recommandation
+
+- **Boîtes aux lettres fonctionnelles :** certificat OV (SwissSign Organization Validated, DigiCert Secure Email for Organization). Il identifie l’entreprise sans nommer de personne.
+- **Boîtes aux lettres personnelles avec signature vis-à-vis des clients et partenaires :** certificat SV (SwissSign Gold, DigiCert Secure Email for Employee). Il identifie la personne et l’entreprise.
+- **Chiffrement uniquement :** sur le plan cryptographique, tous les types sont équivalents. Pour le chiffrement seul, un certificat MV suffit.
+- **Planifier les vérifications :** la vérification de l’organisation est valable 825 jours, celle du domaine 398 jours. Après une modification du nom ou du siège de l’entreprise, les informations du certificat ne correspondent plus au registre ; prévoyez alors de nouveaux certificats.
+- **Vérifier à la réception :** l’OID de politique et l’UID indiquent si une signature est réellement attribuée à une entreprise vérifiée.
+
+## Sources
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): version 1.0.17 du 20 novembre 2026 ; types de certificat et OID de politique (section 1.1), vérification de l’organisation (3.2.3), vérification du pouvoir de représentation (3.2.6), réutilisation des résultats de vérification (4.2.1), durées de validité (6.3.2), champs Subject (7.1.4.2) et schémas d’enregistrement (annexe A).
+
+2.  [cabforum/smime sur GitHub : SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): version Markdown des S/MIME Baseline Requirements avec historique des versions, notamment l’EUID à partir de la version 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): désignations des produits Silver et Gold, exemple `NTRCH-CHE-109.357.012`, UID comme numéro de registre et EUID pour les entreprises allemandes (28.04.2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): profils de certificat SwissSign pour MV, SV et OV avec champs Subject, usages et OID de politique, version 14 du 18.09.2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): aperçu des produits avec attribution aux types MV, OV et SV, fin de la génération `Legacy` et des anciens produits S/MIME le 10 juillet 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): vérification de l’organisation et du domaine, confirmation des collaborateurs par l’organisation, profils `Strict` et `Multipurpose`, durées de validité.
+
+7.  [Loi fédérale sur la signature électronique (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): art. 2 (notions, sceau réglementé), art. 6 (clés), art. 7 (contenu des certificats réglementés, UID), art. 8 (certificats qualifiés) et art. 9 (vérification de l’identité).
+
+8.  [Code des obligations (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14, al. 2bis, sur l’assimilation de la signature électronique qualifiée à la signature manuscrite.
+
+9.  [Registre UID](https://www.uid.admin.ch): consultation d’un UID avec nom, siège et statut, tenu par l’Office fédéral de la statistique.
+
+10.  [Zefix](https://www.zefix.ch): index central des entreprises des registres cantonaux du commerce.
+
+11.  [Code de procédure civile (CPC)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 sur la libre appréciation des preuves.
+
+12.  [Règlement (UE) no 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25, al. 2, sur l’assimilation de la signature électronique qualifiée à la signature manuscrite.
 
 ----
 
@@ -70026,6 +70605,285 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# S/MIME con indicazione dell’organizzazione: organizationIdentifier e UID nel certificato
+
+URL: https://rafaelpfister.ch/it/blog/s-mime-con-indicazione-dell-organizzazione-organizationidentifier-e-uid-nel-certificato
+Datum: 2026-12-15
+
+# S/MIME con indicazione dell’organizzazione: organizationIdentifier e UID nel certificato
+
+Le autorità di certificazione (CA) distinguono tra certificati S/MIME con e senza indicazione dell’organizzazione. Oltre all’indirizzo e-mail, un certificato con indicazione dell’organizzazione attesta anche l’azienda cui appartiene la casella di posta: con il nome verificato e un numero di registro. Per le aziende svizzere, questo numero di registro è l’UID, ossia il numero CHE del registro di commercio.
+
+In breve: un’indicazione dell’organizzazione esiste solo per i tipi di certificato `Organization-validated` e `Sponsor-validated` dei S/MIME Baseline Requirements. È costituita dal nome dell’azienda nel campo `O` e dal campo `organizationIdentifier` (OID 2.5.4.97), per un’azienda svizzera ad esempio `NTRCH-CHE-123.456.789`. Prima di inserire tali dati nel certificato, la CA verifica l’azienda in un registro ufficiale. Un certificato convalidato sulla casella di posta, invece, dimostra soltanto l’accesso a una casella di posta. Per SwissSign ciò corrisponde alla scelta tra Silver e Gold, mentre per DigiCert alla scelta tra «Secure Email for Individual Mailbox» e i prodotti «for Employee» e «for Organization». L’indicazione dell’organizzazione non crea una firma qualificata ai sensi della ZertES.
+
+**Focus Svizzera:** la classificazione giuridica segue il diritto svizzero (ZertES, CO). Laddove le norme UE differiscono, viene fornita un’indicazione contrassegnata.
+
+## I quattro tipi di certificato
+
+Dal 1° settembre 2023, per i certificati S/MIME pubblicamente attendibili si applicano i `S/MIME Baseline Requirements` (BR) del CA/Browser Forum. Essi distinguono quattro tipi di certificato in base a chi è indicato come titolare (`Subject`) nel certificato:
+
+| Tipo | Titolare nel certificato | Indicazione dell’organizzazione | Cosa verifica la CA |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | solo l’indirizzo e-mail | non ammessa | controllo della casella di posta o del dominio e-mail |
+| `Organization-validated` (OV) | un’organizzazione, nessuna persona | obbligatoria | organizzazione nonché casella di posta o dominio e-mail |
+| `Sponsor-validated` (SV) | una persona appartenente a un’organizzazione | obbligatoria | come OV, più la persona; la CA o l’organizzazione stessa verifica quest’ultima |
+| `Individual-validated` (IV) | una persona senza organizzazione | non ammessa | identità della persona e casella di posta |
+
+Con «S/MIME con indicazione dell’organizzazione» si intendono i tipi OV e SV. Per entrambi, i BR prescrivono obbligatoriamente i campi `organizationName` e `organizationIdentifier`, in tutte e tre le generazioni `Legacy`, `Multipurpose` e `Strict`. Le generazioni si differenziano per i campi Subject consentiti, le estensioni e gli scopi d’uso. I BR hanno dismesso la generazione `Legacy` al 15 luglio 2025; da allora SwissSign e DigiCert non la rilasciano più.
+
+I certificati OV sono adatti alle caselle funzionali, quali `info@` o `buchhaltung@`, che non sono assegnate a una persona. I certificati SV sono destinati alle caselle personali dei collaboratori e contengono inoltre il nome della persona o uno pseudonimo.
+
+## Struttura dell’organizationIdentifier
+
+Il campo `organizationIdentifier` (OID 2.5.4.97) contiene un numero di registro dell’organizzazione. Lo stesso campo viene utilizzato anche dai certificati secondo eIDAS e ZertES. Per i certificati S/MIME, i BR prescrivono la seguente struttura:
+
+| Parte | Esempio | Significato |
+|---|---|---|
+| Schema di registrazione, 3 caratteri | `NTR` | `National Trade Register`, il registro di commercio |
+| Codice paese secondo ISO 3166-1 | `CH` | Paese in cui è tenuto il registro |
+| Trattino | `-` | Separatore |
+| Numero di registro | `CHE-123.456.789` | Numero dell’organizzazione nel registro |
+
+Combinati, danno `NTRCH-CHE-123.456.789`. Poiché l’UID stesso contiene un trattino, i BR stabiliscono che lo schema e il codice paese non contengano mai trattini. Il primo trattino da sinistra separa quindi lo schema dal numero di registro, mentre tutti gli altri appartengono al numero. Se un registro assegna numeri soltanto a livello di Stato federale o provincia, dopo il codice paese segue un `+` con il codice della regione, ad esempio `NTRUS+CA-12345678` per la California.
+
+I BR prevedono i seguenti schemi di registrazione:
+
+| Schema | Origine del numero | Esempio dai BR |
+|---|---|---|
+| `NTR` | registro di commercio o delle imprese | `NTRGB-12345678` |
+| `VAT` | autorità fiscale (numero IVA) | `VATEL-123456789` |
+| `PSD` | numero di autorizzazione di un prestatore di servizi di pagamento ai sensi della direttiva UE 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` secondo ISO 17442, codice paese sempre `XG` | `LEIXG-` seguito dal LEI |
+| `GOV` | autorità senza numero in uno degli altri schemi | `GOVUS` |
+| `INT` | organizzazioni internazionali | `INTXG` |
+
+Per le aziende svizzere, `NTR` con l’UID è la norma. L’UID è assegnato dall’Ufficio federale di statistica. I registri di commercio lo utilizzano come numero dell’impresa, serve anche da numero IVA e rimane invariato quando un’azienda trasferisce la propria sede in un altro Cantone. Un numero IVA, invece, può decadere quando termina l’assoggettamento fiscale e non tutte le organizzazioni ne possiedono uno. SwissSign riporta l’UID con i punti, come figura nel registro UID, e indica come esempio `NTRCH-CHE-109.357.012` per SwissSign AG.
+
+**Nota UE:** in Germania, i tribunali locali assegnano i numeri del registro di commercio e lo stesso numero ricorre presso più tribunali. Dalla versione 1.0.9 del maggio 2025, i BR consentono pertanto nello schema `NTR` l’`European Unique Identifier` (EUID) e lo raccomandano per le aziende tedesche, ad esempio `NTRDE-DER3306.HRB12345` per un’azienda iscritta nel registro di commercio del tribunale locale di Colonia. Secondo i BR, il numero di registro deve essere univoco solo laddove il registro e l’ordinamento giuridico assegnino numeri univoci.
+
+## Cosa verifica la CA
+
+Prima di rilasciare un certificato OV o SV, una CA deve verificare secondo i BR le seguenti informazioni:
+
+- **Nome ed esistenza dell’organizzazione:** tramite un’autorità del Paese dell’organizzazione, dati LEI, una visita in loco o una conferma con estratto del registro. Per un’azienda svizzera si tratta del registro di commercio e del registro UID. Se l’azienda vi risulta cancellata o inattiva, la CA non può rilasciare il certificato.
+- **Numero di registro:** la CA conferma che il numero nell’`organizationIdentifier` appartiene all’organizzazione nel campo `O`.
+- **Procura:** attraverso un canale di comunicazione affidabile, la CA verifica che la persona richiedente sia autorizzata a richiedere certificati per l’organizzazione o ad agire come `Enterprise RA`.
+- **Casella di posta o dominio e-mail:** la CA verifica il controllo degli indirizzi e-mail presenti nel certificato. Se l’organizzazione agisce come `Enterprise RA`, deve dimostrare il controllo dell’intero dominio e-mail.
+- **Persona (solo SV):** i BR consentono all’organizzazione, in qualità di `Enterprise RA`, di confermare direttamente i propri collaboratori. La CA verifica quindi l’organizzazione e non ogni singola persona.
+
+Una CA può riutilizzare i risultati di tali verifiche: la verifica dell’organizzazione e della procura per 825 giorni, la verifica del controllo del dominio per 398 giorni. Un certificato delle generazioni `Multipurpose` e `Strict` è valido al massimo 825 giorni.
+
+## Confronto tra SwissSign e DigiCert
+
+Entrambe le CA offrono i tipi MV, SV e OV con propri nomi di prodotto. Nessuna delle due offre un certificato IV. La struttura dell’`organizationIdentifier` è definita dai BR e vale allo stesso modo per entrambi i fornitori.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (precedentemente Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | non disponibile | non disponibile |
+| Generazione per SV e OV | `Multipurpose` secondo i profili dei certificati | `Strict` come standard, `Multipurpose` selezionabile |
+| Persona per SV | nome e cognome o pseudonimo con prefisso `pseudo:` nel `CN` | nome e cognome o pseudonimo; nel `CN` è possibile scegliere il nome o l’indirizzo e-mail |
+| Usi aggiuntivi per SV | nel profilo con autenticazione: autenticazione client, accesso con smart card, EFS | con `Strict` non ripudio, con `Multipurpose` anche crittografia dei dati e autenticazione client |
+
+DigiCert descrive esplicitamente il prodotto SV secondo il modello dell’`Enterprise RA`: l’organizzazione conferma che la persona nel certificato appartiene ai propri collaboratori o rappresentanti e conserva le relative prove. DigiCert verifica soltanto l’organizzazione. Per OV e SV, DigiCert richiede sempre la prova del controllo del dominio. La verifica dell’organizzazione è valida 825 giorni, quella del dominio 398 giorni. Si può scegliere una durata di uno o due anni oppure una data di scadenza personalizzata fino a un massimo di 824 giorni. DigiCert ha ritirato il 10 luglio 2025 i precedenti prodotti Premium, Email Security Plus, Digital Signature Plus e Class 1 S/MIME, sostituendoli con questi prodotti.
+
+Con SwissSign, il certificato OV contiene nel `CN` il nome dell’organizzazione come nel campo `O`. L’articolo [S/MIME nelle banche: situazione giuridica in Svizzera e scelta tra Silver e Gold](/blog/smime-silver-gold-schweiz) descrive quale livello una banca dovrebbe scegliere per quale casella di posta e cosa ciò comporta sul piano giuridico.
+
+## Verificare il tipo di certificato
+
+In Outlook e in altri programmi di posta è possibile aprire i dettagli del certificato di un’e-mail firmata tramite l’icona della firma. In Windows, i campi sono disponibili nella scheda «Dettagli» alla voce «Richiedente». Per l’OID 2.5.4.97, Windows non conosce un nome visualizzato e lo mostra come `OID.2.5.4.97`.
+
+### Visualizzare il titolare con PowerShell
+
+Per un certificato esportato (ad esempio dai dettagli del certificato di un’e-mail firmata):
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `Get-PfxCertificate` | legge un certificato da un file, anche da un file `.cer` senza chiave privata |
+| `-FilePath .\zertifikat.cer` | percorso del file del certificato |
+| `SubjectName.Format($true)` | restituisce i campi del titolare riga per riga |
+
+</details>
+
+Output per un certificato SV (esempio):
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+In un certificato MV, l’output contiene solo `CN=` con l’indirizzo e-mail.
+
+### Determinare tipo e generazione tramite la Policy OID
+
+Ogni certificato secondo i BR contiene nell’estensione `Certificate Policies` un OID secondo il modello `2.23.140.1.5.<Typ>.<Generation>`:
+
+| Posizione | Valore | Significato |
+|---|---|---|
+| Tipo | `1` | `Mailbox-validated` |
+| Tipo | `2` | `Organization-validated` |
+| Tipo | `3` | `Sponsor-validated` |
+| Tipo | `4` | `Individual-validated` |
+| Generazione | `1` | `Legacy` |
+| Generazione | `2` | `Multipurpose` |
+| Generazione | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `$zert.Extensions` | estensioni del certificato letto in precedenza |
+| `'2.5.29.32'` | OID dell’estensione `Certificate Policies` |
+| `Format($true)` | restituisce il contenuto dell’estensione su più righe |
+
+</details>
+
+Output (abbreviato):
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` indica un certificato SV della generazione `Multipurpose`. Ulteriori voci con OID della CA stessa sono normali.
+
+### Elencare i certificati S/MIME nel proprio archivio certificati
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `Cert:\CurrentUser\My` | archivio certificati personale dell’utente connesso |
+| `EnhancedKeyUsageList.ObjectId` | usi estesi della chiave del certificato |
+| `'1.3.6.1.5.5.7.3.4'` | OID per la protezione e-mail (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | mostra titolare e data di scadenza |
+
+</details>
+
+### Con OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `x509` | sottocomando per certificati |
+| `-in zertifikat.pem` | file di input in formato PEM; per un file DER, aggiungere `-inform der` |
+| `-noout` | sopprime l’output del certificato codificato |
+| `-subject` | restituisce il titolare |
+| `-nameopt multiline` | un campo per riga con nomi dei campi per esteso |
+
+</details>
+
+OpenSSL 3 conosce il nome del campo e lo mostra per esteso:
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Verificare il numero di registro
+
+Come destinatari di un’e-mail firmata, potete verificare l’indicazione dell’organizzazione in quattro passaggi:
+
+1. Il programma di posta segnala la firma come valida e il certificato proviene da una CA di cui il programma di posta si fida.
+2. La Policy OID inizia con `2.23.140.1.5.2` o `2.23.140.1.5.3`, e il certificato contiene i campi `O` e `organizationIdentifier`.
+3. L’UID dell’`organizationIdentifier` appartiene nel registro UID all’azienda prevista e l’azienda è attiva.
+4. Il dominio dell’indirizzo del mittente appartiene a tale azienda.
+
+## Distinzione rispetto alla ZertES
+
+L’indicazione dell’organizzazione non trasforma un certificato S/MIME in un certificato regolamentato ai sensi della ZertES. I certificati regolamentati sono rilasciati solo da prestatrici riconosciute ai sensi della ZertES e il certificato deve contenere l’indicazione che si tratta di un certificato regolamentato (art. 2 lett. g e art. 7 cpv. 2 lett. b ZertES).
+
+Sul piano dei contenuti vi sono analogie. Un certificato regolamentato per un’unità UID deve contenere il relativo UID (art. 7 cpv. 2 lett. e ZertES), così come l’`organizationIdentifier` lo contiene per OV e SV. Un certificato per una persona fisica può inoltre contenere l’indicazione che essa è autorizzata a rappresentare una determinata unità UID (art. 7 cpv. 3 lett. b ZertES); nella struttura ciò corrisponde a un certificato SV.
+
+| | S/MIME con indicazione dell’organizzazione | certificato regolamentato secondo ZertES |
+|---|---|---|
+| Base | S/MIME Baseline Requirements del CA/Browser Forum | ZertES e disposizioni di esecuzione |
+| Emittente | CA pubblicamente attendibile | prestatrice riconosciuta ai sensi della ZertES |
+| Identificativo dell’organizzazione | `organizationIdentifier`, per le aziende svizzere con l’UID | UID, obbligatorio per le unità UID |
+| Verifica della persona | per SV dalla CA o dall’organizzazione in qualità di `Enterprise RA` | in linea di principio presenza personale con prova dell’identità; per le unità UID, un rappresentante con prova del potere di rappresentanza (art. 9 ZertES) |
+| Chiave | secondo le prescrizioni della CA, anche su un gateway | requisiti ai sensi dell’art. 6 ZertES |
+
+Solo la firma elettronica qualificata con marca temporale qualificata è equiparata alla firma autografa ai sensi dell’art. 14 cpv. 2bis CO, e un certificato qualificato può essere rilasciato soltanto a una persona fisica (art. 8 cpv. 1 ZertES). Per la firma di un’organizzazione, la ZertES prevede il sigillo elettronico regolamentato: una firma elettronica avanzata creata con un’unità sicura di creazione del sigillo e basata su un certificato regolamentato di un’unità UID (art. 2 lett. d ZertES). Un’e-mail firmata S/MIME è un mezzo di prova il cui valore è liberamente valutato dal giudice (art. 157 CPC); un’indicazione dell’organizzazione verificata supporta l’attribuzione all’azienda mittente.
+
+**Nota UE:** nell’UE, il regolamento eIDAS disciplina le firme e i sigilli elettronici. Ai sensi dell’art. 25 cpv. 2 eIDAS, anche qui soltanto la firma elettronica qualificata è equiparata alla firma autografa.
+
+## Raccomandazione
+
+- **Caselle funzionali:** certificato OV (SwissSign Organization Validated, DigiCert Secure Email for Organization). Attesta l’azienda senza menzionare una persona.
+- **Caselle personali con firma nei confronti di clienti e partner:** certificato SV (SwissSign Gold, DigiCert Secure Email for Employee). Attesta la persona e l’azienda.
+- **Solo crittografia:** dal punto di vista crittografico, tutti i tipi sono equivalenti. Per la sola crittografia è sufficiente un certificato MV.
+- **Pianificare le verifiche:** la verifica dell’organizzazione è valida 825 giorni, quella del dominio 398 giorni. Dopo una modifica del nome dell’azienda o della sede, i dati nel certificato non corrispondono più al registro; pianificate quindi nuovi certificati.
+- **Verificare in ricezione:** Policy OID e UID mostrano se una firma è effettivamente attribuita a un’azienda verificata.
+
+## Fonti
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): versione 1.0.17 del 20 novembre 2026; tipi di certificato e Policy OID (sezione 1.1), verifica dell’organizzazione (3.2.3), verifica della procura (3.2.6), riutilizzo dei risultati delle verifiche (4.2.1), durate di validità (6.3.2), campi Subject (7.1.4.2) e schemi di registrazione (appendice A).
+
+2.  [cabforum/smime su GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): versione Markdown dei S/MIME Baseline Requirements con cronologia delle versioni, tra cui EUID dalla versione 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): denominazioni dei prodotti Silver e Gold, esempio `NTRCH-CHE-109.357.012`, UID come numero di registro ed EUID per le aziende tedesche (28.04.2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): profili dei certificati SwissSign per MV, SV e OV con campi Subject, scopi d’uso e Policy OID, versione 14 del 18.09.2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): panoramica dei prodotti con assegnazione a MV, OV e SV, fine della generazione `Legacy` e dei precedenti prodotti S/MIME il 10 luglio 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): verifica dell’organizzazione e del dominio, conferma dei collaboratori da parte dell’organizzazione, profili `Strict` e `Multipurpose`, durate di validità.
+
+7.  [Legge federale concernente la firma elettronica (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): art. 2 (termini, sigillo regolamentato), art. 6 (chiavi), art. 7 (contenuto dei certificati regolamentati, UID), art. 8 (certificati qualificati) e art. 9 (verifica dell’identità).
+
+8.  [Codice delle obbligazioni (CO)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14 cpv. 2bis sull’equiparazione della firma elettronica qualificata alla firma autografa.
+
+9.  [Registro UID](https://www.uid.admin.ch): consultazione di un UID con nome, sede e stato, gestito dall’Ufficio federale di statistica.
+
+10.  [Zefix](https://www.zefix.ch): indice centrale delle imprese dei registri di commercio cantonali.
+
+11.  [Codice di procedura civile (CPC)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 sulla libera valutazione delle prove.
+
+12.  [Regolamento (UE) n. 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25 cpv. 2 sull’equiparazione della firma elettronica qualificata alla firma autografa.
+
+----
+
 # Microsoft To Do verrà ritirato: passaggio a Planner dal punto di vista dell’amministratore
 
 URL: https://rafaelpfister.ch/it/blog/microsoft-to-do-verra-ritirato-passaggio-a-planner-dal-punto-di-vista-dell-amministratore
@@ -93252,6 +94110,285 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# S/MIME con entrada de organización: organizationIdentifier y UID en el certificado
+
+URL: https://rafaelpfister.ch/es/blog/s-mime-con-entrada-de-organizacion-organizationidentifier-y-uid-en-el-certificado
+Datum: 2026-12-15
+
+# S/MIME con entrada de organización: organizationIdentifier y UID en el certificado
+
+Las autoridades de certificación (CA) distinguen entre certificados S/MIME con y sin entrada de organización. Un certificado con entrada de organización identifica, además de la dirección de correo electrónico, a la empresa a la que pertenece el buzón: con su nombre verificado y un número de registro. Para las empresas suizas, este número de registro es la UID, es decir, el número CHE del registro mercantil.
+
+Conclusión breve: Solo existe una entrada de organización para los tipos de certificado `Organization-validated` y `Sponsor-validated` de los requisitos básicos de S/MIME. Consta del nombre de la empresa en el campo `O` y del campo `organizationIdentifier` (OID 2.5.4.97), en el caso de una empresa suiza, por ejemplo, `NTRCH-CHE-123.456.789`. La CA verifica la empresa en un registro oficial antes de incorporar estos datos al certificado. En cambio, un certificado validado para buzón solo acredita el acceso a un buzón. En SwissSign, esto corresponde a elegir entre Silver y Gold; en DigiCert, a elegir entre «Secure Email for Individual Mailbox» y los productos «for Employee» y «for Organization». Una firma cualificada conforme a ZertES no surge de la entrada de organización.
+
+**Enfoque en Suiza:** La clasificación jurídica sigue el derecho suizo (ZertES, OR). Cuando las normas de la UE difieren, se indica mediante una nota señalada.
+
+## Los cuatro tipos de certificado
+
+Desde el 1 de septiembre de 2023, los certificados S/MIME de confianza pública se rigen por los `S/MIME Baseline Requirements` (BR) del CA/Browser Forum. Distinguen cuatro tipos de certificado según quién figure como titular (`Subject`) en el certificado:
+
+| Tipo | Titular en el certificado | Entrada de organización | Qué verifica la CA |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | solo la dirección de correo electrónico | no permitida | control del buzón o del dominio de correo |
+| `Organization-validated` (OV) | una organización, ninguna persona | obligatoria | organización y buzón o dominio de correo |
+| `Sponsor-validated` (SV) | una persona como integrante de una organización | obligatoria | como OV, además la persona; la CA o la propia organización la verifica |
+| `Individual-validated` (IV) | una persona sin organización | no permitida | identidad de la persona y buzón |
+
+Por «S/MIME con entrada de organización» se entienden los tipos OV y SV. Para ambos, los BR exigen obligatoriamente los campos `organizationName` y `organizationIdentifier`, en las tres generaciones: `Legacy`, `Multipurpose` y `Strict`. Las generaciones se diferencian por los campos Subject permitidos, las extensiones y los usos previstos. Los BR retiraron la generación `Legacy` el 15 de julio de 2025; desde entonces, SwissSign y DigiCert ya no la emiten.
+
+Los certificados OV son adecuados para buzones funcionales como `info@` o `buchhaltung@`, que no están asignados a una persona. Los certificados SV están pensados para buzones personales de empleados e incluyen además el nombre de la persona o un seudónimo.
+
+## Estructura del organizationIdentifier
+
+El campo `organizationIdentifier` (OID 2.5.4.97) contiene un número de registro de la organización. Los certificados conforme a eIDAS y ZertES utilizan el mismo campo. Para los certificados S/MIME, los BR prescriben la siguiente estructura:
+
+| Parte | Ejemplo | Significado |
+|---|---|---|
+| Esquema de registro, 3 caracteres | `NTR` | `National Trade Register`, el registro mercantil |
+| Código de país según ISO 3166-1 | `CH` | país en el que se lleva el registro |
+| Guion | `-` | separador |
+| Número de registro | `CHE-123.456.789` | número de la organización en el registro |
+
+Combinado, el resultado es `NTRCH-CHE-123.456.789`. Puesto que la propia UID contiene un guion, los BR establecen que el esquema y el código de país nunca contienen un guion. Por tanto, el primer guion de la izquierda separa el esquema del número de registro; todos los demás pertenecen al número. Si un registro solo asigna números a nivel de un estado federado o de una provincia, tras el código de país sigue un `+` con el código de la región, por ejemplo `NTRUS+CA-12345678` para California.
+
+Los BR contemplan estos esquemas de registro:
+
+| Esquema | Origen del número | Ejemplo de los BR |
+|---|---|---|
+| `NTR` | registro mercantil o empresarial | `NTRGB-12345678` |
+| `VAT` | autoridad fiscal (número de IVA) | `VATEL-123456789` |
+| `PSD` | número de autorización de un proveedor de servicios de pago conforme a la Directiva de la UE 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` conforme a ISO 17442, código de país siempre `XG` | `LEIXG-` seguido del LEI |
+| `GOV` | autoridades públicas sin número de uno de los demás esquemas | `GOVUS` |
+| `INT` | organizaciones internacionales | `INTXG` |
+
+Para las empresas suizas, `NTR` con la UID es el caso habitual. La UID la asigna la Oficina Federal de Estadística. Los registros mercantiles la utilizan como número de empresa, también sirve como número de IVA y no cambia cuando una empresa traslada su sede a otro cantón. En cambio, un número de IVA puede dejar de existir cuando termina la obligación tributaria, y no todas las organizaciones tienen uno. SwissSign adopta la UID con los puntos, tal como figura en el registro UID, y cita como ejemplo `NTRCH-CHE-109.357.012` para SwissSign AG.
+
+**Nota sobre la UE:** En Alemania, los tribunales de distrito asignan los números del registro mercantil, y el mismo número aparece en varios tribunales. Por ello, desde la versión 1.0.9 de mayo de 2025, los BR permiten en el esquema `NTR` el `European Unique Identifier` (EUID) y lo recomiendan para las empresas alemanas, por ejemplo `NTRDE-DER3306.HRB12345` para una empresa en el registro mercantil del tribunal de distrito de Colonia. Según los BR, el número de registro solo debe ser inequívoco allí donde el registro y el ordenamiento jurídico asignen números inequívocos.
+
+## Qué verifica la CA
+
+Antes de que una CA emita un certificado OV o SV, debe verificar los siguientes datos conforme a los BR:
+
+- **Nombre y existencia de la organización:** mediante una autoridad del país de la organización, datos LEI, una visita in situ o una confirmación con extracto del registro. Para una empresa suiza, se trata del registro mercantil y del registro UID. Si la empresa figura allí como eliminada o inactiva, la CA no puede emitir el certificado.
+- **Número de registro:** La CA confirma que el número del `organizationIdentifier` pertenece a la organización del campo `O`.
+- **Poder de representación:** Por un canal de comunicación fiable, la CA verifica que la persona solicitante puede solicitar certificados para la organización o actuar como `Enterprise RA`.
+- **Buzón o dominio de correo:** La CA verifica el control de las direcciones de correo electrónico del certificado. Si la organización actúa como `Enterprise RA`, debe demostrar el control de todo el dominio de correo.
+- **Persona (solo SV):** Los BR permiten que la organización, como `Enterprise RA`, confirme por sí misma a sus empleados. En ese caso, la CA verifica la organización y no a cada persona individualmente.
+
+Una CA puede reutilizar los resultados de estas verificaciones: la verificación de la organización y del poder de representación durante 825 días, y la verificación del control del dominio durante 398 días. Un certificado de las generaciones `Multipurpose` y `Strict` tiene una validez máxima de 825 días.
+
+## Comparación entre SwissSign y DigiCert
+
+Ambas CA ofrecen los tipos MV, SV y OV con sus propios nombres de producto. Ninguna de las dos ofrece un certificado IV. Los BR definen la estructura del `organizationIdentifier`, que es igual para ambos proveedores.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (antes Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | no disponible | no disponible |
+| Generación en SV y OV | `Multipurpose` según los perfiles de certificado | `Strict` como estándar, `Multipurpose` seleccionable |
+| Persona en SV | nombre y apellidos o seudónimo con el prefijo `pseudo:` en el `CN` | nombre y apellidos o seudónimo; en el `CN`, opcionalmente el nombre o la dirección de correo electrónico |
+| Usos adicionales en SV | en el perfil con autenticación: autenticación de cliente, inicio de sesión con tarjeta inteligente, EFS | en `Strict` no repudio; en `Multipurpose`, además cifrado de datos y autenticación de cliente |
+
+DigiCert describe expresamente el producto SV según el modelo del `Enterprise RA`: La organización confirma que la persona del certificado pertenece a sus empleados o representantes y conserva las pruebas correspondientes. DigiCert solo verifica la organización. Para OV y SV, DigiCert exige siempre la prueba del control del dominio. La verificación de la organización es válida durante 825 días y la del dominio durante 398 días. Se puede elegir una duración de uno o dos años, o una fecha de vencimiento propia de hasta 824 días. DigiCert retiró el 10 de julio de 2025 los productos anteriores Premium, Email Security Plus, Digital Signature Plus y Class 1 S/MIME, sustituyéndolos por estos productos.
+
+En SwissSign, el certificado OV contiene en el `CN` el nombre de la organización, como en el campo `O`. El artículo [S/MIME en bancos: situación jurídica en Suiza y elección entre Silver y Gold](/blog/smime-silver-gold-schweiz) describe qué nivel debería elegir un banco para cada buzón y qué implica jurídicamente.
+
+## Comprobar el tipo de certificado
+
+En Outlook y otros programas de correo, los detalles del certificado de un correo firmado se pueden abrir mediante el icono de firma. En Windows, los campos se encuentran en la pestaña «Detalles», en la entrada «Sujeto». Windows no conoce un nombre visible para la OID 2.5.4.97 y la muestra como `OID.2.5.4.97`.
+
+### Mostrar el titular con PowerShell
+
+Para un certificado exportado (por ejemplo, desde los detalles del certificado de un correo firmado):
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `Get-PfxCertificate` | lee un certificado desde un archivo, incluso desde un archivo `.cer` sin clave privada |
+| `-FilePath .\zertifikat.cer` | ruta al archivo de certificado |
+| `SubjectName.Format($true)` | muestra los campos del titular, uno por línea |
+
+</details>
+
+Salida para un certificado SV (ejemplo):
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+En un certificado MV, la salida solo contiene `CN=` con la dirección de correo electrónico.
+
+### Determinar el tipo y la generación mediante la OID de política
+
+Todo certificado conforme a los BR contiene, en la extensión `Certificate Policies`, una OID con el patrón `2.23.140.1.5.<Typ>.<Generation>`:
+
+| Posición | Valor | Significado |
+|---|---|---|
+| Tipo | `1` | `Mailbox-validated` |
+| Tipo | `2` | `Organization-validated` |
+| Tipo | `3` | `Sponsor-validated` |
+| Tipo | `4` | `Individual-validated` |
+| Generación | `1` | `Legacy` |
+| Generación | `2` | `Multipurpose` |
+| Generación | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `$zert.Extensions` | extensiones del certificado leído previamente |
+| `'2.5.29.32'` | OID de la extensión `Certificate Policies` |
+| `Format($true)` | muestra el contenido de la extensión en varias líneas |
+
+</details>
+
+Salida (abreviada):
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` corresponde a un certificado SV de la generación `Multipurpose`. Es normal que haya otras entradas con OID de la propia CA.
+
+### Listar certificados S/MIME en el almacén de certificados propio
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `Cert:\CurrentUser\My` | almacén personal de certificados del usuario que ha iniciado sesión |
+| `EnhancedKeyUsageList.ObjectId` | usos mejorados de clave del certificado |
+| `'1.3.6.1.5.5.7.3.4'` | OID para protección de correo electrónico (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | muestra el titular y la fecha de vencimiento |
+
+</details>
+
+### Con OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `x509` | subcomando para certificados |
+| `-in zertifikat.pem` | archivo de entrada en formato PEM; para un archivo DER, añadir `-inform der` |
+| `-noout` | suprime la salida del certificado codificado |
+| `-subject` | muestra el titular |
+| `-nameopt multiline` | un campo por línea con nombres de campo desarrollados |
+
+</details>
+
+OpenSSL 3 conoce el nombre del campo y lo muestra desarrollado:
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Verificar el número de registro
+
+Como destinatario de un correo firmado, puede verificar la entrada de organización en cuatro pasos:
+
+1. El programa de correo indica que la firma es válida y el certificado procede de una CA en la que confía el programa de correo.
+2. La OID de política comienza con `2.23.140.1.5.2` o `2.23.140.1.5.3`, y el certificado contiene los campos `O` y `organizationIdentifier`.
+3. La UID del `organizationIdentifier` pertenece, en el registro UID, a la empresa esperada y la empresa está activa allí.
+4. El dominio de la dirección del remitente pertenece a esta empresa.
+
+## Distinción respecto a ZertES
+
+La entrada de organización no convierte un certificado S/MIME en un certificado regulado conforme a ZertES. Solo los proveedores reconocidos conforme a ZertES emiten certificados regulados, y el certificado debe incluir la indicación de que se trata de un certificado regulado (art. 2, letra g, y art. 7, apdo. 2, letra b, ZertES).
+
+En cuanto al contenido, existen paralelismos. Un certificado regulado para una unidad UID debe contener su UID (art. 7, apdo. 2, letra e, ZertES), igual que el `organizationIdentifier` la contiene en OV y SV. Un certificado para una persona física también puede contener la indicación de que está autorizada para representar una unidad UID determinada (art. 7, apdo. 3, letra b, ZertES); estructuralmente, esto corresponde a un certificado SV.
+
+| | S/MIME con entrada de organización | certificado regulado conforme a ZertES |
+|---|---|---|
+| Base | Requisitos básicos de S/MIME del CA/Browser Forum | ZertES y disposiciones de ejecución |
+| Emisora | CA de confianza pública | proveedora reconocida conforme a ZertES |
+| Identificador de organización | `organizationIdentifier`, en empresas suizas con la UID | UID, obligatoria para unidades UID |
+| Verificación de la persona | en SV, por la CA o por la organización como `Enterprise RA` | por regla general, comparecencia personal con prueba de identidad; en unidades UID, un representante con prueba de poder de representación (art. 9 ZertES) |
+| Clave | conforme a los requisitos de la CA, también en una pasarela | requisitos conforme al art. 6 ZertES |
+
+Según el art. 14, apdo. 2bis, OR, solo la firma electrónica cualificada con sello de tiempo cualificado equivale a la firma manuscrita, y un certificado cualificado solo puede expedirse a una persona física (art. 8, apdo. 1, ZertES). Para la firma de una organización, ZertES prevé el sello electrónico regulado: una firma electrónica avanzada creada con una unidad segura de creación de sellos y basada en un certificado regulado de una unidad UID (art. 2, letra d, ZertES). Un correo firmado con S/MIME es un medio de prueba cuyo valor el tribunal aprecia libremente (art. 157 ZPO); una entrada de organización verificada respalda así la atribución a la empresa remitente.
+
+**Nota sobre la UE:** En la UE, el Reglamento eIDAS regula las firmas y los sellos electrónicos. Conforme al art. 25, apdo. 2, eIDAS, también solo la firma electrónica cualificada equivale a la firma manuscrita.
+
+## Recomendación
+
+- **Buzones funcionales:** Certificado OV (SwissSign Organization Validated, DigiCert Secure Email for Organization). Identifica a la empresa sin mencionar a una persona.
+- **Buzones personales con firma ante clientes y socios:** Certificado SV (SwissSign Gold, DigiCert Secure Email for Employee). Identifica a la persona y a la empresa.
+- **Solo cifrado:** Criptográficamente, todos los tipos son equivalentes. Para el cifrado por sí solo basta un certificado MV.
+- **Planificar las verificaciones:** La verificación de la organización es válida durante 825 días y la del dominio durante 398 días. Tras un cambio de nombre o sede de la empresa, los datos del certificado dejan de coincidir con el registro; planifique entonces nuevos certificados.
+- **Comprobar al recibir:** La OID de política y la UID muestran si una firma está realmente asignada a una empresa verificada.
+
+## Fuentes
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): versión 1.0.17 del 20 de noviembre de 2026; tipos de certificado y OID de política (sección 1.1), verificación de la organización (3.2.3), verificación del poder de representación (3.2.6), reutilización de resultados de verificación (4.2.1), periodos de validez (6.3.2), campos Subject (7.1.4.2) y esquemas de registro (anexo A).
+
+2.  [cabforum/smime en GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): versión Markdown de los requisitos básicos de S/MIME con historial de versiones, entre otros EUID desde la versión 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): denominaciones de producto Silver y Gold, ejemplo `NTRCH-CHE-109.357.012`, UID como número de registro y EUID para empresas alemanas (28.04.2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): perfiles de certificado de SwissSign para MV, SV y OV con campos Subject, usos previstos y OID de política, versión 14 del 18.09.2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): visión general de productos con asignación a MV, OV y SV, fin de la generación `Legacy` y de los productos S/MIME anteriores el 10 de julio de 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): verificación de organización y dominio, confirmación de los empleados por la organización, perfiles `Strict` y `Multipurpose`, periodos de validez.
+
+7.  [Ley federal sobre la firma electrónica (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): art. 2 (conceptos, sello regulado), art. 6 (claves), art. 7 (contenido de certificados regulados, UID), art. 8 (certificados cualificados) y art. 9 (verificación de identidad).
+
+8.  [Código de Obligaciones (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): art. 14, apdo. 2bis, sobre la equivalencia de la firma electrónica cualificada con la firma manuscrita.
+
+9.  [Registro UID](https://www.uid.admin.ch): consulta de una UID con nombre, sede y estado, gestionado por la Oficina Federal de Estadística.
+
+10.  [Zefix](https://www.zefix.ch): índice central de empresas de los registros mercantiles cantonales.
+
+11.  [Código de Procedimiento Civil (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 sobre la libre valoración de la prueba.
+
+12.  [Reglamento (UE) n.º 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25, apdo. 2, sobre la equivalencia de la firma electrónica cualificada con la firma manuscrita.
+
+----
+
 # Microsoft To Do se retira: migración a Planner desde la perspectiva del administrador
 
 URL: https://rafaelpfister.ch/es/blog/microsoft-to-do-se-retira-migracion-a-planner-desde-la-perspectiva-del-administrador
@@ -116472,6 +117609,285 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# S/MIME med organisationsuppgift: organizationIdentifier och UID i certifikatet
+
+URL: https://rafaelpfister.ch/sv/blog/s-mime-med-organisationsuppgift-organizationidentifier-och-uid-i-certifikatet
+Datum: 2026-12-15
+
+# S/MIME med organisationsuppgift: organizationIdentifier och UID i certifikatet
+
+Certifikatutfärdare (CA) skiljer mellan S/MIME-certifikat med och utan organisationsuppgift. Ett certifikat med organisationsuppgift visar, utöver e-postadressen, även företaget som postlådan tillhör: med dess kontrollerade namn och med ett registreringsnummer. För schweiziska företag är detta registreringsnummer UID, alltså CHE-numret från handelsregistret.
+
+Kort slutsats: En organisationsuppgift finns endast för certifikattyperna `Organization-validated` och `Sponsor-validated` i S/MIME Baseline Requirements. Den består av företagsnamnet i fältet `O` och fältet `organizationIdentifier` (OID 2.5.4.97), exempelvis `NTRCH-CHE-123.456.789` för ett schweiziskt företag. CA:n kontrollerar företaget i ett officiellt register innan den skriver in dessa uppgifter i certifikatet. Ett mailbox-validerat certifikat styrker däremot endast åtkomsten till en postlåda. Hos SwissSign motsvarar detta valet mellan Silver och Gold, hos DigiCert valet mellan «Secure Email for Individual Mailbox» och produkterna «for Employee» och «for Organization». En kvalificerad signatur enligt ZertES uppstår inte genom organisationsuppgiften.
+
+**Schweiziskt fokus:** Den rättsliga bedömningen följer schweizisk rätt (ZertES, OR). Där EU-reglerna skiljer sig åt finns en markerad hänvisning.
+
+## De fyra certifikattyperna
+
+Sedan den 1 september 2023 gäller `S/MIME Baseline Requirements` (BR) från CA/Browser Forum för offentligt betrodda S/MIME-certifikat. De skiljer mellan fyra certifikattyper beroende på vem som anges som innehavare (`Subject`) i certifikatet:
+
+| Typ | Innehavare i certifikatet | Organisationsuppgift | Vad CA:n kontrollerar |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | endast e-postadressen | inte tillåten | Kontroll över postlådan eller e-postdomänen |
+| `Organization-validated` (OV) | en organisation, ingen person | obligatorisk | Organisationen samt postlådan eller e-postdomänen |
+| `Sponsor-validated` (SV) | en person som tillhör en organisation | obligatorisk | som OV, dessutom personen; denna kontrollerar CA:n eller organisationen själv |
+| `Individual-validated` (IV) | en person utan organisation | inte tillåten | Personens identitet och postlådan |
+
+Med «S/MIME med organisationsuppgift» avses typerna OV och SV. För båda föreskriver BR obligatoriskt fälten `organizationName` och `organizationIdentifier`, i samtliga tre generationer `Legacy`, `Multipurpose` och `Strict`. Generationerna skiljer sig åt beträffande tillåtna Subject-fält, tillägg och användningsområden. BR avvecklade generationen `Legacy` den 15 juli 2025; SwissSign och DigiCert utfärdar den inte längre.
+
+OV-certifikat lämpar sig för funktionspostlådor som `info@` eller `buchhaltung@`, som inte är knutna till någon person. SV-certifikat är avsedda för medarbetares personliga postlådor och innehåller dessutom personens namn eller en pseudonym.
+
+## organizationIdentifier:s uppbyggnad
+
+Fältet `organizationIdentifier` (OID 2.5.4.97) innehåller ett registreringsnummer för organisationen. Samma fält används även av certifikat enligt eIDAS och ZertES. För S/MIME-certifikat föreskriver BR följande uppbyggnad:
+
+| Del | Exempel | Betydelse |
+|---|---|---|
+| Registreringsschema, 3 tecken | `NTR` | `National Trade Register`, handelsregistret |
+| Landskod enligt ISO 3166-1 | `CH` | Landet där registret förs |
+| Bindestreck | `-` | Avskiljare |
+| Registreringsnummer | `CHE-123.456.789` | Organisationens nummer i registret |
+
+Sammansatt blir detta `NTRCH-CHE-123.456.789`. Eftersom UID själv innehåller ett bindestreck fastställer BR att schema och landskod aldrig innehåller ett bindestreck. Det första bindestrecket från vänster skiljer alltså schemat från registreringsnumret, alla ytterligare hör till numret. Om ett register tilldelar nummer endast på delstats- eller provinsnivå följer en `+` efter landskoden med regionens kod, exempelvis `NTRUS+CA-12345678` för Kalifornien.
+
+BR känner till dessa registreringsscheman:
+
+| Schema | Numrets ursprung | Exempel från BR |
+|---|---|---|
+| `NTR` | Handels- eller företagsregister | `NTRGB-12345678` |
+| `VAT` | Skattemyndighet (mervärdesskattenummer) | `VATEL-123456789` |
+| `PSD` | Tillståndsnummer för en betaltjänstleverantör enligt EU-direktiv 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` enligt ISO 17442, landskod alltid `XG` | `LEIXG-` följt av LEI |
+| `GOV` | Myndigheter utan nummer från något av de övriga schemana | `GOVUS` |
+| `INT` | Internationella organisationer | `INTXG` |
+
+För schweiziska företag är `NTR` med UID det normala fallet. UID tilldelas av Bundesamt für Statistik. Handelsregistren använder den som företagsnummer, den används även som mervärdesskattenummer och förblir densamma när ett företag flyttar sitt säte till en annan kanton. Ett mervärdesskattenummer kan däremot upphöra när skattskyldigheten upphör, och alla organisationer har inte ett sådant. SwissSign övertar UID med punkterna, precis som den står i UID-registret, och anger `NTRCH-CHE-109.357.012` som exempel för SwissSign AG.
+
+**EU-anmärkning:** I Tyskland tilldelar Amtsgerichte handelsregisternummer, och samma nummer förekommer vid flera domstolar. Sedan version 1.0.9 från maj 2025 tillåter BR därför `NTR`-schemat `European Unique Identifier` (EUID) och rekommenderar det för tyska företag, exempelvis `NTRDE-DER3306.HRB12345` för ett företag i Handelsregister vid Amtsgericht Köln. Enligt BR behöver registreringsnumret endast vara entydigt där register och rättsordning tilldelar entydiga nummer.
+
+## Vad CA:n kontrollerar
+
+Innan en CA utfärdar ett OV- eller SV-certifikat måste den enligt BR kontrollera följande uppgifter:
+
+- **Organisationens namn och existens:** via en myndighet i organisationens land, via LEI-data, ett besök på plats eller en bekräftelse med registerutdrag. För ett schweiziskt företag är det handelsregistret och UID-registret. Om företaget där anges som avregistrerat eller inaktivt får CA:n inte utfärda certifikatet.
+- **Registreringsnummer:** CA:n bekräftar att numret i `organizationIdentifier` tillhör organisationen i fältet `O`.
+- **Fullmakt:** Via en tillförlitlig kommunikationskanal kontrollerar CA:n att den sökande personen får ansöka om certifikat för organisationen eller agera som `Enterprise RA`.
+- **Postlåda eller e-postdomän:** CA:n kontrollerar kontrollen över e-postadresserna i certifikatet. Om organisationen agerar som `Enterprise RA` måste den styrka kontrollen över hela e-postdomänen.
+- **Person (endast SV):** BR tillåter att organisationen som `Enterprise RA` själv bekräftar sina medarbetare. CA:n kontrollerar då organisationen och inte varje enskild person.
+
+En CA får återanvända resultaten av dessa kontroller: kontrollen av organisationen och fullmakten under 825 dagar, kontrollen av domänkontrollen under 398 dagar. Ett certifikat av generationerna `Multipurpose` och `Strict` är giltigt i högst 825 dagar.
+
+## Jämförelse mellan SwissSign och DigiCert
+
+Båda CA:erna erbjuder typerna MV, SV och OV under egna produktnamn. Ingen av dem erbjuder ett IV-certifikat. BR fastställer uppbyggnaden av `organizationIdentifier`, och den är densamma för båda leverantörerna.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (tidigare Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | erbjuds inte | erbjuds inte |
+| Generation för SV och OV | `Multipurpose` enligt certifikatprofilerna | `Strict` som standard, `Multipurpose` valbar |
+| Person vid SV | För- och efternamn eller pseudonym med prefixet `pseudo:` i `CN` | För- och efternamn eller pseudonym; i `CN` valfritt namnet eller e-postadressen |
+| Ytterligare användningar vid SV | i profilen med autentisering: klientautentisering, smartkortsinloggning, EFS | vid `Strict` oavvislighet, vid `Multipurpose` dessutom datakryptering och klientautentisering |
+
+DigiCert beskriver uttryckligen SV-produkten enligt modellen `Enterprise RA`: Organisationen bekräftar att personen i certifikatet tillhör dess medarbetare eller representanter och bevarar underlagen för detta. DigiCert kontrollerar själv endast organisationen. Vid OV och SV kräver DigiCert alltid bevis på domänkontroll. Organisationskontrollen gäller i 825 dagar, domänkontrollen i 398 dagar. Som giltighetstid kan man välja ett eller två år eller ett eget utgångsdatum på högst 824 dagar. DigiCert avvecklade de tidigare produkterna Premium, Email Security Plus, Digital Signature Plus och Class 1 S/MIME den 10 juli 2025 och ersatte dem med dessa produkter.
+
+Hos SwissSign innehåller OV-certifikatet i `CN` organisationens namn som i fältet `O`. Artikeln [S/MIME hos banker: rättsläge i Schweiz och valet mellan Silver och Gold](/blog/smime-silver-gold-schweiz) beskriver vilken nivå en bank bör välja för vilken postlåda och vad det innebär juridiskt.
+
+## Kontrollera certifikattypen
+
+I Outlook och andra e-postprogram går det att öppna certifikatuppgifterna för ett signerat e-postmeddelande via signaturikonen. I Windows finns fälten på fliken «Details» under posten «Subject». För OID 2.5.4.97 känner Windows inte till något visningsnamn och visar den som `OID.2.5.4.97`.
+
+### Visa innehavare med PowerShell
+
+För ett exporterat certifikat (till exempel från certifikatuppgifterna för ett signerat e-postmeddelande):
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Alternativen förklarade</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `Get-PfxCertificate` | läser ett certifikat från en fil, även från en `.cer`-fil utan privat nyckel |
+| `-FilePath .\zertifikat.cer` | sökväg till certifikatfilen |
+| `SubjectName.Format($true)` | skriver ut innehavarens fält rad för rad |
+
+</details>
+
+Utdata för ett SV-certifikat (exempel):
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+För ett MV-certifikat innehåller utdata endast `CN=` med e-postadressen.
+
+### Fastställ typ och generation via Policy-OID
+
+Varje certifikat enligt BR innehåller i tillägget `Certificate Policies` en OID enligt mönstret `2.23.140.1.5.<Typ>.<Generation>`:
+
+| Position | Värde | Betydelse |
+|---|---|---|
+| Typ | `1` | `Mailbox-validated` |
+| Typ | `2` | `Organization-validated` |
+| Typ | `3` | `Sponsor-validated` |
+| Typ | `4` | `Individual-validated` |
+| Generation | `1` | `Legacy` |
+| Generation | `2` | `Multipurpose` |
+| Generation | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Alternativen förklarade</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `$zert.Extensions` | tillägg för det tidigare inlästa certifikatet |
+| `'2.5.29.32'` | OID för tillägget `Certificate Policies` |
+| `Format($true)` | skriver ut tilläggets innehåll på flera rader |
+
+</details>
+
+Utdata (förkortad):
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` står för ett SV-certifikat av generationen `Multipurpose`. Ytterligare poster med OID:er från CA:n själv är normala.
+
+### Lista S/MIME-certifikat i det egna certifikatarkivet
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Alternativen förklarade</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `Cert:\CurrentUser\My` | den inloggade användarens personliga certifikatarkiv |
+| `EnhancedKeyUsageList.ObjectId` | certifikatets utökade nyckelanvändningar |
+| `'1.3.6.1.5.5.7.3.4'` | OID för e-postskydd (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | visar innehavare och utgångsdatum |
+
+</details>
+
+### Med OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Alternativen förklarade</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `x509` | underkommando för certifikat |
+| `-in zertifikat.pem` | indatafil i PEM-format; för en DER-fil dessutom `-inform der` |
+| `-noout` | undertrycker utmatning av det kodade certifikatet |
+| `-subject` | skriver ut innehavaren |
+| `-nameopt multiline` | ett fält per rad med utskrivna fältnamn |
+
+</details>
+
+OpenSSL 3 känner till fältnamnet och visar det utskrivet:
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Kontrollera registreringsnumret
+
+Som mottagare av ett signerat e-postmeddelande kan du kontrollera organisationsuppgiften i fyra steg:
+
+1. E-postprogrammet anger signaturen som giltig, och certifikatet kommer från en CA som e-postprogrammet litar på.
+2. Policy-OID börjar med `2.23.140.1.5.2` eller `2.23.140.1.5.3`, och certifikatet innehåller fälten `O` och `organizationIdentifier`.
+3. UID från `organizationIdentifier` tillhör den förväntade firman i UID-registret, och firman är aktiv där.
+4. Avsändaradressens domän tillhör detta företag.
+
+## Avgränsning mot ZertES
+
+Organisationsuppgiften gör inte ett S/MIME-certifikat till ett reglerat certifikat enligt ZertES. Reglerade certifikat utfärdas endast av leverantörer som är erkända enligt ZertES, och certifikatet måste innehålla upplysningen att det är ett reglerat certifikat (art. 2 bokst. g och art. 7 stycke 2 bokst. b ZertES).
+
+Innehållsmässigt finns paralleller. Ett reglerat certifikat för en UID-enhet måste innehålla dess UID (art. 7 stycke 2 bokst. e ZertES), precis som `organizationIdentifier` innehåller den för OV och SV. Ett certifikat för en fysisk person kan dessutom innehålla upplysningen att personen har rätt att företräda en viss UID-enhet (art. 7 stycke 3 bokst. b ZertES); detta motsvarar till sin uppbyggnad ett SV-certifikat.
+
+| | S/MIME med organisationsuppgift | reglerat certifikat enligt ZertES |
+|---|---|---|
+| Grund | S/MIME Baseline Requirements från CA/Browser Forum | ZertES och tillämpningsbestämmelser |
+| Utfärdare | offentligt betrodd CA | leverantör erkänd enligt ZertES |
+| Organisationsidentifierare | `organizationIdentifier`, för schweiziska företag med UID | UID, obligatoriskt för UID-enheter |
+| Kontroll av personen | för SV av CA:n eller av organisationen som `Enterprise RA` | i princip personligt inställelse med identitetshandling; för UID-enheter en företrädare med bevis på behörighet att företräda (art. 9 ZertES) |
+| Nyckel | enligt CA:ns krav, även på en gateway | krav enligt art. 6 ZertES |
+
+Endast den kvalificerade elektroniska signaturen med kvalificerad tidsstämpel är enligt art. 14 stycke 2bis OR likställd med egenhändig underskrift, och ett kvalificerat certifikat får endast utfärdas till en fysisk person (art. 8 stycke 1 ZertES). För en organisations signatur föreskriver ZertES det reglerade elektroniska sigillet: en avancerad elektronisk signatur som skapas med en säker enhet för sigillframställning och grundar sig på ett reglerat certifikat för en UID-enhet (art. 2 bokst. d ZertES). Ett S/MIME-signat e-postmeddelande är bevisning vars värde domstolen bedömer fritt (art. 157 ZPO); en kontrollerad organisationsuppgift stöder då kopplingen till det avsändande företaget.
+
+**EU-anmärkning:** I EU reglerar eIDAS-förordningen elektroniska signaturer och sigill. Enligt art. 25 stycke 2 eIDAS är även där endast den kvalificerade elektroniska signaturen likställd med en handskriven underskrift.
+
+## Rekommendation
+
+- **Funktionspostlådor:** OV-certifikat (SwissSign Organization Validated, DigiCert Secure Email for Organization). Det styrker företaget utan att nämna en person.
+- **Personliga postlådor med signatur gentemot kunder och partner:** SV-certifikat (SwissSign Gold, DigiCert Secure Email for Employee). Det styrker personen och företaget.
+- **Endast kryptering:** Kryptografiskt är alla typer likvärdiga. För enbart kryptering räcker ett MV-certifikat.
+- **Planera för kontroller:** Organisationskontrollen gäller i 825 dagar, domänkontrollen i 398 dagar. Efter en ändring av företagsnamn eller säte överensstämmer uppgifterna i certifikatet inte längre med registret; planera då för nya certifikat.
+- **Kontrollera vid mottagande:** Policy-OID och UID visar om en signatur faktiskt kan kopplas till ett kontrollerat företag.
+
+## Källor
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 av den 20 november 2026; certifikattyper och Policy-OID:er (avsnitt 1.1), kontroll av organisationen (3.2.3), kontroll av fullmakt (3.2.6), återanvändning av kontrollresultat (4.2.1), giltighetstider (6.3.2), Subject-fält (7.1.4.2) och registreringsscheman (bilaga A).
+
+2.  [cabforum/smime på GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): Markdown-version av S/MIME Baseline Requirements med versionshistorik, bland annat EUID från version 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): Produktnamnen Silver och Gold, exempel `NTRCH-CHE-109.357.012`, UID som registreringsnummer och EUID för tyska företag (28.04.2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): SwissSigns certifikatprofiler för MV, SV och OV med Subject-fält, användningsområden och Policy-OID:er, version 14 av den 18.09.2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): Produktöversikt med koppling till MV, OV och SV, slutet för generationen `Legacy` och de tidigare S/MIME-produkterna den 10 juli 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisations- och domänkontroll, organisationens bekräftelse av medarbetare, profilerna `Strict` och `Multipurpose`, giltighetstider.
+
+7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Art. 2 (begrepp, reglerat sigill), art. 6 (nycklar), art. 7 (innehåll i reglerade certifikat, UID), art. 8 (kvalificerade certifikat) och art. 9 (identitetskontroll).
+
+8.  [Obligationenrecht (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 stycke 2bis om likställandet av den kvalificerade elektroniska signaturen med egenhändig underskrift.
+
+9.  [UID-register](https://www.uid.admin.ch): Sökning av en UID med namn, säte och status, förs av Bundesamt für Statistik.
+
+10.  [Zefix](https://www.zefix.ch): Centralt företagsindex för de kantonala handelsregistren.
+
+11.  [Zivilprozessordnung (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 om fri bevisvärdering.
+
+12.  [Förordning (EU) nr 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): Art. 25 stycke 2 om likställandet av den kvalificerade elektroniska signaturen med en handskriven underskrift.
 
 ----
 
@@ -139699,6 +141115,285 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# S/MIME med organisasjonsoppføring: organizationIdentifier og UID i sertifikatet
+
+URL: https://rafaelpfister.ch/no/blog/s-mime-med-organisasjonsoppforing-organizationidentifier-og-uid-i-sertifikatet
+Datum: 2026-12-15
+
+# S/MIME med organisasjonsoppføring: organizationIdentifier og UID i sertifikatet
+
+Sertifiseringsinstanser (CA) skiller mellom S/MIME-sertifikater med og uten organisasjonsoppføring. Et sertifikat med organisasjonsoppføring viser, i tillegg til e-postadressen, selskapet som postkassen tilhører: med det verifiserte navnet og et registreringsnummer. For sveitsiske selskaper er dette registreringsnummeret UID-en, altså CHE-nummeret fra handelsregisteret.
+
+Kort oppsummert: En organisasjonsoppføring finnes bare for sertifikattypene `Organization-validated` og `Sponsor-validated` i S/MIME Baseline Requirements. Den består av selskapsnavnet i feltet `O` og feltet `organizationIdentifier` (OID 2.5.4.97), for et sveitsisk selskap for eksempel `NTRCH-CHE-123.456.789`. CA-en kontrollerer selskapet i et offentlig register før den skriver disse opplysningene i sertifikatet. Et postkassevalidert sertifikat dokumenterer derimot bare tilgang til en postkasse. Hos SwissSign tilsvarer dette valget mellom Silver og Gold, hos DigiCert valget mellom «Secure Email for Individual Mailbox» og produktene «for Employee» og «for Organization». En kvalifisert signatur etter ZertES oppstår ikke gjennom organisasjonsoppføringen.
+
+**Sveits-fokus:** Den rettslige vurderingen følger sveitsisk rett (ZertES, OR). Der EU-reglene avviker, finnes en merket merknad.
+
+## De fire sertifikattypene
+
+Siden 1. september 2023 gjelder `S/MIME Baseline Requirements` (BR) fra CA/Browser Forum for offentlig tillitsverdige S/MIME-sertifikater. De skiller mellom fire sertifikattyper ut fra hvem som står som innehaver (`Subject`) i sertifikatet:
+
+| Type | Innehaver i sertifikatet | Organisasjonsoppføring | Hva CA-en kontrollerer |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | bare e-postadressen | ikke tillatt | Kontroll over postkassen eller e-postdomenet |
+| `Organization-validated` (OV) | en organisasjon, ingen person | obligatorisk | Organisasjon samt postkasse eller e-postdomene |
+| `Sponsor-validated` (SV) | en person som tilhører en organisasjon | obligatorisk | som OV, i tillegg personen; denne kontrolleres av CA-en eller av organisasjonen selv |
+| `Individual-validated` (IV) | en person uten organisasjon | ikke tillatt | Personens identitet og postkasse |
+
+Med «S/MIME med organisasjonsoppføring» menes typene OV og SV. For begge krever BR feltene `organizationName` og `organizationIdentifier`, i alle de tre generasjonene `Legacy`, `Multipurpose` og `Strict`. Generasjonene skiller seg ved tillatte Subject-felt, utvidelser og bruksformål. BR avviklet generasjonen `Legacy` 15. juli 2025; SwissSign og DigiCert har ikke utstedt den siden.
+
+OV-sertifikater egner seg for funksjonelle postkasser som `info@` eller `buchhaltung@`, som ikke er tilordnet en person. SV-sertifikater er beregnet på ansattes personlige postkasser og inneholder i tillegg personens navn eller et pseudonym.
+
+## Oppbygning av organizationIdentifier
+
+Feltet `organizationIdentifier` (OID 2.5.4.97) inneholder et registreringsnummer for organisasjonen. Det samme feltet brukes også av sertifikater etter eIDAS og ZertES. For S/MIME-sertifikater krever BR følgende oppbygning:
+
+| Del | Eksempel | Betydning |
+|---|---|---|
+| Registreringsskjema, 3 tegn | `NTR` | `National Trade Register`, handelsregisteret |
+| Landskode etter ISO 3166-1 | `CH` | Landet der registeret føres |
+| Bindestrek | `-` | Skilletegn |
+| Registreringsnummer | `CHE-123.456.789` | Organisasjonens nummer i registeret |
+
+Sammensatt blir dette `NTRCH-CHE-123.456.789`. Fordi UID-en selv inneholder en bindestrek, fastsetter BR at skjema og landskode aldri inneholder bindestrek. Den første bindestreken fra venstre skiller dermed skjemaet fra registreringsnummeret, mens alle øvrige hører til nummeret. Dersom et register bare tildeler numre på delstats- eller provinsnivå, følger et `+` med regionkoden etter landskoden, som `NTRUS+CA-12345678` for California.
+
+BR kjenner disse registreringsskjemaene:
+
+| Skjema | Nummerets opprinnelse | Eksempel fra BR |
+|---|---|---|
+| `NTR` | Handels- eller foretaksregister | `NTRGB-12345678` |
+| `VAT` | Skattemyndighet (merverdiavgiftsnummer) | `VATEL-123456789` |
+| `PSD` | Tillatelsesnummer for betalingsforetak etter EU-direktiv 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` etter ISO 17442, landskoden alltid `XG` | `LEIXG-` etterfulgt av LEI |
+| `GOV` | Offentlige myndigheter uten nummer fra et av de øvrige skjemaene | `GOVUS` |
+| `INT` | Internasjonale organisasjoner | `INTXG` |
+
+For sveitsiske selskaper er `NTR` med UID-en hovedregelen. UID-en tildeles av Bundesamt für Statistik. Handelsregistrene bruker den som selskapsnummer, den fungerer også som merverdiavgiftsnummer, og den forblir den samme når et selskap flytter sitt sete til en annen kanton. Et merverdiavgiftsnummer kan derimot falle bort når skatteplikten opphører, og ikke alle organisasjoner har et. SwissSign overtar UID-en med punktene, slik den står i UID-registeret, og oppgir `NTRCH-CHE-109.357.012` som eksempel for SwissSign AG.
+
+**EU-merknad:** I Tyskland tildeler Amtsgerichte handelsregisternumrene, og samme nummer forekommer ved flere domstoler. Siden versjon 1.0.9 fra mai 2025 tillater BR derfor `European Unique Identifier` (EUID) i skjemaet `NTR` og anbefaler det for tyske selskaper, for eksempel `NTRDE-DER3306.HRB12345` for et selskap i handelsregisteret hos Amtsgericht Köln. Etter BR må registreringsnummeret bare være entydig der register og rettsorden tildeler entydige numre.
+
+## Hva CA-en kontrollerer
+
+Før en CA utsteder et OV- eller SV-sertifikat, må den etter BR kontrollere følgende opplysninger:
+
+- **Navn og eksistens til organisasjonen:** gjennom en myndighet i organisasjonens land, gjennom LEI-data, et besøk på stedet eller en bekreftelse med registerutskrift. For et sveitsisk selskap er dette handelsregisteret og UID-registeret. Dersom selskapet der er oppført som slettet eller inaktivt, kan CA-en ikke utstede sertifikatet.
+- **Registreringsnummer:** CA-en bekrefter at nummeret i `organizationIdentifier` tilhører organisasjonen i feltet `O`.
+- **Fullmakt:** Gjennom en pålitelig kommunikasjonskanal kontrollerer CA-en at personen som søker, kan søke sertifikater for organisasjonen eller opptre som `Enterprise RA`.
+- **Postkasse eller e-postdomene:** CA-en kontrollerer kontrollen over e-postadressene i sertifikatet. Dersom organisasjonen opptrer som `Enterprise RA`, må den dokumentere kontroll over hele e-postdomenet.
+- **Person (kun SV):** BR tillater at organisasjonen som `Enterprise RA` selv bekrefter sine ansatte. CA-en kontrollerer da organisasjonen og ikke hver enkelt person.
+
+En CA kan gjenbruke resultatene av disse kontrollene: kontrollen av organisasjonen og fullmakten i 825 dager, og kontrollen av domenekontrollen i 398 dager. Et sertifikat i generasjonene `Multipurpose` og `Strict` er gyldig i høyst 825 dager.
+
+## Sammenligning av SwissSign og DigiCert
+
+Begge CA-ene tilbyr typene MV, SV og OV under egne produktnavn. Ingen av de to tilbyr et IV-sertifikat. BR fastsetter oppbygningen av `organizationIdentifier`, og den er den samme hos begge leverandørene.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (tidligere Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | ikke i tilbudet | ikke i tilbudet |
+| Generasjon for SV og OV | `Multipurpose` ifølge sertifikatprofilene | `Strict` som standard, `Multipurpose` kan velges |
+| Person ved SV | Fornavn og etternavn eller pseudonym med prefikset `pseudo:` i `CN` | Fornavn og etternavn eller pseudonym; i `CN` kan enten navnet eller e-postadressen velges |
+| Ytterligere bruksområder ved SV | i profilen med autentisering: klientautentisering, smartkortpålogging, EFS | for `Strict` ikke-benekting, for `Multipurpose` i tillegg datakryptering og klientautentisering |
+
+DigiCert beskriver SV-produktet uttrykkelig etter modellen `Enterprise RA`: Organisasjonen bekrefter at personen i sertifikatet hører til dens ansatte eller representanter, og oppbevarer dokumentasjonen for dette. DigiCert selv kontrollerer bare organisasjonen. For OV og SV krever DigiCert alltid dokumentasjon på domenekontroll. Organisasjonskontrollen gjelder i 825 dager, domenekontrollen i 398 dager. Du kan velge en gyldighet på ett eller to år, eller en egen utløpsdato på høyst 824 dager. DigiCert avviklet de tidligere produktene Premium, Email Security Plus, Digital Signature Plus og Class 1 S/MIME 10. juli 2025 og erstattet dem med disse produktene.
+
+Hos SwissSign inneholder OV-sertifikatet i `CN` organisasjonens navn som i feltet `O`. Artikkelen [S/MIME hos banker: rettslig situasjon i Sveits og valget mellom Silver og Gold](/blog/smime-silver-gold-schweiz) beskriver hvilket nivå en bank bør velge for hvilken postkasse, og hva dette betyr juridisk.
+
+## Kontrollere sertifikattypen
+
+I Outlook og andre e-postprogrammer kan sertifikatdetaljene for en signert e-post åpnes via signaturikonet. I Windows finnes feltene i fanen «Detaljer» under oppføringen «Emne». For OID 2.5.4.97 kjenner Windows ikke noe visningsnavn og viser den som `OID.2.5.4.97`.
+
+### Vise innehaver med PowerShell
+
+For et eksportert sertifikat (for eksempel fra sertifikatdetaljene i en signert e-post):
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Get-PfxCertificate` | leser et sertifikat fra en fil, også fra en `.cer`-fil uten privat nøkkel |
+| `-FilePath .\zertifikat.cer` | bane til sertifikatfilen |
+| `SubjectName.Format($true)` | skriver ut innehaverens felt, én per linje |
+
+</details>
+
+Utdata for et SV-sertifikat (eksempel):
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+For et MV-sertifikat inneholder utdataene bare `CN=` med e-postadressen.
+
+### Bestemme type og generasjon via Policy-OID
+
+Hvert sertifikat etter BR inneholder i utvidelsen `Certificate Policies` en OID med mønsteret `2.23.140.1.5.<Typ>.<Generation>`:
+
+| Posisjon | Verdi | Betydning |
+|---|---|---|
+| Type | `1` | `Mailbox-validated` |
+| Type | `2` | `Organization-validated` |
+| Type | `3` | `Sponsor-validated` |
+| Type | `4` | `Individual-validated` |
+| Generasjon | `1` | `Legacy` |
+| Generasjon | `2` | `Multipurpose` |
+| Generasjon | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `$zert.Extensions` | utvidelser for sertifikatet som ble lest inn tidligere |
+| `'2.5.29.32'` | OID for utvidelsen `Certificate Policies` |
+| `Format($true)` | skriver ut innholdet i utvidelsen over flere linjer |
+
+</details>
+
+Utdata (forkortet):
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` står for et SV-sertifikat i generasjonen `Multipurpose`. Ytterligere oppføringer med OID-er for selve CA-en er normale.
+
+### Liste over S/MIME-sertifikater i eget sertifikatlager
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `Cert:\CurrentUser\My` | personlig sertifikatlager for den påloggede brukeren |
+| `EnhancedKeyUsageList.ObjectId` | sertifikatets utvidede nøkkelbruk |
+| `'1.3.6.1.5.5.7.3.4'` | OID for e-postbeskyttelse (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | viser innehaver og utløpsdato |
+
+</details>
+
+### Med OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `x509` | underkommando for sertifikater |
+| `-in zertifikat.pem` | inndatafil i PEM-format; for en DER-fil i tillegg `-inform der` |
+| `-noout` | undertrykker utdata av det kodede sertifikatet |
+| `-subject` | skriver ut innehaveren |
+| `-nameopt multiline` | ett felt per linje med utskrevne feltnavn |
+
+</details>
+
+OpenSSL 3 kjenner feltnavnet og viser det fullt utskrevet:
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Kontrollere registreringsnummeret
+
+Som mottaker av en signert e-post kan du kontrollere organisasjonsoppføringen i fire trinn:
+
+1. E-postprogrammet oppgir at signaturen er gyldig, og sertifikatet kommer fra en CA som e-postprogrammet stoler på.
+2. Policy-OID-en begynner med `2.23.140.1.5.2` eller `2.23.140.1.5.3`, og sertifikatet inneholder feltene `O` og `organizationIdentifier`.
+3. UID-en fra `organizationIdentifier` tilhører det forventede selskapet i UID-registeret, og selskapet er aktivt der.
+4. Domenet til avsenderadressen tilhører dette selskapet.
+
+## Avgrensning mot ZertES
+
+Organisasjonsoppføringen gjør ikke et S/MIME-sertifikat til et regulert sertifikat etter ZertES. Regulerte sertifikater utstedes bare av tilbydere som er anerkjent etter ZertES, og sertifikatet må inneholde opplysningen om at det er et regulert sertifikat (art. 2 bokstav g og art. 7 avsnitt 2 bokstav b ZertES).
+
+Innholdsmessig finnes det paralleller. Et regulert sertifikat for en UID-enhet må inneholde dens UID (art. 7 avsnitt 2 bokstav e ZertES), på samme måte som `organizationIdentifier` inneholder den for OV og SV. Et sertifikat for en fysisk person kan dessuten inneholde opplysningen om at vedkommende har rett til å representere en bestemt UID-enhet (art. 7 avsnitt 3 bokstav b ZertES); oppbygningen tilsvarer et SV-sertifikat.
+
+| | S/MIME med organisasjonsoppføring | regulert sertifikat etter ZertES |
+|---|---|---|
+| Grunnlag | S/MIME Baseline Requirements fra CA/Browser Forum | ZertES og gjennomføringsbestemmelser |
+| Utsteder | offentlig tillitsverdig CA | tilbyder anerkjent etter ZertES |
+| Organisasjonsidentifikator | `organizationIdentifier`, for sveitsiske selskaper med UID-en | UID, obligatorisk for UID-enheter |
+| Kontroll av personen | ved SV av CA-en eller av organisasjonen som `Enterprise RA` | som hovedregel personlig oppmøte med identitetsbevis; for UID-enheter en representant med dokumentasjon på representasjonsfullmakt (art. 9 ZertES) |
+| Nøkkel | etter CA-ens krav, også på en gateway | krav etter art. 6 ZertES |
+
+Bare den kvalifiserte elektroniske signaturen med kvalifisert tidsstempel er likestilt med håndskrevet underskrift etter art. 14 avsnitt 2bis OR, og et kvalifisert sertifikat kan bare utstedes til en fysisk person (art. 8 avsnitt 1 ZertES). For en organisasjons signatur har ZertES det regulerte elektroniske seglet: en avansert elektronisk signatur som opprettes med en sikker seglopprettingsenhet og bygger på et regulert sertifikat for en UID-enhet (art. 2 bokstav d ZertES). En S/MIME-signert e-post er et bevismiddel som retten vurderer fritt (art. 157 ZPO); en kontrollert organisasjonsoppføring underbygger da tilordningen til det avsendende selskapet.
+
+**EU-merknad:** I EU regulerer eIDAS-forordningen elektroniske signaturer og segl. Etter art. 25 avsnitt 2 eIDAS er også bare den kvalifiserte elektroniske signaturen likestilt med håndskrevet underskrift.
+
+## Anbefaling
+
+- **Funksjonelle postkasser:** OV-sertifikat (SwissSign Organization Validated, DigiCert Secure Email for Organization). Det identifiserer selskapet uten å nevne en person.
+- **Personlige postkasser med signatur overfor kunder og partnere:** SV-sertifikat (SwissSign Gold, DigiCert Secure Email for Employee). Det identifiserer personen og selskapet.
+- **Bare kryptering:** Kryptografisk er alle typene likeverdige. For kryptering alene er et MV-sertifikat tilstrekkelig.
+- **Planlegg kontroller:** Organisasjonskontrollen gjelder i 825 dager, domenekontrollen i 398 dager. Etter en endring av selskapsnavn eller sete samsvarer ikke lenger opplysningene i sertifikatet med registeret; planlegg da nye sertifikater.
+- **Kontroller ved mottak:** Policy-OID og UID viser om en signatur faktisk er tilordnet et kontrollert selskap.
+
+## Kilder
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Versjon 1.0.17 av 20. november 2026; sertifikattyper og Policy-OID-er (avsnitt 1.1), kontroll av organisasjonen (3.2.3), kontroll av fullmakt (3.2.6), gjenbruk av kontrollresultater (4.2.1), gyldighetsperioder (6.3.2), Subject-felt (7.1.4.2) og registreringsskjemaer (vedlegg A).
+
+2.  [cabforum/smime på GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): Markdown-versjon av S/MIME Baseline Requirements med versjonshistorikk, blant annet EUID fra versjon 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): Produktbetegnelsene Silver og Gold, eksempel `NTRCH-CHE-109.357.012`, UID som registreringsnummer og EUID for tyske selskaper (28.04.2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): Sertifikatprofiler fra SwissSign for MV, SV og OV med Subject-felt, bruksformål og Policy-OID-er, versjon 14 av 18.09.2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): Produktoversikt med tilordning til MV, OV og SV, slutten på generasjonen `Legacy` og de tidligere S/MIME-produktene 10. juli 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisasjons- og domenekontroll, bekreftelse av ansatte fra organisasjonen, profilene `Strict` og `Multipurpose`, gyldighetsperioder.
+
+7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Art. 2 (begreper, regulert segl), art. 6 (nøkler), art. 7 (innhold i regulerte sertifikater, UID), art. 8 (kvalifiserte sertifikater) og art. 9 (identitetskontroll).
+
+8.  [Obligationenrecht (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 avsnitt 2bis om likestilling av kvalifisert elektronisk signatur med håndskrevet underskrift.
+
+9.  [UID-register](https://www.uid.admin.ch): Oppslag av en UID med navn, sete og status, ført av Bundesamt für Statistik.
+
+10.  [Zefix](https://www.zefix.ch): Sentralt selskapsregister for de kantonale handelsregistrene.
+
+11.  [Zivilprozessordnung (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 om fri bevisvurdering.
+
+12.  [Forordning (EU) nr. 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): Art. 25 avsnitt 2 om likestilling av kvalifisert elektronisk signatur med håndskrevet underskrift.
 
 ----
 
