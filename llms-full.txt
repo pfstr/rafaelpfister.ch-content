@@ -14,6 +14,194 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# Microsoft To Do wird eingestellt: Umstieg auf Planner aus Admin-Sicht
+
+URL: https://rafaelpfister.ch/blog/microsoft-to-do-planner-umstieg
+Datum: 2026-11-24
+
+# Microsoft To Do wird eingestellt: Umstieg auf Planner aus Admin-Sicht
+
+Microsoft stellt Microsoft To Do ein. Die Apps für Web, Windows, Mac, iOS und Android werden am 30. Juni 2027 abgeschaltet, für Geschäfts- und Schulkonten ebenso wie für private Microsoft-Konten. Für Geschäfts- und Schulkonten übernimmt Microsoft Planner die persönlichen Aufgaben; die überarbeitete Ansicht «Meine Aufgaben» (My tasks) wird ab Dezember 2026 ausgerollt. Microsoft hat die Änderung im November 2026 in einem Support-Artikel mit Zeitplan, Unterschieden und Hinweisen für Administratoren veröffentlicht.
+
+Kurzfazit: Eine automatische Migration gibt es nicht. Bestehende To-Do-Aufgaben bleiben bis zum 30. Juni 2027 in Planner sichtbar und liegen weiterhin im Exchange-Online-Postfach. Neue private Aufgaben speichert Planner ab dem Rollout in einem privaten Planner-Plan, also nicht mehr in Exchange. Damit ändern sich für Schweizer Tenants Datenstandort und Purview-Abdeckung. Prüfen Sie bis Mitte 2027 Lizenzen, geteilte Listen, Integrationen und Aufbewahrungspflichten. Private Microsoft-Konten erhalten keinen Ersatz.
+
+## Zeitplan
+
+| Zeitpunkt | Änderung |
+|---|---|
+| Dezember 2026 | Beginn des Rollouts der überarbeiteten Ansicht «Meine Aufgaben» in Planner für Geschäfts- und Schulkonten. Neu erstellte private Aufgaben speichert Planner ab dann in einem privaten Planner-Plan. |
+| vor dem 30. Juni 2027 | Microsoft stellt eine Exportfunktion für To-Do-Daten bereit. Format, Umfang und Voraussetzungen sind noch nicht veröffentlicht. |
+| 30. Juni 2027 | Die To-Do-Apps für Web, Windows, Mac, iOS und Android werden eingestellt. Bestehende To-Do-Aufgaben sind danach auch in Planner nicht mehr sichtbar. |
+| später, noch ohne Datum | Der To-Do-Dienst, die APIs und die Synchronisation werden separat abgekündigt. Microsoft nennt die Termine gesondert. |
+
+Planner ist für Geschäftskonten bereits heute im Web unter `planner.cloud.microsoft` und als App in Teams verfügbar. Microsoft kündigt an, die bestehenden Einstiegspunkte von To Do in Microsoft 365 anzupassen. Gegenüber Thurrott hat Microsoft präzisiert, dass die bestehenden Integrationen, darunter Outlook und Teams, auf Planner umgestellt werden.
+
+## Bestehende Aufgaben werden nicht migriert
+
+Microsoft überträgt bestehende To-Do-Aufgaben und -Listen nicht nach Planner. Bis zum 30. Juni 2027 lassen sie sich in Planner noch anzeigen und bearbeiten, danach nicht mehr. In den neuen privaten Plan werden sie nicht übernommen.
+
+Gelöscht werden die Daten mit dem Ende der Apps nicht. Laut Microsoft plant die Abkündigung der Apps keine Löschung ein; Aufbewahrung und Zugriff behandelt Microsoft getrennt davon. To Do speichert Aufgaben als Exchange-Aufgaben im Exchange-Online-Postfach des Benutzers, im selben Postfach wie Mails, Termine, Kontakte und Notizen. Der Bestand bleibt deshalb nach dem 30. Juni 2027 vorerst im Postfach.
+
+Das klassische Outlook ist von der Abkündigung nicht betroffen. Microsoft schreibt, dass dessen Aufgabenfunktion von To Do getrennt ist, weiter funktioniert und mit Exchange synchronisiert. To-Do-Listen erscheinen im klassischen Outlook als Aufgabenordner unter «Meine Aufgaben»; Benutzer mit klassischem Outlook können den Bestand dort also weiterhin lesen. Was mit den Daten geschieht, wenn Microsoft später den To-Do-Dienst selbst abschaltet, ist noch nicht beschrieben.
+
+## Neue Aufgaben liegen ausserhalb von Exchange
+
+Mit der neuen Ansicht ändert sich der Speicherort. Laut den FAQ für Planner-Administratoren liegen Aufgaben aus To Do und Outlook in Exchange, Pläne und ihre Aufgaben dagegen in Azure. Anhänge an Planaufgaben speichert Planner in der SharePoint-Site der Gruppe, Premium-Pläne in Dataverse. Neue private Aufgaben aus «Meine Aufgaben» liegen damit nicht mehr im Postfach des Benutzers. Für Administratoren hat das zwei Folgen.
+
+### Datenstandort
+
+Exchange Online gehört zu den Diensten mit dauerhafter Datenstandort-Zusage. Ist ein Tenant in der Schweiz angelegt, speichert Microsoft laut Product Terms Postfachinhalte (Mailtext, Kalendereinträge und Anhänge) ruhend nur in der Schweiz. Aufgaben nennt die Zusage nicht ausdrücklich, sie liegen jedoch im selben Postfach.
+
+Planner führt Microsoft unter den weiteren Microsoft-365-Diensten ohne dauerhafte Zusage. Für Tenants mit Land Schweiz nennt die Tabelle als Speicherort «EUR1», die Makroregion Europa. Planner nimmt zudem nicht an Advanced Data Residency teil. Persönliche Aufgaben, die To Do bisher im Postfach in der Schweiz gespeichert hat, speichert Planner nach dem Wechsel in der Makroregion Europa. Die Speicherorte pro Dienst für Ihren Tenant sind im Microsoft 365 Admin Center auf der Datenstandort-Karte (Data Location Card) aufgeführt. Organisationen, die einen Datenstandort Schweiz vertraglich oder in internen Vorgaben zugesichert haben, müssen diese Änderung bewerten.
+
+### Aufbewahrung und eDiscovery
+
+Exchange-Aufbewahrungsrichtlinien in Microsoft Purview erfassen Aufgaben im Postfach nur, wenn sie ein Enddatum haben; Aufgaben ohne Enddatum sind nicht abgedeckt. Diese Einschränkung gilt bereits heute für To-Do-Aufgaben.
+
+Für Planner unterstützt Purview eDiscovery-Suche und Legal Hold laut Microsoft nur für Aufgaben in Plänen, die mit einer Gruppe geteilt sind. Ausdrücklich nicht unterstützt sind persönliche Pläne (Roster-Pläne), Pläne in Loop-Komponenten, Premium-Pläne sowie Pläne in freigegebenen und privaten Teams-Kanälen. Aufbewahrungs- und Löschrichtlinien für Planner-Inhalte rollt Microsoft seit Mitte Juli 2026 aus, der Abschluss war für Anfang August angekündigt (MC1384412); laut Meldung lassen sie sich auf benutzer- und gruppenbasierte Pläne anwenden. Welchem Plantyp der neue private Plan technisch entspricht, geht aus der Ankündigung nicht hervor. Prüfen Sie nach dem Rollout, ob Ihre Aufbewahrungsrichtlinien und Holds die neuen privaten Aufgaben erfassen.
+
+## Unterschiede zwischen To Do und Planner
+
+Microsoft listet die folgenden Unterschiede auf:
+
+| Bereich | Unterschied laut Microsoft |
+|---|---|
+| Organisation | Planner fasst private Aufgaben und zugewiesene Arbeit unter «Meine Aufgaben» zusammen, heute mit Raster- und Board-Ansicht. Eine Listenansicht folgt mit der Überarbeitung. |
+| Erinnerungen | Die Benachrichtigungen zum Fälligkeitsdatum in Planner unterscheiden sich von den pro Aufgabe geplanten Erinnerungen in To Do. |
+| Freigabe | Planner arbeitet mit Plänen und Zuweisungen. Mitgliedschaften, Zuweisungen und Berechtigungen geteilter To-Do-Listen werden nicht übernommen. |
+| Desktop und offline | Planner gibt es im Web und in Teams. Native Apps für Windows und Mac sind nicht geplant; Web und Teams bieten keine vergleichbare Offline-Funktion. |
+| Kategorien | Planner-Bezeichnungen funktionieren anders als Outlook-Kategorien und werden nicht mit ihnen synchronisiert. |
+| Anhänge | Im neuen privaten Planner-Plan werden Dateianhänge an Aufgaben derzeit nicht unterstützt. |
+| Stern und Priorität | Der persönliche Stern dient der eigenen Planung und kommt mit der neuen Ansicht. Die Priorität einer Aufgabe gilt für alle Beteiligten eines geteilten Plans. |
+| Listengruppen | Ohne direkte Entsprechung in Planner. |
+| Drucken, Liste per Mail senden | Für die Ersatzlösung derzeit nicht geplant. |
+
+Benutzer, die mit der To-Do-App unter Windows oder Mac offline arbeiten, haben in Planner keinen gleichwertigen Ersatz.
+
+## Lizenzen und Zugriff auf Planner
+
+Planner ist unter anderem in Microsoft 365 Business Basic, Business Standard und Business Premium sowie in Office 365 E1, E3 und E5 enthalten. Fehlt Planner in einer Lizenz, bietet Microsoft Planner Plan 1 oder Planner and Project Plan 3 als eigene Abonnements an; diese sind auch für die Premium-Funktionen nötig. Eine neue Konfiguration ist laut Microsoft nicht erforderlich, und es gibt keinen eigenen Schalter, mit dem Administratoren den Wechsel steuern oder aufschieben können.
+
+Ist Planner in der Lizenzzuweisung deaktiviert (Serviceplan `PROJECTWORKMANAGEMENT`), brauchen die betroffenen Benutzer wieder Zugriff, wenn Planner To Do ersetzen soll. Das Entfernen der Planner-Lizenz blendet laut Planner-FAQ ohnehin nur die Kachel aus: Über `planner.cloud.microsoft` können Benutzer ohne Lizenz weiterhin Pläne anlegen und bearbeiten. Haben Sie Planner bisher über die Lizenz gesperrt, prüfen Sie diese Entscheidung im Hinblick auf den Wechsel.
+
+## Bestand erheben mit Microsoft Graph
+
+Welche Benutzer To Do nutzen und welche Listen geteilt sind, lässt sich über die To-Do-API von Microsoft Graph auslesen. Das folgende Skript schreibt pro Benutzer alle Listen mit Freigabestatus und Anzahl offener Aufgaben in eine CSV-Datei. Es braucht die Module `Microsoft.Graph.Authentication` und `Microsoft.Graph.Users` sowie eine App-Registrierung mit den Anwendungsberechtigungen `Tasks.Read.All` und `User.Read.All` (mit Administratorzustimmung) und ein Zertifikat für die Anmeldung. `Tasks.Read.All` gewährt Lesezugriff auf die Aufgaben aller Benutzer; entfernen Sie die Berechtigung oder die App-Registrierung nach der Bestandsaufnahme wieder.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # Kein Exchange-Online-Postfach oder kein Zugriff: Benutzer überspringen
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `ClientId`, `TenantId` | App-Registrierung und Tenant, an dem sich das Skript anmeldet |
+| `CertificateThumbprint` | Fingerabdruck des Zertifikats im Zertifikatsspeicher des aktuellen Benutzers; Anmeldung als App ohne Benutzerkonto |
+| `-NoWelcome` | Unterdrückt die Begrüssungsmeldung von `Connect-MgGraph` |
+| `-All` | Liest alle Seiten eines Ergebnisses statt nur der ersten |
+| `-Filter "accountEnabled eq true"` | Nur aktivierte Konten; deaktivierte Konten wie freigegebene Postfächer entfallen |
+| `-Property Id, UserPrincipalName` | Lädt nur die beiden benötigten Eigenschaften |
+| `-UserId` | Benutzer, dessen Listen oder Aufgaben abgefragt werden |
+| `-ErrorAction Stop` | Macht einen Fehler abfangbar, damit `catch` den Benutzer überspringen kann |
+| `-TodoTaskListId` | Liste, deren Aufgaben abgefragt werden |
+| `WellknownListName` | `defaultList` für die Standardliste «Aufgaben», `flaggedEmails` für gekennzeichnete Nachrichten, `none` für eigene Listen |
+| `IsShared` | `True`, wenn die Liste mit anderen Benutzern geteilt ist |
+| `IsOwner` | `False`, wenn die Liste einem anderen Benutzer gehört und nur geteilt wurde |
+| `Status -ne 'completed'` | Zählt alle nicht erledigten Aufgaben |
+| `-NoTypeInformation` | Keine Typzeile am Anfang der CSV-Datei |
+| `-Encoding UTF8` | Umlaute in Listennamen bleiben erhalten |
+
+</details>
+
+Konten ohne Exchange-Online-Postfach liefern einen Fehler und werden übersprungen. In grossen Tenants ist ein Testlauf mit einer Teilmenge sinnvoll, etwa mit `-Top 20` statt `-All` bei `Get-MgUser`.
+
+Die Auswertung der CSV-Datei:
+
+- **Geteilte Listen** (`Geteilt` = `True`) zeigen, wo Zusammenarbeit über To Do läuft. Diese Mitgliedschaften überträgt Microsoft nicht; die Listen müssen als Planner-Plan mit den betreffenden Personen neu aufgebaut werden.
+- **Offene Aufgaben** in eigenen Listen (`Typ` = `none` oder `defaultList`) müssen die Benutzer bis zum 30. Juni 2027 von Hand in Planner übernehmen oder mit der angekündigten Exportfunktion sichern.
+- **Gekennzeichnete Nachrichten** (`Typ` = `flaggedEmails`) bleiben als Kennzeichnung an der Mail im Postfach erhalten.
+
+## Private Microsoft-Konten
+
+Auch für private Microsoft-Konten, einschliesslich Microsoft 365 Personal und Family, werden die To-Do-Apps am 30. Juni 2027 eingestellt. Planner steht für diese Konten nicht zur Verfügung. Microsoft empfiehlt, eine andere Aufgabenverwaltung zu wählen und die Daten mit der angekündigten Exportfunktion zu sichern. Ein Export bedeutet laut Microsoft nicht, dass sich die Daten in Planner oder eine andere Anwendung importieren lassen. Benutzer mit Geschäfts- und Privatkonto müssen beide Konten getrennt prüfen.
+
+## Vorbereitung für Administratoren
+
+1. **Zugriff und Lizenzen:** Stellen Sie sicher, dass alle To-Do-Benutzer eine Lizenz mit Planner haben und der Serviceplan `PROJECTWORKMANAGEMENT` aktiviert ist.
+
+2. **Geteilte Listen und Integrationen:** Erheben Sie den Bestand mit dem Skript oben. Identifizieren Sie Power-Automate-Flows und Drittanwendungen, die die To-Do-API von Microsoft Graph verwenden. Microsoft kündigt die API separat und später ab; laut Microsoft können Integrationen trotzdem Anpassungen erfordern.
+
+3. **Aufbewahrung und Datenstandort:** Prüfen Sie, ob bestehende Aufbewahrungspflichten für To-Do-Aufgaben gelten und ob Purview-Richtlinien und Holds den neuen privaten Plan erfassen. Bewerten Sie, ob der Speicherort in der Makroregion Europa mit Ihren Vorgaben vereinbar ist. Beziehen Sie vor dem Löschen oder Umorganisieren von Aufgabendaten die Compliance-Verantwortlichen ein.
+
+4. **Benutzer informieren:** Teilen Sie den Benutzern mit, dass keine Migration stattfindet, wie lange der Bestand in Planner sichtbar bleibt und welche Funktionen sich ändern (Offline-Nutzung, Erinnerungen, Anhänge, Listengruppen).
+
+5. **Message Center verfolgen:** Microsoft kündigt Rollout-Details, die Exportfunktion und die Termine für Dienst und APIs dort an.
+
+## Quellen
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): Ankündigung mit Zeitplan, Unterschieden zwischen To Do und Planner, Vorbereitungsschritten und FAQ.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): Speicherung der To-Do-Aufgaben als Aufgaben im Exchange-Online-Postfach.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): Speicherorte von Aufgaben (Exchange, Azure, SharePoint, Dataverse), Serviceplan `PROJECTWORKMANAGEMENT` und Zugriff über `planner.cloud.microsoft` ohne Lizenz.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): Abonnements mit Planner sowie Planner Plan 1 und Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner ohne dauerhafte Datenstandort-Zusage, Speicherort «EUR1» für Tenants mit Land Schweiz.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): Zusage der Product Terms für ruhende Postfachinhalte in der Schweiz.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): Speicherung der Plandaten in Azure; Planner nimmt nicht an Advanced Data Residency teil. Stand August 2025, vor der Einführung der Aufbewahrungsrichtlinien für Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery und Legal Hold nur für Aufgaben in gruppenbasierten Plänen, Liste der nicht unterstützten Plantypen.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): Spiegel der Message-Center-Meldung zu Aufbewahrungs- und Löschrichtlinien für Planner, Rollout Juli bis August 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): unterstützte Postfachelemente; Aufgaben nur mit Enddatum.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): Ressourcen der To-Do-API in Microsoft Graph (Listen, Aufgaben, Checklisten, verknüpfte Ressourcen).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): Endpunkt, Berechtigungen und Eigenschaften `isShared`, `isOwner` und `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): Endpunkt für Aufgaben einer Liste und Anwendungsberechtigung `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): Bericht mit nachgereichter Stellungnahme von Microsoft zu den Integrationen in Outlook und Teams.
+
+----
+
 # Nach dem Exchange-Online-Ausfall: SLA-Gutschrift bei Microsoft einfordern
 
 URL: https://rafaelpfister.ch/blog/microsoft-sla-gutschrift-einfordern
@@ -23106,6 +23294,164 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Java4Shell (CVE-2026-114938): Memory Error in OpenJDK's Base64 Decoder - Find, Secure, and Patch Affected Systems
+
+URL: https://rafaelpfister.ch/en/blog/java4shell-cve-2026-114938-memory-error-in-openjdk-s-base64-decoder-find-secure-and-patch
+Datum: 2026-11-18
+
+# Java4Shell (CVE-2026-114938): Memory Error in OpenJDK's Base64 Decoder - Find, Secure, and Patch Affected Systems
+
+Java4Shell is a memory error in the Base64 decoder of OpenJDK's HotSpot JVM. The vulnerability is identified as CVE-2026-114938 and was disclosed by the security firm Calif on November 17, 2026, at the same time as fixes from Oracle and the OpenJDK project. An attacker without credentials sends a Java application a short Base64 string with invalid padding; the JVM then writes beyond the end of a buffer in the Java heap. This makes it easy to trigger a JVM crash. According to Calif, code execution without authentication is also possible in several widely used products. Oracle rates the vulnerability CVSS 3.1 8.1 (high attack complexity), Calif rates it CVSS 4.0 9.2, and Red Hat classifies it as critical.
+
+In short: A system is affected only when three conditions coincide: an OpenJDK-based runtime starting with version 17.0.6 (including 21, 25, and 27), an x86-64 processor with AVX-512 VBMI, and an application that decodes Base64 data from an untrusted source. Java 8 and 11 as well as ARM64 are not affected. As of November 18, 2026, no exploitation is known, and the vulnerability is not in CISA's KEV catalog. Install your vendor's fixed runtime; where that is not immediately possible, the startup parameter `-XX:-UseBASE64Intrinsics` disables the faulty code.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Support with assessment</p>
+<p>If you would like to check whether your Java applications are affected, please use the <a href="https://adeptio.ch/en">contact form on adeptio.ch</a>.</p>
+</div>
+
+## Cause
+
+On x86-64, HotSpot replaces Base64 decoding by `java.util.Base64` with a handwritten machine-code routine (intrinsic) that processes 64 bytes at a time using AVX-512. If the input ends with the padding character `=`, the routine calculates the length of the final output incorrectly: the value underflows to -1 or -2, the resulting write mask covers all 64 bytes, and the routine writes the entire block rather than a few bytes into the target buffer. In Calif's example, the write operation starts 48 bytes after the beginning of a 50-byte buffer, with 62 bytes ending up after it in the heap. Only afterward does Java report the input as invalid Base64. By that point, memory has already been overwritten.
+
+The trigger requires only 64 `A` characters followed by a single `=`; according to Calif, older OpenJDK 17 releases require 128 `A` characters. The faulty routine runs only after the JIT compiler has compiled the decoder at its highest tier (C2). This happens after many calls and is normal for a service under load.
+
+Base64 is decoded in many places in Java applications before a user is authenticated: for HTTP Basic authentication, SAML messages, tokens, CSRF values, and MIME-encoded headers. This is why the flaw can be reached without authentication in many products.
+
+## Affected and Unaffected Systems
+
+| Criterion | Affected | Not affected |
+|---|---|---|
+| Runtime | OpenJDK-based builds from 17.0.6 onward as well as 21, 25, and 27 without a fix; Oracle Java SE 8 Enterprise Performance Pack 8u511b33-perf; Oracle GraalVM for JDK 17.0.21.0.3 and 21.0.13.0.3; GraalVM Enterprise Edition 21.3.20.0.3 | Java 8 and 11 (standard builds), Java 17.0.0 through 17.0.5 |
+| Processor | x86-64 with AVX-512 VBMI: Intel Xeon from Ice Lake onward (including Sapphire Rapids, Emerald Rapids, Granite Rapids), AMD EPYC and Ryzen from Zen 4 onward | ARM64 (e.g., AWS Graviton, Ampere, Apple Silicon); x86-64 without AVX-512 VBMI (e.g., Skylake-SP, Cascade Lake, Zen 2, Zen 3) |
+| Application | decodes Base64 from network data using `java.util.Base64` | does not process external Base64 data |
+
+The list of distributions includes all builds from the affected branches: Oracle Java SE, Oracle OpenJDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, BellSoft Liberica, SAP SapMachine, Microsoft Build of OpenJDK, and Red Hat Build of OpenJDK. In virtual machines, what matters is whether the hypervisor passes the CPU extension through to the guest.
+
+Many products include their own Java runtime, which does not appear as a Java installation in the software inventory. This applies to container images as well as appliances, including Java-based mail servers and mail gateways. For such products, the respective vendor's information is authoritative; the product version number alone says nothing about the version of the included runtime.
+
+According to Calif, it has demonstrated unauthenticated code execution in the default configuration of Keycloak, Atlassian Jira, Atlassian Confluence, JFrog Artifactory, Jenkins, and PingFederate, and authenticated code execution in Apache Kafka, Apache Solr, Elasticsearch, Gerrit, and Spinnaker. Calif is withholding the exploits for these products. A test program that triggers only the memory corruption is publicly available.
+
+## Checking Whether a Host Is Affected
+
+On Linux, the following command shows whether the processor reports the four required extensions. The host meets the hardware condition only if all four lines appear.
+
+```bash
+grep -m1 '^flags' /proc/cpuinfo |
+  tr ' ' '\n' |
+  grep -E '^(avx512f|avx512bw|avx512vbmi|bmi2)$'
+```
+
+The JVM itself provides the version and effective settings. Use the same `java` binary that starts the application; for containers, run it in the container.
+
+```bash
+java -version
+java -XX:+PrintFlagsFinal -version 2>/dev/null |
+  grep -E ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `-version` | displays the runtime vendor and version and exits the JVM |
+| `-XX:+PrintFlagsFinal` | lists all JVM settings with the value that actually applies on this host |
+| `UseAVX` | highest AVX level used by HotSpot; `3` means AVX-512 |
+| `UseBASE64Intrinsics` | `true`: the accelerated Base64 routine is active |
+
+</details>
+
+The faulty code is reachable only if the version falls within the affected range, `UseAVX` has the value `3`, and `UseBASE64Intrinsics` is set to `true`. The same command works in PowerShell on Windows:
+
+```powershell
+java -XX:+PrintFlagsFinal -version 2>$null |
+  Select-String ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+For processes already running, `jcmd -l` shows process IDs, `jcmd <pid> VM.version` shows the runtime, and `jcmd <pid> VM.flags -all` shows the settings. Included runtimes can be found through the `release` file in the Java directory; it contains the line `JAVA_VERSION=`.
+
+## Fixed Versions
+
+| Vendor | Fixed version | Status as of November 18, 2026 |
+|---|---|---|
+| Oracle Java SE | 17.0.21.1, 21.0.13.1, 25.0.5.1, 27.0.1.1; Java 8 Enterprise Performance Pack 8u513-perf | available since November 17 |
+| Amazon Corretto | 17.0.21.1.2 | available since November 17 |
+| Eclipse Temurin | 17.0.21.1+2, 21.0.13.1+2, 25.0.5.1+2, 27.0.1.1+4 | binary packages are being released continuously; container images follow for each version |
+| Red Hat Build of OpenJDK (RHEL 8, 9, 10) | no errata yet | Red Hat has announced expedited fixes |
+| Keycloak | no fixed image yet | x86-64 images 26.8.2-1 and 26.8.2-2 contain affected OpenJDK 21.0.13 |
+| Azul, Microsoft, BellSoft, SAP, Linux distributions | respective November release | check with the vendor |
+
+Oracle's version numbers cannot be applied to other distributions. For Oracle, 17.0.21.0.3 is the last affected release and 17.0.21.1 is the first fixed release; tools that compare only the first three components classify both as the same. After updating, every Java process must be restarted.
+
+## Temporary Mitigation Until the Update
+
+There are two ways to disable the faulty code using a startup parameter. Oracle and the OpenJDK Vulnerability Group do not mention them in their advisories; they originate from Calif and are recommended by Red Hat, Adoptium, and Keycloak.
+
+| Parameter | Effect | Limitation |
+|---|---|---|
+| `-XX:-UseBASE64Intrinsics` | disables only accelerated Base64 encoding and decoding; all other AVX-512 optimizations remain active | applications with very heavy Base64 processing may be slower |
+| `-XX:UseAVX=2` | disables AVX-512 for the entire JVM | set only on x86-64: OpenJDK on ARM does not recognize the setting and will not start with it |
+
+Red Hat describes `-XX:-UseBASE64Intrinsics` as the preferred option. How the parameter is set depends on the product. In general, every JVM evaluates the environment variable `JAVA_TOOL_OPTIONS`; Keycloak uses `JAVA_OPTS_APPEND`.
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+```
+
+```bash
+docker run -e JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics \
+  <keycloak-image> start
+```
+
+Existing values of the variables must be retained; append the parameter. For services under systemd, the variable belongs in the unit (`Environment=`); assigning it in the interactive shell has no effect there. After restarting, the effect can be checked on the running process:
+
+```bash
+jcmd <pid> VM.flags -all | grep -F UseBASE64Intrinsics
+```
+
+The expected output is `bool UseBASE64Intrinsics = false {product} {command line}`.
+
+An upstream reverse proxy does not replace this measure. According to OX Security, request buffering in nginx disrupts some attack chains, but not all of them, and length limits do not help with an input of 65 characters. CISA additionally recommends restricting unauthenticated access and watching for unexpected JVM crashes and suspicious Java processes.
+
+## Risk Assessment
+
+Assessments differ because crashes and code execution are difficult to achieve to different degrees. A crash can be caused with a single request. According to VulnCheck, executing code requires targeted heap preparation as well as an information leak to bypass ASLR; each application requires its own attack chain. Calif says it built such chains for six products within a few hours, and another researcher reports a working, unpublished exploit.
+
+OX Security estimates that fewer than 0.12 percent of all JVMs are currently realistic targets for code execution. Under this calculation, out of 10,000 Java instances, around 2,200 contain faulty code on affected hardware, 80 can be crashed from the internet by an unauthenticated attacker, and 12 have a realistic risk of code execution. The calculation is based on estimated shares, not measurements.
+
+This results in the following prioritization: first, internet-accessible services with Java-based authentication (identity providers, wikis, ticketing and build systems, artifact repositories); then internal services; and finally clients. Java clients are also affected: according to Calif, a program can be attacked if it establishes a TLS connection to a server controlled by the attacker.
+
+The Federal Office for Cyber Security (BACS) recommends that operators inventory Java applications, including embedded components and externally operated services, clarify exposure with suppliers, and restrict unnecessary external access. CISA calls for immediate patching.
+
+## Sources
+
+1.  [Calif: Java4Shell](https://calif.io/java4shell/): description of the cause, trigger, affected processors, list of tested products, and test program.
+
+2.  [Oracle Critical Security Patch Update, November 2026](https://www.oracle.com/security-alerts/cspunov2026.html): affected and fixed versions of Oracle Java SE and GraalVM, CVSS 3.1 8.1.
+
+3.  [OpenJDK Vulnerability Advisory 2026-11-17](https://openjdk.org/groups/vulnerability/advisories/2026-11-17): advisory from the OpenJDK Vulnerability Group for branches 17, 21, 25, and 27.
+
+4.  [Red Hat Security Bulletin RHSB-2026-018](https://access.redhat.com/security/vulnerabilities/RHSB-2026-018): affected Red Hat products, critical classification, preferred startup parameter, and verification commands.
+
+5.  [Adoptium: Temurin November 2026 and Java4Shell](https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell): fixed Temurin builds and release status.
+
+6.  [Amazon Corretto 17.0.21.1.2 Changelog](https://github.com/corretto/corretto-17/blob/17.0.21.1.2/CHANGELOG.md): fixed Corretto version.
+
+7.  [Keycloak: Java4Shell, What Keycloak admins need to do](https://www.keycloak.org/2026/11/java4shell-vulnerability-cve-2026-114938): affected image tags, setting the parameter in containers, Compose, and Operator, verification with `jcmd`.
+
+8.  [CISA: Critical Java Vulnerability Requires Immediate Patching](https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching): recommendations from the U.S. agency dated November 17, 2026.
+
+9.  [BACS: Java Warning](https://www.bacs.admin.ch/de/warnung-java-de): recommendations from the Federal Office for Cyber Security for operators in Switzerland.
+
+10.  [OX Security: Easy to Crash, Hard to Exploit](https://www.ox.security/blog/java4shell-cve-2026-114938-rce-risk/): estimate of actually attackable JVMs and version table.
+
+11.  [Help Net Security: Exploitation is tricky and hinges on specific CPUs](https://www.helpnetsecurity.com/2026/11/18/java4shell-openjdk-vulnerability-cve-2026-114938/): assessments from VulnCheck and SentinelOne on the requirements for code execution.
+
+12.  [Tenable: Java4Shell FAQ](https://www.tenable.com/blog/java4shell-cve-2026-114938-frequently-asked-questions-about-openjdk-rce-vulnerability): version table, exploitation status, and note on attack vectors through Basic authentication and JWT.
+
+----
+
 # Downdetector Under Fire: What the U.S. Outage Week Reveals About Incident Reports
 
 URL: https://rafaelpfister.ch/en/blog/downdetector-under-fire-what-the-u-s-outage-week-reveals-about-incident-reports
@@ -45987,6 +46333,164 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 
 ----
 
+# Java4Shell (CVE-2026-114938) : erreur mémoire dans le décodeur Base64 d’OpenJDK – identifier, sécuriser et corriger les systèmes concernés
+
+URL: https://rafaelpfister.ch/fr/blog/java4shell-cve-2026-114938-erreur-memoire-dans-le-decodeur-base64-d-openjdk-identifier
+Datum: 2026-11-18
+
+# Java4Shell (CVE-2026-114938) : erreur mémoire dans le décodeur Base64 d’OpenJDK – identifier, sécuriser et corriger les systèmes concernés
+
+Java4Shell est une erreur mémoire dans le décodeur Base64 de la JVM HotSpot d’OpenJDK. La vulnérabilité porte l’identifiant CVE-2026-114938 et a été publiée le 17 novembre 2026 par la société de sécurité Calif, simultanément aux correctifs d’Oracle et du projet OpenJDK. Un attaquant sans identifiants envoie à une application Java une courte chaîne Base64 au remplissage incorrect ; la JVM écrit alors au-delà de la fin d’un tampon dans le tas Java. Il est ainsi facile de provoquer l’arrêt de la JVM. Selon Calif, l’exécution de code sans authentification est également possible dans plusieurs produits courants. Oracle évalue la vulnérabilité à CVSS 3.1 8.1 (complexité d’attaque élevée), Calif à CVSS 4.0 9.2, et Red Hat la classe comme critique.
+
+En bref : un système n’est concerné que si trois conditions sont réunies : un environnement d’exécution basé sur OpenJDK à partir de la version 17.0.6 (y compris 21, 25 et 27), un processeur x86-64 avec AVX-512 VBMI et une application qui décode des données Base64 provenant d’une source non fiable. Java 8 et 11 ainsi qu’ARM64 ne sont pas concernés. Au 18 novembre 2026, aucune exploitation n’est connue et la vulnérabilité ne figure pas dans le catalogue KEV de la CISA. Installez l’environnement d’exécution corrigé de votre fournisseur ; lorsque cela n’est pas immédiatement possible, le paramètre de démarrage `-XX:-UseBASE64Intrinsics` désactive le code défectueux.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Assistance pour l’évaluation</p>
+<p>Si vous souhaitez vérifier si vos applications Java sont concernées, veuillez utiliser le <a href="https://adeptio.ch/en">formulaire de contact sur adeptio.ch</a>.</p>
+</div>
+
+## Cause
+
+Sur x86-64, HotSpot remplace le décodage Base64 de `java.util.Base64` par une routine de code machine écrite à la main (intrinsèque), qui traite 64 octets à la fois avec AVX-512. Si l’entrée se termine par le caractère de remplissage `=`, la routine calcule incorrectement la longueur de la dernière sortie : la valeur subit un dépassement inférieur à -1 ou -2, le masque d’écriture qui en résulte couvre les 64 octets et la routine écrit le bloc entier au lieu de quelques octets dans le tampon de destination. Dans l’exemple de Calif, l’écriture commence 48 octets après le début d’un tampon de 50 octets, et 62 octets sont écrits après celui-ci dans le tas. Java ne signale l’entrée comme Base64 non valide qu’ensuite. À ce moment-là, la mémoire a déjà été écrasée.
+
+Il suffit de 64 caractères `A`, suivis d’un unique `=` ; selon Calif, les anciennes versions d’OpenJDK 17 nécessitent 128 caractères `A`. La routine défectueuse ne s’exécute qu’après que le compilateur JIT a traduit le décodeur au niveau maximal (C2). Cela se produit après de nombreux appels et constitue l’état normal pour un service soumis à charge.
+
+Les applications Java décodent Base64 à de nombreux endroits avant qu’un utilisateur soit authentifié : pour l’authentification HTTP Basic, les messages SAML, les jetons, les valeurs CSRF et les en-têtes encodés MIME. L’erreur est donc accessible sans authentification dans de nombreux produits.
+
+## Systèmes concernés et non concernés
+
+| Critère | Concerné | Non concerné |
+|---|---|---|
+| Environnement d’exécution | Builds basés sur OpenJDK à partir de 17.0.6 ainsi que 21, 25 et 27 sans correctif ; Oracle Java SE 8 Enterprise Performance Pack 8u511b33-perf ; Oracle GraalVM for JDK 17.0.21.0.3 et 21.0.13.0.3 ; GraalVM Enterprise Edition 21.3.20.0.3 | Java 8 et 11 (builds standard), Java 17.0.0 à 17.0.5 |
+| Processeur | x86-64 avec AVX-512 VBMI : Intel Xeon à partir d’Ice Lake (y compris Sapphire Rapids, Emerald Rapids, Granite Rapids), AMD EPYC et Ryzen à partir de Zen 4 | ARM64 (p. ex. AWS Graviton, Ampere, Apple Silicon) ; x86-64 sans AVX-512 VBMI (p. ex. Skylake-SP, Cascade Lake, Zen 2, Zen 3) |
+| Application | décode des données Base64 réseau avec `java.util.Base64` | ne traite aucune donnée Base64 externe |
+
+La liste des distributions couvre tous les builds des branches concernées : Oracle Java SE, Oracle OpenJDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, BellSoft Liberica, SAP SapMachine, Microsoft Build of OpenJDK et Red Hat Build of OpenJDK. Dans les machines virtuelles, il importe que l’hyperviseur transmette l’extension processeur à l’invité.
+
+De nombreux produits fournissent leur propre environnement d’exécution Java, qui n’apparaît pas comme installation Java dans l’inventaire logiciel. Cela concerne aussi bien les images de conteneurs que les appliances, notamment les serveurs de messagerie et les passerelles de messagerie basés sur Java. Pour ces produits, les informations du fabricant concerné font foi ; le numéro de version du produit seul ne renseigne pas sur l’état de l’environnement d’exécution inclus.
+
+Calif affirme avoir démontré l’exécution de code sans authentification dans la configuration standard de Keycloak, Atlassian Jira, Atlassian Confluence, JFrog Artifactory, Jenkins et PingFederate, et après authentification également dans Apache Kafka, Apache Solr, Elasticsearch, Gerrit et Spinnaker. Calif ne publie pas les exploits pour ces produits. Un programme de test qui ne déclenche que la corruption mémoire est public.
+
+## Vérifier si un hôte est concerné
+
+Sous Linux, la commande suivante indique si le processeur signale les quatre extensions requises. L’hôte ne remplit la condition matérielle que si les quatre lignes apparaissent.
+
+```bash
+grep -m1 '^flags' /proc/cpuinfo |
+  tr ' ' '\n' |
+  grep -E '^(avx512f|avx512bw|avx512vbmi|bmi2)$'
+```
+
+La JVM elle-même fournit la version et les options effectives. Utilisez à cette fin le même binaire `java` que celui avec lequel l’application démarre ; pour les conteneurs, exécutez donc la commande dans le conteneur.
+
+```bash
+java -version
+java -XX:+PrintFlagsFinal -version 2>/dev/null |
+  grep -E ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-version` | affiche le fournisseur et la version de l’environnement d’exécution, puis arrête la JVM |
+| `-XX:+PrintFlagsFinal` | répertorie toutes les options de la JVM avec la valeur effectivement appliquée sur cet hôte |
+| `UseAVX` | niveau AVX maximal utilisé par HotSpot ; `3` signifie AVX-512 |
+| `UseBASE64Intrinsics` | `true` : la routine Base64 accélérée est active |
+
+</details>
+
+Le code défectueux n’est accessible que si la version se situe dans la plage concernée, si `UseAVX` a la valeur `3` et si `UseBASE64Intrinsics` est défini sur `true`. Sous Windows, le même appel fonctionne dans PowerShell :
+
+```powershell
+java -XX:+PrintFlagsFinal -version 2>$null |
+  Select-String ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+Pour les processus déjà en cours, `jcmd -l` affiche les identifiants de processus, `jcmd <pid> VM.version` l’environnement d’exécution et `jcmd <pid> VM.flags -all` les options. Les environnements d’exécution fournis avec un produit peuvent être trouvés via le fichier `release` dans le répertoire Java ; il contient la ligne `JAVA_VERSION=`.
+
+## Versions corrigées
+
+| Fournisseur | Version corrigée | État au 18 novembre 2026 |
+|---|---|---|
+| Oracle Java SE | 17.0.21.1, 21.0.13.1, 25.0.5.1, 27.0.1.1 ; Java 8 Enterprise Performance Pack 8u513-perf | disponible depuis le 17 novembre |
+| Amazon Corretto | 17.0.21.1.2 | disponible depuis le 17 novembre |
+| Eclipse Temurin | 17.0.21.1+2, 21.0.13.1+2, 25.0.5.1+2, 27.0.1.1+4 | les paquets binaires sont publiés progressivement, les images de conteneurs suivent selon les versions |
+| Red Hat Build of OpenJDK (RHEL 8, 9, 10) | pas encore d’errata | Red Hat annonce des correctifs accélérés |
+| Keycloak | aucune image corrigée à ce jour | les images x86-64 26.8.2-1 et 26.8.2-2 contiennent un OpenJDK 21.0.13 concerné |
+| Azul, Microsoft, BellSoft, SAP, distributions Linux | publication de novembre correspondante | vérifier auprès du fournisseur |
+
+Les numéros de version d’Oracle ne peuvent pas être transposés à d’autres distributions. Chez Oracle, 17.0.21.0.3 est la dernière version concernée et 17.0.21.1 la première version corrigée ; les outils qui ne comparent que les trois premiers éléments les classent de la même manière. Après la mise à jour, chaque processus Java doit être redémarré.
+
+## Mesure transitoire jusqu’à la mise à jour
+
+Il existe deux possibilités pour désactiver le code défectueux via un paramètre de démarrage. Oracle et l’OpenJDK Vulnerability Group ne les mentionnent pas dans leurs avis ; elles proviennent de Calif et sont recommandées par Red Hat, Adoptium et Keycloak.
+
+| Paramètre | Effet | Limitation |
+|---|---|---|
+| `-XX:-UseBASE64Intrinsics` | désactive uniquement l’encodage et le décodage Base64 accélérés, toutes les autres optimisations AVX-512 restent actives | les applications effectuant énormément de traitements Base64 peuvent ralentir |
+| `-XX:UseAVX=2` | désactive AVX-512 pour l’ensemble de la JVM | à définir uniquement sur x86-64 : OpenJDK sur ARM ne connaît pas cette option et ne démarre pas avec celle-ci |
+
+Red Hat qualifie `-XX:-UseBASE64Intrinsics` d’option privilégiée. La manière de définir le paramètre dépend du produit. En règle générale, chaque JVM évalue la variable d’environnement `JAVA_TOOL_OPTIONS` ; Keycloak utilise `JAVA_OPTS_APPEND`.
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+```
+
+```bash
+docker run -e JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics \
+  <keycloak-image> start
+```
+
+Les valeurs existantes de la variable doivent être conservées et le paramètre ajouté. Pour les services sous systemd, la variable doit être placée dans l’unité (`Environment=`) ; une affectation dans le shell interactif n’y a aucun effet. Après le redémarrage, l’effet peut être vérifié sur le processus en cours :
+
+```bash
+jcmd <pid> VM.flags -all | grep -F UseBASE64Intrinsics
+```
+
+La sortie attendue est `bool UseBASE64Intrinsics = false {product} {command line}`.
+
+Un reverse proxy placé en amont ne remplace pas cette mesure. Selon OX Security, la mise en mémoire tampon des requêtes dans nginx interrompt certaines chaînes d’attaque, mais pas toutes, et les limites de longueur n’aident pas face à une entrée de 65 caractères. La CISA recommande également de restreindre les accès non authentifiés et de surveiller les arrêts inattendus de JVM ainsi que les processus Java suspects.
+
+## Évaluation du risque
+
+Les évaluations divergent, car l’arrêt et l’exécution de code ne sont pas aussi difficiles à obtenir. L’arrêt est possible avec une seule requête. Selon VulnCheck, l’exécution de code exige d’un attaquant une préparation ciblée du tas ainsi qu’une fuite d’informations afin de contourner l’ASLR ; chaque application nécessite sa propre chaîne d’attaque. Calif indique avoir construit de telles chaînes pour six produits en quelques heures, et un autre chercheur signale un exploit fonctionnel non publié.
+
+OX Security estime que moins de 0,12 % de toutes les JVM constituent aujourd’hui une cible réaliste pour l’exécution de code. Sur 10’000 instances Java, ce calcul donne environ 2’200 instances avec du code défectueux sur du matériel concerné, 80 qu’un attaquant non authentifié depuis Internet peut faire tomber, et 12 présentant un risque réaliste d’exécution de code. Le calcul repose sur des proportions estimées, et non sur des mesures.
+
+Pour établir les priorités, l’ordre qui en découle est le suivant : d’abord les services accessibles depuis Internet avec authentification via Java (fournisseurs d’identité, wikis, systèmes de tickets et de build, dépôts d’artefacts), puis les services internes et enfin les clients. Les clients Java sont également concernés : selon Calif, il est possible d’attaquer un programme qui établit une connexion TLS vers un serveur contrôlé par l’attaquant.
+
+L’Office fédéral de la cybersécurité (OFCS) recommande aux exploitants de recenser les applications Java, y compris les composants intégrés et les services exploités par des tiers, de clarifier avec les fournisseurs s’ils sont concernés et de restreindre les accès externes non nécessaires. La CISA appelle à appliquer immédiatement les correctifs.
+
+## Sources
+
+1.  [Calif : Java4Shell](https://calif.io/java4shell/) : description de la cause, du déclencheur, des processeurs concernés, liste des produits testés et programme de test.
+
+2.  [Oracle Critical Security Patch Update, novembre 2026](https://www.oracle.com/security-alerts/cspunov2026.html) : versions Oracle Java SE et GraalVM concernées et corrigées, CVSS 3.1 8.1.
+
+3.  [OpenJDK Vulnerability Advisory 2026-11-17](https://openjdk.org/groups/vulnerability/advisories/2026-11-17) : avis de l’OpenJDK Vulnerability Group concernant les branches 17, 21, 25 et 27.
+
+4.  [Red Hat Security Bulletin RHSB-2026-018](https://access.redhat.com/security/vulnerabilities/RHSB-2026-018) : produits Red Hat concernés, classification critique, paramètre de démarrage privilégié et commandes de vérification.
+
+5.  [Adoptium : Temurin novembre 2026 et Java4Shell](https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell) : builds Temurin corrigés et état de la publication.
+
+6.  [Amazon Corretto 17.0.21.1.2 Changelog](https://github.com/corretto/corretto-17/blob/17.0.21.1.2/CHANGELOG.md) : version Corretto corrigée.
+
+7.  [Keycloak : Java4Shell, What Keycloak admins need to do](https://www.keycloak.org/2026/11/java4shell-vulnerability-cve-2026-114938) : balises d’images concernées, définition du paramètre dans les conteneurs, Compose et Operator, vérification avec `jcmd`.
+
+8.  [CISA : Critical Java Vulnerability Requires Immediate Patching](https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching) : recommandations de l’agence américaine du 17 novembre 2026.
+
+9.  [OFCS : Avertissement concernant Java](https://www.bacs.admin.ch/de/warnung-java-de) : recommandations de l’Office fédéral de la cybersécurité aux exploitants en Suisse.
+
+10.  [OX Security : Easy to Crash, Hard to Exploit](https://www.ox.security/blog/java4shell-cve-2026-114938-rce-risk/) : estimation des JVM réellement attaquables et tableau des versions.
+
+11.  [Help Net Security : Exploitation is tricky and hinges on specific CPUs](https://www.helpnetsecurity.com/2026/11/18/java4shell-openjdk-vulnerability-cve-2026-114938/) : évaluations de VulnCheck et SentinelOne concernant les conditions nécessaires à l’exécution de code.
+
+12.  [Tenable : Java4Shell FAQ](https://www.tenable.com/blog/java4shell-cve-2026-114938-frequently-asked-questions-about-openjdk-rce-vulnerability) : tableau des versions, état de l’exploitation et indication des voies d’attaque via l’authentification Basic et JWT.
+
+----
+
 # Downdetector sous le feu des critiques : ce que la semaine de pannes aux États-Unis révèle sur les signalements d’incidents
 
 URL: https://rafaelpfister.ch/fr/blog/downdetector-sous-le-feu-des-critiques-ce-que-la-semaine-de-pannes-aux-etats-unis-revele-sur
@@ -68864,6 +69368,164 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): format des messages texte Internet (en-têtes et corps).
     
 7.  [Microsoft Learn – « Connectors for secure mail flow with a partner »](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuration des connecteurs pour le flux de messagerie sécurisé entre Exchange Online et la passerelle.
+
+----
+
+# Java4Shell (CVE-2026-114938): errore di memoria nel decoder Base64 di OpenJDK - individuare, proteggere e correggere i sistemi interessati
+
+URL: https://rafaelpfister.ch/it/blog/java4shell-cve-2026-114938-errore-di-memoria-nel-decoder-base64-di-openjdk-individuare
+Datum: 2026-11-18
+
+# Java4Shell (CVE-2026-114938): errore di memoria nel decoder Base64 di OpenJDK - individuare, proteggere e correggere i sistemi interessati
+
+Java4Shell è un errore di memoria nel decoder Base64 della JVM HotSpot di OpenJDK. La vulnerabilità ha l'identificativo CVE-2026-114938 ed è stata pubblicata il 17 novembre 2026 dall'azienda di sicurezza Calif, contemporaneamente alle correzioni di Oracle e del progetto OpenJDK. Un attaccante senza credenziali invia a un'applicazione Java una breve stringa Base64 con riempimento non valido; la JVM scrive quindi oltre la fine di un buffer nell'heap Java. In questo modo è facile provocare l'arresto anomalo della JVM. Secondo Calif, in diversi prodotti diffusi è possibile anche eseguire codice senza autenticazione. Oracle valuta la vulnerabilità con CVSS 3.1 8.1 (elevata complessità di attacco), Calif con CVSS 4.0 9.2, Red Hat la classifica come critica.
+
+In breve: un sistema è interessato solo se coincidono tre condizioni: un runtime basato su OpenJDK dalla versione 17.0.6 (incluse 21, 25 e 27), un processore x86-64 con AVX-512 VBMI e un'applicazione che decodifica dati Base64 da una fonte non attendibile. Java 8 e 11 nonché ARM64 non sono interessati. Al 18 novembre 2026 non è noto alcuno sfruttamento e la vulnerabilità non figura nel catalogo KEV della CISA. Installate il runtime corretto del vostro fornitore; dove ciò non è immediatamente possibile, il parametro di avvio `-XX:-UseBASE64Intrinsics` disattiva il codice difettoso.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Supporto per la valutazione</p>
+<p>Se desiderate verificare se le vostre applicazioni Java sono interessate, utilizzate il <a href="https://adeptio.ch/en">modulo di contatto su adeptio.ch</a>.</p>
+</div>
+
+## Causa
+
+Su x86-64, HotSpot sostituisce la decodifica Base64 di `java.util.Base64` con una routine di codice macchina scritta a mano (intrinsic), che con AVX-512 elabora 64 byte alla volta. Se l'input termina con il carattere di riempimento `=`, la routine calcola erroneamente la lunghezza dell'ultimo output: il valore va in underflow a -1 o -2, la maschera di scrittura che ne deriva copre tutti i 64 byte e la routine scrive l'intero blocco anziché pochi byte nel buffer di destinazione. Nell'esempio di Calif, la scrittura inizia 48 byte dopo l'inizio di un buffer di 50 byte e 62 byte finiscono oltre il buffer nell'heap. Solo dopo Java segnala l'input come Base64 non valido. A quel punto la memoria è già stata sovrascritta.
+
+Come trigger sono sufficienti 64 caratteri `A`, seguiti da un singolo `=`; secondo Calif, nelle versioni precedenti di OpenJDK 17 sono 128 caratteri `A`. La routine difettosa viene eseguita solo dopo che il compilatore JIT ha tradotto il decoder al livello più alto (C2). Ciò avviene dopo molte chiamate ed è la condizione normale per un servizio sotto carico.
+
+Nelle applicazioni Java, Base64 viene decodificato in molti punti prima dell'autenticazione di un utente: nell'autenticazione HTTP Basic, nei messaggi SAML, nei token, nei valori CSRF e nelle intestazioni codificate MIME. Per questo l'errore è raggiungibile senza autenticazione in molti prodotti.
+
+## Sistemi interessati e non interessati
+
+| Criterio | Interessati | Non interessati |
+|---|---|---|
+| Runtime | Build basate su OpenJDK dalla 17.0.6 e 21, 25 e 27 senza correzione; Oracle Java SE 8 Enterprise Performance Pack 8u511b33-perf; Oracle GraalVM for JDK 17.0.21.0.3 e 21.0.13.0.3; GraalVM Enterprise Edition 21.3.20.0.3 | Java 8 e 11 (build standard), Java 17.0.0 fino a 17.0.5 |
+| Processore | x86-64 con AVX-512 VBMI: Intel Xeon da Ice Lake in poi (inclusi Sapphire Rapids, Emerald Rapids, Granite Rapids), AMD EPYC e Ryzen da Zen 4 in poi | ARM64 (ad es. AWS Graviton, Ampere, Apple Silicon); x86-64 senza AVX-512 VBMI (ad es. Skylake-SP, Cascade Lake, Zen 2, Zen 3) |
+| Applicazione | decodifica Base64 da dati di rete con `java.util.Base64` | non elabora dati Base64 esterni |
+
+L'elenco delle distribuzioni comprende tutte le build dei rami interessati: Oracle Java SE, Oracle OpenJDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, BellSoft Liberica, SAP SapMachine, Microsoft Build of OpenJDK e Red Hat Build of OpenJDK. Nelle macchine virtuali conta se l'hypervisor espone l'estensione della CPU al guest.
+
+Molti prodotti includono un proprio runtime Java, che non compare nell'inventario software come installazione Java. Ciò riguarda sia le immagini di container sia le appliance, inclusi server di posta e gateway di posta basati su Java. Per tali prodotti è determinante l'indicazione del rispettivo produttore; il solo numero di versione del prodotto non dice nulla sulla versione del runtime incluso.
+
+Secondo quanto dichiarato da Calif, l'esecuzione di codice senza autenticazione è stata dimostrata nella configurazione standard di Keycloak, Atlassian Jira, Atlassian Confluence, JFrog Artifactory, Jenkins e PingFederate, e dopo l'autenticazione anche in Apache Kafka, Apache Solr, Elasticsearch, Gerrit e Spinnaker. Calif non pubblica gli exploit per questi prodotti. È pubblico un programma di test che provoca soltanto la corruzione della memoria.
+
+## Verificare se un host è interessato
+
+In Linux, il comando seguente mostra se il processore segnala le quattro estensioni necessarie. L'host soddisfa il requisito hardware solo se compaiono tutte e quattro le righe.
+
+```bash
+grep -m1 '^flags' /proc/cpuinfo |
+  tr ' ' '\n' |
+  grep -E '^(avx512f|avx512bw|avx512vbmi|bmi2)$'
+```
+
+La JVM stessa fornisce la versione e le opzioni effettive. A tale scopo, utilizzate lo stesso binario `java` con cui viene avviata l'applicazione; per i container, quindi, eseguite il comando nel container.
+
+```bash
+java -version
+java -XX:+PrintFlagsFinal -version 2>/dev/null |
+  grep -E ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-version` | visualizza fornitore e versione del runtime e termina la JVM |
+| `-XX:+PrintFlagsFinal` | elenca tutte le opzioni JVM con il valore effettivamente applicato su questo host |
+| `UseAVX` | livello AVX più alto utilizzato da HotSpot; `3` significa AVX-512 |
+| `UseBASE64Intrinsics` | `true`: la routine Base64 accelerata è attiva |
+
+</details>
+
+Il codice difettoso è raggiungibile solo se la versione rientra nell'intervallo interessato, `UseAVX` ha valore `3` e `UseBASE64Intrinsics` è impostato su `true`. In Windows, lo stesso comando funziona in PowerShell:
+
+```powershell
+java -XX:+PrintFlagsFinal -version 2>$null |
+  Select-String ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+Per i processi già in esecuzione, `jcmd -l` mostra gli ID dei processi, `jcmd <pid> VM.version` il runtime e `jcmd <pid> VM.flags -all` le opzioni. I runtime inclusi possono essere individuati tramite il file `release` nella directory Java; contiene la riga `JAVA_VERSION=`.
+
+## Versioni corrette
+
+| Fornitore | Versione corretta | Stato al 18 novembre 2026 |
+|---|---|---|
+| Oracle Java SE | 17.0.21.1, 21.0.13.1, 25.0.5.1, 27.0.1.1; Java 8 Enterprise Performance Pack 8u513-perf | disponibile dal 17 novembre |
+| Amazon Corretto | 17.0.21.1.2 | disponibile dal 17 novembre |
+| Eclipse Temurin | 17.0.21.1+2, 21.0.13.1+2, 25.0.5.1+2, 27.0.1.1+4 | i pacchetti binari vengono pubblicati progressivamente, le immagini di container seguono per ciascuna versione |
+| Red Hat Build of OpenJDK (RHEL 8, 9, 10) | ancora nessun errata | Red Hat annuncia correzioni accelerate |
+| Keycloak | ancora nessuna immagine corretta | le immagini x86-64 26.8.2-1 e 26.8.2-2 contengono un OpenJDK 21.0.13 interessato |
+| Azul, Microsoft, BellSoft, SAP, distribuzioni Linux | rispettiva release di novembre | verificare presso il fornitore |
+
+I numeri di versione di Oracle non possono essere trasferiti ad altre distribuzioni. Per Oracle, 17.0.21.0.3 è l'ultima versione interessata e 17.0.21.1 la prima corretta; gli strumenti che confrontano solo le prime tre cifre classificano entrambe allo stesso modo. Dopo l'aggiornamento, ogni processo Java deve essere riavviato.
+
+## Misura temporanea fino all'aggiornamento
+
+Esistono due modi per disattivare il codice difettoso tramite parametro di avvio. Oracle e l'OpenJDK Vulnerability Group non li menzionano nei loro avvisi; provengono da Calif e sono raccomandati da Red Hat, Adoptium e Keycloak.
+
+| Parametro | Effetto | Limitazione |
+|---|---|---|
+| `-XX:-UseBASE64Intrinsics` | disattiva solo la codifica e decodifica Base64 accelerata, tutte le altre ottimizzazioni AVX-512 restano attive | le applicazioni con molta elaborazione Base64 potrebbero rallentare |
+| `-XX:UseAVX=2` | disattiva AVX-512 per l'intera JVM | impostare solo su x86-64: OpenJDK su ARM non riconosce l'opzione e non si avvia con essa |
+
+Red Hat definisce `-XX:-UseBASE64Intrinsics` come opzione preferita. Il modo di impostare il parametro dipende dal prodotto. In generale, ogni JVM valuta la variabile d'ambiente `JAVA_TOOL_OPTIONS`; Keycloak utilizza `JAVA_OPTS_APPEND`.
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+```
+
+```bash
+docker run -e JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics \
+  <keycloak-image> start
+```
+
+I valori esistenti della variabile devono essere mantenuti e il parametro viene aggiunto. Per i servizi sotto systemd, la variabile va inserita nell'unità (`Environment=`), poiché un'assegnazione nella shell interattiva non ha effetto lì. Dopo il riavvio, l'effetto può essere verificato sul processo in esecuzione:
+
+```bash
+jcmd <pid> VM.flags -all | grep -F UseBASE64Intrinsics
+```
+
+L'output previsto è `bool UseBASE64Intrinsics = false {product} {command line}`.
+
+Un reverse proxy a monte non sostituisce la misura. Secondo OX Security, il buffering delle richieste in nginx interrompe alcune catene di attacco, ma non tutte, e i limiti di lunghezza non aiutano con un input di 65 caratteri. La CISA raccomanda inoltre di limitare gli accessi non autenticati e di monitorare arresti anomali inattesi della JVM e processi Java sospetti.
+
+## Valutazione del rischio
+
+Le valutazioni divergono perché l'arresto anomalo e l'esecuzione di codice hanno difficoltà di realizzazione diverse. L'arresto anomalo riesce con una singola richiesta. Secondo VulnCheck, per l'esecuzione di codice un attaccante necessita di una preparazione mirata dell'heap e inoltre di una fuga di informazioni per aggirare ASLR; ogni applicazione richiede una propria catena di attacco. Calif afferma di aver creato tali catene per sei prodotti nel giro di poche ore, e un altro ricercatore segnala un exploit funzionante ma non pubblicato.
+
+OX Security stima che oggi meno dello 0,12 per cento di tutte le JVM sia un obiettivo realistico per l'esecuzione di codice. Su 10'000 istanze Java, secondo questo calcolo, circa 2'200 presentano codice difettoso su hardware interessato, 80 possono essere mandate in crash da un attaccante non autenticato da Internet e 12 presentano un rischio realistico di esecuzione di codice. Il calcolo si basa su quote stimate, non su misurazioni.
+
+Per la definizione delle priorità ne risulta un ordine: prima i servizi raggiungibili da Internet con autenticazione tramite Java (Identity Provider, wiki, sistemi di ticketing e build, repository di artefatti), poi i servizi interni e infine i client. Anche i client Java sono interessati: secondo Calif, è possibile attaccare un programma che stabilisce una connessione TLS verso un server controllato dall'attaccante.
+
+L'Ufficio federale della cibersicurezza (UFCS) raccomanda agli operatori di inventariare le applicazioni Java, inclusi i componenti incorporati e i servizi gestiti esternamente, chiarire l'impatto con i fornitori e limitare gli accessi esterni non necessari. La CISA chiede di applicare immediatamente le patch.
+
+## Fonti
+
+1.  [Calif: Java4Shell](https://calif.io/java4shell/): descrizione della causa, trigger, processori interessati, elenco dei prodotti testati e programma di test.
+
+2.  [Oracle Critical Security Patch Update, novembre 2026](https://www.oracle.com/security-alerts/cspunov2026.html): versioni interessate e corrette di Oracle Java SE e GraalVM, CVSS 3.1 8.1.
+
+3.  [OpenJDK Vulnerability Advisory 2026-11-17](https://openjdk.org/groups/vulnerability/advisories/2026-11-17): avviso dell'OpenJDK Vulnerability Group sui rami 17, 21, 25 e 27.
+
+4.  [Red Hat Security Bulletin RHSB-2026-018](https://access.redhat.com/security/vulnerabilities/RHSB-2026-018): prodotti Red Hat interessati, classificazione critica, parametro di avvio preferito e comandi di verifica.
+
+5.  [Adoptium: Temurin novembre 2026 e Java4Shell](https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell): build Temurin corrette e stato della pubblicazione.
+
+6.  [Amazon Corretto 17.0.21.1.2 Changelog](https://github.com/corretto/corretto-17/blob/17.0.21.1.2/CHANGELOG.md): versione Corretto corretta.
+
+7.  [Keycloak: Java4Shell, What Keycloak admins need to do](https://www.keycloak.org/2026/11/java4shell-vulnerability-cve-2026-114938): tag delle immagini interessate, impostazione del parametro in container, Compose e Operator, controllo con `jcmd`.
+
+8.  [CISA: Critical Java Vulnerability Requires Immediate Patching](https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching): raccomandazioni dell'autorità statunitense del 17 novembre 2026.
+
+9.  [UFCS: Avviso su Java](https://www.bacs.admin.ch/de/warnung-java-de): raccomandazioni dell'Ufficio federale della cibersicurezza agli operatori in Svizzera.
+
+10.  [OX Security: Easy to Crash, Hard to Exploit](https://www.ox.security/blog/java4shell-cve-2026-114938-rce-risk/): stima delle JVM effettivamente attaccabili e tabella delle versioni.
+
+11.  [Help Net Security: Exploitation is tricky and hinges on specific CPUs](https://www.helpnetsecurity.com/2026/11/18/java4shell-openjdk-vulnerability-cve-2026-114938/): valutazioni di VulnCheck e SentinelOne sui prerequisiti per l'esecuzione di codice.
+
+12.  [Tenable: Java4Shell FAQ](https://www.tenable.com/blog/java4shell-cve-2026-114938-frequently-asked-questions-about-openjdk-rce-vulnerability): tabella delle versioni, stato dello sfruttamento e indicazione delle vie di attacco tramite autenticazione Basic e JWT.
 
 ----
 
@@ -91986,6 +92648,164 @@ Attachments: helpdesk ticket export, monitoring data, screenshots.
 
 ----
 
+# Java4Shell (CVE-2026-114938): error de memoria en el decodificador Base64 de OpenJDK: identificar, proteger y parchear los sistemas afectados
+
+URL: https://rafaelpfister.ch/es/blog/java4shell-cve-2026-114938-error-de-memoria-en-el-decodificador-base64-de-openjdk-identificar
+Datum: 2026-11-18
+
+# Java4Shell (CVE-2026-114938): error de memoria en el decodificador Base64 de OpenJDK: identificar, proteger y parchear los sistemas afectados
+
+Java4Shell es un error de memoria en el decodificador Base64 de la JVM HotSpot de OpenJDK. La vulnerabilidad tiene el identificador CVE-2026-114938 y fue publicada el 17 de noviembre de 2026 por la empresa de seguridad Calif, coincidiendo con las correcciones de Oracle y del proyecto OpenJDK. Un atacante sin credenciales envía a una aplicación Java una cadena Base64 corta con relleno incorrecto; entonces, la JVM escribe más allá del final de un búfer en el heap de Java. De este modo, se puede provocar fácilmente el bloqueo de la JVM. Según Calif, en varios productos ampliamente utilizados también es posible ejecutar código sin autenticación. Oracle califica la vulnerabilidad con CVSS 3.1 8.1 (alta complejidad de ataque), Calif con CVSS 4.0 9.2 y Red Hat la clasifica como crítica.
+
+Conclusión breve: un sistema solo está afectado si se cumplen tres condiciones: un entorno de ejecución basado en OpenJDK a partir de la versión 17.0.6 (incluidos 21, 25 y 27), un procesador x86-64 con AVX-512 VBMI y una aplicación que decodifique datos Base64 de una fuente no fiable. Java 8 y 11, así como ARM64, no están afectados. Hasta el 18 de noviembre de 2026 no se conoce ninguna explotación y la vulnerabilidad no figura en el catálogo KEV de CISA. Instale el entorno de ejecución corregido de su proveedor; cuando no sea posible hacerlo de inmediato, el parámetro de inicio `-XX:-UseBASE64Intrinsics` desactiva el código defectuoso.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Asistencia para la evaluación</p>
+<p>Si desea comprobar si sus aplicaciones Java están afectadas, utilice el <a href="https://adeptio.ch/en">formulario de contacto en adeptio.ch</a>.</p>
+</div>
+
+## Causa
+
+HotSpot sustituye la decodificación Base64 de `java.util.Base64` en x86-64 por una rutina de código máquina escrita a mano (intrínseca), que procesa 64 bytes de una vez mediante AVX-512. Si la entrada termina con el carácter de relleno `=`, la rutina calcula incorrectamente la longitud de la última salida: el valor sufre un desbordamiento por debajo hasta -1 o -2, la máscara de escritura resultante cubre los 64 bytes completos y la rutina escribe el bloque entero en lugar de solo unos pocos bytes en el búfer de destino. En el ejemplo de Calif, la operación de escritura comienza 48 bytes después del inicio de un búfer de 50 bytes y 62 bytes terminan después de este en el heap. Solo después Java informa de que la entrada es Base64 no válida. En ese momento, la memoria ya se ha sobrescrito.
+
+Como desencadenante bastan 64 caracteres `A`, seguidos de un único `=`; según Calif, en versiones anteriores de OpenJDK 17 son 128 caracteres `A`. La rutina defectuosa solo se ejecuta después de que el compilador JIT haya traducido el decodificador al nivel más alto (C2). Esto ocurre tras muchas llamadas y es el estado habitual de un servicio bajo carga.
+
+En las aplicaciones Java, Base64 se decodifica en muchos lugares antes de que un usuario inicie sesión: en la autenticación HTTP Basic, en mensajes SAML, en tokens, en valores CSRF y en cabeceras codificadas con MIME. Por eso, el error es accesible sin autenticación en muchos productos.
+
+## Sistemas afectados y no afectados
+
+| Criterio | Afectado | No afectado |
+|---|---|---|
+| Entorno de ejecución | Compilaciones basadas en OpenJDK a partir de 17.0.6, así como 21, 25 y 27 sin corrección; Oracle Java SE 8 Enterprise Performance Pack 8u511b33-perf; Oracle GraalVM for JDK 17.0.21.0.3 y 21.0.13.0.3; GraalVM Enterprise Edition 21.3.20.0.3 | Java 8 y 11 (compilaciones estándar), Java 17.0.0 a 17.0.5 |
+| Procesador | x86-64 con AVX-512 VBMI: Intel Xeon a partir de Ice Lake (incluidos Sapphire Rapids, Emerald Rapids y Granite Rapids), AMD EPYC y Ryzen a partir de Zen 4 | ARM64 (p. ej., AWS Graviton, Ampere, Apple Silicon); x86-64 sin AVX-512 VBMI (p. ej., Skylake-SP, Cascade Lake, Zen 2, Zen 3) |
+| Aplicación | decodifica Base64 de datos de red con `java.util.Base64` | no procesa datos Base64 externos |
+
+La lista de distribuciones incluye todas las compilaciones de las ramas afectadas: Oracle Java SE, Oracle OpenJDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, BellSoft Liberica, SAP SapMachine, Microsoft Build of OpenJDK y Red Hat Build of OpenJDK. En máquinas virtuales, importa si el hipervisor transmite la extensión de CPU al invitado.
+
+Muchos productos incluyen su propio entorno de ejecución Java, que no aparece como instalación de Java en el inventario de software. Esto afecta tanto a las imágenes de contenedor como a los appliances, incluidos los servidores de correo y las puertas de enlace de correo basados en Java. Para tales productos, es determinante la información del fabricante correspondiente; el número de versión del producto por sí solo no dice nada sobre la versión del entorno de ejecución incluido.
+
+Según Calif, ha demostrado ejecución de código sin autenticación en la configuración predeterminada de Keycloak, Atlassian Jira, Atlassian Confluence, JFrog Artifactory, Jenkins y PingFederate, y también tras autenticación en Apache Kafka, Apache Solr, Elasticsearch, Gerrit y Spinnaker. Calif retiene los exploits para estos productos. Es público un programa de prueba que solo desencadena la corrupción de memoria.
+
+## Comprobar si un host está afectado
+
+En Linux, el siguiente comando muestra si el procesador informa de las cuatro extensiones necesarias. El host solo cumple la condición de hardware si aparecen las cuatro líneas.
+
+```bash
+grep -m1 '^flags' /proc/cpuinfo |
+  tr ' ' '\n' |
+  grep -E '^(avx512f|avx512bw|avx512vbmi|bmi2)$'
+```
+
+La propia JVM proporciona la versión y los parámetros efectivos. Para ello, utilice el mismo binario `java` con el que se inicia la aplicación; en contenedores, por tanto, ejecute el comando dentro del contenedor.
+
+```bash
+java -version
+java -XX:+PrintFlagsFinal -version 2>/dev/null |
+  grep -E ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-version` | muestra el proveedor y la versión del entorno de ejecución y finaliza la JVM |
+| `-XX:+PrintFlagsFinal` | enumera todos los parámetros de la JVM con el valor que realmente se aplica en este host |
+| `UseAVX` | nivel AVX máximo que utiliza HotSpot; `3` significa AVX-512 |
+| `UseBASE64Intrinsics` | `true`: la rutina Base64 acelerada está activa |
+
+</details>
+
+El código defectuoso solo es accesible si la versión está en el intervalo afectado, `UseAVX` tiene el valor `3` y `UseBASE64Intrinsics` está establecido en `true`. En Windows, la misma llamada funciona en PowerShell:
+
+```powershell
+java -XX:+PrintFlagsFinal -version 2>$null |
+  Select-String ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+Para procesos que ya están en ejecución, `jcmd -l` muestra los ID de proceso, `jcmd <pid> VM.version` el entorno de ejecución y `jcmd <pid> VM.flags -all` los parámetros. Los entornos de ejecución incluidos pueden encontrarse mediante el archivo `release` en el directorio Java; contiene la línea `JAVA_VERSION=`.
+
+## Versiones corregidas
+
+| Proveedor | Versión corregida | Estado al 18 de noviembre de 2026 |
+|---|---|---|
+| Oracle Java SE | 17.0.21.1, 21.0.13.1, 25.0.5.1, 27.0.1.1; Java 8 Enterprise Performance Pack 8u513-perf | disponible desde el 17 de noviembre |
+| Amazon Corretto | 17.0.21.1.2 | disponible desde el 17 de noviembre |
+| Eclipse Temurin | 17.0.21.1+2, 21.0.13.1+2, 25.0.5.1+2, 27.0.1.1+4 | los paquetes binarios se publican continuamente; las imágenes de contenedor siguen según la versión |
+| Red Hat Build of OpenJDK (RHEL 8, 9, 10) | todavía sin erratas | Red Hat anuncia correcciones aceleradas |
+| Keycloak | todavía sin imagen corregida | las imágenes x86-64 26.8.2-1 y 26.8.2-2 contienen un OpenJDK 21.0.13 afectado |
+| Azul, Microsoft, BellSoft, SAP, distribuciones Linux | la versión de noviembre correspondiente | comprobar con el proveedor |
+
+Los números de versión de Oracle no se pueden trasladar a otras distribuciones. En Oracle, 17.0.21.0.3 es la última versión afectada y 17.0.21.1 la primera corregida; las herramientas que comparan solo los tres primeros componentes clasifican ambas como iguales. Después de la actualización, se debe reiniciar cada proceso Java.
+
+## Medida temporal hasta la actualización
+
+Hay dos opciones para desactivar el código defectuoso mediante un parámetro de inicio. Oracle y el grupo de vulnerabilidades de OpenJDK no las mencionan en sus avisos; proceden de Calif y son recomendadas por Red Hat, Adoptium y Keycloak.
+
+| Parámetro | Efecto | Limitación |
+|---|---|---|
+| `-XX:-UseBASE64Intrinsics` | desactiva solo la codificación y decodificación Base64 aceleradas; todas las demás optimizaciones AVX-512 permanecen activas | las aplicaciones con mucho procesamiento Base64 pueden ser más lentas |
+| `-XX:UseAVX=2` | desactiva AVX-512 para toda la JVM | establecer solo en x86-64: OpenJDK en ARM no reconoce el parámetro y no se inicia con él |
+
+Red Hat designa `-XX:-UseBASE64Intrinsics` como la opción preferida. La forma de establecer el parámetro depende del producto. En general, toda JVM evalúa la variable de entorno `JAVA_TOOL_OPTIONS`; Keycloak utiliza `JAVA_OPTS_APPEND`.
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+```
+
+```bash
+docker run -e JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics \
+  <keycloak-image> start
+```
+
+Deben conservarse los valores existentes de las variables; el parámetro se añade. En servicios bajo systemd, la variable debe incluirse en la unidad (`Environment=`); una asignación en la shell interactiva no tiene efecto allí. Tras reiniciar, se puede comprobar el efecto en el proceso en ejecución:
+
+```bash
+jcmd <pid> VM.flags -all | grep -F UseBASE64Intrinsics
+```
+
+La salida esperada es `bool UseBASE64Intrinsics = false {product} {command line}`.
+
+Un proxy inverso situado delante no sustituye esta medida. Según OX Security, el almacenamiento en búfer de solicitudes en nginx interrumpe cadenas de ataque individuales, pero no todas, y los límites de longitud no ayudan con una entrada de 65 caracteres. CISA recomienda además restringir los accesos no autenticados y vigilar bloqueos inesperados de la JVM y procesos Java sospechosos.
+
+## Evaluación del riesgo
+
+Las valoraciones difieren porque el bloqueo y la ejecución de código tienen distinta dificultad. El bloqueo se logra con una sola solicitud. Según VulnCheck, para ejecutar código un atacante necesita preparar específicamente el heap y además una filtración de información para sortear ASLR; cada aplicación requiere su propia cadena de ataque. Calif afirma haber creado tales cadenas para seis productos en pocas horas, y otro investigador informa de un exploit funcional no publicado.
+
+OX Security estima que menos del 0,12 por ciento de todas las JVM son hoy un objetivo realista para la ejecución de código. De 10'000 instancias Java, según este cálculo, unas 2'200 tienen código defectuoso en hardware afectado, 80 pueden ser bloqueadas desde Internet por un atacante no autenticado y 12 presentan un riesgo realista de ejecución de código. El cálculo se basa en proporciones estimadas, no en mediciones.
+
+Para la priorización resulta el siguiente orden: primero, servicios accesibles desde Internet con autenticación mediante Java (proveedores de identidad, wikis, sistemas de tickets y de compilación, repositorios de artefactos); después, servicios internos; por último, clientes. Los clientes Java también están afectados: según Calif, se puede atacar un programa que establece una conexión TLS con un servidor bajo control del atacante.
+
+La Oficina Federal de Ciberseguridad (BACS) recomienda a los operadores inventariar las aplicaciones Java, incluidos los componentes integrados y los servicios operados externamente, aclarar con los proveedores si están afectados y restringir los accesos externos no necesarios. CISA exige aplicar los parches de inmediato.
+
+## Fuentes
+
+1.  [Calif: Java4Shell](https://calif.io/java4shell/): descripción de la causa, desencadenante, procesadores afectados, lista de productos probados y programa de prueba.
+
+2.  [Oracle Critical Security Patch Update, noviembre de 2026](https://www.oracle.com/security-alerts/cspunov2026.html): versiones afectadas y corregidas de Oracle Java SE y GraalVM, CVSS 3.1 8.1.
+
+3.  [OpenJDK Vulnerability Advisory 2026-11-17](https://openjdk.org/groups/vulnerability/advisories/2026-11-17): aviso del grupo de vulnerabilidades de OpenJDK sobre las ramas 17, 21, 25 y 27.
+
+4.  [Red Hat Security Bulletin RHSB-2026-018](https://access.redhat.com/security/vulnerabilities/RHSB-2026-018): productos Red Hat afectados, clasificación como crítica, parámetro de inicio preferido y comandos de comprobación.
+
+5.  [Adoptium: Temurin noviembre de 2026 y Java4Shell](https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell): compilaciones Temurin corregidas y estado de la publicación.
+
+6.  [Amazon Corretto 17.0.21.1.2 Changelog](https://github.com/corretto/corretto-17/blob/17.0.21.1.2/CHANGELOG.md): versión corregida de Corretto.
+
+7.  [Keycloak: Java4Shell, What Keycloak admins need to do](https://www.keycloak.org/2026/11/java4shell-vulnerability-cve-2026-114938): etiquetas de imagen afectadas, establecimiento del parámetro en contenedor, Compose y Operator, comprobación con `jcmd`.
+
+8.  [CISA: Critical Java Vulnerability Requires Immediate Patching](https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching): recomendaciones de la agencia estadounidense del 17 de noviembre de 2026.
+
+9.  [BACS: Advertencia sobre Java](https://www.bacs.admin.ch/de/warnung-java-de): recomendaciones de la Oficina Federal de Ciberseguridad para operadores en Suiza.
+
+10.  [OX Security: Easy to Crash, Hard to Exploit](https://www.ox.security/blog/java4shell-cve-2026-114938-rce-risk/): estimación de las JVM realmente atacables y tabla de versiones.
+
+11.  [Help Net Security: Exploitation is tricky and hinges on specific CPUs](https://www.helpnetsecurity.com/2026/11/18/java4shell-openjdk-vulnerability-cve-2026-114938/): valoraciones de VulnCheck y SentinelOne sobre los requisitos para la ejecución de código.
+
+12.  [Tenable: Java4Shell FAQ](https://www.tenable.com/blog/java4shell-cve-2026-114938-frequently-asked-questions-about-openjdk-rce-vulnerability): tabla de versiones, estado de explotación e indicación de las vías de ataque mediante autenticación Basic y JWT.
+
+----
+
 # Downdetector bajo crítica: lo que la semana de caídas en EE. UU. revela sobre los reportes de incidencias
 
 URL: https://rafaelpfister.ch/es/blog/downdetector-bajo-critica-lo-que-la-semana-de-caidas-en-ee-uu-revela-sobre-los-reportes-de
@@ -114621,6 +115441,164 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# Java4Shell (CVE-2026-114938): Minnesfel i OpenJDK:s Base64-avkodare – hitta, säkra och patcha berörda system
+
+URL: https://rafaelpfister.ch/sv/blog/java4shell-cve-2026-114938-minnesfel-i-openjdk-s-base64-avkodare-hitta-sakra-och-patcha-berorda
+Datum: 2026-11-18
+
+# Java4Shell (CVE-2026-114938): Minnesfel i OpenJDK:s Base64-avkodare – hitta, säkra och patcha berörda system
+
+Java4Shell är ett minnesfel i Base64-avkodaren i HotSpot-JVM:en i OpenJDK. Sårbarheten har beteckningen CVE-2026-114938 och publicerades den 17 november 2026 av säkerhetsföretaget Calif, samtidigt som Oracle och OpenJDK-projektet släppte sina korrigeringar. En angripare utan inloggningsuppgifter skickar en kort, felaktigt utfylld Base64-sträng till en Java-applikation; JVM:en skriver då förbi slutet av en buffert i Java-heapen. Det går därmed enkelt att utlösa en krasch i JVM:en. Enligt Calif är det också möjligt att köra kod utan autentisering i flera vanliga produkter. Oracle bedömer sårbarheten till CVSS 3.1 8.1 (hög attackkomplexitet), Calif till CVSS 4.0 9.2, och Red Hat klassar den som kritisk.
+
+Kort sammanfattning: Ett system påverkas endast om tre villkor sammanfaller: en OpenJDK-baserad runtime från version 17.0.6 (även 21, 25 och 27), en x86-64-processor med AVX-512 VBMI och en applikation som avkodar Base64-data från en ej betrodd källa. Java 8 och 11 samt ARM64 påverkas inte. Fram till den 18 november 2026 är ingen exploatering känd, och sårbarheten finns inte i CISA:s KEV-katalog. Installera den korrigerade runtime-versionen från er leverantör; där detta inte är möjligt omedelbart stänger startparametern `-XX:-UseBASE64Intrinsics` av den felaktiga koden.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Hjälp med bedömningen</p>
+<p>Om du vill kontrollera om dina Java-applikationer påverkas, använd <a href="https://adeptio.ch/en">kontaktformuläret på adeptio.ch</a>.</p>
+</div>
+
+## Orsak
+
+HotSpot ersätter Base64-avkodningen från `java.util.Base64` på x86-64 med en handskriven maskinkodsrutin (intrinsic), som med AVX-512 bearbetar 64 byte åt gången. Om indata slutar med utfyllnadstecknet `=` beräknar rutinen längden på den sista utdata fel: värdet underflödar till -1 eller -2, skrivmasken som bildas av detta omfattar samtliga 64 byte och rutinen skriver hela blocket i stället för några få byte till målbufferten. I Califs exempel börjar skrivningen 48 byte efter början av en 50 byte stor buffert, och 62 byte hamnar efter den i heapen. Först därefter rapporterar Java indata som ogiltig Base64. Minnet har redan skrivits över vid denna tidpunkt.
+
+Det räcker med 64 tecken `A`, följda av ett enda `=`; i äldre versioner av OpenJDK 17 krävs enligt Calif 128 tecken `A`. Den felaktiga rutinen körs först efter att JIT-kompilatorn har kompilerat avkodaren på högsta nivå (C2). Det sker efter många anrop och är normaltillståndet för en tjänst under belastning.
+
+Base64 avkodas på många ställen i Java-applikationer innan en användare har loggat in: vid HTTP Basic-autentisering, SAML-meddelanden, token, CSRF-värden och MIME-kodade rubriker. Därför går felet att nå utan autentisering i många produkter.
+
+## Berörda och ej berörda system
+
+| Kriterium | Berörda | Ej berörda |
+|---|---|---|
+| Runtime | OpenJDK-baserade byggen från 17.0.6 samt 21, 25 och 27 utan korrigering; Oracle Java SE 8 Enterprise Performance Pack 8u511b33-perf; Oracle GraalVM for JDK 17.0.21.0.3 och 21.0.13.0.3; GraalVM Enterprise Edition 21.3.20.0.3 | Java 8 och 11 (standardbyggen), Java 17.0.0 till 17.0.5 |
+| Processor | x86-64 med AVX-512 VBMI: Intel Xeon från Ice Lake (även Sapphire Rapids, Emerald Rapids, Granite Rapids), AMD EPYC och Ryzen från Zen 4 | ARM64 (t.ex. AWS Graviton, Ampere, Apple Silicon); x86-64 utan AVX-512 VBMI (t.ex. Skylake-SP, Cascade Lake, Zen 2, Zen 3) |
+| Applikation | avkodar Base64 från nätverksdata med `java.util.Base64` | bearbetar inga externa Base64-data |
+
+Listan över distributioner omfattar alla byggen från de berörda grenarna: Oracle Java SE, Oracle OpenJDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, BellSoft Liberica, SAP SapMachine, Microsoft Build of OpenJDK och Red Hat Build of OpenJDK. I virtuella maskiner avgörs saken av om hypervisorn vidarebefordrar CPU-utökningen till gästen.
+
+Många produkter levereras med en egen Java-runtime som inte visas som en Java-installation i programvaruinventeringen. Detta gäller både containeravbildningar och apparater, däribland Java-baserade e-postservrar och e-postgateways. För sådana produkter är respektive tillverkares information avgörande; produktens versionsnummer i sig säger inget om versionen på den medföljande runtime-miljön.
+
+Calif uppger att de har verifierat kodexekvering utan autentisering i standardkonfigurationen av Keycloak, Atlassian Jira, Atlassian Confluence, JFrog Artifactory, Jenkins och PingFederate, och efter autentisering även i Apache Kafka, Apache Solr, Elasticsearch, Gerrit och Spinnaker. Calif håller tillbaka exploiterna för dessa produkter. Ett testprogram som endast utlöser minneskorruptionen är offentligt tillgängligt.
+
+## Kontrollera om en värd påverkas
+
+I Linux visar följande kommando om processorn rapporterar de fyra nödvändiga utökningarna. Värden uppfyller maskinvarukravet endast om alla fyra rader visas.
+
+```bash
+grep -m1 '^flags' /proc/cpuinfo |
+  tr ' ' '\n' |
+  grep -E '^(avx512f|avx512bw|avx512vbmi|bmi2)$'
+```
+
+JVM:en själv visar versionen och de aktiva flaggorna. Använd samma `java`-binärfil som applikationen startar med, alltså anropet i containern för containrar.
+
+```bash
+java -version
+java -XX:+PrintFlagsFinal -version 2>/dev/null |
+  grep -E ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-version` | visar runtime-leverantör och -version och avslutar JVM:en |
+| `-XX:+PrintFlagsFinal` | listar alla JVM-flaggor med det värde som faktiskt gäller på denna värd |
+| `UseAVX` | högsta AVX-nivå som HotSpot använder; `3` betyder AVX-512 |
+| `UseBASE64Intrinsics` | `true`: den accelererade Base64-rutinen är aktiv |
+
+</details>
+
+Den felaktiga koden är endast åtkomlig om versionen ligger inom det berörda intervallet, `UseAVX` har värdet `3` och `UseBASE64Intrinsics` är satt till `true`. I Windows fungerar samma anrop i PowerShell:
+
+```powershell
+java -XX:+PrintFlagsFinal -version 2>$null |
+  Select-String ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+För processer som redan körs visar `jcmd -l` process-ID:n, `jcmd <pid> VM.version` runtime-miljön och `jcmd <pid> VM.flags -all` flaggorna. Medföljande runtime-miljöer kan hittas via filen `release` i Java-katalogen; den innehåller raden `JAVA_VERSION=`.
+
+## Korrigerade versioner
+
+| Leverantör | Korrigerad version | Status 18 november 2026 |
+|---|---|---|
+| Oracle Java SE | 17.0.21.1, 21.0.13.1, 25.0.5.1, 27.0.1.1; Java 8 Enterprise Performance Pack 8u513-perf | tillgänglig sedan 17 november |
+| Amazon Corretto | 17.0.21.1.2 | tillgänglig sedan 17 november |
+| Eclipse Temurin | 17.0.21.1+2, 21.0.13.1+2, 25.0.5.1+2, 27.0.1.1+4 | binärpaket publiceras löpande, containeravbildningar följer per version |
+| Red Hat Build of OpenJDK (RHEL 8, 9, 10) | ännu inga errata | Red Hat aviserar påskyndade korrigeringar |
+| Keycloak | ännu ingen korrigerad avbildning | x86-64-avbildningarna 26.8.2-1 och 26.8.2-2 innehåller ett berört OpenJDK 21.0.13 |
+| Azul, Microsoft, BellSoft, SAP, Linux-distributioner | respektive novemberversion | kontrollera hos leverantören |
+
+Oracles versionsnummer kan inte överföras till andra distributioner. Hos Oracle är 17.0.21.0.3 den sista berörda versionen och 17.0.21.1 den första korrigerade; verktyg som endast jämför de tre första segmenten klassar dem båda lika. Efter uppdateringen måste varje Java-process startas om.
+
+## Tillfällig åtgärd fram till uppdateringen
+
+Det finns två sätt att stänga av den felaktiga koden med en startparameter. Oracle och OpenJDK Vulnerability Group nämner dem inte i sina meddelanden; de kommer från Calif och rekommenderas av Red Hat, Adoptium och Keycloak.
+
+| Parameter | Effekt | Begränsning |
+|---|---|---|
+| `-XX:-UseBASE64Intrinsics` | stänger endast av den accelererade Base64-kodningen och -avkodningen, medan alla övriga AVX-512-optimeringar förblir aktiva | applikationer med mycket Base64-bearbetning kan bli långsammare |
+| `-XX:UseAVX=2` | stänger av AVX-512 för hela JVM:en | ange endast på x86-64: OpenJDK på ARM känner inte till flaggan och startar inte med den |
+
+Red Hat anger `-XX:-UseBASE64Intrinsics` som det föredragna alternativet. Hur parametern anges beror på produkten. Generellt utvärderar varje JVM miljövariabeln `JAVA_TOOL_OPTIONS`; Keycloak använder `JAVA_OPTS_APPEND`.
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+```
+
+```bash
+docker run -e JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics \
+  <keycloak-image> start
+```
+
+Befintliga värden för variablerna måste behållas och parametern läggs till. För tjänster under systemd ska variabeln anges i enheten (`Environment=`), en tilldelning i det interaktiva skalet har ingen effekt där. Efter omstart kan effekten kontrolleras på den körande processen:
+
+```bash
+jcmd <pid> VM.flags -all | grep -F UseBASE64Intrinsics
+```
+
+Den förväntade utdata är `bool UseBASE64Intrinsics = false {product} {command line}`.
+
+En framförliggande reverse proxy ersätter inte åtgärden. Request buffering i nginx bryter enligt OX Security vissa attackkedjor, men inte alla, och längdbegränsningar hjälper inte vid en indata på 65 tecken. CISA rekommenderar dessutom att begränsa oautentiserad åtkomst och att övervaka oväntade JVM-krascher samt misstänkta Java-processer.
+
+## Bedömning av risken
+
+Bedömningarna skiljer sig åt eftersom krasch och kodexekvering är olika svåra att uppnå. Kraschen lyckas med en enda begäran. För kodexekvering behöver en angripare enligt VulnCheck riktat förbereda heapen samt dessutom ett informationsläckage för att kringgå ASLR; varje applikation kräver en egen attackkedja. Calif uppger att de byggde sådana kedjor för sex produkter inom några timmar, och en annan forskare rapporterar en fungerande, opublicerad exploit.
+
+OX Security uppskattar att mindre än 0,12 procent av alla JVM:er i dag är ett realistiskt mål för kodexekvering. Per 10'000 Java-instanser blir det enligt denna beräkning omkring 2'200 med felaktig kod på berörd maskinvara, 80 som en oautentiserad angripare från internet kan få att krascha och 12 med en realistisk risk för kodexekvering. Beräkningen bygger på uppskattade andelar, inte på mätningar.
+
+Följande prioritetsordning följer av detta: först tjänster som är åtkomliga från internet och använder Java för inloggning (identitetsleverantörer, wikier, ärende- och byggsystem, artefaktarkiv), därefter interna tjänster och sist klienter. Även Java-klienter påverkas: enligt Calif kan ett program angripas om det upprättar en TLS-anslutning till en server som angriparen kontrollerar.
+
+Bundesamt für Cybersicherheit (BACS) rekommenderar operatörer att inventera Java-applikationer, inklusive inbäddade komponenter och externt drivna tjänster, klargöra påverkan med leverantörerna och begränsa externa åtkomster som inte behövs. CISA uppmanar till omedelbar patchning.
+
+## Källor
+
+1.  [Calif: Java4Shell](https://calif.io/java4shell/): beskrivning av orsak, utlösare, berörda processorer, lista över testade produkter och testprogram.
+
+2.  [Oracle Critical Security Patch Update, november 2026](https://www.oracle.com/security-alerts/cspunov2026.html): berörda och korrigerade versioner av Oracle Java SE och GraalVM, CVSS 3.1 8.1.
+
+3.  [OpenJDK Vulnerability Advisory 2026-11-17](https://openjdk.org/groups/vulnerability/advisories/2026-11-17): meddelande från OpenJDK Vulnerability Group om grenarna 17, 21, 25 och 27.
+
+4.  [Red Hat Security Bulletin RHSB-2026-018](https://access.redhat.com/security/vulnerabilities/RHSB-2026-018): berörda Red Hat-produkter, klassificering som kritisk, föredragen startparameter och kontrollkommandon.
+
+5.  [Adoptium: Temurin november 2026 och Java4Shell](https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell): korrigerade Temurin-byggen och publiceringsstatus.
+
+6.  [Amazon Corretto 17.0.21.1.2 Changelog](https://github.com/corretto/corretto-17/blob/17.0.21.1.2/CHANGELOG.md): korrigerad Corretto-version.
+
+7.  [Keycloak: Java4Shell, What Keycloak admins need to do](https://www.keycloak.org/2026/11/java4shell-vulnerability-cve-2026-114938): berörda avbildningstaggar, inställning av parametern i container, Compose och Operator, kontroll med `jcmd`.
+
+8.  [CISA: Critical Java Vulnerability Requires Immediate Patching](https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching): rekommendationer från den amerikanska myndigheten den 17 november 2026.
+
+9.  [BACS: Varning om Java](https://www.bacs.admin.ch/de/warnung-java-de): rekommendationer från Bundesamt für Cybersicherheit till operatörer i Schweiz.
+
+10.  [OX Security: Easy to Crash, Hard to Exploit](https://www.ox.security/blog/java4shell-cve-2026-114938-rce-risk/): uppskattning av de JVM:er som faktiskt kan angripas samt versionstabell.
+
+11.  [Help Net Security: Exploitation is tricky and hinges on specific CPUs](https://www.helpnetsecurity.com/2026/11/18/java4shell-openjdk-vulnerability-cve-2026-114938/): bedömningar från VulnCheck och SentinelOne om förutsättningarna för kodexekvering.
+
+12.  [Tenable: Java4Shell FAQ](https://www.tenable.com/blog/java4shell-cve-2026-114938-frequently-asked-questions-about-openjdk-rce-vulnerability): versionstabell, exploateringsstatus och information om attackvägar via Basic-autentisering och JWT.
 
 ----
 
@@ -137502,6 +138480,164 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Java4Shell (CVE-2026-114938): Minnefeil i Base64-dekoderen i OpenJDK – finn, sikre og oppdater berørte systemer
+
+URL: https://rafaelpfister.ch/no/blog/java4shell-cve-2026-114938-minnefeil-i-base64-dekoderen-i-openjdk-finn-sikre-og-oppdater
+Datum: 2026-11-18
+
+# Java4Shell (CVE-2026-114938): Minnefeil i Base64-dekoderen i OpenJDK – finn, sikre og oppdater berørte systemer
+
+Java4Shell er en minnefeil i Base64-dekoderen i HotSpot-JVM-en i OpenJDK. Sårbarheten har identifikatoren CVE-2026-114938 og ble publisert 17. november 2026 av sikkerhetsselskapet Calif, samtidig med rettelsene fra Oracle og OpenJDK-prosjektet. En angriper uten påloggingsopplysninger sender en Java-applikasjon en kort, feilutfylt Base64-streng; JVM-en skriver deretter forbi slutten av en buffer i Java-heapen. Det er dermed enkelt å utløse krasj i JVM-en. Ifølge Calif er det også mulig å kjøre kode uten pålogging i flere utbredte produkter. Oracle vurderer sårbarheten til CVSS 3.1 8.1 (høy angrepskompleksitet), Calif til CVSS 4.0 9.2, og Red Hat klassifiserer den som kritisk.
+
+Kort oppsummert: Et system er bare berørt når tre betingelser foreligger samtidig: en OpenJDK-basert runtime fra versjon 17.0.6 (også 21, 25 og 27), en x86-64-prosessor med AVX-512 VBMI og en applikasjon som dekoder Base64-data fra en ikke-klarert kilde. Java 8 og 11 samt ARM64 er ikke berørt. Per 18. november 2026 er ingen utnyttelse kjent, og sårbarheten står ikke i CISA sin KEV-katalog. Installer leverandørens korrigerte runtime; der dette ikke er mulig umiddelbart, deaktiverer oppstartsparameteren `-XX:-UseBASE64Intrinsics` den feilaktige koden.
+
+<div class="notfall-hinweis">
+<p class="notfall-hinweis__titel">Hjelp med vurderingen</p>
+<p>Hvis du vil kontrollere om Java-applikasjonene dine er berørt, kan du bruke <a href="https://adeptio.ch/en">kontaktskjemaet på adeptio.ch</a>.</p>
+</div>
+
+## Årsak
+
+HotSpot erstatter Base64-dekoderingen av `java.util.Base64` på x86-64 med en håndskrevet maskinkoderutine (intrinsic) som behandler 64 byte om gangen med AVX-512. Når inndataene avsluttes med utfyllingstegnet `=`, beregner rutinen lengden på den siste utdataen feil: Verdien underflyter til -1 eller -2, skrivemasken som dannes fra den dekker alle 64 byte, og rutinen skriver hele blokken i stedet for noen få byte i målbufferen. I Califs eksempel begynner skriveoperasjonen 48 byte etter starten av en 50 byte stor buffer, og 62 byte havner etter den i heapen. Først etterpå melder Java at inndataene er ugyldig Base64. Minnet er allerede overskrevet på dette tidspunktet.
+
+Som utløser er 64 tegn `A`, etterfulgt av ett enkelt `=`, tilstrekkelig; i eldre versjoner av OpenJDK 17 er det ifølge Calif 128 tegn `A`. Den feilaktige rutinen kjører først etter at JIT-kompilatoren har oversatt dekoderen på høyeste nivå (C2). Det skjer etter mange kall og er normalt for en tjeneste under belastning.
+
+Base64 dekodes mange steder i Java-applikasjoner før en bruker er logget på: ved HTTP Basic-autentisering, SAML-meldinger, token, CSRF-verdier og MIME-kodede overskrifter. Derfor kan feilen nås uten pålogging i mange produkter.
+
+## Berørte og ikke-berørte systemer
+
+| Kriterium | Berørt | Ikke berørt |
+|---|---|---|
+| Runtime | OpenJDK-baserte bygg fra 17.0.6 samt 21, 25 og 27 uten rettelse; Oracle Java SE 8 Enterprise Performance Pack 8u511b33-perf; Oracle GraalVM for JDK 17.0.21.0.3 og 21.0.13.0.3; GraalVM Enterprise Edition 21.3.20.0.3 | Java 8 og 11 (standardbygg), Java 17.0.0 til 17.0.5 |
+| Prosessor | x86-64 med AVX-512 VBMI: Intel Xeon fra Ice Lake (også Sapphire Rapids, Emerald Rapids, Granite Rapids), AMD EPYC og Ryzen fra Zen 4 | ARM64 (f.eks. AWS Graviton, Ampere, Apple Silicon); x86-64 uten AVX-512 VBMI (f.eks. Skylake-SP, Cascade Lake, Zen 2, Zen 3) |
+| Applikasjon | dekoder Base64 fra nettverksdata med `java.util.Base64` | behandler ingen eksterne Base64-data |
+
+Listen over distribusjoner omfatter alle bygg fra de berørte grenene: Oracle Java SE, Oracle OpenJDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, BellSoft Liberica, SAP SapMachine, Microsoft Build of OpenJDK og Red Hat Build of OpenJDK. I virtuelle maskiner er det avgjørende om hypervisoren videresender CPU-utvidelsen til gjesten.
+
+Mange produkter leveres med en egen Java-runtime som ikke vises som en Java-installasjon i programvareinventaret. Dette gjelder både containerbilder og apparater, inkludert Java-baserte e-postservere og e-postgatewayer. For slike produkter er informasjonen fra den aktuelle produsenten avgjørende; produktets versjonsnummer alene sier ingenting om versjonen av den inkluderte runtime-en.
+
+Calif opplyser å ha påvist kodekjøring uten pålogging i standardkonfigurasjonen av Keycloak, Atlassian Jira, Atlassian Confluence, JFrog Artifactory, Jenkins og PingFederate, og etter pålogging også i Apache Kafka, Apache Solr, Elasticsearch, Gerrit og Spinnaker. Calif holder tilbake utnyttelsene for disse produktene. Et testprogram som bare utløser minnekorrupsjonen, er offentlig tilgjengelig.
+
+## Kontroller om en vert er berørt
+
+På Linux viser følgende kommando om prosessoren rapporterer de fire nødvendige utvidelsene. Verten oppfyller maskinvarebetingelsen bare dersom alle fire linjene vises.
+
+```bash
+grep -m1 '^flags' /proc/cpuinfo |
+  tr ' ' '\n' |
+  grep -E '^(avx512f|avx512bw|avx512vbmi|bmi2)$'
+```
+
+Versjonen og de gjeldende innstillingene oppgir JVM-en selv. Bruk samme `java`-binærfil som applikasjonen starter med, altså kommandoen inne i containeren for containere.
+
+```bash
+java -version
+java -XX:+PrintFlagsFinal -version 2>/dev/null |
+  grep -E ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-version` | viser leverandør og versjon av runtime-en og avslutter JVM-en |
+| `-XX:+PrintFlagsFinal` | viser alle JVM-innstillinger med verdien som faktisk gjelder på denne verten |
+| `UseAVX` | høyeste AVX-nivå som HotSpot bruker; `3` betyr AVX-512 |
+| `UseBASE64Intrinsics` | `true`: den akselererte Base64-rutinen er aktiv |
+
+</details>
+
+Den feilaktige koden kan bare nås når versjonen er innenfor det berørte området, `UseAVX` har verdien `3` og `UseBASE64Intrinsics` er satt til `true`. I Windows fungerer samme kommando i PowerShell:
+
+```powershell
+java -XX:+PrintFlagsFinal -version 2>$null |
+  Select-String ' (UseAVX|UseBASE64Intrinsics) '
+```
+
+For allerede kjørende prosesser viser `jcmd -l` prosess-ID-ene, `jcmd <pid> VM.version` runtime-en og `jcmd <pid> VM.flags -all` innstillingene. Medfølgende runtime-er kan finnes via filen `release` i Java-katalogen; den inneholder linjen `JAVA_VERSION=`.
+
+## Korrigerte versjoner
+
+| Leverandør | Korrigert versjon | Status 18. november 2026 |
+|---|---|---|
+| Oracle Java SE | 17.0.21.1, 21.0.13.1, 25.0.5.1, 27.0.1.1; Java 8 Enterprise Performance Pack 8u513-perf | tilgjengelig siden 17. november |
+| Amazon Corretto | 17.0.21.1.2 | tilgjengelig siden 17. november |
+| Eclipse Temurin | 17.0.21.1+2, 21.0.13.1+2, 25.0.5.1+2, 27.0.1.1+4 | binærpakker publiseres fortløpende, containerbilder følger for hver versjon |
+| Red Hat Build of OpenJDK (RHEL 8, 9, 10) | ennå ingen errata | Red Hat varsler raskere rettelser |
+| Keycloak | ennå ikke noe korrigert bilde | x86-64-bildene 26.8.2-1 og 26.8.2-2 inneholder en berørt OpenJDK 21.0.13 |
+| Azul, Microsoft, BellSoft, SAP, Linux-distribusjoner | respektive novemberutgivelse | kontroller hos leverandøren |
+
+Oracle sine versjonsnumre kan ikke overføres til andre distribusjoner. Hos Oracle er 17.0.21.0.3 den siste berørte og 17.0.21.1 den første korrigerte versjonen; verktøy som bare sammenligner de tre første leddene, klassifiserer begge likt. Etter oppdateringen må hver Java-prosess startes på nytt.
+
+## Midlertidig tiltak frem til oppdatering
+
+Det finnes to måter å deaktivere den feilaktige koden med en oppstartsparameter. Oracle og OpenJDK Vulnerability Group nevner dem ikke i sine meldinger; de stammer fra Calif og anbefales av Red Hat, Adoptium og Keycloak.
+
+| Parameter | Effekt | Begrensning |
+|---|---|---|
+| `-XX:-UseBASE64Intrinsics` | deaktiverer bare akselerert Base64-koding og -dekoding, mens alle øvrige AVX-512-optimaliseringer forblir aktive | applikasjoner med svært mye Base64-behandling kan bli langsommere |
+| `-XX:UseAVX=2` | deaktiverer AVX-512 for hele JVM-en | skal bare settes på x86-64: OpenJDK på ARM kjenner ikke parameteren og starter ikke med den |
+
+Red Hat omtaler `-XX:-UseBASE64Intrinsics` som den foretrukne løsningen. Hvordan parameteren settes, avhenger av produktet. Generelt leser hver JVM miljøvariabelen `JAVA_TOOL_OPTIONS`; Keycloak bruker `JAVA_OPTS_APPEND`.
+
+```bash
+export JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+```
+
+```bash
+docker run -e JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics \
+  <keycloak-image> start
+```
+
+Eksisterende verdier i variablene må beholdes; parameteren legges til. For tjenester under systemd skal variabelen ligge i unit-filen (`Environment=`), en tildeling i det interaktive skallet har ingen effekt der. Etter omstarten kan effekten kontrolleres på den kjørende prosessen:
+
+```bash
+jcmd <pid> VM.flags -all | grep -F UseBASE64Intrinsics
+```
+
+Forventet utdata er `bool UseBASE64Intrinsics = false {product} {command line}`.
+
+En forankoblet reverse proxy erstatter ikke tiltaket. Request-buffering i nginx bryter ifølge OX Security enkelte angrepskjeder, men ikke alle, og lengdebegrensninger hjelper ikke ved inndata på 65 tegn. CISA anbefaler i tillegg å begrense uautentisert tilgang og følge med på uventede JVM-krasj samt iøynefallende Java-prosesser.
+
+## Vurdering av risikoen
+
+Vurderingene spriker fordi krasj og kodekjøring er ulikt vanskelige å oppnå. Krasjet kan utløses med én enkelt forespørsel. Ifølge VulnCheck trenger en angriper målrettet forberedelse av heapen og i tillegg en informasjonslekkasje for å omgå ASLR for å kunne kjøre kode; hver applikasjon krever sin egen angrepskjede. Calif oppgir å ha bygget slike kjeder for seks produkter i løpet av få timer, og en annen forsker melder om en fungerende, ikke-offentliggjort exploit.
+
+OX Security anslår at færre enn 0,12 prosent av alle JVM-er i dag er et realistisk mål for kodekjøring. Per 10 000 Java-instanser gir denne beregningen rundt 2 200 med feilaktig kode på berørt maskinvare, 80 som en uautentisert angriper fra Internett kan få til å krasje, og 12 med realistisk risiko for kodekjøring. Beregningen bygger på estimerte andeler, ikke målinger.
+
+For prioriteringen gir dette følgende rekkefølge: først tjenester tilgjengelige fra Internett med pålogging via Java (identitetsleverandører, wikier, sak- og byggesystemer, artefaktlagre), deretter interne tjenester og til slutt klienter. Java-klienter er også berørt: Ifølge Calif kan et program angripes hvis det oppretter en TLS-forbindelse til en server under angriperens kontroll.
+
+Det føderale kontoret for cybersikkerhet (BACS) anbefaler operatører å kartlegge Java-applikasjoner, inkludert innebygde komponenter og eksternt driftede tjenester, avklare berørthet med leverandørene og begrense unødvendig ekstern tilgang. CISA oppfordrer til umiddelbar patching.
+
+## Kilder
+
+1.  [Calif: Java4Shell](https://calif.io/java4shell/): Beskrivelse av årsaken, utløseren, berørte prosessorer, liste over testede produkter og testprogrammet.
+
+2.  [Oracle Critical Security Patch Update, november 2026](https://www.oracle.com/security-alerts/cspunov2026.html): berørte og korrigerte versjoner av Oracle Java SE og GraalVM, CVSS 3.1 8.1.
+
+3.  [OpenJDK Vulnerability Advisory 2026-11-17](https://openjdk.org/groups/vulnerability/advisories/2026-11-17): Melding fra OpenJDK Vulnerability Group om grenene 17, 21, 25 og 27.
+
+4.  [Red Hat Security Bulletin RHSB-2026-018](https://access.redhat.com/security/vulnerabilities/RHSB-2026-018): berørte Red Hat-produkter, klassifisering som kritisk, foretrukket oppstartsparameter og kontrollkommandoer.
+
+5.  [Adoptium: Temurin november 2026 og Java4Shell](https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell): korrigerte Temurin-bygg og publiseringsstatus.
+
+6.  [Amazon Corretto 17.0.21.1.2 Changelog](https://github.com/corretto/corretto-17/blob/17.0.21.1.2/CHANGELOG.md): korrigert Corretto-versjon.
+
+7.  [Keycloak: Java4Shell, What Keycloak admins need to do](https://www.keycloak.org/2026/11/java4shell-vulnerability-cve-2026-114938): berørte bilde-tagger, setting av parameteren i container, Compose og Operator, kontroll med `jcmd`.
+
+8.  [CISA: Critical Java Vulnerability Requires Immediate Patching](https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching): anbefalinger fra den amerikanske myndigheten fra 17. november 2026.
+
+9.  [BACS: Advarsel om Java](https://www.bacs.admin.ch/de/warnung-java-de): anbefalinger fra Det føderale kontoret for cybersikkerhet til operatører i Sveits.
+
+10.  [OX Security: Easy to Crash, Hard to Exploit](https://www.ox.security/blog/java4shell-cve-2026-114938-rce-risk/): anslag over faktisk angripbare JVM-er og versjonstabell.
+
+11.  [Help Net Security: Exploitation is tricky and hinges on specific CPUs](https://www.helpnetsecurity.com/2026/11/18/java4shell-openjdk-vulnerability-cve-2026-114938/): vurderinger fra VulnCheck og SentinelOne om forutsetningene for kodekjøring.
+
+12.  [Tenable: Java4Shell FAQ](https://www.tenable.com/blog/java4shell-cve-2026-114938-frequently-asked-questions-about-openjdk-rce-vulnerability): versjonstabell, status for utnyttelse og merknad om angrepsveiene via Basic-autentisering og JWT.
 
 ----
 
