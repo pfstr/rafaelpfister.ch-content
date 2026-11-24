@@ -14,6 +14,285 @@ Diese Datei enthält die Volltexte aller verfügbaren Blog-Sprachversionen in Ma
 
 ----
 
+# S/MIME mit Organisationseintrag: organizationIdentifier und UID im Zertifikat
+
+URL: https://rafaelpfister.ch/blog/smime-organisation-uid
+Datum: 2026-12-15
+
+# S/MIME mit Organisationseintrag: organizationIdentifier und UID im Zertifikat
+
+Zertifizierungsstellen (CA) unterscheiden S/MIME-Zertifikate mit und ohne Organisationseintrag. Ein Zertifikat mit Organisationseintrag weist neben der Mailadresse auch die Firma aus, zu der das Postfach gehört: mit ihrem geprüften Namen und mit einer Registernummer. Für Schweizer Unternehmen ist diese Registernummer die UID, also die CHE-Nummer aus dem Handelsregister.
+
+Kurzfazit: Einen Organisationseintrag gibt es nur bei den Zertifikatstypen `Organization-validated` und `Sponsor-validated` der S/MIME Baseline Requirements. Er besteht aus dem Firmennamen im Feld `O` und dem Feld `organizationIdentifier` (OID 2.5.4.97), bei einer Schweizer Firma zum Beispiel `NTRCH-CHE-123.456.789`. Die CA prüft die Firma in einem amtlichen Register, bevor sie diese Angaben ins Zertifikat schreibt. Ein mailbox-validiertes Zertifikat belegt dagegen nur den Zugriff auf ein Postfach. Bei SwissSign entspricht das der Wahl zwischen Silver und Gold, bei DigiCert der Wahl zwischen «Secure Email for Individual Mailbox» und den Produkten «for Employee» und «for Organization». Eine qualifizierte Signatur nach ZertES entsteht durch den Organisationseintrag nicht.
+
+**Schweiz-Fokus:** Die rechtliche Einordnung folgt dem Schweizer Recht (ZertES, OR). Wo die EU-Regeln abweichen, steht ein gekennzeichneter Hinweis.
+
+## Die vier Zertifikatstypen
+
+Seit dem 1. September 2023 gelten für öffentlich vertrauenswürdige S/MIME-Zertifikate die `S/MIME Baseline Requirements` (BR) des CA/Browser Forum. Sie unterscheiden vier Zertifikatstypen danach, wer als Inhaber (`Subject`) im Zertifikat steht:
+
+| Typ | Inhaber im Zertifikat | Organisationseintrag | Was die CA prüft |
+|---|---|---|---|
+| `Mailbox-validated` (MV) | nur die Mailadresse | nicht zulässig | Kontrolle über das Postfach oder die Maildomain |
+| `Organization-validated` (OV) | eine Organisation, keine Person | Pflicht | Organisation sowie Postfach oder Maildomain |
+| `Sponsor-validated` (SV) | eine Person als Angehörige einer Organisation | Pflicht | wie OV, dazu die Person; diese prüft die CA oder die Organisation selbst |
+| `Individual-validated` (IV) | eine Person ohne Organisation | nicht zulässig | Identität der Person und Postfach |
+
+Mit «S/MIME mit Organisationseintrag» sind die Typen OV und SV gemeint. Für beide schreiben die BR die Felder `organizationName` und `organizationIdentifier` zwingend vor, und zwar in allen drei Generationen `Legacy`, `Multipurpose` und `Strict`. Die Generationen unterscheiden sich bei den zulässigen Subject-Feldern, Erweiterungen und Verwendungszwecken. Die Generation `Legacy` haben die BR per 15. Juli 2025 abgekündigt; SwissSign und DigiCert stellen sie seither nicht mehr aus.
+
+OV-Zertifikate eignen sich für Funktionspostfächer wie `info@` oder `buchhaltung@`, die keiner Person zugeordnet sind. SV-Zertifikate sind für persönliche Postfächer von Mitarbeitenden gedacht und enthalten zusätzlich den Namen der Person oder ein Pseudonym.
+
+## Aufbau des organizationIdentifier
+
+Das Feld `organizationIdentifier` (OID 2.5.4.97) enthält eine Registernummer der Organisation. Dasselbe Feld verwenden auch Zertifikate nach eIDAS und ZertES. Für S/MIME-Zertifikate schreiben die BR folgenden Aufbau vor:
+
+| Teil | Beispiel | Bedeutung |
+|---|---|---|
+| Registrierungsschema, 3 Zeichen | `NTR` | `National Trade Register`, das Handelsregister |
+| Ländercode nach ISO 3166-1 | `CH` | Land, in dem das Register geführt wird |
+| Bindestrich | `-` | Trennzeichen |
+| Registernummer | `CHE-123.456.789` | Nummer der Organisation im Register |
+
+Zusammengesetzt ergibt das `NTRCH-CHE-123.456.789`. Weil die UID selbst einen Bindestrich enthält, legen die BR fest, dass Schema und Ländercode nie einen Bindestrich enthalten. Der erste Bindestrich von links trennt also das Schema von der Registernummer, alle weiteren gehören zur Nummer. Vergibt ein Register Nummern nur auf der Ebene eines Bundesstaats oder einer Provinz, folgt auf den Ländercode ein `+` mit dem Code der Region, etwa `NTRUS+CA-12345678` für Kalifornien.
+
+Die BR kennen diese Registrierungsschemata:
+
+| Schema | Herkunft der Nummer | Beispiel aus den BR |
+|---|---|---|
+| `NTR` | Handels- oder Unternehmensregister | `NTRGB-12345678` |
+| `VAT` | Steuerbehörde (Mehrwertsteuernummer) | `VATEL-123456789` |
+| `PSD` | Zulassungsnummer eines Zahlungsdienstleisters nach der EU-Richtlinie 2015/2366 | `PSDBE-NBB-1234.567.890` |
+| `LEI` | `Legal Entity Identifier` nach ISO 17442, Ländercode immer `XG` | `LEIXG-` gefolgt vom LEI |
+| `GOV` | Behörden ohne Nummer aus einem der übrigen Schemata | `GOVUS` |
+| `INT` | internationale Organisationen | `INTXG` |
+
+Für Schweizer Unternehmen ist `NTR` mit der UID der Regelfall. Die UID vergibt das Bundesamt für Statistik. Die Handelsregister verwenden sie als Firmennummer, sie dient auch als Mehrwertsteuernummer, und sie bleibt gleich, wenn eine Firma ihren Sitz in einen anderen Kanton verlegt. Eine Mehrwertsteuernummer kann dagegen entfallen, wenn die Steuerpflicht endet, und nicht jede Organisation hat eine. SwissSign übernimmt die UID mit den Punkten, so wie sie im UID-Register steht, und nennt als Beispiel `NTRCH-CHE-109.357.012` für die SwissSign AG.
+
+**EU-Hinweis:** In Deutschland vergeben die Amtsgerichte die Handelsregisternummern, und dieselbe Nummer kommt bei mehreren Gerichten vor. Seit Version 1.0.9 vom Mai 2025 erlauben die BR deshalb im Schema `NTR` die `European Unique Identifier` (EUID) und empfehlen sie für deutsche Firmen, etwa `NTRDE-DER3306.HRB12345` für eine Firma im Handelsregister des Amtsgerichts Köln. Eindeutig muss die Registernummer nach den BR nur dort sein, wo Register und Rechtsordnung eindeutige Nummern vergeben.
+
+## Was die CA prüft
+
+Bevor eine CA ein OV- oder SV-Zertifikat ausstellt, muss sie nach den BR folgende Angaben prüfen:
+
+- **Name und Existenz der Organisation:** über eine Behörde im Land der Organisation, über LEI-Daten, einen Besuch vor Ort oder eine Bestätigung mit Registerauszug. Für eine Schweizer Firma sind das das Handelsregister und das UID-Register. Ist die Firma dort als gelöscht oder inaktiv geführt, darf die CA das Zertifikat nicht ausstellen.
+- **Registernummer:** Die CA bestätigt, dass die Nummer im `organizationIdentifier` zur Organisation im Feld `O` gehört.
+- **Vollmacht:** Über einen zuverlässigen Kommunikationsweg prüft die CA, dass die antragstellende Person für die Organisation Zertifikate beantragen oder als `Enterprise RA` handeln darf.
+- **Postfach oder Maildomain:** Die CA prüft die Kontrolle über die Mailadressen im Zertifikat. Handelt die Organisation als `Enterprise RA`, muss sie die Kontrolle über die ganze Maildomain nachweisen.
+- **Person (nur SV):** Die BR erlauben, dass die Organisation als `Enterprise RA` ihre Mitarbeitenden selbst bestätigt. Die CA prüft dann die Organisation und nicht jede einzelne Person.
+
+Die Ergebnisse dieser Prüfungen darf eine CA wiederverwenden: die Prüfung der Organisation und der Vollmacht während 825 Tagen, die Prüfung der Domainkontrolle während 398 Tagen. Ein Zertifikat der Generationen `Multipurpose` und `Strict` ist höchstens 825 Tage gültig.
+
+## SwissSign und DigiCert im Vergleich
+
+Beide CAs bieten die Typen MV, SV und OV unter eigenen Produktnamen an. Ein IV-Zertifikat führt keine der beiden. Den Aufbau des `organizationIdentifier` legen die BR fest, er gilt für beide Anbieter gleich.
+
+| | SwissSign | DigiCert |
+|---|---|---|
+| MV | Personal S/MIME E-Mail ID Silver | Secure Email for Individual Mailbox |
+| SV | Pro S/MIME E-Mail ID Gold | Secure Email for Employee (früher Secure Email for Business) |
+| OV | Organization Validated E-Mail Certificate | Secure Email for Organization |
+| IV | nicht im Angebot | nicht im Angebot |
+| Generation bei SV und OV | `Multipurpose` laut Zertifikatsprofilen | `Strict` als Standard, `Multipurpose` wählbar |
+| Person bei SV | Vor- und Nachname oder Pseudonym mit Präfix `pseudo:` im `CN` | Vor- und Nachname oder Pseudonym; im `CN` wahlweise der Name oder die Mailadresse |
+| Zusätzliche Verwendungen bei SV | im Profil mit Authentifizierung: Client-Authentifizierung, Smartcard-Anmeldung, EFS | bei `Strict` Nichtabstreitbarkeit, bei `Multipurpose` zusätzlich Datenverschlüsselung und Client-Authentifizierung |
+
+DigiCert beschreibt das SV-Produkt ausdrücklich nach dem Modell der `Enterprise RA`: Die Organisation bestätigt, dass die Person im Zertifikat zu ihren Mitarbeitenden oder Vertretern gehört, und bewahrt die Belege dafür auf. DigiCert selbst prüft nur die Organisation. Bei OV und SV verlangt DigiCert immer den Nachweis der Domainkontrolle. Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Als Laufzeit stehen ein oder zwei Jahre oder ein eigenes Ablaufdatum bis höchstens 824 Tage zur Wahl. Die früheren Produkte Premium, Email Security Plus, Digital Signature Plus und Class 1 S/MIME hat DigiCert am 10. Juli 2025 eingestellt und durch diese Produkte ersetzt.
+
+Bei SwissSign enthält das OV-Zertifikat im `CN` den Namen der Organisation wie im Feld `O`. Welche Stufe eine Bank für welches Postfach wählen sollte und was das rechtlich bedeutet, beschreibt der Artikel [S/MIME bei Banken: Rechtslage in der Schweiz und die Wahl zwischen Silver und Gold](/blog/smime-silver-gold-schweiz).
+
+## Den Zertifikatstyp prüfen
+
+In Outlook und anderen Mailprogrammen lassen sich die Zertifikatsdetails einer signierten Mail über das Signatursymbol öffnen. Unter Windows stehen die Felder im Register «Details» beim Eintrag «Antragsteller». Für die OID 2.5.4.97 kennt Windows keinen Anzeigenamen und zeigt sie als `OID.2.5.4.97` an.
+
+### Inhaber mit PowerShell anzeigen
+
+Für ein exportiertes Zertifikat (zum Beispiel aus den Zertifikatsdetails einer signierten Mail):
+
+```powershell
+$zert = Get-PfxCertificate -FilePath .\zertifikat.cer
+$zert.SubjectName.Format($true)
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Get-PfxCertificate` | liest ein Zertifikat aus einer Datei, auch aus einer `.cer`-Datei ohne privaten Schlüssel |
+| `-FilePath .\zertifikat.cer` | Pfad zur Zertifikatsdatei |
+| `SubjectName.Format($true)` | gibt die Felder des Inhabers zeilenweise aus |
+
+</details>
+
+Ausgabe für ein SV-Zertifikat (Beispiel):
+
+```text
+CN=Max Muster
+G=Max
+SN=Muster
+O=Muster AG
+OID.2.5.4.97=NTRCH-CHE-123.456.789
+S=ZH
+C=CH
+```
+
+Bei einem MV-Zertifikat enthält die Ausgabe nur `CN=` mit der Mailadresse.
+
+### Typ und Generation über die Policy-OID bestimmen
+
+Jedes Zertifikat nach den BR enthält in der Erweiterung `Certificate Policies` eine OID nach dem Muster `2.23.140.1.5.<Typ>.<Generation>`:
+
+| Stelle | Wert | Bedeutung |
+|---|---|---|
+| Typ | `1` | `Mailbox-validated` |
+| Typ | `2` | `Organization-validated` |
+| Typ | `3` | `Sponsor-validated` |
+| Typ | `4` | `Individual-validated` |
+| Generation | `1` | `Legacy` |
+| Generation | `2` | `Multipurpose` |
+| Generation | `3` | `Strict` |
+
+```powershell
+$zert.Extensions |
+  Where-Object { $_.Oid.Value -eq '2.5.29.32' } |
+  ForEach-Object { $_.Format($true) }
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `$zert.Extensions` | Erweiterungen des zuvor eingelesenen Zertifikats |
+| `'2.5.29.32'` | OID der Erweiterung `Certificate Policies` |
+| `Format($true)` | gibt den Inhalt der Erweiterung mehrzeilig aus |
+
+</details>
+
+Ausgabe (gekürzt):
+
+```text
+[1]Certificate Policy:
+     Policy Identifier=2.23.140.1.5.3.2
+```
+
+`2.23.140.1.5.3.2` steht für ein SV-Zertifikat der Generation `Multipurpose`. Weitere Einträge mit OIDs der CA selbst sind normal.
+
+### S/MIME-Zertifikate im eigenen Zertifikatsspeicher auflisten
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My |
+  Where-Object { $_.EnhancedKeyUsageList.ObjectId -contains '1.3.6.1.5.5.7.3.4' } |
+  Select-Object Subject, NotAfter
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `Cert:\CurrentUser\My` | persönlicher Zertifikatsspeicher des angemeldeten Benutzers |
+| `EnhancedKeyUsageList.ObjectId` | erweiterte Schlüsselverwendungen des Zertifikats |
+| `'1.3.6.1.5.5.7.3.4'` | OID für E-Mail-Schutz (`id-kp-emailProtection`) |
+| `Select-Object Subject, NotAfter` | zeigt Inhaber und Ablaufdatum |
+
+</details>
+
+### Mit OpenSSL
+
+```bash
+openssl x509 -in zertifikat.pem -noout -subject -nameopt multiline
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `x509` | Unterbefehl für Zertifikate |
+| `-in zertifikat.pem` | Eingabedatei im PEM-Format; für eine DER-Datei zusätzlich `-inform der` |
+| `-noout` | unterdrückt die Ausgabe des kodierten Zertifikats |
+| `-subject` | gibt den Inhaber aus |
+| `-nameopt multiline` | ein Feld pro Zeile mit ausgeschriebenen Feldnamen |
+
+</details>
+
+OpenSSL 3 kennt den Feldnamen und zeigt ihn ausgeschrieben an:
+
+```text
+subject=
+    commonName                = Max Muster
+    givenName                 = Max
+    surname                   = Muster
+    organizationName          = Muster AG
+    organizationIdentifier    = NTRCH-CHE-123.456.789
+    stateOrProvinceName       = ZH
+    countryName               = CH
+```
+
+### Registernummer gegenprüfen
+
+Als Empfänger einer signierten Mail können Sie den Organisationseintrag in vier Schritten prüfen:
+
+1. Das Mailprogramm meldet die Signatur als gültig, und das Zertifikat stammt von einer CA, der das Mailprogramm vertraut.
+2. Die Policy-OID beginnt mit `2.23.140.1.5.2` oder `2.23.140.1.5.3`, und das Zertifikat enthält die Felder `O` und `organizationIdentifier`.
+3. Die UID aus dem `organizationIdentifier` gehört im UID-Register zur erwarteten Firma, und die Firma ist dort aktiv.
+4. Die Domain der Absenderadresse gehört zu dieser Firma.
+
+## Abgrenzung zum ZertES
+
+Der Organisationseintrag macht ein S/MIME-Zertifikat nicht zu einem geregelten Zertifikat nach ZertES. Geregelte Zertifikate stellen nur nach ZertES anerkannte Anbieterinnen aus, und das Zertifikat muss den Hinweis enthalten, dass es sich um ein geregeltes Zertifikat handelt (Art. 2 Bst. g und Art. 7 Abs. 2 Bst. b ZertES).
+
+Inhaltlich gibt es Parallelen. Ein geregeltes Zertifikat für eine UID-Einheit muss deren UID enthalten (Art. 7 Abs. 2 Bst. e ZertES), so wie der `organizationIdentifier` sie bei OV und SV enthält. Ein Zertifikat für eine natürliche Person kann zudem den Hinweis enthalten, dass sie zur Vertretung einer bestimmten UID-Einheit berechtigt ist (Art. 7 Abs. 3 Bst. b ZertES); das entspricht im Aufbau einem SV-Zertifikat.
+
+| | S/MIME mit Organisationseintrag | geregeltes Zertifikat nach ZertES |
+|---|---|---|
+| Grundlage | S/MIME Baseline Requirements des CA/Browser Forum | ZertES und Ausführungsbestimmungen |
+| Ausstellerin | öffentlich vertrauenswürdige CA | nach ZertES anerkannte Anbieterin |
+| Organisationskennung | `organizationIdentifier`, bei Schweizer Firmen mit der UID | UID, Pflicht bei UID-Einheiten |
+| Prüfung der Person | bei SV durch die CA oder durch die Organisation als `Enterprise RA` | grundsätzlich persönliches Erscheinen mit Identitätsnachweis; bei UID-Einheiten eine Vertretung mit Nachweis der Vertretungsmacht (Art. 9 ZertES) |
+| Schlüssel | nach den Vorgaben der CA, auch auf einem Gateway | Anforderungen nach Art. 6 ZertES |
+
+Der eigenhändigen Unterschrift gleichgestellt ist nach Art. 14 Abs. 2bis OR nur die qualifizierte elektronische Signatur mit qualifiziertem Zeitstempel, und ein qualifiziertes Zertifikat darf nur auf eine natürliche Person ausgestellt werden (Art. 8 Abs. 1 ZertES). Für die Signatur einer Organisation sieht das ZertES das geregelte elektronische Siegel vor: eine fortgeschrittene elektronische Signatur, die mit einer sicheren Siegelerstellungseinheit erstellt wird und auf einem geregelten Zertifikat einer UID-Einheit beruht (Art. 2 Bst. d ZertES). Eine S/MIME-signierte Mail ist ein Beweismittel, dessen Wert das Gericht frei würdigt (Art. 157 ZPO); ein geprüfter Organisationseintrag stützt dabei die Zuordnung zur absendenden Firma.
+
+**EU-Hinweis:** In der EU regelt die eIDAS-Verordnung elektronische Signaturen und Siegel. Nach Art. 25 Abs. 2 eIDAS ist ebenfalls nur die qualifizierte elektronische Signatur der handschriftlichen Unterschrift gleichgestellt.
+
+## Empfehlung
+
+- **Funktionspostfächer:** OV-Zertifikat (SwissSign Organization Validated, DigiCert Secure Email for Organization). Es weist die Firma aus, ohne eine Person zu nennen.
+- **Persönliche Postfächer mit Signatur gegenüber Kunden und Partnern:** SV-Zertifikat (SwissSign Gold, DigiCert Secure Email for Employee). Es weist Person und Firma aus.
+- **Nur Verschlüsselung:** Kryptografisch sind alle Typen gleichwertig. Für die Verschlüsselung allein genügt ein MV-Zertifikat.
+- **Prüfungen einplanen:** Die Organisationsprüfung gilt 825 Tage, die Domainprüfung 398 Tage. Nach einer Änderung von Firmenname oder Sitz stimmen die Angaben im Zertifikat nicht mehr mit dem Register überein; planen Sie dann neue Zertifikate ein.
+- **Beim Empfang prüfen:** Policy-OID und UID zeigen, ob eine Signatur tatsächlich einer geprüften Firma zugeordnet ist.
+
+## Quellen
+
+1.  [CA/Browser Forum: S/MIME Baseline Requirements](https://cabforum.org/working-groups/smime/requirements/): Version 1.0.17 vom 20. November 2026; Zertifikatstypen und Policy-OIDs (Abschnitt 1.1), Prüfung der Organisation (3.2.3), Prüfung der Vollmacht (3.2.6), Wiederverwendung von Prüfergebnissen (4.2.1), Laufzeiten (6.3.2), Subject-Felder (7.1.4.2) und Registrierungsschemata (Anhang A).
+
+2.  [cabforum/smime auf GitHub: SBR.md](https://github.com/cabforum/smime/blob/main/SBR.md): Markdown-Fassung der S/MIME Baseline Requirements mit Versionsverlauf, unter anderem EUID ab Version 1.0.9.
+
+3.  [SwissSign: EUID, How Your Digital Certificates Become Even More Trustworthy](https://www.swisssign.com/en/blog/european-unique-identifier-euid): Produktbezeichnungen Silver und Gold, Beispiel `NTRCH-CHE-109.357.012`, UID als Registernummer und EUID für deutsche Firmen (28.04.2025).
+
+4.  [SwissSign CPR S/MIME](https://repository.swisssign.com/SwissSign_CPR_SMIME_R14.pdf): Zertifikatsprofile von SwissSign für MV, SV und OV mit Subject-Feldern, Verwendungszwecken und Policy-OIDs, Version 14 vom 18.09.2025.
+
+5.  [DigiCert: Secure Email products](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates.html): Produktübersicht mit Zuordnung zu MV, OV und SV, Ende der Generation `Legacy` und der früheren S/MIME-Produkte am 10. Juli 2025.
+
+6.  [DigiCert: Order your Secure Email for Employee certificate](https://docs.digicert.com/en/certcentral/order-and-manage-certificates/secure-email-certificates/order-your-secure-email-for-employee-certificate.html): Organisations- und Domainprüfung, Bestätigung der Mitarbeitenden durch die Organisation, Profile `Strict` und `Multipurpose`, Laufzeiten.
+
+7.  [Bundesgesetz über die elektronische Signatur (ZertES)](https://www.fedlex.admin.ch/eli/cc/2016/752/de): Art. 2 (Begriffe, geregeltes Siegel), Art. 6 (Schlüssel), Art. 7 (Inhalt geregelter Zertifikate, UID), Art. 8 (qualifizierte Zertifikate) und Art. 9 (Identitätsprüfung).
+
+8.  [Obligationenrecht (OR)](https://www.fedlex.admin.ch/eli/cc/27/317_321_377/de): Art. 14 Abs. 2bis zur Gleichstellung der qualifizierten elektronischen Signatur mit der eigenhändigen Unterschrift.
+
+9.  [UID-Register](https://www.uid.admin.ch): Abfrage einer UID mit Name, Sitz und Status, geführt vom Bundesamt für Statistik.
+
+10.  [Zefix](https://www.zefix.ch): zentraler Firmenindex der kantonalen Handelsregister.
+
+11.  [Zivilprozessordnung (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 zur freien Beweiswürdigung.
+
+12.  [Verordnung (EU) Nr. 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): Art. 25 Abs. 2 zur Gleichstellung der qualifizierten elektronischen Signatur mit der handschriftlichen Unterschrift.
+
+----
+
 # Microsoft To Do wird eingestellt: Umstieg auf Planner aus Admin-Sicht
 
 URL: https://rafaelpfister.ch/blog/microsoft-to-do-planner-umstieg
@@ -23294,6 +23573,194 @@ So lässt sich ein Mailflow schrittweise verfolgen, ohne die XML-Datei fälschli
 
 ----
 
+# Microsoft To Do Is Being Retired: Moving to Planner from an Admin Perspective
+
+URL: https://rafaelpfister.ch/en/blog/microsoft-to-do-is-being-retired-moving-to-planner-from-an-admin-perspective
+Datum: 2026-11-24
+
+# Microsoft To Do Is Being Retired: Moving to Planner from an Admin Perspective
+
+Microsoft is retiring Microsoft To Do. The apps for web, Windows, Mac, iOS, and Android will be discontinued on June 30, 2027, for business and school accounts as well as personal Microsoft accounts. For business and school accounts, Microsoft Planner will take over personal tasks; the redesigned “My tasks” view will roll out starting in December 2026. Microsoft published the change in a support article in November 2026, including a timeline, differences, and guidance for administrators.
+
+In brief: There will be no automatic migration. Existing To Do tasks will remain visible in Planner until June 30, 2027, and will continue to reside in the Exchange Online mailbox. Starting with the rollout, Planner will store new personal tasks in a private Planner plan, no longer in Exchange. This changes data location and Purview coverage for Swiss tenants. Review licenses, shared lists, integrations, and retention requirements by mid-2027. Personal Microsoft accounts will not receive a replacement.
+
+## Timeline
+
+| Date | Change |
+|---|---|
+| December 2026 | Rollout of the redesigned “My tasks” view in Planner for business and school accounts begins. From then on, Planner will store newly created personal tasks in a private Planner plan. |
+| before June 30, 2027 | Microsoft will provide an export feature for To Do data. The format, scope, and prerequisites have not yet been published. |
+| June 30, 2027 | The To Do apps for web, Windows, Mac, iOS, and Android will be retired. Existing To Do tasks will no longer be visible in Planner afterward. |
+| later, date not yet announced | The To Do service, APIs, and synchronization will be retired separately. Microsoft will announce the dates separately. |
+
+Planner is already available to business accounts on the web at `planner.cloud.microsoft` and as an app in Teams. Microsoft has announced that it will update the existing To Do entry points in Microsoft 365. Microsoft clarified to Thurrott that existing integrations, including Outlook and Teams, will be switched to Planner.
+
+## Existing Tasks Will Not Be Migrated
+
+Microsoft will not transfer existing To Do tasks and lists to Planner. They can still be viewed and edited in Planner until June 30, 2027, but not afterward. They will not be transferred to the new private plan.
+
+The data will not be deleted when the apps are retired. According to Microsoft, retiring the apps does not include data deletion; Microsoft addresses retention and access separately. To Do stores tasks as Exchange tasks in the user’s Exchange Online mailbox, the same mailbox that contains mail, appointments, contacts, and notes. The data will therefore remain in the mailbox for the time being after June 30, 2027.
+
+Classic Outlook is not affected by the retirement. Microsoft states that its task feature is separate from To Do, will continue to work, and syncs with Exchange. To Do lists appear in classic Outlook as task folders under “My Tasks”; users with classic Outlook can therefore continue to read the existing data there. Microsoft has not yet described what will happen to the data when it later shuts down the To Do service itself.
+
+## New Tasks Are Stored Outside Exchange
+
+The new view changes the storage location. According to the FAQ for Planner administrators, tasks from To Do and Outlook are stored in Exchange, whereas plans and their tasks are stored in Azure. Planner stores attachments to plan tasks in the group’s SharePoint site, and Premium plans in Dataverse. New personal tasks from “My tasks” will therefore no longer reside in the user’s mailbox. This has two implications for administrators.
+
+### Data Location
+
+Exchange Online is one of the services with a long-term data location commitment. If a tenant is provisioned in Switzerland, Microsoft states in the Product Terms that it stores mailbox content (email body text, calendar entries, and attachments) at rest only in Switzerland. The commitment does not explicitly mention tasks, but they reside in the same mailbox.
+
+Microsoft lists Planner among the other Microsoft 365 services without a long-term commitment. For tenants with Switzerland as their country, the table lists “EUR1,” the Europe macro-region, as the storage location. Planner also does not participate in Advanced Data Residency. Personal tasks that To Do previously stored in the mailbox in Switzerland will be stored by Planner in the Europe macro-region after the transition. The storage locations for each service in your tenant are listed on the Data Location Card in the Microsoft 365 admin center. Organizations that have contractually committed to a Switzerland data location or specified it in internal policies must assess this change.
+
+### Retention and eDiscovery
+
+Exchange retention policies in Microsoft Purview cover tasks in the mailbox only if they have an end date; tasks without an end date are not covered. This limitation already applies to To Do tasks today.
+
+For Planner, Microsoft states that Purview eDiscovery search and Legal Hold support only tasks in plans shared with a group. Personal plans (roster plans), plans in Loop components, Premium plans, and plans in shared and private Teams channels are explicitly not supported. Microsoft has been rolling out retention and deletion policies for Planner content since mid-July 2026, with completion announced for early August (MC1384412); according to the announcement, they can be applied to user- and group-based plans. The announcement does not specify which plan type the new private plan technically corresponds to. After the rollout, verify whether your retention policies and holds cover the new personal tasks.
+
+## Differences Between To Do and Planner
+
+Microsoft lists the following differences:
+
+| Area | Difference according to Microsoft |
+|---|---|
+| Organization | Planner combines personal tasks and assigned work under “My tasks,” currently with grid and board views. A list view will follow with the redesign. |
+| Reminders | Due-date notifications in Planner differ from the reminders scheduled per task in To Do. |
+| Sharing | Planner works with plans and assignments. Memberships, assignments, and permissions of shared To Do lists will not be transferred. |
+| Desktop and offline | Planner is available on the web and in Teams. Native apps for Windows and Mac are not planned; web and Teams do not offer comparable offline functionality. |
+| Categories | Planner labels work differently from Outlook categories and do not synchronize with them. |
+| Attachments | File attachments to tasks are not currently supported in the new private Planner plan. |
+| Star and priority | The personal star is used for individual planning and arrives with the new view. A task’s priority applies to everyone involved in a shared plan. |
+| List groups | No direct equivalent in Planner. |
+| Printing, emailing a list | Not currently planned for the replacement solution. |
+
+Users who work offline with the To Do app on Windows or Mac have no equivalent replacement in Planner.
+
+## Licenses and Access to Planner
+
+Planner is included in Microsoft 365 Business Basic, Business Standard, and Business Premium, as well as Office 365 E1, E3, and E5, among others. If Planner is not included in a license, Microsoft offers Planner Plan 1 or Planner and Project Plan 3 as separate subscriptions; these are also required for Premium features. According to Microsoft, no new configuration is required, and there is no separate switch administrators can use to control or postpone the transition.
+
+If Planner is disabled in the license assignment (service plan `PROJECTWORKMANAGEMENT`), affected users need access again if Planner is to replace To Do. According to the Planner FAQ, removing the Planner license only hides the tile anyway: users without a license can still create and edit plans through `planner.cloud.microsoft`. If you have previously blocked Planner through licensing, review that decision in light of the transition.
+
+## Assessing the Environment with Microsoft Graph
+
+You can use the Microsoft Graph To Do API to identify which users use To Do and which lists are shared. The following script writes all lists per user, including sharing status and the number of open tasks, to a CSV file. It requires the modules `Microsoft.Graph.Authentication` and `Microsoft.Graph.Users`, as well as an app registration with the application permissions `Tasks.Read.All` and `User.Read.All` (with admin consent) and a certificate for sign-in. `Tasks.Read.All` grants read access to the tasks of all users; remove the permission or the app registration again after the assessment.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # No Exchange Online mailbox or no access: skip user
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Options explained</summary>
+
+| Option | Effect |
+|---|---|
+| `ClientId`, `TenantId` | App registration and tenant that the script signs in to |
+| `CertificateThumbprint` | Thumbprint of the certificate in the current user’s certificate store; app-only sign-in without a user account |
+| `-NoWelcome` | Suppresses the welcome message from `Connect-MgGraph` |
+| `-All` | Reads all pages of a result instead of only the first |
+| `-Filter "accountEnabled eq true"` | Only enabled accounts; disabled accounts such as shared mailboxes are excluded |
+| `-Property Id, UserPrincipalName` | Loads only the two required properties |
+| `-UserId` | User whose lists or tasks are queried |
+| `-ErrorAction Stop` | Makes an error catchable so that `catch` can skip the user |
+| `-TodoTaskListId` | List whose tasks are queried |
+| `WellknownListName` | `defaultList` for the default “Tasks” list, `flaggedEmails` for flagged messages, `none` for custom lists |
+| `IsShared` | `True` if the list is shared with other users |
+| `IsOwner` | `False` if the list belongs to another user and was only shared |
+| `Status -ne 'completed'` | Counts all incomplete tasks |
+| `-NoTypeInformation` | No type line at the beginning of the CSV file |
+| `-Encoding UTF8` | Preserves umlauts in list names |
+
+</details>
+
+Accounts without an Exchange Online mailbox return an error and are skipped. In large tenants, a test run with a subset is advisable, for example using `-Top 20` instead of `-All` with `Get-MgUser`.
+
+Reviewing the CSV file:
+
+- **Shared lists** (`Geteilt` = `True`) show where collaboration takes place through To Do. Microsoft will not transfer these memberships; the lists must be rebuilt as a Planner plan with the relevant people.
+- **Open tasks** in custom lists (`Typ` = `none` or `defaultList`) must be manually transferred to Planner by users by June 30, 2027, or secured using the announced export feature.
+- **Flagged messages** (`Typ` = `flaggedEmails`) remain flagged on the email in the mailbox.
+
+## Personal Microsoft Accounts
+
+The To Do apps will also be retired on June 30, 2027, for personal Microsoft accounts, including Microsoft 365 Personal and Family. Planner is not available for these accounts. Microsoft recommends choosing another task management solution and securing the data with the announced export feature. According to Microsoft, an export does not mean that the data can be imported into Planner or another application. Users with both business and personal accounts must review both accounts separately.
+
+## Preparation for Administrators
+
+1. **Access and licenses:** Ensure that all To Do users have a license that includes Planner and that service plan `PROJECTWORKMANAGEMENT` is enabled.
+
+2. **Shared lists and integrations:** Assess the environment using the script above. Identify Power Automate flows and third-party applications that use the Microsoft Graph To Do API. Microsoft will retire the API separately and later; according to Microsoft, integrations may nevertheless require adjustments.
+
+3. **Retention and data location:** Review whether existing retention requirements apply to To Do tasks and whether Purview policies and holds cover the new private plan. Assess whether storage in the Europe macro-region is compatible with your requirements. Involve compliance stakeholders before deleting or reorganizing task data.
+
+4. **Inform users:** Tell users that no migration will take place, how long existing data will remain visible in Planner, and which features will change (offline use, reminders, attachments, list groups).
+
+5. **Monitor the Message Center:** Microsoft will announce rollout details, the export feature, and the dates for the service and APIs there.
+
+## Sources
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): Announcement with timeline, differences between To Do and Planner, preparation steps, and FAQ.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): Storage of To Do tasks as tasks in the Exchange Online mailbox.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): Storage locations of tasks (Exchange, Azure, SharePoint, Dataverse), service plan `PROJECTWORKMANAGEMENT`, and access through `planner.cloud.microsoft` without a license.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): Subscriptions that include Planner, as well as Planner Plan 1 and Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner without a long-term data location commitment, storage location “EUR1” for tenants with Switzerland as their country.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): Product Terms commitment for mailbox content at rest in Switzerland.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): Storage of plan data in Azure; Planner does not participate in Advanced Data Residency. Current as of August 2025, before the introduction of retention policies for Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery and Legal Hold only for tasks in group-based plans, with a list of unsupported plan types.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): Mirror of the Message Center announcement on retention and deletion policies for Planner, rollout from July to August 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): Supported mailbox items; tasks only with an end date.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): Microsoft Graph To Do API resources (lists, tasks, checklists, linked resources).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): Endpoint, permissions, and properties `isShared`, `isOwner`, and `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): Endpoint for a list’s tasks and application permission `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): Report including a subsequent statement from Microsoft on integrations in Outlook and Teams.
+
+----
+
 # Java4Shell (CVE-2026-114938): Memory Error in OpenJDK's Base64 Decoder - Find, Secure, and Patch Affected Systems
 
 URL: https://rafaelpfister.ch/en/blog/java4shell-cve-2026-114938-memory-error-in-openjdk-s-base64-decoder-find-secure-and-patch
@@ -46330,6 +46797,194 @@ This makes it possible to trace mail flow step by step without mistakenly readin
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format of Internet text messages (headers and body).
     
 7.  [Microsoft Learn – “Connectors for secure mail flow with a partner”](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector configuration for secure mail flow between Exchange Online and the gateway.
+
+----
+
+# Microsoft To Do est abandonné : passage à Planner du point de vue de l’administrateur
+
+URL: https://rafaelpfister.ch/fr/blog/microsoft-to-do-est-abandonne-passage-a-planner-du-point-de-vue-de-l-administrateur
+Datum: 2026-11-24
+
+# Microsoft To Do est abandonné : passage à Planner du point de vue de l’administrateur
+
+Microsoft abandonne Microsoft To Do. Les applications Web, Windows, Mac, iOS et Android seront arrêtées le 30 juin 2027, aussi bien pour les comptes professionnels et scolaires que pour les comptes Microsoft personnels. Pour les comptes professionnels et scolaires, Microsoft Planner prend en charge les tâches personnelles ; la vue remaniée « Mes tâches » (My tasks) sera déployée à partir de décembre 2026. Microsoft a publié ce changement en novembre 2026 dans un article de support comprenant le calendrier, les différences et des indications destinées aux administrateurs.
+
+En bref : il n’existe aucune migration automatique. Les tâches To Do existantes resteront visibles dans Planner jusqu’au 30 juin 2027 et continueront d’être stockées dans la boîte aux lettres Exchange Online. À partir du déploiement, Planner enregistre les nouvelles tâches privées dans un plan Planner privé, donc plus dans Exchange. Cela modifie le lieu de stockage des données et la couverture Purview pour les tenants suisses. Vérifiez d’ici mi-2027 les licences, les listes partagées, les intégrations et les obligations de conservation. Les comptes Microsoft personnels ne disposent d’aucune solution de remplacement.
+
+## Calendrier
+
+| Date | Changement |
+|---|---|
+| Décembre 2026 | Début du déploiement de la vue remaniée « Mes tâches » dans Planner pour les comptes professionnels et scolaires. À partir de cette date, Planner enregistre les tâches privées nouvellement créées dans un plan Planner privé. |
+| avant le 30 juin 2027 | Microsoft fournira une fonction d’exportation des données To Do. Le format, l’étendue et les conditions ne sont pas encore publiés. |
+| 30 juin 2027 | Les applications To Do pour le Web, Windows, Mac, iOS et Android sont abandonnées. Les tâches To Do existantes ne seront alors plus visibles non plus dans Planner. |
+| ultérieurement, sans date | Le service To Do, les API et la synchronisation seront retirés séparément. Microsoft annoncera les dates distinctement. |
+
+Planner est déjà disponible aujourd’hui pour les comptes professionnels sur le Web à l’adresse `planner.cloud.microsoft` et comme application dans Teams. Microsoft annonce qu’il adaptera les points d’accès existants de To Do dans Microsoft 365. Microsoft a précisé à Thurrott que les intégrations existantes, notamment Outlook et Teams, seront basculées vers Planner.
+
+## Les tâches existantes ne sont pas migrées
+
+Microsoft ne transfère pas les tâches et listes To Do existantes vers Planner. Elles peuvent encore être affichées et modifiées dans Planner jusqu’au 30 juin 2027, mais plus après. Elles ne sont pas reprises dans le nouveau plan privé.
+
+Les données ne sont pas supprimées à la fin des applications. Selon Microsoft, le retrait des applications ne prévoit aucune suppression ; Microsoft traite séparément la conservation et l’accès. To Do stocke les tâches comme tâches Exchange dans la boîte aux lettres Exchange Online de l’utilisateur, dans la même boîte aux lettres que les e-mails, rendez-vous, contacts et notes. Les données restent donc provisoirement dans la boîte aux lettres après le 30 juin 2027.
+
+Outlook classique n’est pas concerné par le retrait. Microsoft indique que sa fonction de tâches est distincte de To Do, continue de fonctionner et se synchronise avec Exchange. Les listes To Do apparaissent dans Outlook classique comme dossiers de tâches sous « Mes tâches » ; les utilisateurs d’Outlook classique peuvent donc continuer à y consulter les données. Microsoft n’a pas encore décrit ce qu’il adviendra des données lorsqu’il arrêtera ultérieurement le service To Do lui-même.
+
+## Les nouvelles tâches sont stockées en dehors d’Exchange
+
+Avec la nouvelle vue, le lieu de stockage change. Selon la FAQ destinée aux administrateurs Planner, les tâches de To Do et Outlook se trouvent dans Exchange, tandis que les plans et leurs tâches se trouvent dans Azure. Planner stocke les pièces jointes des tâches de plan dans le site SharePoint du groupe, et les plans Premium dans Dataverse. Les nouvelles tâches privées de « Mes tâches » ne se trouvent donc plus dans la boîte aux lettres de l’utilisateur. Cela a deux conséquences pour les administrateurs.
+
+### Lieu de stockage des données
+
+Exchange Online fait partie des services bénéficiant d’un engagement permanent concernant le lieu de stockage des données. Si un tenant est créé en Suisse, Microsoft stocke, selon les Product Terms, le contenu des boîtes aux lettres au repos (texte des e-mails, entrées de calendrier et pièces jointes) uniquement en Suisse. Cet engagement ne mentionne pas explicitement les tâches, mais elles se trouvent dans la même boîte aux lettres.
+
+Microsoft classe Planner parmi les autres services Microsoft 365 sans engagement permanent. Pour les tenants dont le pays est la Suisse, le tableau indique « EUR1 », la macro-région Europe, comme lieu de stockage. Planner ne participe pas non plus à Advanced Data Residency. Les tâches personnelles que To Do stockait jusqu’ici dans la boîte aux lettres en Suisse sont stockées par Planner, après le changement, dans la macro-région Europe. Les lieux de stockage par service pour votre tenant sont indiqués dans le Centre d’administration Microsoft 365 sur la carte de localisation des données (Data Location Card). Les organisations qui ont garanti un lieu de stockage des données en Suisse contractuellement ou dans leurs directives internes doivent évaluer ce changement.
+
+### Conservation et eDiscovery
+
+Les stratégies de rétention Exchange dans Microsoft Purview ne couvrent les tâches de la boîte aux lettres que si elles ont une date de fin ; les tâches sans date de fin ne sont pas couvertes. Cette limitation s’applique déjà aujourd’hui aux tâches To Do.
+
+Pour Planner, Purview prend en charge, selon Microsoft, la recherche eDiscovery et la conservation légale uniquement pour les tâches des plans partagés avec un groupe. Les plans personnels (plans Roster), les plans dans des composants Loop, les plans Premium ainsi que les plans dans les canaux Teams partagés et privés ne sont explicitement pas pris en charge. Microsoft déploie depuis la mi-juillet 2026 les stratégies de rétention et de suppression pour les contenus Planner ; la fin du déploiement était annoncée pour début août (MC1384412). Selon l’annonce, elles peuvent être appliquées aux plans basés sur les utilisateurs et les groupes. L’annonce ne précise pas à quel type de plan correspond techniquement le nouveau plan privé. Après le déploiement, vérifiez si vos stratégies de rétention et vos conservations légales couvrent les nouvelles tâches privées.
+
+## Différences entre To Do et Planner
+
+Microsoft énumère les différences suivantes :
+
+| Domaine | Différence selon Microsoft |
+|---|---|
+| Organisation | Planner regroupe les tâches privées et le travail assigné sous « Mes tâches », aujourd’hui avec les vues Grille et Tableau. Une vue Liste suivra avec la refonte. |
+| Rappels | Les notifications relatives aux dates d’échéance dans Planner diffèrent des rappels planifiés par tâche dans To Do. |
+| Partage | Planner fonctionne avec des plans et des attributions. Les appartenances, attributions et autorisations des listes To Do partagées ne sont pas reprises. |
+| Bureau et hors ligne | Planner est disponible sur le Web et dans Teams. Aucune application native pour Windows et Mac n’est prévue ; le Web et Teams n’offrent pas de fonction hors ligne comparable. |
+| Catégories | Les étiquettes Planner fonctionnent différemment des catégories Outlook et ne sont pas synchronisées avec elles. |
+| Pièces jointes | Les pièces jointes aux tâches ne sont actuellement pas prises en charge dans le nouveau plan Planner privé. |
+| Étoile et priorité | L’étoile personnelle sert à la planification individuelle et arrive avec la nouvelle vue. La priorité d’une tâche s’applique à tous les participants d’un plan partagé. |
+| Groupes de listes | Sans équivalent direct dans Planner. |
+| Imprimer, envoyer une liste par e-mail | Pas actuellement prévu pour la solution de remplacement. |
+
+Les utilisateurs qui travaillent hors ligne avec l’application To Do sous Windows ou Mac n’ont pas d’alternative équivalente dans Planner.
+
+## Licences et accès à Planner
+
+Planner est notamment inclus dans Microsoft 365 Business Basic, Business Standard et Business Premium, ainsi que dans Office 365 E1, E3 et E5. Si Planner manque dans une licence, Microsoft propose Planner Plan 1 ou Planner and Project Plan 3 sous forme d’abonnements distincts ; ils sont également nécessaires pour les fonctions Premium. Selon Microsoft, aucune nouvelle configuration n’est requise et il n’existe pas de commutateur spécifique permettant aux administrateurs de contrôler ou de reporter le changement.
+
+Si Planner est désactivé dans l’attribution de licences (plan de service `PROJECTWORKMANAGEMENT`), les utilisateurs concernés doivent à nouveau y avoir accès si Planner doit remplacer To Do. Selon la FAQ Planner, supprimer la licence Planner ne masque de toute façon que la vignette : via `planner.cloud.microsoft`, les utilisateurs sans licence peuvent toujours créer et modifier des plans. Si vous avez jusqu’ici bloqué Planner via la licence, réévaluez cette décision au regard du changement.
+
+## Inventorier l’existant avec Microsoft Graph
+
+L’API To Do de Microsoft Graph permet de déterminer quels utilisateurs utilisent To Do et quelles listes sont partagées. Le script suivant écrit dans un fichier CSV toutes les listes de chaque utilisateur, avec leur statut de partage et le nombre de tâches ouvertes. Il nécessite les modules `Microsoft.Graph.Authentication` et `Microsoft.Graph.Users`, ainsi qu’une inscription d’application avec les autorisations d’application `Tasks.Read.All` et `User.Read.All` (avec consentement administrateur) et un certificat pour l’authentification. `Tasks.Read.All` accorde un accès en lecture aux tâches de tous les utilisateurs ; supprimez l’autorisation ou l’inscription d’application après l’inventaire.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # Aucune boîte aux lettres Exchange Online ou aucun accès : ignorer l’utilisateur
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `ClientId`, `TenantId` | Inscription d’application et tenant auxquels le script se connecte |
+| `CertificateThumbprint` | Empreinte du certificat dans le magasin de certificats de l’utilisateur actuel ; authentification en tant qu’application sans compte utilisateur |
+| `-NoWelcome` | Supprime le message d’accueil de `Connect-MgGraph` |
+| `-All` | Lit toutes les pages d’un résultat au lieu de la première seulement |
+| `-Filter "accountEnabled eq true"` | Comptes activés uniquement ; les comptes désactivés tels que les boîtes aux lettres partagées sont exclus |
+| `-Property Id, UserPrincipalName` | Charge uniquement les deux propriétés nécessaires |
+| `-UserId` | Utilisateur dont les listes ou tâches sont interrogées |
+| `-ErrorAction Stop` | Rend une erreur interceptable afin que `catch` puisse ignorer l’utilisateur |
+| `-TodoTaskListId` | Liste dont les tâches sont interrogées |
+| `WellknownListName` | `defaultList` pour la liste standard « Tâches », `flaggedEmails` pour les messages marqués et `none` pour les listes personnalisées |
+| `IsShared` | `True` lorsque la liste est partagée avec d’autres utilisateurs |
+| `IsOwner` | `False` lorsque la liste appartient à un autre utilisateur et a seulement été partagée |
+| `Status -ne 'completed'` | Compte toutes les tâches non terminées |
+| `-NoTypeInformation` | Aucune ligne de type au début du fichier CSV |
+| `-Encoding UTF8` | Les accents dans les noms de listes sont conservés |
+
+</details>
+
+Les comptes sans boîte aux lettres Exchange Online renvoient une erreur et sont ignorés. Dans les grands tenants, il est judicieux d’effectuer un test sur un sous-ensemble, par exemple avec `-Top 20` au lieu de `-All` dans `Get-MgUser`.
+
+L’analyse du fichier CSV :
+
+- **Listes partagées** (`Geteilt` = `True`) indique où la collaboration passe par To Do. Microsoft ne transfère pas ces appartenances ; les listes doivent être recréées comme plans Planner avec les personnes concernées.
+- Les **tâches ouvertes** dans des listes personnelles (`Typ` = `none` ou `defaultList`) doivent être transférées manuellement par les utilisateurs vers Planner avant le 30 juin 2027 ou sauvegardées avec la fonction d’exportation annoncée.
+- Les **messages marqués** (`Typ` = `flaggedEmails`) restent marqués dans l’e-mail de la boîte aux lettres.
+
+## Comptes Microsoft personnels
+
+Les applications To Do seront également abandonnées le 30 juin 2027 pour les comptes Microsoft personnels, y compris Microsoft 365 Personal et Family. Planner n’est pas disponible pour ces comptes. Microsoft recommande de choisir une autre gestion des tâches et de sauvegarder les données au moyen de la fonction d’exportation annoncée. Selon Microsoft, une exportation ne signifie pas que les données peuvent être importées dans Planner ou une autre application. Les utilisateurs ayant un compte professionnel et un compte personnel doivent vérifier séparément les deux comptes.
+
+## Préparation pour les administrateurs
+
+1. **Accès et licences :** Assurez-vous que tous les utilisateurs de To Do disposent d’une licence incluant Planner et que le plan de service `PROJECTWORKMANAGEMENT` est activé.
+
+2. **Listes partagées et intégrations :** Inventoriez l’existant avec le script ci-dessus. Identifiez les flux Power Automate et applications tierces qui utilisent l’API To Do de Microsoft Graph. Microsoft retirera l’API séparément et ultérieurement ; selon Microsoft, les intégrations peuvent néanmoins nécessiter des adaptations.
+
+3. **Conservation et lieu de stockage des données :** Vérifiez si des obligations de conservation existantes s’appliquent aux tâches To Do et si les stratégies et conservations légales Purview couvrent le nouveau plan privé. Évaluez si le stockage dans la macro-région Europe est compatible avec vos exigences. Consultez les responsables de la conformité avant de supprimer ou réorganiser des données de tâches.
+
+4. **Informer les utilisateurs :** Indiquez aux utilisateurs qu’aucune migration n’a lieu, combien de temps les données existantes restent visibles dans Planner et quelles fonctions changent (utilisation hors ligne, rappels, pièces jointes, groupes de listes).
+
+5. **Suivre le Centre de messages :** Microsoft y annoncera les détails du déploiement, la fonction d’exportation et les dates concernant le service et les API.
+
+## Sources
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): annonce avec calendrier, différences entre To Do et Planner, étapes de préparation et FAQ.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): stockage des tâches To Do en tant que tâches dans la boîte aux lettres Exchange Online.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): lieux de stockage des tâches (Exchange, Azure, SharePoint, Dataverse), plan de service `PROJECTWORKMANAGEMENT` et accès via `planner.cloud.microsoft` sans licence.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): abonnements incluant Planner ainsi que Planner Plan 1 et Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner sans engagement permanent concernant le lieu de stockage des données, lieu de stockage « EUR1 » pour les tenants dont le pays est la Suisse.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): engagement des Product Terms pour le contenu des boîtes aux lettres au repos en Suisse.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): stockage des données de plan dans Azure ; Planner ne participe pas à Advanced Data Residency. État en août 2025, avant l’introduction des stratégies de rétention pour Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery et conservation légale uniquement pour les tâches dans les plans basés sur des groupes, liste des types de plans non pris en charge.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): miroir du message du Centre de messages relatif aux stratégies de rétention et de suppression pour Planner, déploiement de juillet à août 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): éléments de boîte aux lettres pris en charge ; tâches uniquement avec une date de fin.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): ressources de l’API To Do dans Microsoft Graph (listes, tâches, listes de contrôle, ressources liées).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): point de terminaison, autorisations et propriétés `isShared`, `isOwner` et `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): point de terminaison pour les tâches d’une liste et autorisation d’application `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): article comprenant une déclaration ultérieure de Microsoft sur les intégrations dans Outlook et Teams.
 
 ----
 
@@ -69371,6 +70026,194 @@ Le flux de messagerie peut ainsi être suivi étape par étape, sans lire à tor
 
 ----
 
+# Microsoft To Do verrà ritirato: passaggio a Planner dal punto di vista dell’amministratore
+
+URL: https://rafaelpfister.ch/it/blog/microsoft-to-do-verra-ritirato-passaggio-a-planner-dal-punto-di-vista-dell-amministratore
+Datum: 2026-11-24
+
+# Microsoft To Do verrà ritirato: passaggio a Planner dal punto di vista dell’amministratore
+
+Microsoft ritirerà Microsoft To Do. Le app per Web, Windows, Mac, iOS e Android verranno disattivate il 30 giugno 2027, sia per gli account aziendali e scolastici sia per gli account Microsoft privati. Per gli account aziendali e scolastici, Microsoft Planner prenderà in carico le attività personali; la visualizzazione rivista «Le mie attività» (My tasks) verrà distribuita a partire da dicembre 2026. Microsoft ha pubblicato la modifica nel novembre 2026 in un articolo di supporto con cronologia, differenze e indicazioni per gli amministratori.
+
+In breve: non è prevista alcuna migrazione automatica. Le attività To Do esistenti resteranno visibili in Planner fino al 30 giugno 2027 e continueranno a essere archiviate nella cassetta postale Exchange Online. A partire dalla distribuzione, Planner salverà le nuove attività private in un piano Planner privato, quindi non più in Exchange. Per i tenant svizzeri cambieranno pertanto la localizzazione dei dati e la copertura di Purview. Entro metà 2027, verificate licenze, elenchi condivisi, integrazioni e obblighi di conservazione. Gli account Microsoft privati non riceveranno alcun sostituto.
+
+## Cronologia
+
+| Data | Modifica |
+|---|---|
+| Dicembre 2026 | Inizio della distribuzione della visualizzazione rivista «Le mie attività» in Planner per gli account aziendali e scolastici. Da quel momento Planner salverà le nuove attività private in un piano Planner privato. |
+| prima del 30 giugno 2027 | Microsoft metterà a disposizione una funzione di esportazione per i dati To Do. Formato, ambito e requisiti non sono ancora stati pubblicati. |
+| 30 giugno 2027 | Le app To Do per Web, Windows, Mac, iOS e Android verranno ritirate. Dopo tale data, le attività To Do esistenti non saranno più visibili neppure in Planner. |
+| successivamente, senza data | Il servizio To Do, le API e la sincronizzazione verranno ritirati separatamente. Microsoft comunicherà le date a parte. |
+
+Planner è già oggi disponibile per gli account aziendali sul Web all’indirizzo `planner.cloud.microsoft` e come app in Teams. Microsoft annuncia l’adeguamento dei punti di accesso esistenti di To Do in Microsoft 365. A Thurrott, Microsoft ha precisato che le integrazioni esistenti, tra cui Outlook e Teams, passeranno a Planner.
+
+## Le attività esistenti non verranno migrate
+
+Microsoft non trasferirà in Planner le attività e gli elenchi To Do esistenti. Fino al 30 giugno 2027 sarà ancora possibile visualizzarli e modificarli in Planner, ma non successivamente. Non verranno trasferiti nel nuovo piano privato.
+
+I dati non verranno eliminati con la fine delle app. Secondo Microsoft, il ritiro delle app non prevede alcuna cancellazione; Microsoft tratta separatamente la conservazione e l’accesso. To Do salva le attività come attività Exchange nella cassetta postale Exchange Online dell’utente, nella stessa cassetta postale di e-mail, appuntamenti, contatti e note. Pertanto, il contenuto resterà per il momento nella cassetta postale anche dopo il 30 giugno 2027.
+
+Outlook classico non è interessato dal ritiro. Microsoft afferma che la sua funzionalità attività è separata da To Do, continuerà a funzionare e si sincronizzerà con Exchange. Gli elenchi To Do vengono visualizzati in Outlook classico come cartelle delle attività in «Le mie attività»; gli utenti di Outlook classico potranno quindi continuare a leggere il contenuto lì. Non è ancora descritto cosa accadrà ai dati quando Microsoft disattiverà successivamente il servizio To Do stesso.
+
+## Le nuove attività si trovano al di fuori di Exchange
+
+Con la nuova visualizzazione cambia la posizione di archiviazione. Secondo le FAQ per gli amministratori di Planner, le attività da To Do e Outlook si trovano in Exchange, mentre i piani e le relative attività si trovano in Azure. Planner salva gli allegati alle attività del piano nel sito SharePoint del gruppo e i piani Premium in Dataverse. Le nuove attività private da «Le mie attività» non si troveranno quindi più nella cassetta postale dell’utente. Per gli amministratori, questo comporta due conseguenze.
+
+### Localizzazione dei dati
+
+Exchange Online rientra tra i servizi con impegno permanente sulla localizzazione dei dati. Se un tenant è stato creato in Svizzera, secondo i Product Terms Microsoft salva i contenuti delle cassette postali inattivi (testo delle e-mail, voci di calendario e allegati) solo in Svizzera. L’impegno non menziona espressamente le attività, ma esse si trovano nella stessa cassetta postale.
+
+Microsoft indica Planner tra gli altri servizi Microsoft 365 senza impegno permanente. Per i tenant con paese Svizzera, la tabella indica «EUR1», la macroregione Europa, come posizione di archiviazione. Inoltre, Planner non partecipa ad Advanced Data Residency. Le attività personali che To Do ha finora salvato nella cassetta postale in Svizzera verranno salvate da Planner, dopo il passaggio, nella macroregione Europa. Le posizioni di archiviazione per servizio del vostro tenant sono elencate nel Microsoft 365 Admin Center nella scheda Data Location Card. Le organizzazioni che hanno garantito contrattualmente o nelle proprie direttive interne una localizzazione dei dati in Svizzera devono valutare questa modifica.
+
+### Conservazione ed eDiscovery
+
+I criteri di conservazione di Exchange in Microsoft Purview acquisiscono le attività nella cassetta postale solo se hanno una data di scadenza; le attività senza data di scadenza non sono coperte. Questa limitazione si applica già oggi alle attività To Do.
+
+Per Planner, secondo Microsoft Purview supporta la ricerca eDiscovery e Legal Hold solo per le attività nei piani condivisi con un gruppo. Non sono espressamente supportati i piani personali (piani roster), i piani nei componenti Loop, i piani Premium e i piani nei canali Teams condivisi e privati. Microsoft distribuisce i criteri di conservazione ed eliminazione per i contenuti Planner dalla metà di luglio 2026; il completamento era annunciato per l’inizio di agosto (MC1384412). Secondo l’annuncio, possono essere applicati ai piani basati su utenti e gruppi. Dall’annuncio non risulta a quale tipo di piano corrisponda tecnicamente il nuovo piano privato. Dopo la distribuzione, verificate se i vostri criteri di conservazione e hold acquisiscono le nuove attività private.
+
+## Differenze tra To Do e Planner
+
+Microsoft elenca le seguenti differenze:
+
+| Area | Differenza secondo Microsoft |
+|---|---|
+| Organizzazione | Planner riunisce le attività private e il lavoro assegnato in «Le mie attività», oggi con visualizzazione a griglia e bacheca. Con l’aggiornamento seguirà una visualizzazione elenco. |
+| Promemoria | Le notifiche delle date di scadenza in Planner differiscono dai promemoria pianificati per singola attività in To Do. |
+| Condivisione | Planner utilizza piani e assegnazioni. Membri, assegnazioni e autorizzazioni degli elenchi To Do condivisi non verranno trasferiti. |
+| Desktop e offline | Planner è disponibile sul Web e in Teams. Non sono previste app native per Windows e Mac; Web e Teams non offrono una funzionalità offline equivalente. |
+| Categorie | Le etichette di Planner funzionano diversamente dalle categorie di Outlook e non vengono sincronizzate con esse. |
+| Allegati | Gli allegati di file alle attività non sono attualmente supportati nel nuovo piano Planner privato. |
+| Stella e priorità | La stella personale serve alla pianificazione individuale e arriverà con la nuova visualizzazione. La priorità di un’attività si applica a tutti i partecipanti di un piano condiviso. |
+| Gruppi di elenchi | Nessun equivalente diretto in Planner. |
+| Stampa, invio dell’elenco via e-mail | Attualmente non previsti per la soluzione sostitutiva. |
+
+Gli utenti che lavorano offline con l’app To Do in Windows o Mac non avranno un sostituto equivalente in Planner.
+
+## Licenze e accesso a Planner
+
+Planner è incluso, tra l’altro, in Microsoft 365 Business Basic, Business Standard e Business Premium, nonché in Office 365 E1, E3 ed E5. Se Planner manca in una licenza, Microsoft offre Planner Plan 1 o Planner and Project Plan 3 come abbonamenti separati; questi sono necessari anche per le funzionalità Premium. Secondo Microsoft, non è necessaria alcuna nuova configurazione e non esiste un’opzione specifica con cui gli amministratori possano controllare o rinviare il passaggio.
+
+Se Planner è disattivato nell’assegnazione della licenza (piano di servizio `PROJECTWORKMANAGEMENT`), gli utenti interessati dovranno nuovamente avere accesso se Planner deve sostituire To Do. Secondo le FAQ di Planner, la rimozione della licenza Planner nasconde comunque solo il riquadro: tramite `planner.cloud.microsoft` gli utenti senza licenza possono comunque creare e modificare piani. Se finora avete bloccato Planner tramite licenza, riesaminate questa decisione alla luce del passaggio.
+
+## Rilevare il contenuto con Microsoft Graph
+
+È possibile leggere tramite l’API To Do di Microsoft Graph quali utenti utilizzano To Do e quali elenchi sono condivisi. Il seguente script scrive in un file CSV tutti gli elenchi per utente, con stato di condivisione e numero di attività aperte. Richiede i moduli `Microsoft.Graph.Authentication` e `Microsoft.Graph.Users`, nonché una registrazione dell’app con le autorizzazioni applicative `Tasks.Read.All` e `User.Read.All` (con consenso dell’amministratore) e un certificato per l’accesso. `Tasks.Read.All` concede l’accesso in lettura alle attività di tutti gli utenti; rimuovete l’autorizzazione o la registrazione dell’app dopo aver rilevato il contenuto.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # Nessuna cassetta postale Exchange Online o nessun accesso: ignora l'utente
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Opzioni spiegate</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `ClientId`, `TenantId` | Registrazione dell’app e tenant presso cui lo script esegue l’accesso |
+| `CertificateThumbprint` | Impronta digitale del certificato nell’archivio certificati dell’utente corrente; accesso come app senza account utente |
+| `-NoWelcome` | Sopprime il messaggio di benvenuto di `Connect-MgGraph` |
+| `-All` | Legge tutte le pagine di un risultato anziché solo la prima |
+| `-Filter "accountEnabled eq true"` | Solo account abilitati; gli account disabilitati, come le cassette postali condivise, vengono esclusi |
+| `-Property Id, UserPrincipalName` | Carica solo le due proprietà necessarie |
+| `-UserId` | Utente di cui vengono interrogati elenchi o attività |
+| `-ErrorAction Stop` | Rende un errore intercettabile, affinché `catch` possa ignorare l’utente |
+| `-TodoTaskListId` | Elenco di cui vengono interrogate le attività |
+| `WellknownListName` | `defaultList` per l’elenco standard «Attività», `flaggedEmails` per i messaggi contrassegnati, `none` per gli elenchi personalizzati |
+| `IsShared` | `True` se l’elenco è condiviso con altri utenti |
+| `IsOwner` | `False` se l’elenco appartiene a un altro utente ed è stato solo condiviso |
+| `Status -ne 'completed'` | Conta tutte le attività non completate |
+| `-NoTypeInformation` | Nessuna riga del tipo all’inizio del file CSV |
+| `-Encoding UTF8` | Le dieresi nei nomi degli elenchi vengono mantenute |
+
+</details>
+
+Gli account senza cassetta postale Exchange Online restituiscono un errore e vengono ignorati. Nei tenant di grandi dimensioni è opportuno eseguire un test con un sottoinsieme, ad esempio con `-Top 20` anziché `-All` in `Get-MgUser`.
+
+L’analisi del file CSV:
+
+- **Elenchi condivisi** (`Geteilt` = `True`) mostrano dove avviene la collaborazione tramite To Do. Microsoft non trasferirà queste appartenenze; gli elenchi dovranno essere ricreati come piani Planner con le persone interessate.
+- **Attività aperte** negli elenchi personali (`Typ` = `none` o `defaultList`) dovranno essere trasferite manualmente dagli utenti in Planner entro il 30 giugno 2027 oppure salvate con la funzione di esportazione annunciata.
+- **Messaggi contrassegnati** (`Typ` = `flaggedEmails`) resteranno come contrassegno nell’e-mail della cassetta postale.
+
+## Account Microsoft privati
+
+Anche per gli account Microsoft privati, inclusi Microsoft 365 Personal e Family, le app To Do verranno ritirate il 30 giugno 2027. Planner non è disponibile per questi account. Microsoft consiglia di scegliere un’altra gestione delle attività e di salvare i dati con la funzione di esportazione annunciata. Secondo Microsoft, un’esportazione non significa che i dati possano essere importati in Planner o in un’altra applicazione. Gli utenti con account aziendale e privato devono verificare separatamente entrambi gli account.
+
+## Preparazione per gli amministratori
+
+1. **Accesso e licenze:** assicuratevi che tutti gli utenti To Do abbiano una licenza con Planner e che il piano di servizio `PROJECTWORKMANAGEMENT` sia attivato.
+
+2. **Elenchi condivisi e integrazioni:** rilevate il contenuto con lo script sopra. Identificate i flussi Power Automate e le applicazioni di terze parti che utilizzano l’API To Do di Microsoft Graph. Microsoft ritirerà l’API separatamente e in seguito; secondo Microsoft, le integrazioni potrebbero comunque richiedere adeguamenti.
+
+3. **Conservazione e localizzazione dei dati:** verificate se gli obblighi di conservazione esistenti si applicano alle attività To Do e se i criteri e gli hold di Purview acquisiscono il nuovo piano privato. Valutate se la posizione di archiviazione nella macroregione Europa è compatibile con le vostre direttive. Prima di eliminare o riorganizzare i dati delle attività, coinvolgete i responsabili della conformità.
+
+4. **Informare gli utenti:** comunicate agli utenti che non avverrà alcuna migrazione, per quanto tempo il contenuto resterà visibile in Planner e quali funzionalità cambieranno (uso offline, promemoria, allegati, gruppi di elenchi).
+
+5. **Monitorare il Message Center:** Microsoft comunicherà lì i dettagli della distribuzione, la funzione di esportazione e le date per il servizio e le API.
+
+## Fonti
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): annuncio con cronologia, differenze tra To Do e Planner, passaggi di preparazione e FAQ.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): archiviazione delle attività To Do come attività nella cassetta postale Exchange Online.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): posizioni di archiviazione delle attività (Exchange, Azure, SharePoint, Dataverse), piano di servizio `PROJECTWORKMANAGEMENT` e accesso tramite `planner.cloud.microsoft` senza licenza.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): abbonamenti con Planner, nonché Planner Plan 1 e Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner senza impegno permanente sulla localizzazione dei dati, posizione di archiviazione «EUR1» per tenant con paese Svizzera.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): impegno dei Product Terms per i contenuti inattivi delle cassette postali in Svizzera.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): archiviazione dei dati del piano in Azure; Planner non partecipa ad Advanced Data Residency. Stato agosto 2025, prima dell’introduzione dei criteri di conservazione per Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery e Legal Hold solo per attività in piani basati su gruppi, elenco dei tipi di piano non supportati.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): copia del messaggio Message Center relativo ai criteri di conservazione ed eliminazione per Planner, distribuzione da luglio ad agosto 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): elementi della cassetta postale supportati; attività solo con data di scadenza.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): risorse dell’API To Do in Microsoft Graph (elenchi, attività, checklist, risorse collegate).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): endpoint, autorizzazioni e proprietà `isShared`, `isOwner` e `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): endpoint per le attività di un elenco e autorizzazione applicativa `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): articolo con dichiarazione successiva di Microsoft sulle integrazioni in Outlook e Teams.
+
+----
+
 # Java4Shell (CVE-2026-114938): errore di memoria nel decoder Base64 di OpenJDK - individuare, proteggere e correggere i sistemi interessati
 
 URL: https://rafaelpfister.ch/it/blog/java4shell-cve-2026-114938-errore-di-memoria-nel-decoder-base64-di-openjdk-individuare
@@ -92409,6 +93252,194 @@ In questo modo è possibile seguire un flusso di posta passo dopo passo, senza l
 
 ----
 
+# Microsoft To Do se retira: migración a Planner desde la perspectiva del administrador
+
+URL: https://rafaelpfister.ch/es/blog/microsoft-to-do-se-retira-migracion-a-planner-desde-la-perspectiva-del-administrador
+Datum: 2026-11-24
+
+# Microsoft To Do se retira: migración a Planner desde la perspectiva del administrador
+
+Microsoft retira Microsoft To Do. Las aplicaciones para web, Windows, Mac, iOS y Android se desactivarán el 30 de junio de 2027, tanto para cuentas profesionales y educativas como para cuentas personales de Microsoft. Para las cuentas profesionales y educativas, Microsoft Planner asumirá las tareas personales; la vista revisada «Mis tareas» (My tasks) se implementará a partir de diciembre de 2026. Microsoft publicó el cambio en noviembre de 2026 en un artículo de soporte con calendario, diferencias e indicaciones para administradores.
+
+Conclusión breve: no habrá migración automática. Las tareas existentes de To Do seguirán visibles en Planner hasta el 30 de junio de 2027 y permanecerán en el buzón de Exchange Online. A partir de la implementación, Planner almacenará las nuevas tareas privadas en un plan privado de Planner, es decir, ya no en Exchange. Esto modifica la ubicación de los datos y la cobertura de Purview para los tenants suizos. Revise antes de mediados de 2027 las licencias, las listas compartidas, las integraciones y las obligaciones de conservación. Las cuentas personales de Microsoft no recibirán sustituto.
+
+## Calendario
+
+| Fecha | Cambio |
+|---|---|
+| Diciembre de 2026 | Inicio de la implementación de la vista revisada «Mis tareas» en Planner para cuentas profesionales y educativas. A partir de entonces, Planner almacenará las tareas privadas recién creadas en un plan privado de Planner. |
+| antes del 30 de junio de 2027 | Microsoft proporcionará una función de exportación para los datos de To Do. El formato, el alcance y los requisitos aún no se han publicado. |
+| 30 de junio de 2027 | Se retirarán las aplicaciones To Do para web, Windows, Mac, iOS y Android. Después, las tareas existentes de To Do tampoco serán visibles en Planner. |
+| más adelante, sin fecha todavía | El servicio de To Do, las API y la sincronización se retirarán por separado. Microsoft comunicará las fechas de forma independiente. |
+
+Planner ya está disponible para cuentas profesionales en la web en `planner.cloud.microsoft` y como aplicación en Teams. Microsoft anuncia que adaptará los puntos de acceso existentes de To Do en Microsoft 365. Microsoft aclaró a Thurrott que las integraciones existentes, entre ellas Outlook y Teams, pasarán a Planner.
+
+## Las tareas existentes no se migrarán
+
+Microsoft no transferirá las tareas ni las listas existentes de To Do a Planner. Hasta el 30 de junio de 2027 aún podrán visualizarse y editarse en Planner; después ya no. No se transferirán al nuevo plan privado.
+
+Los datos no se eliminarán al finalizar las aplicaciones. Según Microsoft, la retirada de las aplicaciones no contempla la eliminación; Microsoft trata por separado la conservación y el acceso. To Do almacena las tareas como tareas de Exchange en el buzón de Exchange Online del usuario, el mismo buzón que contiene correos, citas, contactos y notas. Por ello, el inventario permanecerá inicialmente en el buzón después del 30 de junio de 2027.
+
+El Outlook clásico no se ve afectado por la retirada. Microsoft indica que su función de tareas está separada de To Do, sigue funcionando y se sincroniza con Exchange. Las listas de To Do aparecen en el Outlook clásico como carpetas de tareas en «Mis tareas»; por tanto, los usuarios con Outlook clásico podrán seguir leyendo allí el inventario. Aún no se ha descrito qué ocurrirá con los datos cuando Microsoft retire posteriormente el propio servicio de To Do.
+
+## Las nuevas tareas se almacenan fuera de Exchange
+
+Con la nueva vista cambia la ubicación de almacenamiento. Según las preguntas frecuentes para administradores de Planner, las tareas de To Do y Outlook se encuentran en Exchange, mientras que los planes y sus tareas se almacenan en Azure. Planner almacena los adjuntos de las tareas de los planes en el sitio de SharePoint del grupo, y los planes Premium en Dataverse. Por tanto, las nuevas tareas privadas de «Mis tareas» ya no se encuentran en el buzón del usuario. Esto tiene dos consecuencias para los administradores.
+
+### Ubicación de los datos
+
+Exchange Online figura entre los servicios con un compromiso permanente de ubicación de datos. Si un tenant se crea en Suiza, según los Product Terms Microsoft almacena el contenido de los buzones en reposo (texto de correo, entradas de calendario y adjuntos) únicamente en Suiza. El compromiso no menciona expresamente las tareas, pero estas se encuentran en el mismo buzón.
+
+Microsoft incluye Planner entre los demás servicios de Microsoft 365 sin compromiso permanente. Para tenants con Suiza como país, la tabla indica «EUR1», la macrorregión Europa, como ubicación de almacenamiento. Además, Planner no participa en Advanced Data Residency. Las tareas personales que To Do almacenaba hasta ahora en el buzón en Suiza, Planner las almacenará tras el cambio en la macrorregión Europa. Las ubicaciones de almacenamiento por servicio para su tenant figuran en la tarjeta de ubicación de datos (Data Location Card) del Centro de administración de Microsoft 365. Las organizaciones que hayan garantizado contractualmente o mediante directrices internas una ubicación de datos en Suiza deben evaluar este cambio.
+
+### Conservación y eDiscovery
+
+Las directivas de conservación de Exchange en Microsoft Purview solo incluyen las tareas del buzón si tienen una fecha de finalización; las tareas sin fecha de finalización no están cubiertas. Esta limitación ya se aplica actualmente a las tareas de To Do.
+
+Según Microsoft, para Planner Purview solo admite la búsqueda de eDiscovery y Legal Hold para tareas de planes compartidos con un grupo. No se admiten expresamente los planes personales (planes de lista), los planes en componentes de Loop, los planes Premium ni los planes en canales compartidos y privados de Teams. Microsoft implementa desde mediados de julio de 2026 las directivas de conservación y eliminación para contenido de Planner; se anunció su finalización para principios de agosto (MC1384412). Según el anuncio, pueden aplicarse a planes basados en usuarios y grupos. El anuncio no indica a qué tipo de plan corresponde técnicamente el nuevo plan privado. Tras la implementación, compruebe si sus directivas de conservación y sus retenciones incluyen las nuevas tareas privadas.
+
+## Diferencias entre To Do y Planner
+
+Microsoft enumera las siguientes diferencias:
+
+| Área | Diferencia según Microsoft |
+|---|---|
+| Organización | Planner reúne las tareas privadas y el trabajo asignado en «Mis tareas», actualmente con vista de cuadrícula y tablero. La vista de lista llegará con la revisión. |
+| Recordatorios | Las notificaciones de fecha de vencimiento de Planner difieren de los recordatorios programados por tarea de To Do. |
+| Uso compartido | Planner funciona con planes y asignaciones. No se transferirán las membresías, las asignaciones ni los permisos de las listas compartidas de To Do. |
+| Escritorio y sin conexión | Planner está disponible en la web y en Teams. No se prevén aplicaciones nativas para Windows y Mac; la web y Teams no ofrecen una función sin conexión comparable. |
+| Categorías | Las etiquetas de Planner funcionan de forma distinta a las categorías de Outlook y no se sincronizan con ellas. |
+| Adjuntos | Actualmente no se admiten adjuntos de archivos en tareas del nuevo plan privado de Planner. |
+| Estrella y prioridad | La estrella personal sirve para la planificación propia y llegará con la nueva vista. La prioridad de una tarea se aplica a todos los participantes de un plan compartido. |
+| Grupos de listas | No tienen equivalente directo en Planner. |
+| Imprimir, enviar lista por correo | Actualmente no está previsto para la solución de sustitución. |
+
+Los usuarios que trabajan sin conexión con la aplicación To Do en Windows o Mac no tendrán un sustituto equivalente en Planner.
+
+## Licencias y acceso a Planner
+
+Planner está incluido, entre otros, en Microsoft 365 Business Basic, Business Standard y Business Premium, así como en Office 365 E1, E3 y E5. Si Planner no está incluido en una licencia, Microsoft ofrece Planner Plan 1 o Planner and Project Plan 3 como suscripciones independientes; también son necesarias para las funciones Premium. Según Microsoft, no se requiere ninguna configuración nueva y no existe un interruptor específico con el que los administradores puedan controlar o aplazar el cambio.
+
+Si Planner está desactivado en la asignación de licencias (plan de servicio `PROJECTWORKMANAGEMENT`), los usuarios afectados necesitarán volver a tener acceso si Planner debe sustituir a To Do. Según las preguntas frecuentes de Planner, eliminar la licencia de Planner solo oculta el mosaico: mediante `planner.cloud.microsoft`, los usuarios sin licencia pueden seguir creando y editando planes. Si hasta ahora ha bloqueado Planner mediante la licencia, revise esta decisión en vista del cambio.
+
+## Inventario con Microsoft Graph
+
+Es posible consultar mediante la API de To Do de Microsoft Graph qué usuarios utilizan To Do y qué listas están compartidas. El siguiente script escribe en un archivo CSV todas las listas por usuario, con el estado de uso compartido y el número de tareas abiertas. Requiere los módulos `Microsoft.Graph.Authentication` y `Microsoft.Graph.Users`, así como un registro de aplicación con los permisos de aplicación `Tasks.Read.All` y `User.Read.All` (con consentimiento de administrador) y un certificado para iniciar sesión. `Tasks.Read.All` concede acceso de lectura a las tareas de todos los usuarios; elimine de nuevo el permiso o el registro de aplicación después del inventario.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # Sin buzón de Exchange Online o sin acceso: omitir usuario
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Opciones explicadas</summary>
+
+| Opción | Efecto |
+|---|---|
+| `ClientId`, `TenantId` | Registro de aplicación y tenant en los que inicia sesión el script |
+| `CertificateThumbprint` | Huella digital del certificado en el almacén de certificados del usuario actual; inicio de sesión como aplicación sin cuenta de usuario |
+| `-NoWelcome` | Suprime el mensaje de bienvenida de `Connect-MgGraph` |
+| `-All` | Lee todas las páginas de un resultado en lugar de solo la primera |
+| `-Filter "accountEnabled eq true"` | Solo cuentas activadas; se excluyen las cuentas desactivadas, como los buzones compartidos |
+| `-Property Id, UserPrincipalName` | Carga solo las dos propiedades necesarias |
+| `-UserId` | Usuario cuyas listas o tareas se consultan |
+| `-ErrorAction Stop` | Hace que un error pueda capturarse para que `catch` pueda omitir al usuario |
+| `-TodoTaskListId` | Lista cuyas tareas se consultan |
+| `WellknownListName` | `defaultList` para la lista estándar «Tareas», `flaggedEmails` para mensajes marcados y `none` para listas propias |
+| `IsShared` | `True` si la lista está compartida con otros usuarios |
+| `IsOwner` | `False` si la lista pertenece a otro usuario y solo se ha compartido |
+| `Status -ne 'completed'` | Cuenta todas las tareas no completadas |
+| `-NoTypeInformation` | Sin línea de tipo al inicio del archivo CSV |
+| `-Encoding UTF8` | Se conservan los caracteres especiales en los nombres de las listas |
+
+</details>
+
+Las cuentas sin buzón de Exchange Online devuelven un error y se omiten. En tenants grandes conviene realizar una prueba con un subconjunto, por ejemplo con `-Top 20` en lugar de `-All` en `Get-MgUser`.
+
+El análisis del archivo CSV:
+
+- **Listas compartidas** (`Geteilt` = `True`) muestran dónde se realiza la colaboración mediante To Do. Microsoft no transferirá estas membresías; las listas deben recrearse como un plan de Planner con las personas correspondientes.
+- **Tareas abiertas** en listas propias (`Typ` = `none` o `defaultList`) deben ser transferidas manualmente por los usuarios a Planner antes del 30 de junio de 2027 o protegidas mediante la función de exportación anunciada.
+- **Mensajes marcados** (`Typ` = `flaggedEmails`) se conservarán como marca en el correo del buzón.
+
+## Cuentas personales de Microsoft
+
+Las aplicaciones To Do también se retirarán el 30 de junio de 2027 para las cuentas personales de Microsoft, incluidas Microsoft 365 Personal y Family. Planner no está disponible para estas cuentas. Microsoft recomienda elegir otro gestor de tareas y proteger los datos con la función de exportación anunciada. Según Microsoft, una exportación no significa que los datos puedan importarse en Planner u otra aplicación. Los usuarios con cuenta profesional y personal deben revisar ambas cuentas por separado.
+
+## Preparación para administradores
+
+1. **Acceso y licencias:** asegúrese de que todos los usuarios de To Do tengan una licencia con Planner y que el plan de servicio `PROJECTWORKMANAGEMENT` esté activado.
+
+2. **Listas compartidas e integraciones:** recopile el inventario con el script anterior. Identifique los flujos de Power Automate y las aplicaciones de terceros que usan la API de To Do de Microsoft Graph. Microsoft retirará la API por separado y más adelante; según Microsoft, las integraciones pueden requerir ajustes de todos modos.
+
+3. **Conservación y ubicación de datos:** compruebe si existen obligaciones de conservación aplicables a las tareas de To Do y si las directivas y retenciones de Purview incluyen el nuevo plan privado. Evalúe si la ubicación de almacenamiento en la macrorregión Europa es compatible con sus requisitos. Antes de eliminar o reorganizar datos de tareas, consulte a los responsables de cumplimiento.
+
+4. **Informar a los usuarios:** comunique a los usuarios que no habrá migración, durante cuánto tiempo seguirá visible el inventario en Planner y qué funciones cambiarán (uso sin conexión, recordatorios, adjuntos, grupos de listas).
+
+5. **Seguir el Centro de mensajes:** Microsoft anunciará allí los detalles de la implementación, la función de exportación y las fechas para el servicio y las API.
+
+## Fuentes
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): anuncio con calendario, diferencias entre To Do y Planner, pasos de preparación y preguntas frecuentes.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): almacenamiento de las tareas de To Do como tareas en el buzón de Exchange Online.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): ubicaciones de almacenamiento de las tareas (Exchange, Azure, SharePoint, Dataverse), plan de servicio `PROJECTWORKMANAGEMENT` y acceso mediante `planner.cloud.microsoft` sin licencia.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): suscripciones con Planner, así como Planner Plan 1 y Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner sin compromiso permanente de ubicación de datos, ubicación «EUR1» para tenants con Suiza como país.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): compromiso de los Product Terms para el contenido de buzones en reposo en Suiza.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): almacenamiento de los datos de planes en Azure; Planner no participa en Advanced Data Residency. Estado de agosto de 2025, antes de la introducción de las directivas de conservación para Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery y Legal Hold solo para tareas en planes basados en grupos, lista de tipos de planes no compatibles.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): copia del aviso del Centro de mensajes sobre directivas de conservación y eliminación para Planner, implementación de julio a agosto de 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): elementos de buzón compatibles; tareas solo con fecha de finalización.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): recursos de la API de To Do en Microsoft Graph (listas, tareas, listas de comprobación, recursos vinculados).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): punto de conexión, permisos y propiedades `isShared`, `isOwner` y `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): punto de conexión para las tareas de una lista y permiso de aplicación `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): informe con una declaración posterior de Microsoft sobre las integraciones con Outlook y Teams.
+
+----
+
 # Tras la caída de Exchange Online: solicitar un crédito SLA a Microsoft
 
 URL: https://rafaelpfister.ch/es/blog/tras-la-interrupcion-de-exchange-online-solicitar-un-credito-de-sla-a-microsoft
@@ -115441,6 +116472,194 @@ De este modo, se puede seguir un flujo de correo paso a paso sin leer erróneame
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): formato de los mensajes de texto de Internet (encabezados y cuerpo).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): configuración del conector para el flujo de correo seguro entre Exchange Online y el gateway.
+
+----
+
+# Microsoft To Do avvecklas: migrering till Planner ur ett administratörsperspektiv
+
+URL: https://rafaelpfister.ch/sv/blog/microsoft-to-do-avvecklas-migrering-till-planner-ur-ett-administratorsperspektiv
+Datum: 2026-11-24
+
+# Microsoft To Do avvecklas: migrering till Planner ur ett administratörsperspektiv
+
+Microsoft avvecklar Microsoft To Do. Appar för webben, Windows, Mac, iOS och Android stängs av den 30 juni 2027, både för företags- och skolkonton samt privata Microsoft-konton. För företags- och skolkonton tar Microsoft Planner över de personliga uppgifterna; den omarbetade vyn ”Mina uppgifter” (My tasks) rullas ut från december 2026. Microsoft publicerade ändringen i november 2026 i en supportartikel med tidsplan, skillnader och information för administratörer.
+
+Kort sammanfattning: Det finns ingen automatisk migrering. Befintliga To Do-uppgifter förblir synliga i Planner till den 30 juni 2027 och lagras fortsatt i Exchange Online-postlådan. Från utrullningen lagrar Planner nya privata uppgifter i en privat Planner-plan, alltså inte längre i Exchange. Därmed ändras dataplats och Purview-täckning för schweiziska klientorganisationer. Kontrollera licenser, delade listor, integrationer och bevarandekrav före mitten av 2027. Privata Microsoft-konton får ingen ersättning.
+
+## Tidsplan
+
+| Tidpunkt | Ändring |
+|---|---|
+| December 2026 | Utrullningen av den omarbetade vyn ”Mina uppgifter” i Planner för företags- och skolkonton inleds. Planner lagrar från då nya privata uppgifter i en privat Planner-plan. |
+| före den 30 juni 2027 | Microsoft tillhandahåller en exportfunktion för To Do-data. Format, omfattning och förutsättningar har ännu inte publicerats. |
+| 30 juni 2027 | To Do-apparna för webben, Windows, Mac, iOS och Android avvecklas. Befintliga To Do-uppgifter är därefter inte längre synliga ens i Planner. |
+| senare, ännu utan datum | To Do-tjänsten, API:erna och synkroniseringen avvecklas separat. Microsoft meddelar datumen separat. |
+
+Planner är redan i dag tillgängligt för företagskonton på webben via `planner.cloud.microsoft` och som app i Teams. Microsoft meddelar att de befintliga ingångarna till To Do i Microsoft 365 anpassas. Microsoft har för Thurrott förtydligat att de befintliga integrationerna, däribland Outlook och Teams, övergår till Planner.
+
+## Befintliga uppgifter migreras inte
+
+Microsoft överför inte befintliga To Do-uppgifter och -listor till Planner. De kan fortfarande visas och redigeras i Planner till den 30 juni 2027, men inte därefter. De tas inte med till den nya privata planen.
+
+Data raderas inte när apparna upphör. Enligt Microsoft omfattar avvecklingen av apparna ingen radering; Microsoft hanterar lagring och åtkomst separat. To Do lagrar uppgifter som Exchange-uppgifter i användarens Exchange Online-postlåda, i samma postlåda som e-post, kalenderposter, kontakter och anteckningar. Beståndet finns därför tills vidare kvar i postlådan efter den 30 juni 2027.
+
+Klassiska Outlook påverkas inte av avvecklingen. Microsoft skriver att dess uppgiftsfunktion är separat från To Do, fortsätter att fungera och synkroniseras med Exchange. To Do-listor visas i klassiska Outlook som uppgiftsmappar under ”Mina uppgifter”; användare med klassiska Outlook kan alltså fortsatt läsa beståndet där. Vad som händer med data när Microsoft senare stänger själva To Do-tjänsten har ännu inte beskrivits.
+
+## Nya uppgifter lagras utanför Exchange
+
+Med den nya vyn ändras lagringsplatsen. Enligt vanliga frågor för Planner-administratörer finns uppgifter från To Do och Outlook i Exchange, medan planer och deras uppgifter finns i Azure. Planner lagrar bilagor till planuppgifter på gruppens SharePoint-webbplats och premiumplaner i Dataverse. Nya privata uppgifter från ”Mina uppgifter” finns därmed inte längre i användarens postlåda. Detta får två konsekvenser för administratörer.
+
+### Dataplats
+
+Exchange Online hör till tjänsterna med permanent åtagande om dataplats. Om en klientorganisation har skapats i Schweiz lagrar Microsoft enligt Product Terms postlådeinnehåll (e-posttext, kalenderposter och bilagor) i vila endast i Schweiz. Uppgifter nämns inte uttryckligen i åtagandet, men de finns i samma postlåda.
+
+Microsoft listar Planner bland övriga Microsoft 365-tjänster utan permanent åtagande. För klientorganisationer med Schweiz som land anger tabellen ”EUR1”, makroregionen Europa, som lagringsplats. Planner deltar dessutom inte i Advanced Data Residency. Personliga uppgifter som To Do tidigare lagrade i postlådan i Schweiz lagrar Planner efter bytet i makroregionen Europa. Lagringsplatserna per tjänst för din klientorganisation anges på Data Location Card i Microsoft 365 Admin Center. Organisationer som har garanterat dataplats i Schweiz avtalsmässigt eller i interna riktlinjer måste bedöma denna ändring.
+
+### Kvarhållning och eDiscovery
+
+Exchange-kvarhållningsprinciper i Microsoft Purview omfattar uppgifter i postlådan endast om de har ett slutdatum; uppgifter utan slutdatum omfattas inte. Denna begränsning gäller redan i dag för To Do-uppgifter.
+
+För Planner stöder Purview enligt Microsoft eDiscovery-sökning och Legal Hold endast för uppgifter i planer som delas med en grupp. Personliga planer (Roster-planer), planer i Loop-komponenter, premiumplaner samt planer i delade och privata Teams-kanaler stöds uttryckligen inte. Microsoft har rullat ut principer för kvarhållning och radering av Planner-innehåll sedan mitten av juli 2026, med planerat slutförande i början av augusti (MC1384412); enligt meddelandet kan de tillämpas på användar- och gruppbaserade planer. Vilken plantyp den nya privata planen tekniskt motsvarar framgår inte av tillkännagivandet. Kontrollera efter utrullningen om dina kvarhållningsprinciper och holds omfattar de nya privata uppgifterna.
+
+## Skillnader mellan To Do och Planner
+
+Microsoft listar följande skillnader:
+
+| Område | Skillnad enligt Microsoft |
+|---|---|
+| Organisation | Planner samlar privata uppgifter och tilldelat arbete under ”Mina uppgifter”, i dag med rutnäts- och tavlevy. En listvy kommer med omarbetningen. |
+| Påminnelser | Aviseringarna om förfallodatum i Planner skiljer sig från de schemalagda påminnelserna per uppgift i To Do. |
+| Delning | Planner arbetar med planer och tilldelningar. Medlemskap, tilldelningar och behörigheter för delade To Do-listor överförs inte. |
+| Skrivbord och offline | Planner finns på webben och i Teams. Inga inbyggda appar för Windows och Mac är planerade; webben och Teams erbjuder ingen jämförbar offlinefunktion. |
+| Kategorier | Planner-etiketter fungerar annorlunda än Outlook-kategorier och synkroniseras inte med dem. |
+| Bilagor | Filbilagor till uppgifter stöds för närvarande inte i den nya privata Planner-planen. |
+| Stjärna och prioritet | Den personliga stjärnan används för egen planering och kommer med den nya vyn. En uppgifts prioritet gäller för alla deltagare i en delad plan. |
+| Listgrupper | Har ingen direkt motsvarighet i Planner. |
+| Skriva ut, skicka lista via e-post | Är för närvarande inte planerat för ersättningslösningen. |
+
+Användare som arbetar offline med To Do-appen i Windows eller Mac har ingen likvärdig ersättning i Planner.
+
+## Licenser och åtkomst till Planner
+
+Planner ingår bland annat i Microsoft 365 Business Basic, Business Standard och Business Premium samt i Office 365 E1, E3 och E5. Om Planner saknas i en licens erbjuder Microsoft Planner Plan 1 eller Planner and Project Plan 3 som separata prenumerationer; dessa krävs även för premiumfunktionerna. Enligt Microsoft krävs ingen ny konfiguration, och det finns ingen separat växel med vilken administratörer kan styra eller skjuta upp bytet.
+
+Om Planner är inaktiverat i licenstilldelningen (tjänstplan `PROJECTWORKMANAGEMENT`) behöver berörda användare åter få åtkomst om Planner ska ersätta To Do. Enligt Planner-FAQ döljer borttagning av Planner-licensen ändå endast rutan: via `planner.cloud.microsoft` kan användare utan licens fortfarande skapa och redigera planer. Om du hittills har spärrat Planner via licensen bör du se över detta beslut med tanke på bytet.
+
+## Kartlägg beståndet med Microsoft Graph
+
+Vilka användare som använder To Do och vilka listor som delas kan läsas ut via To Do-API:t i Microsoft Graph. Följande skript skriver alla listor per användare, med delningsstatus och antal öppna uppgifter, till en CSV-fil. Det kräver modulerna `Microsoft.Graph.Authentication` och `Microsoft.Graph.Users` samt en appregistrering med programbehörigheterna `Tasks.Read.All` och `User.Read.All` (med administratörsgodkännande) och ett certifikat för inloggning. `Tasks.Read.All` ger läsåtkomst till alla användares uppgifter; ta bort behörigheten eller appregistreringen igen efter kartläggningen.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # Ingen Exchange Online-postlåda eller ingen åtkomst: hoppa över användaren
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Förklarade alternativ</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `ClientId`, `TenantId` | Appregistrering och klientorganisation som skriptet loggar in mot |
+| `CertificateThumbprint` | Certifikatets tumavtryck i den aktuella användarens certifikatarkiv; inloggning som app utan användarkonto |
+| `-NoWelcome` | Undertrycker välkomstmeddelandet från `Connect-MgGraph` |
+| `-All` | Läser alla sidor i ett resultat i stället för endast den första |
+| `-Filter "accountEnabled eq true"` | Endast aktiverade konton; inaktiverade konton såsom delade postlådor utelämnas |
+| `-Property Id, UserPrincipalName` | Läser endast in de två egenskaper som behövs |
+| `-UserId` | Användare vars listor eller uppgifter hämtas |
+| `-ErrorAction Stop` | Gör ett fel fångbart så att `catch` kan hoppa över användaren |
+| `-TodoTaskListId` | Lista vars uppgifter hämtas |
+| `WellknownListName` | `defaultList` för standardlistan ”Uppgifter”, `flaggedEmails` för flaggade meddelanden, `none` för egna listor |
+| `IsShared` | `True` om listan delas med andra användare |
+| `IsOwner` | `False` om listan tillhör en annan användare och endast har delats |
+| `Status -ne 'completed'` | Räknar alla ej slutförda uppgifter |
+| `-NoTypeInformation` | Ingen typrad i början av CSV-filen |
+| `-Encoding UTF8` | Umlauter i listnamn bevaras |
+
+</details>
+
+Konton utan Exchange Online-postlåda ger ett fel och hoppas över. I stora klientorganisationer är en testkörning med ett urval lämplig, till exempel med `-Top 20` i stället för `-All` vid `Get-MgUser`.
+
+Utvärdering av CSV-filen:
+
+- **Delade listor** (`Geteilt` = `True`) visar var samarbete sker via To Do. Microsoft överför inte dessa medlemskap; listorna måste byggas upp på nytt som Planner-planer med berörda personer.
+- **Öppna uppgifter** i egna listor (`Typ` = `none` eller `defaultList`) måste användarna före den 30 juni 2027 manuellt föra över till Planner eller säkra med den aviserade exportfunktionen.
+- **Flaggade meddelanden** (`Typ` = `flaggedEmails`) finns kvar som flaggning på e-postmeddelandet i postlådan.
+
+## Privata Microsoft-konton
+
+To Do-apparna avvecklas även för privata Microsoft-konton, inklusive Microsoft 365 Personal och Family, den 30 juni 2027. Planner är inte tillgängligt för dessa konton. Microsoft rekommenderar att välja en annan uppgiftshantering och säkra data med den aviserade exportfunktionen. Enligt Microsoft innebär en export inte att data kan importeras till Planner eller någon annan app. Användare med både företags- och privatkonto måste kontrollera båda kontona separat.
+
+## Förberedelser för administratörer
+
+1. **Åtkomst och licenser:** Säkerställ att alla To Do-användare har en licens med Planner och att tjänstplanen `PROJECTWORKMANAGEMENT` är aktiverad.
+
+2. **Delade listor och integrationer:** Kartlägg beståndet med skriptet ovan. Identifiera Power Automate-flöden och tredjepartsapplikationer som använder To Do-API:t i Microsoft Graph. Microsoft avvecklar API:t separat och senare; enligt Microsoft kan integrationer ändå behöva anpassas.
+
+3. **Kvarhållning och dataplats:** Kontrollera om befintliga bevarandekrav gäller för To Do-uppgifter och om Purview-principer och holds omfattar den nya privata planen. Bedöm om lagringsplatsen i makroregionen Europa är förenlig med era krav. Involvera de compliance-ansvariga innan uppgiftsdata raderas eller omorganiseras.
+
+4. **Informera användare:** Informera användarna om att ingen migrering sker, hur länge beståndet förblir synligt i Planner och vilka funktioner som ändras (offlineanvändning, påminnelser, bilagor, listgrupper).
+
+5. **Följ Message Center:** Microsoft meddelar där detaljer om utrullningen, exportfunktionen och tidpunkterna för tjänsten och API:erna.
+
+## Källor
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): Tillkännagivande med tidsplan, skillnader mellan To Do och Planner, förberedelsesteg och FAQ.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): Lagring av To Do-uppgifter som uppgifter i Exchange Online-postlådan.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): Lagringsplatser för uppgifter (Exchange, Azure, SharePoint, Dataverse), tjänstplan `PROJECTWORKMANAGEMENT` och åtkomst via `planner.cloud.microsoft` utan licens.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): Prenumerationer med Planner samt Planner Plan 1 och Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner utan permanent åtagande om dataplats, lagringsplats ”EUR1” för klientorganisationer med Schweiz som land.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): Product Terms-åtagande för postlådeinnehåll i vila i Schweiz.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): Lagring av plandata i Azure; Planner deltar inte i Advanced Data Residency. Status augusti 2025, före införandet av kvarhållningsprinciper för Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery och Legal Hold endast för uppgifter i gruppbaserade planer, lista över plantyper som inte stöds.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): Spegel av Message Center-meddelandet om principer för kvarhållning och radering för Planner, utrullning juli till augusti 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): Postlådeobjekt som stöds; uppgifter endast med slutdatum.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): Resurser i To Do-API:t i Microsoft Graph (listor, uppgifter, checklistor, länkade resurser).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): Slutpunkt, behörigheter och egenskaperna `isShared`, `isOwner` och `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): Slutpunkt för uppgifter i en lista och programbehörighet `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): Rapport med Microsofts senare uttalande om integrationerna i Outlook och Teams.
 
 ----
 
@@ -138480,6 +139699,194 @@ På så sätt kan ett e-postflöde följas steg för steg utan att felaktigt lä
 6.  [IETF – RFC 822](https://datatracker.ietf.org/doc/html/rfc822): Format för textmeddelanden på internet (headers och brödtext).
     
 7.  [Microsoft Learn – «Connectors for secure mail flow with a partner»](https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/set-up-connectors-for-secure-mail-flow-with-a-partner): Connector-konfiguration för säkert e-postflöde mellan Exchange Online och gatewayen.
+
+----
+
+# Microsoft To Do avvikles: overgang til Planner sett fra et administratorperspektiv
+
+URL: https://rafaelpfister.ch/no/blog/microsoft-to-do-avvikles-overgang-til-planner-sett-fra-et-administratorperspektiv
+Datum: 2026-11-24
+
+# Microsoft To Do avvikles: overgang til Planner sett fra et administratorperspektiv
+
+Microsoft avvikler Microsoft To Do. Appene for nett, Windows, Mac, iOS og Android blir tatt ut av drift 30. juni 2027, både for jobb- og skolekontoer og for private Microsoft-kontoer. For jobb- og skolekontoer overtar Microsoft Planner de personlige oppgavene; den reviderte visningen «Mine oppgaver» (My tasks) rulles ut fra desember 2026. Microsoft publiserte endringen i november 2026 i en støtteartikkel med tidsplan, forskjeller og informasjon for administratorer.
+
+Kort oppsummert: Det finnes ingen automatisk migrering. Eksisterende To Do-oppgaver forblir synlige i Planner frem til 30. juni 2027 og lagres fortsatt i Exchange Online-postboksen. Fra utrullingen lagrer Planner nye private oppgaver i en privat Planner-plan, altså ikke lenger i Exchange. Dermed endres datalagringssted og Purview-dekning for sveitsiske leiere. Gå gjennom lisenser, delte lister, integrasjoner og oppbevaringsforpliktelser innen midten av 2027. Private Microsoft-kontoer får ingen erstatning.
+
+## Tidsplan
+
+| Tidspunkt | Endring |
+|---|---|
+| Desember 2026 | Start på utrullingen av den reviderte visningen «Mine oppgaver» i Planner for jobb- og skolekontoer. Fra da av lagrer Planner nyopprettede private oppgaver i en privat Planner-plan. |
+| før 30. juni 2027 | Microsoft tilbyr en eksportfunksjon for To Do-data. Format, omfang og forutsetninger er ennå ikke publisert. |
+| 30. juni 2027 | To Do-appene for nett, Windows, Mac, iOS og Android avvikles. Eksisterende To Do-oppgaver er deretter heller ikke synlige i Planner. |
+| senere, uten dato | To Do-tjenesten, API-ene og synkroniseringen avvikles separat. Microsoft oppgir datoene særskilt. |
+
+Planner er allerede tilgjengelig for bedriftskontoer på nettet via `planner.cloud.microsoft` og som app i Teams. Microsoft varsler at de eksisterende inngangspunktene til To Do i Microsoft 365 vil bli tilpasset. Microsoft har overfor Thurrott presisert at de eksisterende integrasjonene, inkludert Outlook og Teams, blir lagt om til Planner.
+
+## Eksisterende oppgaver migreres ikke
+
+Microsoft overfører ikke eksisterende To Do-oppgaver og -lister til Planner. Frem til 30. juni 2027 kan de fortsatt vises og redigeres i Planner, men ikke etterpå. De overføres ikke til den nye private planen.
+
+Dataene slettes ikke når appene avvikles. Ifølge Microsoft innebærer ikke avviklingen av appene noen sletting; Microsoft behandler oppbevaring og tilgang separat. To Do lagrer oppgaver som Exchange-oppgaver i brukerens Exchange Online-postboks, i samme postboks som e-post, avtaler, kontakter og notater. Beholdningen blir derfor foreløpig værende i postboksen etter 30. juni 2027.
+
+Klassisk Outlook påvirkes ikke av avviklingen. Microsoft skriver at oppgavefunksjonen der er separat fra To Do, fortsatt fungerer og synkroniseres med Exchange. To Do-lister vises i klassisk Outlook som oppgavemapper under «Mine oppgaver»; brukere med klassisk Outlook kan derfor fortsatt lese beholdningen der. Hva som skjer med dataene når Microsoft senere slår av selve To Do-tjenesten, er ennå ikke beskrevet.
+
+## Nye oppgaver lagres utenfor Exchange
+
+Med den nye visningen endres lagringsstedet. Ifølge FAQ-en for Planner-administratorer ligger oppgaver fra To Do og Outlook i Exchange, mens planer og oppgavene deres ligger i Azure. Planner lagrer vedlegg til planoppgaver på gruppens SharePoint-nettsted, og Premium-planer i Dataverse. Nye private oppgaver fra «Mine oppgaver» ligger dermed ikke lenger i brukerens postboks. Dette får to konsekvenser for administratorer.
+
+### Datalagringssted
+
+Exchange Online er blant tjenestene med en varig garanti for datalagringssted. Hvis en leier er opprettet i Sveits, lagrer Microsoft ifølge Product Terms postboksinnhold (e-posttekst, kalenderoppføringer og vedlegg) i hvile kun i Sveits. Oppgaver nevnes ikke uttrykkelig i garantien, men de ligger i samme postboks.
+
+Microsoft fører Planner opp blant de øvrige Microsoft 365-tjenestene uten varig garanti. For leiere med land Sveits angir tabellen «EUR1», makroregionen Europa, som lagringssted. Planner deltar heller ikke i Advanced Data Residency. Personlige oppgaver som To Do hittil har lagret i postboksen i Sveits, lagrer Planner etter overgangen i makroregionen Europa. Lagringsstedene per tjeneste for leieren din er oppført på Data Location Card i Microsoft 365 Admin Center. Organisasjoner som har garantert datalagringssted i Sveits kontraktsmessig eller i interne retningslinjer, må vurdere denne endringen.
+
+### Oppbevaring og eDiscovery
+
+Exchange-oppbevaringspolicyer i Microsoft Purview omfatter oppgaver i postboksen bare dersom de har en sluttdato; oppgaver uten sluttdato er ikke dekket. Denne begrensningen gjelder allerede i dag for To Do-oppgaver.
+
+For Planner støtter Purview eDiscovery-søk og Legal Hold ifølge Microsoft bare for oppgaver i planer som er delt med en gruppe. Personlige planer (Roster-planer), planer i Loop-komponenter, Premium-planer samt planer i delte og private Teams-kanaler støttes uttrykkelig ikke. Microsoft har rullet ut oppbevarings- og slettingspolicyer for Planner-innhold siden midten av juli 2026, med planlagt ferdigstillelse tidlig i august (MC1384412); ifølge meldingen kan de brukes på bruker- og gruppebaserte planer. Kunngjøringen opplyser ikke hvilken plantype den nye private planen teknisk tilsvarer. Kontroller etter utrullingen om oppbevaringspolicyene og holdene dine omfatter de nye private oppgavene.
+
+## Forskjeller mellom To Do og Planner
+
+Microsoft lister opp følgende forskjeller:
+
+| Område | Forskjell ifølge Microsoft |
+|---|---|
+| Organisering | Planner samler private oppgaver og tildelt arbeid under «Mine oppgaver», i dag med rutenett- og tavlevisning. En listevisning kommer med revisjonen. |
+| Påminnelser | Varslingene om forfallsdato i Planner skiller seg fra påminnelsene som planlegges per oppgave i To Do. |
+| Deling | Planner bruker planer og tildelinger. Medlemskap, tildelinger og tillatelser for delte To Do-lister overføres ikke. |
+| Skrivebord og frakoblet bruk | Planner finnes på nettet og i Teams. Det er ikke planlagt egne apper for Windows og Mac; nett og Teams har ingen tilsvarende frakoblet funksjon. |
+| Kategorier | Planner-etiketter fungerer annerledes enn Outlook-kategorier og synkroniseres ikke med dem. |
+| Vedlegg | Filvedlegg til oppgaver støttes for øyeblikket ikke i den nye private Planner-planen. |
+| Stjerne og prioritet | Den personlige stjernen brukes til egen planlegging og kommer med den nye visningen. Prioriteten til en oppgave gjelder for alle deltakere i en delt plan. |
+| Listegrupper | Ingen direkte ekvivalent i Planner. |
+| Utskrift, sende liste per e-post | Ikke planlagt for erstatningsløsningen for øyeblikket. |
+
+Brukere som arbeider frakoblet med To Do-appen i Windows eller Mac, har ingen tilsvarende erstatning i Planner.
+
+## Lisenser og tilgang til Planner
+
+Planner er blant annet inkludert i Microsoft 365 Business Basic, Business Standard og Business Premium samt i Office 365 E1, E3 og E5. Hvis Planner mangler i en lisens, tilbyr Microsoft Planner Plan 1 eller Planner and Project Plan 3 som egne abonnementer; disse kreves også for Premium-funksjonene. Ifølge Microsoft er ingen ny konfigurasjon nødvendig, og det finnes ingen egen bryter som administratorer kan bruke til å styre eller utsette overgangen.
+
+Hvis Planner er deaktivert i lisenstildelingen (tjenesteplan `PROJECTWORKMANAGEMENT`), må de berørte brukerne få tilgang igjen dersom Planner skal erstatte To Do. Ifølge Planner-FAQ-en skjuler fjerning av Planner-lisensen uansett bare flisen: Via `planner.cloud.microsoft` kan brukere uten lisens fortsatt opprette og redigere planer. Hvis du hittil har sperret Planner via lisensen, bør du gjennomgå denne beslutningen med tanke på overgangen.
+
+## Kartlegg beholdningen med Microsoft Graph
+
+Hvilke brukere som bruker To Do, og hvilke lister som er delt, kan hentes ut via To Do-API-et i Microsoft Graph. Skriptet nedenfor skriver alle lister per bruker med delingsstatus og antall åpne oppgaver til en CSV-fil. Det krever modulene `Microsoft.Graph.Authentication` og `Microsoft.Graph.Users`, samt en appregistrering med programtillatelsene `Tasks.Read.All` og `User.Read.All` (med administratorgodkjenning) og et sertifikat for pålogging. `Tasks.Read.All` gir lesetilgang til oppgavene til alle brukere; fjern tillatelsen eller appregistreringen igjen etter kartleggingen.
+
+```powershell
+$verbindung = @{
+    ClientId              = '<App-ID>'
+    TenantId              = '<Tenant-ID>'
+    CertificateThumbprint = '<Zertifikat-Fingerabdruck>'
+}
+Connect-MgGraph @verbindung -NoWelcome
+
+$benutzer = Get-MgUser -All -Filter "accountEnabled eq true" -Property Id, UserPrincipalName
+
+$bestand = foreach ($b in $benutzer) {
+    try {
+        $listen = Get-MgUserTodoList -UserId $b.Id -All -ErrorAction Stop
+    }
+    catch {
+        # Ingen Exchange Online-postboks eller ingen tilgang: hopp over brukeren
+        continue
+    }
+    foreach ($l in $listen) {
+        $aufgaben = @(Get-MgUserTodoTask -UserId $b.Id -TodoTaskListId $l.Id -All)
+        [pscustomobject]@{
+            Benutzer = $b.UserPrincipalName
+            Liste    = $l.DisplayName
+            Typ      = $l.WellknownListName
+            Geteilt  = $l.IsShared
+            Besitzer = $l.IsOwner
+            Offen    = @($aufgaben | Where-Object Status -ne 'completed').Count
+            Gesamt   = $aufgaben.Count
+        }
+    }
+}
+
+$bestand | Export-Csv -Path .\todo-bestand.csv -NoTypeInformation -Encoding UTF8
+```
+
+<details class="options-details">
+<summary>Forklaring av alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `ClientId`, `TenantId` | Appregistreringen og leieren som skriptet logger på mot |
+| `CertificateThumbprint` | Fingeravtrykket til sertifikatet i sertifikatlageret til gjeldende bruker; pålogging som app uten brukerkonto |
+| `-NoWelcome` | Undertrykker velkomstmeldingen fra `Connect-MgGraph` |
+| `-All` | Leser alle sider i et resultat i stedet for bare den første |
+| `-Filter "accountEnabled eq true"` | Bare aktiverte kontoer; deaktiverte kontoer som delte postbokser utelates |
+| `-Property Id, UserPrincipalName` | Laster bare de to nødvendige egenskapene |
+| `-UserId` | Brukeren som lister eller oppgaver hentes for |
+| `-ErrorAction Stop` | Gjør en feil fangbar, slik at `catch` kan hoppe over brukeren |
+| `-TodoTaskListId` | Listen det hentes oppgaver for |
+| `WellknownListName` | `defaultList` for standardlisten «Oppgaver», `flaggedEmails` for flaggede meldinger, `none` for egne lister |
+| `IsShared` | `True`, når listen er delt med andre brukere |
+| `IsOwner` | `False`, når listen eies av en annen bruker og bare er delt |
+| `Status -ne 'completed'` | Teller alle oppgaver som ikke er fullført |
+| `-NoTypeInformation` | Ingen typeinje i starten av CSV-filen |
+| `-Encoding UTF8` | Omlyder i listenavn bevares |
+
+</details>
+
+Kontoer uten Exchange Online-postboks gir en feil og hoppes over. I store leiere er det fornuftig med en testkjøring med et utvalg, for eksempel med `-Top 20` i stedet for `-All` ved `Get-MgUser`.
+
+Evaluering av CSV-filen:
+
+- **Delte lister** (`Geteilt` = `True`) viser hvor samarbeid skjer via To Do. Microsoft overfører ikke disse medlemskapene; listene må bygges opp på nytt som en Planner-plan med de aktuelle personene.
+- **Åpne oppgaver** i egne lister (`Typ` = `none` eller `defaultList`) må brukerne overføre manuelt til Planner innen 30. juni 2027 eller sikre med den varslede eksportfunksjonen.
+- **Flaggede meldinger** (`Typ` = `flaggedEmails`) beholdes som flagg på e-posten i postboksen.
+
+## Private Microsoft-kontoer
+
+To Do-appene avvikles også for private Microsoft-kontoer, inkludert Microsoft 365 Personal og Family, 30. juni 2027. Planner er ikke tilgjengelig for disse kontoene. Microsoft anbefaler å velge en annen oppgavebehandling og sikre dataene med den varslede eksportfunksjonen. Ifølge Microsoft betyr ikke en eksport at dataene kan importeres til Planner eller et annet program. Brukere med både jobb- og privatkonto må kontrollere begge kontoene separat.
+
+## Forberedelser for administratorer
+
+1. **Tilgang og lisenser:** Sørg for at alle To Do-brukere har en lisens med Planner, og at tjenesteplanen `PROJECTWORKMANAGEMENT` er aktivert.
+
+2. **Delte lister og integrasjoner:** Kartlegg beholdningen med skriptet ovenfor. Identifiser Power Automate-flyter og tredjepartsprogrammer som bruker To Do-API-et i Microsoft Graph. Microsoft avvikler API-et separat og senere; ifølge Microsoft kan integrasjoner likevel kreve tilpasninger.
+
+3. **Oppbevaring og datalagringssted:** Kontroller om eksisterende oppbevaringsforpliktelser gjelder for To Do-oppgaver, og om Purview-policyer og hold omfatter den nye private planen. Vurder om lagringsstedet i makroregionen Europa er forenlig med kravene dine. Involver de compliance-ansvarlige før du sletter eller reorganiserer oppgavedata.
+
+4. **Informer brukerne:** Opplys brukerne om at ingen migrering finner sted, hvor lenge beholdningen forblir synlig i Planner, og hvilke funksjoner som endres (frakoblet bruk, påminnelser, vedlegg, listegrupper).
+
+5. **Følg Message Center:** Microsoft varsler detaljer om utrullingen, eksportfunksjonen og datoene for tjenesten og API-ene der.
+
+## Kilder
+
+1.  [Moving from Microsoft To Do to Microsoft Planner](https://support.microsoft.com/en-us/planner/to-do-to-planner): Kunngjøring med tidsplan, forskjeller mellom To Do og Planner, forberedelsestrinn og FAQ.
+
+2.  [Review data storage and compliance in Microsoft To Do](https://support.microsoft.com/en-us/todo/review-data-storage-and-compliance-in-microsoft-to-do): Lagring av To Do-oppgaver som oppgaver i Exchange Online-postboksen.
+
+3.  [Frequently asked questions for admins about Microsoft Planner](https://learn.microsoft.com/en-us/planner/faq-for-planner-admins): Lagringssteder for oppgaver (Exchange, Azure, SharePoint, Dataverse), tjenesteplan `PROJECTWORKMANAGEMENT` og tilgang via `planner.cloud.microsoft` uten lisens.
+
+4.  [Microsoft Planner for admins](https://learn.microsoft.com/en-us/planner/planner-for-admins): Abonnementer med Planner samt Planner Plan 1 og Planner and Project Plan 3.
+
+5.  [Other Microsoft 365 services data locations](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-other?view=o365-worldwide#planner): Planner uten varig garanti for datalagringssted, lagringssted «EUR1» for leiere med land Sveits.
+
+6.  [Data Residency for Exchange Online](https://learn.microsoft.com/en-us/microsoft-365/enterprise/m365-dr-service-exo?view=o365-worldwide): Garantien i Product Terms for postboksinnhold i hvile i Sveits.
+
+7.  [Security, privacy, and compliance in Microsoft Planner](https://learn.microsoft.com/en-us/planner/planner-security-privacy-compliance): Lagring av plandata i Azure; Planner deltar ikke i Advanced Data Residency. Status august 2025, før innføringen av oppbevaringspolicyer for Planner.
+
+8.  [Microsoft Planner support in Microsoft Purview](https://learn.microsoft.com/en-us/planner/planner-in-purview): eDiscovery og Legal Hold bare for oppgaver i gruppebaserte planer, liste over ikke-støttede plantyper.
+
+9.  [MC1384412: Retention policies for Microsoft Planner content](https://mc.merill.net/message/MC1384412): Speil av Message Center-meldingen om oppbevarings- og slettingspolicyer for Planner, utrulling fra juli til august 2026.
+
+10.  [Learn about retention for Exchange](https://learn.microsoft.com/en-us/purview/retention-policies-exchange): Støttede postbokselementer; oppgaver bare med sluttdato.
+
+11.  [Use the Microsoft To Do API](https://learn.microsoft.com/en-us/graph/api/resources/todo-overview?view=graph-rest-1.0): Ressurser i To Do-API-et i Microsoft Graph (lister, oppgaver, sjekklister, tilknyttede ressurser).
+
+12.  [List lists](https://learn.microsoft.com/en-us/graph/api/todo-list-lists?view=graph-rest-1.0): Endepunkt, tillatelser og egenskapene `isShared`, `isOwner` og `wellknownListName`.
+
+13.  [List Todo tasks](https://learn.microsoft.com/en-us/graph/api/todotasklist-list-tasks?view=graph-rest-1.0): Endepunkt for oppgaver i en liste og programtillatelsen `Tasks.Read.All`.
+
+14.  [Microsoft Will Retire its To Do App in June 2027](https://www.thurrott.com/cloud/344071/microsoft-will-retire-its-to-do-app-on-in-june-2027): Rapport med ettersendt uttalelse fra Microsoft om integrasjonene i Outlook og Teams.
 
 ----
 
