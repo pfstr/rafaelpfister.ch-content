@@ -24,6 +24,17 @@ Articles that analyse or reference these vulnerabilities (generated from the art
 
 | CVE | Article |
 | --- | --- |
+| CVE-2026-130637 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124845 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124844 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124843 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124842 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124841 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124840 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124839 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124838 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124837 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
+| CVE-2026-124836 | [SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
 | CVE-2026-124194 | [CVE-2026-124194: Outlook Spoofing Is Being Exploited - Update and Check Your Office Version](https://rafaelpfister.ch/en/blog/cve-2026-124194-outlook-spoofing-is-being-exploited-update-and-check-your-office-version) |
 | CVE-2026-118208 | [November 2026 Exchange security updates: nine vulnerabilities, first update only for Exchange SE](https://rafaelpfister.ch/en/blog/november-2026-exchange-security-updates-nine-vulnerabilities-first-update-only-for-exchange-se) |
 | CVE-2026-118207 | [November 2026 Exchange security updates: nine vulnerabilities, first update only for Exchange SE](https://rafaelpfister.ch/en/blog/november-2026-exchange-security-updates-nine-vulnerabilities-first-update-only-for-exchange-se) |
@@ -38,7 +49,7 @@ Articles that analyse or reference these vulnerabilities (generated from the art
 | CVE-2026-114938 | [Java4Shell (CVE-2026-114938): Memory Error in OpenJDK's Base64 Decoder - Find, Secure, and Patch Affected Systems](https://rafaelpfister.ch/en/blog/java4shell-cve-2026-114938-memory-error-in-openjdk-s-base64-decoder-find-secure-and-patch) |
 | CVE-2026-114426 | [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](https://rafaelpfister.ch/en/blog/seppmail-15-1-1-five-cve-fixes-and-a-fix-for-the-dns-regression-from-15-1-0-1) |
 | CVE-2026-114425 | [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](https://rafaelpfister.ch/en/blog/seppmail-15-1-1-five-cve-fixes-and-a-fix-for-the-dns-regression-from-15-1-0-1) |
-| CVE-2026-114424 | [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](https://rafaelpfister.ch/en/blog/seppmail-15-1-1-five-cve-fixes-and-a-fix-for-the-dns-regression-from-15-1-0-1) |
+| CVE-2026-114424 | [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](https://rafaelpfister.ch/en/blog/seppmail-15-1-1-five-cve-fixes-and-a-fix-for-the-dns-regression-from-15-1-0-1)<br>[SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS](https://rafaelpfister.ch/blog/seppmail-releases-15-1-2) (German) |
 | CVE-2026-114421 | [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](https://rafaelpfister.ch/en/blog/seppmail-15-1-1-five-cve-fixes-and-a-fix-for-the-dns-regression-from-15-1-0-1) |
 | CVE-2026-114420 | [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](https://rafaelpfister.ch/en/blog/seppmail-15-1-1-five-cve-fixes-and-a-fix-for-the-dns-regression-from-15-1-0-1) |
 | CVE-2026-111943 | [Rclone 1.76.0: numerous security fixes, VFS fixes, and new backends](https://rafaelpfister.ch/en/blog/rclone-1-76-0-numerous-security-fixes-vfs-fixes-and-new-backends) |
