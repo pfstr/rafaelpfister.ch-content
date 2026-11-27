@@ -67,6 +67,22 @@ Für den Betrieb müssen mehrere Bedingungen gleichzeitig erfüllt sein:
 
 In der Einladung aktivieren Sie den Facilitator unter **Options** > **Copilot and other AI** mit der Einstellung «Allow Copilot and Facilitator». Alternativ lässt er sich während des Meetings über das Copilot-Menü einschalten.
 
+## Facilitator ist ausgegraut
+
+Im Meeting zeigt Teams im Menü «Besprechungs-KI» drei Schalter: Copilot, Facilitator und Intelligente Zusammenfassung. Sind alle drei ausgegraut und erscheint der Hinweis «Sie haben in dieser Besprechung keinen Zugriff auf KI», liegt die Ursache bei der Lizenz oder beim Meeting selbst. Ist nur der Facilitator ausgegraut, liegt sie bei der App oder bei Loop.
+
+| Symptom | Mögliche Ursache | Prüfung |
+|---|---|---|
+| Alle drei Schalter grau | Das Konto hat weder eine Microsoft-365-Copilot- noch eine Teams-Premium-Lizenz | Microsoft 365 Admin Center > Benutzer > Lizenzen. Eine neu zugewiesene Lizenz wird in Teams oft erst nach einigen Stunden oder einer neuen Anmeldung wirksam |
+| Alle drei Schalter grau | Sofortbesprechung («Jetzt besprechen»), aus dem Chat gestartetes Meeting, Kanalbesprechung oder Anruf | Meeting über den Kalender als geplantes Teams-Meeting anlegen |
+| Alle drei Schalter grau | Meeting einer anderen Organisation, Teilnahme als externe Person oder Gast | Facilitator ist in externen Meetings nicht verfügbar |
+| Alle drei Schalter grau | Meeting-Option «Copilot und Facilitator zulassen» steht auf «Aus», gesetzt von der organisierenden Person, einer Meeting-Vorlage oder einer Vertraulichkeitsbezeichnung | Besprechungsoptionen > Copilot und andere KI |
+| Alle drei Schalter grau | Teams-Besprechungsrichtlinie sperrt Copilot oder die Transkription | Teams Admin Center > Besprechungen > Besprechungsrichtlinien |
+| Nur Facilitator grau | App «Facilitator» blockiert, etwa weil alle Apps gesperrt sind | Teams Admin Center > Teams-Apps > Apps verwalten |
+| Nur Facilitator grau oder keine Notizen | Loop für Meeting-Notizen ausgeschaltet | `Get-SPOTenant` zeigt `IsCollabMeetingNotesFluidEnabled` |
+
+Die Lizenz ist die häufigste Ursache. Ohne Microsoft-365-Copilot-Lizenz bleibt der Facilitator-Schalter in jedem Meeting grau, unabhängig von Meeting-Optionen und Richtlinien.
+
 ## Wofür sich der Facilitator eignet
 
 Den grössten Nutzen hat der Facilitator in Meetings, in denen sonst jemand Protokoll führt und dadurch nicht mitdiskutieren kann. Typische Beispiele:
