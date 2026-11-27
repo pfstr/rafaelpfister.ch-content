@@ -23986,6 +23986,98 @@ Under Art. 14 para. 2bis OR, only a qualified electronic signature with a qualif
 
 ----
 
+# SEPPmail 15.1.2: Eleven CVE Fixes, Mainly in GINA, and Post-Quantum TLS
+
+URL: https://rafaelpfister.ch/en/blog/seppmail-15-1-2-eleven-cve-fixes-mainly-in-gina-and-post-quantum-tls
+Datum: 2026-11-25
+
+# SEPPmail 15.1.2: Eleven CVE Fixes, Mainly in GINA, and Post-Quantum TLS
+
+On November 24, 2026, SEPPmail released patch release 15.1.2. It fixes eleven vulnerabilities with CVSS scores between 6.3 and 9.3, affecting all versions before 15.1.2. Eight of them are in GINA (webmail), including a template injection on the login page and two ways to take over registered accounts; another affects a hard-coded fallback key in Large File Transfer (LFT). Also new are post-quantum key exchange (X25519MLKEM768) in the web server TLS configuration, CSV export in Log View, a larger `/etc` partition, and REST API authentication that enforces the MFA policy for administrators. The release is intended for all operators of SEPPmail appliances, including appliances running as HIN Mailgateway, as these are based on SEPPmail firmware. The previous release is described in the article on [SEPPmail 15.1.1](/blog/seppmail-releases-15-1-1).
+
+## Versions at a glance
+
+| Version | Date | Type | Key points |
+|---|---|---|---|
+| 15.1.2 | 11/24/2026 | Patch release | Eleven CVEs (CVSS 6.3–9.3), highest score: CVE-2026-130637 (CVSS 9.3, GINA login), X25519MLKEM768 for the web server, CSV export in Log View, MFA enforcement for REST logins, LFT without a hard-coded fallback key |
+
+## Security fixes in 15.1.2
+
+The Revision History and Extended Release Notes list eleven entries with CVE IDs. In each case, they identify versions before 15.1.2 as affected; they do not specify a CVSS version or vector.
+
+**GINA accounts and login:**
+
+- **CVE-2026-130637, CVSS 9.3:** Values from requests to the GINA login page were evaluated by the template engine. According to the Extended Release Notes, an unauthenticated attacker could use this to read attributes of arbitrary GINA accounts and take over accounts. Request values are no longer evaluated as template placeholders.
+- **CVE-2026-124840, CVSS 9.2:** A session from recovery via security question was also accepted for account registration and settings. Anyone who knew the answer to the security question could change the password. Recovery now uses a separate session purpose valid only within that workflow.
+- **CVE-2026-124842, CVSS 8.3:** An unauthenticated request could reset the password of a registered GINA account without answering the security question. Unauthenticated resets now apply only to unregistered accounts.
+- **CVE-2026-124841, CVSS 6.9:** Wildcard characters in account addresses were not escaped in GINA LDAP queries, allowing a query to target a different account. All values in these LDAP filters are now escaped.
+- **CVE-2026-124845, CVSS 6.3:** An HTTP header set by the client could cause GINA domain resolution to fail; the request then ran using the settings of the `[default]` domain. Requests for GINA domains that cannot be resolved are now rejected.
+- **CVE-2026-124844, CVSS 8.7:** Files from unauthenticated GINA uploads were not deleted, which could fill up storage space. Uploads are now limited to the maximum message size of the GINA domain, and unneeded files are removed.
+
+**Large File Transfer:**
+
+- **CVE-2026-124843, CVSS 9.2:** If appliance key material was missing, LFT encryption used a hard-coded fallback secret. This allowed attachments to be decrypted outside the appliance. The fallback has been removed; without the required key, the appliance refuses LFT encryption.
+
+**Privilege escalation on the appliance:**
+
+- **CVE-2026-124838, CVSS 8.5:** The local socket of the configuration service was accessible to all local users. An attacker with local code execution could use it to execute commands with elevated privileges. Access is now restricted to authorized system accounts, and supplied command data is escaped.
+- **CVE-2026-124839, CVSS 7.7:** A crafted GINA account address could trigger commands with elevated privileges through a maintenance script during system startup. The account address is no longer passed to a shell command.
+
+**Mail processing:**
+
+- **CVE-2026-124836, CVSS 6.3:** The rule commands `ldap_compare` and `ldap_read` inserted values from the message into LDAP filters without escaping. A sender could thereby influence the result of an LDAP rule. The values are now escaped.
+- **CVE-2026-124837, CVSS 6.3:** A crafted DKIM signature could inject forged entries into the `Authentication-Results` header, which were subsequently covered by the gateway's ARC seal. Values from the DKIM signature are now validated before being adopted.
+
+Without a CVE ID, the release notes additionally mention hardening of internal helper functions for command execution.
+
+As of November 25, 2026, the NVD has no entry for CVE-2026-130637 or CVE-2026-124840, and CVE.org does not list CVE-2026-124840 as published. Vectors, CWE classification, and an assessment of exploitability are therefore not yet available; the CVSS scores come from the vendor's release notes. According to the vendor's description, several GINA flaws can be triggered without authentication, while CVE-2026-124836 and CVE-2026-124837 can be triggered through incoming messages. Until the update is installed, check whether GINA is reachable from the internet and whether rules with `ldap_compare` or `ldap_read` use values from messages.
+
+## New features and changes
+
+- **Post-Quantum TLS:** In the TLS settings of GINA domains, the setting formerly called “Curves” is now called “Groups.” Groups with post-quantum support, such as X25519MLKEM768, can be selected there; the setting affects the web server (httpd) configuration. The release notes do not specify default values.
+- **Log View:** A new “Export CSV...” button exports all displayed or filtered entries, for both file-based and database-based logging.
+- **Operating system:** The `/etc` partition was enlarged because it was too small in some installations, occasionally preventing configuration files from being written.
+- **REST API:** The `/auth` endpoint honors MFA settings for administrators, failed logins consistently receive HTTP 403, and successful logins are logged. REST API tokens of users become invalid after the timeout configured for the Admin GUI. In several REST endpoints, client values are escaped in LDAP search filters.
+- **LFT:** Encryption no longer uses a hard-coded fallback key (see CVE-2026-124843).
+
+Two changes may affect existing workflows. Scripts and integrations that log in to the REST API with an administrator account must meet the MFA policy after the update, and long-running automations using user tokens will run into the Admin GUI timeout; test such integrations after updating. Since LFT no longer encrypts without existing key material, verify after the update that LFT deliveries continue to work.
+
+## Bug fixes
+
+- **Background Tasks:** A GINA satellite could not send users and keys.
+- **CfgServer:** S/MIME signature generation for the automatic trust establishment of domain certificates works again.
+- **Database:** An LDAP change repeated previous changes when the same entry was edited again.
+- **Large Files:** Orphaned files are handled correctly when expired LFT data is cleaned up.
+- **Logging:** The progress indicator when rebuilding the database log cache has been corrected; according to the Extended Release Notes, CC recipients were also missing from Log View.
+- **Webmail (GINA):** Double-clicking “Send” sent a reply twice.
+
+## Known issues
+
+- **CVE IDs for the security fixes in 15.1.0:** Still pending. The Revision History continues to list “CVE-ID: Pending” unchanged for both entries (CVSS 9.9 and 7.1) as of November 25, 2026.
+- **NVD entries for the CVEs from 15.1.1:** Now partially published. CVE-2026-114424 has been in the NVD since November 4, 2026, with the NCSC as the source and CVSS 4.0 at 9.2; the NVD describes the confirmed execution context as root.
+
+The release notes for 15.1.2 do not contain a Known Issues section.
+
+## Recommended approach
+
+The target version is 15.1.2, because all eleven CVEs affect versions before 15.1.2 and several can be triggered without logging in to GINA or through incoming messages. For systems on the 15.0 branch, first update to 15.0.7 as described in the article on 15.1.1; according to the Revision History, it enables the update to 15.1. Before updating, create a backup and, for virtual appliances, also create a snapshot, as recommended by the vendor documentation. Afterwards, test REST API integrations using administrator accounts and LFT delivery. The release notes do not provide information about the update sequence in a cluster or a minimum version for 15.1.2 as of November 25, 2026.
+
+## Sources
+
+1.  [SEPPmail documentation: Revision History](https://docs.seppmail.com/ch/20_revision-history.html): Release notes for 15.1.2 with the date, eleven CVEs with CVSS scores, new features and bug fixes, and the status of the CVE IDs from 15.1.0.
+
+2.  [SEPPmail: Extended Release Notes 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html): Detailed description of 15.1.2, including the renaming of “Curves” to “Groups,” the REST API token timeout, and LFT encryption.
+
+3.  [NVD: CVE-2026-130637](https://nvd.nist.gov/vuln/detail/CVE-2026-130637): As of November 25, 2026, no entry is available yet, nor is one available for CVE-2026-124840.
+
+4.  [CVE.org: CVE-2026-124840](https://www.cve.org/CVERecord?id=CVE-2026-124840): Not published as of November 25, 2026.
+
+5.  [NVD: CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424): Entry for one of the vulnerabilities from 15.1.1, published on November 4, 2026, with CVSS 4.0 at 9.2.
+
+6.  [SEPPmail 15.1.1: Five CVE Fixes and a Fix for the DNS Regression from 15.1.0.1](/blog/seppmail-releases-15-1-1): Previous release status with the fixes from 15.1.1 and the update path through 15.0.7.
+
+----
+
 # Microsoft To Do Is Being Retired: Moving to Planner from an Admin Perspective
 
 URL: https://rafaelpfister.ch/en/blog/microsoft-to-do-is-being-retired-moving-to-planner-from-an-admin-perspective
@@ -47510,6 +47602,98 @@ Seule la signature électronique qualifiée avec horodatage qualifié est assimi
 11.  [Code de procédure civile (CPC)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 relatif à la libre appréciation des preuves.
 
 12.  [Règlement (UE) n° 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25, al. 2 sur l’assimilation de la signature électronique qualifiée à la signature manuscrite.
+
+----
+
+# SEPPmail 15.1.2 : onze correctifs CVE, surtout dans GINA, et TLS post-quantique
+
+URL: https://rafaelpfister.ch/fr/blog/seppmail-15-1-2-onze-correctifs-cve-surtout-dans-gina-et-tls-post-quantique
+Datum: 2026-11-25
+
+# SEPPmail 15.1.2 : onze correctifs CVE, surtout dans GINA, et TLS post-quantique
+
+SEPPmail a publié la version corrective 15.1.2 le 24 novembre 2026. Elle corrige onze vulnérabilités avec des scores CVSS compris entre 6.3 et 9.3, qui affectent toutes les versions antérieures à 15.1.2. Huit d’entre elles concernent GINA (webmail), dont une injection de modèle sur la page de connexion et deux moyens de prendre le contrôle de comptes enregistrés ; une autre concerne une clé de remplacement codée en dur dans Large File Transfer (LFT). Les nouveautés comprennent également l’échange de clés post-quantique (X25519MLKEM768) dans la configuration TLS du serveur web, une exportation CSV dans la vue des journaux, une partition `/etc` plus grande et une authentification REST API qui applique la politique MFA pour les administrateurs. Cette version s’adresse à tous les exploitants d’appliances SEPPmail, y compris aux appliances utilisées comme passerelle HIN Mail, car elles reposent sur le firmware SEPPmail. La version précédente est décrite dans l’article sur [SEPPmail 15.1.1](/blog/seppmail-releases-15-1-1).
+
+## Aperçu des versions
+
+| Version | Date | Type | Points principaux |
+|---|---|---|---|
+| 15.1.2 | 24.11.2026 | Version corrective | Onze CVE (CVSS 6.3–9.3), score maximal CVE-2026-130637 (CVSS 9.3, connexion GINA), X25519MLKEM768 pour le serveur web, exportation CSV dans la vue des journaux, application de MFA lors de la connexion REST, LFT sans clé de remplacement codée en dur |
+
+## Correctifs de sécurité dans 15.1.2
+
+L’historique des révisions et les notes de version étendues répertorient onze entrées avec un identifiant CVE. Ils indiquent à chaque fois que les versions antérieures à 15.1.2 sont affectées ; ils ne précisent ni version CVSS ni vecteur.
+
+**Comptes et connexion GINA :**
+
+- **CVE-2026-130637, CVSS 9.3 :** Les valeurs des requêtes vers la page de connexion GINA étaient évaluées par le moteur de modèles. Selon les notes de version étendues, un attaquant non authentifié pouvait ainsi lire les attributs de comptes GINA arbitraires et prendre le contrôle de comptes. Les valeurs des requêtes ne sont plus évaluées comme espaces réservés de modèle.
+- **CVE-2026-124840, CVSS 9.2 :** Une session issue de la récupération par question de sécurité était également acceptée pour l’enregistrement de compte et les paramètres. Toute personne connaissant la réponse à la question de sécurité pouvait modifier le mot de passe. La récupération utilise désormais un objectif de session distinct, valable uniquement dans ce processus.
+- **CVE-2026-124842, CVSS 8.3 :** Une requête non authentifiée pouvait réinitialiser le mot de passe d’un compte GINA enregistré sans répondre à la question de sécurité. La réinitialisation sans authentification ne s’applique désormais qu’aux comptes non enregistrés.
+- **CVE-2026-124841, CVSS 6.9 :** Les caractères génériques dans les adresses de compte n’étaient pas échappés dans les requêtes LDAP de GINA, ce qui permettait à une requête de cibler un autre compte. Toutes les valeurs dans ces filtres LDAP sont désormais échappées.
+- **CVE-2026-124845, CVSS 6.3 :** Un en-tête HTTP défini par le client pouvait faire échouer la résolution du domaine GINA ; la requête était alors traitée avec les paramètres du domaine `[default]`. Les requêtes destinées à des domaines GINA non résolubles sont désormais rejetées.
+- **CVE-2026-124844, CVSS 8.7 :** Les fichiers issus de téléversements GINA non authentifiés n’étaient pas supprimés, ce qui pouvait saturer l’espace de stockage. Les téléversements sont désormais limités à la taille maximale des messages du domaine GINA, et les fichiers inutiles sont supprimés.
+
+**Large File Transfer :**
+
+- **CVE-2026-124843, CVSS 9.2 :** Si le matériel de clé de l’appliance était absent, le chiffrement LFT utilisait un secret de remplacement codé en dur. Les pièces jointes pouvaient ainsi être déchiffrées en dehors de l’appliance. Ce remplacement est supprimé ; sans la clé requise, l’appliance refuse le chiffrement LFT.
+
+**Élévation de privilèges sur l’appliance :**
+
+- **CVE-2026-124838, CVSS 8.5 :** Le socket local du service de configuration était accessible à tous les utilisateurs locaux. Un attaquant disposant d’une exécution de code locale pouvait ainsi exécuter des commandes avec des privilèges élevés. L’accès est désormais limité aux comptes système autorisés, et les données de commande transmises sont échappées.
+- **CVE-2026-124839, CVSS 7.7 :** Une adresse de compte GINA préparée pouvait déclencher, au démarrage du système et via un script de maintenance, des commandes avec des privilèges élevés. L’adresse du compte n’est plus transmise à une commande shell.
+
+**Traitement des e-mails :**
+
+- **CVE-2026-124836, CVSS 6.3 :** Les commandes de règle `ldap_compare` et `ldap_read` inséraient des valeurs du message dans des filtres LDAP sans échappement. Un expéditeur pouvait ainsi influencer le résultat d’une règle LDAP. Les valeurs sont désormais échappées.
+- **CVE-2026-124837, CVSS 6.3 :** Une signature DKIM préparée pouvait injecter de fausses entrées dans l’en-tête `Authentication-Results`, qui étaient ensuite couvertes par le sceau ARC de la passerelle. Les valeurs provenant de la signature DKIM sont désormais validées avant leur reprise.
+
+Sans identifiant CVE, les notes de version mentionnent également un durcissement des fonctions auxiliaires internes d’exécution de commandes.
+
+Au 25 novembre 2026, la NVD ne fournit aucune entrée pour CVE-2026-130637 et CVE-2026-124840, et CVE.org n’indique pas CVE-2026-124840 comme publié. Les vecteurs, la classification CWE et une évaluation de l’exploitation ne sont donc pas encore disponibles ; les scores CVSS proviennent des notes de version du fabricant. Selon la description du fabricant, plusieurs failles dans GINA peuvent être exploitées sans connexion, et CVE-2026-124836 ainsi que CVE-2026-124837 via des messages entrants. Jusqu’à la mise à jour, vérifiez si GINA est accessible depuis Internet et si des règles utilisant `ldap_compare` ou `ldap_read` emploient des valeurs issues du message.
+
+## Nouvelles fonctions et modifications
+
+- **TLS post-quantique :** Dans les paramètres TLS des domaines GINA, le réglage « Curves » s’appelle désormais « Groups ». Il permet de sélectionner des groupes avec prise en charge post-quantique, tels que X25519MLKEM768 ; ce réglage agit sur la configuration du serveur web (httpd). Les notes de version ne précisent pas les valeurs par défaut.
+- **Vue des journaux :** Un nouveau bouton « Export CSV... » exporte toutes les entrées affichées ou filtrées, tant pour la journalisation basée sur des fichiers que sur une base de données.
+- **Système d’exploitation :** La partition `/etc` a été agrandie, car elle était trop petite dans certaines installations et empêchait parfois l’écriture de fichiers de configuration.
+- **REST API :** Le point de terminaison `/auth` prend en compte les paramètres MFA pour les administrateurs, les connexions échouées reçoivent uniformément HTTP 403, et les connexions réussies sont consignées. Les jetons REST API des utilisateurs expirent après le délai d’expiration configuré pour l’interface d’administration. Dans plusieurs points de terminaison REST, les valeurs du client sont échappées dans les filtres de recherche LDAP.
+- **LFT :** Le chiffrement n’utilise plus de clé de remplacement codée en dur (voir CVE-2026-124843).
+
+Deux modifications peuvent affecter les processus existants. Les scripts et intégrations qui se connectent à la REST API avec un compte administrateur doivent respecter la politique MFA après la mise à jour, et les automatisations de longue durée utilisant des jetons utilisateur atteignent le délai d’expiration de l’interface d’administration ; testez ces intégrations après la mise à jour. Comme LFT ne chiffre plus sans matériel de clé existant, vérifiez après la mise à jour que les envois LFT fonctionnent toujours.
+
+## Corrections de bugs
+
+- **Tâches d’arrière-plan :** Un satellite GINA ne pouvait pas envoyer d’utilisateurs ni de clés.
+- **CfgServer :** La création de signatures S/MIME pour l’établissement automatique de la confiance des certificats de domaine fonctionne à nouveau.
+- **Base de données :** Une modification LDAP répétait des modifications antérieures lorsque la même entrée était à nouveau modifiée.
+- **Fichiers volumineux :** Les fichiers orphelins sont correctement traités lors du nettoyage des données LFT expirées.
+- **Journalisation :** L’indicateur de progression lors de la reconstruction du cache de journaux de la base de données est corrigé ; selon les notes de version étendues, les destinataires en copie manquaient également dans la vue des journaux.
+- **Webmail (GINA) :** Un double-clic sur « Envoyer » envoyait une réponse deux fois.
+
+## Problèmes connus
+
+- **Identifiants CVE pour les correctifs de sécurité de 15.1.0 :** toujours en attente. L’historique des révisions indique sans changement « CVE-ID: Pending » pour les deux entrées (CVSS 9.9 et 7.1) au 25 novembre 2026.
+- **Entrées NVD concernant les CVE de 15.1.1 :** désormais partiellement publiées. CVE-2026-114424 figure dans la NVD depuis le 4 novembre 2026, avec le NCSC comme source et un CVSS 4.0 de 9.2 ; la NVD décrit le contexte d’exécution confirmé comme root.
+
+Les notes de version de 15.1.2 ne comportent pas de section consacrée aux problèmes connus.
+
+## Procédure recommandée
+
+La version cible est 15.1.2, car les onze CVE affectent les versions antérieures à 15.1.2 et plusieurs peuvent être exploitées sans connexion à GINA ou via des messages entrants. Pour les systèmes de la branche 15.0, mettez d’abord à jour vers 15.0.7 comme décrit dans l’article sur 15.1.1, car cette version permet, selon l’historique des révisions, la mise à jour vers 15.1. Avant la mise à jour, créez une sauvegarde et, pour les appliances virtuelles, un instantané supplémentaire, comme le recommande la documentation du fabricant. Testez ensuite les intégrations REST API avec des comptes administrateur et l’envoi LFT. Les notes de version ne contiennent aucune information sur l’ordre de mise à jour dans le cluster ou sur une version minimale pour 15.1.2 (au 25 novembre 2026).
+
+## Sources
+
+1.  [Documentation SEPPmail : historique des révisions](https://docs.seppmail.com/ch/20_revision-history.html) : notes de version de 15.1.2 avec la date, onze CVE et leurs scores CVSS, les nouvelles fonctions et les corrections de bugs, ainsi que le statut des identifiants CVE de 15.1.0.
+
+2.  [SEPPmail : notes de version étendues 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html) : description détaillée de 15.1.2, notamment le renommage de « Curves » en « Groups », le délai d’expiration des jetons REST API et le chiffrement LFT.
+
+3.  [NVD : CVE-2026-130637](https://nvd.nist.gov/vuln/detail/CVE-2026-130637) : au 25 novembre 2026, aucune entrée n’est encore disponible, de même pour CVE-2026-124840.
+
+4.  [CVE.org : CVE-2026-124840](https://www.cve.org/CVERecord?id=CVE-2026-124840) : non publié au 25 novembre 2026.
+
+5.  [NVD : CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424) : entrée concernant l’une des failles de 15.1.1, publiée le 4 novembre 2026, CVSS 4.0 de 9.2.
+
+6.  [SEPPmail 15.1.1 : cinq correctifs CVE et correction de la régression DNS de 15.1.0.1](/blog/seppmail-releases-15-1-1) : version précédente avec les correctifs de 15.1.1 et le chemin de mise à jour via 15.0.7.
 
 ----
 
@@ -71039,6 +71223,98 @@ Ai sensi dell'art. 14 cpv. 2bis CO, soltanto la firma elettronica qualificata co
 
 ----
 
+# SEPPmail 15.1.2: undici correzioni CVE, soprattutto in GINA, e TLS post-quantum
+
+URL: https://rafaelpfister.ch/it/blog/seppmail-15-1-2-undici-correzioni-cve-soprattutto-in-gina-e-tls-post-quantum
+Datum: 2026-11-25
+
+# SEPPmail 15.1.2: undici correzioni CVE, soprattutto in GINA, e TLS post-quantum
+
+SEPPmail ha pubblicato la patch release 15.1.2 il 24 novembre 2026. Corregge undici vulnerabilità con punteggi CVSS compresi tra 6.3 e 9.3, che interessano tutte le versioni precedenti alla 15.1.2. Otto di queste riguardano GINA (webmail), tra cui una template injection nella pagina di login e due modi per compromettere account registrati; un'altra riguarda una chiave sostitutiva codificata in modo fisso in Large File Transfer (LFT). Sono inoltre nuovi lo scambio di chiavi post-quantum (X25519MLKEM768) nella configurazione TLS del server web, un'esportazione CSV nella vista dei log, una partizione `/etc` più grande e un'autenticazione REST API che applica la policy MFA per gli amministratori. La release è destinata a tutti gli operatori di appliance SEPPmail, comprese le appliance utilizzate come HIN Mailgateway, poiché si basano sul firmware SEPPmail. La versione precedente è descritta nell'articolo su [SEPPmail 15.1.1](/blog/seppmail-releases-15-1-1).
+
+## Panoramica delle versioni
+
+| Versione | Data | Tipo | Punti principali |
+|---|---|---|---|
+| 15.1.2 | 24.11.2026 | Patch release | Undici CVE (CVSS 6.3–9.3), valore massimo CVE-2026-130637 (CVSS 9.3, login GINA), X25519MLKEM768 per il server web, esportazione CSV nella vista dei log, applicazione MFA al login REST, LFT senza chiave sostitutiva codificata in modo fisso |
+
+## Correzioni di sicurezza nella 15.1.2
+
+La Revision History e le Extended Release Notes elencano undici voci con ID CVE. Per ciascuna indicano come interessate le versioni precedenti alla 15.1.2; non specificano una versione o un vettore CVSS.
+
+**Account e login GINA:**
+
+- **CVE-2026-130637, CVSS 9.3:** I valori provenienti dalle richieste alla pagina di login GINA venivano elaborati dal motore di template. Secondo le Extended Release Notes, un attaccante non autenticato poteva così leggere gli attributi di account GINA arbitrari e compromettere gli account. I valori delle richieste non vengono più elaborati come segnaposto del template.
+- **CVE-2026-124840, CVSS 9.2:** Una sessione ottenuta tramite il recupero mediante domanda di sicurezza veniva accettata anche per la registrazione dell'account e le impostazioni. Chi conosceva la risposta alla domanda di sicurezza poteva modificare la password. Il recupero utilizza ora uno scopo di sessione separato, valido solo per questa procedura.
+- **CVE-2026-124842, CVSS 8.3:** Una richiesta non autenticata poteva reimpostare la password di un account GINA registrato senza rispondere alla domanda di sicurezza. La reimpostazione senza autenticazione è ora consentita solo per gli account non registrati.
+- **CVE-2026-124841, CVSS 6.9:** I caratteri jolly negli indirizzi degli account non venivano sottoposti a escaping nelle query LDAP di GINA, pertanto una query poteva colpire un altro account. Tutti i valori in questi filtri LDAP vengono ora sottoposti a escaping.
+- **CVE-2026-124845, CVSS 6.3:** Un header HTTP impostato dal client poteva impedire la risoluzione del dominio GINA; la richiesta veniva quindi elaborata con le impostazioni del dominio `[default]`. Le richieste per domini GINA non risolvibili vengono ora rifiutate.
+- **CVE-2026-124844, CVSS 8.7:** I file provenienti da upload GINA non autenticati non venivano eliminati, con il rischio di saturare lo spazio di archiviazione. Gli upload sono ora limitati alla dimensione massima dei messaggi del dominio GINA e i file non necessari vengono rimossi.
+
+**Large File Transfer:**
+
+- **CVE-2026-124843, CVSS 9.2:** Se mancava il materiale crittografico dell'appliance, la crittografia LFT utilizzava un segreto sostitutivo codificato in modo fisso. Di conseguenza, gli allegati potevano essere decifrati al di fuori dell'appliance. Il sostituto è stato rimosso; senza la chiave necessaria, l'appliance rifiuta la crittografia LFT.
+
+**Escalation dei privilegi sull'appliance:**
+
+- **CVE-2026-124838, CVSS 8.5:** Il socket locale del servizio di configurazione era accessibile a tutti gli utenti locali. Un attaccante con esecuzione di codice locale poteva usarlo per eseguire comandi con privilegi elevati. L'accesso è ora limitato agli account di sistema autorizzati e i dati dei comandi trasmessi vengono sottoposti a escaping.
+- **CVE-2026-124839, CVSS 7.7:** Un indirizzo di account GINA appositamente predisposto poteva attivare comandi con privilegi elevati tramite uno script di manutenzione all'avvio del sistema. L'indirizzo dell'account non viene più passato a un comando shell.
+
+**Elaborazione della posta:**
+
+- **CVE-2026-124836, CVSS 6.3:** I comandi delle regole `ldap_compare` e `ldap_read` inserivano valori dal messaggio nei filtri LDAP senza escaping. Un mittente poteva così influenzare il risultato di una regola LDAP. I valori vengono ora sottoposti a escaping.
+- **CVE-2026-124837, CVSS 6.3:** Una firma DKIM appositamente predisposta poteva inserire voci contraffatte nell'header `Authentication-Results`, successivamente coperte dal sigillo ARC del gateway. I valori della firma DKIM vengono ora convalidati prima dell'acquisizione.
+
+Senza un ID CVE, le Release Notes menzionano inoltre un rafforzamento delle funzioni interne di supporto per l'esecuzione dei comandi.
+
+Al 25 novembre 2026, la NVD non fornisce alcuna voce per CVE-2026-130637 e CVE-2026-124840, e CVE.org non elenca CVE-2026-124840 come pubblicato. Non sono quindi ancora disponibili vettori, classificazioni CWE e una valutazione dello sfruttamento; i punteggi CVSS provengono dalle Release Notes del produttore. Secondo la descrizione del produttore, diverse lacune in GINA possono essere sfruttate senza autenticazione, mentre CVE-2026-124836 e CVE-2026-124837 tramite messaggi in arrivo. Fino all'aggiornamento, verificate se GINA è raggiungibile da Internet e se le regole con `ldap_compare` o `ldap_read` utilizzano valori dal messaggio.
+
+## Nuove funzioni e modifiche
+
+- **TLS post-quantum:** Nelle impostazioni TLS dei domini GINA, l'impostazione «Curves» si chiama ora «Groups». Qui è possibile selezionare gruppi con supporto post-quantum come X25519MLKEM768; l'impostazione agisce sulla configurazione del server web (httpd). Le Release Notes non indicano valori predefiniti.
+- **Vista dei log:** Un nuovo pulsante «Export CSV...» esporta tutte le voci visualizzate o filtrate, sia con logging basato su file sia con logging basato su database.
+- **Sistema operativo:** La partizione `/etc` è stata ampliata, poiché in alcune installazioni era troppo piccola e occasionalmente non era possibile scrivere i file di configurazione.
+- **REST API:** L'endpoint `/auth` considera le impostazioni MFA per gli amministratori, i login non riusciti ricevono uniformemente HTTP 403 e i login riusciti vengono registrati. I token REST API degli utenti diventano invalidi dopo il timeout configurato per la GUI amministrativa. In vari endpoint REST, i valori del client nei filtri di ricerca LDAP vengono sottoposti a escaping.
+- **LFT:** La crittografia non utilizza più una chiave sostitutiva codificata in modo fisso (vedere CVE-2026-124843).
+
+Due modifiche possono interessare i flussi esistenti. Gli script e le integrazioni che effettuano il login alla REST API con un account amministratore devono rispettare la policy MFA dopo l'aggiornamento, mentre le automazioni a lunga esecuzione con token utente incorreranno nel timeout della GUI amministrativa; testate tali integrazioni dopo l'aggiornamento. Poiché LFT non cifra più senza materiale crittografico disponibile, verificate dopo l'aggiornamento che gli invii LFT continuino a funzionare.
+
+## Correzioni di bug
+
+- **Attività in background:** Un satellite GINA non poteva inviare utenti e chiavi.
+- **CfgServer:** La generazione della firma S/MIME per l'instaurazione automatica della fiducia dei certificati di dominio funziona di nuovo.
+- **Database:** Una modifica LDAP ripeteva modifiche precedenti quando la stessa voce veniva modificata nuovamente.
+- **File di grandi dimensioni:** I file orfani vengono gestiti correttamente durante la pulizia dei dati LFT scaduti.
+- **Logging:** L'indicatore di avanzamento durante la ricostruzione della cache dei log del database è stato corretto; secondo le Extended Release Notes, nella vista dei log mancavano inoltre i destinatari CC.
+- **Webmail (GINA):** Un doppio clic su «Invia» spediva una risposta due volte.
+
+## Problemi noti
+
+- **ID CVE per le correzioni di sicurezza della 15.1.0:** ancora in sospeso. La Revision History riporta invariato «CVE-ID: Pending» per entrambe le voci (CVSS 9.9 e 7.1; stato al 25 novembre 2026).
+- **Voci NVD relative alle CVE della 15.1.1:** nel frattempo parzialmente pubblicate. CVE-2026-114424 è presente nella NVD dal 4 novembre 2026, con l'NCSC come fonte e CVSS 4.0 pari a 9.2; la NVD descrive il contesto di esecuzione confermato come root.
+
+Le Release Notes della 15.1.2 non contengono una sezione sui problemi noti.
+
+## Procedura consigliata
+
+La versione di destinazione è la 15.1.2, poiché tutte e undici le CVE interessano versioni precedenti alla 15.1.2 e molte di esse possono essere sfruttate senza autenticazione a GINA o tramite messaggi in arrivo. Aggiornate i sistemi nel ramo 15.0, come descritto nell'articolo sulla 15.1.1, prima alla 15.0.7, che secondo la Revision History consente l'aggiornamento alla 15.1. Prima dell'aggiornamento, create un backup e, per le appliance virtuali, anche uno snapshot, come raccomandato dalla documentazione del produttore. Successivamente testate le integrazioni REST API con account amministratori e l'invio LFT. Le Release Notes non contengono indicazioni sulla sequenza di aggiornamento nel cluster o su una versione minima per la 15.1.2 (stato al 25 novembre 2026).
+
+## Fonti
+
+1.  [Documentazione SEPPmail: Revision History](https://docs.seppmail.com/ch/20_revision-history.html): Release Notes della 15.1.2 con data, undici CVE con punteggi CVSS, nuove funzioni e correzioni di bug, nonché stato degli ID CVE della 15.1.0.
+
+2.  [SEPPmail: Extended Release Notes 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html): Descrizione dettagliata della 15.1.2, tra l'altro sulla rinomina da «Curves» a «Groups», sul timeout dei token REST API e sulla crittografia LFT.
+
+3.  [NVD: CVE-2026-130637](https://nvd.nist.gov/vuln/detail/CVE-2026-130637): Al 25 novembre 2026 ancora nessuna voce, così come per CVE-2026-124840.
+
+4.  [CVE.org: CVE-2026-124840](https://www.cve.org/CVERecord?id=CVE-2026-124840): Al 25 novembre 2026 non pubblicata.
+
+5.  [NVD: CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424): Voce relativa a una delle vulnerabilità della 15.1.1, pubblicata il 4 novembre 2026, CVSS 4.0 pari a 9.2.
+
+6.  [SEPPmail 15.1.1: cinque correzioni CVE e fix per la regressione DNS della 15.1.0.1](/blog/seppmail-releases-15-1-1): Versione precedente con le correzioni della 15.1.1 e il percorso di aggiornamento tramite la 15.0.7.
+
+----
+
 # Microsoft To Do verrà ritirato: passaggio a Planner dal punto di vista dell’amministratore
 
 URL: https://rafaelpfister.ch/it/blog/microsoft-to-do-verra-ritirato-passaggio-a-planner-dal-punto-di-vista-dell-amministratore
@@ -94565,6 +94841,98 @@ Según el art. 14, apdo. 2bis, OR, solo la firma electrónica cualificada con se
 
 ----
 
+# SEPPmail 15.1.2: once correcciones de CVE, principalmente en GINA, y TLS poscuántico
+
+URL: https://rafaelpfister.ch/es/blog/seppmail-15-1-2-once-correcciones-de-cve-principalmente-en-gina-y-tls-poscuantico
+Datum: 2026-11-25
+
+# SEPPmail 15.1.2: once correcciones de CVE, principalmente en GINA, y TLS poscuántico
+
+SEPPmail publicó la versión de parche 15.1.2 el 24 de noviembre de 2026. Corrige once vulnerabilidades con valores CVSS entre 6.3 y 9.3 que afectan a todas las versiones anteriores a 15.1.2. Ocho de ellas se encuentran en GINA (webmail), entre ellas una inyección de plantillas en la página de inicio de sesión y dos vías para tomar el control de cuentas registradas; otra afecta a una clave de sustitución codificada de forma fija en Large File Transfer (LFT). También se incorporan el intercambio de claves poscuántico (X25519MLKEM768) en la configuración TLS del servidor web, una exportación CSV en la vista de registros, una partición `/etc` más grande y un inicio de sesión en la REST API que aplica la política MFA para administradores. La versión se dirige a todos los operadores de appliances SEPPmail, incluidos los appliances que funcionan como HIN Mailgateway, ya que se basan en el firmware de SEPPmail. El estado anterior se describe en el artículo sobre [SEPPmail 15.1.1](/blog/seppmail-releases-15-1-1).
+
+## Las versiones de un vistazo
+
+| Versión | Fecha | Tipo | Puntos principales |
+|---|---|---|---|
+| 15.1.2 | 24.11.2026 | Versión de parche | Once CVE (CVSS 6.3–9.3), valor más alto CVE-2026-130637 (CVSS 9.3, inicio de sesión GINA), X25519MLKEM768 para el servidor web, exportación CSV en la vista de registros, aplicación de MFA en el inicio de sesión REST, LFT sin clave de sustitución codificada de forma fija |
+
+## Correcciones de seguridad en 15.1.2
+
+El historial de revisiones y las notas de versión ampliadas incluyen once entradas con ID de CVE. En cada caso indican como afectadas las versiones anteriores a 15.1.2; no especifican una versión ni un vector CVSS.
+
+**Cuentas e inicio de sesión de GINA:**
+
+- **CVE-2026-130637, CVSS 9.3:** Los valores de las solicitudes a la página de inicio de sesión de GINA eran evaluados por el motor de plantillas. Según las notas de versión ampliadas, un atacante no autenticado podía así leer atributos de cualquier cuenta GINA y tomar el control de cuentas. Los valores de las solicitudes ya no se evalúan como marcadores de posición de plantillas.
+- **CVE-2026-124840, CVSS 9.2:** Una sesión procedente de la recuperación mediante pregunta de seguridad también era aceptada para el registro de cuentas y la configuración. Quien conociera la respuesta a la pregunta de seguridad podía cambiar la contraseña. La recuperación utiliza ahora un propósito de sesión propio que solo es válido en este flujo.
+- **CVE-2026-124842, CVSS 8.3:** Una solicitud no autenticada podía restablecer la contraseña de una cuenta GINA registrada sin responder a la pregunta de seguridad. El restablecimiento sin autenticación ahora solo se aplica a cuentas no registradas.
+- **CVE-2026-124841, CVSS 6.9:** Los caracteres comodín en direcciones de cuentas no se escapaban en las consultas LDAP de GINA, por lo que una consulta podía afectar a otra cuenta. Todos los valores de estos filtros LDAP ahora se escapan.
+- **CVE-2026-124845, CVSS 6.3:** Una cabecera HTTP establecida por el cliente podía hacer fallar la resolución del dominio GINA; la solicitud se procesaba entonces con la configuración del dominio `[default]`. Las solicitudes para dominios GINA que no pueden resolverse ahora se rechazan.
+- **CVE-2026-124844, CVSS 8.7:** Los archivos de cargas GINA no autenticadas no se eliminaban, por lo que el espacio de almacenamiento podía llenarse. Las cargas ahora se limitan al tamaño máximo de mensaje del dominio GINA y se eliminan los archivos no necesarios.
+
+**Large File Transfer:**
+
+- **CVE-2026-124843, CVSS 9.2:** Si faltaba el material de claves del appliance, el cifrado LFT utilizaba un secreto de sustitución codificado de forma fija. Como consecuencia, los adjuntos podían descifrarse fuera del appliance. Se elimina la sustitución; sin la clave necesaria, el appliance rechaza el cifrado LFT.
+
+**Escalada de privilegios en el appliance:**
+
+- **CVE-2026-124838, CVSS 8.5:** El socket local del servicio de configuración era accesible para todos los usuarios locales. Un atacante con ejecución local de código podía ejecutar comandos con privilegios elevados a través de él. El acceso ahora se limita a cuentas de sistema autorizadas y los datos de comandos transmitidos se escapan.
+- **CVE-2026-124839, CVSS 7.7:** Una dirección de cuenta GINA preparada podía activar comandos con privilegios elevados mediante un script de mantenimiento durante el arranque del sistema. La dirección de cuenta ya no se pasa a un comando de shell.
+
+**Procesamiento de correo:**
+
+- **CVE-2026-124836, CVSS 6.3:** Los comandos de reglas `ldap_compare` y `ldap_read` insertaban valores del mensaje en filtros LDAP sin escaparlos. Un remitente podía así influir en el resultado de una regla LDAP. Los valores ahora se escapan.
+- **CVE-2026-124837, CVSS 6.3:** Una firma DKIM preparada podía inyectar entradas falsificadas en la cabecera `Authentication-Results`, que posteriormente quedaban cubiertas por el sello ARC del gateway. Los valores de la firma DKIM ahora se validan antes de adoptarse.
+
+Sin ID de CVE, las notas de versión también mencionan un endurecimiento de funciones auxiliares internas para la ejecución de comandos.
+
+A fecha de 25 de noviembre de 2026, la NVD no ofrece una entrada para CVE-2026-130637 ni para CVE-2026-124840, y CVE.org no lista CVE-2026-124840 como publicado. Por ello, todavía no hay vectores, asignación CWE ni una evaluación de la explotación; los valores CVSS proceden de las notas de versión del fabricante. Según la descripción del fabricante, varias vulnerabilidades de GINA pueden activarse sin inicio de sesión, y CVE-2026-124836 y CVE-2026-124837 mediante mensajes entrantes. Hasta la actualización, compruebe si GINA es accesible desde Internet y si las reglas con `ldap_compare` o `ldap_read` utilizan valores del mensaje.
+
+## Nuevas funciones y cambios
+
+- **TLS poscuántico:** En la configuración TLS de los dominios GINA, el ajuste «Curves» pasa a llamarse «Groups». Allí pueden seleccionarse grupos con compatibilidad poscuántica, como X25519MLKEM768; el ajuste afecta a la configuración del servidor web (httpd). Las notas de versión no indican valores predeterminados.
+- **Vista de registros:** Un nuevo botón «Export CSV...» exporta todas las entradas mostradas o filtradas, tanto con registro basado en archivos como en base de datos.
+- **Sistema operativo:** La partición `/etc` se ha ampliado, ya que en algunas instalaciones era demasiado pequeña y ocasionalmente no se podían escribir archivos de configuración.
+- **REST API:** El endpoint `/auth` tiene en cuenta la configuración MFA para administradores, los inicios de sesión fallidos reciben de forma uniforme HTTP 403 y los inicios de sesión correctos se registran. Los tokens de REST API de los usuarios dejan de ser válidos después del tiempo de espera configurado para la GUI de administración. En varios endpoints REST, los valores del cliente se escapan en los filtros de búsqueda LDAP.
+- **LFT:** El cifrado ya no utiliza una clave de sustitución codificada de forma fija (véase CVE-2026-124843).
+
+Dos cambios pueden afectar a los flujos existentes. Los scripts e integraciones que inician sesión en la REST API con una cuenta de administrador deben cumplir la política MFA después de la actualización, y las automatizaciones de larga duración con tokens de usuario alcanzarán el tiempo de espera de la GUI de administración; pruebe estas integraciones después de actualizar. Puesto que LFT ya no cifra sin material de claves disponible, compruebe tras la actualización si los envíos LFT siguen funcionando.
+
+## Corrección de errores
+
+- **Tareas en segundo plano:** Un satélite GINA no podía enviar usuarios ni claves.
+- **CfgServer:** La generación de firmas S/MIME para el establecimiento automático de confianza de certificados de dominio vuelve a funcionar.
+- **Base de datos:** Un cambio LDAP repetía cambios anteriores cuando se editaba de nuevo la misma entrada.
+- **Archivos grandes:** Los archivos huérfanos se tratan correctamente durante la limpieza de datos LFT caducados.
+- **Registro:** Se ha corregido el indicador de progreso al reconstruir la caché de registros de la base de datos; según las notas de versión ampliadas, además faltaban destinatarios CC en la vista de registros.
+- **Webmail (GINA):** Un doble clic en «Enviar» enviaba una respuesta dos veces.
+
+## Problemas conocidos
+
+- **ID de CVE para las correcciones de seguridad de 15.1.0:** siguen pendientes. El historial de revisiones mantiene sin cambios «CVE-ID: Pending» para ambas entradas (CVSS 9.9 y 7.1) (a fecha de 25 de noviembre de 2026).
+- **Entradas NVD sobre los CVE de 15.1.1:** ya se han publicado parcialmente. CVE-2026-114424 figura en la NVD desde el 4 de noviembre de 2026, con el NCSC como fuente y CVSS 4.0 con 9.2; la NVD describe el contexto de ejecución confirmado como root.
+
+Las notas de versión de 15.1.2 no contienen una sección de problemas conocidos.
+
+## Procedimiento recomendado
+
+La versión objetivo es 15.1.2, ya que los once CVE afectan a versiones anteriores a 15.1.2 y varios de ellos pueden activarse sin iniciar sesión en GINA o mediante mensajes entrantes. Actualice los sistemas de la rama 15.0, tal como se describe en el artículo sobre 15.1.1, primero a 15.0.7, que según el historial de revisiones permite la actualización a 15.1. Antes de actualizar, cree una copia de seguridad y, en el caso de appliances virtuales, además una instantánea, tal como recomienda la documentación del fabricante. Después, pruebe las integraciones de REST API con cuentas de administrador y el envío LFT. Las notas de versión no contienen información sobre el orden de actualización en el clúster ni sobre una versión mínima para 15.1.2 (a fecha de 25 de noviembre de 2026).
+
+## Fuentes
+
+1.  [Documentación de SEPPmail: Historial de revisiones](https://docs.seppmail.com/ch/20_revision-history.html): Notas de versión de 15.1.2 con fecha, once CVE con valores CVSS, nuevas funciones y correcciones de errores, así como el estado de los ID de CVE de 15.1.0.
+
+2.  [SEPPmail: Notas de versión ampliadas 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html): Descripción detallada de 15.1.2, entre otros aspectos sobre el cambio de nombre de «Curves» a «Groups», el tiempo de espera del token REST API y el cifrado LFT.
+
+3.  [NVD: CVE-2026-130637](https://nvd.nist.gov/vuln/detail/CVE-2026-130637): A fecha de 25 de noviembre de 2026, todavía no hay entrada, tampoco para CVE-2026-124840.
+
+4.  [CVE.org: CVE-2026-124840](https://www.cve.org/CVERecord?id=CVE-2026-124840): No publicado a fecha de 25 de noviembre de 2026.
+
+5.  [NVD: CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424): Entrada sobre una de las vulnerabilidades de 15.1.1, publicada el 4 de noviembre de 2026, CVSS 4.0 con 9.2.
+
+6.  [SEPPmail 15.1.1: cinco correcciones de CVE y solución para la regresión DNS de 15.1.0.1](/blog/seppmail-releases-15-1-1): Estado de la versión anterior con las correcciones de 15.1.1 y la ruta de actualización mediante 15.0.7.
+
+----
+
 # Microsoft To Do se retira: migración a Planner desde la perspectiva del administrador
 
 URL: https://rafaelpfister.ch/es/blog/microsoft-to-do-se-retira-migracion-a-planner-desde-la-perspectiva-del-administrador
@@ -118085,6 +118453,98 @@ Endast den kvalificerade elektroniska signaturen med kvalificerad tidsstämpel �
 11.  [Civilprocesslagen (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 om fri bevisvärdering.
 
 12.  [Förordning (EU) nr 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25 stycke 2 om likställandet av den kvalificerade elektroniska signaturen med handskriven underskrift.
+
+----
+
+# SEPPmail 15.1.2: elva CVE-korrigeringar, främst i GINA, och Post-Quantum-TLS
+
+URL: https://rafaelpfister.ch/sv/blog/seppmail-15-1-2-elva-cve-korrigeringar-framst-i-gina-och-post-quantum-tls
+Datum: 2026-11-25
+
+# SEPPmail 15.1.2: elva CVE-korrigeringar, främst i GINA, och Post-Quantum-TLS
+
+SEPPmail publicerade patchversionen 15.1.2 den 24 november 2026. Den åtgärdar elva sårbarheter med CVSS-värden mellan 6.3 och 9.3, som påverkar alla versioner före 15.1.2. Åtta av dem finns i GINA (webbmail), däribland en template injection på inloggningssidan och två sätt att ta över registrerade konton; ytterligare en gäller en hårdkodad reservnyckel i Large File Transfer (LFT). Nytt är även Post-Quantum-nyckelutbyte (X25519MLKEM768) i webbserverns TLS-konfiguration, CSV-export i loggvyn, en större `/etc`-partition och en REST API-inloggning som upprätthåller MFA-principen för administratörer. Versionen riktar sig till alla operatörer av SEPPmail-appliances, även appliances som körs som HIN Mailgateway, eftersom dessa bygger på SEPPmail-firmware. Den tidigare versionen beskrivs i artikeln om [SEPPmail 15.1.1](/blog/seppmail-releases-15-1-1).
+
+## Versionerna i korthet
+
+| Version | Datum | Typ | Huvudpunkter |
+|---|---|---|---|
+| 15.1.2 | 24.11.2026 | Patchversion | Elva CVE:er (CVSS 6.3–9.3), högsta värde CVE-2026-130637 (CVSS 9.3, GINA-inloggning), X25519MLKEM768 för webbservern, CSV-export i loggvyn, MFA-tillämpning vid REST-inloggning, LFT utan hårdkodad reservnyckel |
+
+## Säkerhetskorrigeringar i 15.1.2
+
+Revision History och Extended Release Notes listar elva poster med CVE-ID. De anger i varje fall versioner före 15.1.2 som berörda, men ingen CVSS-version eller vektor.
+
+**GINA-konton och inloggning:**
+
+- **CVE-2026-130637, CVSS 9.3:** Värden från förfrågningar till GINA-inloggningssidan utvärderades av template-motorn. Enligt Extended Release Notes kunde en oautentiserad angripare därigenom läsa attribut för godtyckliga GINA-konton och ta över konton. Förfrågningsvärden utvärderas inte längre som template-platshållare.
+- **CVE-2026-124840, CVSS 9.2:** En session från återställning via säkerhetsfråga accepterades även för kontoregistrering och inställningar. Den som kände svaret på säkerhetsfrågan kunde ändra lösenordet. Återställningen använder nu ett eget sessionssyfte som endast gäller i detta flöde.
+- **CVE-2026-124842, CVSS 8.3:** En oautentiserad förfrågan kunde återställa lösenordet för ett registrerat GINA-konto utan att säkerhetsfrågan besvarades. Återställning utan autentisering gäller nu endast oregistrerade konton.
+- **CVE-2026-124841, CVSS 6.9:** Jokertecken i kontoadresser escapedes inte i LDAP-frågor från GINA, vilket kunde göra att en fråga träffade ett annat konto. Alla värden i dessa LDAP-filter escapes nu.
+- **CVE-2026-124845, CVSS 6.3:** En HTTP-header som satts av klienten kunde få upplösningen av GINA-domänen att misslyckas; förfrågan kördes då med inställningarna för `[default]`-domänen. Förfrågningar för GINA-domäner som inte kan lösas upp avvisas nu.
+- **CVE-2026-124844, CVSS 8.7:** Filer från oautentiserade GINA-uppladdningar raderades inte, vilket kunde fylla lagringsutrymmet. Uppladdningar är nu begränsade till den maximala meddelandestorleken för GINA-domänen och filer som inte behövs tas bort.
+
+**Large File Transfer:**
+
+- **CVE-2026-124843, CVSS 9.2:** Om appliance-enhetens nyckelmaterial saknades använde LFT-krypteringen en hårdkodad reservhemlighet. Bilagor kunde därmed dekrypteras utanför appliance-enheten. Reserven tas bort; utan den nödvändiga nyckeln vägrar appliance-enheten LFT-kryptering.
+
+**Behörighetseskalering på appliance-enheten:**
+
+- **CVE-2026-124838, CVSS 8.5:** Konfigurationstjänstens lokala socket var åtkomlig för alla lokala användare. En angripare med lokal kodexekvering kunde via den köra kommandon med utökade behörigheter. Åtkomsten är nu begränsad till behöriga systemkonton och överförda kommandodata escapes.
+- **CVE-2026-124839, CVSS 7.7:** En preparerad GINA-kontoadress kunde vid systemstart via ett underhållsskript utlösa kommandon med utökade behörigheter. Kontoadressen skickas inte längre till ett shell-kommando.
+
+**E-postbearbetning:**
+
+- **CVE-2026-124836, CVSS 6.3:** Regelkommandona `ldap_compare` och `ldap_read` infogade värden från meddelandet i LDAP-filter utan escaping. En avsändare kunde därmed påverka resultatet av en LDAP-regel. Värdena escapes nu.
+- **CVE-2026-124837, CVSS 6.3:** En preparerad DKIM-signatur kunde föra in förfalskade poster i headern `Authentication-Results`, som sedan täcktes av gatewayens ARC-sigill. Värden från DKIM-signaturen valideras nu före överföringen.
+
+Utan CVE-ID nämner release notes dessutom en härdning av interna hjälpfunktioner för kommandoexekvering.
+
+Per den 25 november 2026 har NVD ingen post för CVE-2026-130637 och CVE-2026-124840, och CVE.org listar inte CVE-2026-124840 som publicerad. Vektorer, CWE-klassificering och en bedömning av exploatering finns därför ännu inte; CVSS-värdena kommer från tillverkarens release notes. Enligt tillverkarens beskrivning kan flera brister i GINA utlösas utan inloggning, medan CVE-2026-124836 och CVE-2026-124837 kan utlösas via inkommande meddelanden. Kontrollera fram till uppdateringen om GINA är åtkomligt från internet och om regler med `ldap_compare` eller `ldap_read` använder värden från meddelandet.
+
+## Nya funktioner och ändringar
+
+- **Post-Quantum-TLS:** I TLS-inställningarna för GINA-domäner heter inställningen ”Curves” nu ”Groups”. Där kan grupper med Post-Quantum-stöd, exempelvis X25519MLKEM768, väljas; inställningen påverkar webbserverns konfiguration (httpd). Release notes anger inga standardvärden.
+- **Loggvy:** En ny knapp, ”Export CSV...”, exporterar alla visade respektive filtrerade poster, både vid filbaserad och databasbaserad loggning.
+- **Operativsystem:** `/etc`-partitionen har utökats eftersom den i vissa installationer var för liten och konfigurationsfiler ibland inte kunde skrivas.
+- **REST API:** Slutpunkten `/auth` tar hänsyn till MFA-inställningarna för administratörer, misslyckade inloggningar får enhetligt HTTP 403 och lyckade inloggningar loggas. REST API-token för användare blir ogiltiga efter den timeout som konfigurerats för Admin GUI. I flera REST-slutpunkter escapes klientvärden i LDAP-sökfilter.
+- **LFT:** Krypteringen använder inte längre en hårdkodad reservnyckel (se CVE-2026-124843).
+
+Två ändringar kan påverka befintliga arbetsflöden. Skript och integrationer som loggar in på REST API med ett administratörskonto måste efter uppdateringen uppfylla MFA-principen, och långkörande automatiseringar med användartoken når tidsgränsen för Admin GUI; testa sådana integrationer efter uppdateringen. Eftersom LFT inte längre krypterar utan befintligt nyckelmaterial bör du efter uppdateringen kontrollera att LFT-sändningar fortfarande fungerar.
+
+## Felrättningar
+
+- **Bakgrundsjobb:** En GINA-satellit kunde inte skicka användare och nycklar.
+- **CfgServer:** S/MIME-signaturgenereringen för automatisk etablering av förtroende för domäncertifikat fungerar igen.
+- **Databas:** En LDAP-ändring upprepade tidigare ändringar när samma post bearbetades igen.
+- **Large Files:** Föräldralösa filer hanteras korrekt vid rensning av utgångna LFT-data.
+- **Loggning:** Förloppsindikatorn vid återuppbyggnad av databasens loggcache har korrigerats; enligt Extended Release Notes saknades dessutom CC-mottagare i loggvyn.
+- **Webbmail (GINA):** Ett dubbelklick på ”Skicka” skickade ett svar två gånger.
+
+## Kända problem
+
+- **CVE-ID:n för säkerhetskorrigeringarna från 15.1.0:** fortfarande öppna. Revision History listar fortfarande ”CVE-ID: Pending” för båda posterna (CVSS 9.9 och 7.1) utan ändring (status 25 november 2026).
+- **NVD-poster för CVE:erna från 15.1.1:** nu delvis publicerade. CVE-2026-114424 finns i NVD sedan den 4 november 2026, med NCSC som källa och CVSS 4.0 på 9.2; NVD beskriver den bekräftade exekveringskontexten som root.
+
+Release notes för 15.1.2 innehåller inget avsnitt om Known Issues.
+
+## Rekommenderat tillvägagångssätt
+
+Målversionen är 15.1.2, eftersom alla elva CVE:er berör versioner före 15.1.2 och flera av dem kan utlösas utan inloggning på GINA eller via inkommande meddelanden. System i 15.0-grenen uppdateras, enligt beskrivningen i artikeln om 15.1.1, först till 15.0.7, som enligt Revision History möjliggör uppdateringen till 15.1. Skapa en säkerhetskopia före uppdateringen och även en snapshot för virtuella appliances, vilket tillverkarens dokumentation rekommenderar. Testa därefter REST API-integrationer med administratörskonton och LFT-sändning. Release notes innehåller inga uppgifter om uppdateringsordning i kluster eller någon minimiversion för 15.1.2 (status 25 november 2026).
+
+## Källor
+
+1.  [SEPPmail-dokumentation: Revision History](https://docs.seppmail.com/ch/20_revision-history.html): Release notes för 15.1.2 med datum, elva CVE:er med CVSS-värden, nya funktioner och felrättningar samt status för CVE-ID:n från 15.1.0.
+
+2.  [SEPPmail: Extended Release Notes 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html): Utförlig beskrivning av 15.1.2, bland annat om namnbytet från ”Curves” till ”Groups”, REST API-token-timeouten och LFT-krypteringen.
+
+3.  [NVD: CVE-2026-130637](https://nvd.nist.gov/vuln/detail/CVE-2026-130637): Per den 25 november 2026 saknas fortfarande en post, liksom för CVE-2026-124840.
+
+4.  [CVE.org: CVE-2026-124840](https://www.cve.org/CVERecord?id=CVE-2026-124840): Inte publicerad per den 25 november 2026.
+
+5.  [NVD: CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424): Post om en av bristerna från 15.1.1, publicerad den 4 november 2026, CVSS 4.0 på 9.2.
+
+6.  [SEPPmail 15.1.1: fem CVE-korrigeringar och fix för DNS-regressionen från 15.1.0.1](/blog/seppmail-releases-15-1-1): Föregående versionsstatus med korrigeringarna från 15.1.1 och uppdateringsvägen via 15.0.7.
 
 ----
 
@@ -141612,6 +142072,98 @@ Bare den kvalifiserte elektroniske signaturen med kvalifisert tidsstempel er lik
 11.  [Zivilprozessordnung (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 om fri bevisvurdering.
 
 12.  [Forordning (EU) nr. 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): Art. 25 avsnitt 2 om likestilling av den kvalifiserte elektroniske signaturen med den håndskrevne underskriften.
+
+----
+
+# SEPPmail 15.1.2: elleve CVE-rettinger, særlig i GINA, og post-kvante-TLS
+
+URL: https://rafaelpfister.ch/no/blog/seppmail-15-1-2-elleve-cve-rettinger-saerlig-i-gina-og-post-kvante-tls
+Datum: 2026-11-25
+
+# SEPPmail 15.1.2: elleve CVE-rettinger, særlig i GINA, og post-kvante-TLS
+
+SEPPmail publiserte patch-utgivelsen 15.1.2 den 24. november 2026. Den lukker elleve sårbarheter med CVSS-verdier mellom 6.3 og 9.3, som berører alle versjoner før 15.1.2. Åtte av dem finnes i GINA (webmail), blant annet en template injection på innloggingssiden og to veier til å overta registrerte kontoer; én annen gjelder en hardkodet reservenøkkel i Large File Transfer (LFT). Nytt er også post-kvante-nøkkelutveksling (X25519MLKEM768) i TLS-konfigurasjonen for webserveren, CSV-eksport i Log-View, en større `/etc`-partisjon og en REST-API-pålogging som håndhever MFA-policyen for administratorer. Utgivelsen er rettet mot alle operatører av SEPPmail-apparater, også apparater som kjører som HIN Mailgateway, siden disse er basert på SEPPmail-fastvaren. Forrige status er beskrevet i artikkelen om [SEPPmail 15.1.1](/blog/seppmail-releases-15-1-1).
+
+## Versjonene i oversikt
+
+| Versjon | Dato | Type | Hovedpunkter |
+|---|---|---|---|
+| 15.1.2 | 24.11.2026 | Patch-utgivelse | Elleve CVE-er (CVSS 6.3–9.3), høyeste verdi CVE-2026-130637 (CVSS 9.3, GINA-innlogging), X25519MLKEM768 for webserveren, CSV-eksport i Log-View, MFA-håndheving ved REST-innlogging, LFT uten hardkodet reservenøkkel |
+
+## Sikkerhetsrettinger i 15.1.2
+
+Revisjonshistorikken og de utvidede utgivelsesnotatene oppgir elleve oppføringer med CVE-ID. De angir i hvert tilfelle versjoner før 15.1.2 som berørt; de oppgir ikke CVSS-versjon eller vektor.
+
+**GINA-kontoer og innlogging:**
+
+- **CVE-2026-130637, CVSS 9.3:** Verdier fra forespørsler til GINA-innloggingssiden ble evaluert av template-motoren. Ifølge de utvidede utgivelsesnotatene kunne en ikke-innlogget angriper dermed lese attributter for vilkårlige GINA-kontoer og overta kontoer. Forespørselsverdier blir ikke lenger evaluert som template-plassholdere.
+- **CVE-2026-124840, CVSS 9.2:** En økt fra gjenoppretting via sikkerhetsspørsmål ble også akseptert for kontoregistrering og innstillinger. Den som kjente svaret på sikkerhetsspørsmålet, kunne endre passordet. Gjenopprettingen bruker nå et eget øktformål som bare gjelder i denne prosessen.
+- **CVE-2026-124842, CVSS 8.3:** En ikke-autentisert forespørsel kunne tilbakestille passordet til en registrert GINA-konto uten at sikkerhetsspørsmålet ble besvart. Tilbakestilling uten autentisering gjelder nå bare for ikke-registrerte kontoer.
+- **CVE-2026-124841, CVSS 6.9:** Jokertegn i kontoadresser ble ikke escaped i LDAP-spørringer fra GINA, og en spørring kunne dermed treffe en annen konto. Alle verdier i disse LDAP-filtrene blir nå escaped.
+- **CVE-2026-124845, CVSS 6.3:** En HTTP-header satt av klienten kunne føre til at oppløsningen av GINA-domenet feilet; forespørselen ble da kjørt med innstillingene for `[default]`-domenet. Forespørsler for GINA-domener som ikke kan løses opp, blir nå avvist.
+- **CVE-2026-124844, CVSS 8.7:** Filer fra ikke-autentiserte GINA-opplastinger ble ikke slettet, slik at lagringsplassen kunne fylles opp. Opplastinger er nå begrenset til maksimal meldingsstørrelse for GINA-domenet, og unødvendige filer fjernes.
+
+**Large File Transfer:**
+
+- **CVE-2026-124843, CVSS 9.2:** Hvis nøkkelmaterialet til apparatet manglet, brukte LFT-krypteringen en hardkodet reservehemmelighet. Vedlegg kunne dermed dekrypteres utenfor apparatet. Reserven fjernes; uten den nødvendige nøkkelen nekter apparatet LFT-kryptering.
+
+**Rettighetsutvidelse på apparatet:**
+
+- **CVE-2026-124838, CVSS 8.5:** Den lokale sokkelen til konfigurasjonstjenesten var tilgjengelig for alle lokale brukere. En angriper med lokal kodekjøring kunne gjennom den kjøre kommandoer med forhøyede rettigheter. Tilgangen er nå begrenset til autoriserte systemkontoer, og overførte kommandodata blir escaped.
+- **CVE-2026-124839, CVSS 7.7:** En preparert GINA-kontoadresse kunne ved systemoppstart via et vedlikeholdsskript utløse kommandoer med forhøyede rettigheter. Kontoadressen sendes ikke lenger til en shell-kommando.
+
+**E-postbehandling:**
+
+- **CVE-2026-124836, CVSS 6.3:** Regelkommandoene `ldap_compare` og `ldap_read` satte verdier fra meldingen inn i LDAP-filtre uten escaping. En avsender kunne dermed påvirke resultatet av en LDAP-regel. Verdiene blir nå escaped.
+- **CVE-2026-124837, CVSS 6.3:** En preparert DKIM-signatur kunne injisere forfalskede oppføringer i headeren `Authentication-Results`, som deretter ble dekket av gatewayens ARC-segl. Verdier fra DKIM-signaturen blir nå validert før de overtas.
+
+Uten CVE-ID nevner utgivelsesnotatene i tillegg en herding av interne hjelpefunksjoner for kjøring av kommandoer.
+
+Per 25. november 2026 har NVD ingen oppføring for CVE-2026-130637 og CVE-2026-124840, og CVE.org oppgir ikke CVE-2026-124840 som publisert. Vektorer, CWE-klassifisering og en vurdering av utnyttelse foreligger derfor ennå ikke; CVSS-verdiene stammer fra produsentens utgivelsesnotater. Ifølge produsentens beskrivelse kan flere sårbarheter i GINA utløses uten innlogging, og CVE-2026-124836 og CVE-2026-124837 via innkommende meldinger. Frem til oppdateringen bør du kontrollere om GINA er tilgjengelig fra internett, og om regler med `ldap_compare` eller `ldap_read` bruker verdier fra meldingen.
+
+## Nye funksjoner og endringer
+
+- **Post-kvante-TLS:** I TLS-innstillingene for GINA-domener heter innstillingen «Curves» nå «Groups». Der kan grupper med post-kvante-støtte som X25519MLKEM768 velges; innstillingen påvirker konfigurasjonen av webserveren (httpd). Utgivelsesnotatene oppgir ingen standardverdier.
+- **Log-View:** En ny knapp, «Export CSV...», eksporterer alle viste eller filtrerte oppføringer, både med fil- og databasebasert logging.
+- **Operativsystem:** `/etc`-partisjonen ble utvidet, fordi den i enkelte installasjoner var for liten og konfigurasjonsfiler av og til ikke kunne skrives.
+- **REST-API:** Endepunktet `/auth` tar hensyn til MFA-innstillingene for administratorer, mislykkede innlogginger får konsekvent HTTP 403, og vellykkede innlogginger loggføres. REST-API-tokener fra brukere blir ugyldige etter timeouten konfigurert for Admin-GUI. I flere REST-endepunkter blir klientverdier escaped i LDAP-søkefiltre.
+- **LFT:** Krypteringen bruker ikke lenger en hardkodet reservenøkkel (se CVE-2026-124843).
+
+To endringer kan påvirke eksisterende arbeidsflyter. Skript og integrasjoner som logger inn på REST-API-et med en administratorkonto, må etter oppdateringen oppfylle MFA-policyen, og langvarige automatiseringer med brukertokener rammes av Admin-GUI-timeouten; test slike integrasjoner etter oppdateringen. Siden LFT ikke lenger krypterer uten tilgjengelig nøkkelmateriale, bør du etter oppdateringen kontrollere om LFT-forsendelser fortsatt fungerer.
+
+## Feilrettinger
+
+- **Background Tasks:** En GINA-satellitt kunne ikke sende brukere og nøkler.
+- **CfgServer:** Generering av S/MIME-signatur for automatisk tillitsetablering for domenesertifikater fungerer igjen.
+- **Database:** En LDAP-endring gjentok tidligere endringer når samme oppføring ble redigert på nytt.
+- **Large Files:** Foreldreløse filer behandles korrekt ved opprydding av utløpte LFT-data.
+- **Logging:** Fremdriftsvisningen ved gjenoppbygging av database-loggcachen er rettet; ifølge de utvidede utgivelsesnotatene manglet dessuten CC-mottakere i Log-View.
+- **Webmail (GINA):** Et dobbeltklikk på «Send» sendte et svar to ganger.
+
+## Kjente problemer
+
+- **CVE-ID-er for sikkerhetsrettingene fra 15.1.0:** fortsatt åpne. Revisjonshistorikken oppgir fortsatt «CVE-ID: Pending» for begge oppføringene (CVSS 9.9 og 7.1) (status 25. november 2026).
+- **NVD-oppføringer for CVE-ene fra 15.1.1:** nå delvis publisert. CVE-2026-114424 har stått i NVD siden 4. november 2026, med NCSC som kilde og CVSS 4.0 på 9.2; NVD beskriver den bekreftede kjøringskonteksten som root.
+
+Utgivelsesnotatene for 15.1.2 inneholder ingen seksjon om kjente problemer.
+
+## Anbefalt fremgangsmåte
+
+Målversjonen er 15.1.2, siden alle elleve CVE-ene berører versjoner før 15.1.2 og flere av dem kan utløses uten innlogging på GINA eller via innkommende meldinger. Systemer i 15.0-grenen oppdateres som beskrevet i artikkelen om 15.1.1, først til 15.0.7, som ifølge revisjonshistorikken muliggjør oppdateringen til 15.1. Opprett en sikkerhetskopi før oppdateringen og, for virtuelle apparater, i tillegg et snapshot, slik produsentens dokumentasjon anbefaler. Test deretter REST-API-integrasjoner med administratorkontoer og LFT-forsendelse. Utgivelsesnotatene inneholder ingen opplysninger om oppdateringsrekkefølge i klyngen eller en minimumsversjon for 15.1.2 (status 25. november 2026).
+
+## Kilder
+
+1.  [SEPPmail-dokumentasjon: Revision History](https://docs.seppmail.com/ch/20_revision-history.html): Utgivelsesnotater for 15.1.2 med dato, elleve CVE-er med CVSS-verdier, nye funksjoner og feilrettinger samt status for CVE-ID-ene fra 15.1.0.
+
+2.  [SEPPmail: Extended Release Notes 15.1](https://downloads.seppmail.com/extrelnotes/151/ERN15.1.html): Detaljert beskrivelse av 15.1.2, blant annet om endringen fra «Curves» til «Groups», REST-API-token-timeout og LFT-kryptering.
+
+3.  [NVD: CVE-2026-130637](https://nvd.nist.gov/vuln/detail/CVE-2026-130637): Per 25. november 2026 fortsatt ingen oppføring, det samme gjelder CVE-2026-124840.
+
+4.  [CVE.org: CVE-2026-124840](https://www.cve.org/CVERecord?id=CVE-2026-124840): Ikke publisert per 25. november 2026.
+
+5.  [NVD: CVE-2026-114424](https://nvd.nist.gov/vuln/detail/CVE-2026-114424): Oppføring for én av sårbarhetene fra 15.1.1, publisert 4. november 2026, CVSS 4.0 på 9.2.
+
+6.  [SEPPmail 15.1.1: fem CVE-rettinger og fiks for DNS-regresjonen fra 15.1.0.1](/blog/seppmail-releases-15-1-1): Forrige utgivelsesstatus med rettingene fra 15.1.1 og oppdateringsstien via 15.0.7.
 
 ----
 
