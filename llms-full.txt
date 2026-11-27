@@ -314,6 +314,168 @@ Der eigenhändigen Unterschrift gleichgestellt ist nach Art. 14 Abs. 2bis OR nur
 
 ----
 
+# Facilitator in Microsoft Teams: Was der Meeting-Agent kann und was nicht
+
+URL: https://rafaelpfister.ch/blog/teams-facilitator
+Datum: 2026-11-27
+
+Seit Microsoft den Facilitator in Teams-Meetings ausrollt, taucht in vielen Tenants ein neuer Eintrag in den Meeting-Optionen auf: «Allow Copilot and Facilitator». Der Name lässt offen, was dahintersteckt. Der Facilitator ist ein KI-Agent, der als Teilnehmer im Meeting mitläuft und für alle sichtbar arbeitet. Daraus ergeben sich sowohl die Einsatzmöglichkeiten als auch die Grenzen.
+
+## Was der Facilitator ist
+
+Der Facilitator ist ein Agent von Microsoft 365 Copilot, der in einem geplanten Teams-Meeting die Rolle einer Moderationsassistenz übernimmt. Er schreibt während des Meetings Notizen in einer gemeinsamen Loop-Seite, die alle internen Teilnehmenden lesen und bearbeiten können. Er liest die Agenda aus der Einladung, zeigt einen Agenda-Timer auf der Meeting-Bühne und reagiert auf @Erwähnungen im Meeting-Chat.
+
+Der Unterschied zu den anderen KI-Funktionen in Teams liegt in der Sichtbarkeit:
+
+| Funktion | Wer sieht das Ergebnis | Zeitpunkt |
+|---|---|---|
+| Copilot in Teams-Meetings | nur die Person, die fragt | während und nach dem Meeting |
+| Intelligent Recap | Teilnehmende mit Teams-Premium- oder Copilot-Lizenz | nach dem Meeting |
+| Facilitator | alle internen Teilnehmenden | während des Meetings, Notizen auch danach |
+
+Eine Frage an Copilot bleibt privat. Eine Frage an den Facilitator und seine Antwort erscheinen im Meeting-Chat für alle. Der Facilitator arbeitet damit für alle Teilnehmenden gemeinsam.
+
+## Übersicht für Anwenderinnen und Anwender
+
+Für alle Funktionen gilt: Das Meeting ist ein geplantes Teams-Meeting Ihrer eigenen Organisation ohne externe Teilnehmende, in den Besprechungsoptionen ist «Copilot und Facilitator zulassen» eingeschaltet, und beim Start wurde die gesprochene Sprache gewählt. Eine Copilot-Lizenz braucht nur, wer den Facilitator startet oder ihm Aufträge gibt. Alle anderen internen Teilnehmenden sehen die Ergebnisse ohne eigene Copilot-Lizenz.
+
+| Funktion | Was Sie damit tun | Wer kann es nutzen | Weitere Voraussetzungen |
+|---|---|---|---|
+| Facilitator starten | Den Agenten vor oder während des Meetings einschalten | Personen mit Microsoft-365-Copilot-Lizenz | Loop in Teams eingeschaltet, App «Facilitator» nicht blockiert |
+| Live-Notizen | Entscheidungen, offene Fragen und Aufgaben werden laufend im Tab «Notes» festgehalten; Sie können sie direkt korrigieren und ergänzen | Lesen und bearbeiten: alle internen Teilnehmenden | Transkription läuft (startet automatisch); nur Gesprochenes in der gewählten Sprache wird erfasst, Chat-Nachrichten nicht |
+| Agenda und Abhaken | Die Traktandenliste aus der Einladung erscheint im Chat, besprochene Punkte werden abgehakt | Sehen: alle internen Teilnehmenden | Agenda steht in der Einladung oder wird per @Facilitator im Chat übergeben; Einladung nicht verschlüsselt; ausser der organisierenden Person ist mindestens eine weitere Person im Meeting |
+| Timer und Erinnerungen | Countdown für einen Punkt, Hinweis zur Halbzeit, vor Meeting-Ende und bei Überzug | Timer anfordern: Copilot-Lizenz; sehen: alle internen Teilnehmenden | keine |
+| Fragen zum Meeting | Per @Facilitator im Chat fragen, zum Beispiel «Was haben wir zu Punkt 2 entschieden?»; Frage und Antwort sind für alle sichtbar | Fragen: Copilot-Lizenz; Antworten lesen: alle internen Teilnehmenden | Fragen nach Meeting-Ende nur mit Option «Während und nach der Besprechung» |
+| Fragen mit Websuche | Kurze Recherche während des Meetings, zum Beispiel zu einer Produktversion | Copilot-Lizenz | Websuche für Copilot im Tenant nicht deaktiviert |
+| Word-Dokument erstellen | Aus den Notizen ein Dokument erzeugen, etwa als Protokollentwurf | Copilot-Lizenz | Ablage im OneDrive der anfragenden Person |
+| PowerPoint-Präsentation erstellen | Aus dem Meeting eine Präsentation erzeugen | Copilot-Lizenz | Public Preview: Teilnahme am Teams Public Preview |
+| Aufgaben in Planner übernehmen | Erfasste Aufgaben mit «Accept to sync» nach Planner übertragen | Copilot-Lizenz | Public Preview: Teilnahme am Teams Public Preview |
+| Notizen im Präsenzmeeting (Smartphone) | Mit der Teams-App auf dem Smartphone ein Gespräch vor Ort protokollieren | Copilot-Lizenz | Teams-App auf dem Smartphone |
+| Notizen im Teams Room | Im Besprechungsraum Chat, Notizen und Timer auf dem Raumbildschirm anzeigen | Copilot-Lizenz nur für die organisierende Person | Teams Rooms on Windows; für ungeplante Präsenzmeetings Teams Rooms Pro (Public Preview) |
+
+## Funktionen und Status
+
+Microsoft führt die Funktionen in der Admin-Dokumentation getrennt nach allgemein verfügbar und Public Preview (Stand November 2026):
+
+| Funktion | Status |
+|---|---|
+| Live-Notizen im Tab «Notes» (Loop-Seite, gemeinsam bearbeitbar) | allgemein verfügbar |
+| Fragen beantworten aus dem Meeting-Inhalt und per Websuche | allgemein verfügbar |
+| Agenda-Timer mit Hinweisen zur Halbzeit und vor Meeting-Ende | allgemein verfügbar |
+| Word-Dokument aus dem Meeting erstellen | allgemein verfügbar |
+| @Erwähnung des Facilitators im Meeting-Chat | allgemein verfügbar |
+| Notizen auf dem Smartphone für Präsenzmeetings | allgemein verfügbar |
+| Teams Rooms: Chat, Notizen und Timer im Raum | allgemein verfügbar |
+| Aufgaben erfassen und mit Planner synchronisieren | Public Preview |
+| PowerPoint-Präsentation aus dem Meeting erstellen | Public Preview |
+| Notizen für ungeplante Präsenzmeetings in Teams Rooms | Public Preview |
+
+Zur Agenda: Steht in der Einladung eine Traktandenliste, übernimmt der Facilitator sie, postet sie im Chat und hakt Punkte ab, sobald sie besprochen wurden. Das Abhaken erfolgt in Intervallen, nicht sofort. Läuft das Meeting über die geplante Endzeit, weist er darauf hin. Auf Wunsch setzt er auch einen Countdown für einen einzelnen Punkt.
+
+Zu den Notizen: Der Facilitator fasst Entscheidungen, offene Fragen und Aufgaben zusammen. Grundlage ist ausschliesslich das gesprochene Wort über das Transkript. Was nur im Meeting-Chat steht, fliesst nicht in die Notizen ein. Die Notizen lassen sich jederzeit von Hand korrigieren und ergänzen; der Facilitator schreibt in dieselbe Seite weiter.
+
+## Voraussetzungen
+
+Für den Betrieb müssen mehrere Bedingungen gleichzeitig erfüllt sein:
+
+- **Lizenz:** Wer den Facilitator zu einem Meeting hinzufügt oder während des Meetings einschaltet, braucht eine Microsoft-365-Copilot-Lizenz zusätzlich zu einer geeigneten Microsoft-365- und Teams-Lizenz. Teilnehmende ohne Copilot-Lizenz können dem Facilitator keine Fragen stellen, sehen aber die Notizen, die Fragen der anderen und seine Antworten.
+- **Loop:** Die Loop-Erfahrungen in Teams müssen im Tenant eingeschaltet sein. Ohne Loop gibt es keine Notizen.
+- **Transkription:** Beim Einschalten des Facilitators startet die Transkription automatisch. Steht die Meeting-Option «Allow Copilot and Facilitator» auf «Only during the meeting», läuft der Facilitator ohne gespeichertes Transkript; Fragen nach Meeting-Ende sind dann nicht möglich.
+- **App-Freigabe:** Die App «Facilitator» ist standardmässig erlaubt, sofern im Teams Admin Center nicht alle Apps blockiert sind.
+
+In der Einladung aktivieren Sie den Facilitator unter **Options** > **Copilot and other AI** mit der Einstellung «Allow Copilot and Facilitator». Alternativ lässt er sich während des Meetings über das Copilot-Menü einschalten.
+
+## Facilitator ist ausgegraut
+
+Im Meeting zeigt Teams im Menü «Besprechungs-KI» drei Schalter: Copilot, Facilitator und Intelligente Zusammenfassung. Sind alle drei ausgegraut und erscheint der Hinweis «Sie haben in dieser Besprechung keinen Zugriff auf KI», liegt die Ursache bei der Lizenz oder beim Meeting selbst. Ist nur der Facilitator ausgegraut, liegt sie bei der App oder bei Loop.
+
+| Symptom | Mögliche Ursache | Prüfung |
+|---|---|---|
+| Alle drei Schalter grau | Das Konto hat weder eine Microsoft-365-Copilot- noch eine Teams-Premium-Lizenz | Microsoft 365 Admin Center > Benutzer > Lizenzen. Eine neu zugewiesene Lizenz wird in Teams oft erst nach einigen Stunden oder einer neuen Anmeldung wirksam |
+| Alle drei Schalter grau | Sofortbesprechung («Jetzt besprechen»), aus dem Chat gestartetes Meeting, Kanalbesprechung oder Anruf | Meeting über den Kalender als geplantes Teams-Meeting anlegen |
+| Alle drei Schalter grau | Meeting einer anderen Organisation, Teilnahme als externe Person oder Gast | Facilitator ist in externen Meetings nicht verfügbar |
+| Alle drei Schalter grau | Meeting-Option «Copilot und Facilitator zulassen» steht auf «Aus», gesetzt von der organisierenden Person, einer Meeting-Vorlage oder einer Vertraulichkeitsbezeichnung | Besprechungsoptionen > Copilot und andere KI |
+| Alle drei Schalter grau | Teams-Besprechungsrichtlinie sperrt Copilot oder die Transkription | Teams Admin Center > Besprechungen > Besprechungsrichtlinien |
+| Nur Facilitator grau | App «Facilitator» blockiert, etwa weil alle Apps gesperrt sind | Teams Admin Center > Teams-Apps > Apps verwalten |
+| Nur Facilitator grau oder keine Notizen | Loop für Meeting-Notizen ausgeschaltet | `Get-SPOTenant` zeigt `IsCollabMeetingNotesFluidEnabled` |
+
+Die Lizenz ist die häufigste Ursache. Ohne Microsoft-365-Copilot-Lizenz bleibt der Facilitator-Schalter in jedem Meeting grau, unabhängig von Meeting-Optionen und Richtlinien.
+
+## Wofür sich der Facilitator eignet
+
+Den grössten Nutzen hat der Facilitator in Meetings, in denen sonst jemand Protokoll führt und dadurch nicht mitdiskutieren kann. Typische Beispiele:
+
+- **Projekt- und Statusmeetings mit fester Traktandenliste:** Agenda-Timer und Hinweise zur Halbzeit halten den Zeitplan ein, die Notizen enthalten Entscheidungen und offene Punkte ohne separates Protokoll.
+- **Workshops mit Entscheidungen:** Die gemeinsame Loop-Seite ist während des Meetings sichtbar. Die Teilnehmenden korrigieren Formulierungen direkt, statt ein Protokoll nachträglich per Mail abzustimmen.
+- **Fragen während des Meetings:** «Was haben wir zu Punkt 2 entschieden?» oder eine kurze Websuche zu einer Produktversion beantwortet der Facilitator im Chat, sichtbar für alle.
+- **Spätere Zusammenfassung:** Aus den Notizen erstellt der Facilitator auf Anfrage ein Word-Dokument, das in OneDrive der anfragenden Person abgelegt wird.
+- **Präsenzmeetings:** Mit der Teams-App auf dem Smartphone oder in einem Teams Room werden auch Besprechungen vor Ort protokolliert.
+
+## Was der Facilitator nicht kann
+
+Die Grenzen sind in der Microsoft-Dokumentation klar beschrieben und betreffen vor allem Meeting-Typen, Sprache und Compliance.
+
+**Nicht unterstützte Meeting-Typen.** Der Facilitator läuft nur in geplanten Teams-Meetings. Nicht unterstützt sind Sofortbesprechungen («Meet now»), aus einem Chat gestartete Meetings, Teams-Anrufe, Kanalbesprechungen sowie 1:1- und Gruppenchats. Für Webinare und Town Halls nennt die Dokumentation keine Unterstützung.
+
+**Keine externen Teilnehmenden.** In Meetings und Chats mit externen Personen sind KI-generierte Notizen nicht verfügbar. Externe Teilnehmende sehen die Notizen grundsätzlich nicht. Für Meetings mit Kunden oder Lieferanten ist der Facilitator als Protokollwerkzeug damit nicht einsetzbar.
+
+**Eine Sprache pro Meeting.** Beim Einschalten wird die gesprochene Sprache gewählt. Notizen entstehen nur für Passagen in dieser Sprache. In einem Meeting, das zwischen Deutsch und Französisch wechselt, fehlen die französischen Teile. Weicht die gewählte Sprache von der gesprochenen ab, entstehen keine Notizen. Schweizerdeutsch ist in der Liste der unterstützten Copilot-Sprachen nicht als eigene Sprache aufgeführt.
+
+**Keine Aufzeichnung.** Der Facilitator schaltet die Transkription ein, aber keine Aufzeichnung. Wer Bild und Ton braucht, startet die Aufzeichnung separat.
+
+**Keine Agenda aus geschützten Einladungen.** Ist die Einladung mit einer Vertraulichkeitsbezeichnung verschlüsselt, kann der Facilitator die Agenda nicht lesen. Dasselbe gilt, solange nur die organisierende Person im Meeting ist, weil er deren Kopie der Einladung nicht ausliest.
+
+**Kein Ersatz für ein formelles Protokoll.** Die Notizen sind eine KI-Zusammenfassung des Transkripts. Für Verwaltungsratssitzungen, Personalgespräche oder andere Besprechungen mit rechtlicher Tragweite braucht es weiterhin ein geprüftes und freigegebenes Protokoll.
+
+## Datenablage und Compliance
+
+Die Notizen liegen als `.loop`-Datei im Ordner «Meetings» im OneDrive der Person, die den Facilitator gestartet hat. Microsoft behandelt sie wie Transkriptdaten. Für Compliance-Verantwortliche sind drei Einschränkungen relevant:
+
+- **eDiscovery:** KI-generierte Meeting-Notizen werden in Microsoft Purview eDiscovery nicht automatisch als Cloud-Anlagen erfasst.
+- **Aufbewahrung:** Aufbewahrungsbezeichnungen werden für Cloud-Anlagen in KI-generierten Notizen nicht unterstützt.
+- **Vertraulichkeitsbezeichnungen:** Die Notizen übernehmen die Bezeichnung des Meetings nicht. Eine Bezeichnung lässt sich nachträglich auf die Loop-Komponente setzen. Einstellungen wie «Prevent copy and paste» und Wasserzeichen gelten nicht für Antworten und Notizen des Facilitators.
+
+Für Organisationen mit Aufbewahrungspflichten bedeutet das: Notizen, die als Geschäftsunterlage gelten sollen, müssen in eine Ablage mit funktionierender Aufbewahrung überführt werden. Microsoft beschreibt die Purview-Aspekte in einer eigenen Seite (siehe Quellen).
+
+## Facilitator steuern und deaktivieren
+
+Im Teams Admin Center finden Sie die App unter **Teams apps** > **Manage apps** mit der Suche nach «Facilitator». Dort lässt sie sich für den ganzen Tenant erlauben oder blockieren. Für einzelne Benutzergruppen steuern Sie die App über App-Berechtigungsrichtlinien oder App-zentrierte Verwaltung.
+
+Die Loop-Notizen in Meetings, auf denen der Facilitator aufbaut, hängen an einer SharePoint-Tenant-Einstellung. Diese gilt für alle Benutzer und lässt sich nicht pro Person setzen:
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Optionen erklärt</summary>
+
+| Option | Wirkung |
+|---|---|
+| `-Url` | Adresse des SharePoint-Admin-Centers des Tenants (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` schaltet die gemeinsamen Meeting-Notizen und damit die KI-Notizen des Facilitators für alle Benutzer aus, `$true` wieder ein |
+
+</details>
+
+Diese Einstellung entfernt die Notizfunktion auch für Meetings ohne Facilitator. Soll nur der Agent gesperrt werden, ist das Blockieren der App im Teams Admin Center der gezieltere Weg. Für Meetings ohne gespeichertes Transkript setzen Sie in der Meeting-Richtlinie die Option für Copilot und Facilitator auf «Only during the meeting».
+
+## Quellen
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Admin-Dokumentation mit Lizenzanforderungen, Funktionsstatus, Datenablage, Compliance-Einschränkungen und App-Steuerung (Stand 18.11.2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): Endbenutzer-Anleitung zu Meeting-Optionen, Agenda, Timer, unterstützten Meeting-Typen und Sprachwahl.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): Präsenzmeetings in Teams Rooms on Windows, Lizenz der organisierenden Person, Zuordnung von Sprechenden im Raum.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Microsoft-365-Insider-Blog vom Oktober 2025 zu Transkription, Notizgrundlage und Betrieb ohne gespeichertes Transkript.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Purview-Sicht auf Facilitator-Daten für Aufbewahrung und eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Tenant-Einstellungen `IsLoopEnabled` und `IsCollabMeetingNotesFluidEnabled` für Loop-Komponenten und Meeting-Notizen.
+
+----
+
 # SEPPmail 15.1.2: elf CVE-Korrekturen, vor allem in GINA, und Post-Quantum-TLS
 
 URL: https://rafaelpfister.ch/blog/seppmail-releases-15-1-2
@@ -23986,6 +24148,168 @@ Under Art. 14 para. 2bis OR, only a qualified electronic signature with a qualif
 
 ----
 
+# Facilitator in Microsoft Teams: What the meeting agent can and cannot do
+
+URL: https://rafaelpfister.ch/en/blog/facilitator-in-microsoft-teams-what-the-meeting-agent-can-and-cannot-do
+Datum: 2026-11-27
+
+Since Microsoft began rolling out Facilitator in Teams meetings, a new entry has appeared in the meeting options in many tenants: “Allow Copilot and Facilitator.” The name does not make clear what it does. Facilitator is an AI agent that joins the meeting as a participant and works visibly for everyone. This creates both its possible uses and its limitations.
+
+## What Facilitator is
+
+Facilitator is a Microsoft 365 Copilot agent that acts as a moderation assistant in a scheduled Teams meeting. During the meeting, it writes notes on a shared Loop page that all internal participants can read and edit. It reads the agenda from the invitation, displays an agenda timer on the meeting stage, and responds to @mentions in the meeting chat.
+
+The difference from other AI features in Teams is visibility:
+
+| Feature | Who sees the result | When |
+|---|---|---|
+| Copilot in Teams meetings | only the person asking | during and after the meeting |
+| Intelligent Recap | participants with a Teams Premium or Copilot license | after the meeting |
+| Facilitator | all internal participants | during the meeting; notes also afterward |
+
+A question to Copilot remains private. A question to Facilitator and its answer appear in the meeting chat for everyone. Facilitator therefore works collectively for all participants.
+
+## Overview for users
+
+The following applies to all features: The meeting is a scheduled Teams meeting within your own organization, with no external participants; “Allow Copilot and Facilitator” is enabled in the meeting options; and the spoken language was selected when starting. Only the person who starts Facilitator or assigns it tasks needs a Copilot license. All other internal participants can see the results without their own Copilot license.
+
+| Feature | What you can do with it | Who can use it | Additional requirements |
+|---|---|---|---|
+| Start Facilitator | Turn on the agent before or during the meeting | People with a Microsoft 365 Copilot license | Loop enabled in Teams; “Facilitator” app not blocked |
+| Live notes | Decisions, open questions, and tasks are continuously captured in the “Notes” tab; you can correct and add to them directly | Read and edit: all internal participants | Transcription is running (starts automatically); only speech in the selected language is captured, not chat messages |
+| Agenda and check-off | The agenda from the invitation appears in chat, and discussed items are checked off | View: all internal participants | Agenda is in the invitation or provided through @Facilitator in chat; invitation is not encrypted; at least one other person besides the organizer is in the meeting |
+| Timer and reminders | Countdown for an item, notice at the halfway point, before the meeting ends, and when it runs over | Request timer: Copilot license; view: all internal participants | none |
+| Questions about the meeting | Ask via @Facilitator in chat, for example, “What did we decide on item 2?”; question and answer are visible to everyone | Ask: Copilot license; read answers: all internal participants | Questions after the meeting ends only with the “During and after the meeting” option |
+| Questions with web search | Brief research during the meeting, for example about a product version | Copilot license | Web search for Copilot not disabled in the tenant |
+| Create a Word document | Generate a document from the notes, such as draft meeting minutes | Copilot license | Stored in the requester's OneDrive |
+| Create a PowerPoint presentation | Generate a presentation from the meeting | Copilot license | Public Preview: participation in Teams Public Preview |
+| Transfer tasks to Planner | Transfer captured tasks to Planner with “Accept to sync” | Copilot license | Public Preview: participation in Teams Public Preview |
+| Notes in an in-person meeting (smartphone) | Use the Teams app on a smartphone to document an in-person conversation | Copilot license | Teams app on a smartphone |
+| Notes in a Teams Room | Display chat, notes, and timers on the room screen | Copilot license only for the organizer | Teams Rooms on Windows; for unscheduled in-person meetings, Teams Rooms Pro (Public Preview) |
+
+## Features and status
+
+Microsoft lists features separately in the admin documentation as generally available and Public Preview (as of November 2026):
+
+| Feature | Status |
+|---|---|
+| Live notes in the “Notes” tab (Loop page, collaboratively editable) | generally available |
+| Answering questions using meeting content and web search | generally available |
+| Agenda timer with notifications at the halfway point and before the meeting ends | generally available |
+| Create a Word document from the meeting | generally available |
+| @mention Facilitator in the meeting chat | generally available |
+| Notes on a smartphone for in-person meetings | generally available |
+| Teams Rooms: chat, notes, and timer in the room | generally available |
+| Capture tasks and synchronize with Planner | Public Preview |
+| Create a PowerPoint presentation from the meeting | Public Preview |
+| Notes for unscheduled in-person meetings in Teams Rooms | Public Preview |
+
+Regarding the agenda: If the invitation contains an agenda, Facilitator adopts it, posts it in chat, and checks off items once they have been discussed. Items are checked off at intervals, not immediately. If the meeting runs past the scheduled end time, it points this out. On request, it also sets a countdown for an individual item.
+
+Regarding notes: Facilitator summarizes decisions, open questions, and tasks. It relies exclusively on spoken words through the transcript. Anything only written in the meeting chat is not included in the notes. The notes can be manually corrected and supplemented at any time; Facilitator continues writing on the same page.
+
+## Requirements
+
+Several conditions must be met at the same time for operation:
+
+- **License:** Anyone who adds Facilitator to a meeting or turns it on during the meeting needs a Microsoft 365 Copilot license in addition to an appropriate Microsoft 365 and Teams license. Participants without a Copilot license cannot ask Facilitator questions, but they can see the notes, other participants’ questions, and its answers.
+- **Loop:** Loop experiences in Teams must be enabled in the tenant. Without Loop, there are no notes.
+- **Transcription:** Turning on Facilitator starts transcription automatically. If the “Allow Copilot and Facilitator” meeting option is set to “Only during the meeting,” Facilitator runs without a saved transcript; questions after the meeting ends are then not possible.
+- **App approval:** The “Facilitator” app is allowed by default, unless all apps are blocked in the Teams Admin Center.
+
+In the invitation, enable Facilitator under **Options** > **Copilot and other AI** using the “Allow Copilot and Facilitator” setting. Alternatively, it can be turned on during the meeting through the Copilot menu.
+
+## Facilitator is grayed out
+
+In the meeting, Teams shows three toggles in the “Meeting AI” menu: Copilot, Facilitator, and Intelligent Recap. If all three are grayed out and the message “You don’t have access to AI in this meeting” appears, the cause is the license or the meeting itself. If only Facilitator is grayed out, the cause is the app or Loop.
+
+| Symptom | Possible cause | Check |
+|---|---|---|
+| All three toggles grayed out | The account has neither a Microsoft 365 Copilot license nor a Teams Premium license | Microsoft 365 Admin Center > Users > Licenses. A newly assigned license often only takes effect in Teams after a few hours or after signing in again |
+| All three toggles grayed out | Instant meeting (“Meet now”), meeting started from chat, channel meeting, or call | Create the meeting through the calendar as a scheduled Teams meeting |
+| All three toggles grayed out | Meeting from another organization, joining as an external participant or guest | Facilitator is not available in external meetings |
+| All three toggles grayed out | The “Allow Copilot and Facilitator” meeting option is set to “Off,” by the organizer, a meeting template, or a sensitivity label | Meeting options > Copilot and other AI |
+| All three toggles grayed out | Teams meeting policy blocks Copilot or transcription | Teams Admin Center > Meetings > Meeting policies |
+| Only Facilitator grayed out | “Facilitator” app is blocked, for example because all apps are blocked | Teams Admin Center > Teams apps > Manage apps |
+| Only Facilitator grayed out or no notes | Loop for meeting notes is disabled | `Get-SPOTenant` shows `IsCollabMeetingNotesFluidEnabled` |
+
+The license is the most common cause. Without a Microsoft 365 Copilot license, the Facilitator toggle remains grayed out in every meeting, regardless of meeting options and policies.
+
+## What Facilitator is suitable for
+
+Facilitator provides the greatest benefit in meetings where someone would otherwise take minutes and therefore cannot fully participate in the discussion. Typical examples:
+
+- **Project and status meetings with a fixed agenda:** Agenda timers and halfway notifications keep the schedule on track, while the notes capture decisions and open items without separate minutes.
+- **Workshops with decisions:** The shared Loop page is visible during the meeting. Participants correct wording directly instead of reconciling minutes by email afterward.
+- **Questions during the meeting:** Facilitator answers “What did we decide on item 2?” or performs a brief web search about a product version in chat, visible to everyone.
+- **Later summary:** On request, Facilitator creates a Word document from the notes and stores it in the requester's OneDrive.
+- **In-person meetings:** The Teams app on a smartphone or a Teams Room can also document meetings held on-site.
+
+## What Facilitator cannot do
+
+The limitations are clearly described in Microsoft documentation and primarily concern meeting types, language, and compliance.
+
+**Unsupported meeting types.** Facilitator runs only in scheduled Teams meetings. Instant meetings (“Meet now”), meetings started from a chat, Teams calls, channel meetings, and 1:1 and group chats are not supported. The documentation does not mention support for webinars and town halls.
+
+**No external participants.** AI-generated notes are not available in meetings and chats with external people. External participants generally cannot see the notes. This means Facilitator cannot be used as a minutes tool for meetings with customers or vendors.
+
+**One language per meeting.** The spoken language is selected when turning it on. Notes are generated only for passages in that language. In a meeting that switches between German and French, the French portions will be missing. If the selected language differs from the spoken language, no notes are generated. Swiss German is not listed as a separate language among the supported Copilot languages.
+
+**No recording.** Facilitator turns on transcription, but not recording. Anyone who needs video and audio must start recording separately.
+
+**No agenda from protected invitations.** If the invitation is encrypted with a sensitivity label, Facilitator cannot read the agenda. The same applies while only the organizer is in the meeting, because it does not read the organizer’s copy of the invitation.
+
+**Not a replacement for formal minutes.** The notes are an AI summary of the transcript. Board meetings, personnel discussions, or other meetings with legal implications still require reviewed and approved minutes.
+
+## Data storage and compliance
+
+The notes are stored as a `.loop` file in the “Meetings” folder in the OneDrive of the person who started Facilitator. Microsoft treats them like transcript data. Three limitations are relevant for compliance professionals:
+
+- **eDiscovery:** AI-generated meeting notes are not automatically captured as cloud attachments in Microsoft Purview eDiscovery.
+- **Retention:** Retention labels are not supported for cloud attachments in AI-generated notes.
+- **Sensitivity labels:** The notes do not inherit the meeting's label. A label can be applied to the Loop component afterward. Settings such as “Prevent copy and paste” and watermarks do not apply to Facilitator answers and notes.
+
+For organizations with retention obligations, this means that notes intended to serve as business records must be moved to storage with functioning retention. Microsoft describes the Purview aspects on a separate page (see Sources).
+
+## Controlling and disabling Facilitator
+
+In the Teams Admin Center, find the app under **Teams apps** > **Manage apps** by searching for “Facilitator.” There, it can be allowed or blocked for the entire tenant. For individual user groups, manage the app through app permission policies or app-centric management.
+
+The Loop meeting notes on which Facilitator is based depend on a SharePoint tenant setting. This applies to all users and cannot be set per person:
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Explains options</summary>
+
+| Option | Effect |
+|---|---|
+| `-Url` | Address of the tenant’s SharePoint Admin Center (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` turns off shared meeting notes and therefore Facilitator’s AI notes for all users; `$true` turns them back on |
+
+</details>
+
+This setting also removes the note feature for meetings without Facilitator. If only the agent should be blocked, blocking the app in the Teams Admin Center is the more targeted approach. For meetings without a saved transcript, set the Copilot and Facilitator option in the meeting policy to “Only during the meeting.”
+
+## Sources
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Admin documentation with licensing requirements, feature status, data storage, compliance limitations, and app management (as of November 18, 2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): End-user guide to meeting options, agenda, timer, supported meeting types, and language selection.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): In-person meetings in Teams Rooms on Windows, organizer licensing, and assignment of speakers in the room.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Microsoft 365 Insider blog from October 2025 on transcription, the basis for notes, and operation without a saved transcript.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Purview perspective on Facilitator data for retention and eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Tenant settings `IsLoopEnabled` and `IsCollabMeetingNotesFluidEnabled` for Loop components and meeting notes.
+
+----
+
 # SEPPmail 15.1.2: Eleven CVE Fixes, Mainly in GINA, and Post-Quantum TLS
 
 URL: https://rafaelpfister.ch/en/blog/seppmail-15-1-2-eleven-cve-fixes-mainly-in-gina-and-post-quantum-tls
@@ -47602,6 +47926,168 @@ Seule la signature électronique qualifiée avec horodatage qualifié est assimi
 11.  [Code de procédure civile (CPC)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 relatif à la libre appréciation des preuves.
 
 12.  [Règlement (UE) n° 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25, al. 2 sur l’assimilation de la signature électronique qualifiée à la signature manuscrite.
+
+----
+
+# Facilitator dans Microsoft Teams : ce que l’agent de réunion peut faire et ne peut pas faire
+
+URL: https://rafaelpfister.ch/fr/blog/facilitator-dans-microsoft-teams-ce-que-l-agent-de-reunion-peut-faire-et-ne-peut-pas-faire
+Datum: 2026-11-27
+
+Depuis que Microsoft déploie Facilitator dans les réunions Teams, une nouvelle entrée apparaît dans les options de réunion de nombreux tenants : «Allow Copilot and Facilitator». Son nom ne précise pas ce qui se cache derrière. Facilitator est un agent d’IA qui participe à la réunion et travaille de manière visible pour tous. Cela détermine à la fois ses possibilités d’utilisation et ses limites.
+
+## Ce qu’est Facilitator
+
+Facilitator est un agent de Microsoft 365 Copilot qui assume le rôle d’assistant de modération dans une réunion Teams planifiée. Pendant la réunion, il rédige des notes sur une page Loop commune que tous les participants internes peuvent lire et modifier. Il lit l’ordre du jour dans l’invitation, affiche un minuteur d’ordre du jour sur la scène de réunion et réagit aux @mentions dans le chat de réunion.
+
+La différence par rapport aux autres fonctions d’IA dans Teams réside dans la visibilité :
+
+| Fonction | Qui voit le résultat | Moment |
+|---|---|---|
+| Copilot dans les réunions Teams | uniquement la personne qui pose la question | pendant et après la réunion |
+| Intelligent Recap | participants disposant d’une licence Teams Premium ou Copilot | après la réunion |
+| Facilitator | tous les participants internes | pendant la réunion, notes également après |
+
+Une question posée à Copilot reste privée. Une question posée à Facilitator et sa réponse apparaissent dans le chat de réunion pour tous. Facilitator travaille donc collectivement pour tous les participants.
+
+## Vue d’ensemble pour les utilisateurs
+
+Pour toutes les fonctions, les conditions suivantes s’appliquent : la réunion est une réunion Teams planifiée de votre propre organisation, sans participants externes, l’option «Autoriser Copilot et Facilitator» est activée dans les options de réunion et la langue parlée a été sélectionnée au démarrage. Seule la personne qui démarre Facilitator ou lui donne des instructions a besoin d’une licence Copilot. Tous les autres participants internes voient les résultats sans licence Copilot propre.
+
+| Fonction | Ce que vous pouvez faire | Qui peut l’utiliser | Autres prérequis |
+|---|---|---|---|
+| Démarrer Facilitator | Activer l’agent avant ou pendant la réunion | personnes disposant d’une licence Microsoft 365 Copilot | Loop activé dans Teams, application «Facilitator» non bloquée |
+| Notes en direct | Les décisions, questions ouvertes et tâches sont consignées en continu dans l’onglet «Notes» ; vous pouvez les corriger et les compléter directement | lecture et modification : tous les participants internes | la transcription est active (elle démarre automatiquement) ; seules les paroles dans la langue sélectionnée sont prises en compte, pas les messages du chat |
+| Ordre du jour et suivi | La liste des points de l’ordre du jour de l’invitation apparaît dans le chat, les points traités sont cochés | affichage : tous les participants internes | ordre du jour dans l’invitation ou transmis via @Facilitator dans le chat ; invitation non chiffrée ; au moins une autre personne que l’organisateur participe à la réunion |
+| Minuteur et rappels | Compte à rebours pour un point, indication à mi-parcours, avant la fin et en cas de dépassement | demander le minuteur : licence Copilot ; voir : tous les participants internes | aucun |
+| Questions sur la réunion | Poser une question via @Facilitator dans le chat, par exemple «Qu’avons-nous décidé pour le point 2 ?» ; question et réponse visibles pour tous | poser des questions : licence Copilot ; lire les réponses : tous les participants internes | questions après la fin de la réunion uniquement avec l’option «Pendant et après la réunion» |
+| Questions avec recherche web | Recherche rapide pendant la réunion, par exemple sur une version de produit | licence Copilot | recherche web pour Copilot non désactivée dans le tenant |
+| Créer un document Word | Générer un document à partir des notes, par exemple comme projet de procès-verbal | licence Copilot | stockage dans le OneDrive de la personne qui effectue la demande |
+| Créer une présentation PowerPoint | Générer une présentation à partir de la réunion | licence Copilot | Public Preview : participation à Teams Public Preview |
+| Transférer les tâches dans Planner | Transférer les tâches recensées vers Planner avec «Accept to sync» | licence Copilot | Public Preview : participation à Teams Public Preview |
+| Notes lors d’une réunion en présentiel (smartphone) | Documenter une discussion sur place avec l’application Teams sur smartphone | licence Copilot | application Teams sur smartphone |
+| Notes dans une Teams Room | Afficher le chat, les notes et le minuteur sur l’écran de la salle | licence Copilot uniquement pour l’organisateur | Teams Rooms on Windows ; pour les réunions en présentiel non planifiées, Teams Rooms Pro (Public Preview) |
+
+## Fonctions et statut
+
+Microsoft distingue les fonctions généralement disponibles de celles en Public Preview dans la documentation d’administration (état : novembre 2026) :
+
+| Fonction | Statut |
+|---|---|
+| Notes en direct dans l’onglet «Notes» (page Loop, modifiable en commun) | généralement disponible |
+| Répondre aux questions à partir du contenu de la réunion et via recherche web | généralement disponible |
+| Minuteur d’ordre du jour avec indications à mi-parcours et avant la fin de la réunion | généralement disponible |
+| Créer un document Word à partir de la réunion | généralement disponible |
+| @mention de Facilitator dans le chat de réunion | généralement disponible |
+| Notes sur smartphone pour les réunions en présentiel | généralement disponible |
+| Teams Rooms : chat, notes et minuteur dans la salle | généralement disponible |
+| Recenser les tâches et les synchroniser avec Planner | Public Preview |
+| Créer une présentation PowerPoint à partir de la réunion | Public Preview |
+| Notes pour les réunions en présentiel non planifiées dans Teams Rooms | Public Preview |
+
+Concernant l’ordre du jour : si l’invitation contient une liste de points, Facilitator la reprend, la publie dans le chat et coche les points dès qu’ils ont été abordés. Le suivi s’effectue à intervalles, et non immédiatement. Si la réunion dépasse l’heure de fin prévue, il le signale. Sur demande, il peut également lancer un compte à rebours pour un point précis.
+
+Concernant les notes : Facilitator résume les décisions, les questions ouvertes et les tâches. Il se base exclusivement sur les propos retranscrits. Ce qui figure uniquement dans le chat de réunion n’est pas intégré aux notes. Celles-ci peuvent être corrigées et complétées manuellement à tout moment ; Facilitator continue d’écrire sur la même page.
+
+## Prérequis
+
+Plusieurs conditions doivent être remplies simultanément pour l’utiliser :
+
+- **Licence :** Toute personne qui ajoute Facilitator à une réunion ou l’active pendant celle-ci a besoin d’une licence Microsoft 365 Copilot, en plus d’une licence Microsoft 365 et Teams appropriée. Les participants sans licence Copilot ne peuvent pas poser de questions à Facilitator, mais voient les notes, les questions des autres et ses réponses.
+- **Loop :** Les expériences Loop dans Teams doivent être activées dans le tenant. Sans Loop, il n’y a pas de notes.
+- **Transcription :** L’activation de Facilitator démarre automatiquement la transcription. Si l’option de réunion «Allow Copilot and Facilitator» est définie sur «Only during the meeting», Facilitator fonctionne sans transcription enregistrée ; il n’est alors pas possible de poser des questions après la fin de la réunion.
+- **Autorisation de l’application :** L’application «Facilitator» est autorisée par défaut, à moins que toutes les applications ne soient bloquées dans le Teams Admin Center.
+
+Dans l’invitation, activez Facilitator sous **Options** > **Copilot and other AI** avec le paramètre «Allow Copilot and Facilitator». Vous pouvez également l’activer pendant la réunion via le menu Copilot.
+
+## Facilitator est grisé
+
+Dans le menu «IA de réunion», Teams affiche trois commutateurs : Copilot, Facilitator et Récapitulatif intelligent. Si les trois sont grisés et que le message «Vous n’avez pas accès à l’IA dans cette réunion» apparaît, la cause est la licence ou la réunion elle-même. Si seul Facilitator est grisé, la cause est l’application ou Loop.
+
+| Symptôme | Cause possible | Vérification |
+|---|---|---|
+| Les trois commutateurs sont gris | Le compte n’a ni licence Microsoft 365 Copilot ni licence Teams Premium | Microsoft 365 Admin Center > Utilisateurs > Licences. Une licence nouvellement attribuée ne prend souvent effet dans Teams qu’après quelques heures ou une nouvelle connexion |
+| Les trois commutateurs sont gris | Réunion instantanée («Meet now»), réunion démarrée depuis un chat, réunion de canal ou appel | Créer la réunion dans le calendrier en tant que réunion Teams planifiée |
+| Les trois commutateurs sont gris | Réunion d’une autre organisation, participation en tant que personne externe ou invité | Facilitator n’est pas disponible dans les réunions externes |
+| Les trois commutateurs sont gris | L’option de réunion «Autoriser Copilot et Facilitator» est définie sur «Désactivé», par l’organisateur, un modèle de réunion ou une étiquette de confidentialité | Options de réunion > Copilot et autres IA |
+| Les trois commutateurs sont gris | La stratégie de réunion Teams bloque Copilot ou la transcription | Teams Admin Center > Réunions > Stratégies de réunion |
+| Seul Facilitator est gris | L’application «Facilitator» est bloquée, par exemple parce que toutes les applications sont interdites | Teams Admin Center > Applications Teams > Gérer les applications |
+| Seul Facilitator est gris ou aucune note | Loop est désactivé pour les notes de réunion | `Get-SPOTenant` affiche `IsCollabMeetingNotesFluidEnabled` |
+
+La licence est la cause la plus fréquente. Sans licence Microsoft 365 Copilot, le commutateur Facilitator reste grisé dans chaque réunion, indépendamment des options de réunion et des stratégies.
+
+## À quoi sert Facilitator
+
+Facilitator est particulièrement utile dans les réunions où une personne devrait autrement rédiger le procès-verbal et ne peut donc pas participer pleinement à la discussion. Exemples typiques :
+
+- **Réunions de projet et de suivi avec un ordre du jour fixe :** le minuteur d’ordre du jour et les indications à mi-parcours permettent de respecter le calendrier, tandis que les notes consignent les décisions et les points ouverts sans procès-verbal séparé.
+- **Ateliers avec décisions :** la page Loop commune est visible pendant la réunion. Les participants corrigent directement les formulations, au lieu de valider ultérieurement un procès-verbal par e-mail.
+- **Questions pendant la réunion :** Facilitator répond dans le chat, de manière visible pour tous, à des questions comme «Qu’avons-nous décidé pour le point 2 ?» ou à une courte recherche web sur une version de produit.
+- **Résumé ultérieur :** sur demande, Facilitator crée un document Word à partir des notes, qui est enregistré dans le OneDrive de la personne qui effectue la demande.
+- **Réunions en présentiel :** l’application Teams sur smartphone ou une Teams Room permettent également de documenter les réunions sur place.
+
+## Ce que Facilitator ne peut pas faire
+
+Les limites sont clairement décrites dans la documentation Microsoft et concernent principalement les types de réunions, la langue et la conformité.
+
+**Types de réunions non pris en charge.** Facilitator fonctionne uniquement dans les réunions Teams planifiées. Les réunions instantanées («Meet now»), les réunions démarrées depuis un chat, les appels Teams, les réunions de canal ainsi que les conversations 1:1 et de groupe ne sont pas pris en charge. La documentation ne mentionne aucune prise en charge des webinaires ni des assemblées publiques.
+
+**Pas de participants externes.** Les notes générées par IA ne sont pas disponibles dans les réunions et les chats comportant des personnes externes. Les participants externes ne voient généralement pas les notes. Facilitator ne peut donc pas être utilisé comme outil de procès-verbal pour les réunions avec des clients ou des fournisseurs.
+
+**Une langue par réunion.** La langue parlée est sélectionnée lors de l’activation. Les notes ne sont générées que pour les passages dans cette langue. Dans une réunion qui alterne entre l’allemand et le français, les parties en français sont absentes. Si la langue choisie diffère de celle qui est parlée, aucune note n’est créée. Le suisse allemand n’est pas répertorié comme langue distincte dans la liste des langues Copilot prises en charge.
+
+**Pas d’enregistrement.** Facilitator active la transcription, mais pas l’enregistrement. Les personnes qui ont besoin de l’image et du son doivent démarrer l’enregistrement séparément.
+
+**Pas d’ordre du jour à partir d’invitations protégées.** Si l’invitation est chiffrée à l’aide d’une étiquette de confidentialité, Facilitator ne peut pas lire l’ordre du jour. Il en va de même tant que seule la personne organisatrice est présente dans la réunion, car il ne lit pas sa copie de l’invitation.
+
+**Ne remplace pas un procès-verbal formel.** Les notes sont un résumé généré par IA à partir de la transcription. Pour les séances du conseil d’administration, les entretiens RH ou d’autres réunions ayant une portée juridique, un procès-verbal vérifié et approuvé reste nécessaire.
+
+## Stockage des données et conformité
+
+Les notes sont stockées sous forme de fichier `.loop` dans le dossier «Meetings» du OneDrive de la personne qui a démarré Facilitator. Microsoft les traite comme des données de transcription. Trois limitations sont pertinentes pour les responsables de la conformité :
+
+- **eDiscovery :** les notes de réunion générées par IA ne sont pas automatiquement recensées comme pièces jointes cloud dans Microsoft Purview eDiscovery.
+- **Conservation :** les étiquettes de conservation ne sont pas prises en charge pour les pièces jointes cloud dans les notes générées par IA.
+- **Étiquettes de confidentialité :** les notes ne reprennent pas l’étiquette de la réunion. Une étiquette peut être appliquée ultérieurement au composant Loop. Des paramètres tels que «Prevent copy and paste» et les filigranes ne s’appliquent pas aux réponses et aux notes de Facilitator.
+
+Pour les organisations soumises à des obligations de conservation, cela signifie que les notes devant être considérées comme des documents commerciaux doivent être transférées vers un emplacement de stockage où la conservation fonctionne. Microsoft décrit les aspects Purview sur une page distincte (voir Sources).
+
+## Gérer et désactiver Facilitator
+
+Dans le Teams Admin Center, recherchez l’application sous **Teams apps** > **Manage apps** en recherchant «Facilitator». Vous pouvez l’y autoriser ou la bloquer pour l’ensemble du tenant. Pour certains groupes d’utilisateurs, gérez l’application via les stratégies d’autorisation des applications ou la gestion centrée sur les applications.
+
+Les notes Loop dans les réunions, sur lesquelles Facilitator s’appuie, dépendent d’un paramètre SharePoint au niveau du tenant. Celui-ci s’applique à tous les utilisateurs et ne peut pas être défini par personne :
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Explication des options</summary>
+
+| Option | Effet |
+|---|---|
+| `-Url` | Adresse du centre d’administration SharePoint du tenant (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` désactive les notes de réunion communes et donc les notes IA de Facilitator pour tous les utilisateurs, `$true` les réactive |
+
+</details>
+
+Ce paramètre supprime également la fonction de notes pour les réunions sans Facilitator. Si seul l’agent doit être bloqué, le blocage de l’application dans le Teams Admin Center est la solution la plus ciblée. Pour les réunions sans transcription enregistrée, définissez l’option Copilot et Facilitator sur «Only during the meeting» dans la stratégie de réunion.
+
+## Sources
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Documentation d’administration avec les exigences de licence, le statut des fonctionnalités, le stockage des données, les limitations de conformité et la gestion de l’application (état au 18.11.2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): Guide utilisateur sur les options de réunion, l’ordre du jour, le minuteur, les types de réunions pris en charge et le choix de la langue.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): Réunions en présentiel dans Teams Rooms on Windows, licence de la personne organisatrice, attribution des intervenants dans la salle.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Blog Microsoft 365 Insider d’octobre 2025 sur la transcription, la base des notes et le fonctionnement sans transcription enregistrée.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Vue Purview des données Facilitator pour la conservation et eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Paramètres de tenant `IsLoopEnabled` et `IsCollabMeetingNotesFluidEnabled` pour les composants Loop et les notes de réunion.
 
 ----
 
@@ -71223,6 +71709,168 @@ Ai sensi dell'art. 14 cpv. 2bis CO, soltanto la firma elettronica qualificata co
 
 ----
 
+# Facilitator in Microsoft Teams: cosa può fare e cosa non può fare l'agente per riunioni
+
+URL: https://rafaelpfister.ch/it/blog/facilitator-in-microsoft-teams-cosa-puo-fare-e-cosa-non-puo-fare-l-agente-per-riunioni
+Datum: 2026-11-27
+
+Da quando Microsoft sta distribuendo Facilitator nelle riunioni Teams, in molti tenant compare una nuova voce nelle opzioni della riunione: «Allow Copilot and Facilitator». Il nome non chiarisce cosa vi sia dietro. Facilitator è un agente di IA che partecipa alla riunione e lavora in modo visibile a tutti. Da ciò derivano sia le possibilità di utilizzo sia i limiti.
+
+## Cos'è Facilitator
+
+Facilitator è un agente di Microsoft 365 Copilot che, in una riunione Teams pianificata, svolge il ruolo di assistente alla moderazione. Durante la riunione scrive note in una pagina Loop condivisa, che tutti i partecipanti interni possono leggere e modificare. Legge l'agenda dall'invito, mostra un timer dell'agenda sul palco della riunione e reagisce alle @menzioni nella chat della riunione.
+
+La differenza rispetto alle altre funzioni di IA in Teams sta nella visibilità:
+
+| Funzione | Chi vede il risultato | Momento |
+|---|---|---|
+| Copilot nelle riunioni Teams | solo la persona che pone la domanda | durante e dopo la riunione |
+| Riepilogo intelligente | partecipanti con licenza Teams Premium o Copilot | dopo la riunione |
+| Facilitator | tutti i partecipanti interni | durante la riunione, note anche dopo |
+
+Una domanda a Copilot rimane privata. Una domanda a Facilitator e la relativa risposta compaiono nella chat della riunione per tutti. Facilitator lavora quindi per tutti i partecipanti congiuntamente.
+
+## Panoramica per gli utenti
+
+Per tutte le funzioni vale quanto segue: la riunione è una riunione Teams pianificata della propria organizzazione, senza partecipanti esterni; nelle opzioni della riunione è attivata l'impostazione «Allow Copilot and Facilitator»; al momento dell'avvio è stata selezionata la lingua parlata. La licenza Copilot è necessaria solo a chi avvia Facilitator o gli assegna compiti. Tutti gli altri partecipanti interni vedono i risultati senza una propria licenza Copilot.
+
+| Funzione | Cosa consente di fare | Chi può utilizzarla | Ulteriori requisiti |
+|---|---|---|---|
+| Avviare Facilitator | Attivare l'agente prima o durante la riunione | Persone con licenza Microsoft 365 Copilot | Loop in Teams attivato, app «Facilitator» non bloccata |
+| Note in tempo reale | Decisioni, questioni aperte e attività vengono registrate continuamente nella scheda «Notes»; è possibile correggerle e integrarle direttamente | Lettura e modifica: tutti i partecipanti interni | La trascrizione è in esecuzione (si avvia automaticamente); viene rilevato solo ciò che viene detto nella lingua selezionata, non i messaggi di chat |
+| Agenda e spunta dei punti | L'elenco dei punti all'ordine del giorno dall'invito compare nella chat, i punti discussi vengono spuntati | Visualizzazione: tutti i partecipanti interni | L'agenda è presente nell'invito oppure viene fornita tramite @Facilitator nella chat; invito non crittografato; oltre alla persona organizzatrice, nella riunione è presente almeno un'altra persona |
+| Timer e promemoria | Conto alla rovescia per un punto, avviso a metà riunione, prima della fine e in caso di sforamento | Richiedere il timer: licenza Copilot; visualizzare: tutti i partecipanti interni | nessuno |
+| Domande sulla riunione | Porre domande tramite @Facilitator nella chat, ad esempio «Cosa abbiamo deciso al punto 2?»; domanda e risposta sono visibili a tutti | Porre domande: licenza Copilot; leggere le risposte: tutti i partecipanti interni | Domande dopo la fine della riunione solo con l'opzione «Durante e dopo la riunione» |
+| Domande con ricerca sul Web | Breve ricerca durante la riunione, ad esempio su una versione del prodotto | Licenza Copilot | Ricerca sul Web per Copilot non disattivata nel tenant |
+| Creare un documento Word | Generare dalle note un documento, ad esempio come bozza di verbale | Licenza Copilot | Salvataggio in OneDrive della persona richiedente |
+| Creare una presentazione PowerPoint | Generare una presentazione dalla riunione | Licenza Copilot | Public Preview: partecipazione a Teams Public Preview |
+| Trasferire attività in Planner | Trasferire le attività rilevate in Planner con «Accept to sync» | Licenza Copilot | Public Preview: partecipazione a Teams Public Preview |
+| Note in riunioni in presenza (smartphone) | Documentare una conversazione in presenza con l'app Teams sullo smartphone | Licenza Copilot | App Teams sullo smartphone |
+| Note in Teams Room | Visualizzare chat, note e timer sullo schermo della sala riunioni | Licenza Copilot solo per la persona organizzatrice | Teams Rooms on Windows; per riunioni in presenza non pianificate Teams Rooms Pro (Public Preview) |
+
+## Funzioni e stato
+
+Microsoft elenca le funzioni nella documentazione amministrativa separatamente in base alla disponibilità generale e alla Public Preview (stato: novembre 2026):
+
+| Funzione | Stato |
+|---|---|
+| Note in tempo reale nella scheda «Notes» (pagina Loop, modificabile congiuntamente) | disponibilità generale |
+| Rispondere a domande in base al contenuto della riunione e tramite ricerca sul Web | disponibilità generale |
+| Timer dell'agenda con avvisi a metà riunione e prima della fine | disponibilità generale |
+| Creare un documento Word dalla riunione | disponibilità generale |
+| @menzione di Facilitator nella chat della riunione | disponibilità generale |
+| Note sullo smartphone per riunioni in presenza | disponibilità generale |
+| Teams Rooms: chat, note e timer nella sala | disponibilità generale |
+| Rilevare attività e sincronizzarle con Planner | Public Preview |
+| Creare una presentazione PowerPoint dalla riunione | Public Preview |
+| Note per riunioni in presenza non pianificate in Teams Rooms | Public Preview |
+
+Per quanto riguarda l'agenda: se nell'invito è presente un elenco di punti all'ordine del giorno, Facilitator lo acquisisce, lo pubblica nella chat e spunta i punti non appena vengono discussi. La spunta avviene a intervalli, non immediatamente. Se la riunione supera l'orario di fine previsto, lo segnala. Su richiesta, imposta anche un conto alla rovescia per un singolo punto.
+
+Per quanto riguarda le note: Facilitator riassume decisioni, questioni aperte e attività. La base è esclusivamente quanto pronunciato tramite la trascrizione. Ciò che compare solo nella chat della riunione non confluisce nelle note. Le note possono essere corrette e integrate manualmente in qualsiasi momento; Facilitator continua a scrivere nella stessa pagina.
+
+## Requisiti
+
+Per il funzionamento devono essere soddisfatte contemporaneamente più condizioni:
+
+- **Licenza:** chi aggiunge Facilitator a una riunione o lo attiva durante la riunione necessita di una licenza Microsoft 365 Copilot, oltre a una licenza Microsoft 365 e Teams idonea. I partecipanti senza licenza Copilot non possono porre domande a Facilitator, ma vedono le note, le domande degli altri e le sue risposte.
+- **Loop:** le esperienze Loop in Teams devono essere attivate nel tenant. Senza Loop non ci sono note.
+- **Trascrizione:** attivando Facilitator, la trascrizione si avvia automaticamente. Se l'opzione della riunione «Allow Copilot and Facilitator» è impostata su «Only during the meeting», Facilitator opera senza una trascrizione salvata; in tal caso non sono possibili domande dopo la fine della riunione.
+- **Abilitazione dell'app:** l'app «Facilitator» è consentita per impostazione predefinita, a meno che nel Teams Admin Center non siano bloccate tutte le app.
+
+Nell'invito, attivate Facilitator in **Options** > **Copilot and other AI** con l'impostazione «Allow Copilot and Facilitator». In alternativa, può essere attivato durante la riunione dal menu Copilot.
+
+## Facilitator è disattivato
+
+Nella riunione, Teams mostra nel menu «IA della riunione» tre interruttori: Copilot, Facilitator e riepilogo intelligente. Se tutti e tre sono disattivati e compare l'avviso «Non hai accesso all'IA in questa riunione», la causa è la licenza o la riunione stessa. Se è disattivato solo Facilitator, la causa è l'app o Loop.
+
+| Sintomo | Possibile causa | Verifica |
+|---|---|---|
+| Tutti e tre gli interruttori sono grigi | L'account non dispone né di una licenza Microsoft 365 Copilot né di Teams Premium | Microsoft 365 Admin Center > Utenti > Licenze. Una licenza assegnata di recente spesso diventa effettiva in Teams solo dopo alcune ore o un nuovo accesso |
+| Tutti e tre gli interruttori sono grigi | Riunione immediata («Meet now»), riunione avviata dalla chat, riunione di canale o chiamata | Creare la riunione dal calendario come riunione Teams pianificata |
+| Tutti e tre gli interruttori sono grigi | Riunione di un'altra organizzazione, partecipazione come persona esterna o ospite | Facilitator non è disponibile nelle riunioni esterne |
+| Tutti e tre gli interruttori sono grigi | L'opzione della riunione «Consenti Copilot e Facilitator» è impostata su «Disattivato», impostata dalla persona organizzatrice, da un modello di riunione o da un'etichetta di riservatezza | Opzioni della riunione > Copilot e altra IA |
+| Tutti e tre gli interruttori sono grigi | Il criterio per le riunioni Teams blocca Copilot o la trascrizione | Teams Admin Center > Riunioni > Criteri per le riunioni |
+| Solo Facilitator è grigio | App «Facilitator» bloccata, ad esempio perché tutte le app sono bloccate | Teams Admin Center > App Teams > Gestisci app |
+| Solo Facilitator è grigio o non ci sono note | Loop per le note della riunione disattivato | `Get-SPOTenant` mostra `IsCollabMeetingNotesFluidEnabled` |
+
+La licenza è la causa più frequente. Senza una licenza Microsoft 365 Copilot, l'interruttore Facilitator rimane grigio in ogni riunione, indipendentemente dalle opzioni della riunione e dai criteri.
+
+## Per cosa è adatto Facilitator
+
+Facilitator offre il massimo vantaggio nelle riunioni in cui altrimenti qualcuno redigerebbe il verbale e non potrebbe quindi partecipare alla discussione. Esempi tipici:
+
+- **Riunioni di progetto e di stato con un elenco fisso di punti all'ordine del giorno:** il timer dell'agenda e gli avvisi a metà riunione mantengono il rispetto del programma, mentre le note contengono decisioni e punti aperti senza un verbale separato.
+- **Workshop con decisioni:** la pagina Loop condivisa è visibile durante la riunione. I partecipanti correggono direttamente le formulazioni, anziché concordare un verbale successivamente via e-mail.
+- **Domande durante la riunione:** «Cosa abbiamo deciso al punto 2?» oppure una breve ricerca sul Web su una versione del prodotto ricevono risposta da Facilitator nella chat, visibile a tutti.
+- **Riepilogo successivo:** su richiesta, Facilitator crea dalle note un documento Word, salvato nel OneDrive della persona richiedente.
+- **Riunioni in presenza:** con l'app Teams sullo smartphone o in una Teams Room vengono documentate anche le riunioni in loco.
+
+## Cosa non può fare Facilitator
+
+I limiti sono descritti chiaramente nella documentazione Microsoft e riguardano soprattutto i tipi di riunione, la lingua e la conformità.
+
+**Tipi di riunione non supportati.** Facilitator funziona solo nelle riunioni Teams pianificate. Non sono supportate riunioni immediate («Meet now»), riunioni avviate da una chat, chiamate Teams, riunioni di canale nonché chat 1:1 e di gruppo. La documentazione non menziona il supporto per webinar e Town Hall.
+
+**Nessun partecipante esterno.** Nelle riunioni e nelle chat con persone esterne, le note generate dall'IA non sono disponibili. I partecipanti esterni in linea di principio non vedono le note. Facilitator non è quindi utilizzabile come strumento di verbalizzazione per riunioni con clienti o fornitori.
+
+**Una lingua per riunione.** All'attivazione viene selezionata la lingua parlata. Le note vengono create solo per i passaggi in questa lingua. In una riunione che alterna tedesco e francese, le parti in francese mancano. Se la lingua selezionata differisce da quella parlata, non vengono create note. Il tedesco svizzero non è elencato come lingua a sé stante nell'elenco delle lingue Copilot supportate.
+
+**Nessuna registrazione.** Facilitator attiva la trascrizione, ma non la registrazione. Chi necessita di immagini e audio deve avviare separatamente la registrazione.
+
+**Nessuna agenda da inviti protetti.** Se l'invito è crittografato con un'etichetta di riservatezza, Facilitator non può leggere l'agenda. Lo stesso vale finché nella riunione è presente solo la persona organizzatrice, poiché non legge la sua copia dell'invito.
+
+**Nessun sostituto di un verbale formale.** Le note sono un riepilogo IA della trascrizione. Per riunioni del consiglio di amministrazione, colloqui del personale o altre riunioni con rilevanza legale, è comunque necessario un verbale verificato e approvato.
+
+## Archiviazione dei dati e conformità
+
+Le note sono archiviate come file `.loop` nella cartella «Meetings» di OneDrive della persona che ha avviato Facilitator. Microsoft le tratta come dati di trascrizione. Per i responsabili della conformità sono rilevanti tre limitazioni:
+
+- **eDiscovery:** le note delle riunioni generate dall'IA non vengono acquisite automaticamente come allegati cloud in Microsoft Purview eDiscovery.
+- **Conservazione:** le etichette di conservazione non sono supportate per gli allegati cloud nelle note generate dall'IA.
+- **Etichette di riservatezza:** le note non ereditano l'etichetta della riunione. È possibile applicare successivamente un'etichetta al componente Loop. Impostazioni quali «Prevent copy and paste» e filigrane non si applicano alle risposte e alle note di Facilitator.
+
+Per le organizzazioni soggette a obblighi di conservazione, ciò significa che le note che devono essere considerate documenti aziendali devono essere trasferite in un archivio con una conservazione funzionante. Microsoft descrive gli aspetti di Purview in una pagina dedicata (vedere Fonti).
+
+## Gestire e disattivare Facilitator
+
+Nel Teams Admin Center trovate l'app in **Teams apps** > **Manage apps** cercando «Facilitator». Da lì è possibile consentirla o bloccarla per l'intero tenant. Per singoli gruppi di utenti, gestite l'app tramite criteri di autorizzazione delle app o gestione incentrata sulle app.
+
+Le note Loop nelle riunioni, su cui si basa Facilitator, dipendono da un'impostazione del tenant SharePoint. Questa si applica a tutti gli utenti e non può essere impostata per singola persona:
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Spiegazione delle opzioni</summary>
+
+| Opzione | Effetto |
+|---|---|
+| `-Url` | Indirizzo del SharePoint Admin Center del tenant (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` disattiva le note condivise della riunione e quindi le note IA di Facilitator per tutti gli utenti, `$true` le riattiva |
+
+</details>
+
+Questa impostazione rimuove la funzione delle note anche per le riunioni senza Facilitator. Se deve essere bloccato solo l'agente, bloccare l'app nel Teams Admin Center è la soluzione più mirata. Per riunioni senza trascrizione salvata, impostate nel criterio della riunione l'opzione per Copilot e Facilitator su «Only during the meeting».
+
+## Fonti
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Documentazione amministrativa con requisiti di licenza, stato delle funzioni, archiviazione dei dati, limitazioni di conformità e gestione dell'app (stato: 18.11.2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): Guida per utenti finali su opzioni della riunione, agenda, timer, tipi di riunione supportati e selezione della lingua.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): Riunioni in presenza in Teams Rooms on Windows, licenza della persona organizzatrice, assegnazione dei partecipanti che parlano nella sala.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Blog Microsoft 365 Insider dell'ottobre 2025 su trascrizione, base delle note e funzionamento senza trascrizione salvata.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Prospettiva Purview sui dati di Facilitator per conservazione ed eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Impostazioni del tenant `IsLoopEnabled` e `IsCollabMeetingNotesFluidEnabled` per componenti Loop e note delle riunioni.
+
+----
+
 # SEPPmail 15.1.2: undici correzioni CVE, soprattutto in GINA, e TLS post-quantum
 
 URL: https://rafaelpfister.ch/it/blog/seppmail-15-1-2-undici-correzioni-cve-soprattutto-in-gina-e-tls-post-quantum
@@ -94841,6 +95489,168 @@ Según el art. 14, apdo. 2bis, OR, solo la firma electrónica cualificada con se
 
 ----
 
+# Facilitator en Microsoft Teams: qué puede hacer el agente de reuniones y qué no
+
+URL: https://rafaelpfister.ch/es/blog/facilitator-en-microsoft-teams-que-puede-hacer-el-agente-de-reuniones-y-que-no
+Datum: 2026-11-27
+
+Desde que Microsoft está implementando Facilitator en las reuniones de Teams, en muchos tenants aparece una nueva entrada en las opciones de reunión: «Allow Copilot and Facilitator». El nombre no deja claro qué hay detrás. Facilitator es un agente de IA que participa en la reunión y trabaja de forma visible para todos. De ello se derivan tanto sus posibilidades de uso como sus limitaciones.
+
+## Qué es Facilitator
+
+Facilitator es un agente de Microsoft 365 Copilot que asume la función de asistente de moderación en una reunión programada de Teams. Durante la reunión, redacta notas en una página compartida de Loop que todos los participantes internos pueden leer y editar. Lee la agenda de la invitación, muestra un temporizador de agenda en el escenario de la reunión y responde a las @menciones en el chat de la reunión.
+
+La diferencia con las demás funciones de IA de Teams reside en la visibilidad:
+
+| Función | Quién ve el resultado | Momento |
+|---|---|---|
+| Copilot en reuniones de Teams | solo la persona que pregunta | durante y después de la reunión |
+| Recap inteligente | participantes con licencia de Teams Premium o Copilot | después de la reunión |
+| Facilitator | todos los participantes internos | durante la reunión; las notas también después |
+
+Una pregunta a Copilot sigue siendo privada. Una pregunta a Facilitator y su respuesta aparecen en el chat de la reunión para todos. Así, Facilitator trabaja de forma conjunta para todos los participantes.
+
+## Resumen para usuarios
+
+Para todas las funciones se aplica lo siguiente: la reunión debe ser una reunión programada de Teams de su propia organización, sin participantes externos; en las opciones de reunión debe estar activado «Permitir Copilot y Facilitator», y al inicio debe haberse seleccionado el idioma hablado. Solo necesita una licencia de Copilot quien inicie Facilitator o le encargue tareas. Todos los demás participantes internos ven los resultados sin necesidad de una licencia propia de Copilot.
+
+| Función | Qué puede hacer con ella | Quién puede usarla | Requisitos adicionales |
+|---|---|---|---|
+| Iniciar Facilitator | Activar el agente antes o durante la reunión | Personas con licencia de Microsoft 365 Copilot | Loop activado en Teams; aplicación «Facilitator» no bloqueada |
+| Notas en directo | Las decisiones, preguntas abiertas y tareas se registran continuamente en la pestaña «Notes»; puede corregirlas y completarlas directamente | Leer y editar: todos los participantes internos | La transcripción está en marcha (se inicia automáticamente); solo se registra lo hablado en el idioma seleccionado, no los mensajes del chat |
+| Agenda y marcado de puntos | La lista de puntos de la invitación aparece en el chat y los puntos tratados se marcan como completados | Ver: todos los participantes internos | La agenda está en la invitación o se proporciona mediante @Facilitator en el chat; invitación no cifrada; además de la persona organizadora, hay al menos otra persona en la reunión |
+| Temporizador y recordatorios | Cuenta atrás para un punto, aviso a mitad de tiempo, antes del final de la reunión y en caso de excederlo | Solicitar temporizador: licencia de Copilot; ver: todos los participantes internos | ninguno |
+| Preguntas sobre la reunión | Preguntar mediante @Facilitator en el chat, por ejemplo «¿Qué decidimos sobre el punto 2?»; la pregunta y la respuesta son visibles para todos | Preguntar: licencia de Copilot; leer respuestas: todos los participantes internos | Preguntas tras el final de la reunión solo con la opción «Durante y después de la reunión» |
+| Preguntas con búsqueda web | Investigación breve durante la reunión, por ejemplo sobre una versión de producto | Licencia de Copilot | La búsqueda web para Copilot no está desactivada en el tenant |
+| Crear documento de Word | Generar un documento a partir de las notas, por ejemplo como borrador de acta | Licencia de Copilot | Almacenamiento en el OneDrive de la persona solicitante |
+| Crear presentación de PowerPoint | Generar una presentación a partir de la reunión | Licencia de Copilot | Vista previa pública: participación en Teams Public Preview |
+| Transferir tareas a Planner | Transferir a Planner las tareas registradas con «Accept to sync» | Licencia de Copilot | Vista previa pública: participación en Teams Public Preview |
+| Notas en reuniones presenciales (smartphone) | Documentar una conversación presencial con la aplicación de Teams en el smartphone | Licencia de Copilot | Aplicación de Teams en el smartphone |
+| Notas en Teams Room | Mostrar chat, notas y temporizador en la pantalla de la sala | Licencia de Copilot solo para la persona organizadora | Teams Rooms on Windows; para reuniones presenciales no programadas, Teams Rooms Pro (vista previa pública) |
+
+## Funciones y estado
+
+Microsoft clasifica las funciones por separado en su documentación de administración como disponibles de forma general y en vista previa pública (a noviembre de 2026):
+
+| Función | Estado |
+|---|---|
+| Notas en directo en la pestaña «Notes» (página de Loop, editable de forma colaborativa) | disponibilidad general |
+| Responder preguntas a partir del contenido de la reunión y mediante búsqueda web | disponibilidad general |
+| Temporizador de agenda con avisos a mitad de tiempo y antes del final de la reunión | disponibilidad general |
+| Crear un documento de Word a partir de la reunión | disponibilidad general |
+| @mención de Facilitator en el chat de la reunión | disponibilidad general |
+| Notas en el smartphone para reuniones presenciales | disponibilidad general |
+| Teams Rooms: chat, notas y temporizador en la sala | disponibilidad general |
+| Registrar tareas y sincronizarlas con Planner | vista previa pública |
+| Crear una presentación de PowerPoint a partir de la reunión | vista previa pública |
+| Notas para reuniones presenciales no programadas en Teams Rooms | vista previa pública |
+
+Sobre la agenda: si la invitación contiene una lista de puntos, Facilitator la adopta, la publica en el chat y marca los puntos en cuanto se han tratado. El marcado se realiza a intervalos, no de inmediato. Si la reunión se prolonga más allá de la hora prevista de finalización, lo indica. Si se le solicita, también establece una cuenta atrás para un punto concreto.
+
+Sobre las notas: Facilitator resume decisiones, preguntas abiertas y tareas. La base es exclusivamente lo hablado mediante la transcripción. Lo que solo aparece en el chat de la reunión no se incorpora a las notas. Las notas se pueden corregir y completar manualmente en cualquier momento; Facilitator sigue escribiendo en la misma página.
+
+## Requisitos
+
+Para utilizarlo deben cumplirse varias condiciones simultáneamente:
+
+- **Licencia:** Quien añada Facilitator a una reunión o lo active durante ella necesita una licencia de Microsoft 365 Copilot además de una licencia adecuada de Microsoft 365 y Teams. Los participantes sin licencia de Copilot no pueden hacer preguntas a Facilitator, pero ven las notas, las preguntas de otras personas y sus respuestas.
+- **Loop:** Las experiencias de Loop en Teams deben estar activadas en el tenant. Sin Loop no hay notas.
+- **Transcripción:** Al activar Facilitator, la transcripción se inicia automáticamente. Si la opción de reunión «Allow Copilot and Facilitator» está configurada como «Only during the meeting», Facilitator funciona sin una transcripción guardada; en ese caso no es posible hacer preguntas después de finalizar la reunión.
+- **Permiso de aplicación:** La aplicación «Facilitator» está permitida de forma predeterminada, siempre que no se hayan bloqueado todas las aplicaciones en el Teams Admin Center.
+
+En la invitación, active Facilitator en **Options** > **Copilot and other AI** con la configuración «Allow Copilot and Facilitator». Como alternativa, puede activarlo durante la reunión desde el menú de Copilot.
+
+## Facilitator aparece atenuado
+
+En la reunión, Teams muestra tres interruptores en el menú «IA de reunión»: Copilot, Facilitator y Resumen inteligente. Si los tres están atenuados y aparece el aviso «No tiene acceso a IA en esta reunión», la causa está en la licencia o en la propia reunión. Si solo Facilitator está atenuado, la causa está en la aplicación o en Loop.
+
+| Síntoma | Posible causa | Comprobación |
+|---|---|---|
+| Los tres interruptores en gris | La cuenta no tiene ni una licencia de Microsoft 365 Copilot ni de Teams Premium | Microsoft 365 Admin Center > Usuarios > Licencias. Una licencia asignada recientemente suele surtir efecto en Teams solo tras unas horas o al iniciar sesión de nuevo |
+| Los tres interruptores en gris | Reunión instantánea («Reunirse ahora»), reunión iniciada desde el chat, reunión de canal o llamada | Cree la reunión como reunión programada de Teams desde el calendario |
+| Los tres interruptores en gris | Reunión de otra organización, participación como persona externa o invitada | Facilitator no está disponible en reuniones externas |
+| Los tres interruptores en gris | La opción de reunión «Permitir Copilot y Facilitator» está en «Desactivado», configurada por la persona organizadora, una plantilla de reunión o una etiqueta de confidencialidad | Opciones de reunión > Copilot y otra IA |
+| Los tres interruptores en gris | La directiva de reuniones de Teams bloquea Copilot o la transcripción | Teams Admin Center > Reuniones > Directivas de reuniones |
+| Solo Facilitator en gris | Aplicación «Facilitator» bloqueada, por ejemplo porque todas las aplicaciones están bloqueadas | Teams Admin Center > Aplicaciones de Teams > Administrar aplicaciones |
+| Solo Facilitator en gris o sin notas | Loop para notas de reunión desactivado | `Get-SPOTenant` muestra `IsCollabMeetingNotesFluidEnabled` |
+
+La licencia es la causa más frecuente. Sin una licencia de Microsoft 365 Copilot, el interruptor de Facilitator permanece atenuado en todas las reuniones, independientemente de las opciones de reunión y las directivas.
+
+## Para qué es adecuado Facilitator
+
+Facilitator aporta el mayor beneficio en reuniones en las que, de otro modo, alguien toma acta y por ello no puede participar en el debate. Ejemplos habituales:
+
+- **Reuniones de proyecto y de estado con agenda fija:** El temporizador de agenda y los avisos a mitad de tiempo mantienen el horario; las notas contienen decisiones y puntos abiertos sin necesidad de un acta separada.
+- **Talleres con decisiones:** La página compartida de Loop es visible durante la reunión. Los participantes corrigen directamente las formulaciones, en lugar de acordar un acta posteriormente por correo electrónico.
+- **Preguntas durante la reunión:** Facilitator responde en el chat, de forma visible para todos, a «¿Qué decidimos sobre el punto 2?» o a una breve búsqueda web sobre una versión de producto.
+- **Resumen posterior:** A petición, Facilitator crea un documento de Word a partir de las notas y lo almacena en el OneDrive de la persona solicitante.
+- **Reuniones presenciales:** Con la aplicación de Teams en el smartphone o en una Teams Room también se documentan las reuniones in situ.
+
+## Lo que Facilitator no puede hacer
+
+Las limitaciones se describen claramente en la documentación de Microsoft y afectan sobre todo a los tipos de reunión, el idioma y el cumplimiento normativo.
+
+**Tipos de reunión no compatibles.** Facilitator solo funciona en reuniones programadas de Teams. No se admiten reuniones instantáneas («Meet now»), reuniones iniciadas desde un chat, llamadas de Teams, reuniones de canal ni chats individuales y grupales. La documentación no indica compatibilidad con seminarios web ni Town Halls.
+
+**Sin participantes externos.** Las notas generadas por IA no están disponibles en reuniones ni chats con personas externas. Por regla general, los participantes externos no ven las notas. Por tanto, Facilitator no puede utilizarse como herramienta de actas en reuniones con clientes o proveedores.
+
+**Un idioma por reunión.** Al activarlo se selecciona el idioma hablado. Las notas solo se generan para los fragmentos en ese idioma. En una reunión que alterna entre alemán y francés faltarán las partes en francés. Si el idioma seleccionado difiere del hablado, no se generan notas. El alemán suizo no figura como idioma propio en la lista de idiomas compatibles con Copilot.
+
+**Sin grabación.** Facilitator activa la transcripción, pero no la grabación. Quien necesite imagen y sonido debe iniciar la grabación por separado.
+
+**Sin agenda de invitaciones protegidas.** Si la invitación está cifrada con una etiqueta de confidencialidad, Facilitator no puede leer la agenda. Lo mismo ocurre mientras solo esté la persona organizadora en la reunión, ya que no lee su copia de la invitación.
+
+**No sustituye un acta formal.** Las notas son un resumen mediante IA de la transcripción. Para reuniones del consejo de administración, entrevistas de personal u otras reuniones con consecuencias jurídicas, sigue siendo necesaria un acta revisada y aprobada.
+
+## Almacenamiento de datos y cumplimiento normativo
+
+Las notas se almacenan como archivo `.loop` en la carpeta «Meetings» del OneDrive de la persona que inició Facilitator. Microsoft las trata como datos de transcripción. Para las personas responsables de cumplimiento normativo, son relevantes tres limitaciones:
+
+- **eDiscovery:** Las notas de reunión generadas por IA no se registran automáticamente como archivos adjuntos en la nube en Microsoft Purview eDiscovery.
+- **Retención:** Las etiquetas de retención no son compatibles con los archivos adjuntos en la nube de las notas generadas por IA.
+- **Etiquetas de confidencialidad:** Las notas no heredan la etiqueta de la reunión. Se puede aplicar una etiqueta posteriormente al componente de Loop. Configuraciones como «Prevent copy and paste» y las marcas de agua no se aplican a las respuestas ni a las notas de Facilitator.
+
+Para las organizaciones con obligaciones de retención, esto significa que las notas que deban considerarse documentación empresarial deben transferirse a un repositorio con retención operativa. Microsoft describe los aspectos de Purview en una página independiente (véase Fuentes).
+
+## Controlar y desactivar Facilitator
+
+En el Teams Admin Center encontrará la aplicación en **Teams apps** > **Manage apps** buscando «Facilitator». Allí puede permitirla o bloquearla para todo el tenant. Para grupos de usuarios concretos, controle la aplicación mediante directivas de permisos de aplicaciones o administración centrada en aplicaciones.
+
+Las notas de Loop en las reuniones, en las que se basa Facilitator, dependen de una configuración de tenant de SharePoint. Esta se aplica a todos los usuarios y no puede configurarse por persona:
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Explica las opciones</summary>
+
+| Opción | Efecto |
+|---|---|
+| `-Url` | Dirección del SharePoint Admin Center del tenant (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` desactiva las notas compartidas de reunión y, con ello, las notas de IA de Facilitator para todos los usuarios; `$true` las vuelve a activar |
+
+</details>
+
+Esta configuración también elimina la función de notas para reuniones sin Facilitator. Si solo se desea bloquear el agente, bloquear la aplicación en el Teams Admin Center es la vía más específica. Para reuniones sin una transcripción guardada, configure en la directiva de reuniones la opción de Copilot y Facilitator como «Only during the meeting».
+
+## Fuentes
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Documentación de administración con requisitos de licencia, estado de las funciones, almacenamiento de datos, limitaciones de cumplimiento normativo y control de aplicaciones (a 18/11/2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): Guía para usuarios finales sobre opciones de reunión, agenda, temporizador, tipos de reunión compatibles y selección de idioma.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): Reuniones presenciales en Teams Rooms on Windows, licencia de la persona organizadora, asignación de hablantes en la sala.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Blog de Microsoft 365 Insider de octubre de 2025 sobre transcripción, base de las notas y funcionamiento sin transcripción guardada.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Perspectiva de Purview sobre los datos de Facilitator para retención y eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Configuraciones de tenant `IsLoopEnabled` y `IsCollabMeetingNotesFluidEnabled` para componentes de Loop y notas de reunión.
+
+----
+
 # SEPPmail 15.1.2: once correcciones de CVE, principalmente en GINA, y TLS poscuántico
 
 URL: https://rafaelpfister.ch/es/blog/seppmail-15-1-2-once-correcciones-de-cve-principalmente-en-gina-y-tls-poscuantico
@@ -118453,6 +119263,168 @@ Endast den kvalificerade elektroniska signaturen med kvalificerad tidsstämpel �
 11.  [Civilprocesslagen (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): art. 157 om fri bevisvärdering.
 
 12.  [Förordning (EU) nr 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): art. 25 stycke 2 om likställandet av den kvalificerade elektroniska signaturen med handskriven underskrift.
+
+----
+
+# Facilitator i Microsoft Teams: Vad mötesagenten kan och inte kan
+
+URL: https://rafaelpfister.ch/sv/blog/facilitator-i-microsoft-teams-vad-motesagenten-kan-och-inte-kan
+Datum: 2026-11-27
+
+Sedan Microsoft har rullat ut Facilitator i Teams-möten har en ny post dykt upp i mötesalternativen i många klientorganisationer: «Allow Copilot and Facilitator». Namnet säger inte mycket om vad som döljer sig bakom. Facilitator är en AI-agent som deltar i mötet och arbetar synligt för alla. Därmed blir både användningsmöjligheterna och begränsningarna tydliga.
+
+## Vad Facilitator är
+
+Facilitator är en agent från Microsoft 365 Copilot som tar rollen som mötesmoderator i ett schemalagt Teams-möte. Under mötet skriver den anteckningar på en gemensam Loop-sida som alla interna deltagare kan läsa och redigera. Den läser agendan från inbjudan, visar en agendatimer på mötesscenen och reagerar på @omnämnanden i möteschatten.
+
+Skillnaden jämfört med de andra AI-funktionerna i Teams ligger i synligheten:
+
+| Funktion | Vem ser resultatet | Tidpunkt |
+|---|---|---|
+| Copilot i Teams-möten | endast personen som frågar | under och efter mötet |
+| Intelligent sammanfattning | deltagare med Teams Premium- eller Copilot-licens | efter mötet |
+| Facilitator | alla interna deltagare | under mötet, även anteckningarna efteråt |
+
+En fråga till Copilot förblir privat. En fråga till Facilitator och dess svar visas i möteschatten för alla. Facilitator arbetar alltså gemensamt för alla deltagare.
+
+## Översikt för användare
+
+För alla funktioner gäller följande: Mötet är ett schemalagt Teams-möte i din egen organisation utan externa deltagare, «Tillåt Copilot och Facilitator» är aktiverat i mötesalternativen och det talade språket har valts vid starten. Endast den som startar Facilitator eller ger den uppgifter behöver en Copilot-licens. Alla andra interna deltagare ser resultaten utan egen Copilot-licens.
+
+| Funktion | Vad du kan göra med den | Vem kan använda den | Ytterligare krav |
+|---|---|---|---|
+| Starta Facilitator | Aktivera agenten före eller under mötet | Personer med Microsoft 365 Copilot-licens | Loop i Teams aktiverat, appen «Facilitator» inte blockerad |
+| Liveanteckningar | Beslut, öppna frågor och uppgifter registreras löpande på fliken «Notes»; du kan korrigera och komplettera dem direkt | Läsa och redigera: alla interna deltagare | Transkribering körs (startar automatiskt); endast det som sägs på valt språk registreras, inte chattmeddelanden |
+| Agenda och avprickning | Ärendelistan från inbjudan visas i chatten, avhandlade punkter bockas av | Se: alla interna deltagare | Agenda finns i inbjudan eller lämnas via @Facilitator i chatten; inbjudan är inte krypterad; minst en ytterligare person utöver organisatören deltar i mötet |
+| Timer och påminnelser | Nedräkning för en punkt, påminnelse halvvägs, före mötesslut och vid överskriden tid | Begära timer: Copilot-licens; se: alla interna deltagare | inga |
+| Frågor om mötet | Fråga via @Facilitator i chatten, till exempel «Vad beslutade vi om punkt 2?»; frågan och svaret syns för alla | Ställa frågor: Copilot-licens; läsa svar: alla interna deltagare | Frågor efter mötets slut endast med alternativet «Under och efter mötet» |
+| Frågor med webbsökning | Kort research under mötet, till exempel om en produktversion | Copilot-licens | Webbsökning för Copilot är inte inaktiverad i klientorganisationen |
+| Skapa Word-dokument | Skapa ett dokument av anteckningarna, till exempel ett utkast till protokoll | Copilot-licens | Sparas i den frågande personens OneDrive |
+| Skapa PowerPoint-presentation | Skapa en presentation från mötet | Copilot-licens | Public Preview: deltagande i Teams Public Preview |
+| Överföra uppgifter till Planner | Överför registrerade uppgifter till Planner med «Accept to sync» | Copilot-licens | Public Preview: deltagande i Teams Public Preview |
+| Anteckningar vid fysiskt möte (smartphone) | Dokumentera ett samtal på plats med Teams-appen på smarttelefonen | Copilot-licens | Teams-app på smarttelefonen |
+| Anteckningar i Teams Room | Visa chatt, anteckningar och timer på rumsskärmen | Copilot-licens endast för organisatören | Teams Rooms on Windows; för oplanerade fysiska möten Teams Rooms Pro (Public Preview) |
+
+## Funktioner och status
+
+Microsoft redovisar funktionerna separat i administratörsdokumentationen efter allmänt tillgängliga och Public Preview (status november 2026):
+
+| Funktion | Status |
+|---|---|
+| Liveanteckningar på fliken «Notes» (Loop-sida, gemensamt redigerbar) | allmänt tillgänglig |
+| Svara på frågor utifrån mötesinnehållet och via webbsökning | allmänt tillgänglig |
+| Agendatimer med påminnelser halvvägs och före mötesslut | allmänt tillgänglig |
+| Skapa Word-dokument från mötet | allmänt tillgänglig |
+| @omnämnande av Facilitator i möteschatten | allmänt tillgänglig |
+| Anteckningar på smarttelefonen för fysiska möten | allmänt tillgänglig |
+| Teams Rooms: chatt, anteckningar och timer i rummet | allmänt tillgänglig |
+| Registrera uppgifter och synkronisera med Planner | Public Preview |
+| Skapa PowerPoint-presentation från mötet | Public Preview |
+| Anteckningar för oplanerade fysiska möten i Teams Rooms | Public Preview |
+
+Om agendan: Om inbjudan innehåller en ärendelista tar Facilitator över den, publicerar den i chatten och bockar av punkter när de har avhandlats. Avprickningen sker med intervall, inte omedelbart. Om mötet går över den planerade sluttiden påpekar den detta. På begäran kan den även sätta en nedräkning för en enskild punkt.
+
+Om anteckningarna: Facilitator sammanfattar beslut, öppna frågor och uppgifter. Underlaget är enbart det talade ordet via transkriberingen. Det som endast står i möteschatten tas inte med i anteckningarna. Anteckningarna kan när som helst korrigeras och kompletteras manuellt; Facilitator fortsätter att skriva på samma sida.
+
+## Förutsättningar
+
+För att tjänsten ska fungera måste flera villkor uppfyllas samtidigt:
+
+- **Licens:** Den som lägger till Facilitator i ett möte eller aktiverar den under mötet behöver en Microsoft 365 Copilot-licens utöver en lämplig Microsoft 365- och Teams-licens. Deltagare utan Copilot-licens kan inte ställa frågor till Facilitator, men ser anteckningarna, de andras frågor och dess svar.
+- **Loop:** Loop-upplevelserna i Teams måste vara aktiverade i klientorganisationen. Utan Loop finns inga anteckningar.
+- **Transkribering:** När Facilitator aktiveras startar transkriberingen automatiskt. Om mötesalternativet «Allow Copilot and Facilitator» är inställt på «Only during the meeting» körs Facilitator utan sparad transkribering; frågor efter mötets slut är då inte möjliga.
+- **Appbehörighet:** Appen «Facilitator» är tillåten som standard, förutsatt att inte alla appar blockeras i Teams Admin Center.
+
+I inbjudan aktiverar du Facilitator under **Options** > **Copilot and other AI** med inställningen «Allow Copilot and Facilitator». Alternativt kan den aktiveras under mötet via Copilot-menyn.
+
+## Facilitator är nedtonad
+
+I mötet visar Teams tre reglage i menyn «Mötes-AI»: Copilot, Facilitator och Intelligent sammanfattning. Om alla tre är nedtonade och meddelandet «Du har inte åtkomst till AI i det här mötet» visas, beror orsaken på licensen eller själva mötet. Om endast Facilitator är nedtonad beror det på appen eller Loop.
+
+| Symtom | Möjlig orsak | Kontroll |
+|---|---|---|
+| Alla tre reglage är grå | Kontot har varken Microsoft 365 Copilot- eller Teams Premium-licens | Microsoft 365 Admin Center > Användare > Licenser. En nyligen tilldelad licens träder ofta i kraft i Teams först efter några timmar eller efter en ny inloggning |
+| Alla tre reglage är grå | Direktmöte («Meet now»), möte startat från chatten, kanalmöte eller samtal | Skapa mötet som ett schemalagt Teams-möte via kalendern |
+| Alla tre reglage är grå | Möte i en annan organisation, deltagande som extern person eller gäst | Facilitator är inte tillgänglig i externa möten |
+| Alla tre reglage är grå | Mötesalternativet «Tillåt Copilot och Facilitator» är inställt på «Av», angett av organisatören, en mötesmall eller en känslighetsetikett | Mötesalternativ > Copilot och annan AI |
+| Alla tre reglage är grå | Teams mötesprincip blockerar Copilot eller transkribering | Teams Admin Center > Möten > Mötesprinciper |
+| Endast Facilitator är grå | Appen «Facilitator» är blockerad, till exempel eftersom alla appar är spärrade | Teams Admin Center > Teams-appar > Hantera appar |
+| Endast Facilitator är grå eller inga anteckningar | Loop för mötesanteckningar är inaktiverat | `Get-SPOTenant` visar `IsCollabMeetingNotesFluidEnabled` |
+
+Licensen är den vanligaste orsaken. Utan Microsoft 365 Copilot-licens förblir Facilitator-reglaget grått i varje möte, oavsett mötesalternativ och principer.
+
+## Vad Facilitator passar för
+
+Facilitator ger störst nytta i möten där någon annars för protokoll och därför inte kan delta i diskussionen. Typiska exempel:
+
+- **Projekt- och statusmöten med fast ärendelista:** Agendatimer och påminnelser halvvägs håller tidsplanen, och anteckningarna innehåller beslut och öppna punkter utan separat protokoll.
+- **Workshoppar med beslut:** Den gemensamma Loop-sidan är synlig under mötet. Deltagarna korrigerar formuleringar direkt i stället för att efteråt stämma av ett protokoll via e-post.
+- **Frågor under mötet:** «Vad beslutade vi om punkt 2?» eller en kort webbsökning om en produktversion besvarar Facilitator i chatten, synligt för alla.
+- **Senare sammanfattning:** På begäran skapar Facilitator ett Word-dokument av anteckningarna som lagras i den frågande personens OneDrive.
+- **Fysiska möten:** Med Teams-appen på smarttelefonen eller i ett Teams Room dokumenteras även möten på plats.
+
+## Vad Facilitator inte kan
+
+Begränsningarna beskrivs tydligt i Microsofts dokumentation och gäller främst mötestyper, språk och regelefterlevnad.
+
+**Mötestyper som inte stöds.** Facilitator fungerar endast i schemalagda Teams-möten. Direktmöten («Meet now»), möten startade från en chatt, Teams-samtal, kanalmöten samt 1:1- och gruppchattar stöds inte. Dokumentationen nämner inget stöd för webbseminarier och Town Halls.
+
+**Inga externa deltagare.** AI-genererade anteckningar är inte tillgängliga i möten och chattar med externa personer. Externa deltagare kan i princip inte se anteckningarna. Facilitator kan därför inte användas som protokollsverktyg för möten med kunder eller leverantörer.
+
+**Ett språk per möte.** Det talade språket väljs vid aktiveringen. Anteckningar skapas endast för avsnitt på detta språk. I ett möte som växlar mellan tyska och franska saknas de franska delarna. Om det valda språket skiljer sig från det talade skapas inga anteckningar. Schweizertyska anges inte som ett eget språk i listan över Copilot-språk som stöds.
+
+**Ingen inspelning.** Facilitator aktiverar transkriberingen, men inte inspelning. Den som behöver bild och ljud måste starta inspelningen separat.
+
+**Ingen agenda från skyddade inbjudningar.** Om inbjudan är krypterad med en känslighetsetikett kan Facilitator inte läsa agendan. Detsamma gäller så länge endast organisatören finns i mötet, eftersom den inte läser organisatörens kopia av inbjudan.
+
+**Ingen ersättning för ett formellt protokoll.** Anteckningarna är en AI-sammanfattning av transkriberingen. För styrelsemöten, personalsamtal eller andra möten med rättslig betydelse behövs fortfarande ett granskat och godkänt protokoll.
+
+## Datalagring och regelefterlevnad
+
+Anteckningarna lagras som en `.loop`-fil i mappen «Meetings» i OneDrive för personen som startade Facilitator. Microsoft behandlar dem som transkriberingsdata. För compliance-ansvariga är tre begränsningar relevanta:
+
+- **eDiscovery:** AI-genererade mötesanteckningar registreras inte automatiskt som molnbilagor i Microsoft Purview eDiscovery.
+- **Bevarande:** Bevarandeetiketter stöds inte för molnbilagor i AI-genererade anteckningar.
+- **Känslighetsetiketter:** Anteckningarna ärver inte mötets etikett. En etikett kan läggas till i efterhand på Loop-komponenten. Inställningar som «Prevent copy and paste» och vattenstämplar gäller inte för Facilitators svar och anteckningar.
+
+För organisationer med bevarandekrav innebär detta att anteckningar som ska räknas som affärshandlingar måste överföras till en lagringsplats med fungerande bevarande. Microsoft beskriver Purview-aspekterna på en egen sida (se Källor).
+
+## Styra och inaktivera Facilitator
+
+I Teams Admin Center hittar du appen under **Teams apps** > **Manage apps** genom att söka efter «Facilitator». Där kan den tillåtas eller blockeras för hela klientorganisationen. För enskilda användargrupper styr du appen via principer för appbehörighet eller appcentrerad hantering.
+
+Loop-anteckningarna i möten, som Facilitator bygger på, är knutna till en SharePoint-inställning på klientorganisationsnivå. Den gäller för alla användare och kan inte ställas in per person:
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Förklaring av alternativen</summary>
+
+| Alternativ | Effekt |
+|---|---|
+| `-Url` | Adressen till klientorganisationens SharePoint Admin Center (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` inaktiverar de gemensamma mötesanteckningarna och därmed Facilitators AI-anteckningar för alla användare, `$true` aktiverar dem igen |
+
+</details>
+
+Denna inställning tar även bort anteckningsfunktionen för möten utan Facilitator. Om endast agenten ska blockeras är det mer träffsäkert att blockera appen i Teams Admin Center. För möten utan sparad transkribering anger du alternativet för Copilot och Facilitator till «Only during the meeting» i mötesprincipen.
+
+## Källor
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Administratörsdokumentation med licenskrav, funktionsstatus, datalagring, compliance-begränsningar och appstyrning (status 18.11.2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): Användarguide om mötesalternativ, agenda, timer, mötestyper som stöds och språkval.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): Fysiska möten i Teams Rooms on Windows, organisatörens licens, koppling av talare i rummet.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Microsoft 365 Insider-blogg från oktober 2025 om transkribering, underlag för anteckningar och drift utan sparad transkribering.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Purview-perspektiv på Facilitator-data för bevarande och eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Klientorganisationsinställningarna `IsLoopEnabled` och `IsCollabMeetingNotesFluidEnabled` för Loop-komponenter och mötesanteckningar.
 
 ----
 
@@ -142072,6 +143044,168 @@ Bare den kvalifiserte elektroniske signaturen med kvalifisert tidsstempel er lik
 11.  [Zivilprozessordnung (ZPO)](https://www.fedlex.admin.ch/eli/cc/2010/262/de): Art. 157 om fri bevisvurdering.
 
 12.  [Forordning (EU) nr. 910/2014 (eIDAS)](https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32014R0910): Art. 25 avsnitt 2 om likestilling av den kvalifiserte elektroniske signaturen med den håndskrevne underskriften.
+
+----
+
+# Facilitator i Microsoft Teams: Hva møteagenten kan og ikke kan
+
+URL: https://rafaelpfister.ch/no/blog/facilitator-i-microsoft-teams-hva-moteagenten-kan-og-ikke-kan
+Datum: 2026-11-27
+
+Siden Microsoft har rullet ut Facilitator i Teams-møter, har det dukket opp et nytt alternativ i møteinnstillingene i mange leiere: «Allow Copilot and Facilitator». Navnet sier lite om hva som ligger bak. Facilitator er en KI-agent som deltar i møtet og arbeider synlig for alle. Dette gir både bruksområder og begrensninger.
+
+## Hva Facilitator er
+
+Facilitator er en agent fra Microsoft 365 Copilot som fungerer som en møteassistent i et planlagt Teams-møte. Under møtet skriver den notater på en felles Loop-side som alle interne deltakere kan lese og redigere. Den leser agendaen fra invitasjonen, viser en agendatimer på møtescenen og reagerer på @omtaler i møtechatten.
+
+Forskjellen fra de andre KI-funksjonene i Teams ligger i synligheten:
+
+| Funksjon | Hvem ser resultatet | Tidspunkt |
+|---|---|---|
+| Copilot i Teams-møter | bare personen som spør | under og etter møtet |
+| Intelligent Recap | deltakere med Teams Premium- eller Copilot-lisens | etter møtet |
+| Facilitator | alle interne deltakere | under møtet, notater også etterpå |
+
+Et spørsmål til Copilot forblir privat. Et spørsmål til Facilitator og svaret vises i møtechatten for alle. Facilitator arbeider dermed for alle deltakerne i fellesskap.
+
+## Oversikt for brukere
+
+For alle funksjoner gjelder følgende: Møtet er et planlagt Teams-møte i din egen organisasjon uten eksterne deltakere, «Copilot og Facilitator tillatt» er slått på i møteinnstillingene, og talespråket ble valgt ved oppstart. Bare den som starter Facilitator eller gir den oppgaver, trenger en Copilot-lisens. Alle andre interne deltakere ser resultatene uten egen Copilot-lisens.
+
+| Funksjon | Hva du kan gjøre med den | Hvem kan bruke den | Andre forutsetninger |
+|---|---|---|---|
+| Starte Facilitator | Slå på agenten før eller under møtet | Personer med Microsoft 365 Copilot-lisens | Loop i Teams er slått på, appen «Facilitator» er ikke blokkert |
+| Direktenotater | Beslutninger, åpne spørsmål og oppgaver registreres fortløpende i fanen «Notes»; du kan korrigere og supplere dem direkte | Lese og redigere: alle interne deltakere | Transkripsjon kjører (starter automatisk); bare tale på det valgte språket registreres, ikke chatmeldinger |
+| Agenda og avkryssing | Saklisten fra invitasjonen vises i chatten, og behandlede punkter krysses av | Se: alle interne deltakere | Agendaen står i invitasjonen eller sendes via @Facilitator i chatten; invitasjonen er ikke kryptert; minst én annen person enn arrangøren er i møtet |
+| Timer og påminnelser | Nedtelling for et punkt, varsel ved halv tid, før møteslutt og ved overskridelse | Be om timer: Copilot-lisens; se: alle interne deltakere | ingen |
+| Spørsmål om møtet | Spør via @Facilitator i chatten, for eksempel «Hva bestemte vi om punkt 2?»; spørsmål og svar er synlige for alle | Stille spørsmål: Copilot-lisens; lese svar: alle interne deltakere | Spørsmål etter møteslutt bare med alternativet «Under og etter møtet» |
+| Spørsmål med nettsøk | Kort research under møtet, for eksempel om en produktversjon | Copilot-lisens | Nettsøk for Copilot er ikke deaktivert i leieren |
+| Opprette Word-dokument | Opprette et dokument fra notatene, for eksempel et utkast til referat | Copilot-lisens | Lagring i OneDrive til personen som spør |
+| Opprette PowerPoint-presentasjon | Opprette en presentasjon fra møtet | Copilot-lisens | Public Preview: deltakelse i Teams Public Preview |
+| Overføre oppgaver til Planner | Overføre registrerte oppgaver til Planner med «Accept to sync» | Copilot-lisens | Public Preview: deltakelse i Teams Public Preview |
+| Notater i fysisk møte (smarttelefon) | Protokollføre en samtale på stedet med Teams-appen på smarttelefonen | Copilot-lisens | Teams-app på smarttelefonen |
+| Notater i Teams Room | Vise chat, notater og timer på romskjermen i møterommet | Copilot-lisens bare for arrangøren | Teams Rooms on Windows; for uplanlagte fysiske møter Teams Rooms Pro (Public Preview) |
+
+## Funksjoner og status
+
+Microsoft oppgir funksjonene separat i administratordokumentasjonen etter generell tilgjengelighet og Public Preview (per november 2026):
+
+| Funksjon | Status |
+|---|---|
+| Direktenotater i fanen «Notes» (Loop-side, redigerbar i fellesskap) | generelt tilgjengelig |
+| Besvare spørsmål fra møteinnholdet og via nettsøk | generelt tilgjengelig |
+| Agendatimer med varsler ved halv tid og før møteslutt | generelt tilgjengelig |
+| Opprette Word-dokument fra møtet | generelt tilgjengelig |
+| @omtale av Facilitator i møtechatten | generelt tilgjengelig |
+| Notater på smarttelefon for fysiske møter | generelt tilgjengelig |
+| Teams Rooms: chat, notater og timer i rommet | generelt tilgjengelig |
+| Registrere oppgaver og synkronisere med Planner | Public Preview |
+| Opprette PowerPoint-presentasjon fra møtet | Public Preview |
+| Notater for uplanlagte fysiske møter i Teams Rooms | Public Preview |
+
+Om agendaen: Hvis invitasjonen inneholder en saksliste, overtar Facilitator den, publiserer den i chatten og krysser av punkter når de er behandlet. Avkryssingen skjer med intervaller, ikke umiddelbart. Hvis møtet går over den planlagte sluttiden, varsler den om dette. På forespørsel setter den også en nedtelling for et enkelt punkt.
+
+Om notatene: Facilitator oppsummerer beslutninger, åpne spørsmål og oppgaver. Grunnlaget er utelukkende det som blir sagt i transkripsjonen. Det som bare står i møtechatten, tas ikke med i notatene. Notatene kan når som helst korrigeres og suppleres manuelt; Facilitator fortsetter å skrive på samme side.
+
+## Forutsetninger
+
+Flere betingelser må være oppfylt samtidig for å bruke funksjonen:
+
+- **Lisens:** Den som legger Facilitator til i et møte eller slår den på under møtet, trenger en Microsoft 365 Copilot-lisens i tillegg til en egnet Microsoft 365- og Teams-lisens. Deltakere uten Copilot-lisens kan ikke stille spørsmål til Facilitator, men ser notatene, andres spørsmål og svarene dens.
+- **Loop:** Loop-opplevelsene i Teams må være aktivert i leieren. Uten Loop finnes det ingen notater.
+- **Transkripsjon:** Når Facilitator slås på, starter transkripsjonen automatisk. Hvis møteinnstillingen «Allow Copilot and Facilitator» er satt til «Only during the meeting», kjører Facilitator uten lagret transkripsjon; spørsmål etter møteslutt er da ikke mulig.
+- **Appgodkjenning:** Appen «Facilitator» er tillatt som standard, forutsatt at ikke alle apper er blokkert i Teams Admin Center.
+
+I invitasjonen aktiverer du Facilitator under **Options** > **Copilot and other AI** med innstillingen «Allow Copilot and Facilitator». Alternativt kan den slås på under møtet via Copilot-menyen.
+
+## Facilitator er nedtonet
+
+I møtet viser Teams tre brytere i menyen «Møte-KI»: Copilot, Facilitator og Intelligent oppsummering. Hvis alle tre er nedtonet og meldingen «Du har ikke tilgang til KI i dette møtet» vises, skyldes det lisensen eller selve møtet. Hvis bare Facilitator er nedtonet, skyldes det appen eller Loop.
+
+| Symptom | Mulig årsak | Kontroll |
+|---|---|---|
+| Alle tre bryterne er grå | Kontoen har verken Microsoft 365 Copilot- eller Teams Premium-lisens | Microsoft 365 Admin Center > Brukere > Lisenser. En nylig tildelt lisens blir ofte først aktiv i Teams etter noen timer eller etter ny pålogging |
+| Alle tre bryterne er grå | Øyeblikkelig møte («Meet now»), møte startet fra chatten, kanalmøte eller samtale | Opprett møtet som et planlagt Teams-møte via kalenderen |
+| Alle tre bryterne er grå | Møte i en annen organisasjon, deltakelse som ekstern person eller gjest | Facilitator er ikke tilgjengelig i eksterne møter |
+| Alle tre bryterne er grå | Møteinnstillingen «Tillat Copilot og Facilitator» er satt til «Av», angitt av arrangøren, en møtemal eller en sensitivitetsetikett | Møteinnstillinger > Copilot og annen KI |
+| Alle tre bryterne er grå | Teams-møtepolicyen blokkerer Copilot eller transkripsjon | Teams Admin Center > Møter > Møtepolicyer |
+| Bare Facilitator er grå | Appen «Facilitator» er blokkert, for eksempel fordi alle apper er sperret | Teams Admin Center > Teams-apper > Administrer apper |
+| Bare Facilitator er grå eller ingen notater | Loop for møtenotater er slått av | `Get-SPOTenant` viser `IsCollabMeetingNotesFluidEnabled` |
+
+Lisensen er den vanligste årsaken. Uten Microsoft 365 Copilot-lisens forblir Facilitator-bryteren grå i hvert møte, uavhengig av møteinnstillinger og policyer.
+
+## Hva Facilitator egner seg til
+
+Facilitator gir størst nytte i møter der noen ellers ville ført referat og dermed ikke kunne delta i diskusjonen. Typiske eksempler:
+
+- **Prosjekt- og statusmøter med fast saksliste:** Agendatimeren og varsler ved halv tid holder tidsplanen, og notatene inneholder beslutninger og åpne punkter uten eget referat.
+- **Workshoper med beslutninger:** Den felles Loop-siden er synlig under møtet. Deltakerne korrigerer formuleringer direkte i stedet for å samordne et referat i etterkant via e-post.
+- **Spørsmål under møtet:** «Hva bestemte vi om punkt 2?» eller et kort nettsøk om en produktversjon besvarer Facilitator i chatten, synlig for alle.
+- **Senere oppsummering:** På forespørsel oppretter Facilitator et Word-dokument fra notatene, som lagres i OneDrive til personen som spør.
+- **Fysiske møter:** Med Teams-appen på smarttelefonen eller i et Teams Room protokollføres også møter på stedet.
+
+## Hva Facilitator ikke kan
+
+Begrensningene er tydelig beskrevet i Microsoft-dokumentasjonen og gjelder først og fremst møtetyper, språk og compliance.
+
+**Møtetyper som ikke støttes.** Facilitator kjører bare i planlagte Teams-møter. Øyeblikkelige møter («Meet now»), møter startet fra en chat, Teams-samtaler, kanalmøter samt 1:1- og gruppechatter støttes ikke. Dokumentasjonen oppgir ingen støtte for webinarer og Town Halls.
+
+**Ingen eksterne deltakere.** I møter og chatter med eksterne personer er KI-genererte notater ikke tilgjengelige. Eksterne deltakere kan som hovedregel ikke se notatene. Facilitator kan derfor ikke brukes som referatverktøy i møter med kunder eller leverandører.
+
+**Ett språk per møte.** Talespråket velges ved oppstart. Notater opprettes bare for deler på dette språket. I et møte som veksler mellom tysk og fransk, mangler de franske delene. Hvis det valgte språket avviker fra det som snakkes, opprettes det ingen notater. Sveitsertysk er ikke oppført som et eget språk i listen over støttede Copilot-språk.
+
+**Ingen opptak.** Facilitator slår på transkripsjonen, men ikke opptak. De som trenger bilde og lyd, må starte opptaket separat.
+
+**Ingen agenda fra beskyttede invitasjoner.** Hvis invitasjonen er kryptert med en sensitivitetsetikett, kan Facilitator ikke lese agendaen. Det samme gjelder så lenge bare arrangøren er i møtet, fordi den ikke leser arrangørens kopi av invitasjonen.
+
+**Ingen erstatning for et formelt referat.** Notatene er en KI-oppsummering av transkripsjonen. For styremøter, personalsamtaler eller andre møter med juridisk betydning kreves det fortsatt et gjennomgått og godkjent referat.
+
+## Datalagring og compliance
+
+Notatene lagres som en `.loop`-fil i mappen «Meetings» i OneDrive til personen som startet Facilitator. Microsoft behandler dem på samme måte som transkripsjonsdata. For compliance-ansvarlige er tre begrensninger relevante:
+
+- **eDiscovery:** KI-genererte møtenotater registreres ikke automatisk som skyvedlegg i Microsoft Purview eDiscovery.
+- **Oppbevaring:** Oppbevaringsetiketter støttes ikke for skyvedlegg i KI-genererte notater.
+- **Sensitivitetsetiketter:** Notatene overtar ikke etiketten fra møtet. En etikett kan settes på Loop-komponenten i etterkant. Innstillinger som «Prevent copy and paste» og vannmerker gjelder ikke for svar og notater fra Facilitator.
+
+For organisasjoner med oppbevaringsplikter betyr dette at notater som skal regnes som forretningsdokumentasjon, må overføres til et lagringssted med fungerende oppbevaring. Microsoft beskriver Purview-aspektene på en egen side (se Kilder).
+
+## Styre og deaktivere Facilitator
+
+I Teams Admin Center finner du appen under **Teams apps** > **Manage apps** ved å søke etter «Facilitator». Der kan den tillates eller blokkeres for hele leieren. For enkelte brukergrupper styrer du appen via app-tillatelsespolicyer eller app-sentrert administrasjon.
+
+Loop-notatene i møter, som Facilitator bygger på, avhenger av en SharePoint-leierinnstilling. Den gjelder for alle brukere og kan ikke angis per person:
+
+```powershell
+Connect-SPOService -Url "https://contoso-admin.sharepoint.com"
+Set-SPOTenant -IsCollabMeetingNotesFluidEnabled $false
+```
+
+<details class="options-details">
+<summary>Forklarte alternativer</summary>
+
+| Alternativ | Virkning |
+|---|---|
+| `-Url` | Adressen til leierens SharePoint Admin Center (`<tenant>-admin.sharepoint.com`) |
+| `-IsCollabMeetingNotesFluidEnabled` | `$false` slår av felles møtenotater og dermed KI-notatene fra Facilitator for alle brukere, `$true` slår dem på igjen |
+
+</details>
+
+Denne innstillingen fjerner også notatfunksjonen for møter uten Facilitator. Hvis bare agenten skal blokkeres, er det mer målrettet å blokkere appen i Teams Admin Center. For møter uten lagret transkripsjon setter du alternativet for Copilot og Facilitator til «Only during the meeting» i møtepolicyen.
+
+## Kilder
+
+1.  [Set up Facilitator in Microsoft Teams for collaborative AI-generated notes](https://learn.microsoft.com/en-us/microsoftteams/facilitator-teams): Administratordokumentasjon med lisenskrav, funksjonsstatus, datalagring, compliance-begrensninger og appstyring (per 18.11.2026).
+
+2.  [Facilitator in Microsoft Teams meetings](https://support.microsoft.com/en-us/teams/copilot/facilitator-in-microsoft-teams-meetings): Sluttbrukerveiledning for møteinnstillinger, agenda, timer, støttede møtetyper og språkvalg.
+
+3.  [Facilitator in Microsoft Teams Rooms](https://learn.microsoft.com/en-us/microsoftteams/rooms/facilitator-teams-rooms): Fysiske møter i Teams Rooms on Windows, lisens for arrangøren, tilordning av talere i rommet.
+
+4.  [Keep meetings focused and productive with Facilitator in Teams](https://techcommunity.microsoft.com/blog/microsoft365insiderblog/keep-meetings-focused-and-productive-with-facilitator-in-teams/4456029): Microsoft 365 Insider-blogg fra oktober 2025 om transkripsjon, grunnlaget for notater og bruk uten lagret transkripsjon.
+
+5.  [Microsoft Purview: Teams Facilitator](https://learn.microsoft.com/en-us/purview/ai-teams-facilitator): Purview-perspektiv på Facilitator-data for oppbevaring og eDiscovery.
+
+6.  [Manage Loop components in OneDrive and SharePoint](https://learn.microsoft.com/microsoft-365/loop/loop-components-configuration): Leierinnstillingene `IsLoopEnabled` og `IsCollabMeetingNotesFluidEnabled` for Loop-komponenter og møtenotater.
 
 ----
 
