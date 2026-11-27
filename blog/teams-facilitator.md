@@ -35,6 +35,24 @@ Der Unterschied zu den anderen KI-Funktionen in Teams liegt in der Sichtbarkeit:
 
 Eine Frage an Copilot bleibt privat. Eine Frage an den Facilitator und seine Antwort erscheinen im Meeting-Chat für alle. Der Facilitator arbeitet damit für alle Teilnehmenden gemeinsam.
 
+## Übersicht für Anwenderinnen und Anwender
+
+Für alle Funktionen gilt: Das Meeting ist ein geplantes Teams-Meeting Ihrer eigenen Organisation ohne externe Teilnehmende, in den Besprechungsoptionen ist «Copilot und Facilitator zulassen» eingeschaltet, und beim Start wurde die gesprochene Sprache gewählt. Eine Copilot-Lizenz braucht nur, wer den Facilitator startet oder ihm Aufträge gibt. Alle anderen internen Teilnehmenden sehen die Ergebnisse ohne eigene Copilot-Lizenz.
+
+| Funktion | Was Sie damit tun | Wer kann es nutzen | Weitere Voraussetzungen |
+|---|---|---|---|
+| Facilitator starten | Den Agenten vor oder während des Meetings einschalten | Personen mit Microsoft-365-Copilot-Lizenz | Loop in Teams eingeschaltet, App «Facilitator» nicht blockiert |
+| Live-Notizen | Entscheidungen, offene Fragen und Aufgaben werden laufend im Tab «Notes» festgehalten; Sie können sie direkt korrigieren und ergänzen | Lesen und bearbeiten: alle internen Teilnehmenden | Transkription läuft (startet automatisch); nur Gesprochenes in der gewählten Sprache wird erfasst, Chat-Nachrichten nicht |
+| Agenda und Abhaken | Die Traktandenliste aus der Einladung erscheint im Chat, besprochene Punkte werden abgehakt | Sehen: alle internen Teilnehmenden | Agenda steht in der Einladung oder wird per @Facilitator im Chat übergeben; Einladung nicht verschlüsselt; ausser der organisierenden Person ist mindestens eine weitere Person im Meeting |
+| Timer und Erinnerungen | Countdown für einen Punkt, Hinweis zur Halbzeit, vor Meeting-Ende und bei Überzug | Timer anfordern: Copilot-Lizenz; sehen: alle internen Teilnehmenden | keine |
+| Fragen zum Meeting | Per @Facilitator im Chat fragen, zum Beispiel «Was haben wir zu Punkt 2 entschieden?»; Frage und Antwort sind für alle sichtbar | Fragen: Copilot-Lizenz; Antworten lesen: alle internen Teilnehmenden | Fragen nach Meeting-Ende nur mit Option «Während und nach der Besprechung» |
+| Fragen mit Websuche | Kurze Recherche während des Meetings, zum Beispiel zu einer Produktversion | Copilot-Lizenz | Websuche für Copilot im Tenant nicht deaktiviert |
+| Word-Dokument erstellen | Aus den Notizen ein Dokument erzeugen, etwa als Protokollentwurf | Copilot-Lizenz | Ablage im OneDrive der anfragenden Person |
+| PowerPoint-Präsentation erstellen | Aus dem Meeting eine Präsentation erzeugen | Copilot-Lizenz | Public Preview: Teilnahme am Teams Public Preview |
+| Aufgaben in Planner übernehmen | Erfasste Aufgaben mit «Accept to sync» nach Planner übertragen | Copilot-Lizenz | Public Preview: Teilnahme am Teams Public Preview |
+| Notizen im Präsenzmeeting (Smartphone) | Mit der Teams-App auf dem Smartphone ein Gespräch vor Ort protokollieren | Copilot-Lizenz | Teams-App auf dem Smartphone |
+| Notizen im Teams Room | Im Besprechungsraum Chat, Notizen und Timer auf dem Raumbildschirm anzeigen | Copilot-Lizenz nur für die organisierende Person | Teams Rooms on Windows; für ungeplante Präsenzmeetings Teams Rooms Pro (Public Preview) |
+
 ## Funktionen und Status
 
 Microsoft führt die Funktionen in der Admin-Dokumentation getrennt nach allgemein verfügbar und Public Preview (Stand November 2026):
